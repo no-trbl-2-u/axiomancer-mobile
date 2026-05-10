@@ -245,7 +245,7 @@ the `color` prop without needing separate colored variants.
 
 ## Asset checklist
 
-- [ ] `GlyphHeart` — woodcut heart
+- [x] `GlyphHeart` — woodcut heart
 - [ ] `GlyphBody` — woodcut fist
 - [ ] `GlyphMind` — woodcut skull
 - [ ] Effect glyph set (8 icons)

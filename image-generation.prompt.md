@@ -84,6 +84,8 @@ Requirements:
 
 Save as: `assets/images/<kebab-name>.svg` (raw SVG text, not a React file).
 
+write the SVG as an inline XML string constant in the component file
+
 Then write the import shim in the component:
   ```tsx
   import { SvgXml } from 'react-native-svg';
@@ -95,9 +97,9 @@ Then write the import shim in the component:
 
 **Requires an image-generation tool.** Before running this step, confirm
 one of the following is available:
-  (a) Cursor's built-in GenerateImage tool, OR
-  (b) An image-generation MCP (e.g. fal.ai, Replicate, Stability AI)
+  (a) (CHECK FIRST) An image-generation MCP (e.g. fal.ai, Replicate, Stability AI)
       configured in this project's MCP settings.
+  (b) (DEFAULT) Cursor's built-in GenerateImage tool, OR
 
 If neither is available, STOP and print:
   BLOCKED: No image-generation tool available. Add an image-gen MCP
@@ -199,8 +201,4 @@ HARD RULES (non-negotiable)
 
 ## What to add before running this
 
-1. **Image-gen MCP** — for the raster illustrations (§5–8), add one to `.cursor/mcp.json`. fal.ai is the most straightforward; Replicate also works. The prompt already handles the "no tool available" case gracefully.
-
 2. **SVG raw import support** — for the vector path (Step 3A), Metro needs to know how to `require()` `.svg` files as strings. That's either `metro-svg-transformer` or the asset already being imported via `SvgXml` with a string. Worth confirming this is set up before the vector track runs.
-
-3. **The test harness (Spec 01)** — Step 6 depends on `npm test` working. If Spec 01 isn't done yet, the prompt will BLOCKED at Step 6's `npm test` call, which is the correct behavior.

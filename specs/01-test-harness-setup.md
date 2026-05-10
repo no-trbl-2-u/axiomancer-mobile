@@ -65,7 +65,7 @@ under `app/<route>/e2e/`. Type-check (`npx tsc --noEmit`) stays clean.
      `createGameStore` lifecycle (no presenter — just engine plumbing).
    - (C) Both — a presenter test *and* an engine-store-lifecycle test,
      to lock both shapes in.
-   > Your answer:
+   > Your answer: C
 
 4. **RNG strategy in tests.**
    - (A) **(default)** Local `app/test-utils/rng.ts` mirroring the
@@ -74,7 +74,7 @@ under `app/<route>/e2e/`. Type-check (`npx tsc --noEmit`) stays clean.
    - (B) Wait for the engine to ship a seedable RNG (engine Spec 11),
      then thread it through. Until then, use `Math.random` stubs
      inline.
-   > Your answer:
+   > Your answer: A, but include a comment near the code with a TODO for when the engine ships a seedable RNG
 
 5. **`AsyncStorage` mock.** Even though Spec 09 hasn't landed yet, the
    engine store is parameterised on a persistence adapter. Should the
@@ -96,7 +96,7 @@ under `app/<route>/e2e/`. Type-check (`npx tsc --noEmit`) stays clean.
 7. **CI integration.** Out of scope for this spec, but worth flagging:
    should `npm test` be run in a GitHub Action / Cursor Cloud agent
    on PR open?
-   > Your answer:
+   > Your answer: Yes
 
 ## Proposed approach
 

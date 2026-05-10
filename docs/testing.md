@@ -1,0 +1,197 @@
+# Testing Standard — Hermetic E2E by Default
+
+> **Audience:** humans and AI agents writing or modifying code in this
+> repo.
+>
+> **Rule of thumb:** every implementation lands with at least one
+> hermetic end-to-end test that exercises the change through the
+> highest-level public entry point that touches it. If you can't write
+> one, you must explain why in the PR description (and ideally fix the
+> architecture so you can).
+
+> **Status note (2026-05):** the test harness itself does not exist yet
+> in this repo. **Spec 01 — Test Harness Setup** in `specs/` is the
+> prerequisite for every other spec. Until Spec 01 lands, "tests pass"
+> means `npx tsc --noEmit` is clean. Once Spec 01 is `[DONE]`, the
+> `npm test` / hermetic-suite requirement below becomes binding.
+
+---
+
+## What "hermetic" means here
+
+A test is **hermetic** if and only if all three of these hold:
+
+1. **Self-contained.** No network requests, no real `AsyncStorage`,
+   no real filesystem, no real font loader, no real `Animated` /
+   Reanimated driver, no real timers, no real image fetching, no real
+   subprocess. The test must run in plain `npm test` with no external
+   service.
+2. **Deterministic.** No reliance on wall-clock time, real
+   `Math.random`, process IDs, or environment variables. Stub
+   `Math.random` (and once the engine's seedable RNG ships, swap to
+   that). Use `jest.useFakeTimers()` when timing matters.
+3. **Isolated.** No shared mutable state across tests. `afterEach`
+   restores any `jest.spyOn` mocks. Fixtures are deep-cloned by the
+   code under test, not by the test.
+
+If a test reads from the network, opens real `AsyncStorage`, depends
+on the system clock, or fails intermittently when run in a different
+order, it is not hermetic. Fix it.
+
+## What "e2e" means here
+
+A test is **end-to-end** if it drives the change through the
+highest-level public entry point of its module — *not* through a
+private helper. The test asserts on observable state (the view-model
+returned by a presenter, the rendered text in a component tree, the
+engine `GameState` after an action), not on intermediate function
+calls.
+
+Examples of e2e entry points by module:
+
+| Module                      | Hermetic e2e entry point                                                              |
+| --------------------------- | -------------------------------------------------------------------------------------- |
+| `app/(tabs)/combat.tsx`     | `selectCombatViewModel(state)` → assert on the returned view-model; component render via `@testing-library/react-native` for the JSX |
+| `app/(tabs)/character.tsx`  | `selectCharacterViewModel(state)`                                                      |
+| `app/(tabs)/inventory.tsx`  | `selectInventoryViewModel(state)`                                                      |
+| `app/(tabs)/exploration.tsx`| `selectExplorationViewModel(state)`                                                    |
+| `app/(tabs)/event.tsx`      | `selectEventViewModel(state)`                                                          |
+| Engine store lifecycle      | `createGameStore(memoryAdapter, …)` driven through `startCombat` / `updateCombat` / `endCombat` from `axiomancer-mechanics` |
+| `components/<X>.tsx`        | `render(<X {...props} />)` → assert on `getByText` / `getByA11yLabel`. Only when the component has branching UI logic worth pinning. |
+
+Unit tests for individual helpers are still welcome, but they do not
+satisfy the hermetic-e2e requirement on their own.
+
+## What CANNOT be tested hermetically (today)
+
+- **Real device behaviour** (haptics, real fonts loading, real splash
+  screen). Mock `expo-haptics`, `expo-font`, `expo-splash-screen` in
+  `jest.setup.ts`.
+- **Reanimated worklets running on the UI thread.** Use
+  `react-native-reanimated/mock` from the Jest config. Worklet timing
+  is therefore not testable here.
+- **Push notifications, deep links** — out of scope for hermetic
+  tests; cover with manual smoke tests.
+
+If your change touches any of the above, the hermetic e2e test must
+target the underlying presenter / engine function. The screen
+component test then becomes a thin "renders without crashing + shows
+expected text" check.
+
+---
+
+## File and naming conventions
+
+- **Location:**
+  - `app/<route>/e2e/<feature>.engine.test.ts` for hermetic
+    full-flow presenter / state tests. Companion code:
+    `app/<route>/e2e/<feature>.engine.ts`.
+  - `app/<route>/<file>.test.ts` for pure unit tests.
+  - `components/<Component>.test.tsx` for render tests of components
+    with branching UI.
+- **Fixtures / mocks** live in `*.mock.ts` files, e.g.
+  `app/(tabs)/combat.mock.ts`. They must be plain data — no
+  `Math.random`, no environment reads.
+- **Test utilities** live in `app/test-utils/` (created by Spec 01) and
+  are excluded from the production bundle via Metro config.
+
+## Required test categories per implementation
+
+For every non-trivial implementation, the e2e file should cover at
+minimum:
+
+1. **Happy path** — the typical success scenario, end-to-end.
+2. **Boundary / branch conditions** — every terminal state the change
+   can reach (e.g. combat presenter covers all four phases:
+   `choosing_stance`, `choosing_action`, `choosing_skill`, `resolving`;
+   inventory presenter covers empty / partial / full).
+3. **Invariants** — properties that must hold throughout (HP bar
+   percentage in `[0, 1]`, view-model strings never `undefined`,
+   round counter monotonic, fixtures unmutated, no negative durations).
+4. **Lifecycle integration** — at least one test that drives the
+   change through the engine's `createGameStore(memoryAdapter, …)`
+   lifecycle, asserting expected adapter calls
+   (`jest.spyOn(memoryAdapter, 'save')`).
+
+## Reference example (target shape)
+
+Once Spec 01 ships, `app/(tabs)/combat/e2e/combat-presenter.engine.test.ts`
+is the reference. Until then, copy the structure of the engine
+package's `src/Combat/e2e/combat.engine.test.ts` — its top-of-file
+comment, its alternating-RNG helper, its three win-condition suites,
+and its store-lifecycle suite together demonstrate every property
+above.
+
+---
+
+## Copy-pasteable scaffold
+
+```ts
+/**
+ * Hermetic E2E Tests — <Module / Feature>
+ *
+ * Hermetic = self-contained + deterministic + isolated.
+ * See docs/testing.md for the full standard.
+ */
+
+import { afterEach, describe, it, expect, jest } from '@jest/globals';
+
+import { mockAlternatingRng } from '@/app/test-utils/rng';
+// import the public entry point under test
+// e.g. import { selectCombatViewModel } from '../combat.engine';
+
+afterEach(() => {
+    jest.restoreAllMocks();
+});
+
+describe('<feature>: happy path', () => {
+    it('drives the change through the public entry point', () => {
+        mockAlternatingRng();
+        // ...arrange, act, assert on observable state...
+    });
+});
+
+describe('<feature>: invariants', () => {
+    it('preserves <invariant> across N steps', () => {
+        // ...
+    });
+});
+```
+
+## Component-test scaffold
+
+```tsx
+import { render } from '@testing-library/react-native';
+import { CombatScreen } from '../combat';
+import { combatStateFixture } from '../combat.mock';
+
+describe('CombatScreen render', () => {
+    it('renders the stance picker in the choosing_stance phase', () => {
+        const { getByText } = render(
+            <CombatScreen state={combatStateFixture('choosing_stance')} />
+        );
+        expect(getByText(/CHOOSE THY STANCE/)).toBeTruthy();
+    });
+});
+```
+
+## PR self-check
+
+Before opening a PR, confirm:
+
+- [ ] At least one new (or modified) test under `app/<route>/e2e/`
+      covers the change.
+- [ ] The new test runs green via `npm test` — no flakes when run
+      twice.
+- [ ] Every randomness source is stubbed — no raw `Math.random` in the
+      test.
+- [ ] No network, no `AsyncStorage`, no real timers, no real fonts, no
+      real Reanimated driver in the test path.
+- [ ] `jest.restoreAllMocks()` runs in `afterEach`.
+- [ ] If the change is screen-only, the underlying presenter logic was
+      extracted and tested hermetically.
+- [ ] `npx tsc --noEmit` and `npm test` are clean.
+
+If you cannot satisfy this list, write a one-paragraph "Hermetic-test
+debt" note in the PR description explaining why and what would unblock
+it.

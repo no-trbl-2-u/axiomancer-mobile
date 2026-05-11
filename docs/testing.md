@@ -9,11 +9,9 @@
 > one, you must explain why in the PR description (and ideally fix the
 > architecture so you can).
 
-> **Status note (2026-05):** the test harness itself does not exist yet
-> in this repo. **Spec 01 — Test Harness Setup** in `specs/` is the
-> prerequisite for every other spec. Until Spec 01 lands, "tests pass"
-> means `npx tsc --noEmit` is clean. Once Spec 01 is `[DONE]`, the
-> `npm test` / hermetic-suite requirement below becomes binding.
+> **Status note (2026-05):** Spec 01 — Test Harness Setup has shipped.
+> `npm test` runs Jest via `jest-expo` and the hermetic-suite requirement
+> is now binding for all subsequent specs.
 
 ---
 
@@ -115,8 +113,8 @@ minimum:
 
 ## Reference example (target shape)
 
-Once Spec 01 ships, `app/(tabs)/combat/e2e/combat-presenter.engine.test.ts`
-is the reference. Until then, copy the structure of the engine
+The canonical reference test is `app/(tabs)/combat/e2e/combat-hud.engine.test.ts`
+(delivered by Spec 01). Until then, copy the structure of the engine
 package's `src/Combat/e2e/combat.engine.test.ts` — its top-of-file
 comment, its alternating-RNG helper, its three win-condition suites,
 and its store-lifecycle suite together demonstrate every property

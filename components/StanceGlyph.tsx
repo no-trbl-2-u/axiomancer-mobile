@@ -1,5 +1,5 @@
 import React from 'react';
-import Svg, { Path, Ellipse, Circle } from 'react-native-svg';
+import Svg, { Path, Ellipse, SvgXml } from 'react-native-svg';
 import { AXM } from '@/theme/axm';
 
 interface GlyphProps {
@@ -8,18 +8,18 @@ interface GlyphProps {
   stroke?: number;
 }
 
-export function GlyphHeart({ size = 40, color = AXM.parchment, stroke = 2.4 }: GlyphProps) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-      <Path
-        d="M32 18 C 26 6, 10 8, 10 22 C 10 36, 32 52, 32 56 C 32 52, 54 36, 54 22 C 54 8, 38 6, 32 18 Z"
-        fill={color} fillOpacity={0.18} stroke={color} strokeWidth={stroke} strokeLinejoin="round"
-      />
-      <Path d="M22 22 L 22 32 M 42 22 L 42 32 M 32 18 L 32 38" stroke={color} strokeWidth={stroke * 0.7} />
-      <Path d="M28 14 L 26 8 M 36 14 L 38 8" stroke={color} strokeWidth={stroke} />
-      <Path d="M16 30 L 22 36 M 18 36 L 22 40 M 42 36 L 48 30 M 42 40 L 46 36" stroke={color} strokeWidth={stroke * 0.6} opacity={0.55} />
-    </Svg>
-  );
+// Source artifact: assets/images/heart.svg (see assets/images/heart.provenance.json).
+// Mirrored inline so the bundler does not depend on a Metro SVG transformer.
+const heartXml = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <path d="M20 54 L 19 60 L 21 60 Z M 28 56 L 27 62 L 29 62 Z M 38 56 L 37 62 L 39 62 Z M 44 54 L 43 60 L 45 60 Z" fill="currentColor"/>
+  <path fill-rule="evenodd" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="miter" d="M32 16 L 34 13 L 38 10 L 43 9 L 48 10 L 53 14 L 56 19 L 56 25 L 54 31 L 50 37 L 44 43 L 38 48 L 33 53 L 32 55 L 31 53 L 26 48 L 20 43 L 14 37 L 10 31 L 8 25 L 8 19 L 11 14 L 16 10 L 21 9 L 26 10 L 30 13 Z M22 22 L 26 26 L 24 28 L 20 24 Z M14 30 L 18 34 L 16 36 L 12 32 Z M40 24 L 42 26 L 38 30 L 36 28 Z M44 32 L 48 36 L 46 38 L 42 34 Z"/>
+  <path d="M30 16 L 28 8 L 24 6 L 25 10 L 28 12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M34 16 L 36 8 L 40 6 L 39 10 L 36 12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M32 14 L 32 4 M 30 6 L 32 4 L 34 6" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+export function GlyphHeart({ size = 40, color = AXM.parchment }: GlyphProps) {
+  return <SvgXml xml={heartXml} width={size} height={size} color={color} />;
 }
 
 export function GlyphBody({ size = 40, color = AXM.parchment, stroke = 2.4 }: GlyphProps) {

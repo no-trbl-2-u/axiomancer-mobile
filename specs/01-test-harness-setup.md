@@ -1,4 +1,5 @@
 # Spec 01 — Test Harness Setup
+<!-- [DONE on 2026-05-11] -->
 
 ## Goal
 

@@ -46,8 +46,12 @@ All commands are in `package.json`:
   `axiomancer-mechanics` → keep screens as `<screen>.tsx` UI shells.
   See Specs 02 + 03.
 - **SVGs are placeholders.** Every SVG in this codebase (stance glyphs,
-  effect glyphs, action icons, enemy art) is a coded placeholder. The
-  swap contract is documented in [`SVG_ASSET_SPEC.md`](./SVG_ASSET_SPEC.md).
+ effect glyphs, action icons, enemy art) is a coded placeholder. The
+ swap contract is documented in [`SVG_ASSET_SPEC.md`](./SVG_ASSET_SPEC.md).
+ The end-to-end workflow for swapping a placeholder for a real asset
+ (vector or raster) lives in the
+ [`swap-asset-placeholder`](./.cursor/skills/swap-asset-placeholder/SKILL.md)
+ skill — read it before generating, wiring, or committing any new asset.
 - **Path alias `@/*` resolves to repo root** — see `tsconfig.json`.
 - **Fonts must finish loading before splash screen hides.** See
   `app/_layout.tsx`. Tests should mock `expo-font`'s `useFonts` to return

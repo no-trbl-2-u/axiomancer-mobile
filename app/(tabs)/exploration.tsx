@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import Svg, {
   Path, Circle, Line, G, Defs, Pattern,
   Text as SvgText,
@@ -11,6 +12,7 @@ import { SectionLabel } from '@/components/SectionLabel';
 import { NodeMark } from '@/components/NodeMark';
 import { ActionIcon } from '@/components/ActionIcon';
 import { Splatter } from '@/components/Splatter';
+import { useCombatMode } from '@/state/combat-mode';
 
 const NODES = [
   { id: 'n0', x: 60,  y: 380, kind: 'completed' as const, label: 'Hovel',          type: 'rest' },
@@ -49,8 +51,17 @@ function rnd(i: number) {
   return x - Math.floor(x);
 }
 
+const ENCOUNTER_NODE_TYPES = new Set(['encounter', 'boss']);
+
 export default function ExplorationScreen() {
   const get = (id: string) => NODES.find(n => n.id === id)!;
+  const router = useRouter();
+  const { enterCombat } = useCombatMode();
+
+  const triggerCombat = () => {
+    enterCombat();
+    router.replace('/combat' as any);
+  };
 
   return (
     <ScreenBg>
@@ -114,8 +125,16 @@ export default function ExplorationScreen() {
           const ev = EVENT_BADGE[n.type] || EVENT_BADGE.encounter;
           const left = (n.x - 18) / 360 * 100;
           const top = (n.y - 18) / 400 * 100;
+          const triggers = n.kind === 'available' && ENCOUNTER_NODE_TYPES.has(n.type);
+          const Wrap: any = triggers ? TouchableOpacity : View;
           return (
-            <View key={n.id} style={[styles.nodeWrap, { left: `${left}%` as any, top: `${top}%` as any }]}>
+            <Wrap
+              key={n.id}
+              accessibilityRole={triggers ? 'button' : undefined}
+              accessibilityLabel={triggers ? `Engage ${n.label}` : undefined}
+              onPress={triggers ? triggerCombat : undefined}
+              style={[styles.nodeWrap, { left: `${left}%` as any, top: `${top}%` as any }]}
+            >
               <NodeMark kind={n.kind} size={36} />
               <View style={[styles.nodeLabel, { opacity: n.kind === 'locked' ? 0.4 : 1 }]}>
                 <Text style={[styles.nodeLabelText, { color: n.kind === 'locked' ? AXM.ash : AXM.parchment }]}>
@@ -127,7 +146,7 @@ export default function ExplorationScreen() {
                   <Text style={styles.nodeTypeBadgeText}>{ev.label}</Text>
                 </View>
               )}
-            </View>
+            </Wrap>
           );
         })}
 

@@ -1,8 +1,10 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { AXM, FONTS } from '@/theme/axm';
+import { useCombatMode } from '@/state/combat-mode';
+import { isTabHidden } from './_layout.engine';
 
 function TabIcon({ kind, color, size }: { kind: string; color: string; size: number }) {
   switch (kind) {
@@ -46,6 +48,8 @@ function TabIcon({ kind, color, size }: { kind: string; color: string; size: num
 }
 
 export default function TabLayout() {
+  const { inCombat } = useCombatMode();
+
   return (
     <Tabs
       screenOptions={{
@@ -61,6 +65,7 @@ export default function TabLayout() {
         options={{
           title: 'MAP',
           tabBarIcon: ({ color, size }) => <TabIcon kind="eye" color={color} size={size} />,
+          href: isTabHidden(inCombat, 'exploration') ? null : undefined,
         }}
       />
       <Tabs.Screen
@@ -68,6 +73,7 @@ export default function TabLayout() {
         options={{
           title: 'COMBAT',
           tabBarIcon: ({ color, size }) => <TabIcon kind="sword" color={color} size={size} />,
+          href: isTabHidden(inCombat, 'combat') ? null : undefined,
         }}
       />
       <Tabs.Screen

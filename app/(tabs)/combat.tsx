@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import Svg, { Path, Circle, Ellipse, G, Defs, RadialGradient, Stop, Line } from 'react-native-svg';
 import { AXM, FONTS } from '@/theme/axm';
+import { useCombatMode } from '@/state/combat-mode';
 import { ScreenBg } from '@/components/ScreenBg';
 import { SectionLabel } from '@/components/SectionLabel';
 import { StatBar } from '@/components/StatBar';
@@ -52,6 +54,13 @@ const LOG_LINES: Record<CombatPhase, string[]> = {
 export default function CombatScreen() {
   const [phase, setPhase] = useState<CombatPhase>('choosing_stance');
   const [selectedStance, setSelectedStance] = useState<Stance>('heart');
+  const router = useRouter();
+  const { exitCombat } = useCombatMode();
+
+  const leaveCombat = () => {
+    exitCombat();
+    router.replace('/exploration' as any);
+  };
 
   const enemy = {
     name: 'CARRION HIEROPHANT', tier: 'elite',
@@ -184,6 +193,7 @@ export default function CombatScreen() {
           <ActionPhase
             onSkill={() => setPhase('choosing_skill')}
             onAttack={() => setPhase('resolving')}
+            onFlee={leaveCombat}
           />
         )}
         {phase === 'choosing_skill' && (
@@ -247,7 +257,7 @@ function StancePhase({ enemy, selected, onPick }: {
   );
 }
 
-function ActionPhase({ onSkill, onAttack }: { onSkill: () => void; onAttack: () => void }) {
+function ActionPhase({ onSkill, onAttack, onFlee }: { onSkill: () => void; onAttack: () => void; onFlee: () => void }) {
   const actions = [
     { key: 'attack', label: 'ATTACK',  icon: 'sword',  hint: 'DEAL DAMAGE BY STANCE', accent: AXM.blood, onPress: onAttack },
     { key: 'defend', label: 'DEFEND',  icon: 'shield', hint: 'REDUCE NEXT HARM',       accent: AXM.parchment, onPress: null },
@@ -269,9 +279,9 @@ function ActionPhase({ onSkill, onAttack }: { onSkill: () => void; onAttack: () 
           </TouchableOpacity>
         ))}
       </View>
-      <View style={action_styles.fleeRow}>
+      <TouchableOpacity onPress={onFlee} style={action_styles.fleeRow} accessibilityRole="button" accessibilityLabel="Flee combat">
         <Text style={action_styles.flee}>or … flee like a craven (luck save)</Text>
-      </View>
+      </TouchableOpacity>
     </View>
   );
 }

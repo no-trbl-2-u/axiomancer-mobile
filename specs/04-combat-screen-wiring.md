@@ -46,7 +46,7 @@ and mind-mark display all reflect engine state.
      game model.
    - (B) Local. Phases are a UI concept (the engine resolves a round
      atomically; phases are just step-by-step prompts in the UI).
-   > Your answer:
+   > Your answer: A
 
 2. **Stance preview vs. confirmed.** The current UI lets the player
    pick a stance but visually pre-selects with `selected = 'heart'`.
@@ -55,7 +55,7 @@ and mind-mark display all reflect engine state.
      dispatched on confirm. Engine state only sees the committed
      stance.
    - (B) Dispatch on every tap; the engine receives every preview.
-   > Your answer:
+   > Your answer: A
 
 3. **Skill list source.** The 6 hard-coded skills in `combat.tsx`:
    - (A) **(default)** Punt to engine Spec 04 — for now read from a
@@ -66,7 +66,7 @@ and mind-mark display all reflect engine state.
      skills are real.
    - (C) Mock the engine API in this repo (`useGameState(s =>
      s.player.equippedSkills)`) and back-fill engine Spec 04 later.
-   > Your answer:
+   > Your answer: A
 
 4. **Battle log rendering.** The mock has 2 log lines per phase. The
    engine emits a structured log (`appendLog(...)`). VM should:
@@ -74,7 +74,7 @@ and mind-mark display all reflect engine state.
      plain text.
    - (B) Categorise by severity (info / damage / crit) and tint.
    - (C) Render the full log in a scroll view.
-   > Your answer:
+   > Your answer: C but font color changes depending on the information in the log
 
 5. **Round transition animations.** The mock UI has no transition.
    When `resolving → choosing_stance`:
@@ -83,14 +83,14 @@ and mind-mark display all reflect engine state.
    - (B) Simple fade via Reanimated — write a hermetic test mocking
      `Animated.timing` so the assertion runs on the post-transition
      state.
-   > Your answer:
+   > Your answer: Have the selections be a carousel. Slide left to reselect stance. "Skills" selection should slide to right to show available skills
 
 6. **Flee.** The mock UI mentions "or … flee like a craven (luck
    save)". The engine has no flee action today. Pick:
    - (A) **(default)** Hide the flee link until engine ships flee.
    - (B) Implement flee in the engine first, then wire it.
    - (C) Leave the link as a no-op with a "coming soon" toast.
-   > Your answer:
+   > Your answer: C
 
 ## Proposed approach
 

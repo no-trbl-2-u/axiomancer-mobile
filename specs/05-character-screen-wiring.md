@@ -36,18 +36,18 @@ character progression ships.
    - (A) **(default)** Show `xp` from engine if exposed; fall back to
      `0 / nextLevel(level)` until Spec 06.
    - (B) Hide XP entirely until Spec 06.
-   > Your answer:
+   > Your answer: A
 
 2. **Saves vs. tests.** Mock shows three saves and three tests. The
    engine has `getSaveStat` and `getResistStat` (per README) — confirm
    one maps to each. If not, propose what `Body Test +2` actually
    represents.
-   > Your answer:
+   > Your answer: The test stat should be focused on tests (map events) and the saves I'm not sure yet.
 
 3. **Equipment slot mapping.** Mock has Head / Body / Hands / Feet /
    Weapon / Armor / Accessory. Engine `Item` types include weapon /
    armor variants (per README's `Items` group). Map 1:1 or rework?
-   > Your answer:
+   > Your answer:1:1 for now.
 
 4. **Stat upgrade buttons.** Are level-up stat picks part of this
    spec or deferred to Spec 06?
@@ -60,7 +60,7 @@ character progression ships.
    `Heart Save 10` with a particular accent. Should we drive the tint
    from the value (e.g. `< level → blood; >= level → parchment`) in
    the VM?
-   > Your answer:
+   > Your answer: No tint because tests will also have a roll
 
 ## Proposed approach
 

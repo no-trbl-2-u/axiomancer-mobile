@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import Svg, { Path, Circle, Ellipse, G, Defs, RadialGradient, Stop, Line } from 'react-native-svg';
+import { FRIENDSHIP_COUNTER_MAX } from 'axiomancer-mechanics';
 import { AXM, FONTS } from '@/theme/axm';
 import { useCombatMode } from '@/state/combat-mode';
+import { useGameActions, useGameState } from '@/state/GameStoreProvider';
+import { createMockEncounterEnemy } from './combat.mock';
 import { ScreenBg } from '@/components/ScreenBg';
 import { SectionLabel } from '@/components/SectionLabel';
 import { StatBar } from '@/components/StatBar';
@@ -51,33 +54,57 @@ const LOG_LINES: Record<CombatPhase, string[]> = {
   resolving:       ['Your blade bites the hood. ROLL 18 vs 14.', 'CRIT — DOUBLE — 14 dmg. Bleed applied.'],
 };
 
+const PLAYER_MANA_PLACEHOLDER = { mana: 9, manaMax: 14 } as const;
+
 export default function CombatScreen() {
   const [phase, setPhase] = useState<CombatPhase>('choosing_stance');
   const [selectedStance, setSelectedStance] = useState<Stance>('heart');
   const router = useRouter();
   const { exitCombat } = useCombatMode();
 
+  const combat = useGameState((s) => s.combat);
+  const enemyEntity = useGameState((s) => s.combat?.enemy ?? null);
+  const playerEntity = useGameState((s) => s.combat?.player ?? null);
+  const friendshipCounter = useGameState((s) => s.combat?.friendshipCounter ?? 0);
+  const enemyStance = useGameState((s) => s.combat?.enemyChoice?.stance ?? null);
+  const { startCombat, endCombat } = useGameActions();
+
+  // Bootstrap a placeholder encounter until Spec 07/10 wires real navigation.
+  useEffect(() => {
+    if (combat === null) startCombat(createMockEncounterEnemy());
+  }, [combat, startCombat]);
+
   const leaveCombat = () => {
+    endCombat();
     exitCombat();
     router.replace('/exploration' as any);
   };
 
+  if (combat === null || enemyEntity === null || playerEntity === null) {
+    // First render before useEffect runs the bootstrap; render nothing rather
+    // than the old literal fixture.
+    return <ScreenBg><View /></ScreenBg>;
+  }
+
+  const enemyLastStance: Stance = (enemyStance ?? 'mind') as Stance;
   const enemy = {
-    name: 'CARRION HIEROPHANT', tier: 'elite',
-    hp: 38, hpMax: 60, friendship: 2, friendshipMax: 5, mindMarks: 3,
-    lastStance: 'mind' as Stance,
-    effects: [
-      { kind: 'bleed', name: 'Bleed', duration: 2, intensity: 1, tint: 'debuff' },
-      { kind: 'buff',  name: 'Hymn',  duration: 3, intensity: 1, tint: 'buff' },
-    ],
+    name: String(enemyEntity.name).toUpperCase(),
+    tier: String(enemyEntity.difficulty ?? 'elite'),
+    hp: enemyEntity.health as number,
+    hpMax: enemyEntity.maxHealth as number,
+    friendship: friendshipCounter,
+    friendshipMax: FRIENDSHIP_COUNTER_MAX,
+    mindMarks: 0,
+    lastStance: enemyLastStance,
+    effects: (enemyEntity.effects ?? []) as Array<{ kind: string; name: string; duration?: number; intensity?: number; tint?: string }>,
   };
 
   const player = {
-    hp: 22, hpMax: 38, mana: 9, manaMax: 14,
-    effects: [
-      { kind: 'poison', name: 'Poison', duration: 1, intensity: 2, tint: 'debuff' },
-      { kind: 'shield', name: 'Warded', duration: 1, intensity: 1, tint: 'buff' },
-    ],
+    hp: playerEntity.health as number,
+    hpMax: playerEntity.maxHealth as number,
+    mana: PLAYER_MANA_PLACEHOLDER.mana,
+    manaMax: PLAYER_MANA_PLACEHOLDER.manaMax,
+    effects: (playerEntity.effects ?? []) as Array<{ kind: string; name: string; duration?: number; intensity?: number; tint?: string }>,
   };
 
   const advantage = BEATS[selectedStance] === enemy.lastStance ? 'ADV'

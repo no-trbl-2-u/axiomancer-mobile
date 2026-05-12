@@ -35,9 +35,19 @@ export function selectCombatHudViewModel(state: GameState): CombatHudViewModel {
         ? clamp(player.health / player.maxHealth, 0, 1)
         : 0;
 
-    const manaPercent = player.maxMana > 0
-        ? clamp(player.mana / player.maxMana, 0, 1)
-        : 0;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rawMana: number | undefined = (player as any).mana;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rawMaxMana: number | undefined = (player as any).maxMana;
+
+    // When the engine has no mana system (both fields absent), treat the bar
+    // as full rather than empty.  An explicit mana=0 with no maxMana still
+    // yields 0 because the player has spent all their mana.
+    const manaPercent: number = rawMana === undefined
+        ? 1
+        : (rawMaxMana ?? 0) > 0
+            ? clamp(rawMana / rawMaxMana!, 0, 1)
+            : 0;
 
     const effects = player.effects
         .slice(0, MAX_EFFECTS_SHOWN)

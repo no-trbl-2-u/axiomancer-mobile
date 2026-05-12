@@ -13,6 +13,7 @@ import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { CombatModeProvider } from '@/state/combat-mode';
+import { GameStoreProvider } from '@/state/GameStoreProvider';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -40,12 +41,14 @@ export default function RootLayout() {
   if (!loaded) return null;
 
   return (
-    <CombatModeProvider>
-      <StatusBar style="light" />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-      </Stack>
-    </CombatModeProvider>
+    <GameStoreProvider>
+      <CombatModeProvider>
+        <StatusBar style="light" />
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+        </Stack>
+      </CombatModeProvider>
+    </GameStoreProvider>
   );
 }

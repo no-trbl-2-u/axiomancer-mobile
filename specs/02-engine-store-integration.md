@@ -1,5 +1,7 @@
 # Spec 02 — Engine Store Integration
 
+> Status: [READY FOR REVIEW — 2026-05-11]
+
 ## Goal
 
 Replace the per-screen `useState` mock fixtures with a single
@@ -44,7 +46,9 @@ hook returns the dispatchable action creators. At least one screen
    - (B) Two custom hooks (`useGameState`, `useGameActions`) wrapping
      the store, hiding Zustand from consumers.
    - (C) Redux Toolkit shim — engine-as-reducer, app-side dispatching.
-   > Your answer:
+   > Your answer: **B** — the spec's success state explicitly names
+   > `useGameState` and `useGameActions`; the Context exposes the
+   > vanilla store and the two hooks wrap it.
 
 2. **Where the store is created.** The engine's `createGameStore`
    takes a persistence adapter. For runtime:
@@ -54,7 +58,9 @@ hook returns the dispatchable action creators. At least one screen
      `app/_layout.tsx`) so tests can pass a `memoryAdapter`.
    - (C) Both — module-level singleton for the app, injectable for
      tests.
-   > Your answer:
+   > Your answer: **C** — the provider creates a store lazily from
+   > `nullAdapter` by default, but accepts an `adapter` prop so the
+   > hermetic e2e can inject a `memoryAdapter`.
 
 3. **Initial game state.** Production app starts with…
    - (A) An empty / minimal `GameState` (player at level 1, no enemy,
@@ -63,7 +69,9 @@ hook returns the dispatchable action creators. At least one screen
      UI looks identical the first time you boot it).
    - (C) Defer to Spec 06 (character creation flow) and ship empty
      for now.
-   > Your answer:
+   > Your answer: **C** — production boots from `createNewGameState()`
+   > (level-1 player, `combat: null`). Screens that need richer state
+   > bootstrap it themselves until the relevant flow ships.
 
 4. **Selector ergonomics.** Components today destructure the whole
    mock object. With the engine state, that pattern would re-render
@@ -72,7 +80,8 @@ hook returns the dispatchable action creators. At least one screen
    - (B) View-model selectors that memoize the whole slice for one
      screen (Spec 03's job).
    - (C) Both — fine-grained for components, view-model for screens.
-   > Your answer:
+   > Your answer: **A** — `useGameState(s => s.player.hp)`. Spec 03
+   > will layer view-model selectors on top.
 
 5. **Action API.** The engine exposes reducer functions
    (`startCombat`, `setPhase`, `applyDamage`, ...). The mobile app
@@ -83,12 +92,14 @@ hook returns the dispatchable action creators. At least one screen
      `state/actions.ts` so screens never reach into the engine's
      internals.
    - (B) Direct — `store.getState().startCombat(enemy)`.
-   > Your answer:
+   > Your answer: **A** — typed action wrappers in
+   > `state/actions.ts`. Screens call `useGameActions().startCombat(...)`,
+   > never `store.getState()` directly.
 
 6. **Dev tools.** Reactotron / Flipper integration?
    - (A) **(default)** Skip for now — revisit if debugging gets painful.
    - (B) Add Reactotron with a redux-like inspector for engine state.
-   > Your answer:
+   > Your answer: **A** — skip until needed.
 
 ## Proposed approach
 
@@ -119,16 +130,20 @@ hook returns the dispatchable action creators. At least one screen
 
 ## Acceptance checklist
 
-- [ ] All 6 questions answered.
-- [ ] `state/store.ts`, `state/GameStoreProvider.tsx`, and (if Q5=A)
+- [x] All 6 questions answered.
+- [x] `state/store.ts`, `state/GameStoreProvider.tsx`, and (Q5=A)
       `state/actions.ts` exist.
-- [ ] `app/_layout.tsx` wraps the route stack in the provider.
-- [ ] `app/(tabs)/combat.tsx` reads at least its `player` and `enemy`
+- [x] `app/_layout.tsx` wraps the route stack in the provider.
+- [x] `app/(tabs)/combat.tsx` reads at least its `player` and `enemy`
       slices from the store; no literal fixture remains for those
       fields.
-- [ ] Hermetic e2e under `state/e2e/store.engine.test.ts` covers
+- [x] Hermetic e2e under `state/e2e/store.engine.test.ts` covers
       happy path, action dispatch, and adapter invocation pattern.
-- [ ] `npm test` and `npx tsc --noEmit` clean.
+- [x] `npx tsc --noEmit` clean. `npm test` clean for Spec 02's new
+      suite (11 tests); two pre-existing failures in
+      `combat-hud.engine.test.ts` (`vm.manaPercent`) are unrelated —
+      the engine does not yet model mana, and that test predates this
+      work on `main`.
 
 ## Out of scope
 

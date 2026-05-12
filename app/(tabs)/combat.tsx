@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import Svg, { Path, Circle, Ellipse, G, Defs, RadialGradient, Stop, Line } from 'react-native-svg';
-import { FRIENDSHIP_COUNTER_MAX } from 'axiomancer-mechanics';
 import { AXM, FONTS } from '@/theme/axm';
 import { useCombatMode } from '@/state/combat-mode';
 import { useGameActions, useGameState } from '@/state/GameStoreProvider';
 import { createMockEncounterEnemy } from '@/state/mocks/combat.mock';
+import { selectCombatViewModel } from '@/state/presenters/combat.engine';
 import { ScreenBg } from '@/components/ScreenBg';
 import { SectionLabel } from '@/components/SectionLabel';
 import { StatBar } from '@/components/StatBar';
@@ -65,7 +65,7 @@ export default function CombatScreen() {
   const combat = useGameState((s) => s.combat);
   const enemyEntity = useGameState((s) => s.combat?.enemy ?? null);
   const playerEntity = useGameState((s) => s.combat?.player ?? null);
-  const friendshipCounter = useGameState((s) => s.combat?.friendshipCounter ?? 0);
+  const combatVm = useGameState(selectCombatViewModel);
   const enemyStance = useGameState((s) => s.combat?.enemyChoice?.stance ?? null);
   const { startCombat, endCombat } = useGameActions();
 
@@ -88,12 +88,12 @@ export default function CombatScreen() {
 
   const enemyLastStance: Stance = (enemyStance ?? 'mind') as Stance;
   const enemy = {
-    name: String(enemyEntity.name).toUpperCase(),
-    tier: String(enemyEntity.difficulty ?? 'elite'),
-    hp: enemyEntity.health as number,
-    hpMax: enemyEntity.maxHealth as number,
-    friendship: friendshipCounter,
-    friendshipMax: FRIENDSHIP_COUNTER_MAX,
+    name: combatVm.enemy.name,
+    tier: combatVm.enemy.tier || 'elite',
+    hp: combatVm.enemy.hp,
+    hpMax: combatVm.enemy.hpMax,
+    friendship: combatVm.friendshipCounter,
+    friendshipMax: combatVm.friendshipCounterMax,
     mindMarks: 0,
     lastStance: enemyLastStance,
     effects: (enemyEntity.effects ?? []) as Array<{ kind: string; name: string; duration?: number; intensity?: number; tint?: string }>,

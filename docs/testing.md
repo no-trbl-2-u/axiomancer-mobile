@@ -49,11 +49,12 @@ Examples of e2e entry points by module:
 
 | Module                      | Hermetic e2e entry point                                                              |
 | --------------------------- | -------------------------------------------------------------------------------------- |
-| `app/(tabs)/combat.tsx`     | `selectCombatViewModel(state)` → assert on the returned view-model; component render via `@testing-library/react-native` for the JSX |
-| `app/(tabs)/character.tsx`  | `selectCharacterViewModel(state)`                                                      |
-| `app/(tabs)/inventory.tsx`  | `selectInventoryViewModel(state)`                                                      |
-| `app/(tabs)/exploration.tsx`| `selectExplorationViewModel(state)`                                                    |
-| `app/(tabs)/event.tsx`      | `selectEventViewModel(state)`                                                          |
+| `app/(tabs)/combat.tsx`     | `selectCombatHudViewModel(state)` in `state/presenters/combat-hud.engine.ts`; component render via `@testing-library/react-native` for the JSX |
+| `app/(tabs)/character.tsx`  | `selectCharacterViewModel(state)` in `state/presenters/character.engine.ts`            |
+| `app/(tabs)/inventory.tsx`  | `selectInventoryViewModel(state)` in `state/presenters/inventory.engine.ts`            |
+| `app/(tabs)/exploration.tsx`| `selectExplorationViewModel(state)` in `state/presenters/exploration.engine.ts`        |
+| `app/(tabs)/event.tsx`      | `selectEventViewModel(state)` in `state/presenters/event.engine.ts`                    |
+| `app/(tabs)/_layout.tsx`    | `selectVisibleTabs(inCombat)` in `state/presenters/tabs.engine.ts`                     |
 | Engine store lifecycle      | `createGameStore(memoryAdapter, …)` driven through `startCombat` / `updateCombat` / `endCombat` from `axiomancer-mechanics` |
 | `components/<X>.tsx`        | `render(<X {...props} />)` → assert on `getByText` / `getByA11yLabel`. Only when the component has branching UI logic worth pinning. |
 
@@ -80,18 +81,30 @@ expected text" check.
 
 ## File and naming conventions
 
+> **NEVER put non-route files inside `app/`.** Expo Router's
+> `require.context` walks every `.ts`/`.tsx` under `app/` and registers
+> it as a route, layout, or API endpoint. A file named
+> `_layout.engine.ts` is detected as a layout (because its
+> basename-before-the-first-dot is `_layout`) and, in production builds,
+> can win the layout-conflict tiebreak against the real `_layout.tsx` —
+> producing the "Unmatched Route" screen for every child route. Test
+> files (`*.test.ts`), mocks (`*.mock.ts`), and engine/presenter helpers
+> all leak into the route tree the same way. See
+> `state/e2e/route-tree.engine.test.ts` for the guard test that pins
+> the allowed routes.
+
 - **Location:**
-  - `app/<route>/e2e/<feature>.engine.test.ts` for hermetic
-    full-flow presenter / state tests. Companion code:
-    `app/<route>/e2e/<feature>.engine.ts`.
-  - `app/<route>/<file>.test.ts` for pure unit tests.
+  - `state/e2e/<feature>.engine.test.ts` for hermetic full-flow
+    presenter / state tests. Companion code:
+    `state/presenters/<feature>.engine.ts`.
+  - `<module>/<file>.test.ts` (outside `app/`) for pure unit tests.
   - `components/<Component>.test.tsx` for render tests of components
     with branching UI.
-- **Fixtures / mocks** live in `*.mock.ts` files, e.g.
-  `app/(tabs)/combat.mock.ts`. They must be plain data — no
-  `Math.random`, no environment reads.
-- **Test utilities** live in `app/test-utils/` (created by Spec 01) and
-  are excluded from the production bundle via Metro config.
+- **Fixtures / mocks** live in `state/mocks/<feature>.mock.ts` (or any
+  location outside `app/`). They must be plain data — no `Math.random`,
+  no environment reads.
+- **Test utilities** live in `test-utils/` at the repo root. Anything
+  that references the `jest` global must never sit inside `app/`.
 
 ## Required test categories per implementation
 

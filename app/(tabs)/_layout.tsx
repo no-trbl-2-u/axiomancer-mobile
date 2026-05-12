@@ -4,7 +4,7 @@ import { StyleSheet } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { AXM, FONTS } from '@/theme/axm';
 import { useCombatMode } from '@/state/combat-mode';
-import { isTabHidden } from './_layout.engine';
+import { isTabHidden } from '@/state/presenters/tabs.engine';
 
 function TabIcon({ kind, color, size }: { kind: string; color: string; size: number }) {
   switch (kind) {

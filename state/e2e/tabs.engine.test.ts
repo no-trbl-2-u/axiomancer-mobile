@@ -10,7 +10,7 @@
 
 import { afterEach, describe, it, expect, jest } from '@jest/globals';
 
-import { isTabHidden, selectVisibleTabs, type TabKey } from '../_layout.engine';
+import { isTabHidden, selectVisibleTabs, type TabKey } from '@/state/presenters/tabs.engine';
 
 afterEach(() => {
     jest.restoreAllMocks();

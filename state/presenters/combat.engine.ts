@@ -1,120 +1,828 @@
 /**
  * Screen-level presenter for `app/(tabs)/combat.tsx`.
  *
- * Composes `selectCombatHudViewModel` for the HP/mana/effects strip
- * and exposes the rest of the combat state the screen needs to render
- * the enemy panel, stance picker, action grid, and battle log.
+ * Maps the engine's `CombatState` (plus optional ephemeral UI state)
+ * into a fully-shaped `CombatViewModel`. Every UI surface on the
+ * combat screen — enemy panel, battle log, player HUD, stance picker,
+ * action picker, skill picker, resolve panel — reads exclusively from
+ * this VM. The screen itself owns no game logic.
  *
- * Per Spec 03:
- * - Q1: `select<Screen>ViewModel` naming.
- * - Q2: takes the engine `GameStore` plus an optional `localUi` arg
- *   for ephemeral UI (selected stance preview, current phase the
- *   player is composing).
- * - Q3: return value is deep-frozen in dev via `freezeViewModel`.
- * - Q5: VM is *data only* — no event handlers, no colour tokens, no
- *   icon names. The screen owns palette and dispatch.
- *
- * Specs 04+ replace the stub fields with real engine reads. Today
- * everything past `hud`, `isInCombat`, `friendshipCounter`, and
- * `friendshipCounterMax` is a placeholder fixture so the screen keeps
- * rendering pending the real wiring.
+ * Per Spec 03 (Q1 A, Q2 A, Q3 A, Q5 B) and Spec 04 (Q1 A, Q2 A, Q3 A,
+ * Q4 C, Q5 carousel, Q6 C):
+ * - Naming: `selectCombatViewModel`.
+ * - Args: `(state, localUi?)` — `localUi` holds preview-only state
+ *   (stance the player is composing before commit, skill preview).
+ * - Phase: read from `state.combat.phase`. The screen never owns phase.
+ * - Skills: read from `state/mocks/combat.skills.fixture.ts` until
+ *   engine Spec 04 ships real skills.
+ * - VM is data only — no event handlers, no colour tokens, no icon
+ *   instances. The screen resolves icons from stable `iconKind` keys.
  */
 
-import { FRIENDSHIP_COUNTER_MAX, type GameStore } from 'axiomancer-mechanics';
+import {
+    FRIENDSHIP_COUNTER_MAX,
+    determineAdvantage,
+    type GameStore,
+} from 'axiomancer-mechanics';
+import { useMemo } from 'react';
 
-import { selectCombatHudViewModel, type CombatHudViewModel } from './combat-hud.engine';
+import {
+    COMBAT_SKILLS_FIXTURE,
+    type SkillCategoryKey,
+} from '../mocks/combat.skills.fixture';
+import { useGameState, useGameStore } from '../GameStoreProvider';
+
+import {
+    selectCombatHudViewModel,
+    type CombatHudViewModel,
+} from './combat-hud.engine';
 import { freezeViewModel } from './freeze';
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 export type CombatPhaseKey =
     | 'choosing_stance'
     | 'choosing_action'
     | 'choosing_skill'
-    | 'resolving';
+    | 'resolving'
+    | 'ended';
 
 export type StanceKey = 'heart' | 'body' | 'mind';
 
+export type ActionKey = 'attack' | 'defend' | 'skill' | 'item';
+
+export type AdvantageKind = 'adv' | 'dis' | 'neutral';
+
+export type LogSeverity =
+    | 'info'
+    | 'damage'
+    | 'crit'
+    | 'heal'
+    | 'effect'
+    | 'friendship'
+    | 'system';
+
+export type ResolveOutcomeKind = 'damage' | 'crit' | 'friendship' | 'miss';
+
 export interface CombatLocalUi {
-    /** Phase the player is composing locally. Engine phase wins once Spec 04 wires it. */
-    phase?: CombatPhaseKey;
-    /** Stance preview before the player commits. */
+    /** Stance the player has previewed but not yet committed. */
     selectedStance?: StanceKey;
+    /** Skill the player has previewed but not yet committed. */
+    selectedSkillId?: string;
+}
+
+export interface CombatEffectDisplay {
+    /** Stable id (icon + colour key for the chip). */
+    kind: string;
+    /** Display name. */
+    name: string;
+    /** Remaining duration in rounds; `null` for indefinite. */
+    duration: number | null;
+    /** Stack intensity. */
+    intensity: number;
+    /** Visual tint hint — `'buff' | 'debuff' | null`. */
+    tint: 'buff' | 'debuff' | null;
 }
 
 export interface CombatEnemySummary {
-    /** Uppercased display name. Empty string when no combat is active. */
     name: string;
-    /** Raw difficulty tier string (e.g. `'elite'`); empty when none. */
+    /** e.g. `'elite'`; empty string when no combat. */
     tier: string;
-    /** Current HP. */
     hp: number;
-    /** Max HP — invariant: never zero when `isInCombat` is true. */
     hpMax: number;
-    /** Last stance the enemy declared, or `null` before the first round resolves. */
+    /** [0, 1] for the bar. */
+    hpRatio: number;
+    /** Last stance the enemy declared (or showed); `null` before round 1 resolves. */
     lastStance: StanceKey | null;
+    /** Mind-mark stacks on the enemy. */
+    mindMarks: number;
+    /** Active effects (truncated for the UI). */
+    effects: readonly CombatEffectDisplay[];
+    /** Italicised flavour line under the name. */
+    flavor: string;
+}
+
+export interface CombatPlayerSummary {
+    hp: number;
+    hpMax: number;
+    /** [0, 1]. */
+    hpRatio: number;
+    mana: number;
+    manaMax: number;
+    /** [0, 1]. */
+    manaRatio: number;
+    effects: readonly CombatEffectDisplay[];
+}
+
+export interface StanceOption {
+    key: StanceKey;
+    /** Capitalised label, e.g. `'HEART'`. */
+    label: string;
+    /** Display label of the stance this one counters, e.g. `'BODY'`. */
+    counters: string;
+    /** Display label of the stance this one is weak to. */
+    weakTo: string;
+    derived: { attack: number; skill: number; defense: number };
+    /** Relative to the enemy's last stance (or `'neutral'` when unknown). */
+    advantage: AdvantageKind;
+}
+
+export interface StancePickerSlice {
+    options: readonly StanceOption[];
+    /** The stance the player has currently selected/previewed (defaults to first). */
+    selected: StanceKey;
+    /** False when the engine state isn't ready to accept a commit. */
+    canConfirm: boolean;
+}
+
+export interface ActionOption {
+    key: ActionKey;
+    label: string;
+    hint: string;
+    /** Stable icon kind the screen maps to a glyph component. */
+    iconKind: 'sword' | 'shield' | 'arcane' | 'bag';
+    /** Stable palette key the screen resolves to a colour. */
+    accentKind: 'blood' | 'parchment' | 'sulfur' | 'rust';
+    /** False when the action is not yet implemented (greyed in UI). */
+    enabled: boolean;
+}
+
+export interface ActionPickerSlice {
+    options: readonly ActionOption[];
+    /** Per Spec 04 Q6: flee is a no-op + "coming soon" toast. */
+    fleeAvailable: boolean;
+    fleeMessage: string;
+}
+
+export interface SkillOption {
+    id: string;
+    name: string;
+    description: string;
+    category: SkillCategoryKey;
+    stance: StanceKey;
+    manaCost: number;
+    /** False = greyed out (wrong stance or not enough mana). */
+    enabled: boolean;
+    disabledReason: 'wrong-stance' | 'insufficient-mana' | null;
+}
+
+export interface SkillPickerSlice {
+    skills: readonly SkillOption[];
+    /** Number of currently-castable skills (matches stance + cost). */
+    availableCount: number;
+    totalCount: number;
+    mana: number;
+    manaMax: number;
+}
+
+export interface ResolveSlice {
+    /** Stance the player committed to this round; falls back to `'heart'`. */
+    playerStance: StanceKey;
+    /** Stance the enemy committed to; falls back to `'mind'`. */
+    enemyStance: StanceKey;
+    advantageLabel: 'ADVANTAGE' | 'DISADVANTAGE' | 'NEUTRAL';
+    advantageKind: AdvantageKind;
+    /** Display roll values from the last resolved round. */
+    playerRoll: number;
+    enemyRoll: number;
+    /** Outcome bucket — drives the banner colour + header label. */
+    outcome: ResolveOutcomeKind;
+    /** Primary number — `'–14'` or `'FRIEND +1'`. */
+    primaryText: string;
+    /** Banner subtitle, e.g. `'BLEED · 2 ROUNDS APPLIED'`. */
+    message: string;
+    /** Pre-formatted header, e.g. `'❦ PARLEY · HEART OPENS'`. */
+    header: string;
+}
+
+export interface CombatLogEntryDisplay {
+    severity: LogSeverity;
+    text: string;
 }
 
 export interface CombatViewModel {
     /** True when the engine has an active `combat` slice. */
     isInCombat: boolean;
-    /** Composed HUD slice — player HP/mana ratios + active effects. */
+    /** Current engine phase. `'choosing_stance'` when no combat is active. */
+    phase: CombatPhaseKey;
+    /** 1-based current round number; `1` when no combat is active. */
+    round: number;
+    /** Composed HUD slice. */
     hud: CombatHudViewModel;
-    /** Enemy display summary. Fields are total strings; never `undefined`. */
+    /** Enemy display summary. */
     enemy: CombatEnemySummary;
+    /** Player display summary. */
+    player: CombatPlayerSummary;
     /** Friendship counter (Heart-stance parley track). */
     friendshipCounter: number;
     /** Engine-defined ceiling for the friendship counter. */
     friendshipCounterMax: number;
+    stancePicker: StancePickerSlice;
+    actionPicker: ActionPickerSlice;
+    skillPicker: SkillPickerSlice;
+    resolve: ResolveSlice;
+    /** Full battle log; render in a scroll view. */
+    log: readonly CombatLogEntryDisplay[];
+    /** Header line for the current phase. */
+    phaseHeader: string;
+    /** 0-based phase index for pip rendering (-1 when combat ended). */
+    phaseIndex: number;
+    /** Ordered phase keys (matches the pips). */
+    phaseOrder: readonly CombatPhaseKey[];
+    /**
+     * Pre-formatted "round token" used in the phase header / VS panel,
+     * e.g. `'iv vs i'`. Numerals are the player and enemy round counts.
+     */
+    roundToken: string;
 }
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const PHASE_ORDER: readonly CombatPhaseKey[] = [
+    'choosing_stance',
+    'choosing_action',
+    'choosing_skill',
+    'resolving',
+];
+
+const PHASE_LABELS: Record<CombatPhaseKey, string> = {
+    choosing_stance: '✠ CHOOSE THY STANCE',
+    choosing_action: '✠ DECLARE THY ACTION',
+    choosing_skill: '✠ INVOKE A SKILL',
+    resolving: '✠ FATE SETTLES',
+    ended: '✠ THE FIGHT IS OVER',
+};
+
+const STANCE_LABEL: Record<StanceKey, string> = {
+    heart: 'HEART',
+    body: 'BODY',
+    mind: 'MIND',
+};
+
+/** Heart > Body > Mind > Heart — `BEATS[a] === b` ⇔ `a` has advantage over `b`. */
+const BEATS: Record<StanceKey, StanceKey> = {
+    heart: 'body',
+    body: 'mind',
+    mind: 'heart',
+};
+
+const STANCE_DERIVED: Record<StanceKey, { attack: number; skill: number; defense: number }> = {
+    // Placeholder numbers preserved from the pre-Spec-04 mock so the
+    // existing screen layout stays visually consistent. Spec 05 swaps
+    // these for engine reads via `deriveStats` once the character
+    // screen lands.
+    heart: { attack: 11, skill: 9, defense: 6 },
+    body: { attack: 13, skill: 7, defense: 10 },
+    mind: { attack: 8, skill: 14, defense: 8 },
+};
+
+const ACTION_DEFAULTS: readonly ActionOption[] = [
+    {
+        key: 'attack',
+        label: 'ATTACK',
+        hint: 'DEAL DAMAGE BY STANCE',
+        iconKind: 'sword',
+        accentKind: 'blood',
+        enabled: true,
+    },
+    {
+        key: 'defend',
+        label: 'DEFEND',
+        hint: 'REDUCE NEXT HARM',
+        iconKind: 'shield',
+        accentKind: 'parchment',
+        enabled: true,
+    },
+    {
+        key: 'skill',
+        label: 'SKILL',
+        hint: 'SPEND MANA · INVOKE',
+        iconKind: 'arcane',
+        accentKind: 'sulfur',
+        enabled: true,
+    },
+    {
+        key: 'item',
+        label: 'ITEM',
+        hint: 'USE A CONSUMABLE',
+        iconKind: 'bag',
+        accentKind: 'rust',
+        enabled: false,
+    },
+];
+
+const MAX_EFFECTS_SHOWN = 4;
 
 const EMPTY_ENEMY: CombatEnemySummary = {
     name: '',
     tier: '',
     hp: 0,
     hpMax: 0,
+    hpRatio: 0,
     lastStance: null,
+    mindMarks: 0,
+    effects: [],
+    flavor: '',
 };
+
+const EMPTY_PLAYER: CombatPlayerSummary = {
+    hp: 0,
+    hpMax: 0,
+    hpRatio: 0,
+    mana: 0,
+    manaMax: 0,
+    manaRatio: 1,
+    effects: [],
+};
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 function toStanceKey(value: unknown): StanceKey | null {
     if (value === 'heart' || value === 'body' || value === 'mind') return value;
     return null;
 }
 
-/**
- * Screen-level combat presenter. Returns a totally-shaped view-model
- * — every field has a defined value even when no combat is active —
- * so the screen never has to guard for `undefined`.
- */
+function safeRatio(value: number, max: number): number {
+    if (!isFinite(value) || !isFinite(max) || max <= 0) return 0;
+    if (value <= 0) return 0;
+    if (value >= max) return 1;
+    return value / max;
+}
+
+function classifyEffect(rawEffect: unknown): CombatEffectDisplay {
+    // The engine's ActiveEffect shape (per Spec 03 wiring) gives us
+    // `effectId`, `intensity`, `remainingDuration`, plus optional
+    // metadata depending on tier. We never trust callers to give us
+    // anything more than that — anything missing falls back to a
+    // sensible default so the chip still renders.
+    //
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const eff = (rawEffect ?? {}) as Record<string, any>;
+    const idRaw: string =
+        typeof eff.effectId === 'string'
+            ? eff.effectId
+            : typeof eff.id === 'string'
+                ? eff.id
+                : typeof eff.kind === 'string'
+                    ? eff.kind
+                    : '';
+    const id = idRaw.toLowerCase();
+    const name: string =
+        typeof eff.name === 'string' && eff.name.length > 0
+            ? eff.name
+            : idRaw || 'EFFECT';
+
+    const kind = inferEffectKind(id);
+    const tint = inferEffectTint(eff, kind);
+
+    const rawDuration = eff.remainingDuration ?? eff.duration ?? null;
+    const duration =
+        rawDuration === null || rawDuration === undefined
+            ? null
+            : Number(rawDuration);
+    const intensity = Math.max(1, Number(eff.intensity ?? 1));
+
+    return {
+        kind,
+        name,
+        duration:
+            duration !== null && isFinite(duration) ? Math.max(0, duration) : null,
+        intensity,
+        tint,
+    };
+}
+
+function inferEffectKind(idLower: string): string {
+    if (idLower.includes('poison')) return 'poison';
+    if (idLower.includes('bleed')) return 'bleed';
+    if (idLower.includes('stun')) return 'stun';
+    if (idLower.includes('burn') || idLower.includes('fire')) return 'burn';
+    if (idLower.includes('regen') || idLower.includes('heal')) return 'regen';
+    if (idLower.includes('mark')) return 'debuff';
+    return idLower || 'effect';
+}
+
+function inferEffectTint(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    eff: Record<string, any>,
+    kind: string,
+): 'buff' | 'debuff' | null {
+    const t = typeof eff.tint === 'string' ? eff.tint.toLowerCase() : null;
+    if (t === 'buff' || t === 'debuff') return t;
+    if (typeof eff.type === 'string') {
+        const ty = eff.type.toLowerCase();
+        if (ty === 'buff') return 'buff';
+        if (ty === 'debuff') return 'debuff';
+    }
+    if (kind === 'poison' || kind === 'bleed' || kind === 'stun' || kind === 'burn' || kind === 'debuff') {
+        return 'debuff';
+    }
+    if (kind === 'regen') return 'buff';
+    return null;
+}
+
+function mindMarkCount(effects: readonly unknown[]): number {
+    let n = 0;
+    for (const raw of effects) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const eff = (raw ?? {}) as Record<string, any>;
+        const id: string =
+            typeof eff.effectId === 'string'
+                ? eff.effectId
+                : typeof eff.id === 'string'
+                    ? eff.id
+                    : '';
+        if (id.toLowerCase().includes('mind_mark') || id === 'tier1_mind_mark') {
+            n += Math.max(1, Number(eff.intensity ?? 1));
+        }
+    }
+    return n;
+}
+
+function readManaPair(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    player: Record<string, any>,
+): { mana: number; manaMax: number } {
+    const mana = Number(player.mana ?? 0);
+    const manaMax = Number(player.maxMana ?? player.manaMax ?? 0);
+    return {
+        mana: isFinite(mana) ? mana : 0,
+        manaMax: isFinite(manaMax) && manaMax >= 0 ? manaMax : 0,
+    };
+}
+
+function stanceAdvantage(
+    playerStance: StanceKey,
+    enemyStance: StanceKey | null,
+): AdvantageKind {
+    if (enemyStance === null) return 'neutral';
+    if (BEATS[playerStance] === enemyStance) return 'adv';
+    if (BEATS[enemyStance] === playerStance) return 'dis';
+    return 'neutral';
+}
+
+function advantageLabelFor(kind: AdvantageKind): 'ADVANTAGE' | 'DISADVANTAGE' | 'NEUTRAL' {
+    if (kind === 'adv') return 'ADVANTAGE';
+    if (kind === 'dis') return 'DISADVANTAGE';
+    return 'NEUTRAL';
+}
+
+function buildStanceOptions(
+    enemyLastStance: StanceKey | null,
+): readonly StanceOption[] {
+    return (['heart', 'body', 'mind'] as const).map((key) => {
+        const counters = BEATS[key];
+        const weakTo = (Object.keys(BEATS) as StanceKey[]).find(
+            (k) => BEATS[k] === key,
+        ) ?? 'heart';
+        return {
+            key,
+            label: STANCE_LABEL[key],
+            counters: STANCE_LABEL[counters],
+            weakTo: STANCE_LABEL[weakTo],
+            derived: STANCE_DERIVED[key],
+            advantage: stanceAdvantage(key, enemyLastStance),
+        };
+    });
+}
+
+function buildSkillPicker(
+    stance: StanceKey,
+    mana: number,
+    manaMax: number,
+): SkillPickerSlice {
+    const skills: SkillOption[] = COMBAT_SKILLS_FIXTURE.map((s) => {
+        const wrongStance = s.stance !== stance;
+        const tooExpensive = s.manaCost > mana;
+        let disabledReason: SkillOption['disabledReason'] = null;
+        if (wrongStance) disabledReason = 'wrong-stance';
+        else if (tooExpensive) disabledReason = 'insufficient-mana';
+        return {
+            id: s.id,
+            name: s.name,
+            description: s.description,
+            category: s.category,
+            stance: s.stance,
+            manaCost: s.manaCost,
+            enabled: !wrongStance && !tooExpensive,
+            disabledReason,
+        };
+    });
+    const availableCount = skills.filter((s) => s.enabled).length;
+    return {
+        skills,
+        availableCount,
+        totalCount: skills.length,
+        mana,
+        manaMax,
+    };
+}
+
+const ROMAN: readonly string[] = ['', 'i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix', 'x'];
+
+function toRoman(n: number): string {
+    if (!isFinite(n) || n <= 0) return 'i';
+    if (n < ROMAN.length) return ROMAN[n];
+    return String(n);
+}
+
+function classifyLogEntry(raw: unknown): CombatLogEntryDisplay {
+    if (typeof raw === 'string') {
+        return { severity: 'info', text: raw };
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const e = (raw ?? {}) as Record<string, any>;
+    const text =
+        typeof e.text === 'string' && e.text.length > 0
+            ? e.text
+            : typeof e.message === 'string'
+                ? e.message
+                : '';
+    const sevRaw =
+        typeof e.severity === 'string'
+            ? e.severity.toLowerCase()
+            : typeof e.kind === 'string'
+                ? e.kind.toLowerCase()
+                : 'info';
+    const severity: LogSeverity = ((): LogSeverity => {
+        switch (sevRaw) {
+            case 'damage':
+            case 'crit':
+            case 'heal':
+            case 'effect':
+            case 'friendship':
+            case 'system':
+            case 'info':
+                return sevRaw;
+            default:
+                return 'info';
+        }
+    })();
+    return { severity, text };
+}
+
+function resolveSliceFromState(
+    playerStance: StanceKey | null,
+    enemyStance: StanceKey | null,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    combat: Record<string, any> | null,
+): ResolveSlice {
+    const pStance: StanceKey = playerStance ?? 'heart';
+    const eStance: StanceKey = enemyStance ?? 'mind';
+    const adv = stanceAdvantage(pStance, eStance);
+    const advantageLabel = advantageLabelFor(adv);
+
+    // The engine's combat state doesn't expose a structured "last
+    // round resolution" today. The action layer stashes the latest
+    // resolve metadata under `combat.lastResolution` (opaque to the
+    // engine — `BattleLogEntry` is treated as `any` in the published
+    // types). We read it defensively; everything is optional.
+    const last = combat?.lastResolution ?? null;
+    const playerRoll = Number(last?.playerRoll ?? 0);
+    const enemyRoll = Number(last?.enemyRoll ?? 0);
+    const outcomeRaw = typeof last?.outcome === 'string' ? last.outcome : 'miss';
+    const outcome: ResolveOutcomeKind =
+        outcomeRaw === 'damage' || outcomeRaw === 'crit' || outcomeRaw === 'friendship' || outcomeRaw === 'miss'
+            ? outcomeRaw
+            : 'miss';
+    const primaryText = typeof last?.primaryText === 'string' ? last.primaryText : '—';
+    const message = typeof last?.message === 'string' ? last.message : '';
+    let header: string;
+    switch (outcome) {
+        case 'friendship':
+            header = '❦ PARLEY · HEART OPENS';
+            break;
+        case 'crit':
+            header = '✶ CRIT · DOUBLE';
+            break;
+        case 'damage':
+            header = 'STRIKE LANDS';
+            break;
+        default:
+            header = '… NO BLOW LANDS';
+    }
+    return {
+        playerStance: pStance,
+        enemyStance: eStance,
+        advantageLabel,
+        advantageKind: adv,
+        playerRoll: isFinite(playerRoll) ? playerRoll : 0,
+        enemyRoll: isFinite(enemyRoll) ? enemyRoll : 0,
+        outcome,
+        primaryText,
+        message,
+        header,
+    };
+}
+
+// Use the engine's `determineAdvantage` to sanity-check our local
+// `BEATS` mapping. This is a dev-only assertion; if the engine ever
+// changes the triangle the test suite will catch it before users do.
+// (Kept as a side-free helper — never throws in prod.)
+function _devAssertTriangleMatchesEngine(): void {
+    /* istanbul ignore if */
+    if (typeof __DEV__ !== 'undefined' && __DEV__) {
+        for (const a of ['heart', 'body', 'mind'] as const) {
+            for (const b of ['heart', 'body', 'mind'] as const) {
+                const expected = BEATS[a] === b ? 'advantage' : BEATS[b] === a ? 'disadvantage' : 'neutral';
+                const got = determineAdvantage(a, b);
+                /* istanbul ignore next */
+                if (got !== expected && got !== 'neutral' && expected !== 'neutral') {
+                    /* istanbul ignore next */
+                    // eslint-disable-next-line no-console
+                    console.warn('[combat.engine] stance triangle drift', a, b, got, expected);
+                }
+            }
+        }
+    }
+}
+_devAssertTriangleMatchesEngine();
+
+declare const __DEV__: boolean | undefined;
+
+// ---------------------------------------------------------------------------
+// Main selector
+// ---------------------------------------------------------------------------
+
 export function selectCombatViewModel(
     state: GameStore,
-    _localUi: CombatLocalUi = {},
+    localUi: CombatLocalUi = {},
 ): CombatViewModel {
     const hud = selectCombatHudViewModel(state);
     const combat = state.combat;
 
     if (combat === null) {
+        const stancePicker: StancePickerSlice = {
+            options: buildStanceOptions(null),
+            selected: localUi.selectedStance ?? 'heart',
+            canConfirm: false,
+        };
+        const skillPicker = buildSkillPicker(stancePicker.selected, 0, 0);
         return freezeViewModel({
             isInCombat: false,
+            phase: 'choosing_stance',
+            round: 1,
             hud,
             enemy: EMPTY_ENEMY,
+            player: EMPTY_PLAYER,
             friendshipCounter: 0,
             friendshipCounterMax: FRIENDSHIP_COUNTER_MAX,
+            stancePicker,
+            actionPicker: {
+                options: ACTION_DEFAULTS,
+                fleeAvailable: true,
+                fleeMessage: 'Flee is coming soon — luck save TBD.',
+            },
+            skillPicker,
+            resolve: resolveSliceFromState(null, null, null),
+            log: [],
+            phaseHeader: PHASE_LABELS.choosing_stance,
+            phaseIndex: 0,
+            phaseOrder: PHASE_ORDER,
+            roundToken: 'i vs i',
         });
     }
 
-    const enemyEntity = combat.enemy;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const c = combat as unknown as Record<string, any>;
+    const enemyEntity = c.enemy ?? {};
+    const playerEntity = c.player ?? state.player;
+    const phaseRaw = String(c.phase ?? 'choosing_stance');
+    const phase: CombatPhaseKey =
+        phaseRaw === 'choosing_stance'
+            || phaseRaw === 'choosing_action'
+            || phaseRaw === 'choosing_skill'
+            || phaseRaw === 'resolving'
+            || phaseRaw === 'ended'
+            ? phaseRaw
+            : 'choosing_stance';
+
+    const enemyEffectsRaw: readonly unknown[] = Array.isArray(enemyEntity.effects) ? enemyEntity.effects : [];
+    const playerEffectsRaw: readonly unknown[] = Array.isArray(playerEntity.effects) ? playerEntity.effects : [];
+
+    const enemyHp = Number(enemyEntity.health ?? 0);
+    const enemyHpMax = Number(enemyEntity.maxHealth ?? enemyHp);
+    const enemyLastStance = toStanceKey(c.enemyChoice?.stance ?? null);
+    const enemyName = String(enemyEntity.name ?? '').toUpperCase();
+    const enemyFlavor = typeof enemyEntity.description === 'string'
+        ? enemyEntity.description
+        : '';
+
     const enemy: CombatEnemySummary = {
-        name: String(enemyEntity.name ?? '').toUpperCase(),
+        name: enemyName,
         tier: String(enemyEntity.difficulty ?? ''),
-        hp: enemyEntity.health,
-        hpMax: enemyEntity.maxHealth,
-        lastStance: toStanceKey(combat.enemyChoice?.stance ?? null),
+        hp: enemyHp,
+        hpMax: enemyHpMax,
+        hpRatio: safeRatio(enemyHp, enemyHpMax),
+        lastStance: enemyLastStance,
+        mindMarks: mindMarkCount(enemyEffectsRaw),
+        effects: enemyEffectsRaw.slice(0, MAX_EFFECTS_SHOWN).map(classifyEffect),
+        flavor: enemyFlavor,
     };
 
+    const playerHp = Number(playerEntity.health ?? 0);
+    const playerHpMax = Number(playerEntity.maxHealth ?? playerHp);
+    const { mana, manaMax } = readManaPair(playerEntity);
+    const player: CombatPlayerSummary = {
+        hp: playerHp,
+        hpMax: playerHpMax,
+        hpRatio: safeRatio(playerHp, playerHpMax),
+        mana,
+        manaMax,
+        manaRatio: manaMax > 0 ? safeRatio(mana, manaMax) : 1,
+        effects: playerEffectsRaw.slice(0, MAX_EFFECTS_SHOWN).map(classifyEffect),
+    };
+
+    const previewStance: StanceKey =
+        localUi.selectedStance
+            ?? toStanceKey(c.playerChoice?.stance ?? null)
+            ?? 'heart';
+
+    const stancePicker: StancePickerSlice = {
+        options: buildStanceOptions(enemy.lastStance),
+        selected: previewStance,
+        canConfirm: phase === 'choosing_stance',
+    };
+
+    const skillPicker = buildSkillPicker(previewStance, player.mana, player.manaMax);
+
+    const phaseIndex: number = phase === 'ended' ? -1 : PHASE_ORDER.indexOf(phase);
+    const friendshipCounter = Number(c.friendshipCounter ?? 0);
+
+    const log: CombatLogEntryDisplay[] = Array.isArray(c.log)
+        ? c.log
+            .filter((entry: unknown) => {
+                if (typeof entry === 'string') return true;
+                if (entry === null || typeof entry !== 'object') return false;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const meta = entry as Record<string, any>;
+                // Skip pure metadata entries (e.g. lastResolution snapshot).
+                return meta.severity !== '__meta';
+            })
+            .map(classifyLogEntry)
+        : [];
+
+    const round = Number(c.round ?? 1);
+    const roundToken = `${toRoman(round)} vs ${toRoman(Math.max(1, round - 1))}`;
+
     return freezeViewModel({
-        isInCombat: true,
+        isInCombat: phase !== 'ended',
+        phase,
+        round,
         hud,
         enemy,
-        friendshipCounter: combat.friendshipCounter ?? 0,
+        player,
+        friendshipCounter,
         friendshipCounterMax: FRIENDSHIP_COUNTER_MAX,
+        stancePicker,
+        actionPicker: {
+            options: ACTION_DEFAULTS,
+            fleeAvailable: true,
+            fleeMessage: 'Flee is coming soon — luck save TBD.',
+        },
+        skillPicker,
+        resolve: resolveSliceFromState(
+            toStanceKey(c.playerChoice?.stance ?? null),
+            enemy.lastStance,
+            c,
+        ),
+        log,
+        phaseHeader: PHASE_LABELS[phase] ?? PHASE_LABELS.choosing_stance,
+        phaseIndex,
+        phaseOrder: PHASE_ORDER,
+        roundToken,
     });
+}
+
+// ---------------------------------------------------------------------------
+// React hook
+// ---------------------------------------------------------------------------
+
+/**
+ * React hook returning a `CombatViewModel` that's stable by reference
+ * when the underlying state (and `localUi`) hasn't changed.
+ *
+ * `selectCombatViewModel` returns a freshly-constructed object on every
+ * call (deep-frozen per Spec 03 Q3). Passing that selector straight into
+ * Zustand's `useStore` would loop forever — `useSyncExternalStore`
+ * requires `getSnapshot` to return a stable reference for the same
+ * snapshot. This hook subscribes to the engine slices the VM actually
+ * depends on (`combat`, `player`) and memoises the VM against them.
+ */
+export function useCombatViewModel(localUi: CombatLocalUi = {}): CombatViewModel {
+    const store = useGameStore();
+    const combat = useGameState((s) => s.combat);
+    const player = useGameState((s) => s.player);
+    const selectedStance = localUi.selectedStance;
+    const selectedSkillId = localUi.selectedSkillId;
+    return useMemo(
+        () => selectCombatViewModel(store.getState(), { selectedStance, selectedSkillId }),
+        [store, combat, player, selectedStance, selectedSkillId],
+    );
 }

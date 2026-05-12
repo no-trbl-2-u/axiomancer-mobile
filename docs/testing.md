@@ -11,7 +11,10 @@
 
 > **Status note (2026-05):** Spec 01 — Test Harness Setup has shipped.
 > `npm test` runs Jest via `jest-expo` and the hermetic-suite requirement
-> is now binding for all subsequent specs.
+> is now binding for all subsequent specs. **Spec 03 — Presenter Layer
+> has also shipped:** every screen now has a sibling `state/presenters/
+> <screen>.engine.ts` that maps engine state to a view-model. See
+> [`docs/presenters.md`](./presenters.md) for the contract.
 
 ---
 
@@ -49,9 +52,9 @@ Examples of e2e entry points by module:
 
 | Module                      | Hermetic e2e entry point                                                              |
 | --------------------------- | -------------------------------------------------------------------------------------- |
-| `app/(tabs)/combat.tsx`     | `selectCombatHudViewModel(state)` in `state/presenters/combat-hud.engine.ts`; component render via `@testing-library/react-native` for the JSX |
+| `app/(tabs)/combat.tsx`     | `selectCombatViewModel(state, localUi?)` in `state/presenters/combat.engine.ts` (composes `selectCombatHudViewModel`); component render via `@testing-library/react-native` for the JSX |
 | `app/(tabs)/character.tsx`  | `selectCharacterViewModel(state)` in `state/presenters/character.engine.ts`            |
-| `app/(tabs)/inventory.tsx`  | `selectInventoryViewModel(state)` in `state/presenters/inventory.engine.ts`            |
+| `app/(tabs)/inventory.tsx`  | `selectInventoryViewModel(state, localUi?)` in `state/presenters/inventory.engine.ts`  |
 | `app/(tabs)/exploration.tsx`| `selectExplorationViewModel(state)` in `state/presenters/exploration.engine.ts`        |
 | `app/(tabs)/event.tsx`      | `selectEventViewModel(state)` in `state/presenters/event.engine.ts`                    |
 | `app/(tabs)/_layout.tsx`    | `selectVisibleTabs(inCombat)` in `state/presenters/tabs.engine.ts`                     |
@@ -126,12 +129,14 @@ minimum:
 
 ## Reference example (target shape)
 
-The canonical reference test is `app/(tabs)/combat/e2e/combat-hud.engine.test.ts`
-(delivered by Spec 01). Until then, copy the structure of the engine
-package's `src/Combat/e2e/combat.engine.test.ts` — its top-of-file
-comment, its alternating-RNG helper, its three win-condition suites,
-and its store-lifecycle suite together demonstrate every property
-above.
+The canonical reference tests are
+[`state/e2e/combat-hud.engine.test.ts`](../state/e2e/combat-hud.engine.test.ts)
+(Spec 01 — focused HUD slice) and
+[`state/e2e/combat.engine.test.ts`](../state/e2e/combat.engine.test.ts)
+(Spec 03 — full screen-level presenter that composes the HUD). Both
+demonstrate the top-of-file comment, the alternating-RNG helper, the
+suite split (happy path / invariants / store-lifecycle), and the
+deep-freeze invariant check the presenter contract requires.
 
 ---
 

@@ -1,5 +1,7 @@
 # Spec 03 — Presenter Layer
 
+> Status: [READY FOR REVIEW — 2026-05-12]
+
 ## Goal
 
 Define the contract between engine state and screens: a pure presenter
@@ -92,31 +94,47 @@ e2e tests.
 
 1. **Lock down the VM contract** in `docs/presenters.md` (new) — one
    page describing the conventions answered above.
-2. **Generate the empty engine files** for each screen:
-   - `app/(tabs)/combat/combat.engine.ts`
-   - `app/(tabs)/character/character.engine.ts`
-   - `app/(tabs)/inventory/inventory.engine.ts`
-   - `app/(tabs)/exploration/exploration.engine.ts`
-   - `app/(tabs)/event/event.engine.ts`
+2. **Generate the empty engine files** for each screen — landed under
+   `state/presenters/<screen>.engine.ts` (not the original
+   `app/(tabs)/<screen>/<screen>.engine.ts`; non-route files cannot
+   live inside `app/` because Expo Router's `require.context` walks
+   it. The route-tree guard in
+   [`state/e2e/route-tree.engine.test.ts`](../state/e2e/route-tree.engine.test.ts)
+   pins this convention, settled in Spec 01):
+   - `state/presenters/combat.engine.ts`
+   - `state/presenters/character.engine.ts`
+   - `state/presenters/inventory.engine.ts`
+   - `state/presenters/exploration.engine.ts`
+   - `state/presenters/event.engine.ts`
    Each exports its `ViewModel` type and a stub `select…ViewModel`
-   that returns a constant fixture.
-3. **Mirror the test scaffolds** at `app/(tabs)/<screen>/e2e/<screen>.engine.test.ts`.
-   Each test calls the stub and asserts the VM shape.
+   that returns a constant fixture (combat is fully wired against the
+   engine — see step 4).
+3. **Mirror the test scaffolds** at
+   `state/e2e/<screen>.engine.test.ts`. Each test pins the VM shape,
+   asserts the deep-freeze invariant, and includes a store-lifecycle
+   assertion that selection does not call `adapter.save`.
 4. **Promote the Spec 01 reference** `combat-hud.engine.ts` into the
-   new combat presenter, demonstrating the full pattern.
+   new combat presenter by composition — `selectCombatViewModel`
+   embeds `selectCombatHudViewModel`'s output under a `hud` field.
+   `combat.tsx` drops its direct `axiomancer-mechanics` import and
+   routes `FRIENDSHIP_COUNTER_MAX` through the VM.
 5. **Update `docs/testing.md`** to reference the new convention as
-   the "highest-level public entry point" for screen-level e2e.
+   the "highest-level public entry point" for screen-level e2e and
+   to name `combat.engine.test.ts` as a second canonical reference.
 6. Subsequent specs (04 onward) replace each stub with a real
    implementation.
 
 ## Acceptance checklist
 
-- [ ] All 6 questions answered.
-- [ ] `docs/presenters.md` ships.
-- [ ] Five `*.engine.ts` files exist with stubs + types + tests.
-- [ ] `npm test` and `npx tsc --noEmit` are clean.
-- [ ] No screen imports `axiomancer-mechanics` directly anymore;
-      everything routes through a presenter.
+- [x] All 6 questions answered.
+- [x] `docs/presenters.md` ships.
+- [x] Five `*.engine.ts` files exist with stubs + types + tests
+      (`combat`, `character`, `inventory`, `exploration`, `event`).
+- [x] `npm test` and `npx tsc --noEmit` are clean (88 tests, green
+      twice in a row).
+- [x] No screen imports `axiomancer-mechanics` directly anymore;
+      `combat.tsx`'s former `FRIENDSHIP_COUNTER_MAX` import now flows
+      through `selectCombatViewModel`'s `friendshipCounterMax` field.
 
 ## Out of scope
 

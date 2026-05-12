@@ -6,7 +6,7 @@ import { FRIENDSHIP_COUNTER_MAX } from 'axiomancer-mechanics';
 import { AXM, FONTS } from '@/theme/axm';
 import { useCombatMode } from '@/state/combat-mode';
 import { useGameActions, useGameState } from '@/state/GameStoreProvider';
-import { createMockEncounterEnemy } from './combat.mock';
+import { createMockEncounterEnemy } from '@/state/mocks/combat.mock';
 import { ScreenBg } from '@/components/ScreenBg';
 import { SectionLabel } from '@/components/SectionLabel';
 import { StatBar } from '@/components/StatBar';

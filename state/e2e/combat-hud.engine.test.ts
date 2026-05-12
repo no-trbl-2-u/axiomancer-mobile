@@ -19,9 +19,9 @@ import {
     nullAdapter,
 } from 'axiomancer-mechanics';
 
-import { mockAlternatingRng } from '@/app/test-utils/rng';
-import { createMemoryAdapter } from '@/app/test-utils/memoryAdapter';
-import { selectCombatHudViewModel } from './combat-hud.engine';
+import { mockAlternatingRng } from '@/test-utils/rng';
+import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
+import { selectCombatHudViewModel } from '@/state/presenters/combat-hud.engine';
 
 afterEach(() => {
     jest.restoreAllMocks();

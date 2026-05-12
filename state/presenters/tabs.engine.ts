@@ -6,7 +6,7 @@
  * "combat" screen to enter, so the bottom tab bar shows exactly one of
  * {MAP, COMBAT} at any time.
  *
- * Tested in e2e/tab-visibility.engine.test.ts.
+ * Tested in state/e2e/tabs.engine.test.ts.
  */
 
 export type TabKey = 'exploration' | 'combat' | 'character' | 'inventory' | 'event';

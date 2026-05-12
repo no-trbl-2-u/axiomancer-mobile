@@ -19,7 +19,7 @@ import {
 
 import { createAppStore } from '../store';
 import { createAppActions } from '../actions';
-import { createMemoryAdapter, type MemoryAdapter } from '@/app/test-utils/memoryAdapter';
+import { createMemoryAdapter, type MemoryAdapter } from '@/test-utils/memoryAdapter';
 
 function makeEnemy() {
     return createEnemy({

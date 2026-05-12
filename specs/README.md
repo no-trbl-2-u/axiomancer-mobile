@@ -66,7 +66,7 @@ harness exists.
 | 1 | [`01-test-harness-setup.md`](./01-test-harness-setup.md) | Installs `jest-expo` + `@testing-library/react-native`, writes the first hermetic e2e test, becomes the reference. **Blocks every other spec.** |
 | 2 | [`02-engine-store-integration.md`](./02-engine-store-integration.md) | Replaces hard-coded `useState` mocks with `createGameStore` from `axiomancer-mechanics`. Foundation for every screen. |
 | 3 | [`03-presenter-layer.md`](./03-presenter-layer.md) | Defines `<screen>.engine.ts` presenter contract: `(state) => ViewModel`. Locks in the testable boundary. |
-| 4 | [`04-combat-screen-wiring.md`](./04-combat-screen-wiring.md) | First real screen wired through the presenter. The most complex screen — getting it right de-risks the rest. |
+| 4 | [`04-combat-screen-wiring.md`](./04-combat-screen-wiring.md) | **[DONE]** First real screen wired through the presenter. The most complex screen — getting it right de-risks the rest. |
 | 5 | [`05-character-screen-wiring.md`](./05-character-screen-wiring.md) | Reads engine character data; informs the equipment slot story. |
 | 6 | [`06-inventory-screen-wiring.md`](./06-inventory-screen-wiring.md) | Reads engine items; introduces `useConsumable` flows. |
 | 7 | [`07-exploration-screen-wiring.md`](./07-exploration-screen-wiring.md) | Reads engine `WorldState`; node graph rendering. |

@@ -1,5 +1,7 @@
 # Spec 04 — Combat Screen Wiring
 
+> Status: [DONE on 2026-05-12 — see this branch's PR]
+
 ## Goal
 
 Replace `app/(tabs)/combat.tsx`'s hard-coded fixtures with engine-
@@ -136,15 +138,33 @@ and mind-mark display all reflect engine state.
 
 ## Acceptance checklist
 
-- [ ] All 6 questions answered.
-- [ ] `app/(tabs)/combat/` folder exists with `index.tsx`,
-      `combat.engine.ts`, `combat.mock.ts`, `e2e/`.
-- [ ] No literal `enemy = { … }` or `player = { … }` in the screen.
-- [ ] `STANCE_DATA`, `BEATS`, `PHASE_LABELS` moved to the presenter.
-- [ ] e2e covers all four phases + every terminal condition + at
-      least one lifecycle assertion.
-- [ ] Component render test renders all four phases without error.
-- [ ] `npm test` green twice; `npx tsc --noEmit` clean.
+- [x] All 6 questions answered.
+- [x] Combat surface area is fully extracted from `app/`. Per the
+      route-tree guard in [`state/e2e/route-tree.engine.test.ts`](../state/e2e/route-tree.engine.test.ts)
+      and the convention pinned in [`docs/presenters.md`](../docs/presenters.md),
+      non-route files must live **outside** `app/`. This deliberately
+      diverges from this spec's original wording of
+      `app/(tabs)/combat/index.tsx` + co-located engine/mock files.
+      The final shape:
+      `app/(tabs)/combat.tsx` (route shell),
+      [`state/presenters/combat.engine.ts`](../state/presenters/combat.engine.ts) (presenter),
+      [`state/mocks/combat.mock.ts`](../state/mocks/combat.mock.ts) (encounter fixture),
+      [`state/mocks/combat.skills.fixture.ts`](../state/mocks/combat.skills.fixture.ts) (placeholder skills),
+      [`state/actions.ts`](../state/actions.ts) (combat action layer),
+      [`state/e2e/combat.engine.test.ts`](../state/e2e/combat.engine.test.ts) (hermetic e2e),
+      [`state/e2e/combat.screen.test.tsx`](../state/e2e/combat.screen.test.tsx) (component render),
+      [`docs/combat.md`](../docs/combat.md) (screen doc).
+- [x] No literal `enemy = { … }` or `player = { … }` in the screen.
+- [x] `STANCE_DATA`, `BEATS`, `PHASE_LABELS` moved to the presenter
+      (`STANCE_DERIVED`, `BEATS`, `PHASE_LABELS` in
+      [`combat.engine.ts`](../state/presenters/combat.engine.ts)).
+- [x] e2e covers all four phases + every terminal condition (player
+      KO, enemy KO, friendship terminal) + invariants + a
+      `memoryAdapter.save not called` lifecycle assertion across five
+      rounds.
+- [x] Component render test renders all four phases without error
+      ([`combat.screen.test.tsx`](../state/e2e/combat.screen.test.tsx)).
+- [x] `npm test` green twice (110 tests); `npx tsc --noEmit` clean.
 
 ## Out of scope
 

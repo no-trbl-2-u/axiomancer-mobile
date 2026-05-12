@@ -38,7 +38,7 @@ e2e tests.
      selects from state" semantics.
    - (B) `compute<Screen>` — terser, describes what it does.
    - (C) `derive<Screen>VM` — terser still; `VM` suffix for the type.
-   > Your answer:
+   > Your answer: A
 
 2. **Argument shape.** The presenter takes `state` plus what?
    - (A) **(default)** Just `state` — plus an optional `localUi` arg
@@ -48,14 +48,14 @@ e2e tests.
    - (B) Just `state` — every UI-only piece becomes engine state too.
    - (C) `(state, props)` — the screen's route params are the second
      arg.
-   > Your answer:
+   > Your answer: A
 
 3. **View-model immutability.** Should the returned object be deeply
    frozen in dev?
    - (A) **(default)** Yes (`Object.freeze` recursive in dev,
      no-op in prod) so screens can't accidentally mutate it.
    - (B) No — trust the team.
-   > Your answer:
+   > Your answer: A
 
 4. **Memoisation.** Presenters are called on every state change. To
    avoid recomputing the same VM for unrelated state changes:
@@ -65,7 +65,7 @@ e2e tests.
      selectors.
    - (C) Skip — the JSON-shaped VMs are cheap; React's render is the
      bottleneck.
-   > Your answer:
+   > Your answer: A
 
 5. **What exactly belongs in the VM vs. on the component?** Style /
    layout / colours stay on the component. The VM owns:
@@ -78,7 +78,7 @@ e2e tests.
    - (B) Just data — the component decides everything cosmetic.
    - (C) Everything cosmetic too — VM names colours by `AXM.*`
      token.
-   > Your answer:
+   > Your answer: B
 
 6. **Localisation.** The current UI hard-codes English. VM strings
    could go through an `i18n` step now or later:
@@ -86,7 +86,7 @@ e2e tests.
      `tBody` etc. only when there's a real locale need.
    - (B) Now — wrap every visible string in `t(…)` with English as
      the only catalog.
-   > Your answer:
+   > Your answer: A
 
 ## Proposed approach
 

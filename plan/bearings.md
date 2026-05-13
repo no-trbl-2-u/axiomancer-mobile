@@ -74,7 +74,7 @@ against. The game has no online accounts; everything is local.
 
 | # | Service | Runbook | Status | Notes |
 |---|---|---|---|---|
-| 01 | GitHub | _(not wired — see `[needs-user-call]` below)_ | STUB | Repo at `no-trbl-2-u/axiomancer-mobile`. `GH_TOKEN` needed for `/triage`. |
+| 01 | GitHub | `GH_TOKEN` in `.env` (sourced from `gh auth token`; scopes `repo`, `read:org`, `gist`, `workflow`) | OK | Repo at `no-trbl-2-u/axiomancer-mobile`. Used by `/triage` and `ship-a-phase` Step 2.5 (phase mirror). |
 | 02 | EAS Build (Expo) | _(not wired — see `[needs-user-call]` below)_ | STUB | `eas.json` exists with preview / production profiles. `EXPO_TOKEN` needed when the deploy gate stops being a stub. |
 | 03 | npm (engine package) | n/a | OK | `axiomancer-mechanics` consumed via `npm install`. |
 

@@ -34,6 +34,11 @@ commit that ships the phase.
 - [x] Spec 04 — Combat screen wiring (canonical sibling for
       every later screen-wiring phase). See
       `specs/04-combat-screen-wiring.md` `[DONE on 2026-05-12]`.
+- [x] Spec 05 — Character screen wiring
+      (`selectCharacterViewModel`, `app/(tabs)/character/`
+      route folder, read-only stat surface). See
+      `specs/05-character-screen-wiring.md` `[DONE on
+      2026-05-13 — see commit 4afb4ed]`.
 - [x] Spec 06 — Inventory screen wiring. See
       `specs/06-inventory-screen-wiring.md` `[DONE on 2026-05-13]`.
 - [x] Spec 07 — Exploration screen wiring. Implementation
@@ -59,8 +64,11 @@ commit that ships the phase.
       (contract doc + spec status) on 2026-05-12; see
       `plan/phases/phase_4_presenter_layer.md` for the
       retroactive brief.
-- [ ] Phase 5 — Spec 05: Character screen wiring (presenter
-      + view-model + hermetic e2e + view shell).
+- [x] Phase 5 — Spec 05: Character screen wiring. Shipped in
+      commit `4afb4ed` ("feat(spec05): wire character screen to
+      engine via selectCharacterViewModel") on 2026-05-13; see
+      `plan/phases/phase_5_character_screen_wiring.md` for the
+      retroactive brief.
 - [ ] Phase 6 — Spec 08: Event screen wiring (depends on
       engine spec 09 — see carry-overs).
 - [ ] Phase 7 — Spec 09: `AsyncStorage` persistence adapter.
@@ -250,3 +258,6 @@ substrate; `/iterate` takes over after.
   docs/presenters.md, 5 *.engine.ts stubs, route-tree guard,
   freeze.ts helper, deep-freeze invariant; preceded by scaffolds
   in e56184e)
+- phase 5 — 4afb4ed — character screen wiring (Spec 05;
+  selectCharacterViewModel, character/ route folder, hermetic
+  e2e, read-only stat surface)

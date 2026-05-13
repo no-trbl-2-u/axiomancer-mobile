@@ -18,14 +18,18 @@ import {
     setPhase as combatSetPhase,
     setPlayerAction as combatSetPlayerAction,
     setPlayerStance as combatSetPlayerStance,
+    changeMap as worldChangeMap,
+    completeNode as worldCompleteNode,
     determineAdvantage,
     determineCombatEnd,
     determineEnemyAction,
+    getCoastalMap,
     healCharacter,
     incrementFriendship as combatIncrementFriendship,
     isConsumable,
     isEquipment,
     resolveCombatRound,
+    unlockNode as worldUnlockNode,
     type Character,
     type CombatPhase,
     type CombatState,
@@ -33,8 +37,13 @@ import {
     type Enemy,
     type Equipment,
     type Item,
+    type MapName,
     type Stance,
+    type WorldMap,
+    type WorldState,
 } from 'axiomancer-mechanics';
+
+import { getMapLayout } from '@/state/exploration-maps';
 
 import {
     COMBAT_SKILLS_FIXTURE,
@@ -57,6 +66,15 @@ export type LogSeverityKey =
     | 'effect'
     | 'friendship'
     | 'system';
+
+export interface MoveToResult {
+    /** True when the engine state was advanced. */
+    moved: boolean;
+    /** Engine node id the player now occupies (unchanged on no-op). */
+    currentNodeId: string;
+    /** True when the target was locked or not currently reachable. */
+    locked: boolean;
+}
 
 export interface ResolveRoundResult {
     /** True when the engine's `determineCombatEnd` is no longer `'ongoing'`. */
@@ -105,6 +123,15 @@ export interface AppActions {
     equipItem: (itemId: string) => void;
     /** Discard an item — wraps `removeItem` with a quest-item guard. */
     dropItem: (itemId: string) => void;
+    /**
+     * Move the player to a connected, available node.
+     * Marks the target completed, advances `currentNodeId`, and unlocks
+     * outbound edges declared in the screen-side layout fixture
+     * (`app/(tabs)/exploration/maps/<map>.layout.ts`).
+     */
+    moveTo: (nodeId: string) => MoveToResult;
+    /** Swap the active map within the current continent. */
+    changeMap: (mapName: MapName) => void;
     save: () => void;
 }
 
@@ -477,6 +504,8 @@ export function createAppActions(store: AppStore): AppActions {
         useItem: (itemId) => useItemAction(store, itemId),
         equipItem: (itemId) => equipItemAction(store, itemId),
         dropItem: (itemId) => dropItemAction(store, itemId),
+        moveTo: (nodeId) => moveToAction(store, nodeId),
+        changeMap: (mapName) => changeMapAction(store, mapName),
         save: () => store.getState().save(),
     };
 }
@@ -585,4 +614,103 @@ function dropItemAction(store: AppStore, itemId: string): void {
 // through `resolveRound` repeatedly.
 export function incrementCombatFriendship(combat: CombatState): CombatState {
     return combatIncrementFriendship(combat);
+}
+
+// ---------------------------------------------------------------------------
+// World actions (Spec 07)
+// ---------------------------------------------------------------------------
+
+/**
+ * Read the player's current node id from the world slice. The engine
+ * doesn't model a "current node" — we stash one on the `currentMap`
+ * object under a non-typed key. When unset, fall back to the map's
+ * `startingNode.id` so a fresh game has a sensible starting point.
+ */
+export function readCurrentNodeId(world: WorldState): string {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const m = world.currentMap as unknown as Record<string, any>;
+    const stashed = typeof m.currentNodeId === 'string' ? m.currentNodeId : null;
+    return stashed ?? world.currentMap.startingNode.id;
+}
+
+function writeCurrentNodeId(map: WorldMap, nodeId: string): WorldMap {
+    return {
+        ...map,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        currentNodeId: nodeId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any;
+}
+
+function moveToAction(store: AppStore, nodeId: string): MoveToResult {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const world = (store.getState() as any).world as WorldState | undefined;
+    if (!world) {
+        return { moved: false, currentNodeId: '', locked: false };
+    }
+
+    const currentNodeId = readCurrentNodeId(world);
+    const map = world.currentMap;
+    const available = map.availableNodes;
+    const completed = map.completedNodes;
+
+    // Target must be currently reachable. Locked or already-completed
+    // taps no-op (the screen also gates this, but defend in depth).
+    const isAvailable = available.includes(nodeId);
+    const isLocked = map.lockedNodes.includes(nodeId);
+    if (!isAvailable) {
+        return { moved: false, currentNodeId, locked: isLocked };
+    }
+
+    let nextWorld: WorldState = worldCompleteNode(world, nodeId);
+    // The engine reducer only *adds* to completedNodes; tidy up the
+    // available list so the same node can't be re-entered.
+    nextWorld = {
+        ...nextWorld,
+        currentMap: {
+            ...nextWorld.currentMap,
+            availableNodes: (nextWorld.currentMap.availableNodes as readonly string[]).filter(
+                (n: string) => n !== nodeId,
+            ),
+        },
+    };
+
+    // Propagate unlocks for outbound edges declared in the layout fixture.
+    // The engine map only ships connectivity for `startingNode`, so the
+    // mobile-side fixture is the source of truth for the full graph.
+    const layout = getMapLayout(map.name);
+    if (layout !== null) {
+        const moved = layout.nodes.find((n) => n.id === nodeId);
+        const connected = moved?.connectedNodes ?? [];
+        for (const targetId of connected) {
+            if (completed.includes(targetId)) continue;
+            if (nextWorld.currentMap.availableNodes.includes(targetId)) continue;
+            nextWorld = worldUnlockNode(nextWorld, targetId);
+        }
+    }
+
+    nextWorld = {
+        ...nextWorld,
+        currentMap: writeCurrentNodeId(nextWorld.currentMap, nodeId),
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    store.setState({ world: nextWorld } as any);
+
+    return { moved: true, currentNodeId: nodeId, locked: false };
+}
+
+function changeMapAction(store: AppStore, mapName: MapName): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const world = (store.getState() as any).world as WorldState | undefined;
+    if (!world) return;
+
+    const nextMap = getCoastalMap(mapName);
+    let nextWorld = worldChangeMap(world, nextMap);
+    nextWorld = {
+        ...nextWorld,
+        currentMap: writeCurrentNodeId(nextWorld.currentMap, nextMap.startingNode.id),
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    store.setState({ world: nextWorld } as any);
 }

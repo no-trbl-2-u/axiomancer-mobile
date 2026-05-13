@@ -1,0 +1,500 @@
+import React, { useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, {
+    useAnimatedStyle,
+    useSharedValue,
+} from 'react-native-reanimated';
+import { useRouter } from 'expo-router';
+import Svg, { Path, Circle, G } from 'react-native-svg';
+import { AXM, FONTS } from '@/theme/axm';
+import { ScreenBg } from '@/components/ScreenBg';
+import { StatusCard } from '@/components/StatusCard';
+import { SectionLabel } from '@/components/SectionLabel';
+import { NodeMark } from '@/components/NodeMark';
+import { ActionIcon } from '@/components/ActionIcon';
+import { Splatter } from '@/components/Splatter';
+import { useCombatMode } from '@/state/combat-mode';
+import { useGameActions, useGameState, useGameStore } from '@/state/GameStoreProvider';
+import {
+    selectExplorationViewModel,
+    type ExplorationNode,
+    type ExplorationOption,
+    type NodeType,
+} from '@/state/presenters/exploration.engine';
+
+const EVENT_BADGE: Record<NodeType, { c: string; label: string }> = {
+    encounter: { c: AXM.blood, label: 'ENCOUNTER' },
+    treasure: { c: AXM.sulfur, label: 'TREASURE' },
+    boss: { c: AXM.blood, label: 'BOSS' },
+    quest: { c: AXM.sulfur, label: 'QUEST' },
+    rest: { c: AXM.rust, label: 'REST' },
+    gather: { c: AXM.bone, label: 'GATHER' },
+    current: { c: AXM.sulfur, label: 'HERE' },
+};
+
+const OPTION_ICON: Record<NodeType, string> = {
+    rest: 'flame',
+    gather: 'bag',
+    current: 'eye',
+    encounter: 'flee',
+    treasure: 'scroll',
+    boss: 'sword',
+    quest: 'scroll',
+};
+
+export default function ExplorationScreen() {
+    const router = useRouter();
+    const { enterCombat } = useCombatMode();
+    const store = useGameStore();
+    const actions = useGameActions();
+    // Subscribe to the world slice so the screen re-renders on moves
+    // and map transitions. The selector pattern is the same as inventory.
+    const world = useGameState((s) => (s as unknown as { world: unknown }).world);
+    const vm = useMemo(
+        () => selectExplorationViewModel(store.getState()),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [store, world],
+    );
+
+    const nodeById = useMemo(() => {
+        const m = new Map<string, ExplorationNode>();
+        for (const n of vm.nodes) m.set(n.id, n);
+        return m;
+    }, [vm.nodes]);
+
+    // Pinch + pan over the map view (Q2=B). Reanimated shared values
+    // drive a single transform; gestures compose simultaneously so the
+    // user can zoom and drag at once.
+    const scale = useSharedValue(1);
+    const savedScale = useSharedValue(1);
+    const tx = useSharedValue(0);
+    const ty = useSharedValue(0);
+    const savedTx = useSharedValue(0);
+    const savedTy = useSharedValue(0);
+
+    const pinch = Gesture.Pinch()
+        .onUpdate((e) => {
+            const next = savedScale.value * e.scale;
+            scale.value = Math.min(3, Math.max(0.6, next));
+        })
+        .onEnd(() => {
+            savedScale.value = scale.value;
+        });
+
+    const pan = Gesture.Pan()
+        .onUpdate((e) => {
+            tx.value = savedTx.value + e.translationX;
+            ty.value = savedTy.value + e.translationY;
+        })
+        .onEnd(() => {
+            savedTx.value = tx.value;
+            savedTy.value = ty.value;
+        });
+
+    const composed = Gesture.Simultaneous(pinch, pan);
+
+    const mapTransform = useAnimatedStyle(() => ({
+        transform: [
+            { translateX: tx.value },
+            { translateY: ty.value },
+            { scale: scale.value },
+        ],
+    }));
+
+    const onNodePress = (node: ExplorationNode) => {
+        // Q5=B — locked nodes are a no-op. Completed nodes are also a
+        // no-op (you've already been there). Current is informational.
+        if (node.kind !== 'available') return;
+        const result = actions.moveTo(node.id);
+        if (result.moved && node.triggersCombat) {
+            enterCombat();
+            router.replace('/combat' as never);
+        }
+    };
+
+    const onOptionPress = (option: ExplorationOption) => {
+        const node = nodeById.get(option.nodeId);
+        if (!node) return;
+        onNodePress(node);
+    };
+
+    return (
+        <ScreenBg>
+            <StatusCard />
+
+            {/* Region Header */}
+            <View style={styles.regionHeader}>
+                <View>
+                    <SectionLabel size={9} style={{ color: AXM.bone }}>{vm.continent}</SectionLabel>
+                    <Text style={styles.regionTitle}>{vm.region}</Text>
+                    <Text style={styles.regionSub}>{vm.regionProgress}</Text>
+                </View>
+                <View style={styles.dayBox}>
+                    <Text style={styles.dayLabel}>DAY</Text>
+                    <Text style={styles.dayNum}>{vm.dayDisplay}</Text>
+                </View>
+            </View>
+
+            {/* Node Graph */}
+            <View style={styles.graphWrap}>
+                <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#16130d' }]} />
+                <Splatter color={AXM.blood} size={170} seed={3} style={{ position: 'absolute', top: -10, right: -10, opacity: 0.35 }} />
+                <Splatter color={AXM.sulfur} size={130} seed={9} style={{ position: 'absolute', bottom: 30, left: -20, opacity: 0.18 }} />
+
+                {/* Compass */}
+                <Text style={styles.compass}>N ↑ · scale: leagues</Text>
+                <Text style={styles.nodeGraphLabel}>NODE GRAPH</Text>
+
+                <GestureDetector gesture={composed}>
+                    <Animated.View style={[StyleSheet.absoluteFillObject, mapTransform]}>
+                        {/* SVG edges */}
+                        <Svg viewBox="0 0 360 400" width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
+                            {vm.edges.map((e, i) => {
+                                const A = nodeById.get(e.fromId);
+                                const B = nodeById.get(e.toId);
+                                if (!A || !B) return null;
+                                const mx = (A.x + B.x) / 2 + Math.sin(i * 3) * 12;
+                                const my = (A.y + B.y) / 2 + Math.cos(i * 5) * 10;
+                                return (
+                                    <G key={`${e.fromId}|${e.toId}`}>
+                                        <Path
+                                            d={`M ${A.x} ${A.y} Q ${mx} ${my} ${B.x} ${B.y}`}
+                                            stroke={e.traveled ? AXM.parchment : (e.locked ? AXM.ash : AXM.bone)}
+                                            strokeWidth={e.traveled ? 2.5 : 1.6}
+                                            strokeDasharray={e.locked ? '4 4' : undefined}
+                                            fill="none"
+                                            opacity={e.traveled ? 0.9 : 0.6}
+                                            strokeLinecap="round"
+                                        />
+                                        {e.traveled && <Circle cx={mx} cy={my} r={2} fill={AXM.sulfur} />}
+                                    </G>
+                                );
+                            })}
+                            <G opacity={0.4} stroke={AXM.bone} strokeWidth={1} fill="none">
+                                <Path d="M40 250 q 20 -20 40 -10 q 10 12 -10 18 q -22 4 -30 -8 z" />
+                                <Path d="M250 280 q 30 -20 60 -5 q 8 18 -20 22 q -38 -2 -40 -17 z" />
+                            </G>
+                        </Svg>
+
+                        {/* Node markers */}
+                        {vm.nodes.map((n) => {
+                            const ev = EVENT_BADGE[n.type] ?? EVENT_BADGE.encounter;
+                            const left = (n.x - 18) / 360 * 100;
+                            const top = (n.y - 18) / 400 * 100;
+                            const dim = n.kind === 'locked';
+                            return (
+                                <TouchableOpacity
+                                    key={n.id}
+                                    accessibilityRole="button"
+                                    accessibilityLabel={`${n.label} — ${n.kind}`}
+                                    accessibilityState={{ disabled: n.kind !== 'available' }}
+                                    onPress={() => onNodePress(n)}
+                                    activeOpacity={n.kind === 'available' ? 0.7 : 1}
+                                    testID={`node-${n.id}`}
+                                    style={[
+                                        styles.nodeWrap,
+                                        { left: `${left}%` as unknown as number, top: `${top}%` as unknown as number },
+                                        dim && styles.nodeWrapLocked,
+                                    ]}
+                                >
+                                    <NodeMark kind={n.kind} size={36} />
+                                    <View style={[styles.nodeLabel, { opacity: dim ? 0.4 : 1 }]}>
+                                        <Text style={[styles.nodeLabelText, { color: dim ? AXM.ash : AXM.parchment }]}>
+                                            {n.label}
+                                        </Text>
+                                    </View>
+                                    {n.kind === 'available' && (
+                                        <View style={[styles.nodeTypeBadge, { backgroundColor: ev.c }]}>
+                                            <Text style={styles.nodeTypeBadgeText}>{ev.label}</Text>
+                                        </View>
+                                    )}
+                                </TouchableOpacity>
+                            );
+                        })}
+                    </Animated.View>
+                </GestureDetector>
+
+                {vm.eventCallout && (
+                    <View style={styles.eventCallout}>
+                        <View style={styles.eventCalloutRow}>
+                            <ActionIcon kind={vm.eventCallout.iconKey} size={20} color={AXM.blood} />
+                            <SectionLabel size={9} color={AXM.blood}>NEW EVENT</SectionLabel>
+                        </View>
+                        <Text style={styles.eventCalloutText}>{vm.eventCallout.title}</Text>
+                    </View>
+                )}
+
+                <View style={styles.legend}>
+                    <Text style={styles.legendText}>{vm.legend.left}</Text>
+                    <Text style={styles.legendText}>{vm.legend.right}</Text>
+                </View>
+            </View>
+
+            {/* Node options drawer (Q6) — available next steps with thematic blurb */}
+            <View style={styles.drawer}>
+                <View style={styles.drawerHeader}>
+                    <SectionLabel size={10}>★ Where next, pilgrim?</SectionLabel>
+                    {vm.options.length > 1 && (
+                        <Text style={styles.swipeHint}>swipe →</Text>
+                    )}
+                </View>
+                {vm.options.length === 0 ? (
+                    <View style={styles.drawerEmpty} testID="options-empty">
+                        <Text style={styles.drawerEmptyText}>No paths remain from here.</Text>
+                    </View>
+                ) : (
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.drawerScroll}
+                    >
+                        {vm.options.map((opt, i) => {
+                            const ev = EVENT_BADGE[opt.type] ?? EVENT_BADGE.encounter;
+                            return (
+                                <TouchableOpacity
+                                    key={opt.nodeId}
+                                    style={[styles.optionCard, i === 0 && styles.optionCardSelected]}
+                                    onPress={() => onOptionPress(opt)}
+                                    accessibilityRole="button"
+                                    accessibilityLabel={`Travel to ${opt.label}`}
+                                    testID={`option-${opt.nodeId}`}
+                                >
+                                    <View style={styles.optionHead}>
+                                        <ActionIcon
+                                            kind={OPTION_ICON[opt.type]}
+                                            size={20}
+                                            color={i === 0 ? AXM.sulfur : AXM.parchment}
+                                        />
+                                        <View style={[styles.optionBadge, { backgroundColor: ev.c }]}>
+                                            <Text style={styles.optionBadgeText}>{ev.label}</Text>
+                                        </View>
+                                    </View>
+                                    <Text style={styles.optionLabel}>{opt.label}</Text>
+                                    <Text
+                                        style={[styles.optionDesc, i === 0 && { color: AXM.parchment }]}
+                                        numberOfLines={3}
+                                    >
+                                        {opt.description}
+                                    </Text>
+                                </TouchableOpacity>
+                            );
+                        })}
+                    </ScrollView>
+                )}
+            </View>
+        </ScreenBg>
+    );
+}
+
+const styles = StyleSheet.create({
+    regionHeader: {
+        paddingHorizontal: 14,
+        paddingTop: 12,
+        paddingBottom: 4,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+    },
+    regionTitle: {
+        fontFamily: FONTS.gothic,
+        fontSize: 26,
+        lineHeight: 28,
+        color: AXM.parchment,
+        marginTop: 2,
+    },
+    regionSub: {
+        fontFamily: FONTS.serif,
+        fontSize: 11,
+        color: AXM.bone,
+        fontStyle: 'italic',
+        marginTop: 1,
+    },
+    dayBox: {
+        alignItems: 'flex-end',
+    },
+    dayLabel: {
+        fontFamily: FONTS.mono,
+        fontSize: 10,
+        color: AXM.bone,
+    },
+    dayNum: {
+        fontFamily: FONTS.gothic,
+        fontSize: 22,
+        color: AXM.sulfur,
+        lineHeight: 24,
+    },
+    graphWrap: {
+        marginHorizontal: 10,
+        marginVertical: 6,
+        height: 400,
+        position: 'relative',
+        overflow: 'hidden',
+    },
+    compass: {
+        position: 'absolute',
+        top: 10,
+        left: 10,
+        fontFamily: FONTS.mono,
+        fontSize: 9,
+        color: AXM.bone,
+        letterSpacing: 1,
+        zIndex: 2,
+    },
+    nodeGraphLabel: {
+        position: 'absolute',
+        top: 10,
+        right: 12,
+        fontFamily: FONTS.gothic,
+        fontSize: 14,
+        color: AXM.parchment,
+        opacity: 0.6,
+        letterSpacing: 2,
+        zIndex: 2,
+    },
+    nodeWrap: {
+        position: 'absolute',
+        width: 36,
+        alignItems: 'center',
+        zIndex: 3,
+    },
+    nodeWrapLocked: {
+        opacity: 0.45,
+    },
+    nodeLabel: {
+        marginTop: 2,
+        paddingHorizontal: 4,
+        paddingVertical: 1,
+        backgroundColor: 'rgba(10,10,10,0.85)',
+    },
+    nodeLabelText: {
+        fontFamily: FONTS.sans,
+        fontSize: 9,
+        letterSpacing: 1.4,
+        textTransform: 'uppercase',
+    },
+    nodeTypeBadge: {
+        marginTop: 1,
+        paddingHorizontal: 3,
+        paddingVertical: 1,
+    },
+    nodeTypeBadgeText: {
+        fontFamily: FONTS.sans,
+        fontSize: 8,
+        letterSpacing: 1,
+        color: '#0a0a0a',
+    },
+    eventCallout: {
+        position: 'absolute',
+        top: 50,
+        right: 12,
+        width: 130,
+        backgroundColor: '#0a0a0a',
+        borderWidth: 1,
+        borderColor: AXM.blood,
+        padding: 8,
+        zIndex: 4,
+    },
+    eventCalloutRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    eventCalloutText: {
+        fontFamily: FONTS.gothic,
+        fontSize: 13,
+        color: AXM.parchment,
+        marginTop: 2,
+        lineHeight: 15,
+    },
+    legend: {
+        position: 'absolute',
+        bottom: 8,
+        left: 12,
+        right: 12,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        zIndex: 2,
+    },
+    legendText: {
+        fontFamily: FONTS.mono,
+        fontSize: 8,
+        color: AXM.bone,
+        letterSpacing: 1,
+    },
+    drawer: {
+        paddingHorizontal: 10,
+        paddingBottom: 8,
+    },
+    drawerHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'baseline',
+        paddingHorizontal: 4,
+        paddingBottom: 4,
+    },
+    swipeHint: {
+        fontFamily: FONTS.mono,
+        fontSize: 9,
+        color: AXM.bone,
+    },
+    drawerScroll: {
+        gap: 8,
+        paddingVertical: 4,
+        paddingHorizontal: 2,
+    },
+    drawerEmpty: {
+        marginHorizontal: 4,
+        paddingVertical: 18,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: AXM.ash,
+        borderStyle: 'dashed',
+    },
+    drawerEmptyText: {
+        fontFamily: FONTS.serifItalic,
+        fontSize: 13,
+        color: AXM.bone,
+    },
+    optionCard: {
+        width: 180,
+        minHeight: 110,
+        backgroundColor: '#100d0a',
+        borderWidth: 1,
+        borderColor: AXM.ash,
+        padding: 10,
+        gap: 6,
+    },
+    optionCardSelected: {
+        borderWidth: 2,
+        borderColor: AXM.sulfur,
+        backgroundColor: '#1a1410',
+    },
+    optionHead: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    optionBadge: {
+        paddingHorizontal: 4,
+        paddingVertical: 1,
+    },
+    optionBadgeText: {
+        fontFamily: FONTS.sans,
+        fontSize: 8,
+        letterSpacing: 1,
+        color: '#0a0a0a',
+    },
+    optionLabel: {
+        fontFamily: FONTS.gothic,
+        fontSize: 15,
+        color: AXM.parchment,
+        lineHeight: 17,
+    },
+    optionDesc: {
+        fontFamily: FONTS.serifItalic,
+        fontSize: 11,
+        color: AXM.bone,
+        lineHeight: 14,
+    },
+});

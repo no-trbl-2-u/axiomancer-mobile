@@ -1,16 +1,18 @@
 /**
- * Screen-level presenter for `app/(tabs)/exploration.tsx`.
+ * Screen-level presenter for `app/(tabs)/exploration/index.tsx`.
  *
- * Stub per Spec 03 step (2). Spec 07 replaces the fixture with reads
- * from the engine's `WorldState` (current continent, node graph,
- * available actions per node).
- *
- * VM is *data only*; the screen resolves icons and palette by
- * mapping `kind`/`type` keys to its components.
+ * Spec 07: drives the exploration view-model from `state.world`. Node
+ * positions, labels, types, and connectivity live in a per-map fixture
+ * (`app/(tabs)/exploration/maps/<map-id>.layout.ts`, Q1=A); engine state
+ * supplies the completed / available / locked buckets and the
+ * presenter-tracked `currentNodeId`. Tapping a locked node is a no-op
+ * (Q5=B) — the screen renders locked nodes desaturated to convey state.
  */
 
 import type { GameStore } from 'axiomancer-mechanics';
 
+import { readCurrentNodeId } from '../actions';
+import { getMapLayout, type NodeLayout } from '@/state/exploration-maps';
 import { freezeViewModel } from './freeze';
 
 export type NodeKind = 'completed' | 'current' | 'available' | 'locked';
@@ -57,6 +59,15 @@ export interface ExplorationAction {
     selected: boolean;
 }
 
+export interface ExplorationOption {
+    /** Engine node id the option moves the player to. */
+    nodeId: string;
+    label: string;
+    type: NodeType;
+    /** Thematic blurb sourced from the layout fixture. */
+    description: string;
+}
+
 export interface ExplorationViewModel {
     continent: string;
     region: string;
@@ -64,31 +75,174 @@ export interface ExplorationViewModel {
     regionProgress: string;
     /** In-game day number (Roman numerals already formatted). */
     dayDisplay: string;
+    /** Engine map id (used to drive map transitions). */
+    mapId: string;
+    /** Engine node id of the player's current location. */
+    currentNodeId: string;
     nodes: readonly ExplorationNode[];
     edges: readonly ExplorationEdge[];
     actions: readonly ExplorationAction[];
+    /** Next-step picker shown beneath the map (Q6). */
+    options: readonly ExplorationOption[];
     /** Optional event callout banner; `null` when no callout. */
     eventCallout: { title: string; iconKey: string } | null;
     /** Legend bottom strip — pre-formatted display strings. */
     legend: { left: string; right: string };
 }
 
-const STUB_VM: ExplorationViewModel = {
-    continent: 'CONTINENT · IRON SKY',
-    region: 'The Hanged Wood',
-    regionProgress: 'Map ii of vii · 4 paths remain',
-    dayDisplay: 'XXIV',
+const ACTION_ICON_BY_TYPE: Record<NodeType, string> = {
+    rest: 'flame',
+    gather: 'bag',
+    current: 'eye',
+    encounter: 'flee',
+    treasure: 'scroll',
+    boss: 'sword',
+    quest: 'scroll',
+};
+
+const ACTION_TAG_BY_TYPE: Record<NodeType, string> = {
+    rest: 'HEAL · COSTLY',
+    gather: 'NODE · GATHER',
+    current: 'YOU ARE HERE',
+    encounter: 'TRAVEL · 1 TURN',
+    treasure: 'SKILL · MIND',
+    boss: 'TRAVEL · BOSS',
+    quest: 'LORE',
+};
+
+const ENCOUNTER_NODE_TYPES = new Set<NodeType>(['encounter', 'boss']);
+
+function classifyNode(
+    layout: NodeLayout,
+    currentNodeId: string,
+    completed: readonly string[],
+    available: readonly string[],
+): NodeKind {
+    if (layout.id === currentNodeId) return 'current';
+    if (completed.includes(layout.id)) return 'completed';
+    if (available.includes(layout.id)) return 'available';
+    return 'locked';
+}
+
+function buildEdges(
+    nodes: readonly NodeLayout[],
+    completed: readonly string[],
+    locked: readonly string[],
+): ExplorationEdge[] {
+    const edges: ExplorationEdge[] = [];
+    const seen = new Set<string>();
+    for (const node of nodes) {
+        for (const target of node.connectedNodes) {
+            const key = node.id < target ? `${node.id}|${target}` : `${target}|${node.id}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            const traveled = completed.includes(node.id) && completed.includes(target);
+            const isLocked = locked.includes(node.id) || locked.includes(target);
+            edges.push({ fromId: node.id, toId: target, traveled, locked: isLocked });
+        }
+    }
+    return edges;
+}
+
+function buildOptions(
+    layout: readonly NodeLayout[],
+    available: readonly string[],
+): ExplorationOption[] {
+    const order = new Map(layout.map((n, i) => [n.id, i] as const));
+    return available
+        .filter((id) => order.has(id))
+        .sort((a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0))
+        .map((id) => {
+            const n = layout.find((node) => node.id === id)!;
+            return {
+                nodeId: n.id,
+                label: n.label,
+                type: n.type,
+                description: n.description,
+            };
+        });
+}
+
+function buildActions(options: readonly ExplorationOption[]): ExplorationAction[] {
+    return options.map((opt, i) => ({
+        key: `move-${opt.nodeId}`,
+        label: opt.label,
+        iconKey: ACTION_ICON_BY_TYPE[opt.type],
+        tag: ACTION_TAG_BY_TYPE[opt.type],
+        selected: i === 0,
+    }));
+}
+
+const FALLBACK_VM: ExplorationViewModel = {
+    continent: 'CONTINENT · UNKNOWN',
+    region: '—',
+    regionProgress: '',
+    dayDisplay: 'I',
+    mapId: '',
+    currentNodeId: '',
     nodes: [],
     edges: [],
     actions: [],
+    options: [],
     eventCallout: null,
-    legend: { left: '● TRODDEN  ◌ OPEN  ✕ SHUT', right: 'vii nodes · iii sealed' },
+    legend: { left: '● TRODDEN  ◌ OPEN  ✕ SHUT', right: '' },
 };
 
-/**
- * Returns the exploration view-model. **Stub** — Spec 07 wires real
- * engine reads.
- */
-export function selectExplorationViewModel(_state: GameStore): ExplorationViewModel {
-    return freezeViewModel(STUB_VM);
+export function selectExplorationViewModel(state: GameStore): ExplorationViewModel {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const world = (state as any).world;
+    if (!world || !world.currentMap || !world.currentContinent) {
+        return freezeViewModel(FALLBACK_VM);
+    }
+
+    const layout = getMapLayout(world.currentMap.name);
+    if (layout === null) {
+        return freezeViewModel({
+            ...FALLBACK_VM,
+            continent: `CONTINENT · ${String(world.currentContinent.name).toUpperCase()}`,
+            region: world.currentMap.name,
+            mapId: world.currentMap.name,
+            currentNodeId: readCurrentNodeId(world),
+        });
+    }
+
+    const completed = world.currentMap.completedNodes as readonly string[];
+    const available = world.currentMap.availableNodes as readonly string[];
+    const locked = world.currentMap.lockedNodes as readonly string[];
+    const currentNodeId = readCurrentNodeId(world);
+
+    const nodes: ExplorationNode[] = layout.nodes.map((n) => {
+        const kind = classifyNode(n, currentNodeId, completed, available);
+        return {
+            id: n.id,
+            x: n.x,
+            y: n.y,
+            kind,
+            label: n.label,
+            type: n.type,
+            triggersCombat: kind === 'available' && ENCOUNTER_NODE_TYPES.has(n.type),
+        };
+    });
+
+    const options = buildOptions(layout.nodes, available);
+    const actions = buildActions(options);
+    const edges = buildEdges(layout.nodes, completed, locked);
+
+    return freezeViewModel({
+        continent: layout.continent,
+        region: layout.region,
+        regionProgress: layout.regionProgress,
+        dayDisplay: 'XXIV',
+        mapId: world.currentMap.name,
+        currentNodeId,
+        nodes,
+        edges,
+        actions,
+        options,
+        eventCallout: null,
+        legend: {
+            left: '● TRODDEN  ◌ OPEN  ✕ SHUT',
+            right: `${layout.nodes.length} nodes · ${locked.length} sealed`,
+        },
+    });
 }

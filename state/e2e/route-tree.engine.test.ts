@@ -90,7 +90,7 @@ const EXPECTED_ROUTE_FILES: ReadonlySet<string> = new Set([
     './(tabs)/character/index.tsx',
     './(tabs)/combat.tsx',
     './(tabs)/event.tsx',
-    './(tabs)/exploration.tsx',
+    './(tabs)/exploration/index.tsx',
     './(tabs)/inventory/index.tsx',
 ]);
 

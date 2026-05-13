@@ -10,7 +10,10 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "deploy": "npm run deploy:preview",
+    "deploy:preview": "npm test && eas build --platform android --profile preview",
+    "deploy:production": "npm test && eas build --platform all --profile production"
   },
   "dependencies": {
     "@expo-google-fonts/bebas-neue": "^0.4.1",

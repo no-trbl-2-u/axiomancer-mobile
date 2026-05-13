@@ -25,29 +25,20 @@ commit that ships the phase.
       `specs/04-combat-screen-wiring.md` `[DONE on 2026-05-12]`.
 - [x] Spec 06 — Inventory screen wiring. See
       `specs/06-inventory-screen-wiring.md` `[DONE on 2026-05-13]`.
-- [-] Spec 07 — Exploration screen wiring. **Implementation
-      landed** in commit `06fc907` ("Exploration spec
-      implementation"), but the spec doc is not yet flipped to
-      `[DONE]`. Treat as substrate; the first loop pass should
-      audit + close the loop (mark `[DONE]`, add to "Already
-      shipped" above).
+- [x] Spec 07 — Exploration screen wiring. Implementation
+      landed in commit `06fc907` ("Exploration spec
+      implementation"); spec doc flipped to `[DONE on 2026-05-13]`
+      in commit `527f021` as part of phase 2's audit close-out.
 
 **Next up (autonomous loop's queue):**
 
 - [x] Phase 1 — Adopt nexus methodology. Shipped in commit
       `a703908` ("chore: adopt nexus methodology"); closed out
       in this commit.
-- [ ] Phase 2 — **Fix engine API drift (verify-gate
-      unblocker).** The latest `axiomancer-mechanics` bump
-      renamed `Consumable.effect → effectId` and added required
-      fields `rarity` + `requiredLevel` on `Equipment`.
-      `npm run verify` is RED until callers + test fixtures
-      migrate. **No autonomous tick is safe until this lands.**
-      Files to touch: `state/actions.ts`,
-      `state/e2e/inventory.engine.test.ts`,
-      `state/e2e/inventory.modal.engine.test.ts`,
-      `state/e2e/inventory.screen.test.tsx`. See
-      `plan/AUDIT.md` `[HIGH]` row.
+- [x] Phase 2 — Fix engine API drift (verify-gate unblocker).
+      Shipped in commit `527f021` ("Fix audit issues"); see
+      `plan/phases/phase_2_engine_drift.md` for the retroactive
+      brief. Verify gate is GREEN (185 / 185).
 - [ ] Phase 3 — Spec 02: Engine store integration. Replace the
       hard-coded `useState` mocks in screens with a `zustand`
       store wrapping `createGameStore` from
@@ -229,22 +220,17 @@ substrate; `/iterate` takes over after.
 
 ## Carry-overs / known gaps (update as phases ship)
 
-- **Spec 07 (Exploration) shipped without flipping the spec
-  `[DONE]` flag.** Audit + flip + add commit hash in the first
-  available tick (likely during phase 2 or as an `/iterate`
-  finding). Move this row to "Already shipped" once closed.
 - **`docs/presenters.md`** exists but pre-dates the presenter
   contract lock — phase 3 rewrites it.
 - **No `setup/` runbooks yet.** Phase 10 (EAS) and a
   follow-up GitHub runbook are queued; until then,
   `agents.md` "Operational secrets" is the canonical config
   doc.
-- **No `Knowledge-Gaps.md` / `BRAINDUMP.md` / `GAME-ROADMAP.md`
-  in this repo today** (README references them as if they
-  existed). Either author them or fix the README — file as an
-  `/iterate` finding.
 
 ## Phase log (commit hashes)
 
 - phase 1 — a703908 — adopt nexus methodology overlay (substrate;
   no product code changes)
+- phase 2 — 527f021 — engine API drift fix (effect → effectId on
+  Consumable; rarity + requiredLevel on Equipment fixtures;
+  verify gate green at 185 / 185)

@@ -39,7 +39,7 @@ const potion: Consumable = {
     name: 'Potion of Heart',
     description: 'A small phial of ruby liquor.',
     category: 'consumable',
-    effect: 'Heal 6 HP',
+    effectId: 'Heal 6 HP',
     quantity: 1,
 };
 
@@ -49,6 +49,8 @@ const blade: Equipment = {
     description: 'Iron, notched.',
     category: 'equipment',
     slot: 'weapon',
+    rarity: 'common',
+    requiredLevel: 1,
 };
 
 // ---------------------------------------------------------------------------
@@ -81,7 +83,7 @@ describe('selectItemModalViewModel: consumable preview (Q2)', () => {
     });
 
     it('reports "No HP change." when the effect is non-healing', () => {
-        const odd: Consumable = { ...potion, id: 'wine', effect: '+4 Mana' };
+        const odd: Consumable = { ...potion, id: 'wine', effectId: '+4 Mana' };
         const store = makeStore([odd]);
 
         const vm = selectItemModalViewModel(store.getState(), 'wine')!;

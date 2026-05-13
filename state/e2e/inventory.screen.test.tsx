@@ -63,7 +63,7 @@ const potion: Consumable = {
     name: 'Potion of Heart',
     description: 'A small phial of ruby liquor.',
     category: 'consumable',
-    effect: 'Heal 6 HP',
+    effectId: 'Heal 6 HP',
     quantity: 1,
 };
 
@@ -73,6 +73,8 @@ const sword: Equipment = {
     description: 'Iron, notched.',
     category: 'equipment',
     slot: 'weapon',
+    rarity: 'common',
+    requiredLevel: 1,
 };
 
 describe('inventory screen: rendering', () => {

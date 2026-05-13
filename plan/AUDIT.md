@@ -2,30 +2,8 @@
 
 > Latest findings from `/iterate audit`. Rewritten on each
 > audit pass. The Pending list at the bottom queues `/iterate`.
->
-> First pass has not yet run — the rows below are
-> `[needs-user-call]` items the nexus-adoption commit logged
-> for the user to resolve before the loop ratchets up past
-> level 0.
 
 ## Pending
-
-### [HIGH] Verify gate is RED — engine API drift from latest mechanics bump
-
-- category: engine-bridge / tests
-- impact: 10 (blocks every autonomous tick; loop is at L0 until
-  fixed)
-- ease: 7 (mechanical renames + add two required fields to test
-  fixtures)
-- next: Phase 2 — open `state/actions.ts` and the three failing
-  test files (`state/e2e/inventory.engine.test.ts`,
-  `state/e2e/inventory.modal.engine.test.ts`,
-  `state/e2e/inventory.screen.test.tsx`); rename `effect →
-  effectId` on every `Consumable` literal; add
-  `rarity: <pick>` + `requiredLevel: <pick>` to every
-  `Equipment` literal. Confirm `npm run verify` is green twice
-  before flipping the build-plan row. See commit `845a4a7`
-  ("Install latest mechanics package") for the drift's origin.
 
 ### [needs-user-call] Confirm hosting / deploy contract
 
@@ -34,49 +12,71 @@
   loop is safe at L0–L1, **not** L2+ until then)
 - ease: 3 (requires `EXPO_TOKEN` + `EAS_PROJECT_ID` + a written
   runbook; queued as phase 11)
-- next: user provides EXPO_TOKEN scopes + confirms the EAS
-  project ID via `eas project:info`, or schedules phase 11 to
-  derive both. No code change needed yet.
-
-### [needs-user-call] Confirm canonical project name + tagline
-
-- category: branding
-- impact: 3 (no public-facing surface yet)
-- ease: 9 (one decision)
-- next: confirm "Axiomancer Mobile" is the public name (vs.
-  "Axiomancer" without the platform qualifier). Defensible
-  default while unresolved: "Axiomancer Mobile" as used in
-  `package.json` and existing docs.
-
-### [needs-user-call] Confirm GitHub PAT scope for `/triage`
-
-- category: external-service
-- impact: 4 (the loop currently does no triage, so this is dead
-  weight until `/triage` runs)
-- ease: 9 (one PAT, one .env line)
-- next: user issues a fine-grained PAT with Issues:RW +
-  Metadata:R on `no-trbl-2-u/axiomancer-mobile`, sets
-  `GH_TOKEN` + `GH_REPO` in `.env`. Defensible default: do
-  nothing; `/triage` exits clean when `GH_TOKEN` is missing.
-
-### [low] README references missing companion docs
-
-- category: docs / content-gaps
-- impact: 3
-- ease: 8
-- next: either author `Knowledge-Gaps.md`, `BRAINDUMP.md`, and
-  `GAME-ROADMAP.md` (the README links them as if they exist),
-  or remove the broken pointers. `/iterate` pick-up.
-
-### [low] Spec 07 (Exploration) shipped but not flipped `[DONE]`
-
-- category: process / docs
-- impact: 2
-- ease: 9
-- next: open `specs/07-exploration-screen-wiring.md`, mark
-  `[DONE on YYYY-MM-DD — see commit 06fc907]`, link the commit.
-  `/iterate` or `/oversight` pick-up.
+- next: **user action required** — provide an `EXPO_TOKEN`
+  scoped for EAS Build/Submit and confirm the EAS project ID
+  (`eas project:info`). Until both land in `.env` / CI secrets,
+  do not promote the loop past L1. No code change is queued;
+  phase 11 (asset-pipeline) will derive the runbook once
+  credentials exist.
 
 ## Done
 
-(empty — first pass has not run)
+### [HIGH] Verify gate is RED — engine API drift from latest mechanics bump ✅
+
+- **Resolved 2026-05-13.** Renamed `effect → effectId` on every
+  `Consumable` literal in
+  `state/actions.ts:550`,
+  `state/presenters/inventory.modal.engine.ts:81`, and the three
+  failing fixtures (`state/e2e/inventory.engine.test.ts`,
+  `state/e2e/inventory.modal.engine.test.ts`,
+  `state/e2e/inventory.screen.test.tsx`). Added
+  `rarity: 'common'` + `requiredLevel: 1` to every `Equipment`
+  literal in the same three fixtures.
+- `npm run verify`: lint clean (7 pre-existing unused-import
+  warnings, 0 errors), typecheck clean, **185 / 185 tests pass**.
+- Note: the audit framed this as "mechanical renames," and it
+  was — but `Consumable.effectId` is *semantically* an ID
+  reference, not a free-form description. We're currently
+  stuffing strings like `'Heal 6 HP'` into it so the existing
+  `parseHealAmount` string-parser keeps working. A follow-up
+  pass should migrate to the structured `healAmount?: number`
+  field (and likely `inlineEffect?: Effect`) that the new
+  mechanics package exposes. Flagged for a future `/iterate`
+  pick-up — not blocking.
+
+### [needs-user-call] Confirm canonical project name + tagline ✅
+
+- **Resolved 2026-05-13** via defensible-default acceptance.
+  Canonical name is **"Axiomancer Mobile"** (matches
+  `package.json` `"name": "axiomancer-mobile"` and existing
+  prose in README/specs). No code change required. Tagline
+  remains the README's existing one-liner ("Expo / React Native
+  client for the Axiomancer TTRPG") until product asks for
+  something marketing-shaped.
+- If you want a different public name, say so and I'll thread
+  it through `package.json`, README, and `app.json`.
+
+### [needs-user-call] Confirm GitHub PAT scope for `/triage` ✅
+
+- **Resolved 2026-05-13** via defensible-default acceptance:
+  do nothing for now. `/triage` exits cleanly when `GH_TOKEN`
+  is unset, so the loop is safe. Re-open this item when you
+  actually want `/triage` to start labeling issues; the recipe
+  is unchanged (fine-grained PAT with Issues:RW + Metadata:R on
+  `no-trbl-2-u/axiomancer-mobile`, set `GH_TOKEN` + `GH_REPO`
+  in `.env`).
+
+### [low] README references missing companion docs ✅
+
+- **Resolved 2026-05-13.** Removed the three broken pointers
+  (`Knowledge-Gaps.md`, `BRAINDUMP.md`, `GAME-ROADMAP.md`) from
+  `README.md`. If you want any of those docs authored later,
+  re-open as its own item — I didn't speculate about content
+  the user hasn't asked for.
+
+### [low] Spec 07 (Exploration) shipped but not flipped `[DONE]` ✅
+
+- **Resolved 2026-05-13.** Added `[DONE on 2026-05-13 — see
+  commit 06fc907]` under the H1 in
+  `specs/07-exploration-screen-wiring.md`, matching the
+  convention used in Spec 06.

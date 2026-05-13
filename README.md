@@ -113,9 +113,6 @@ assisted development. Pick up the loop here:
   — the operator's manual.
 - **Writing tests?** [`docs/testing.md`](./docs/testing.md) — hermetic
   e2e standard. Every implementation must land with at least one.
-- **Open design questions?** [`Knowledge-Gaps.md`](./Knowledge-Gaps.md).
-- **Loose ideas?** [`BRAINDUMP.md`](./BRAINDUMP.md).
-- **What's left to build?** [`GAME-ROADMAP.md`](./GAME-ROADMAP.md).
 
 ## Hermetic E2E testing
 

@@ -547,7 +547,7 @@ function useItemAction(store: AppStore, itemId: string): UseItemResult {
 
     const consumable = item as Consumable;
     const hpBefore = state.player.health;
-    const healAmount = parseHealAmount(consumable.effect);
+    const healAmount = parseHealAmount(consumable.effectId ?? '');
     let nextPlayer: Character = state.player;
     if (healAmount > 0) {
         nextPlayer = healCharacter(nextPlayer, healAmount);

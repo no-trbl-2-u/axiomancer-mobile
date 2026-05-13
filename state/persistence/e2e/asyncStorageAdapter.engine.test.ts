@@ -89,11 +89,31 @@ describe('createAsyncStorageAdapter — preload + load', () => {
 
 // ---------------------------------------------------------------------------
 // save (debounced) + flush
+//
+// Call-count tests inject a fake `storage` so they don't share spy state
+// with the module-level AsyncStorage mock.
 // ---------------------------------------------------------------------------
+
+interface FakeStorage {
+    getItem: jest.Mock<(key: string) => Promise<string | null>>;
+    setItem: jest.Mock<(key: string, value: string) => Promise<void>>;
+    removeItem: jest.Mock<(key: string) => Promise<void>>;
+}
+
+function createFakeStorage(): FakeStorage {
+    return {
+        getItem: jest.fn<(key: string) => Promise<string | null>>().mockResolvedValue(null),
+        setItem: jest.fn<(key: string, value: string) => Promise<void>>().mockResolvedValue(undefined),
+        removeItem: jest.fn<(key: string) => Promise<void>>().mockResolvedValue(undefined),
+    };
+}
 
 describe('createAsyncStorageAdapter — save (debounced)', () => {
     it('save updates the load cache immediately', () => {
-        const adapter = createAsyncStorageAdapter({ debounceMs: 50 });
+        const adapter = createAsyncStorageAdapter({
+            debounceMs: 50,
+            storage: createFakeStorage(),
+        });
 
         adapter.save(buildState('Alice'));
 
@@ -101,19 +121,19 @@ describe('createAsyncStorageAdapter — save (debounced)', () => {
     });
 
     it('save coalesces bursts within the debounce window into one AsyncStorage write', async () => {
-        const setItemSpy = jest.spyOn(AsyncStorage, 'setItem');
-        const adapter = createAsyncStorageAdapter({ debounceMs: 50 });
+        const storage = createFakeStorage();
+        const adapter = createAsyncStorageAdapter({ debounceMs: 50, storage });
 
         adapter.save(buildState('A'));
         adapter.save(buildState('B'));
         adapter.save(buildState('C'));
 
-        expect(setItemSpy).not.toHaveBeenCalled();
+        expect(storage.setItem).not.toHaveBeenCalled();
 
         await adapter.flush();
 
-        expect(setItemSpy).toHaveBeenCalledTimes(1);
-        const [, blob] = setItemSpy.mock.calls[0] as [string, string];
+        expect(storage.setItem).toHaveBeenCalledTimes(1);
+        const [, blob] = storage.setItem.mock.calls[0];
         const written = JSON.parse(blob) as StoredEnvelope;
         expect(written.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
         const result = unwrap(written);
@@ -121,24 +141,24 @@ describe('createAsyncStorageAdapter — save (debounced)', () => {
     });
 
     it('debounceMs: 0 writes synchronously on every save', async () => {
-        const setItemSpy = jest.spyOn(AsyncStorage, 'setItem');
-        const adapter = createAsyncStorageAdapter({ debounceMs: 0 });
+        const storage = createFakeStorage();
+        const adapter = createAsyncStorageAdapter({ debounceMs: 0, storage });
 
         adapter.save(buildState('A'));
         adapter.save(buildState('B'));
 
         await adapter.flush();
 
-        expect(setItemSpy).toHaveBeenCalledTimes(2);
+        expect(storage.setItem).toHaveBeenCalledTimes(2);
     });
 
     it('flush is a no-op when there is no pending write', async () => {
-        const setItemSpy = jest.spyOn(AsyncStorage, 'setItem');
-        const adapter = createAsyncStorageAdapter();
+        const storage = createFakeStorage();
+        const adapter = createAsyncStorageAdapter({ storage });
 
         await adapter.flush();
 
-        expect(setItemSpy).not.toHaveBeenCalled();
+        expect(storage.setItem).not.toHaveBeenCalled();
     });
 });
 
@@ -159,14 +179,15 @@ describe('createAsyncStorageAdapter — clear', () => {
     });
 
     it('clear cancels a pending debounced write', async () => {
-        const setItemSpy = jest.spyOn(AsyncStorage, 'setItem');
-        const adapter = createAsyncStorageAdapter({ debounceMs: 50 });
+        const storage = createFakeStorage();
+        const adapter = createAsyncStorageAdapter({ debounceMs: 50, storage });
 
         adapter.save(buildState());
         await adapter.clear();
         await adapter.flush();
 
-        expect(setItemSpy).not.toHaveBeenCalled();
+        expect(storage.setItem).not.toHaveBeenCalled();
+        expect(storage.removeItem).toHaveBeenCalledTimes(1);
     });
 });
 

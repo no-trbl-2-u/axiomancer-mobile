@@ -45,6 +45,12 @@ commit that ships the phase.
       landed in commit `06fc907` ("Exploration spec
       implementation"); spec doc flipped to `[DONE on 2026-05-13]`
       in commit `527f021` as part of phase 2's audit close-out.
+- [x] Spec 09 — AsyncStorage persistence adapter
+      (`createAsyncStorageAdapter`, `schemaVersion` migration
+      runner, debounced writes, preload-before-mount in
+      `app/_layout.tsx`, 15 hermetic e2e). See
+      `specs/09-asyncstorage-persistence.md` `[DONE on
+      2026-05-13]` and `plan/phases/phase_7_asyncstorage_persistence.md`.
 
 **Next up (autonomous loop's queue):**
 
@@ -81,8 +87,12 @@ commit that ships the phase.
       `[needs-user-call]` row for resolution paths. Un-skip
       by flipping back to `[ ]` once the contract lands **and**
       mobile Spec 08's open questions are answered.
-- [ ] Phase 7 — Spec 09: `AsyncStorage` persistence adapter.
-      Coordinates with the engine's storage spec.
+- [x] Phase 7 — Spec 09: `AsyncStorage` persistence adapter.
+      Shipped on main across commits `aa187cd` (e2e), `09bc44e`
+      (specs / adapter / migrations) and `2f8ecea` (layout
+      wiring), with this commit closing out the spec Q-answers,
+      DoD ticks, and Phase log. See
+      `plan/phases/phase_7_asyncstorage_persistence.md`.
 - [ ] Phase 8 — Spec 10: Navigation + app-shell polish (deep
       links, back behaviour, tab badges, splash → first screen
       handoff).
@@ -278,3 +288,8 @@ substrate; `/iterate` takes over after.
   e2e, read-only stat surface)
 - phase 6 — SKIPPED — engine Spec 09 + narrative contract
   pending; see plan/phases/phase_6_event_screen_wiring.md
+- phase 7 — aa187cd / 09bc44e / 2f8ecea — AsyncStorage
+  persistence adapter (Spec 09; createAsyncStorageAdapter,
+  migrations runner, preload-before-mount, 15 hermetic e2e,
+  +200/200 verify green; first phase the loop built from
+  scratch)

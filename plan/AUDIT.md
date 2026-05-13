@@ -5,21 +5,31 @@
 
 ## Pending
 
-### [needs-user-call] Confirm hosting / deploy contract
-
-- category: external-service
-- impact: 6 (the deploy gate is a stub until this is resolved;
-  loop is safe at L0–L1, **not** L2+ until then)
-- ease: 3 (requires `EXPO_TOKEN` + `EAS_PROJECT_ID` + a written
-  runbook; queued as phase 11)
-- next: **user action required** — provide an `EXPO_TOKEN`
-  scoped for EAS Build/Submit and confirm the EAS project ID
-  (`eas project:info`). Until both land in `.env` / CI secrets,
-  do not promote the loop past L1. No code change is queued;
-  phase 11 (asset-pipeline) will derive the runbook once
-  credentials exist.
+(empty — all blocking items resolved as of 2026-05-13)
 
 ## Done
+
+### [needs-user-call] Confirm hosting / deploy contract ✅
+
+- **Resolved 2026-05-13.** User provisioned `.env` (gitignored,
+  verified) with `EXPO_ID` + `EXPO_TOKEN`. The `EXPO_ID`
+  (`9c04…`) matches the `projectId` already hardcoded in
+  `app.json:59` under `extra.eas.projectId`, so the build will
+  resolve the right EAS project. `EXPO_TOKEN` is what
+  `eas build` reads for non-interactive auth.
+- `package.json` already wires the deploy gate:
+  `deploy:preview` runs `verify` (currently green, 185/185)
+  then `eas build --platform android --profile preview`
+  against the `preview` profile in `eas.json` (Android APK,
+  internal distribution).
+- **Residual work (non-blocking, not user-gated):**
+  (1) the `eas build` invocation needs `EXPO_TOKEN` exported
+  in the shell — `.env` isn't auto-loaded by npm scripts.
+  Either prefix with `dotenv -e .env --` or document the
+  `export $(grep -v '^#' .env | xargs)` recipe in the runbook.
+  (2) Phase 11 (asset-pipeline) is the natural home for the
+  written runbook + CI secret mirror. Queue for `/iterate`.
+- The loop is now safe at **L2+** for the deploy gate.
 
 ### [HIGH] Verify gate is RED — engine API drift from latest mechanics bump ✅
 

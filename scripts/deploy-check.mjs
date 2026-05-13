@@ -25,17 +25,9 @@
 // `gitCommitHash`).
 
 import { execSync } from 'node:child_process'
-import fs from 'node:fs'
+import dotenv from 'dotenv'
 
-// --- load .env if present (Node has no built-in .env loader) ---
-if (fs.existsSync('.env')) {
-  for (const line of fs.readFileSync('.env', 'utf-8').split(/\r?\n/)) {
-    const m = line.match(/^\s*([A-Z][A-Z0-9_]*)\s*=\s*(.*?)\s*$/)
-    if (m && !process.env[m[1]]) {
-      process.env[m[1]] = m[2].replace(/^["']|["']$/g, '')
-    }
-  }
-}
+dotenv.config()
 
 const PROVIDER = process.env.DEPLOY_PROVIDER ?? 'none'
 

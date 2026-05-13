@@ -20,6 +20,11 @@ commit that ships the phase.
       `@testing-library/react-native`, hermetic-test standard
       in `docs/testing.md`). See `specs/01-test-harness-setup.md`
       `[DONE on 2026-05-11]`.
+- [x] Spec 02 — Engine store integration (Zustand store wrapping
+      `createGameStore`; `<GameStoreProvider>`, `useGameState`,
+      `useGameActions`, typed action wrappers). See
+      `specs/02-engine-store-integration.md` `[DONE on
+      2026-05-11 — see commit efef5f5]`.
 - [x] Spec 04 — Combat screen wiring (canonical sibling for
       every later screen-wiring phase). See
       `specs/04-combat-screen-wiring.md` `[DONE on 2026-05-12]`.
@@ -39,11 +44,10 @@ commit that ships the phase.
       Shipped in commit `527f021` ("Fix audit issues"); see
       `plan/phases/phase_2_engine_drift.md` for the retroactive
       brief. Verify gate is GREEN (185 / 185).
-- [ ] Phase 3 — Spec 02: Engine store integration. Replace the
-      hard-coded `useState` mocks in screens with a `zustand`
-      store wrapping `createGameStore` from
-      `axiomancer-mechanics`. Foundation for the remaining
-      screens.
+- [x] Phase 3 — Spec 02: Engine store integration. Shipped in
+      commit `efef5f5` ("Engine store integration") on
+      2026-05-11; see `plan/phases/phase_3_engine_store_integration.md`
+      for the retroactive brief.
 - [ ] Phase 4 — Spec 03: Presenter layer. Lock the
       `select<Screen>ViewModel(state) → ViewModel` contract for
       every screen; codify the pattern that Spec 04 + 06
@@ -234,3 +238,6 @@ substrate; `/iterate` takes over after.
 - phase 2 — 527f021 — engine API drift fix (effect → effectId on
   Consumable; rarity + requiredLevel on Equipment fixtures;
   verify gate green at 185 / 185)
+- phase 3 — efef5f5 — engine store integration (Spec 02;
+  GameStoreProvider, useGameState, useGameActions, typed action
+  wrappers, hermetic e2e harness)

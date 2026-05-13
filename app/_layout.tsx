@@ -9,13 +9,20 @@ import { BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
 import { JetBrainsMono_400Regular } from '@expo-google-fonts/jetbrains-mono';
 import * as SplashScreen from 'expo-splash-screen';
 import * as NavigationBar from 'expo-navigation-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { CombatModeProvider } from '@/state/combat-mode';
 import { GameStoreProvider } from '@/state/GameStoreProvider';
+import { createAsyncStorageAdapter } from '@/state/persistence/asyncStorageAdapter';
 
 SplashScreen.preventAutoHideAsync();
+
+// Single app-wide persistence adapter. Created once at module load; the
+// `preload()` call below populates its in-memory cache from AsyncStorage
+// before `<GameStoreProvider>` mounts. Tests bypass this entirely via
+// the provider's `adapter` / `store` props.
+const persistenceAdapter = createAsyncStorageAdapter();
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -25,10 +32,31 @@ export default function RootLayout() {
     BebasNeue_400Regular,
     JetBrainsMono_400Regular,
   });
+  const [preloaded, setPreloaded] = useState(false);
 
   useEffect(() => {
-    if (loaded) SplashScreen.hideAsync();
-  }, [loaded]);
+    let cancelled = false;
+    persistenceAdapter
+      .preload()
+      .catch((err: unknown) => {
+        // Q7=A on Spec 09: surface "save corrupted — start new game?" to
+        // the user. Minimum viable for this phase: log and continue with
+        // a fresh game (cache stays null, provider boots `createNewGameState`).
+        // Replace with a UX modal in a follow-up.
+        // eslint-disable-next-line no-console
+        console.warn('[persistence] preload failed; starting fresh', err);
+      })
+      .finally(() => {
+        if (!cancelled) setPreloaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (loaded && preloaded) SplashScreen.hideAsync();
+  }, [loaded, preloaded]);
 
   useEffect(() => {
     if (Platform.OS !== 'android') return;
@@ -38,10 +66,10 @@ export default function RootLayout() {
     NavigationBar.setVisibilityAsync('hidden').catch(() => undefined);
   }, []);
 
-  if (!loaded) return null;
+  if (!loaded || !preloaded) return null;
 
   return (
-    <GameStoreProvider>
+    <GameStoreProvider adapter={persistenceAdapter}>
       <CombatModeProvider>
         <StatusBar style="light" />
         <Stack screenOptions={{ headerShown: false }}>

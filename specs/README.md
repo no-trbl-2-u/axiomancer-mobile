@@ -68,7 +68,7 @@ harness exists.
 | 3 | [`03-presenter-layer.md`](./03-presenter-layer.md) | Defines `<screen>.engine.ts` presenter contract: `(state) => ViewModel`. Locks in the testable boundary. |
 | 4 | [`04-combat-screen-wiring.md`](./04-combat-screen-wiring.md) | **[DONE]** First real screen wired through the presenter. The most complex screen — getting it right de-risks the rest. |
 | 5 | [`05-character-screen-wiring.md`](./05-character-screen-wiring.md) | Reads engine character data; informs the equipment slot story. |
-| 6 | [`06-inventory-screen-wiring.md`](./06-inventory-screen-wiring.md) | Reads engine items; introduces `useConsumable` flows. |
+| 6 | [`06-inventory-screen-wiring.md`](./06-inventory-screen-wiring.md) | **[DONE]** Reads engine items; introduces `useConsumable` flows. |
 | 7 | [`07-exploration-screen-wiring.md`](./07-exploration-screen-wiring.md) | Reads engine `WorldState`; node graph rendering. |
 | 8 | [`08-event-screen-wiring.md`](./08-event-screen-wiring.md) | Reads engine quest / event data (depends on engine Spec 09). |
 | 9 | [`09-asyncstorage-persistence.md`](./09-asyncstorage-persistence.md) | Adds an `AsyncStorage` adapter so the game survives app restarts. Coordinates with engine Spec 12. |

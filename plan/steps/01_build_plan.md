@@ -25,6 +25,12 @@ commit that ships the phase.
       `useGameActions`, typed action wrappers). See
       `specs/02-engine-store-integration.md` `[DONE on
       2026-05-11 — see commit efef5f5]`.
+- [x] Spec 03 — Presenter layer contract
+      (`select<Screen>ViewModel(state, localUi?) → ViewModel`,
+      `docs/presenters.md`, 5 `*.engine.ts` stubs + e2e shape
+      tests, route-tree guard, deep-freeze invariant). See
+      `specs/03-presenter-layer.md` `[DONE on 2026-05-12 — see
+      commit e378f99]`.
 - [x] Spec 04 — Combat screen wiring (canonical sibling for
       every later screen-wiring phase). See
       `specs/04-combat-screen-wiring.md` `[DONE on 2026-05-12]`.
@@ -48,10 +54,11 @@ commit that ships the phase.
       commit `efef5f5` ("Engine store integration") on
       2026-05-11; see `plan/phases/phase_3_engine_store_integration.md`
       for the retroactive brief.
-- [ ] Phase 4 — Spec 03: Presenter layer. Lock the
-      `select<Screen>ViewModel(state) → ViewModel` contract for
-      every screen; codify the pattern that Spec 04 + 06
-      already exemplify.
+- [x] Phase 4 — Spec 03: Presenter layer. Shipped across
+      commits `e56184e` (scaffolds + e2e stubs) and `e378f99`
+      (contract doc + spec status) on 2026-05-12; see
+      `plan/phases/phase_4_presenter_layer.md` for the
+      retroactive brief.
 - [ ] Phase 5 — Spec 05: Character screen wiring (presenter
       + view-model + hermetic e2e + view shell).
 - [ ] Phase 6 — Spec 08: Event screen wiring (depends on
@@ -224,8 +231,6 @@ substrate; `/iterate` takes over after.
 
 ## Carry-overs / known gaps (update as phases ship)
 
-- **`docs/presenters.md`** exists but pre-dates the presenter
-  contract lock — phase 3 rewrites it.
 - **No `setup/` runbooks yet.** Phase 10 (EAS) and a
   follow-up GitHub runbook are queued; until then,
   `agents.md` "Operational secrets" is the canonical config
@@ -241,3 +246,7 @@ substrate; `/iterate` takes over after.
 - phase 3 — efef5f5 — engine store integration (Spec 02;
   GameStoreProvider, useGameState, useGameActions, typed action
   wrappers, hermetic e2e harness)
+- phase 4 — e378f99 — presenter layer contract (Spec 03;
+  docs/presenters.md, 5 *.engine.ts stubs, route-tree guard,
+  freeze.ts helper, deep-freeze invariant; preceded by scaffolds
+  in e56184e)

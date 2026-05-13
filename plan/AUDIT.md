@@ -5,7 +5,29 @@
 
 ## Pending
 
-(empty — all blocking items resolved as of 2026-05-13)
+### [needs-user-call] Phase 6 (Spec 08 — Event screen wiring) blocked on engine event APIs
+
+- category: external-dependency / build-plan
+- impact: 4 (Phase 6 is mid-stack but its blocker doesn't gate
+  Phases 7–13; the loop routes around)
+- ease: 2 (requires an engine package bump that the autonomous
+  loop can't author)
+- next: **user action required** — `axiomancer-mechanics
+  ^0.4.1` does not export `activeEvent`, `resolveEvent`, or
+  `EventChoice[]`. Only `MapEvent` / `UniqueEvent` data shapes
+  and `completeUniqueEvent` reducer ship today. Spec 08 itself
+  notes "`resolveEvent`, `eventChoices` is largely TBD pending
+  engine Spec 08 / 09". Until that engine work lands and the
+  package is bumped here, Phase 6 cannot ship.
+- in the meantime: Phase 6's row is marked `[skipped]` in
+  `plan/steps/01_build_plan.md`; the autonomous loop routes
+  to Phase 7 (Spec 09 — AsyncStorage persistence) and beyond.
+  See `plan/phases/phase_6_event_screen_wiring.md` for the
+  blocker brief and three resolution paths (bump, defer, or
+  stub-ship — the loop *chose not to* stub-ship).
+- additional user-call: even after the engine bump, Spec 08's
+  five open questions are all unanswered in
+  `specs/08-event-screen-wiring.md`. Those are product calls.
 
 ## Done
 

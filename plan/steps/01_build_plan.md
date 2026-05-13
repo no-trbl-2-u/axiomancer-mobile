@@ -69,8 +69,14 @@ commit that ships the phase.
       engine via selectCharacterViewModel") on 2026-05-13; see
       `plan/phases/phase_5_character_screen_wiring.md` for the
       retroactive brief.
-- [ ] Phase 6 — Spec 08: Event screen wiring (depends on
-      engine spec 09 — see carry-overs).
+- [skipped] Phase 6 — Spec 08: Event screen wiring. **Blocked
+      on engine event APIs.** `axiomancer-mechanics ^0.4.1`
+      doesn't export `activeEvent` / `resolveEvent` /
+      `EventChoice[]`. See
+      `plan/phases/phase_6_event_screen_wiring.md` for the
+      blocker brief and `plan/AUDIT.md`'s
+      `[needs-user-call]` row for resolution paths. Un-skip
+      by flipping back to `[ ]` once the engine bump lands.
 - [ ] Phase 7 — Spec 09: `AsyncStorage` persistence adapter.
       Coordinates with the engine's storage spec.
 - [ ] Phase 8 — Spec 10: Navigation + app-shell polish (deep
@@ -261,3 +267,8 @@ substrate; `/iterate` takes over after.
 - phase 5 — 4afb4ed — character screen wiring (Spec 05;
   selectCharacterViewModel, character/ route folder, hermetic
   e2e, read-only stat surface)
+- phase 6 — SKIPPED — engine event APIs missing
+  (`activeEvent` / `resolveEvent` / `EventChoice[]` not in
+  `axiomancer-mechanics ^0.4.1`); see
+  `plan/phases/phase_6_event_screen_wiring.md` and
+  `plan/AUDIT.md` `[needs-user-call]`

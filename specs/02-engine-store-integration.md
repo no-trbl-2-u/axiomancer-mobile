@@ -1,6 +1,6 @@
 # Spec 02 — Engine Store Integration
 
-> Status: [READY FOR REVIEW — 2026-05-11]
+> Status: [DONE on 2026-05-11 — see commit efef5f5]
 
 ## Goal
 

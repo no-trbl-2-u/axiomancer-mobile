@@ -9,11 +9,14 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
+    "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",
+    "verify": "npm run lint && npm run typecheck && npm test",
+    "deploy:check": "node scripts/deploy-check.mjs",
     "deploy": "npm run deploy:preview",
-    "deploy:preview": "npm test && eas build --platform android --profile preview",
-    "deploy:production": "npm test && eas build --platform all --profile production"
+    "deploy:preview": "npm run verify && node scripts/with-env.mjs eas build --platform android --profile preview",
+    "deploy:production": "npm run verify && node scripts/with-env.mjs eas build --platform all --profile production"
   },
   "dependencies": {
     "@expo-google-fonts/bebas-neue": "^0.4.1",
@@ -25,6 +28,7 @@
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
     "axiomancer-mechanics": "^0.4.1",
+    "dotenv": "^17.4.2",
     "expo": "~54.0.33",
     "expo-constants": "~18.0.13",
     "expo-font": "~14.0.11",

@@ -39,7 +39,7 @@ function potion(id = 'potion-of-heart', heal = 6, qty = 1): Consumable {
         name: 'Potion of Heart',
         description: 'A small phial of ruby liquor.',
         category: 'consumable',
-        effect: `Heal ${heal} HP`,
+        effectId: `Heal ${heal} HP`,
         quantity: qty,
     };
 }
@@ -51,6 +51,8 @@ function sword(id = 'long-blade'): Equipment {
         description: 'Iron, notched. Drinks blood.',
         category: 'equipment',
         slot: 'weapon',
+        rarity: 'common',
+        requiredLevel: 1,
     };
 }
 
@@ -61,6 +63,8 @@ function dagger(id = 'bone-dagger'): Equipment {
         description: 'Whittled from a saint\'s rib.',
         category: 'equipment',
         slot: 'weapon',
+        rarity: 'common',
+        requiredLevel: 1,
     };
 }
 

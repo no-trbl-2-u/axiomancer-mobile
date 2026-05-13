@@ -1,5 +1,7 @@
 # Spec 07 — Exploration Screen Wiring
 
+[DONE on 2026-05-13 — see commit 06fc907]
+
 ## Goal
 
 Replace `app/(tabs)/exploration.tsx`'s hard-coded node graph with

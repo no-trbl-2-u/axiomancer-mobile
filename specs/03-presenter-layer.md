@@ -1,6 +1,6 @@
 # Spec 03 — Presenter Layer
 
-> Status: [READY FOR REVIEW — 2026-05-12]
+> Status: [DONE on 2026-05-12 — see commit e378f99]
 
 ## Goal
 

@@ -78,7 +78,7 @@ export function selectItemModalViewModel(
 
 function buildConsumableModal(player: Character, item: Item): ItemModalViewModel {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const effect = String((item as any).effect ?? '');
+    const effect = String((item as any).effectId ?? '');
     const heal = parseHealAmount(effect);
     const projectedHp = heal > 0
         ? Math.min(player.maxHealth, player.health + heal)

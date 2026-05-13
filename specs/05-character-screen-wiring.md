@@ -1,5 +1,7 @@
 # Spec 05 — Character Screen Wiring
 
+[DONE on 2026-05-13 — see commit 4afb4ed]
+
 ## Goal
 
 Replace `app/(tabs)/character.tsx`'s hard-coded base / derived /
@@ -54,7 +56,8 @@ character progression ships.
    - (A) **(default)** Deferred — character screen is read-only here.
    - (B) Implement a "+ stat" button that's disabled until Spec 06
      gives the engine a `pendingPoints` field.
-   > Your answer:
+   > Your answer: A — deferred. Character screen ships read-only;
+   > no stat-upgrade buttons in `app/(tabs)/character/index.tsx`.
 
 5. **Visual treatment for stats below threshold.** Mock tints
    `Heart Save 10` with a particular accent. Should we drive the tint
@@ -79,12 +82,12 @@ character progression ships.
 
 ## Acceptance checklist
 
-- [ ] All 5 questions answered.
-- [ ] `app/(tabs)/character/` folder exists.
-- [ ] No literal `BASE`, `DERIVED`, `SAVES`, `EFFECTS`, `SLOTS` in the
+- [x] All 5 questions answered.
+- [x] `app/(tabs)/character/` folder exists.
+- [x] No literal `BASE`, `DERIVED`, `SAVES`, `EFFECTS`, `SLOTS` in the
       screen.
-- [ ] Hermetic e2e green; component render test exists.
-- [ ] `npm test` and `npx tsc --noEmit` clean.
+- [x] Hermetic e2e green; component render test exists.
+- [x] `npm test` and `npx tsc --noEmit` clean.
 
 ## Out of scope
 

@@ -1,6 +1,6 @@
 # Phase 6 — Spec 08: Event screen wiring
 
-> **Status: [SKIPPED — blocked on engine event APIs].** This
+> **Status: [SKIPPED — blocked on engine Spec 09 + narrative contract].** This
 > phase cannot ship autonomously. The autonomous loop logged
 > this brief on its first attempt, marked the build-plan row
 > `[skipped]`, and routed to Phase 7. See `plan/AUDIT.md`'s
@@ -8,34 +8,29 @@
 
 ## Blocker
 
-`specs/08-event-screen-wiring.md`'s success state requires:
+`specs/08-event-screen-wiring.md`'s **illustrative** success
+state names a slice that does not exist on `GameState` today:
 
 ```
-state.session.activeEvent   // engine surface
+state.session.activeEvent   // not on GameState — do not use
 actions.resolveEvent(choiceId)
 event.choices: EventChoice[]
 ```
 
-The currently installed engine package
-(`axiomancer-mechanics ^0.4.1`) does **not** export any of
-these. The full event-related surface in
-`node_modules/axiomancer-mechanics/dist/index.d.ts` is:
+The installed package (`axiomancer-mechanics ^0.4.1`) **does**
+export the Spec 08 **world** layer (`moveToNode`, `processNode`,
+`applyDialogueChoice`, `DialogueTree`, `MapEvent`, … — see
+mechanics `docs/world.md`), but **`createGameStore` does not**
+expose movement / node processing / dialogue as actions, and
+there is still no first-class “pending map event with choice
+IDs” model. The **narrow** gap for Phase 6 is: **orchestration +
+pinned mobile contract** (engine Spec 09) **and** answered
+product questions in the mobile spec.
 
-- Types: `MapEvent`, `MapEventType`, `UniqueEvent` (data
-  shapes only).
-- Reducer: `completeUniqueEvent(state, eventId)` — fires when
-  a unique event resolves; takes no choice argument and no
-  choice consequence.
-- No `activeEvent` slice on `GameState`.
-- No `resolveEvent` reducer.
-- No `EventChoice` / `eventChoices` type or accessor.
-
-Spec 08's own "Current state" section flags this:
-> "the event-resolution loop (`resolveEvent`, `eventChoices`)
-> is largely TBD pending engine Spec 08 / 09."
-
-So the dependency is acknowledged in the spec itself; the
-engine work simply hasn't landed yet.
+The mobile spec previously quoted “TBD pending engine Spec 08 /
+09”; **Spec 08 is done** — the remaining dependency is **Spec 09**
+(and possibly a small follow-up if the product wants
+`MapEvent`-level choices beyond NPC dialogue).
 
 In addition, all five of Spec 08's open questions are
 **unanswered** in the spec file. Even if the engine APIs
@@ -54,11 +49,13 @@ These are product calls, not implementation calls.
 
 ## Paths forward (for the user)
 
-1. **Bump `axiomancer-mechanics`** to a version that exposes
-   `activeEvent` + `resolveEvent` + `eventChoices`. Once
-   landed, the user (or `/oversight`) un-skips Phase 6 by
-   flipping `[skipped]` → `[ ]` and answers the five open
-   questions in `specs/08-event-screen-wiring.md`. The next
+1. **Ship engine Spec 09** (or bump `axiomancer-mechanics` once
+   it contains that work): `createGameStore` must expose the
+   exploration / node / narrative actions the Event tab needs,
+   **or** document an official pure-function workflow the mobile
+   app composes. Un-skip Phase 6 by flipping `[skipped]` → `[ ]`
+   once the contract is pinned **and** the five open questions
+   in `specs/08-event-screen-wiring.md` are answered; the next
    `/march` tick then ships the phase autonomously.
 2. **Defer Spec 08 indefinitely** — leave `[skipped]`. The
    product flow still works for combat / character /
@@ -102,13 +99,14 @@ Unchanged. Exit 0 (stub).
    here.
 3. `plan/steps/01_build_plan.md` Phase 6 row flipped to
    `[skipped]` with the blocker reason on-row.
-4. Phase log entry: `phase 6 — SKIPPED — engine event APIs
-   missing; see plan/phases/phase_6_event_screen_wiring.md`.
+4. Phase log entry: `phase 6 — SKIPPED — engine Spec 09 +
+   narrative contract pending; see
+   plan/phases/phase_6_event_screen_wiring.md`.
 
 ## When Phase 6 *actually* ships
 
 The brief above will be **rewritten by the user (or the next
-autonomous tick after the engine bump)** as a real shipping
+autonomous tick after engine Spec 09 + contract land)** as a real shipping
 brief that mirrors Phases 4 / 5's shape — open-question
 answers, files-shipped table, decisions-made-upfront, DoD that
 flips `[skipped]` → `[x]`, etc. Treat this version as a
@@ -116,9 +114,9 @@ placeholder.
 
 ## Follow-ups (out of scope this skip-tick)
 
-- Engine package bump tracking. When the engine maintainer
-  ships event-resolution APIs, the user adds it to AUDIT as a
-  ready-to-action item.
+- Engine Spec 09 / package tracking. When orchestration + the
+  pinned narrative contract land, add a ready-to-action item
+  if the mobile repo still needs a version bump.
 - The five open product questions in Spec 08 are independent
   of the engine bump and can be answered any time — answering
   them early de-risks the eventual ship.

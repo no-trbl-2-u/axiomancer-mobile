@@ -70,13 +70,17 @@ commit that ships the phase.
       `plan/phases/phase_5_character_screen_wiring.md` for the
       retroactive brief.
 - [skipped] Phase 6 — Spec 08: Event screen wiring. **Blocked
-      on engine event APIs.** `axiomancer-mechanics ^0.4.1`
-      doesn't export `activeEvent` / `resolveEvent` /
-      `EventChoice[]`. See
+      on engine Spec 09 store/orchestration + a pinned narrative
+      contract** (engine Spec 08 world loop is already in the
+      package; `createGameStore` does not expose
+      `moveToNode` / `processNode` / dialogue yet; no
+      `activeEvent` / `resolveEvent` / `EventChoice[]` — those
+      names remain illustrative). See
       `plan/phases/phase_6_event_screen_wiring.md` for the
       blocker brief and `plan/AUDIT.md`'s
       `[needs-user-call]` row for resolution paths. Un-skip
-      by flipping back to `[ ]` once the engine bump lands.
+      by flipping back to `[ ]` once the contract lands **and**
+      mobile Spec 08's open questions are answered.
 - [ ] Phase 7 — Spec 09: `AsyncStorage` persistence adapter.
       Coordinates with the engine's storage spec.
 - [ ] Phase 8 — Spec 10: Navigation + app-shell polish (deep
@@ -184,10 +188,15 @@ hermetic e2e at `state/e2e/character.engine.test.ts`,
 
 ### Phase 6 — Spec 08: Event screen wiring
 
-Same shape. Depends on engine spec 09 ("quests / events" in
-`axiomancer-mechanics`) — confirm engine support before
-starting; if absent, file a `[needs-engine]` row in `AUDIT.md`
-and pivot to phase 6. Brief from `specs/08-event-screen-wiring.md`.
+Same shape. Depends on **engine Spec 09** (orchestration: wire
+`moveToNode` / `processNode` / dialogue resolution into
+`createGameStore` or an agreed successor) **plus** a pinned
+narrative/event contract for the Event tab — engine **Spec 08
+world content is already implemented**; the blocker is not “no
+world loop” but “no store-level narrative API + open product
+questions”. If still absent when the phase is reached, keep the
+`[skipped]` row in `01_build_plan.md` and the `[needs-user-call]`
+AUDIT entry. Brief from `specs/08-event-screen-wiring.md`.
 
 ### Phase 7 — Spec 09: AsyncStorage persistence
 
@@ -267,8 +276,5 @@ substrate; `/iterate` takes over after.
 - phase 5 — 4afb4ed — character screen wiring (Spec 05;
   selectCharacterViewModel, character/ route folder, hermetic
   e2e, read-only stat surface)
-- phase 6 — SKIPPED — engine event APIs missing
-  (`activeEvent` / `resolveEvent` / `EventChoice[]` not in
-  `axiomancer-mechanics ^0.4.1`); see
-  `plan/phases/phase_6_event_screen_wiring.md` and
-  `plan/AUDIT.md` `[needs-user-call]`
+- phase 6 — SKIPPED — engine Spec 09 + narrative contract
+  pending; see plan/phases/phase_6_event_screen_wiring.md

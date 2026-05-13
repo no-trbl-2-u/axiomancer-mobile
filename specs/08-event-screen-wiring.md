@@ -3,29 +3,54 @@
 ## Goal
 
 Replace `app/(tabs)/event.tsx`'s hard-coded encounter / boss
-illustrations and choice rows with engine-driven event data via
-`selectEventViewModel`. Picking a choice dispatches through the
-engine's quest / event reducer.
+illustrations and choice rows with engine-driven narrative data via
+`selectEventViewModel`. Picking a choice dispatches through the engine
+(resolver name and state shape **TBD** until engine Spec 09 pins the
+mobile-facing contract — see Current state).
 
-**Success state:** When the player enters an event node, the engine's
-`activeEvent` is non-null; the screen renders its prompt and choices;
-each choice calls `actions.resolveEvent(choiceId)`.
+**Success state:** When the player has a pending authorable multi-choice
+narrative (map event, dialogue branch surface, or dedicated event slice —
+exact shape is an engine Spec 09 decision), the mobile store exposes it to
+presenters; the screen renders prompt and choices; each choice calls the
+engine-backed action that advances that narrative and updates `GameState`.
+(Illustrative names used elsewhere in the plan: `activeEvent`,
+`resolveEvent(choiceId)`, `EventChoice[]` — none of these exist on
+`GameState` in `axiomancer-mechanics@0.4.1`.)
 
 ## Why now / dependencies
 
-- **Unblocks:** the broader quest / story flow (mostly engine work).
-- **Depends on:** Spec 01, 02, 03, 07. Heavy dependency on engine
-  Spec 08 (world content + hazards) and Spec 09 (game loop
-  orchestration).
+- **Unblocks:** quest / story polish once the engine + store expose a stable
+  narrative contract.
+- **Depends on:** Spec 01, 02, 03, 07.
+- **Engine (canonical — `axiomancer-mechanics/specs/`):**
+  - **Spec 08 — DONE** (`08-world-content-and-hazards.md`): `processNode`,
+    `moveToNode`, `MapEvent`, NPC `DialogueTree`, `applyDialogueChoice`.
+    Note: `MapEvent.type === 'event'` is **rest** (instant heal + text), not
+    a generic multi-choice node. Branching choices today live on **NPC
+    dialogue**, returned from `processNode` as `{ kind: 'npc', dialogue }`.
+  - **Spec 09 — OPEN** (`09-game-loop-orchestration.md`): top-level
+    orchestration; expected to wire `moveToNode` / `processNode` /
+    `applyDialogueChoice` into `createGameStore` (or equivalent) so the app
+    is not re-implementing exploration transitions ad hoc.
+  - **Spec 12 — OPEN** (`12-package-architecture-and-events.md`): typed UI
+    event channel; relevant if the product wants log-style events vs only
+    state diffs.
 
 ## Current state
 
 - `app/(tabs)/event.tsx` ships with a literal encounter scene + boss
   scene (procedural SVG illustrations described in
   [`SVG_ASSET_SPEC.md`](../SVG_ASSET_SPEC.md) sections 7a / 7b).
-- The engine has `World/quest libraries` per the README, but the
-  event-resolution loop (`resolveEvent`, `eventChoices`) is largely
-  TBD pending engine Spec 08 / 09.
+- **`GameState` (engine 0.4.1)** has `version`, `player`, `world`, `combat`,
+  `quests`, `flags` — **no** `session`, **no** `activeEvent`, **no**
+  `resolveEvent` action on `createGameStore`.
+- **Shipped world/narrative primitives:** `MapEvent` / `UniqueEvent` types,
+  `completeUniqueEvent`, `processNode`, `ProcessNodeResult` / `ProcessedEvent`,
+  `moveToNode`, `applyDialogueChoice` (see `docs/world.md` in mechanics).
+- **Gap for this spec:** there is still no first-class, mobile-trivial
+  “pending event + pick choice ID” slice. Wiring the Event tab may **reuse**
+  NPC dialogue (`applyDialogueChoice`) or wait for a dedicated reducer —
+  that split is engine Spec 09 + product answers below.
 
 ## Open questions
 
@@ -67,28 +92,31 @@ each choice calls `actions.resolveEvent(choiceId)`.
 
 1. **Move `event.tsx` into a folder** — `app/(tabs)/event/index.tsx`
    plus `event.engine.ts`, `e2e/event.engine.test.ts`.
-2. **Implement `selectEventViewModel`** consuming `state.session.activeEvent`.
-3. **Action layer** — `eventActions.pickChoice(choiceId)`,
-   `eventActions.dismiss`.
+2. **Implement `selectEventViewModel`** consuming whatever **pinned**
+   engine/store field ends up holding the pending narrative (today:
+   **blocked** — field does not exist; do not invent `state.session`).
+3. **Action layer** — thin wrappers over engine actions (names TBD;
+   illustrative: `eventActions.pickChoice(choiceId)`,
+   `eventActions.dismiss`).
 4. **Refactor the screen.**
 5. **Hermetic e2e**:
-   - Happy path: a fixture event → render → pick choice → state
+   - Happy path: a fixture narrative state → render → pick choice → state
      updates.
-   - No active event → screen shows empty / "no event in progress".
-   - Lifecycle: a node-enter dispatch sets `activeEvent`; presenter
-     reflects it.
+   - No pending narrative → screen shows empty / "no event in progress".
+   - Lifecycle: engine (or store orchestration) sets pending narrative;
+     presenter reflects it.
 
 ## Acceptance checklist
 
 - [ ] All 5 questions answered.
 - [ ] `app/(tabs)/event/` folder exists.
 - [ ] Procedural illustrations remain *as placeholders* but their
-      slugs come from the engine event.
+      slugs come from the engine (or presenter contract) once defined.
 - [ ] Hermetic e2e green.
 - [ ] `npm test` and `npx tsc --noEmit` clean.
 
 ## Out of scope
 
 - Real assets — Spec 11.
-- Engine event content — engine Spec 08.
+- Authoring full world content — engine content effort.
 - In-combat events — flagged in Q4 for a later spec.

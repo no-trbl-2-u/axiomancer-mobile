@@ -5,29 +5,38 @@
 
 ## Pending
 
-### [needs-user-call] Phase 6 (Spec 08 — Event screen wiring) blocked on engine event APIs
+### [needs-user-call] Phase 6 (Spec 08 — Event screen wiring) blocked on engine Spec 09 + narrative contract
 
 - category: external-dependency / build-plan
 - impact: 4 (Phase 6 is mid-stack but its blocker doesn't gate
   Phases 7–13; the loop routes around)
-- ease: 2 (requires an engine package bump that the autonomous
-  loop can't author)
-- next: **user action required** — `axiomancer-mechanics
-  ^0.4.1` does not export `activeEvent`, `resolveEvent`, or
-  `EventChoice[]`. Only `MapEvent` / `UniqueEvent` data shapes
-  and `completeUniqueEvent` reducer ship today. Spec 08 itself
-  notes "`resolveEvent`, `eventChoices` is largely TBD pending
-  engine Spec 08 / 09". Until that engine work lands and the
-  package is bumped here, Phase 6 cannot ship.
+- ease: 2 (requires engine **Spec 09** orchestration / store wiring
+  and/or a published package bump the autonomous loop cannot
+  author alone)
+- next: **user action required** — `axiomancer-mechanics@0.4.1`
+  does not expose a mobile-trivial “pending narrative + resolve
+  choice” slice (`activeEvent` / `resolveEvent` / `EventChoice[]`
+  are **illustrative** names from the mobile spec, not real
+  exports). **What *does* ship today (engine Spec 08, done):**
+  `moveToNode`, `processNode`, `ProcessNodeResult` / `ProcessedEvent`,
+  `MapEvent` / `UniqueEvent`, `completeUniqueEvent`, branching NPC
+  dialogue via `DialogueTree` + `applyDialogueChoice` (see mechanics
+  `docs/world.md`). **`createGameStore` gap (engine Spec 09):** the
+  public store still does not wrap world movement / `processNode` /
+  dialogue picks — the Event tab cannot match the combat-tab pattern
+  until orchestration + product contract land. Bump or monorepo
+  link when Spec 09 ships; un-skip Phase 6 after the contract is
+  pinned **and** the five product questions in
+  `specs/08-event-screen-wiring.md` are answered.
 - in the meantime: Phase 6's row is marked `[skipped]` in
   `plan/steps/01_build_plan.md`; the autonomous loop routes
   to Phase 7 (Spec 09 — AsyncStorage persistence) and beyond.
   See `plan/phases/phase_6_event_screen_wiring.md` for the
   blocker brief and three resolution paths (bump, defer, or
   stub-ship — the loop *chose not to* stub-ship).
-- additional user-call: even after the engine bump, Spec 08's
-  five open questions are all unanswered in
-  `specs/08-event-screen-wiring.md`. Those are product calls.
+- additional user-call: even after the engine + store wiring
+  land, mobile Spec 08's five open questions are all unanswered
+  in `specs/08-event-screen-wiring.md`. Those are product calls.
 
 ## Done
 

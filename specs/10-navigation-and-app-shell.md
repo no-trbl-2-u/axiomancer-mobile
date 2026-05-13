@@ -70,8 +70,8 @@ on cold start to the right screen.
 ## Proposed approach
 
 1. **Extend the store provider** (Spec 02) to expose
-   `selectActiveTab` (driven by `state.combat`, `state.session.activeEvent`,
-   etc.).
+   `selectActiveTab` (driven by `state.combat`, any future engine-pinned
+   pending-narrative / event slice Spec 08 wires to, etc.).
 2. **Tab guard component** — wraps `Tabs.Screen`s; hides / disables
    per Q1.
 3. **Cold-start router** — `app/index.tsx` reads engine state and

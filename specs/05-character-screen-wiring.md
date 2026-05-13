@@ -70,7 +70,7 @@ character progression ships.
 1. **Move `character.tsx` into a folder** — `app/(tabs)/character/index.tsx`
    plus `character.engine.ts`, `e2e/character.engine.test.ts`.
 2. **Implement `selectCharacterViewModel`** consuming `state.player`
-   and `state.session?.xp`.
+   (XP lives on `player.experience`; there is no `state.session`).
 3. **Refactor screen** to read `vm = useGameState(selectCharacterViewModel)`.
 4. **Hermetic e2e**:
    - Happy path: a full `createCharacter` fixture → VM has correct

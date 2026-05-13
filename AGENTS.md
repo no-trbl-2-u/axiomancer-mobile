@@ -25,20 +25,14 @@ All commands are in `package.json`:
 | Start on web | `npm run web` |
 | Lint (Expo's ESLint config) | `npm run lint` |
 | Type-check | `npx tsc --noEmit` |
-| Test (Jest) | `npm test` *(once Spec 01 lands)* |
+| Test (Jest) | `npm test` |
 
-> **Type-check is the most reliable static-analysis check in this repo
-> today** — `npm run lint` runs `expo lint` which works, but the test
-> harness is not yet bootstrapped. Spec 01 in `specs/` exists for the
-> express purpose of installing `jest-expo` + `@testing-library/react-native`
-> and writing the first hermetic e2e test. Until that lands, "tests pass"
-> means `npx tsc --noEmit` is clean.
+> The test harness (jest-expo + @testing-library/react-native) is
+> installed and configured. `npm test` runs 13 suites / 171+ hermetic
+> tests. Both `npm test` and `npx tsc --noEmit` should be green before
+> declaring done.
 
 ### Caveats
-
-- **No test runner is installed yet.** `package.json` has no `test` script
-  and no `jest` config. **Spec 01** (`specs/01-test-harness-setup.md`) is
-  the prerequisite for every other spec — pull it first.
 - **Hard-coded mock data lives in screens.** `app/(tabs)/combat.tsx`,
   `app/(tabs)/character.tsx`, etc. all hold their own `useState` + literal
   fixtures. The migration plan is: extract pure presenter functions
@@ -98,3 +92,18 @@ fonts, no real timers, no animations) + deterministic
    discrete commits on a feature branch.
 4. Tick the spec's acceptance checklist as you go; mark it
    `[DONE on YYYY-MM-DD — see PR #N]` at the top when finished.
+
+### Cloud Agent runtime notes
+
+- **No backend / Docker / database needed.** The app is fully offline
+  and client-only. `npm install` is the only setup step.
+- **Web target is the easiest way to run the app in Cloud Agent VMs**
+  (no iOS simulator or Android emulator). Use
+  `npx expo start --web --port 8081` to start Metro for web, then
+  browse `http://localhost:8081`.
+- **Pre-existing render-loop bugs on web:** The Event and Character tabs
+  throw "Maximum update depth exceeded" on the web target. These are
+  known pre-existing issues — do not try to fix them unless explicitly
+  asked.
+- **Verification gate:** `npm test` (all green) + `npx tsc --noEmit`
+  (clean) + `npm run lint` (no errors, warnings are acceptable).

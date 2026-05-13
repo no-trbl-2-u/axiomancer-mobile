@@ -1,16 +1,19 @@
 /**
- * Hermetic E2E Tests — Character screen presenter (stub)
+ * Hermetic E2E Tests — Character screen presenter (Spec 05)
  *
- * Pins the `CharacterViewModel` shape contract. Specs 04+ replace the
- * stub return value with real engine reads; this test guards against
- * silent shape drift in the meantime.
- *
- * Hermetic = self-contained + deterministic + isolated.
- * See docs/testing.md for the full standard.
+ * Drives `selectCharacterViewModel` end-to-end with real engine reads.
+ * Every test is self-contained and deterministic (no network, no RNG,
+ * no real timers). See docs/testing.md for the full standard.
  */
 
 import { afterEach, describe, it, expect, jest } from '@jest/globals';
-import { createGameStore } from 'axiomancer-mechanics';
+import {
+    createGameStore,
+    createCharacter,
+    createNewGameState,
+    applyEffect,
+    effectsLibrary,
+} from 'axiomancer-mechanics';
 
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
 import {
@@ -21,6 +24,16 @@ import {
 afterEach(() => {
     jest.restoreAllMocks();
 });
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function makeStore(playerOverrides: Partial<ReturnType<typeof createCharacter>> = {}) {
+    const base = createCharacter({ name: 'Test Hero', level: 1, baseStats: { heart: 1, body: 1, mind: 1 } });
+    const player = { ...base, ...playerOverrides };
+    return createGameStore(createMemoryAdapter(), { player });
+}
 
 // ---------------------------------------------------------------------------
 // Shape contract — every field present, of the documented type
@@ -64,6 +77,7 @@ describe('selectCharacterViewModel: shape contract', () => {
 
         const vm = selectCharacterViewModel(store.getState());
 
+        expect(vm.derived).toHaveLength(3);
         for (const row of vm.derived) {
             expect(typeof row.label).toBe('string');
             expect(typeof row.attack).toBe('number');
@@ -71,14 +85,137 @@ describe('selectCharacterViewModel: shape contract', () => {
             expect(typeof row.defense).toBe('number');
         }
     });
+
+    it('exposes six saves/tests rows (3 saves, 3 tests)', () => {
+        const store = createGameStore(createMemoryAdapter());
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        expect(vm.saves).toHaveLength(6);
+        const labels = vm.saves.map((s) => s.label);
+        expect(labels).toContain('Body Save');
+        expect(labels).toContain('Mind Save');
+        expect(labels).toContain('Heart Save');
+        expect(labels).toContain('Body Test');
+        expect(labels).toContain('Mind Test');
+        expect(labels).toContain('Heart Test');
+    });
+
+    it('exposes seven equipment slot rows in display order', () => {
+        const store = createGameStore(createMemoryAdapter());
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        expect(vm.equipment).toHaveLength(7);
+        const names = vm.equipment.map((s) => s.name);
+        expect(names).toEqual(['Head', 'Body', 'Hands', 'Feet', 'Weapon', 'Armor', 'Accessory']);
+    });
 });
 
 // ---------------------------------------------------------------------------
-// Invariants — VM is total + deep-frozen
+// Happy path — engine values reflected in VM
 // ---------------------------------------------------------------------------
 
-describe('selectCharacterViewModel: invariants', () => {
-    it('xp is in [0, xpMax]', () => {
+describe('selectCharacterViewModel: happy path', () => {
+    it('reflects player name as displayName', () => {
+        const store = makeStore({ name: 'Iron Pilgrim' });
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        expect(vm.displayName).toBe('Iron Pilgrim');
+    });
+
+    it('reflects player level', () => {
+        const base = createCharacter({ name: 'Hero', level: 5, baseStats: { heart: 5, body: 5, mind: 5 } });
+        const store = createGameStore(createMemoryAdapter(), { player: base });
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        expect(vm.level).toBe(5);
+    });
+
+    it('reflects experience and experienceToNextLevel as xp/xpMax', () => {
+        const store = createGameStore(createMemoryAdapter());
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        // Fresh character starts at 0 XP; next level threshold is EXPERIENCE_PER_LEVEL * level.
+        expect(vm.xp).toBe(0);
+        expect(vm.xpMax).toBeGreaterThan(0);
+    });
+
+    it('derives base stat values from player.baseStats', () => {
+        const base = createCharacter({ name: 'Hero', level: 1, baseStats: { heart: 4, body: 8, mind: 6 } });
+        const store = createGameStore(createMemoryAdapter(), { player: base });
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        const heartRow = vm.base.find((r) => r.stanceKey === 'heart')!;
+        const bodyRow  = vm.base.find((r) => r.stanceKey === 'body')!;
+        const mindRow  = vm.base.find((r) => r.stanceKey === 'mind')!;
+        expect(heartRow.value).toBe(4);
+        expect(bodyRow.value).toBe(8);
+        expect(mindRow.value).toBe(6);
+    });
+
+    it('derived PHYSICAL row uses body base stat (attack == body)', () => {
+        const base = createCharacter({ name: 'Hero', level: 1, baseStats: { heart: 1, body: 10, mind: 1 } });
+        const store = createGameStore(createMemoryAdapter(), { player: base });
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        const physical = vm.derived.find((r) => r.label === 'PHYSICAL')!;
+        // STAT_MULTIPLIERS.ATTACK = 1, so physicalAttack = body * 1 = 10
+        expect(physical.attack).toBe(10);
+    });
+
+    it('luck is the average of the three base stats', () => {
+        const base = createCharacter({ name: 'Hero', level: 1, baseStats: { heart: 3, body: 6, mind: 9 } });
+        const store = createGameStore(createMemoryAdapter(), { player: base });
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        expect(vm.luck).toBeCloseTo((3 + 6 + 9) / 3);
+    });
+
+    it('test values are formatted with a leading + for non-negative values', () => {
+        const store = createGameStore(createMemoryAdapter());
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        const tests = vm.saves.filter((s) => s.label.includes('Test'));
+        for (const t of tests) {
+            expect(t.value).toMatch(/^[+-]/);
+        }
+    });
+
+    it('save values are plain integers (no + prefix)', () => {
+        const store = createGameStore(createMemoryAdapter());
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        const saves = vm.saves.filter((s) => s.label.includes('Save'));
+        for (const s of saves) {
+            expect(s.value).toMatch(/^\d+$/);
+        }
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Boundary conditions
+// ---------------------------------------------------------------------------
+
+describe('selectCharacterViewModel: boundary conditions', () => {
+    it('0 XP fresh character: xp = 0, xpMax > 0', () => {
+        const store = createGameStore(createMemoryAdapter());
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        expect(vm.xp).toBe(0);
+        expect(vm.xpMax).toBeGreaterThan(0);
+    });
+
+    it('xp is always in [0, xpMax]', () => {
         const store = createGameStore(createMemoryAdapter());
 
         const vm = selectCharacterViewModel(store.getState());
@@ -87,6 +224,97 @@ describe('selectCharacterViewModel: invariants', () => {
         expect(vm.xp).toBeLessThanOrEqual(vm.xpMax);
     });
 
+    it('character with no effects: effects array is empty', () => {
+        const store = createGameStore(createMemoryAdapter());
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        expect(vm.effects).toHaveLength(0);
+    });
+
+    it('character with no inventory: all equipment slots are null', () => {
+        const store = createGameStore(createMemoryAdapter());
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        for (const slot of vm.equipment) {
+            expect(slot.item).toBeNull();
+        }
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Effects — mapping from engine ActiveEffect to CharacterEffectRow
+// ---------------------------------------------------------------------------
+
+describe('selectCharacterViewModel: effects', () => {
+    it('maps a buff effect to kind="buff" and tint="buff"', () => {
+        const buff = effectsLibrary.buffs[0];
+        const base = createCharacter({ name: 'Hero', level: 1, baseStats: { heart: 1, body: 1, mind: 1 } });
+        const { activeEffects } = applyEffect(base.effects, buff, 1);
+        const player = { ...base, effects: activeEffects };
+        const store = createGameStore(createMemoryAdapter(), { player });
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        expect(vm.effects).toHaveLength(1);
+        expect(vm.effects[0].kind).toBe('buff');
+        expect(vm.effects[0].tint).toBe('buff');
+        expect(vm.effects[0].name).toBe(buff.name);
+        expect(typeof vm.effects[0].description).toBe('string');
+    });
+
+    it('maps a debuff effect to kind="debuff" and tint="debuff"', () => {
+        const debuff = effectsLibrary.debuffs[0];
+        const base = createCharacter({ name: 'Hero', level: 1, baseStats: { heart: 1, body: 1, mind: 1 } });
+        const { activeEffects } = applyEffect(base.effects, debuff, 1);
+        const player = { ...base, effects: activeEffects };
+        const store = createGameStore(createMemoryAdapter(), { player });
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        expect(vm.effects).toHaveLength(1);
+        expect(vm.effects[0].kind).toBe('debuff');
+        expect(vm.effects[0].tint).toBe('debuff');
+    });
+
+    it('preserves effect ordering from player.effects', () => {
+        const base = createCharacter({ name: 'Hero', level: 1, baseStats: { heart: 1, body: 1, mind: 1 } });
+        let effects = base.effects;
+        const usedBuffs = effectsLibrary.buffs.slice(0, 3);
+        usedBuffs.forEach((buff, round) => {
+            ({ activeEffects: effects } = applyEffect(effects, buff, round + 1));
+        });
+        const player = { ...base, effects };
+        const store = createGameStore(createMemoryAdapter(), { player });
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        expect(vm.effects).toHaveLength(3);
+        usedBuffs.forEach((buff, i) => {
+            expect(vm.effects[i].name).toBe(buff.name);
+        });
+    });
+
+    it('effect duration matches activeEffect.remainingDuration', () => {
+        const buff = effectsLibrary.buffs[0];
+        const base = createCharacter({ name: 'Hero', level: 1, baseStats: { heart: 1, body: 1, mind: 1 } });
+        const { activeEffects } = applyEffect(base.effects, buff, 1);
+        const player = { ...base, effects: activeEffects };
+        const store = createGameStore(createMemoryAdapter(), { player });
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        expect(vm.effects[0].duration).toBe(activeEffects[0].remainingDuration);
+        expect(vm.effects[0].intensity).toBe(activeEffects[0].intensity);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Invariants — VM is total + deep-frozen
+// ---------------------------------------------------------------------------
+
+describe('selectCharacterViewModel: invariants', () => {
     it('the returned VM is deep-frozen', () => {
         const store = createGameStore(createMemoryAdapter());
 
@@ -94,11 +322,24 @@ describe('selectCharacterViewModel: invariants', () => {
 
         expect(Object.isFrozen(vm)).toBe(true);
         expect(Object.isFrozen(vm.base)).toBe(true);
+        expect(Object.isFrozen(vm.derived)).toBe(true);
+        expect(Object.isFrozen(vm.saves)).toBe(true);
+        expect(Object.isFrozen(vm.equipment)).toBe(true);
+    });
+
+    it('the VM is total: no undefined fields for a fresh character', () => {
+        const store = createGameStore(createMemoryAdapter());
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        for (const [key, val] of Object.entries(vm)) {
+            expect(val).not.toBeUndefined();
+        }
     });
 });
 
 // ---------------------------------------------------------------------------
-// Store lifecycle — selection is read-only
+// Store lifecycle — mutation is reflected, selection is read-only
 // ---------------------------------------------------------------------------
 
 describe('selectCharacterViewModel: store lifecycle', () => {
@@ -111,5 +352,51 @@ describe('selectCharacterViewModel: store lifecycle', () => {
         selectCharacterViewModel(store.getState());
 
         expect(saveSpy).not.toHaveBeenCalled();
+    });
+
+    it('VM reflects a mutated player after store state changes', () => {
+        const adapter = createMemoryAdapter();
+        const store = createGameStore(adapter);
+
+        const before = selectCharacterViewModel(store.getState());
+        const beforeName = before.displayName;
+
+        // Mutate player name via internal state override (simulates Spec 06 upgrade)
+        const newPlayer = { ...store.getState().player, name: 'Upgraded Hero' };
+        store.setState({ player: newPlayer });
+
+        const after = selectCharacterViewModel(store.getState());
+        expect(after.displayName).toBe('Upgraded Hero');
+        expect(after.displayName).not.toBe(beforeName);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// createCharacter fixture — happy path with a known character
+// ---------------------------------------------------------------------------
+
+describe('selectCharacterViewModel: createCharacter fixture', () => {
+    it('a level-7 character with meaningful stats produces correct derived values', () => {
+        const base = createCharacter({
+            name: 'WORM-EATEN PILGRIM',
+            level: 7,
+            baseStats: { heart: 12, body: 14, mind: 10 },
+        });
+        const store = createGameStore(createMemoryAdapter(), { player: base });
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        expect(vm.level).toBe(7);
+        expect(vm.displayName).toBe('WORM-EATEN PILGRIM');
+
+        const body = vm.base.find((r) => r.stanceKey === 'body')!;
+        expect(body.value).toBe(14);
+
+        const physical = vm.derived.find((r) => r.label === 'PHYSICAL')!;
+        expect(physical.attack).toBe(14);   // body * ATTACK(1)
+        expect(physical.defense).toBe(42);  // body * DEFENSE(3)
+
+        // luck = avg(12, 14, 10) = 12
+        expect(vm.luck).toBeCloseTo(12);
     });
 });

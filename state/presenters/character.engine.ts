@@ -1,16 +1,22 @@
 /**
- * Screen-level presenter for `app/(tabs)/character.tsx`.
+ * Screen-level presenter for `app/(tabs)/character/index.tsx`.
  *
- * Stub per Spec 03 step (2): exposes the `CharacterViewModel` shape
- * and returns a constant fixture sourced from the engine's player
- * record. Spec 05 replaces the fixture fields with real engine
- * reads (derived stats, saves, equipped items, known skills).
+ * Implements `selectCharacterViewModel` from engine state (Spec 05).
+ * Reads player stats, derived stats, save/test modifiers, active effects,
+ * and equipment slots directly from `state.player`. Skills are deferred
+ * to engine Spec 04.
  *
  * VM is *data only* per Q5 — no colour tokens, no icons. The screen
  * resolves `StanceGlyph` from `stanceKey`, etc.
  */
 
-import type { GameStore } from 'axiomancer-mechanics';
+import {
+    lookupEffect,
+    type ActiveEffect,
+    type Character,
+    type Equipment,
+    type GameStore,
+} from 'axiomancer-mechanics';
 
 import { freezeViewModel } from './freeze';
 
@@ -45,7 +51,7 @@ export interface CharacterEffectRow {
     name: string;
     kind: EffectKind;
     tint: EffectTint;
-    /** Remaining duration, or `null` for indefinite effects. */
+    /** Remaining duration in rounds. */
     duration: number | null;
     intensity: number;
     description: string;
@@ -82,41 +88,107 @@ export interface CharacterViewModel {
     skills: readonly CharacterSkillRow[];
 }
 
-const STUB_VM: CharacterViewModel = {
-    displayName: 'WORM-EATEN\nPILGRIM',
-    subtitle: 'HOMO MORIENS · PILGRIM',
-    level: 7,
-    xp: 412,
-    xpMax: 600,
-    base: [
-        { stanceKey: 'heart', label: 'HEART', value: 12 },
-        { stanceKey: 'body', label: 'BODY', value: 14 },
-        { stanceKey: 'mind', label: 'MIND', value: 10 },
-    ],
-    derived: [
-        { label: 'PHYSICAL', attack: 13, skill: 7, defense: 10 },
-        { label: 'MENTAL', attack: 8, skill: 14, defense: 8 },
-        { label: 'EMOTIONAL', attack: 11, skill: 9, defense: 6 },
-    ],
-    luck: 12,
-    saves: [
-        { label: 'Body Save', value: '14' },
-        { label: 'Mind Save', value: '12' },
-        { label: 'Heart Save', value: '10' },
-        { label: 'Body Test', value: '+2' },
-        { label: 'Mind Test', value: '+1' },
-        { label: 'Heart Test', value: '+0' },
-    ],
-    effects: [],
-    equipment: [],
-    skills: [],
+// Equipment slots in display order, matching engine EquipmentSlot literals 1:1.
+const SLOT_ORDER = ['head', 'body', 'hands', 'feet', 'weapon', 'armor', 'accessory'] as const;
+type SlotKey = typeof SLOT_ORDER[number];
+
+const SLOT_LABELS: Record<SlotKey, string> = {
+    head: 'Head',
+    body: 'Body',
+    hands: 'Hands',
+    feet: 'Feet',
+    weapon: 'Weapon',
+    armor: 'Armor',
+    accessory: 'Accessory',
 };
 
+function buildBase(player: Character): readonly BaseStatRow[] {
+    const { heart, body, mind } = player.baseStats;
+    return [
+        { stanceKey: 'heart', label: 'HEART', value: heart },
+        { stanceKey: 'body', label: 'BODY', value: body },
+        { stanceKey: 'mind', label: 'MIND', value: mind },
+    ];
+}
+
+function buildDerived(player: Character): readonly DerivedStatRow[] {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const d = (player as any).derivedStats;
+    return [
+        { label: 'PHYSICAL', attack: d.physicalAttack, skill: d.physicalSkill, defense: d.physicalDefense },
+        { label: 'MENTAL',   attack: d.mentalAttack,   skill: d.mentalSkill,   defense: d.mentalDefense   },
+        { label: 'EMOTIONAL',attack: d.emotionalAttack, skill: d.emotionalSkill, defense: d.emotionalDefense },
+    ];
+}
+
+function buildSaves(player: Character): readonly SaveOrTestRow[] {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const n = (player as any).nonCombatStats;
+    const sign = (v: number) => (v >= 0 ? `+${v}` : `${v}`);
+    return [
+        { label: 'Body Save',  value: String(n.physicalSave) },
+        { label: 'Mind Save',  value: String(n.mentalSave) },
+        { label: 'Heart Save', value: String(n.emotionalSave) },
+        { label: 'Body Test',  value: sign(n.physicalTest) },
+        { label: 'Mind Test',  value: sign(n.mentalTest) },
+        { label: 'Heart Test', value: sign(n.emotionalTest) },
+    ];
+}
+
+function buildEffects(player: Character): readonly CharacterEffectRow[] {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const effects: ActiveEffect[] = (player as any).effects ?? [];
+    return effects.map((ae) => {
+        const def = lookupEffect(ae.effectId);
+        const rawKind = def?.type ?? 'debuff';
+        const kind = (rawKind === 'buff' ? 'buff' : 'debuff') as EffectKind;
+        return {
+            name: def?.name ?? ae.effectId,
+            kind,
+            tint: (kind === 'buff' ? 'buff' : 'debuff') as EffectTint,
+            duration: ae.remainingDuration,
+            intensity: ae.intensity,
+            description: def?.description ?? '',
+        };
+    });
+}
+
+function buildEquipment(player: Character): readonly EquipmentSlotRow[] {
+    const bySlot = new Map<string, string>();
+    for (const item of player.inventory) {
+        if (item.category === 'equipment') {
+            const eq = item as Equipment;
+            if (!bySlot.has(eq.slot)) bySlot.set(eq.slot, eq.name);
+        }
+    }
+    return SLOT_ORDER.map((slot) => ({
+        name: SLOT_LABELS[slot],
+        item: bySlot.get(slot) ?? null,
+    }));
+}
+
 /**
- * Returns the character view-model. **Stub** — Specs 04+ wire real
- * engine reads. The shape is the contract; subsequent specs may
- * widen fields (additive) but must not narrow them.
+ * Derives the character view-model from game state.
+ * All fields are driven by the engine's `state.player`. Skills are
+ * empty until engine Spec 04 ships known-skill reads.
  */
-export function selectCharacterViewModel(_state: GameStore): CharacterViewModel {
-    return freezeViewModel(STUB_VM);
+export function selectCharacterViewModel(state: GameStore): CharacterViewModel {
+    const player = state.player;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const luck: number = (player as any).derivedStats?.luck ?? 0;
+
+    return freezeViewModel({
+        displayName: player.name,
+        subtitle: 'PILGRIM',
+        level: player.level,
+        xp: player.experience,
+        xpMax: player.experienceToNextLevel,
+        base: buildBase(player),
+        derived: buildDerived(player),
+        luck,
+        saves: buildSaves(player),
+        effects: buildEffects(player),
+        equipment: buildEquipment(player),
+        skills: [],
+    });
 }

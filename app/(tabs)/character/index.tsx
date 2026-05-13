@@ -7,66 +7,29 @@ import { StanceGlyph } from '@/components/StanceGlyph';
 import { EffectGlyph } from '@/components/EffectGlyph';
 import { XpChain } from '@/components/XpChain';
 import { BodyDiagram } from '@/components/BodyDiagram';
-
-const xp = 412, xpMax = 600;
-
-const BASE = { Heart: 12, Body: 14, Mind: 10 };
-
-const DERIVED = {
-  Physical:  { Attack: 13, Skill:  7, Defense: 10 },
-  Mental:    { Attack:  8, Skill: 14, Defense:  8 },
-  Emotional: { Attack: 11, Skill:  9, Defense:  6 },
-};
-
-const LUCK = 12;
-
-const SAVES = [
-  { k: 'Body Save',  v: 14 }, { k: 'Mind Save',  v: 12 },
-  { k: 'Heart Save', v: 10 }, { k: 'Body Test',  v: '+2' },
-  { k: 'Mind Test',  v: '+1' }, { k: 'Heart Test', v: '+0' },
-];
-
-const EFFECTS = [
-  { kind: 'poison', name: 'WORM ROT',       dur: 4,  intensity: 2, tint: 'debuff', desc: 'Lose 3 HP at round end. Bypasses defence.' },
-  { kind: 'buff',   name: "PILGRIM'S OATH", dur: 99, intensity: 1, tint: 'buff',   desc: '+1 Heart while at <50% HP.' },
-  { kind: 'debuff', name: 'BROKEN TONGUE',  dur: 2,  intensity: 1, tint: 'debuff', desc: 'Block all Heart skills.' },
-];
-
-const SLOTS = [
-  { name: 'Head',      item: 'Antler Hood' },
-  { name: 'Body',      item: "Saint's Rags" },
-  { name: 'Hands',     item: '—' },
-  { name: 'Feet',      item: 'Coffin Boots' },
-  { name: 'Weapon',    item: 'The Long Blade' },
-  { name: 'Armor',     item: 'Iron Yoke' },
-  { name: 'Accessory', item: 'Tooth of a Saint' },
-];
-
-const SKILLS = [
-  { name: 'AD HOMINEM',      cat: 'fallacy', stance: 'heart' },
-  { name: "ZENO'S BLADE",    cat: 'paradox', stance: 'body' },
-  { name: 'CIRCULAR LOGIC',  cat: 'fallacy', stance: 'mind' },
-  { name: 'OF THESEUS',      cat: 'paradox', stance: 'mind' },
-];
+import { useGameState } from '@/state/GameStoreProvider';
+import { selectCharacterViewModel } from '@/state/presenters/character.engine';
 
 export default function CharacterScreen() {
+  const vm = useGameState(selectCharacterViewModel);
+
   return (
     <ScreenBg>
       {/* Header */}
       <View style={styles.header}>
-        <SectionLabel size={9} color={AXM.bone}>HOMO MORIENS · PILGRIM</SectionLabel>
+        <SectionLabel size={9} color={AXM.bone}>{vm.subtitle}</SectionLabel>
         <View style={styles.headerRow}>
-          <Text style={styles.characterName}>WORM-EATEN{'\n'}PILGRIM</Text>
+          <Text style={styles.characterName}>{vm.displayName}</Text>
           <View style={styles.levelBox}>
-            <Text style={styles.levelText}>7</Text>
+            <Text style={styles.levelText}>{vm.level}</Text>
           </View>
         </View>
         <View style={{ marginTop: 8 }}>
           <View style={styles.xpRow}>
-            <Text style={styles.xpLabel}>XP CHAIN TO LVL 8</Text>
-            <Text style={styles.xpValue}>{xp} / {xpMax}</Text>
+            <Text style={styles.xpLabel}>XP CHAIN TO LVL {vm.level + 1}</Text>
+            <Text style={styles.xpValue}>{vm.xp} / {vm.xpMax}</Text>
           </View>
-          <XpChain value={xp} max={xpMax} />
+          <XpChain value={vm.xp} max={vm.xpMax} />
         </View>
       </View>
 
@@ -74,11 +37,11 @@ export default function CharacterScreen() {
       <View style={styles.section}>
         <SectionLabel size={10}>✠ BASE</SectionLabel>
         <View style={styles.baseRow}>
-          {Object.entries(BASE).map(([k, v]) => (
-            <View key={k} style={styles.baseCard}>
-              <StanceGlyph kind={k.toLowerCase()} size={28} color={AXM.parchment} />
-              <Text style={styles.baseStatLabel}>{k.toUpperCase()}</Text>
-              <Text style={styles.baseStatValue}>{v}</Text>
+          {vm.base.map((r) => (
+            <View key={r.stanceKey} style={styles.baseCard}>
+              <StanceGlyph kind={r.stanceKey} size={28} color={AXM.parchment} />
+              <Text style={styles.baseStatLabel}>{r.label}</Text>
+              <Text style={styles.baseStatValue}>{r.value}</Text>
             </View>
           ))}
         </View>
@@ -94,17 +57,17 @@ export default function CharacterScreen() {
             <Text style={[styles.derivedCell, styles.derivedHeaderCell]}>SKL</Text>
             <Text style={[styles.derivedCell, styles.derivedHeaderCell]}>DEF</Text>
           </View>
-          {Object.entries(DERIVED).map(([row, vs]) => (
-            <View key={row} style={[styles.derivedRow, styles.derivedDataRow]}>
-              <Text style={[styles.derivedCell, styles.derivedRowLabel]}>{row.toUpperCase()}</Text>
-              <Text style={[styles.derivedCell, styles.derivedData]}>{vs.Attack}</Text>
-              <Text style={[styles.derivedCell, styles.derivedData]}>{vs.Skill}</Text>
-              <Text style={[styles.derivedCell, styles.derivedData]}>{vs.Defense}</Text>
+          {vm.derived.map((row) => (
+            <View key={row.label} style={[styles.derivedRow, styles.derivedDataRow]}>
+              <Text style={[styles.derivedCell, styles.derivedRowLabel]}>{row.label}</Text>
+              <Text style={[styles.derivedCell, styles.derivedData]}>{row.attack}</Text>
+              <Text style={[styles.derivedCell, styles.derivedData]}>{row.skill}</Text>
+              <Text style={[styles.derivedCell, styles.derivedData]}>{row.defense}</Text>
             </View>
           ))}
           <View style={styles.luckRow}>
             <Text style={styles.luckLabel}>LUCK · AVG OF THREE</Text>
-            <Text style={styles.luckValue}>{LUCK}</Text>
+            <Text style={styles.luckValue}>{vm.luck}</Text>
           </View>
         </View>
       </View>
@@ -113,10 +76,10 @@ export default function CharacterScreen() {
       <View style={styles.section}>
         <SectionLabel size={10}>✠ SAVES &amp; TESTS</SectionLabel>
         <View style={styles.savesGrid}>
-          {SAVES.map(s => (
-            <View key={s.k} style={styles.saveCell}>
-              <Text style={styles.saveKey}>{s.k}</Text>
-              <Text style={styles.saveVal}>{s.v}</Text>
+          {vm.saves.map((s) => (
+            <View key={s.label} style={styles.saveCell}>
+              <Text style={styles.saveKey}>{s.label}</Text>
+              <Text style={styles.saveVal}>{s.value}</Text>
             </View>
           ))}
         </View>
@@ -126,20 +89,33 @@ export default function CharacterScreen() {
       <View style={styles.section}>
         <SectionLabel size={10}>✠ AFFLICTIONS &amp; BLESSINGS</SectionLabel>
         <View style={styles.effectsList}>
-          {EFFECTS.map(e => (
-            <View key={e.name} style={[styles.effectRow, { backgroundColor: e.tint === 'buff' ? AXM.buff : AXM.debuff, borderColor: e.kind === 'buff' ? AXM.sulfur : AXM.blood }]}>
-              <EffectGlyph kind={e.kind} size={20} color={e.kind === 'buff' ? AXM.sulfur : AXM.blood} />
-              <View style={{ flex: 1 }}>
-                <View style={styles.effectTopRow}>
-                  <Text style={styles.effectName}>{e.name}</Text>
-                  <Text style={styles.effectMeta}>
-                    {e.dur === 99 ? '∞' : `${e.dur}r`} · ×{e.intensity}
-                  </Text>
+          {vm.effects.length === 0 ? (
+            <Text style={styles.emptyLabel}>NO ACTIVE EFFECTS</Text>
+          ) : (
+            vm.effects.map((e) => (
+              <View
+                key={e.name}
+                style={[
+                  styles.effectRow,
+                  {
+                    backgroundColor: e.tint === 'buff' ? AXM.buff : AXM.debuff,
+                    borderColor: e.tint === 'buff' ? AXM.sulfur : AXM.blood,
+                  },
+                ]}
+              >
+                <EffectGlyph kind={e.kind} size={20} color={e.tint === 'buff' ? AXM.sulfur : AXM.blood} />
+                <View style={{ flex: 1 }}>
+                  <View style={styles.effectTopRow}>
+                    <Text style={styles.effectName}>{e.name}</Text>
+                    <Text style={styles.effectMeta}>
+                      {e.duration === null ? '∞' : `${e.duration}r`} · ×{e.intensity}
+                    </Text>
+                  </View>
+                  <Text style={styles.effectDesc}>{e.description}</Text>
                 </View>
-                <Text style={styles.effectDesc}>{e.desc}</Text>
               </View>
-            </View>
-          ))}
+            ))
+          )}
         </View>
       </View>
 
@@ -149,10 +125,12 @@ export default function CharacterScreen() {
         <View style={styles.equipRow}>
           <BodyDiagram />
           <View style={styles.slotsGrid}>
-            {SLOTS.map(s => (
-              <View key={s.name} style={[styles.slotCell, s.item === '—' && styles.slotEmpty]}>
+            {vm.equipment.map((s) => (
+              <View key={s.name} style={[styles.slotCell, s.item === null && styles.slotEmpty]}>
                 <Text style={styles.slotName}>{s.name.toUpperCase()}</Text>
-                <Text style={[styles.slotItem, s.item === '—' && { color: AXM.ash }]}>{s.item}</Text>
+                <Text style={[styles.slotItem, s.item === null && { color: AXM.ash }]}>
+                  {s.item ?? '—'}
+                </Text>
               </View>
             ))}
           </View>
@@ -160,20 +138,33 @@ export default function CharacterScreen() {
       </View>
 
       {/* Skills */}
-      <View style={styles.section}>
-        <SectionLabel size={10}>✠ FALLACIES &amp; PARADOXES</SectionLabel>
-        <View style={styles.skillsGrid}>
-          {SKILLS.map(s => (
-            <View key={s.name} style={[styles.skillCard, { borderColor: s.cat === 'paradox' ? AXM.sulfur : AXM.parchment, borderStyle: s.cat === 'paradox' ? 'solid' : 'dashed' }]}>
-              <StanceGlyph kind={s.stance} size={16} color={AXM.bone} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.skillName}>{s.name}</Text>
-                <Text style={[styles.skillCat, { color: s.cat === 'paradox' ? AXM.sulfur : AXM.parchment }]}>{s.cat.toUpperCase()}</Text>
+      {vm.skills.length > 0 && (
+        <View style={styles.section}>
+          <SectionLabel size={10}>✠ FALLACIES &amp; PARADOXES</SectionLabel>
+          <View style={styles.skillsGrid}>
+            {vm.skills.map((s) => (
+              <View
+                key={s.name}
+                style={[
+                  styles.skillCard,
+                  {
+                    borderColor: s.category === 'paradox' ? AXM.sulfur : AXM.parchment,
+                    borderStyle: s.category === 'paradox' ? 'solid' : 'dashed',
+                  },
+                ]}
+              >
+                <StanceGlyph kind={s.stanceKey} size={16} color={AXM.bone} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.skillName}>{s.name}</Text>
+                  <Text style={[styles.skillCat, { color: s.category === 'paradox' ? AXM.sulfur : AXM.parchment }]}>
+                    {s.category.toUpperCase()}
+                  </Text>
+                </View>
               </View>
-            </View>
-          ))}
+            ))}
+          </View>
         </View>
-      </View>
+      )}
     </ScreenBg>
   );
 }
@@ -208,6 +199,7 @@ const styles = StyleSheet.create({
   saveKey: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone },
   saveVal: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.parchment },
   effectsList: { marginTop: 4, gap: 4 },
+  emptyLabel: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.ash, letterSpacing: 1 },
   effectRow: { flexDirection: 'row', gap: 8, alignItems: 'center', borderWidth: 1, padding: 5, paddingHorizontal: 7 },
   effectTopRow: { flexDirection: 'row', justifyContent: 'space-between' },
   effectName: { fontFamily: FONTS.gothic, fontSize: 13, color: AXM.parchment, letterSpacing: 1 },

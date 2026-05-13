@@ -34,28 +34,30 @@ engine. Continent / map transitions are dispatched through actions.
      id.
    - (B) Add `position: { x, y }` to the engine's `WorldMap`.
    - (C) Auto-layout (force-directed) at runtime.
-   > Your answer:
+   > Your answer: A
 
 2. **Interactive zoom / pan.** Mock map is static. Add:
    - (A) **(default)** No — single-screen tap-to-move.
    - (B) Pinch-to-zoom + pan via `react-native-gesture-handler`.
-   > Your answer:
+   > Your answer: B
 
 3. **Node icons.** Map nodes have types (battle / shop / event / boss).
    Icon source:
    - (A) **(default)** Local `NodeMark` component with `kind` prop
      mapped from engine node type.
    - (B) Engine carries an `iconKey: string`; mobile resolves it.
-   > Your answer:
+   > Your answer: A
 
 4. **Map travel time / fast travel.** Out of scope or in?
-   > Your answer:
+   > Your answer: Out of scope
 
 5. **Locked / hazard tooltips.** Tapping a locked node should:
    - (A) **(default)** Show why it's locked (missing key, level
      requirement).
    - (B) Do nothing.
-   > Your answer:
+   > Your answer: Do nothing. Locked nodes should be a less saturated shade so as to denote it's locked status
+
+6. **Node options** should be shown underneath. Available nodes to select are another way the user can select their next step and also contains a brief thematic explanation of the decision/node.
 
 ## Proposed approach
 

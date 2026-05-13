@@ -1,5 +1,7 @@
 # Spec 06 — Inventory Screen Wiring
 
+[DONE on 2026-05-13]
+
 ## Goal
 
 Replace `app/(tabs)/inventory.tsx`'s hard-coded item list with engine-
@@ -76,11 +78,11 @@ and rarity tints all come from the engine.
 
 ## Acceptance checklist
 
-- [ ] All 5 questions answered.
-- [ ] `app/(tabs)/inventory/` folder exists.
-- [ ] No literal item list in the screen.
-- [ ] Hermetic e2e green; component render test exists.
-- [ ] `npm test` and `npx tsc --noEmit` clean.
+- [x] All 5 questions answered.
+- [x] `app/(tabs)/inventory/` folder exists.
+- [x] No literal item list in the screen.
+- [x] Hermetic e2e green; component render test exists.
+- [x] `npm test` and `npx tsc --noEmit` clean.
 
 ## Out of scope
 

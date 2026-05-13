@@ -21,11 +21,17 @@ import {
     determineAdvantage,
     determineCombatEnd,
     determineEnemyAction,
+    healCharacter,
     incrementFriendship as combatIncrementFriendship,
+    isConsumable,
+    isEquipment,
     resolveCombatRound,
+    type Character,
     type CombatPhase,
     type CombatState,
+    type Consumable,
     type Enemy,
+    type Equipment,
     type Item,
     type Stance,
 } from 'axiomancer-mechanics';
@@ -84,7 +90,31 @@ export interface AppActions {
     addItem: (item: Item) => void;
     removeItem: (itemId: string) => void;
     useConsumable: (itemId: string) => void;
+    /**
+     * Apply a consumable's effect to the player and decrement the stack
+     * (Spec 06 Q2=A). Heals parsed from the consumable's `effect` string
+     * (e.g. `"Heal 6 HP"` / `"Restore 4 HP"` / `"+10 HP"`). No-op when
+     * the item isn't a consumable or doesn't exist.
+     */
+    useItem: (itemId: string) => UseItemResult;
+    /**
+     * Soft-equip an item by reordering inventory so it is the first
+     * occurrence of its slot — the convention shared with
+     * `selectCharacterViewModel`. No-op when the item isn't equipment.
+     */
+    equipItem: (itemId: string) => void;
+    /** Discard an item — wraps `removeItem` with a quest-item guard. */
+    dropItem: (itemId: string) => void;
     save: () => void;
+}
+
+export interface UseItemResult {
+    /** Item was found and a consumable. */
+    applied: boolean;
+    /** Healing applied to player HP (positive integer). */
+    healed: number;
+    /** Damage applied to player HP (positive integer). */
+    damaged: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -444,8 +474,110 @@ export function createAppActions(store: AppStore): AppActions {
         addItem: (item) => store.getState().addItem(item),
         removeItem: (itemId) => store.getState().removeItem(itemId),
         useConsumable: (itemId) => store.getState().useConsumable(itemId),
+        useItem: (itemId) => useItemAction(store, itemId),
+        equipItem: (itemId) => equipItemAction(store, itemId),
+        dropItem: (itemId) => dropItemAction(store, itemId),
         save: () => store.getState().save(),
     };
+}
+
+// ---------------------------------------------------------------------------
+// Inventory action implementations (Spec 06)
+// ---------------------------------------------------------------------------
+
+/**
+ * Parse a consumable's free-form `effect` string for a healing value.
+ * Recognises patterns like `"Heal N HP"`, `"Restore N HP"`, `"+N HP"`,
+ * or `"N HP"`. Returns 0 when no value is found.
+ */
+export function parseHealAmount(effect: string): number {
+    if (!effect) return 0;
+    const lowered = effect.toLowerCase();
+    // Skip strings that explicitly mention damage so we don't heal from
+    // a damage-coded consumable.
+    if (/\bdamage|\bharm|\binflict|\bburn|\bpoison|\bbleed/.test(lowered)) {
+        const matchDamageOnly = /(?:^|\b)(heal|restore|\+)/.test(lowered);
+        if (!matchDamageOnly) return 0;
+    }
+    const re = /(?:heal|restore|\+)\s*(\d+)\s*hp\b/i;
+    const m = effect.match(re);
+    if (m && m[1]) return Math.max(0, parseInt(m[1], 10));
+    const re2 = /\b(\d+)\s*hp\b/i;
+    const m2 = effect.match(re2);
+    if (m2 && m2[1]) return Math.max(0, parseInt(m2[1], 10));
+    return 0;
+}
+
+function useItemAction(store: AppStore, itemId: string): UseItemResult {
+    const state = store.getState();
+    const inventory: readonly Item[] = state.player.inventory;
+    const item = inventory.find((i: Item) => i.id === itemId);
+    if (!item || !isConsumable(item)) {
+        return { applied: false, healed: 0, damaged: 0 };
+    }
+
+    const consumable = item as Consumable;
+    const hpBefore = state.player.health;
+    const healAmount = parseHealAmount(consumable.effect);
+    let nextPlayer: Character = state.player;
+    if (healAmount > 0) {
+        nextPlayer = healCharacter(nextPlayer, healAmount);
+    }
+
+    // Apply the player-state update first, then route the stack
+    // decrement through the engine's reducer.
+    if (nextPlayer !== state.player) {
+        store.setState({ player: nextPlayer });
+    }
+    store.getState().useConsumable(itemId);
+
+    const hpAfter = store.getState().player.health;
+    const delta = hpAfter - hpBefore;
+    return {
+        applied: true,
+        healed: Math.max(0, delta),
+        damaged: Math.max(0, -delta),
+    };
+}
+
+function equipItemAction(store: AppStore, itemId: string): void {
+    const state = store.getState();
+    const inventory: readonly Item[] = state.player.inventory;
+    const target = inventory.find((i: Item) => i.id === itemId);
+    if (!target || !isEquipment(target)) return;
+
+    const targetSlot = (target as Equipment).slot;
+
+    // Build the reordered inventory:
+    //   1. The target item (now first in its slot).
+    //   2. All other items, preserving their relative order, with the
+    //      old "first in slot" item demoted behind the target.
+    const targetIndex = inventory.indexOf(target);
+    const rest = inventory.filter((_: Item, idx: number) => idx !== targetIndex);
+    const slotPeers: Item[] = [];
+    const nonSlot: Item[] = [];
+    for (const it of rest) {
+        if (isEquipment(it) && (it as Equipment).slot === targetSlot) {
+            slotPeers.push(it);
+        } else {
+            nonSlot.push(it);
+        }
+    }
+    const next: Item[] = [target, ...slotPeers, ...nonSlot];
+
+    store.setState({ player: { ...state.player, inventory: next } });
+}
+
+function dropItemAction(store: AppStore, itemId: string): void {
+    const state = store.getState();
+    const inventory: readonly Item[] = state.player.inventory;
+    const target = inventory.find((i: Item) => i.id === itemId);
+    if (!target) return;
+    // Quest items cannot be discarded — `canDiscard` on the VM mirrors
+    // this guard so the screen never offers the action, but defend in
+    // depth here for direct dispatch.
+    if (target.category === 'quest-item') return;
+    store.getState().removeItem(itemId);
 }
 
 // Re-export the friendship reducer as a no-arg incrementer for tests

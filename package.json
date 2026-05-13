@@ -9,11 +9,14 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
+    "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",
+    "verify": "npm run lint && npm run typecheck && npm test",
+    "deploy:check": "node scripts/deploy-check.mjs",
     "deploy": "npm run deploy:preview",
-    "deploy:preview": "npm test && eas build --platform android --profile preview",
-    "deploy:production": "npm test && eas build --platform all --profile production"
+    "deploy:preview": "npm run verify && eas build --platform android --profile preview",
+    "deploy:production": "npm run verify && eas build --platform all --profile production"
   },
   "dependencies": {
     "@expo-google-fonts/bebas-neue": "^0.4.1",

@@ -34,8 +34,9 @@ commit that ships the phase.
 
 **Next up (autonomous loop's queue):**
 
-- [ ] Phase 1 — Adopt nexus methodology (this commit; once
-      pushed, flip to `[x]`).
+- [x] Phase 1 — Adopt nexus methodology. Shipped in commit
+      `a703908` ("chore: adopt nexus methodology"); closed out
+      in this commit.
 - [ ] Phase 2 — **Fix engine API drift (verify-gate
       unblocker).** The latest `axiomancer-mechanics` bump
       renamed `Consumable.effect → effectId` and added required
@@ -245,5 +246,5 @@ substrate; `/iterate` takes over after.
 
 ## Phase log (commit hashes)
 
-(Empty until phase 1 ships. One line per shipped phase, format:
-`phase <N> — <commit hash> — <one-line summary>`.)
+- phase 1 — a703908 — adopt nexus methodology overlay (substrate;
+  no product code changes)

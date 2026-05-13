@@ -33,27 +33,27 @@ and rarity tints all come from the engine.
      kind).
    - (B) Flat list, sorted by `lastAcquired`.
    - (C) Filter chips (All / Consumables / Gear / Misc).
-   > Your answer:
+   > Your answer: A
 
 2. **Use confirmation.** Tapping "Use Potion of Heart" — should it:
    - (A) **(default)** Confirm via a modal first.
    - (B) Apply immediately with an undo toast.
    - (C) Apply immediately without undo.
-   > Your answer:
+   > Your answer: A (And show potential results in the modal)
 
 3. **Stacking display.** `stackItem` exists in the engine. Render:
    - (A) **(default)** `Item × 3` as a single row with the count.
    - (B) Three separate rows.
-   > Your answer:
+   > Your answer:A
 
 4. **Empty state.** Engine starts with no items. Show:
    - (A) **(default)** "Thy sack is empty." with a sketch.
    - (B) A pre-filled tutorial inventory.
-   > Your answer:
+   > Your answer: A
 
 5. **Equipping.** Tapping a weapon — does it auto-equip, prompt for
    slot, or open the character screen?
-   > Your answer:
+   > Your answer: Same as consumable, show a modal with updated stats shown
 
 ## Proposed approach
 

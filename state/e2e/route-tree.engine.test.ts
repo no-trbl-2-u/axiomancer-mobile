@@ -91,7 +91,7 @@ const EXPECTED_ROUTE_FILES: ReadonlySet<string> = new Set([
     './(tabs)/combat.tsx',
     './(tabs)/event.tsx',
     './(tabs)/exploration.tsx',
-    './(tabs)/inventory.tsx',
+    './(tabs)/inventory/index.tsx',
 ]);
 
 describe('Expo Router route tree: only route files live under app/', () => {

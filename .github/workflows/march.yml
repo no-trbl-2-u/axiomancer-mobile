@@ -62,6 +62,10 @@ jobs:
       - name: Provision .env for nexus skills
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          DEPLOY_PROVIDER: ${{ secrets.DEPLOY_PROVIDER }}
+          FULL_NAME: ${{ secrets.FULL_NAME }}
         run: |
           # The nexus skills read GH_TOKEN / GH_REPO from a local .env via
           # `awk -F=`. Provision a CI-scoped copy so /triage and the phase
@@ -70,6 +74,10 @@ jobs:
           cat > .env <<EOF
           GH_TOKEN=${GH_TOKEN}
           GH_REPO=${{ github.repository }}
+          EAS_PROJECT_ID=${EAS_PROJECT_ID}
+          EXPO_TOKEN=${EXPO_TOKEN}
+          DEPLOY_PROVIDER=${DEPLOY_PROVIDER}
+          FULL_NAME=${FULL_NAME}
           EOF
 
       - name: Run /march

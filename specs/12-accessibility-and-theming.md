@@ -39,23 +39,23 @@ passes a manual VoiceOver / TalkBack audit.
    - (A) **(default)** Yes — `type.display | h1 | h2 | body | caption | mono`
      with explicit `fontFamily | fontSize | lineHeight | letterSpacing`.
    - (B) No — current ad-hoc font sizes are fine.
-   > Your answer:
+   > Your answer: A
 
 2. **Spacing scale.** Add `spacing.xs | sm | md | lg | xl`?
-   > Your answer:
+   > Your answer: Yes
 
 3. **Contrast budget.** Mock uses `bone` (#8a8273) for secondary text.
    Audit:
    - (A) **(default)** Audit at 12 sp on parchment / on bg; bump
      `bone` if AA fails.
    - (B) Skip — it's stylized, not a banking app.
-   > Your answer:
+   > Your answer: B
 
 4. **Reduce motion.** Use `useReducedMotion` from Reanimated and:
    - (A) **(default)** Skip every transition when on; UI is instant.
    - (B) Half-speed transitions.
    - (C) Crossfades only.
-   > Your answer:
+   > Your answer: A
 
 5. **Font scaling.** RN respects `allowFontScaling` per `Text`. Set
    a global default?
@@ -64,18 +64,18 @@ passes a manual VoiceOver / TalkBack audit.
    - (B) `allowFontScaling: false` — preserve the typographic
      hierarchy at the cost of accessibility.
    - (C) Per-screen — display titles unscaled, body scaled.
-   > Your answer:
+   > Your answer: C
 
 6. **Dark / light.** App is dark-only today.
    - (A) **(default)** Stay dark-only — flavour decision.
    - (B) Add light mode.
-   > Your answer:
+   > Your answer: A
 
 7. **Haptics.** `expo-haptics` is installed but unused. When?
    - (A) **(default)** Crit / fumble in combat resolve; node-enter
      in exploration.
    - (B) None.
-   > Your answer:
+   > Your answer:A
 
 ## Proposed approach
 

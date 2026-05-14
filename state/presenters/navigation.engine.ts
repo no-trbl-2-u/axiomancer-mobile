@@ -47,34 +47,29 @@ export function selectActiveTab(state: GameStore): TabRoute {
     return 'exploration';
 }
 
+// Stable reference for the all-null badge state. Returning a fresh object
+// literal from a zustand selector triggers an infinite render loop because
+// `useStore` compares results by identity. While every badge slot is still
+// TODO/null, every caller gets this same frozen instance.
+const EMPTY_BADGES: Record<TabRoute, TabBadge | null> = Object.freeze({
+    exploration: null,
+    combat: null,
+    character: null,
+    inventory: null,
+    event: null,
+}) as Record<TabRoute, TabBadge | null>;
+
 /**
  * Tab badges for actionable states (new events, level-ups ready).
+ *
+ * Once badge sources are wired up, build the result object only when one of
+ * the inputs is truthy — never allocate on the steady-state path, or wrap
+ * the consumer with `useShallow` so identity churn doesn't loop the store.
  */
-export function selectTabBadges(state: GameStore): Record<TabRoute, TabBadge | null> {
-    const badges: Record<TabRoute, TabBadge | null> = {
-        exploration: null,
-        combat: null,
-        character: null,
-        inventory: null,
-        event: null,
-    };
-
-    // Character badge for level-up ready (when XP >= next level threshold)
-    if (state.player && state.player.level < 20) {
-        // TODO: When engine exposes XP and level-up logic, implement here
-        // const xpForNext = calculateXPForLevel(state.player.level + 1);
-        // if (state.player.experience >= xpForNext) {
-        //     badges.character = { text: '!', kind: 'levelup' };
-        // }
-    }
-
-    // Event badge for new/unread events
-    // TODO: When engine exposes event state, implement here
-    // if (state.events?.some(event => event.isNew)) {
-    //     badges.event = { text: '1', kind: 'event' };
-    // }
-
-    return badges;
+export function selectTabBadges(_state: GameStore): Record<TabRoute, TabBadge | null> {
+    // TODO: derive level-up and event badges once the engine exposes XP /
+    // active-event state. Until then, return the stable EMPTY_BADGES sentinel.
+    return EMPTY_BADGES;
 }
 
 /**

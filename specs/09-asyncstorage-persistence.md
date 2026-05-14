@@ -50,7 +50,7 @@ a `jest.mock('@react-native-async-storage/async-storage')` fixture.
    - (B) Manual only — user taps "Save".
    - (C) On specific actions (combat end, node entered).
    > Your answer: A — 500ms debounce; tests inject a fake `storage`
-   > so writes are observable but not async-storage-bound.
+   > so writes are observable but not async-storage-bound. Also, leave a comment near this code to point out that we're testing this vs. manual save
 
 4. **Schema versioning.** State shape will change. Migration story:
    - (A) **(default)** Embed `schemaVersion: number` in the saved

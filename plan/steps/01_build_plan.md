@@ -100,9 +100,9 @@ commit that ships the phase.
       placeholder backlog via the existing
       `.cursor/skills/swap-asset-placeholder/SKILL.md` flow.
       One real asset per tick. `78006f1`
-- [ ] Phase 10 — Spec 12: Accessibility + theming polish
+- [x] Phase 10 — Spec 12: Accessibility + theming polish
       (a11y labels, reduce-motion, font-scaling, large-text,
-      dark-only confirmation).
+      dark-only confirmation). See commit `d5d5e5e`.
 - [ ] Phase 11 — EAS Build deploy-gate wiring. Replace the
       stub in `scripts/deploy-check.mjs` with a real EAS Build
       API poll (`https://api.expo.dev/v2/projects/<id>/builds`)

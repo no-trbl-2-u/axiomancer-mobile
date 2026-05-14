@@ -33,20 +33,20 @@ on cold start to the right screen.
    - (A) **(default)** Hidden when inactive — the tab bar adapts.
    - (B) Always visible; show a "no combat in progress" empty state.
    - (C) Always visible but disabled (greyed, untappable).
-   > Your answer:
+   > Your answer: A
 
 2. **Cold-start route.** On launch:
    - (A) **(default)** Route to whatever screen matches the engine's
      current state (combat → combat tab, event → event tab, else
      exploration).
    - (B) Always exploration; the user navigates from there.
-   > Your answer:
+   > Your answer: A
 
 3. **Tab badges.** Mock has none. Add:
    - (A) **(default)** New event → badge on Event tab. Level-up
      ready → badge on Character tab.
    - (B) None.
-   > Your answer:
+   > Your answer:A
 
 4. **Deep links.** Should
    `axiomancer://event/<eventId>` deep link straight to a chosen
@@ -54,18 +54,18 @@ on cold start to the right screen.
    - (A) **(default)** Yes — read-only deep links for events and
      character sheet.
    - (B) No — deep links are out of scope.
-   > Your answer:
+   > Your answer: A
 
 5. **Back-button behaviour.** Android hardware back during combat:
    - (A) **(default)** Disabled — combat is modal.
    - (B) Pops to exploration but combat state retained.
    - (C) Confirm-via-modal "abandon combat?".
-   > Your answer:
+   > Your answer: A
 
 6. **Status bar.** Today `<StatusBar style="light" />` is set once
    in the root. Should it adapt per screen (event scenes go
    translucent over a full-bleed illustration, e.g.)?
-   > Your answer:
+   > Your answer: I don't know
 
 ## Proposed approach
 

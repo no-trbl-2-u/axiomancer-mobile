@@ -76,11 +76,11 @@ The ENCOUNTER / BOSS toggle buttons are a demo artifact. Leave them in place for
 
 ### Acceptance criteria
 
-- [ ] EVENT tab is not visible in the tab bar (neither in combat nor out-of-combat).
-- [ ] Navigating to `/event` manually renders the event screen as a full-screen modal.
-- [ ] Closing the modal returns to the previous tab without error.
-- [ ] `selectHasActiveEvent` returns `false` by default (no regression).
-- [ ] Badge removal doesn't break `selectTabBadges` type shape.
+- [x] EVENT tab is not visible in the tab bar (neither in combat nor out-of-combat).
+- [x] Navigating to `/event` manually renders the event screen as a full-screen modal.
+- [x] Closing the modal returns to the previous tab without error.
+- [x] `selectHasActiveEvent` returns `false` by default (no regression).
+- [x] Badge removal doesn't break `selectTabBadges` type shape.
 
 ---
 
@@ -146,10 +146,10 @@ Also guard the `luck` line in `selectCharacterViewModel` (already done: `?? 0` a
 
 ### Acceptance criteria
 
-- [ ] Tapping the SHEET tab does not crash.
-- [ ] Character screen renders with `0` values when `derivedStats` / `nonCombatStats` are missing.
-- [ ] Character screen renders correct values when engine state is fully populated.
-- [ ] Existing character presenter tests still pass.
+- [x] Tapping the SHEET tab does not crash.
+- [x] Character screen renders with `0` values when `derivedStats` / `nonCombatStats` are missing.
+- [x] Character screen renders correct values when engine state is fully populated.
+- [x] Existing character presenter tests still pass.
 
 ---
 

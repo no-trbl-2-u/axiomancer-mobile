@@ -113,15 +113,16 @@ commit that ships the phase.
 - [x] Phase 13 — TestFlight + Play Internal Track first cut.
       Production EAS builds, store listings drafted, internal
       testers invited. See commit `e49f8db`.
-- [ ] Phase 14 — UI fixes: Character crash + Event tab → modal.
-      Promoted from `plan/PHASE_CANDIDATES.md` via `/oversight`
-      on 2026-05-14 (score 9.0). The implementation already
-      landed in commit `5dd597b` ("Bug issues") — event screen
-      moved out of `(tabs)/` and presented as a modal via the
-      new `EventGate`, character presenter null-guards for
-      missing `derivedStats` / `nonCombatStats`. Row stays open
-      so the next `/march` tick verifies the brief's acceptance
-      criteria and closes formally. See
+- [x] Phase 14 — UI fixes: Character crash + Event tab → modal.
+      Promoted via `/oversight` on 2026-05-14 (score 9.0).
+      Implementation landed in commit `5dd597b` ("Bug issues");
+      verified end-to-end against the brief's acceptance criteria
+      by `/march` on 2026-05-14 and closed formally in this
+      commit. Event screen lives outside `(tabs)/`, served by a
+      `fullScreenModal` Stack.Screen with `EventGate` as the
+      driver; `selectCharacterViewModel` null-guards on missing
+      `derivedStats` / `nonCombatStats` with `?? {}` / `?? 0`.
+      Verify gate green at 249 / 249. See
       `plan/phases/phase_14_ui_fixes.md`.
 - [ ] Phase 15 — Persistence migration: backfill missing engine
       state fields on save load. Promoted from
@@ -341,3 +342,9 @@ adapter).
   smart cold-start routing, deep links for character/events,
   tab badges, hardware back disabled during combat, hermetic
   navigation presenter tests; +209/209 verify green)
+- phase 14 — 5dd597b — UI fixes: Character crash + Event tab →
+  modal (event screen moved out of (tabs)/ behind a
+  fullScreenModal Stack.Screen + new `EventGate` driver;
+  `selectCharacterViewModel` null-guards `derivedStats` /
+  `nonCombatStats` with `?? {}` / `?? 0`; brief verified by
+  /march on 2026-05-14; verify green at 249/249)

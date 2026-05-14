@@ -110,9 +110,9 @@ commit that ships the phase.
       in `setup/02_eas.md` (new file). See commit `0f703d2`.
 - [x] Phase 12 — App icon + splash screen polish (final assets,
       adaptive icons, splash background = `AXM.bg`). See commit `4e0fde5`.
-- [ ] Phase 13 — TestFlight + Play Internal Track first cut.
+- [x] Phase 13 — TestFlight + Play Internal Track first cut.
       Production EAS builds, store listings drafted, internal
-      testers invited.
+      testers invited. See commit `e49f8db`.
 
 > **After phase 13:** the loop transitions to `/iterate` —
 > bug findings, presenter refactors, asset backlog, ongoing

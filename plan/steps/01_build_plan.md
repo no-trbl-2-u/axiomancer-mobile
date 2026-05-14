@@ -93,9 +93,9 @@ commit that ships the phase.
       wiring), with this commit closing out the spec Q-answers,
       DoD ticks, and Phase log. See
       `plan/phases/phase_7_asyncstorage_persistence.md`.
-- [ ] Phase 8 — Spec 10: Navigation + app-shell polish (deep
+- [x] Phase 8 — Spec 10: Navigation + app-shell polish (deep
       links, back behaviour, tab badges, splash → first screen
-      handoff).
+      handoff). See commit `6fc00dd`.
 - [ ] Phase 9 — Spec 11: Asset pipeline. Drain the SVG
       placeholder backlog via the existing
       `.cursor/skills/swap-asset-placeholder/SKILL.md` flow.
@@ -293,3 +293,7 @@ substrate; `/iterate` takes over after.
   migrations runner, preload-before-mount, 15 hermetic e2e,
   +200/200 verify green; first phase the loop built from
   scratch)
+- phase 8 — 6fc00dd — navigation + app shell polish (Spec 10;
+  smart cold-start routing, deep links for character/events,
+  tab badges, hardware back disabled during combat, hermetic
+  navigation presenter tests; +209/209 verify green)

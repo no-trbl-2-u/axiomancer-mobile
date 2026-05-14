@@ -67,3 +67,14 @@ const STUB_VM: EventViewModel = {
 export function selectEventViewModel(_state: GameStore): EventViewModel {
     return freezeViewModel(STUB_VM);
 }
+
+/**
+ * True when an event is currently active in game state and the
+ * full-screen event modal should be shown.
+ *
+ * Stub — Spec 08 will populate `state.activeEvent` (or equivalent)
+ * and this selector will read it.
+ */
+export function selectHasActiveEvent(_state: GameStore): boolean {
+    return false;
+}

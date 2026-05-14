@@ -70,23 +70,23 @@ describe('selectVisibleTabs: mutual exclusion', () => {
 
 describe('selectVisibleTabs: always-visible tabs', () => {
     it.each([false, true])(
-        'always shows SHEET, SACK, and EVENT (inCombat=%p)',
+        'always shows SHEET and SACK (inCombat=%p)',
         (inCombat) => {
             const vm = selectVisibleTabs(inCombat);
 
             expect(vm.visibleTabs).toEqual(
-                expect.arrayContaining(['character', 'inventory', 'event']),
+                expect.arrayContaining(['character', 'inventory']),
             );
             expect(vm.hiddenTabs).not.toEqual(
-                expect.arrayContaining(['character', 'inventory', 'event']),
+                expect.arrayContaining(['character', 'inventory']),
             );
         },
     );
 
-    it('returns 4 visible tabs (1 positional + 3 always-visible)', () => {
+    it('returns 3 visible tabs (1 positional + 2 always-visible)', () => {
         for (const inCombat of [false, true]) {
             const vm = selectVisibleTabs(inCombat);
-            expect(vm.visibleTabs).toHaveLength(4);
+            expect(vm.visibleTabs).toHaveLength(3);
         }
     });
 
@@ -101,7 +101,7 @@ describe('selectVisibleTabs: always-visible tabs', () => {
 // ---------------------------------------------------------------------------
 
 describe('isTabHidden: agreement with selectVisibleTabs', () => {
-    const allTabs: TabKey[] = ['exploration', 'combat', 'character', 'inventory', 'event'];
+    const allTabs: TabKey[] = ['exploration', 'combat', 'character', 'inventory'];
 
     it.each([false, true])(
         'agrees with selectVisibleTabs for every tab when inCombat=%p',

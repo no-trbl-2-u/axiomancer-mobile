@@ -9,7 +9,7 @@
  * Tested in state/e2e/tabs.engine.test.ts.
  */
 
-export type TabKey = 'exploration' | 'combat' | 'character' | 'inventory' | 'event';
+export type TabKey = 'exploration' | 'combat' | 'character' | 'inventory';
 
 export interface TabsViewModel {
     /** Tabs the user can currently see in the bottom bar, in display order. */
@@ -18,7 +18,7 @@ export interface TabsViewModel {
     hiddenTabs: TabKey[];
 }
 
-const ALWAYS_VISIBLE: TabKey[] = ['character', 'inventory', 'event'];
+const ALWAYS_VISIBLE: TabKey[] = ['character', 'inventory'];
 
 export function selectVisibleTabs(inCombat: boolean): TabsViewModel {
     const positional: TabKey = inCombat ? 'combat' : 'exploration';

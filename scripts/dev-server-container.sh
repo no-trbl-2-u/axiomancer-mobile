@@ -33,8 +33,14 @@ case "$CMD" in
             echo "container '$NAME' already running on host port $PORT" >&2
             exit 0
         fi
+        # Run as the host UID/GID so files Metro writes into the mounted
+        # repo (e.g. .expo/web/cache) stay owned by the host user. Without
+        # this, host-side `npx expo start` later fails with EACCES on the
+        # root-owned cache directory and Metro stalls before serving.
         docker run --rm -d \
             --name "$NAME" \
+            --user "$(id -u):$(id -g)" \
+            -e HOME=/tmp \
             -v "$PWD:/app" -w /app \
             -p "${PORT}:8081" \
             "$IMAGE" \

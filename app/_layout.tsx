@@ -17,6 +17,7 @@ import { CombatModeProvider } from '@/state/combat-mode';
 import { GameStoreProvider } from '@/state/GameStoreProvider';
 import { createAsyncStorageAdapter } from '@/state/persistence/asyncStorageAdapter';
 import { HardwareBackHandler } from '@/components/HardwareBackHandler';
+import { EventGate } from '@/components/EventGate';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -92,9 +93,14 @@ export default function RootLayout() {
       <CombatModeProvider>
         <StatusBar style="light" />
         <HardwareBackHandler />
+        <EventGate />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="event"
+            options={{ headerShown: false, presentation: 'fullScreenModal' }}
+          />
         </Stack>
       </CombatModeProvider>
     </GameStoreProvider>

@@ -141,25 +141,11 @@ export default function TabLayout() {
         options={{
           title: 'SACK',
           tabBarIcon: ({ color, size }) => (
-            <TabIconWithBadge 
-              kind="bag" 
-              color={color} 
-              size={size} 
-              badge={badges.inventory} 
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="event"
-        options={{
-          title: 'EVENT',
-          tabBarIcon: ({ color, size }) => (
-            <TabIconWithBadge 
-              kind="scroll" 
-              color={color} 
-              size={size} 
-              badge={badges.event} 
+            <TabIconWithBadge
+              kind="bag"
+              color={color}
+              size={size}
+              badge={badges.inventory}
             />
           ),
         }}

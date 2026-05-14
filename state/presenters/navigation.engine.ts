@@ -8,7 +8,7 @@
 import type { GameStore } from 'axiomancer-mechanics';
 import { freezeViewModel } from './freeze';
 
-export type TabRoute = 'exploration' | 'combat' | 'character' | 'inventory' | 'event';
+export type TabRoute = 'exploration' | 'combat' | 'character' | 'inventory';
 
 export interface TabBadge {
     /** Badge text (e.g., '1', '!', '•') */
@@ -26,23 +26,20 @@ export interface NavigationViewModel {
 
 /**
  * Determines which tab should be active on cold start based on game state.
- * 
+ *
  * Priority:
  * 1. Combat if in combat
- * 2. Event if active event exists  
- * 3. Exploration otherwise
+ * 2. Exploration otherwise
+ *
+ * Events fire as a full-screen modal (see `app/event.tsx` + `selectHasActiveEvent`),
+ * not a tab, so they do not participate in tab selection.
  */
 export function selectActiveTab(state: GameStore): TabRoute {
     // Combat takes highest priority
     if (state.combat) {
         return 'combat';
     }
-    
-    // TODO: When engine exposes active events, check here
-    // if (state.activeEvent) {
-    //     return 'event';
-    // }
-    
+
     // Default to exploration
     return 'exploration';
 }
@@ -56,7 +53,6 @@ const EMPTY_BADGES: Record<TabRoute, TabBadge | null> = Object.freeze({
     combat: null,
     character: null,
     inventory: null,
-    event: null,
 }) as Record<TabRoute, TabBadge | null>;
 
 /**

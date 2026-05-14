@@ -68,7 +68,6 @@ describe('navigation.engine', () => {
                 combat: null,
                 character: null,
                 inventory: null,
-                event: null,
             });
         });
 
@@ -96,7 +95,6 @@ describe('navigation.engine', () => {
                     combat: null,
                     character: null,
                     inventory: null,
-                    event: null,
                 }),
             });
         });

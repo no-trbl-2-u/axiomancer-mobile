@@ -9,12 +9,14 @@ import { BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
 import { JetBrainsMono_400Regular } from '@expo-google-fonts/jetbrains-mono';
 import * as SplashScreen from 'expo-splash-screen';
 import * as NavigationBar from 'expo-navigation-bar';
+import * as Linking from 'expo-linking';
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { CombatModeProvider } from '@/state/combat-mode';
 import { GameStoreProvider } from '@/state/GameStoreProvider';
 import { createAsyncStorageAdapter } from '@/state/persistence/asyncStorageAdapter';
+import { HardwareBackHandler } from '@/components/HardwareBackHandler';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -66,12 +68,31 @@ export default function RootLayout() {
     NavigationBar.setVisibilityAsync('hidden').catch(() => undefined);
   }, []);
 
+  // Handle deep links when app is already open
+  useEffect(() => {
+    const handleDeepLink = (event: { url: string }) => {
+      const { hostname, path } = Linking.parse(event.url);
+      
+      if (hostname === 'character') {
+        // Navigate to character sheet
+        // Router will handle this via expo-router
+      } else if (hostname === 'event' && path) {
+        // Navigate to specific event (read-only)
+        // For now, just go to event tab - event ID handling can be enhanced later
+      }
+    };
+
+    const subscription = Linking.addEventListener('url', handleDeepLink);
+    return () => subscription?.remove();
+  }, []);
+
   if (!loaded || !preloaded) return null;
 
   return (
     <GameStoreProvider adapter={persistenceAdapter}>
       <CombatModeProvider>
         <StatusBar style="light" />
+        <HardwareBackHandler />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="index" options={{ headerShown: false }} />

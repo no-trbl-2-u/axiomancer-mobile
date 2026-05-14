@@ -1,10 +1,41 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { AXM, FONTS } from '@/theme/axm';
 import { useCombatMode } from '@/state/combat-mode';
 import { isTabHidden } from '@/state/presenters/tabs.engine';
+import { useGameState } from '@/state/GameStoreProvider';
+import { selectTabBadges } from '@/state/presenters/navigation.engine';
+
+function TabBadge({ text, kind }: { text: string; kind: 'event' | 'levelup' }) {
+  const badgeColor = kind === 'levelup' ? AXM.sulfur : AXM.blood;
+  
+  return (
+    <View style={[styles.badge, { backgroundColor: badgeColor }]}>
+      <Text style={styles.badgeText}>{text}</Text>
+    </View>
+  );
+}
+
+function TabIconWithBadge({ 
+  kind, 
+  color, 
+  size, 
+  badge 
+}: { 
+  kind: string; 
+  color: string; 
+  size: number; 
+  badge: { text: string; kind: 'event' | 'levelup' } | null;
+}) {
+  return (
+    <View style={styles.iconContainer}>
+      <TabIcon kind={kind} color={color} size={size} />
+      {badge && <TabBadge text={badge.text} kind={badge.kind} />}
+    </View>
+  );
+}
 
 function TabIcon({ kind, color, size }: { kind: string; color: string; size: number }) {
   switch (kind) {
@@ -49,6 +80,7 @@ function TabIcon({ kind, color, size }: { kind: string; color: string; size: num
 
 export default function TabLayout() {
   const { inCombat } = useCombatMode();
+  const badges = useGameState(selectTabBadges);
 
   return (
     <Tabs
@@ -64,7 +96,14 @@ export default function TabLayout() {
         name="exploration"
         options={{
           title: 'MAP',
-          tabBarIcon: ({ color, size }) => <TabIcon kind="eye" color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => (
+            <TabIconWithBadge 
+              kind="eye" 
+              color={color} 
+              size={size} 
+              badge={badges.exploration} 
+            />
+          ),
           href: isTabHidden(inCombat, 'exploration') ? null : undefined,
         }}
       />
@@ -72,7 +111,14 @@ export default function TabLayout() {
         name="combat"
         options={{
           title: 'COMBAT',
-          tabBarIcon: ({ color, size }) => <TabIcon kind="sword" color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => (
+            <TabIconWithBadge 
+              kind="sword" 
+              color={color} 
+              size={size} 
+              badge={badges.combat} 
+            />
+          ),
           href: isTabHidden(inCombat, 'combat') ? null : undefined,
         }}
       />
@@ -80,21 +126,42 @@ export default function TabLayout() {
         name="character"
         options={{
           title: 'SHEET',
-          tabBarIcon: ({ color, size }) => <TabIcon kind="crown" color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => (
+            <TabIconWithBadge 
+              kind="crown" 
+              color={color} 
+              size={size} 
+              badge={badges.character} 
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="inventory"
         options={{
           title: 'SACK',
-          tabBarIcon: ({ color, size }) => <TabIcon kind="bag" color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => (
+            <TabIconWithBadge 
+              kind="bag" 
+              color={color} 
+              size={size} 
+              badge={badges.inventory} 
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="event"
         options={{
           title: 'EVENT',
-          tabBarIcon: ({ color, size }) => <TabIcon kind="scroll" color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => (
+            <TabIconWithBadge 
+              kind="scroll" 
+              color={color} 
+              size={size} 
+              badge={badges.event} 
+            />
+          ),
         }}
       />
     </Tabs>
@@ -113,5 +180,26 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.sans,
     fontSize: 10,
     letterSpacing: 2,
+  },
+  iconContainer: {
+    position: 'relative',
+  },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -6,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: AXM.parchment,
+    fontFamily: FONTS.sans,
+    fontSize: 10,
+    fontWeight: 'bold',
+    lineHeight: 16,
   },
 });

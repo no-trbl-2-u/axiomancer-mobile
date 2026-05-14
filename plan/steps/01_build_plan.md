@@ -103,11 +103,11 @@ commit that ships the phase.
 - [x] Phase 10 — Spec 12: Accessibility + theming polish
       (a11y labels, reduce-motion, font-scaling, large-text,
       dark-only confirmation). See commit `d5d5e5e`.
-- [ ] Phase 11 — EAS Build deploy-gate wiring. Replace the
+- [x] Phase 11 — EAS Build deploy-gate wiring. Replace the
       stub in `scripts/deploy-check.mjs` with a real EAS Build
       API poll (`https://api.expo.dev/v2/projects/<id>/builds`)
       keyed to HEAD's commit SHA. Document `EXPO_TOKEN` setup
-      in `setup/02_eas.md` (new file).
+      in `setup/02_eas.md` (new file). See commit `0f703d2`.
 - [ ] Phase 12 — App icon + splash screen polish (final assets,
       adaptive icons, splash background = `AXM.bg`).
 - [ ] Phase 13 — TestFlight + Play Internal Track first cut.

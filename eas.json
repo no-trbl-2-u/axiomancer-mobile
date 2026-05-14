@@ -8,7 +8,13 @@
       }
     },
     "production": {
+      "ios": {
+        "distribution": "store",
+        "autoIncrement": "buildNumber"
+      },
       "android": {
+        "distribution": "store",
+        "autoIncrement": "versionCode",
         "buildType": "app-bundle"
       }
     }

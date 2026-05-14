@@ -60,7 +60,7 @@ engine-backed action that advances that narrative and updates `GameState`.
      intro before combat starts) and `narrative-choice` (text + 2-4
      choices).
    - (B) One unified `Event` with optional combat hand-off.
-   > Your answer:
+   > Your answer: A
 
 2. **Choice consequences.** Each choice has stat cost, item gain,
    stance lock, etc. Should the VM:
@@ -69,7 +69,7 @@ engine-backed action that advances that narrative and updates `GameState`.
    - (B) Only the human-readable description; the engine resolves on
      pick.
    - (C) Both.
-   > Your answer:
+   > Your answer: C
 
 3. **Illustrations.** Mock has a procedural "Encounter" and a
    procedural "Boss" SVG. Real assets per `SVG_ASSET_SPEC.md`
@@ -77,16 +77,16 @@ engine-backed action that advances that narrative and updates `GameState`.
    - (A) **(default)** Engine event includes an `art: string` slug;
      mobile maps slug → asset.
    - (B) Mobile owns the slug-to-asset map locally.
-   > Your answer:
+   > Your answer: B
 
 4. **Resolving an event mid-combat.** Some events (a tempting voice
    inside a boss fight) might dispatch *during* combat. In scope or
    future spec?
-   > Your answer:
+   > Your answer: Future spec
 
 5. **Skip animation.** Reading large text blocks on mobile is slow.
    Add a "skip" button?
-   > Your answer:
+   > Your answer: Yes
 
 ## Proposed approach
 

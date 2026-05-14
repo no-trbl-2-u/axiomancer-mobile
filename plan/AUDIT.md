@@ -19,16 +19,17 @@
   `components/ActionIcon.tsx`, `components/BodyDiagram.tsx`,
   `components/NodeMark.tsx`; run `npm run verify`; commit
 
-### [3.0] Migrate `Consumable.effectId` from string parsing to structured `healAmount: number`
+### [3.0] Migrate `Consumable.effectId` from string parsing to structured `healAmount: number` ✅
 
+- issue: #12 (closed by commit `a5438c5`)
 - category: refactor / data (engine integration debt)
-- impact: 6 (Phase 2 audit close-out flagged "stuffing strings
-  like `'Heal 6 HP'` into `effectId` so `parseHealAmount` keeps
-  working"; semantic correctness, no user-facing regression today)
-- ease: 5 (grep `effectId` in fixtures + actions, replace with
-  `healAmount`, update `parseHealAmount` callers; ~4 files)
-- next: future tick — not picked this pass (lint cleanup
-  scores higher and clears noise first)
+- **Resolved 2026-05-13.** Mobile now reads `consumable.healAmount`
+  directly; legacy `effectId: 'Heal N HP'` strings stay supported
+  via `parseHealAmount` for backward compat. Caught a latent
+  double-heal bug along the way — the engine's `store.useConsumable`
+  already applies `healAmount` internally via `useConsumableEffect`,
+  so the mobile-side `healCharacter` call now gates to the
+  legacy-string path only. See commit `a5438c5`.
 
 ### [2.5] `state/presenters/navigation.engine.ts` carries 3 TODOs blocked on engine surface
 

@@ -33,6 +33,9 @@ or build a development client.
 | `npm run ios`       | Start the iOS simulator.                                     |
 | `npm run android`   | Start the Android emulator.                                  |
 | `npm run web`       | Start the web target.                                        |
+| `npm run web:container` | Start Expo web inside a `node:20-alpine` container (port 18081 by default). Used for the AI screenshot walkthrough below. |
+| `npm run web:container:wait` | Block until the containerised dev server responds with HTTP 200. |
+| `npm run web:container:down` | Stop and remove the container. |
 | `npm run lint`      | `expo lint` (ESLint with Expo's config).                     |
 | `npx tsc --noEmit`  | Type-check.                                                  |
 | `npm test`          | Run Jest. **Not wired yet — pull `specs/01-test-harness-setup.md` first.** |
@@ -148,6 +151,45 @@ Fonts:
 - **IM Fell English** — body serif (with italic variant).
 - **Bebas Neue** — sans labels (button captions, section labels).
 - **JetBrains Mono** — numerics (HP / damage / rolls).
+
+## AI screenshot walkthrough
+
+Claude Code can drive a real browser against the running app and take
+screenshots — useful for "see what the user sees" regression checks
+before shipping a screen change.
+
+Wiring:
+
+- [`.mcp.json`](./.mcp.json) declares a project-local
+  [`@playwright/mcp`](https://github.com/microsoft/playwright-mcp)
+  server (`chromium`, `--headless`, `--isolated`). Claude Code loads
+  it automatically when started in this repo.
+- [`scripts/dev-server-container.sh`](./scripts/dev-server-container.sh)
+  spins up Expo web inside a throw-away `node:20-alpine` container so
+  the host doesn't accumulate Metro state between sessions.
+
+One-time setup on a fresh checkout:
+
+```bash
+npx playwright install chromium   # ~170 MB, downloads the browser binary
+```
+
+Per-walkthrough flow:
+
+```bash
+npm run web:container             # starts container on http://127.0.0.1:18081
+npm run web:container:wait        # blocks until the bundler is serving HTTP 200
+# (Claude calls browser_navigate / browser_take_screenshot / browser_resize)
+npm run web:container:down        # tear down when done
+```
+
+Mobile viewports live as inline args to the Playwright MCP — switch
+between `Pixel 7` (412 × 915) and `iPhone 14` (390 × 844) by calling
+`browser_resize` mid-walkthrough.
+
+Native (Android emulator + `adb screencap`) is not wired in this pass;
+web coverage catches most regressions. See [`TODO.md`](./TODO.md) for
+the eventual native plan.
 
 ## SVG assets
 

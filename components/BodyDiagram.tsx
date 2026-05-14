@@ -1,5 +1,5 @@
 import React from 'react';
-import Svg, { Circle, Path, Ellipse, G } from 'react-native-svg';
+import Svg, { Circle, Path, Ellipse } from 'react-native-svg';
 import { AXM } from '@/theme/axm';
 
 export function BodyDiagram() {

@@ -45,7 +45,6 @@ export default function RootLayout() {
         // the user. Minimum viable for this phase: log and continue with
         // a fresh game (cache stays null, provider boots `createNewGameState`).
         // Replace with a UX modal in a follow-up.
-        // eslint-disable-next-line no-console
         console.warn('[persistence] preload failed; starting fresh', err);
       })
       .finally(() => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import Svg, { Path, Circle, Rect, Line } from 'react-native-svg';
+import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { AXM } from '@/theme/axm';
 import { EffectGlyph } from './EffectGlyph';
 

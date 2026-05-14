@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Svg, {
   Path, Circle, Ellipse, Line, Rect, G,
-  Defs, RadialGradient, Stop,
 } from 'react-native-svg';
 import { AXM, FONTS } from '@/theme/axm';
 import { ScreenBg } from '@/components/ScreenBg';

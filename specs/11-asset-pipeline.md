@@ -39,27 +39,27 @@ into a "completed" header. New assets can be dropped into
      illustrations (hierophant portrait, event scenes).
    - (B) PNG-first, with @1x / @2x / @3x. Avoid SVG runtime cost.
    - (C) Mix per asset class — small icons SVG; large illos PNG.
-   > Your answer:
+   > Your answer: C
 
 2. **Asset source.** Where does the actual artwork come from?
    - (A) Hand-drawn by the designer, scanned, traced.
    - (B) AI-generated (Midjourney, etc.) and post-processed.
    - (C) Commissioned from an artist.
    - (D) Mix.
-   > Your answer:
+   > Your answer: B
 
 3. **Asset registry.** Hand-rolled `assets/index.ts` mapping slug →
    `require(...)`?
    - (A) **(default)** Yes — typed registry with autocomplete.
    - (B) No — direct `require('@/assets/images/...')` per consumer.
-   > Your answer:
+   > Your answer: A
 
 4. **Theming on raster assets.** PNG illustrations cannot be
    recoloured at runtime. If a future "light mode" or "alt palette"
    is desired:
    - (A) **(default)** Defer — accept dark-mode-only for v1.
    - (B) Provide light/dark variants per asset.
-   > Your answer:
+   > Your answer: A (There will not be a "light mode")
 
 5. **Bundle size budget.** Set a budget for the assets folder
    (e.g. ≤ 5 MB before launch)?

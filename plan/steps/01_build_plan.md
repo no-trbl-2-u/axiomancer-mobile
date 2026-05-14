@@ -113,8 +113,27 @@ commit that ships the phase.
 - [x] Phase 13 — TestFlight + Play Internal Track first cut.
       Production EAS builds, store listings drafted, internal
       testers invited. See commit `e49f8db`.
+- [ ] Phase 14 — UI fixes: Character crash + Event tab → modal.
+      Promoted from `plan/PHASE_CANDIDATES.md` via `/oversight`
+      on 2026-05-14 (score 9.0). The implementation already
+      landed in commit `5dd597b` ("Bug issues") — event screen
+      moved out of `(tabs)/` and presented as a modal via the
+      new `EventGate`, character presenter null-guards for
+      missing `derivedStats` / `nonCombatStats`. Row stays open
+      so the next `/march` tick verifies the brief's acceptance
+      criteria and closes formally. See
+      `plan/phases/phase_14_ui_fixes.md`.
+- [ ] Phase 15 — Persistence migration: backfill missing engine
+      state fields on save load. Promoted from
+      `plan/PHASE_CANDIDATES.md` via `/oversight` on 2026-05-14
+      (score 6.0). Add a `schemaVersion N → N+1` step that
+      populates `derivedStats` / `nonCombatStats` from
+      `attributes` / `archetype` (engine helpers if available,
+      zero-fills otherwise). Drop the `(player as any)` casts
+      and `?? 0` fallbacks introduced in Phase 14. Brief to be
+      drafted by `/plan-a-phase` on next reach.
 
-> **After phase 13:** the loop transitions to `/iterate` —
+> **After phase 15:** the loop transitions to `/iterate` —
 > bug findings, presenter refactors, asset backlog, ongoing
 > audits. `/march` makes that transition automatic.
 
@@ -259,6 +278,31 @@ contract.
 Production EAS builds, store listing drafts, screenshots from
 the simulators, internal testers invited. The end of the
 substrate; `/iterate` takes over after.
+
+### Phase 14 — UI fixes: Character crash + Event tab → modal
+
+Two-issue cleanup that landed informally in commit `5dd597b`
+("Bug issues") before being promoted. (1) Move the Event screen
+out of the `(tabs)/` group and present it as a full-screen modal
+gated by `selectHasActiveEvent` — the EVENT tab no longer
+belongs alongside MAP/COMBAT/SHEET/SACK. (2) Add null-safe
+fallbacks in `selectCharacterViewModel`'s `buildDerived` /
+`buildSaves` helpers so a save without `derivedStats` /
+`nonCombatStats` renders zeros instead of throwing. Brief at
+`plan/phases/phase_14_ui_fixes.md`; row stays open for the next
+`/march` tick to validate the listed acceptance criteria.
+
+### Phase 15 — Persistence migration: backfill engine state fields
+
+Replace the Phase 14 null-guard with a durable fix: extend the
+existing `schemaVersion` migration runner (shipped in Phase 7)
+with a step that populates `derivedStats` and `nonCombatStats`
+on load. Prefer engine helpers if exposed; zero-fill otherwise.
+Drop the `(player as any)` casts + `?? 0` fallbacks once the
+migration is guaranteed to run. Brief to be drafted by
+`/plan-a-phase` from `specs/09-asyncstorage-persistence.md` (no
+dedicated spec — this is an additive migration on the existing
+adapter).
 
 ---
 

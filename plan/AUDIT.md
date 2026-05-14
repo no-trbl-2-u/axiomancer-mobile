@@ -58,6 +58,28 @@
 
 ## Pending
 
+### [3.5] Add a bundler smoke test (boot Expo + curl `/` + assert 200)
+
+- proposed: 2026-05-14, filed via `/oversight` from user note
+  `missing-e2e.md` (now archived into this finding)
+- category: tests (coverage gap — environmental, not unit)
+- impact: 5 (today's hermetic Jest suite cannot detect Metro /
+  Expo bundler regressions: favicon/manifest middleware,
+  filesystem-cache permission failures, asset-pipeline breakage.
+  The next time the bundler fails to boot, nothing flags it
+  before a user hits the symptom — exactly how the
+  2026-05-14 `EACCES` cache-dir incident surfaced)
+- ease: 4 (small Node script + CI workflow; needs to run
+  outside Jest because Metro spawns its own workers)
+- next: write `scripts/smoke-bundler.mjs` that runs
+  `expo export` (or `expo start --offline` in background),
+  curls `/` and asserts a 200 with the root `<div>`, tears
+  down. Hook it into `pnpm verify` as an opt-in step and to
+  CI as a separate job. Document the failure-mode contract
+  alongside `scripts/deploy-check.mjs`.
+- source signal: `missing-e2e.md` user note (archived into this
+  row 2026-05-14 — original file deleted from working tree)
+
 ### [needs-user-call] Phase 6 (Spec 08 — Event screen wiring) blocked on engine Spec 09 + narrative contract
 
 - category: external-dependency / build-plan

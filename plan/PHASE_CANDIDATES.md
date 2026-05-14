@@ -9,70 +9,6 @@
 
 ## Pending
 
-### [ ] [score 9.0] Phase 14 — UI fixes: Character crash + Event tab → modal
-
-- proposed: 2026-05-14, expand pass 1
-- source signals:
-  - Untracked brief already drafted at `plan/phases/phase_14_ui_fixes.md`
-    (user-authored; references `notes-on-ui.md` — file not present in
-    repo, but the brief stands alone)
-  - Brief lists two issues: (1) Event tab is wired as a permanent
-    tab when it should be a modal triggered by game state (parity
-    with combat pattern); (2) `selectCharacterViewModel` crashes
-    when persisted saves are missing `derivedStats` /
-    `nonCombatStats` fields
-  - Brief's "Suggested ship order" pre-ranks the crash fix as
-    self-contained + highest user impact (the SHEET tab is dead
-    today on any pre-derivedStats save)
-- rationale: A drafted-but-unpromoted phase brief is the loudest
-  possible expand signal — the user already did the design
-  thinking and just didn't tick it into the build plan. Crash
-  fix alone justifies promotion; modal restructure is well-scoped
-  in the brief and consistent with the combat-tab pattern.
-- proposed scope: 1 phase. Brief includes acceptance criteria
-  for both issues, fix code for the crash, and a 5-step
-  implementation plan for the modal move. Persistence migration
-  for the underlying type drift is explicitly out of scope
-  (see candidate 2).
-- estimated phases: 1
-- conflicts: none with `spec.md` non-goals (no `spec.md` in
-  this project; bearings doesn't forbid layout changes). Event
-  modal restructure intersects Phase 6 (skipped, blocked on
-  engine Spec 09) but does not require it — `selectHasActiveEvent`
-  returns `false` until Spec 09 lands, so the modal is dormant
-  but reachable for QA.
-
-### [ ] [score 6.0] Persistence migration — backfill missing engine state fields on save load
-
-- proposed: 2026-05-14, expand pass 1
-- source signals:
-  - Phase 14 brief's "Out of scope" section: "Persistence
-    migration to backfill missing `derivedStats` /
-    `nonCombatStats` on old saves"
-  - Phase 14 brief's "Why not fix the type instead of guarding?"
-    callout explicitly names migration as the real fix
-  - Existing Phase 7 (`specs/09-asyncstorage-persistence.md`)
-    shipped a `schemaVersion` migration runner — the rails for
-    this work already exist; this is a new migration entry, not
-    a new system
-- rationale: The Phase 14 null-guard is correct insurance, but
-  it papers over a type/data contract drift between mechanics
-  versions. Without a migration, every new engine field will
-  need a guard, and the `(player as any)` casts will pile up.
-  This is the kind of "structural debt that grows quietly" that
-  warrants a dedicated phase rather than ad-hoc patches.
-- proposed scope: 1 phase. Add a migration step
-  (`schemaVersion N → N+1`) that, on load, populates
-  `derivedStats` and `nonCombatStats` from `attributes` /
-  `archetype` via engine helpers (or zero-fills if the engine
-  doesn't expose computed defaults). Drop the `(player as any)`
-  casts and the `?? 0` fallbacks once migration is guaranteed.
-- estimated phases: 1
-- conflicts: depends on Phase 14 landing first (or being
-  promoted in same wave) — order matters; the guard is the
-  short-term unblocker, migration is the durable fix. No spec
-  / bearings conflicts.
-
 ### [ ] [score 5.5] Drain `combat.skills.fixture.ts` mock — wire engine skill selectors
 
 - proposed: 2026-05-14, expand pass 1
@@ -101,8 +37,28 @@
 
 ## Promoted
 
-(empty — populated as `/oversight` promotes candidates to the
-build plan)
+### [promoted 2026-05-14 → phase 14] [score 9.0] UI fixes: Character crash + Event tab → modal
+
+- promoted via `/oversight` 2026-05-14.
+- Assigned **Phase 14** in `plan/steps/01_build_plan.md`. Row left
+  `[ ]` open — user note: the underlying work shipped in commit
+  `5dd597b` ("Bug issues") but the row stays open so the next
+  `/march` tick verifies acceptance criteria and closes formally.
+- Brief: `plan/phases/phase_14_ui_fixes.md` (in-repo, drafted
+  2026-05-14).
+
+### [promoted 2026-05-14 → phase 15] [score 6.0] Persistence migration — backfill missing engine state fields on save load
+
+- promoted via `/oversight` 2026-05-14, in the same wave as Phase
+  14. Phase 14's null guards are the short-term cover; this
+  migration is the durable fix.
+- Assigned **Phase 15** in `plan/steps/01_build_plan.md`. Brief
+  to be drafted by `/plan-a-phase` on next reach.
+- Scope reminder: add a `schemaVersion N → N+1` migration that
+  backfills `derivedStats` / `nonCombatStats` from
+  `attributes` / `archetype` via engine helpers (or zero-fills if
+  the engine doesn't expose computed defaults). Drop the
+  `(player as any)` casts and `?? 0` fallbacks after migration.
 
 ## Rejected
 

@@ -20,6 +20,23 @@ export const FONTS = {
   mono: 'JetBrainsMono_400Regular',
 };
 
+export const TYPE = {
+  display: { fontFamily: FONTS.gothic, fontSize: 32, lineHeight: 38, letterSpacing: 0.5 },
+  h1: { fontFamily: FONTS.gothic, fontSize: 24, lineHeight: 30, letterSpacing: 0.3 },
+  h2: { fontFamily: FONTS.serif, fontSize: 20, lineHeight: 26, letterSpacing: 0.2 },
+  body: { fontFamily: FONTS.serif, fontSize: 16, lineHeight: 22, letterSpacing: 0 },
+  caption: { fontFamily: FONTS.sans, fontSize: 14, lineHeight: 18, letterSpacing: 0.1 },
+  mono: { fontFamily: FONTS.mono, fontSize: 14, lineHeight: 18, letterSpacing: 0 },
+} as const;
+
+export const SPACING = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+} as const;
+
 export function tornEdgePath(width: number, height: number, jag = 6, seed = 1): string {
   const rnd = (i: number) => {
     const x = Math.sin(i * 9301 + seed * 49297) * 233280;

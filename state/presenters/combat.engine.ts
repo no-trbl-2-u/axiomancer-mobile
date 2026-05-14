@@ -236,6 +236,21 @@ export interface CombatViewModel {
      * e.g. `'iv vs i'`. Numerals are the player and enemy round counts.
      */
     roundToken: string;
+    /** Accessibility labels for interactive elements. */
+    a11y: {
+        stanceHeart: string;
+        stanceBody: string;
+        stanceMind: string;
+        actionAttack: string;
+        actionDefend: string;
+        actionSkill: string;
+        actionItem: string;
+        playerHp: string;
+        playerMana: string;
+        enemyHp: string;
+        phaseHeader: string;
+        roundInfo: string;
+    };
 }
 
 // ---------------------------------------------------------------------------
@@ -646,6 +661,41 @@ _devAssertTriangleMatchesEngine();
 
 declare const __DEV__: boolean | undefined;
 
+function buildCombatA11y(
+    enemy: CombatEnemySummary,
+    player: CombatPlayerSummary,
+    phase: CombatPhaseKey,
+    round: number,
+    isInCombat: boolean,
+): CombatViewModel['a11y'] {
+    const enemyHpText = isInCombat 
+        ? `${enemy.name} has ${enemy.hp} of ${enemy.hpMax} health`
+        : 'No enemy';
+    const playerHpText = `You have ${player.hp} of ${player.hpMax} health`;
+    const playerManaText = `You have ${player.mana} of ${player.manaMax} mana`;
+    const phaseText = phase === 'ended' 
+        ? 'Combat has ended' 
+        : `Combat phase: ${PHASE_LABELS[phase]}`;
+    const roundText = isInCombat 
+        ? `Round ${round}` 
+        : 'Combat not started';
+
+    return {
+        stanceHeart: 'Choose Heart stance, beats Body, weak to Mind',
+        stanceBody: 'Choose Body stance, beats Mind, weak to Heart', 
+        stanceMind: 'Choose Mind stance, beats Heart, weak to Body',
+        actionAttack: 'Attack with equipped weapon',
+        actionDefend: 'Defend to reduce next harm',
+        actionSkill: 'Use a skill that costs mana',
+        actionItem: 'Use an item from inventory',
+        playerHp: playerHpText,
+        playerMana: playerManaText,
+        enemyHp: enemyHpText,
+        phaseHeader: phaseText,
+        roundInfo: roundText,
+    };
+}
+
 // ---------------------------------------------------------------------------
 // Main selector
 // ---------------------------------------------------------------------------
@@ -664,9 +714,9 @@ export function selectCombatViewModel(
             canConfirm: false,
         };
         const skillPicker = buildSkillPicker(stancePicker.selected, 0, 0);
-        return freezeViewModel({
+        const vm = {
             isInCombat: false,
-            phase: 'choosing_stance',
+            phase: 'choosing_stance' as CombatPhaseKey,
             round: 1,
             hud,
             enemy: EMPTY_ENEMY,
@@ -686,7 +736,9 @@ export function selectCombatViewModel(
             phaseIndex: 0,
             phaseOrder: PHASE_ORDER,
             roundToken: 'i vs i',
-        });
+            a11y: buildCombatA11y(EMPTY_ENEMY, EMPTY_PLAYER, 'choosing_stance', 1, false),
+        };
+        return freezeViewModel(vm);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -771,8 +823,9 @@ export function selectCombatViewModel(
     const round = Number(c.round ?? 1);
     const roundToken = `${toRoman(round)} vs ${toRoman(Math.max(1, round - 1))}`;
 
-    return freezeViewModel({
-        isInCombat: phase !== 'ended',
+    const isInCombat = phase !== 'ended';
+    const vm = {
+        isInCombat,
         phase,
         round,
         hud,
@@ -797,7 +850,9 @@ export function selectCombatViewModel(
         phaseIndex,
         phaseOrder: PHASE_ORDER,
         roundToken,
-    });
+        a11y: buildCombatA11y(enemy, player, phase, round, isInCombat),
+    };
+    return freezeViewModel(vm);
 }
 
 // ---------------------------------------------------------------------------

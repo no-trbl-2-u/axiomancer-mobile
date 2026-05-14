@@ -92,6 +92,29 @@ describe('selectCombatViewModel: no combat', () => {
         expect(vm.hud.manaPercent).toBeLessThanOrEqual(1);
         expect(Array.isArray(vm.hud.effects)).toBe(true);
     });
+
+    it('exposes accessibility labels for all interactive elements (Phase 10)', () => {
+        const store = createGameStore(createMemoryAdapter());
+        const vm = selectCombatViewModel(store.getState());
+
+        expect(vm.a11y).toBeDefined();
+        expect(typeof vm.a11y.stanceHeart).toBe('string');
+        expect(typeof vm.a11y.stanceBody).toBe('string');
+        expect(typeof vm.a11y.stanceMind).toBe('string');
+        expect(typeof vm.a11y.actionAttack).toBe('string');
+        expect(typeof vm.a11y.actionDefend).toBe('string');
+        expect(typeof vm.a11y.actionSkill).toBe('string');
+        expect(typeof vm.a11y.actionItem).toBe('string');
+        expect(typeof vm.a11y.playerHp).toBe('string');
+        expect(typeof vm.a11y.playerMana).toBe('string');
+        expect(typeof vm.a11y.enemyHp).toBe('string');
+        expect(typeof vm.a11y.phaseHeader).toBe('string');
+        expect(typeof vm.a11y.roundInfo).toBe('string');
+
+        expect(vm.a11y.stanceHeart).toContain('Heart');
+        expect(vm.a11y.actionAttack).toContain('Attack');
+        expect(vm.a11y.playerHp).toContain('health');
+    });
 });
 
 // ---------------------------------------------------------------------------

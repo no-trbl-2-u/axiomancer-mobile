@@ -86,6 +86,17 @@ export interface CharacterViewModel {
     effects: readonly CharacterEffectRow[];
     equipment: readonly EquipmentSlotRow[];
     skills: readonly CharacterSkillRow[];
+    /** Accessibility labels for character screen elements. */
+    a11y: {
+        characterName: string;
+        level: string;
+        experience: string;
+        baseStats: string;
+        derivedStats: string;
+        saves: string;
+        equipment: string;
+        effects: string;
+    };
 }
 
 // Equipment slots in display order, matching engine EquipmentSlot literals 1:1.
@@ -190,5 +201,17 @@ export function selectCharacterViewModel(state: GameStore): CharacterViewModel {
         effects: buildEffects(player),
         equipment: buildEquipment(player),
         skills: [],
+        a11y: {
+            characterName: `Character name: ${player.name}`,
+            level: `Level ${player.level}`,
+            experience: `Experience: ${player.experience} of ${player.experienceToNextLevel}`,
+            baseStats: 'Base statistics: Heart, Body, Mind',
+            derivedStats: 'Derived statistics: attack, skill, and defense values',
+            saves: 'Saving throws and ability tests',
+            equipment: 'Equipment slots and equipped items',
+            effects: buildEffects(player).length > 0 
+                ? `${buildEffects(player).length} active effects` 
+                : 'No active effects',
+        },
     });
 }

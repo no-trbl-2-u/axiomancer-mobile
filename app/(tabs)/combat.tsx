@@ -26,6 +26,7 @@ import {
     View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import Svg, { Path, Circle, Ellipse, Defs, RadialGradient, Stop } from 'react-native-svg';
 
 import { AXM, FONTS } from '@/theme/axm';
@@ -418,6 +419,7 @@ function PickerCarousel({
                     options={vm.stancePicker.options}
                     selected={vm.stancePicker.selected}
                     onPick={onPickStance}
+                    a11yLabels={vm.a11y}
                 />
             </View>
             <View style={[carousel_styles.page, { width: pageWidth }]} testID="carousel-page-action">
@@ -463,10 +465,12 @@ function StancePhase({
     options,
     selected,
     onPick,
+    a11yLabels,
 }: {
     options: readonly StanceOption[];
     selected: StanceKey;
     onPick: (s: StanceKey) => void;
+    a11yLabels: { stanceHeart: string; stanceBody: string; stanceMind: string };
 }) {
     return (
         <View style={stance_styles.row}>
@@ -481,7 +485,11 @@ function StancePhase({
                         onPress={() => onPick(opt.key)}
                         style={stance_styles.cardTouch}
                         accessibilityRole="button"
-                        accessibilityLabel={`Stance ${opt.label}`}
+                        accessibilityLabel={
+                            opt.key === 'heart' ? a11yLabels.stanceHeart :
+                            opt.key === 'body' ? a11yLabels.stanceBody :
+                            a11yLabels.stanceMind
+                        }
                         accessibilityState={{ selected: isSel }}
                     >
                         <View style={[stance_styles.card, { borderColor: isSel ? AXM.sulfur : accent, backgroundColor: isSel ? '#1a1410' : '#0a0a0a' }]}>
@@ -675,6 +683,15 @@ function ResolvePanel({
     const isFriend = resolve.outcome === 'friendship';
     const isCrit = resolve.outcome === 'crit';
     const accent = isFriend ? AXM.rust : AXM.blood;
+
+    // Trigger haptics for crit/fumble per Phase 10 spec
+    useEffect(() => {
+        if (isCrit) {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+        } else if (resolve.outcome === 'miss') {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }
+    }, [isCrit, resolve.outcome]);
 
     return (
         <View>

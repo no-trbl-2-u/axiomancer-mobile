@@ -47,26 +47,73 @@ if (PROVIDER === 'none') {
   process.exit(0)
 }
 
-// --- EAS BUILD (placeholder — implement in phase 11) -------------
+// --- EAS BUILD (phase 11 implementation) -------------------------
 if (PROVIDER === 'eas') {
   const TOKEN = process.env.EXPO_TOKEN
-  const PROJECT_ID = process.env.EAS_PROJECT_ID
-  if (!TOKEN || !PROJECT_ID) {
+  
+  if (!TOKEN) {
     console.error(
-      'deploy-check: EXPO_TOKEN and EAS_PROJECT_ID required for the\n' +
-        '          "eas" provider. Get a token at\n' +
-        '          https://expo.dev/settings/access-tokens, then set\n' +
-        '          DEPLOY_PROVIDER=eas in .env. Implementation lands in\n' +
-        '          phase 11.',
+      'deploy-check: EXPO_TOKEN required for the "eas" provider.\n' +
+        '          Get a token at https://expo.dev/settings/access-tokens,\n' +
+        '          then set DEPLOY_PROVIDER=eas in .env.\n' +
+        '          See setup/02_eas.md for configuration details.',
     )
     process.exit(3)
   }
-  console.error(
-    'deploy-check: EAS Build polling not yet implemented. See phase 11\n' +
-      '          in plan/steps/01_build_plan.md. Falling back to exit 0\n' +
-      '          so the loop is not blocked.',
-  )
-  process.exit(0)
+
+  try {
+    // Verify authentication first
+    execSync('npx eas whoami', { encoding: 'utf-8', stdio: 'pipe' })
+  } catch (error) {
+    console.error(
+      `deploy-check: EAS authentication failed. Check EXPO_TOKEN.\n` +
+        '          Error: ' + error.message,
+    )
+    process.exit(3)
+  }
+
+  try {
+    // Poll for builds matching current commit
+    const buildsJson = execSync(
+      `npx eas build:list --git-commit-hash="${sha}" --platform=all --json`,
+      { encoding: 'utf-8', stdio: 'pipe' }
+    )
+    
+    const builds = JSON.parse(buildsJson)
+    
+    // Find most recent build for this commit
+    const latestBuild = builds[0]
+    if (!latestBuild) {
+      console.log(`deploy-check: no builds found for commit ${sha.slice(0, 7)}`)
+      process.exit(2) // timeout - no build triggered yet
+    }
+    
+    // Map status to exit codes
+    switch (latestBuild.status) {
+      case 'finished':
+        console.log(`deploy-check: ✓ build ${latestBuild.id} finished`)
+        process.exit(0)
+      case 'errored':
+      case 'canceled':  
+        console.error(`deploy-check: ✗ build ${latestBuild.id} ${latestBuild.status}`)
+        process.exit(1)
+      case 'in-progress':
+      case 'in-queue':
+      case 'new':
+        console.log(`deploy-check: ⏳ build ${latestBuild.id} ${latestBuild.status}`)  
+        process.exit(2)
+      default:
+        console.error(`deploy-check: unknown build status: ${latestBuild.status}`)
+        process.exit(1)
+    }
+  } catch (error) {
+    if (error.message.includes('JSON')) {
+      console.error('deploy-check: failed to parse EAS CLI output')
+      process.exit(1)
+    }
+    console.error(`deploy-check: EAS CLI error: ${error.message}`)
+    process.exit(2) // treat CLI errors as timeout (retry)
+  }
 }
 
 console.error(`deploy-check: unknown DEPLOY_PROVIDER "${PROVIDER}".`)

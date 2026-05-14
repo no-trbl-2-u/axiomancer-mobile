@@ -108,8 +108,8 @@ commit that ships the phase.
       API poll (`https://api.expo.dev/v2/projects/<id>/builds`)
       keyed to HEAD's commit SHA. Document `EXPO_TOKEN` setup
       in `setup/02_eas.md` (new file). See commit `0f703d2`.
-- [ ] Phase 12 — App icon + splash screen polish (final assets,
-      adaptive icons, splash background = `AXM.bg`).
+- [x] Phase 12 — App icon + splash screen polish (final assets,
+      adaptive icons, splash background = `AXM.bg`). See commit `4e0fde5`.
 - [ ] Phase 13 — TestFlight + Play Internal Track first cut.
       Production EAS builds, store listings drafted, internal
       testers invited.

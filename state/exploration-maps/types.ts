@@ -1,7 +1,7 @@
 import type { NodeType } from '@/state/presenters/exploration.engine';
 
 export interface NodeLayout {
-    /** Stable engine node id (matches WorldMap.startingNode.id / completedNodes / availableNodes / lockedNodes). */
+    /** Stable engine node id (matches MapState.currentNode / completedNodes / availableNodes / lockedNodes). */
     id: string;
     /** Pixel position on the canonical 360×400 viewBox. */
     x: number;

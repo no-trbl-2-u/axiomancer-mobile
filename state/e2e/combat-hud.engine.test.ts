@@ -22,6 +22,7 @@ import {
 import { mockAlternatingRng } from '@/test-utils/rng';
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
 import { selectCombatHudViewModel } from '@/state/presenters/combat-hud.engine';
+import { createAppStore } from '@/state/store';
 
 afterEach(() => {
     jest.restoreAllMocks();
@@ -222,7 +223,10 @@ describe('engine store lifecycle', () => {
     it('startCombat does not trigger a save on the persistence adapter', () => {
         mockAlternatingRng();
         const adapter = createMemoryAdapter();
-        const store = createGameStore(adapter);
+        // Goes through the mobile boundary so the deflecting wrapper
+        // in `createAppStore` suppresses the engine's per-dispatch
+        // autosave (Spec 09: AsyncStorage writes are explicit only).
+        const store = createAppStore({ adapter });
 
         store.getState().startCombat(makeEnemy());
 

@@ -250,10 +250,12 @@ describe('changeMap action: map transition', () => {
 
     it('also accepts the WorldMap returned by getCoastalMap as a sanity hint', () => {
         // The action accepts a MapName string; this assertion proves the
-        // engine still ships the expected map under that name.
+        // engine still ships the expected map under that name. Post-Spec
+        // 08 Q5A, `getCoastalMap` returns a runtime `MapState`, so the
+        // starting node id surfaces as `currentNode` on a fresh map.
         const map = getCoastalMap('northern-forest');
         expect(map.name).toBe('northern-forest');
-        expect(map.startingNode.id).toBe('nf-1');
+        expect(map.currentNode).toBe('nf-1');
     });
 });
 

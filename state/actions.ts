@@ -629,25 +629,17 @@ export function incrementCombatFriendship(combat: CombatState): CombatState {
 // ---------------------------------------------------------------------------
 
 /**
- * Read the player's current node id from the world slice. The engine
- * doesn't model a "current node" — we stash one on the `currentMap`
- * object under a non-typed key. When unset, fall back to the map's
- * `startingNode.id` so a fresh game has a sensible starting point.
+ * Read the player's current node id from the world slice. As of
+ * `axiomancer-mechanics@0.5.0` (Spec 08 Q5A), the runtime `MapState`
+ * exposes `currentNode` directly — `createMapState` seeds it from the
+ * static definition's `startingNode.id` for a fresh map.
  */
 export function readCurrentNodeId(world: WorldState): string {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const m = world.currentMap as unknown as Record<string, any>;
-    const stashed = typeof m.currentNodeId === 'string' ? m.currentNodeId : null;
-    return stashed ?? world.currentMap.startingNode.id;
+    return world.currentMap.currentNode;
 }
 
 function writeCurrentNodeId(map: WorldMap, nodeId: string): WorldMap {
-    return {
-        ...map,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        currentNodeId: nodeId,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any;
+    return { ...map, currentNode: nodeId };
 }
 
 function moveToAction(store: AppStore, nodeId: string): MoveToResult {
@@ -684,8 +676,9 @@ function moveToAction(store: AppStore, nodeId: string): MoveToResult {
     };
 
     // Propagate unlocks for outbound edges declared in the layout fixture.
-    // The engine map only ships connectivity for `startingNode`, so the
-    // mobile-side fixture is the source of truth for the full graph.
+    // The mobile-side fixture is the source of truth for the visual graph
+    // (the engine's `completeNode` only marks completion — it doesn't
+    // discover neighbours from the static `MapDefinition`).
     const layout = getMapLayout(map.name);
     if (layout !== null) {
         const moved = layout.nodes.find((n) => n.id === nodeId);
@@ -714,11 +707,10 @@ function changeMapAction(store: AppStore, mapName: MapName): void {
     if (!world) return;
 
     const nextMap = getCoastalMap(mapName);
-    let nextWorld = worldChangeMap(world, nextMap);
-    nextWorld = {
-        ...nextWorld,
-        currentMap: writeCurrentNodeId(nextWorld.currentMap, nextMap.startingNode.id),
-    };
+    // `getCoastalMap` returns a freshly-built `MapState`, with `currentNode`
+    // already seeded to the definition's `startingNode.id`. The engine's
+    // `changeMap` reducer carries that through — no extra fix-up needed.
+    const nextWorld = worldChangeMap(world, nextMap);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     store.setState({ world: nextWorld } as any);
 }

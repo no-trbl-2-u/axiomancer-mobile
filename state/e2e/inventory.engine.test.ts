@@ -20,6 +20,7 @@ import {
 
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
 import { createAppActions, parseHealAmount } from '@/state/actions';
+import { createAppStore } from '@/state/store';
 import {
     selectInventoryViewModel,
     type InventoryViewModel,
@@ -507,14 +508,20 @@ describe('dropItem action: removes the item, except quest items', () => {
 describe('inventory lifecycle: persistence hook', () => {
     it('an addItem → useItem sequence does not call save until explicit', () => {
         const adapter = createMemoryAdapter();
-        const store = createGameStore(adapter, {
-            player: {
-                ...createCharacter({
-                    name: 'Pilgrim',
-                    level: 1,
-                    baseStats: { heart: 4, body: 4, mind: 4 },
-                }),
-                health: 4,
+        // Mobile boundary: `createAppStore` wraps the adapter so the
+        // engine's per-dispatch autosave (mechanics 0.5.0+) is gated,
+        // and only `actions.save()` reaches AsyncStorage.
+        const store = createAppStore({
+            adapter,
+            overrides: {
+                player: {
+                    ...createCharacter({
+                        name: 'Pilgrim',
+                        level: 1,
+                        baseStats: { heart: 4, body: 4, mind: 4 },
+                    }),
+                    health: 4,
+                },
             },
         });
         const actions = createAppActions(store);

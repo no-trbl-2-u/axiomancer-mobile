@@ -501,7 +501,10 @@ describe('selectCombatViewModel: store lifecycle', () => {
     it('selecting the VM does not trigger adapter.save', () => {
         mockFixedRng(0.5);
         const adapter = createMemoryAdapter();
-        const store = createGameStore(adapter);
+        // `createAppStore` wraps the adapter so the engine's per-dispatch
+        // autosave (mechanics 0.5.0+) is suppressed — Spec 09 keeps saves
+        // explicit at the mobile boundary.
+        const store = createAppStore({ adapter });
         const saveSpy = jest.spyOn(adapter, 'save');
 
         store.getState().startCombat(makeEnemy());

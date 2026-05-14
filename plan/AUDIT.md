@@ -3,6 +3,58 @@
 > Latest findings from `/iterate audit`. Rewritten on each
 > audit pass. The Pending list at the bottom queues `/iterate`.
 
+## Top 5 findings (scored) — 2026-05-13
+
+### [3.8] Drain 8 lint warnings (unused imports + stale eslint-disable) — picked
+
+- issue: #11
+- category: tests (quality / verify-gate noise)
+- impact: 4 (warnings are non-fatal but mask real signal; the
+  audit log explicitly tracks the count "7 pre-existing" → now
+  8, and unchecked warnings drift upward)
+- ease: 9.5 (every warning is an import-list trim or a one-line
+  delete; mechanical, no behaviour change)
+- next: edit `app/(tabs)/character/index.tsx`,
+  `app/(tabs)/event.tsx`, `app/_layout.tsx`,
+  `components/ActionIcon.tsx`, `components/BodyDiagram.tsx`,
+  `components/NodeMark.tsx`; run `npm run verify`; commit
+
+### [3.0] Migrate `Consumable.effectId` from string parsing to structured `healAmount: number`
+
+- category: refactor / data (engine integration debt)
+- impact: 6 (Phase 2 audit close-out flagged "stuffing strings
+  like `'Heal 6 HP'` into `effectId` so `parseHealAmount` keeps
+  working"; semantic correctness, no user-facing regression today)
+- ease: 5 (grep `effectId` in fixtures + actions, replace with
+  `healAmount`, update `parseHealAmount` callers; ~4 files)
+- next: future tick — not picked this pass (lint cleanup
+  scores higher and clears noise first)
+
+### [2.5] `state/presenters/navigation.engine.ts` carries 3 TODOs blocked on engine surface
+
+- category: refactor / external-dependency
+- impact: 5 (active events, XP/level-up, event-state checks all
+  fall back to defaults — Phase 8 navigation polish is shipped
+  but these stubs are silent dead ends once engine Spec 09 land)
+- ease: 5 (waits on engine surface; tracked in the
+  `[needs-user-call]` Phase 6 row below)
+- next: defer — same blocker as Phase 6
+
+### [2.0] `state/mocks/combat.skills.fixture.ts` still mocks skills (engine Spec 04)
+
+- category: refactor / data
+- impact: 5 (combat surface reads mocked skills; engine Spec 04
+  shipped but the mobile mock was never migrated to engine
+  selectors — drift risk)
+- ease: 4 (need to wire engine skill selectors into the combat
+  presenter and delete the fixture)
+- next: future tick — sized like a small refactor, not a
+  one-tick fix
+
+### [needs-user-call] Phase 6 (Spec 08 — Event screen wiring) blocked on engine Spec 09 + narrative contract
+
+- See Pending below — unchanged.
+
 ## Pending
 
 ### [needs-user-call] Phase 6 (Spec 08 — Event screen wiring) blocked on engine Spec 09 + narrative contract
@@ -39,6 +91,15 @@
   in `specs/08-event-screen-wiring.md`. Those are product calls.
 
 ## Done
+
+### [3.8] Drain 8 lint warnings (unused imports + stale eslint-disable) ✅
+
+- **Resolved 2026-05-13.** See commit `5c32f87` (issue #11).
+  Trimmed unused `ScrollView`, `Defs`, `RadialGradient`, `Stop`,
+  `Line` (×2), `G` imports across the 5 component / screen
+  files; removed the now-stale `// eslint-disable-next-line
+  no-console` in `app/_layout.tsx:48`. `npm run verify` clean
+  (lint 0/0, typecheck clean, 209/209 tests pass).
 
 ### [needs-user-call] Confirm hosting / deploy contract ✅
 

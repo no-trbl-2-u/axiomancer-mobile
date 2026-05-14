@@ -96,10 +96,10 @@ commit that ships the phase.
 - [x] Phase 8 — Spec 10: Navigation + app-shell polish (deep
       links, back behaviour, tab badges, splash → first screen
       handoff). See commit `6fc00dd`.
-- [ ] Phase 9 — Spec 11: Asset pipeline. Drain the SVG
+- [x] Phase 9 — Spec 11: Asset pipeline. Drain the SVG
       placeholder backlog via the existing
       `.cursor/skills/swap-asset-placeholder/SKILL.md` flow.
-      One real asset per tick.
+      One real asset per tick. `78006f1`
 - [ ] Phase 10 — Spec 12: Accessibility + theming polish
       (a11y labels, reduce-motion, font-scaling, large-text,
       dark-only confirmation).

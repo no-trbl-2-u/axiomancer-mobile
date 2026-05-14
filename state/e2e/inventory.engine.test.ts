@@ -39,7 +39,7 @@ function potion(id = 'potion-of-heart', heal = 6, qty = 1): Consumable {
         name: 'Potion of Heart',
         description: 'A small phial of ruby liquor.',
         category: 'consumable',
-        effectId: `Heal ${heal} HP`,
+        healAmount: heal,
         quantity: qty,
     };
 }

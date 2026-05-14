@@ -63,7 +63,7 @@ const potion: Consumable = {
     name: 'Potion of Heart',
     description: 'A small phial of ruby liquor.',
     category: 'consumable',
-    effectId: 'Heal 6 HP',
+    healAmount: 6,
     quantity: 1,
 };
 

@@ -11,6 +11,7 @@ import {
     isConsumable,
     isEquipment,
     type Character,
+    type Consumable,
     type DerivedStats,
     type Equipment,
     type GameStore,
@@ -77,19 +78,27 @@ export function selectItemModalViewModel(
 }
 
 function buildConsumableModal(player: Character, item: Item): ItemModalViewModel {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const effect = String((item as any).effectId ?? '');
-    const heal = parseHealAmount(effect);
+    // `isConsumable(item)` has narrowed at the call site; cast through.
+    const consumable = item as Consumable;
+    // Prefer the engine's structured `healAmount`; fall back to parsing
+    // a legacy `effectId` string for fixtures / records that haven't
+    // migrated yet.
+    const legacyEffect = consumable.effectId ?? '';
+    const heal = consumable.healAmount ?? parseHealAmount(legacyEffect);
     const projectedHp = heal > 0
         ? Math.min(player.maxHealth, player.health + heal)
         : player.health;
     const hpDelta = projectedHp - player.health;
 
     const previewLines: string[] = [];
-    if (effect) previewLines.push(effect);
+    if (consumable.healAmount && consumable.healAmount > 0) {
+        previewLines.push(`Heal ${consumable.healAmount} HP`);
+    } else if (legacyEffect) {
+        previewLines.push(legacyEffect);
+    }
     if (hpDelta > 0) {
         previewLines.push(`HP ${player.health} → ${projectedHp} (+${hpDelta})`);
-    } else if (effect && heal === 0) {
+    } else if (legacyEffect && heal === 0) {
         previewLines.push('No HP change.');
     }
 

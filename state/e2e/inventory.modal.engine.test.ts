@@ -39,7 +39,7 @@ const potion: Consumable = {
     name: 'Potion of Heart',
     description: 'A small phial of ruby liquor.',
     category: 'consumable',
-    effectId: 'Heal 6 HP',
+    healAmount: 6,
     quantity: 1,
 };
 
@@ -83,7 +83,15 @@ describe('selectItemModalViewModel: consumable preview (Q2)', () => {
     });
 
     it('reports "No HP change." when the effect is non-healing', () => {
-        const odd: Consumable = { ...potion, id: 'wine', effectId: '+4 Mana' };
+        // Intentionally exercises the legacy `effectId` fallback: a free-form
+        // non-healing effect should round-trip through `parseHealAmount → 0`
+        // and surface the "No HP change." preview line.
+        const odd: Consumable = {
+            ...potion,
+            id: 'wine',
+            healAmount: undefined,
+            effectId: '+4 Mana',
+        };
         const store = makeStore([odd]);
 
         const vm = selectItemModalViewModel(store.getState(), 'wine')!;

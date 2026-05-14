@@ -547,10 +547,18 @@ function useItemAction(store: AppStore, itemId: string): UseItemResult {
 
     const consumable = item as Consumable;
     const hpBefore = state.player.health;
-    const healAmount = parseHealAmount(consumable.effectId ?? '');
+    // The engine's `store.useConsumable` runs `useConsumableEffect`
+    // internally, which already applies `consumable.healAmount` when the
+    // structured field is present. We only need to apply heal ourselves
+    // for legacy fixtures / records that still encode the value as a
+    // free-form `effectId` string ("Heal N HP") — the engine ignores
+    // those (lookupEffect returns undefined).
+    const legacyHeal = consumable.healAmount != null
+        ? 0
+        : parseHealAmount(consumable.effectId ?? '');
     let nextPlayer: Character = state.player;
-    if (healAmount > 0) {
-        nextPlayer = healCharacter(nextPlayer, healAmount);
+    if (legacyHeal > 0) {
+        nextPlayer = healCharacter(nextPlayer, legacyHeal);
     }
 
     // Apply the player-state update first, then route the stack

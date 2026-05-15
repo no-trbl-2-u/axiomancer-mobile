@@ -242,7 +242,7 @@ function composeNarrative(resolved: ResolvedEvent): EventViewModel {
                 artSlug,
                 badge: 'A QUIET PLACE',
                 badgeAccentKey: 'parchment',
-                title: 'YOU REST',
+                title: 'THE FIRE LOWERS',
                 subtitle: '',
                 body,
                 choices: [
@@ -260,11 +260,11 @@ function composeNarrative(resolved: ResolvedEvent): EventViewModel {
                 canSkip: body.length > 240,
             };
         case 'gathering':
-            return composeItemBag('A GATHERING', 'YOU GATHER', body, resolved.items, artSlug, 'gather');
+            return composeItemBag('A GATHERING', 'THE BRUSH YIELDS', body, resolved.items, artSlug, 'gather');
         case 'loot-cache':
             return composeItemBag(
                 'A FIND',
-                'YOU TAKE',
+                'THE CACHE OPENS',
                 body,
                 resolved.items,
                 artSlug,

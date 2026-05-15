@@ -18,15 +18,6 @@
 - suggested fix: Stop forcing `.toUpperCase()` on `description` at the screen — let lowercase ritual strings pass through — and either lowercase the choice labels or move the styling to `textTransform: 'uppercase'` so source strings stay readable as voice copy.
 - source: reader
 
-### [MED] /app/event/index.tsx — "✠ WHAT WILL YOU DO?" eyebrow uses modern direct-address voice
-- pass: 3 (commit aaa6dbd)
-- viewport: repository
-- category: voice
-- observation: The choice-list eyebrow lands on the player with a quiz-prompt cadence; the rest of the screen leans archaic (`'YOU REST'`, `'SO BE IT'`, `'A QUIET PLACE'`). The eyebrow is the loudest voice mismatch on the new Phase 6 surface.
-- evidence: `app/event/index.tsx:225-227`: `<SectionLabel size={10}>✠ WHAT WILL YOU DO?</SectionLabel>`.
-- suggested fix: Rephrase to ritual register without second-person address — e.g. `✠ CHOOSE` or `✠ THE PATHS` or `✠ A RECKONING`.
-- source: reader
-
 ### [MED] /app/crucible.tsx — file-level JSDoc points at dead `app/event.tsx` path
 - pass: 3 (commit aaa6dbd)
 - viewport: repository
@@ -74,6 +65,17 @@
 - source: reader
 
 ## Done
+
+### [MED] /app/event/index.tsx — "✠ WHAT WILL YOU DO?" eyebrow uses modern direct-address voice ✅
+- pass: 3 (commit aaa6dbd)
+- viewport: repository
+- category: voice
+- observation: Modern quiz-prompt eyebrow out of register with the rest of the Phase 6 surface.
+- evidence: `app/event/index.tsx:225-227`.
+- suggested fix: Rephrase to ritual register.
+- source: reader
+- issue: #33
+- **Resolved 2026-05-15.** `'✠ WHAT WILL YOU DO?'` → `'✠ A RECKONING'`. Matches the article-prefix ritual pattern of the surrounding badges. Verify green at 342/342. Closes #33. See commit `2ece636`.
 
 ### [MED] /state/presenters/inventory.engine.ts — empty-state copy still says "Thy sack is empty." ✅
 - pass: 3 (commit aaa6dbd)

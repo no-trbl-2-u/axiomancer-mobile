@@ -63,15 +63,6 @@
 - suggested fix: Either derive the subtitle from `enemy.description` if the engine carries one, or rotate over a small per-tier table keyed on `enemy.level` so repeated boss encounters don't share the same omen.
 - source: reader
 
-### [MED] /state/presenters/event.engine.ts — choice descriptions double-uppercased between presenter and screen
-- pass: 3 (commit aaa6dbd)
-- viewport: repository
-- category: voice
-- observation: The new event modal's choice labels are ALLCAPS in the presenter (`'SO BE IT'`, `'WALK ON'`, `'TAKE IT'`, `'FIGHT'`) and the descriptions (e.g. `'Combat · turns'`, `'Continue'`) are then re-uppercased at the screen layer. Result: every line on the most-narrative screen reads as a HUD readout instead of the lowercase ritual cadence bearings prefers.
-- evidence: `state/presenters/event.engine.ts:230` (`'WALK ON'`), `:261/:311` (`'SO BE IT'`), `:356` (`'TAKE IT'`); compounded by `app/event/index.tsx:93`: `<Text style={styles.choiceSub}>{choice.description.toUpperCase()}</Text>`.
-- suggested fix: Stop forcing `.toUpperCase()` on `description` at the screen — let lowercase ritual strings pass through — and either lowercase the choice labels or move the styling to `textTransform: 'uppercase'` so source strings stay readable as voice copy.
-- source: reader
-
 ### [MED] /app/crucible.tsx — file-level JSDoc points at dead `app/event.tsx` path
 - pass: 3 (commit aaa6dbd)
 - viewport: repository
@@ -119,6 +110,17 @@
 - source: reader
 
 ## Done
+
+### [MED] /state/presenters/event.engine.ts — choice descriptions double-uppercased between presenter and screen ✅
+- pass: 3 (commit aaa6dbd)
+- viewport: repository
+- category: voice
+- observation: Presenter labels are ALLCAPS and the screen re-uppercased the descriptions, flattening lowercase ritual cadence into HUD shouting.
+- evidence: `app/event/index.tsx:93`.
+- suggested fix: Drop the screen-side `.toUpperCase()`, move styling to `textTransform: 'uppercase'`.
+- source: reader
+- issue: #34
+- **Resolved 2026-05-15.** Two-line fix in `app/event/index.tsx`: drop `description.toUpperCase()` and add `textTransform: 'uppercase'` to the `choiceSub` style. Source strings stay readable as voice copy; UI still renders caps. Verify green at 342/342. Closes #34. See commit `30e01bd`.
 
 ### [MED] /app/event/index.tsx — "✠ WHAT WILL YOU DO?" eyebrow uses modern direct-address voice ✅
 - pass: 3 (commit aaa6dbd)

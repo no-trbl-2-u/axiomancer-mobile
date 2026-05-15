@@ -377,6 +377,36 @@ describe('eventActions.pickEventChoice', () => {
         expect(store.getState().event.pending).toBeNull();
     });
 
+    it('cutscene auto-resolve clears pending without engine dispatch', () => {
+        const store = makeStore();
+        const actions = createAppActions(store);
+        setPending(store, makeCutsceneResult(['A vision.']));
+
+        actions.pickEventChoice('acknowledge');
+
+        expect(store.getState().event.pending).toBeNull();
+    });
+
+    it('hazard auto-resolve clears pending without engine dispatch', () => {
+        const store = makeStore();
+        const actions = createAppActions(store);
+        setPending(store, makeHazardResult(3));
+
+        actions.pickEventChoice('acknowledge');
+
+        expect(store.getState().event.pending).toBeNull();
+    });
+
+    it('village leave clears pending without engine dispatch', () => {
+        const store = makeStore();
+        const actions = createAppActions(store);
+        setPending(store, makeVillageResult());
+
+        actions.pickEventChoice('leave');
+
+        expect(store.getState().event.pending).toBeNull();
+    });
+
     it('unknown choice id on combat-prelude is a defensive no-op (pending stays)', () => {
         const store = makeStore();
         const actions = createAppActions(store);
@@ -402,13 +432,13 @@ describe('eventActions.dismissEvent', () => {
     });
 });
 
-describe('eventActions.processCurrentNode', () => {
+describe('eventActions.resolveCurrentMapEvent', () => {
     it('no-ops while combat is active (Spec 08 Q4)', () => {
         const store = makeStore();
         const actions = createAppActions(store);
         store.setState({ combat: { phase: 'choose' } as never });
 
-        const produced = actions.processCurrentNode();
+        const produced = actions.resolveCurrentMapEvent();
 
         expect(produced).toBe(false);
         expect(store.getState().event.pending).toBeNull();

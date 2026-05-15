@@ -148,12 +148,8 @@ export interface AppActions {
      *
      * Returns `true` when an event was produced (kind !== 'none').
      *
-     * (Phase 23 Tick B renames this method to `resolveCurrentMapEvent`
-     * once all callers update; for now the body uses the new engine
-     * call but keeps the old method name to avoid touching the
-     * GameStoreProvider + screen wiring in Tick A.)
      */
-    processCurrentNode: () => boolean;
+    resolveCurrentMapEvent: () => boolean;
     /**
      * Resolve the currently-pending event by id. Branches on VM kind:
      *  - combat-prelude + 'fight'  -> startCombat(encounter.enemy); clear
@@ -540,7 +536,7 @@ export function createAppActions(store: AppStore): AppActions {
         moveTo: (nodeId) => moveToAction(store, nodeId),
         changeMap: (mapName) => changeMapAction(store, mapName),
         save: () => store.getState().save(),
-        processCurrentNode: () => processCurrentNodeAction(store),
+        resolveCurrentMapEvent: () => resolveCurrentMapEventAction(store),
         pickEventChoice: (choiceId) => pickEventChoiceAction(store, choiceId),
         dismissEvent: () => dismissEventAction(store),
     };
@@ -755,7 +751,7 @@ function changeMapAction(store: AppStore, mapName: MapName): void {
 // Event actions (Spec 08 — Phase 6 Tick B)
 // ---------------------------------------------------------------------------
 
-function processCurrentNodeAction(store: AppStore): boolean {
+function resolveCurrentMapEventAction(store: AppStore): boolean {
     const state = store.getState();
     // Spec 08 Q4 = Future spec: do not stack events on top of combat.
     if (state.combat !== null) return false;

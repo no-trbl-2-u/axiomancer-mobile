@@ -3,7 +3,7 @@
  *
  * Composes `EventViewModel` from the mobile event slice
  * (`state.event.pending` + `state.event.dialogueCursor`) populated by
- * `eventActions.processCurrentNode()` after `resolveMapEvent(state)`.
+ * `eventActions.resolveCurrentMapEvent()` after `resolveMapEvent(state)`.
  * Two VM kinds drive screen behaviour: `'combat-prelude'` (foe intro
  * -> startCombat) and `'narrative-choice'` (prose + choices ->
  * applyDialogue or auto-resolve).

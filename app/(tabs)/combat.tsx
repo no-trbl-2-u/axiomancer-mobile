@@ -653,7 +653,7 @@ function SkillPhase({
                 })}
             </ScrollView>
             <Text style={skill_styles.availHint}>
-                {availableCount} of {totalCount} available — STANCE LOCKED
+                {availableCount} of {totalCount} open · stance bound.
             </Text>
         </View>
     );

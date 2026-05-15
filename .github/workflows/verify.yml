@@ -20,6 +20,15 @@ on:
 permissions:
   contents: read
 
+# Opt the JavaScript-based actions (checkout, setup-node) onto Node
+# 24 ahead of GitHub's 2026-06-02 default flip and the 2026-09-16
+# Node-20-removal. Lets us flush any Node-24 incompat now while
+# there's time to react. Does not affect the Node version used by
+# `npm ci` / `npm run verify` — that's separately pinned per job
+# via `actions/setup-node.with.node-version`.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 concurrency:
   group: verify-${{ github.ref }}
   cancel-in-progress: true

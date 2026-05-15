@@ -137,25 +137,23 @@ commit that ships the phase.
       zero-fills otherwise). Drop the `(player as any)` casts
       and `?? 0` fallbacks introduced in Phase 14. See commit
       `c8e29a8`.
-- [ ] Phase 16 — Drain `combat.skills.fixture.ts` mock: wire
+- [skipped] Phase 16 — Drain `combat.skills.fixture.ts` mock: wire
       engine skill selectors into the combat presenter. Promoted
       from `plan/PHASE_CANDIDATES.md` via `/oversight` on
-      2026-05-15 (score 5.5). Combat surface still reads a
-      hard-coded skills fixture even though engine Spec 04 has
-      shipped a real skill API — closes the last mobile/engine
-      drift named in the bearings hard rule. Scope: replace
-      `state/mocks/combat.skills.fixture.ts` imports in the
-      combat presenter with engine skill selectors, update e2e
-      tests against engine fixtures, delete the mock file.
-      Brief at `plan/phases/phase_16_engine_skills.md`.
-      **BLOCKED 2026-05-15:** `axiomancer-mechanics@0.6.0` does
-      not re-export `skillLibrary` / `getSkillById` from its
-      top-level index, and its published dist is missing several
-      `types.d.ts` files that would let us deep-import. Engine
-      release must add either the top-level re-export OR a
-      complete `./Skills` subpath export. See the brief's
-      "BLOCKED" header for the unblock recipe. Loop revisits
-      next `/march` tick once the engine ships.
+      2026-05-15 (score 5.5). Brief at
+      `plan/phases/phase_16_engine_skills.md`. **Skipped
+      2026-05-15 — same pattern as Phase 6:** the work is fully
+      designed, but it's blocked on an upstream package release.
+      `axiomancer-mechanics@0.6.0` does not re-export
+      `skillLibrary` / `getSkillById` from its top-level index,
+      and its published dist is missing several `types.d.ts`
+      files that would let us deep-import. Engine release must
+      add either the top-level re-export OR a complete `./Skills`
+      subpath export (see the brief's "BLOCKED" header for the
+      recipe). The `[skipped]` marker stops `/march` from
+      re-attempting `/ship-a-phase` every tick; flip back to
+      `[ ]` (or let `/oversight` flip it) once a new engine
+      release lands with the exports.
 
 > **After phase 16:** the loop transitions to `/iterate` —
 > bug findings, presenter refactors, asset backlog, ongoing

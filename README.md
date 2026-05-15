@@ -188,8 +188,7 @@ between `Pixel 7` (412 × 915) and `iPhone 14` (390 × 844) by calling
 `browser_resize` mid-walkthrough.
 
 Native (Android emulator + `adb screencap`) is not wired in this pass;
-web coverage catches most regressions. See [`TODO.md`](./TODO.md) for
-the eventual native plan.
+web coverage catches most regressions.
 
 ## SVG assets
 

@@ -9,15 +9,6 @@
 
 ## Pending
 
-### [HIGH] /state/presenters/combat.engine.ts — phase banner copy still says "CHOOSE THY STANCE" / "DECLARE THY ACTION"
-- pass: 3 (commit aaa6dbd)
-- viewport: repository
-- category: voice
-- observation: Bearings was updated 2026-05-15 (commit `14a9395`) to ban second-person archaic pronouns (`thee` / `thou` / `thy` / `thine` / `ye`). These two strings sit on the combat HUD every turn — the most-visible remaining violations of a rule that just landed. The matching screen test hard-codes the same strings, so a fix has to land with the test.
-- evidence: `state/presenters/combat.engine.ts:268-269`: `choosing_stance: '✠ CHOOSE THY STANCE',` and `choosing_action: '✠ DECLARE THY ACTION',`. Test pin at `state/e2e/combat.screen.test.tsx:106,114`.
-- suggested fix: Rephrase without `thy` — e.g. `✠ CHOOSE A STANCE` / `✠ DECLARE AN ACTION`, or further into ritual register (`✠ THE STANCE` / `✠ THE ACTION`). Update both presenter constants and the screen test.
-- source: reader
-
 ### [MED] /state/presenters/event.engine.ts — choice descriptions double-uppercased between presenter and screen
 - pass: 3 (commit aaa6dbd)
 - viewport: repository
@@ -101,6 +92,17 @@
 - source: reader
 
 ## Done
+
+### [HIGH] /state/presenters/combat.engine.ts — phase banner copy still says "CHOOSE THY STANCE" / "DECLARE THY ACTION" ✅
+- pass: 3 (commit aaa6dbd)
+- viewport: repository
+- category: voice
+- observation: Bearings was updated 2026-05-15 (commit `14a9395`) to ban second-person archaic pronouns. These two strings sat on the combat HUD every turn.
+- evidence: `state/presenters/combat.engine.ts:268-269`. Test pin at `state/e2e/combat.screen.test.tsx:106,114`.
+- suggested fix: Rephrase without `thy` — pattern-match the sibling `✠ INVOKE A SKILL`. Update presenter + screen test.
+- source: reader
+- issue: #29
+- **Resolved 2026-05-15.** Rephrased to `✠ CHOOSE A STANCE` and `✠ DECLARE AN ACTION` — matches the sibling `✠ INVOKE A SKILL` pattern in the same record. Test pins updated. Verify green at 321/321. Closes #29. See commit `e3da6ba`.
 
 ### [MED] /app/(tabs)/combat.tsx — "No items at hand. Coming soon." breaks voice on visible failure path ✅
 - pass: 2 (commit d967f27)

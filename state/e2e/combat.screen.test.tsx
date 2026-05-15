@@ -103,7 +103,7 @@ describe('CombatScreen: phase coverage', () => {
         seedPhase(store, 'choosing_stance');
         const tree = render(withProviders(store, <CombatScreen />));
         const text = JSON.stringify(tree.toJSON());
-        expect(text).toContain('CHOOSE THY STANCE');
+        expect(text).toContain('CHOOSE A STANCE');
     });
 
     it('renders the choosing_action phase header', () => {
@@ -111,7 +111,7 @@ describe('CombatScreen: phase coverage', () => {
         seedPhase(store, 'choosing_action');
         const tree = render(withProviders(store, <CombatScreen />));
         const text = JSON.stringify(tree.toJSON());
-        expect(text).toContain('DECLARE THY ACTION');
+        expect(text).toContain('DECLARE AN ACTION');
     });
 
     it('renders the choosing_skill phase header', () => {

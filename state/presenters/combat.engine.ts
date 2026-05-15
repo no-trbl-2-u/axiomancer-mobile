@@ -265,8 +265,8 @@ const PHASE_ORDER: readonly CombatPhaseKey[] = [
 ];
 
 const PHASE_LABELS: Record<CombatPhaseKey, string> = {
-    choosing_stance: '✠ CHOOSE THY STANCE',
-    choosing_action: '✠ DECLARE THY ACTION',
+    choosing_stance: '✠ CHOOSE A STANCE',
+    choosing_action: '✠ DECLARE AN ACTION',
     choosing_skill: '✠ INVOKE A SKILL',
     resolving: '✠ FATE SETTLES',
     ended: '✠ THE FIGHT IS OVER',

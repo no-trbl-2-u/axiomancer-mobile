@@ -1,4 +1,4 @@
-# Spec 08 — Event Screen Wiring
+# Spec 08 — Event Screen Wiring `[DONE on 2026-05-15 — see commit beba7d4]`
 
 ## Goal
 
@@ -108,12 +108,50 @@ engine-backed action that advances that narrative and updates `GameState`.
 
 ## Acceptance checklist
 
-- [ ] All 5 questions answered.
-- [ ] `app/(tabs)/event/` folder exists.
-- [ ] Procedural illustrations remain *as placeholders* but their
-      slugs come from the engine (or presenter contract) once defined.
-- [ ] Hermetic e2e green.
-- [ ] `npm test` and `npx tsc --noEmit` clean.
+- [x] All 5 questions answered (A / C / B / Future spec / Yes — see
+      lines 63 / 72 / 80 / 85 / 89 above).
+- [x] `app/event/` folder exists. Note: the folder lives at the
+      route-tree root (not under `(tabs)/`) because Phase 14
+      (`5dd597b`) moved the event screen out of `(tabs)/` and behind
+      a `fullScreenModal` Stack.Screen. Folder shape: `app/event/index.tsx`
+      + illustration components in `components/event/` (kept outside
+      `app/` so expo-router's `*.tsx` discovery doesn't treat them
+      as routes).
+- [x] Procedural illustrations remain *as placeholders* but their
+      slugs come from the presenter contract
+      (`state/presenters/event-assets.ts` — Spec 08 Q3 = B,
+      mobile-local slug-to-art mapper). Engine `ProcessedEvent`
+      discriminant drives slug selection.
+- [x] Hermetic e2e green. New tests:
+      `state/e2e/event.engine.test.ts` (rewritten, fixture-driven),
+      `state/e2e/event-assets.test.ts` (new, exhaustive switch),
+      `state/e2e/event.screen.test.tsx` (new, render + pick
+      dispatch).
+- [x] `npm test` and `npx tsc --noEmit` clean. Verify green at
+      321 / 321 hermetic tests as of `beba7d4`.
+
+## Implementation summary
+
+Shipped across four sub-ticks on 2026-05-15:
+
+- **Tick A** (`2c4d2b0`) — presenter + store slice. `MobileEventSlice`
+  in `state/store.ts` (`pending`, `dialogueCursor`, `history`);
+  `AppStoreState = GameStore & { event: MobileEventSlice }`.
+  `selectEventViewModel` composes the VM from
+  `ProcessNodeResult` + `DialogueTree` cursor with two VM kinds
+  (`combat-prelude`, `narrative-choice`).
+- **Tick B** (`31e42f0`) — action layer. `processCurrentNode`,
+  `pickEventChoice`, `dismissEvent` on `AppActions`. NPC dialogue
+  walks `getDialogueNode` / `applyDialogueChoice` to advance the
+  cursor; combat-prelude `'fight'` dispatches `startCombat`.
+- **Tick C** (`beba7d4`) — screen refactor. `app/event.tsx` →
+  `app/event/index.tsx`; illustrations moved to
+  `components/event/{Encounter,Boss,Placeholder,EventArt}Illustration.tsx`
+  (outside `app/` so they're not router-discovered). Consequence
+  chips render under each choice; skip button gates on `canSkip`.
+- **Tick D** (this commit) — close-out: spec acceptance ticked,
+  Phase 6 row flipped, Phase 19 row closed as drained by Phase 6
+  (`selectHasActiveEvent` flipped to engine truth in Tick A).
 
 ## Out of scope
 

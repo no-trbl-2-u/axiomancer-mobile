@@ -75,20 +75,21 @@ commit that ships the phase.
       engine via selectCharacterViewModel") on 2026-05-13; see
       `plan/phases/phase_5_character_screen_wiring.md` for the
       retroactive brief.
-- [ ] Phase 6 — Spec 08: Event screen wiring. **Unblocked
-      2026-05-15 via `/oversight`**: cross-repo versioning
-      audit confirmed all five product questions in
-      `specs/08-event-screen-wiring.md` are answered in-spec
-      (A / C / B / Future spec / Yes — see lines 63 / 72 / 80 /
-      85 / 89). Engine-side surface present in
-      `axiomancer-mechanics@0.6.0`: `createGameStore` exposes
-      `moveToNode(nodeId)`, `processNode()`, and
-      `applyDialogue(tree, choice)` on `GameActions`. Mobile
-      presenter has to compose `activeEvent` / `resolveEvent` /
-      `EventChoice[]` from `ProcessNodeResult` / `ProcessedEvent`
-      / `DialogueTree`. Brief: `plan/phases/phase_6_event_screen_wiring.md`
-      (full shipping brief, 4 sub-ticks marked). Next
-      `/march`/`/ship-a-phase` reach can pick it up.
+- [x] Phase 6 — Spec 08: Event screen wiring. Shipped across
+      four sub-ticks on 2026-05-15: Tick A presenter + store
+      slice (`2c4d2b0`), Tick B action layer (`31e42f0`),
+      Tick C screen refactor (`beba7d4`), Tick D close-out
+      (this commit). Brief at
+      `plan/phases/phase_6_event_screen_wiring.md`. All five
+      Spec 08 product questions resolved
+      (A / C / B / Future spec / Yes); two VM kinds
+      (`combat-prelude`, `narrative-choice`); illustrations
+      under `components/event/` (out of router tree);
+      `eventActions.pickEventChoice` dispatches `applyDialogue`
+      or `startCombat` per VM kind; `selectHasActiveEvent`
+      reads engine truth; consequence chips + skip button
+      shipped. Phase 19 closes as drained by Tick A (one-line
+      `selectHasActiveEvent` flip). Verify green at 321 / 321.
 - [x] Phase 7 — Spec 09: `AsyncStorage` persistence adapter.
       Shipped on main across commits `aa187cd` (e2e), `09bc44e`
       (specs / adapter / migrations) and `2f8ecea` (layout
@@ -166,15 +167,13 @@ commit that ships the phase.
       loop. Retroactive brief at `plan/phases/phase_17_token_crucible.md`
       (to be drafted; see `plan/AUDIT.md` `[design-source]` row
       for the open question about where the handoff lives).
-- [ ] Phase 19 — `selectHasActiveEvent` real wiring. Promoted
-      from `plan/PHASE_CANDIDATES.md` via `/oversight`
-      2026-05-15 (score 5.0). Half-tick follow-on to Phase 6:
-      replace the `false` return in `state/presenters/event.engine.ts`
-      with a read against the event slice created in Phase 6.
-      **Likely closes as drained by Phase 6's Tick D** (the
-      Phase 6 brief absorbs this work inline); the row exists
-      for traceability if Phase 6 splits and Tick D is
-      deferred.
+- [x] Phase 19 — `selectHasActiveEvent` real wiring. **Drained
+      by Phase 6 Tick A** (`2c4d2b0`) — the rewrite of
+      `state/presenters/event.engine.ts` flipped
+      `selectHasActiveEvent` from `false` to a read against
+      `state.event.pending` (plus a combat short-circuit per
+      Spec 08 Q4). No standalone commit needed; the brief
+      called this absorption out upfront.
 - [ ] Phase 26 — Drain stale presenter stubs (audit gaps B, L,
       partially M). Promoted from `plan/PHASE_CANDIDATES.md`
       via `/oversight` 2026-05-15 (score 7.0; renumbered from
@@ -391,8 +390,16 @@ adapter).
 - phase 5 — 4afb4ed — character screen wiring (Spec 05;
   selectCharacterViewModel, character/ route folder, hermetic
   e2e, read-only stat surface)
-- phase 6 — SKIPPED — engine Spec 09 + narrative contract
-  pending; see plan/phases/phase_6_event_screen_wiring.md
+- phase 6 — 2c4d2b0 / 31e42f0 / beba7d4 / <this commit> —
+  event screen wiring (Spec 08; four sub-ticks: presenter +
+  store slice, action layer, screen refactor, close-out);
+  selectEventViewModel composes from ProcessNodeResult +
+  DialogueTree cursor; two VM kinds (combat-prelude,
+  narrative-choice); eventActions {processCurrentNode,
+  pickEventChoice, dismissEvent}; illustrations under
+  components/event/ (out of router tree); +20 hermetic tests
+  verify green at 321/321. Phase 19 closed as drained by
+  Phase 6 Tick A — selectHasActiveEvent reads engine truth.
 - phase 7 — aa187cd / 09bc44e / 2f8ecea — AsyncStorage
   persistence adapter (Spec 09; createAsyncStorageAdapter,
   migrations runner, preload-before-mount, 15 hermetic e2e,

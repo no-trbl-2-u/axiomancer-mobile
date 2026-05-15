@@ -93,6 +93,10 @@ export default function RootLayout() {
             name="event"
             options={{ headerShown: false, presentation: 'fullScreenModal' }}
           />
+          <Stack.Screen
+            name="crucible"
+            options={{ headerShown: false, presentation: 'fullScreenModal' }}
+          />
         </Stack>
       </CombatModeProvider>
     </GameStoreProvider>

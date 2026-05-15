@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
 import { AXM, FONTS } from '@/theme/axm';
 import { ScreenBg } from '@/components/ScreenBg';
 import { SectionLabel } from '@/components/SectionLabel';
@@ -12,6 +13,7 @@ import { selectCharacterViewModel } from '@/state/presenters/character.engine';
 
 export default function CharacterScreen() {
   const vm = useGameState(selectCharacterViewModel);
+  const router = useRouter();
 
   return (
     <ScreenBg>
@@ -137,6 +139,22 @@ export default function CharacterScreen() {
         </View>
       </View>
 
+      {/* Token Crucible — entry to the standalone resource tracker. */}
+      <View style={styles.section}>
+        <Pressable
+          onPress={() => router.push('/crucible')}
+          style={({ pressed }) => [styles.crucibleBtn, pressed && { opacity: 0.7 }]}
+          accessibilityRole="button"
+          accessibilityLabel="Open Token Crucible"
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={styles.crucibleLabel}>✠ TOKEN CRUCIBLE</Text>
+            <Text style={styles.crucibleSub}>five-resource pool · skill costs · accrual rules</Text>
+          </View>
+          <Text style={styles.crucibleArrow}>→</Text>
+        </Pressable>
+      </View>
+
       {/* Skills */}
       {vm.skills.length > 0 && (
         <View style={styles.section}>
@@ -215,4 +233,20 @@ const styles = StyleSheet.create({
   skillCard: { width: '48%', borderWidth: 2, padding: 4, paddingHorizontal: 6, backgroundColor: '#0a0a0a', flexDirection: 'row', alignItems: 'center', gap: 6 },
   skillName: { fontFamily: FONTS.gothic, fontSize: 12, color: AXM.parchment, lineHeight: 14 },
   skillCat: { fontFamily: FONTS.mono, fontSize: 8, letterSpacing: 1 },
+  crucibleBtn: {
+    marginTop: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    backgroundColor: '#0d0a06',
+    borderWidth: 1,
+    borderColor: AXM.sulfur,
+    borderLeftWidth: 3,
+    borderStyle: 'solid',
+  },
+  crucibleLabel: { fontFamily: FONTS.gothic, fontSize: 14, color: AXM.sulfur, letterSpacing: 1 },
+  crucibleSub: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone, letterSpacing: 1, marginTop: 2 },
+  crucibleArrow: { fontFamily: FONTS.gothic, fontSize: 22, color: AXM.sulfur, paddingLeft: 4 },
 });

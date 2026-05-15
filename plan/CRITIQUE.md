@@ -9,14 +9,6 @@
 
 ## Pending
 
-### [HIGH] /README.md — broken TODO.md reference
-- pass: 1 (commit 2a2b0b6)
-- viewport: repository
-- category: comprehension
-- observation: README references missing TODO.md file that would contain native testing plan
-- evidence: README.md line 192: 'See [`TODO.md`](./TODO.md) for the eventual native plan.'
-- suggested fix: Either create TODO.md or remove the broken reference
-- source: reader
 
 ### [MED] /package.json — deploy environment setup unclear
 - pass: 1 (commit 2a2b0b6)
@@ -47,4 +39,12 @@
 
 ## Done
 
-(empty)
+### [HIGH] /README.md — broken TODO.md reference ✅
+- pass: 1 (commit 2a2b0b6)
+- viewport: repository
+- category: comprehension
+- observation: README references missing TODO.md file that would contain native testing plan
+- evidence: README.md line 192: 'See [`TODO.md`](./TODO.md) for the eventual native plan.'
+- suggested fix: Either create TODO.md or remove the broken reference
+- source: reader
+- **Resolved 2026-05-15.** Removed broken reference to non-existent TODO.md file from README. Simplified text to state that native testing is not wired in current pass. See commit 7b5b44d.

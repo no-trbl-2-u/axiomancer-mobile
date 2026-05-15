@@ -174,23 +174,54 @@ commit that ships the phase.
       `state.event.pending` (plus a combat short-circuit per
       Spec 08 Q4). No standalone commit needed; the brief
       called this absorption out upfront.
+- [ ] Phase 23 — Migrate event subsystem from `processNode` /
+      `ProcessNodeResult` to `resolveMapEvent` / `ResolvedEvent`.
+      **Promoted via `/oversight` 2026-05-15** (urgent — user
+      bumped `axiomancer-mechanics` to `^0.7.0` in commit
+      `ee3b9ad`, which removed `processNode` / `ProcessNodeResult`
+      / `ProcessedEvent` from the engine's top-level surface;
+      Phase 6's event slice and presenters reference the
+      removed types, so the verify gate is RED across the whole
+      codebase until this migration ships). Block III row 23
+      from `plan/PHASE_CANDIDATES.md` becomes blocking. Scope:
+      replace `state/store.ts` `MobileEventSlice.pending` from
+      `ProcessNodeResult | null` to `ResolveMapEventResult |
+      null` (or whatever the new shape is named in 0.7.0);
+      rewrite `state/presenters/event.engine.ts` composition
+      against `ResolvedEvent` + the 8 MapEvent kinds
+      (encounter, interaction, gathering, rest, village,
+      cutscene, hazard, loot-cache); rewrite
+      `state/presenters/event-assets.ts` slug mapping; rewrite
+      `state/actions.ts` `processCurrentNode` (probably now
+      `resolveCurrentMapEvent`); update e2e fixtures. **Sized
+      3–4 ticks** per the original ROADMAP §3 Phase 23 estimate.
+      Brief to be drafted via `/plan-a-phase phase 23` before
+      shipping. Conflicts: this is on the same surface area
+      Phase 6 just touched; expect the migration to feel like
+      Phase 6 redux with a different engine call.
 - [ ] Phase 26 — Drain stale presenter stubs (audit gaps B, L,
-      partially M). Promoted from `plan/PHASE_CANDIDATES.md`
+      partially M). **DEFERRED behind Phase 23** as of
+      2026-05-15 — the migration to `resolveMapEvent` invalidates
+      the brief's planned `selectHasActiveEvent` consumer touch
+      (the selector is fine, but the underlying slice shape is
+      changing). Re-plan Phase 26 after Phase 23 ships. The
+      uncommitted Phase 26 work from this `/march` tick was
+      discarded; issue `#30` (Phase 26 mirror) stays open with
+      a deferral comment. Promoted from `plan/PHASE_CANDIDATES.md`
       via `/oversight` 2026-05-15 (score 7.0; renumbered from
       candidate "Phase 17" because Token Crucible took the 17
-      slot). One tick. Three drains: (1)
+      slot). One tick once Phase 23 unblocks. Three drains: (1)
       `navigation.engine.ts`'s three TODO returns →
       `selectHasActiveEvent` / `selectPlayer.level` /
       `selectMoralMeter`; (2) `combat.engine.ts:289`
       `STANCE_DERIVED` placeholder → engine `deriveStats`;
-      (3) sweep stale comments in `state/actions.ts`. Brief
-      to be drafted by `/plan-a-phase phase 26`. Conflicts:
-      none — Phase 6 ships `selectHasActiveEvent` first.
+      (3) sweep stale comments in `state/actions.ts`. Brief at
+      `plan/phases/phase_26_drain_presenter_stubs.md`.
 
 > **After phase 26:** the loop transitions to `/iterate` —
 > bug findings, presenter refactors, asset backlog, ongoing
 > audits. `/march` makes that transition automatic. (Block II
-> phases 20/21 and Block III phases 22/23/24/25 in
+> phases 20/21 and Block III phases 22/24/25 in
 > `plan/PHASE_CANDIDATES.md` are gated on engine releases or
 > stay below promotion threshold; `/expand` re-evaluates.)
 

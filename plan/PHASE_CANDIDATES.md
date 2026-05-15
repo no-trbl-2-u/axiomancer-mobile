@@ -68,24 +68,6 @@
 - estimated phases: 1
 - conflicts: none.
 
-### [score 6.5] Phase 23 — MapEvents engine consumer (engine 23/24/25 catch-up)
-
-- block: III (alignment / hygiene, large)
-- source: cross-repo versioning audit (integrated 2026-05-15), closes audit gap I
-- proposed scope: 1 phase, 3–4 ticks. `moveToAction` switches to
-  `processNode` / `resolveMapEvent`; `state/exploration-maps/`
-  reduced to visual-layout-only; engine drives unlock propagation
-  via `revealAdjacent`; Phase 18 swaps dialogue-only composition
-  for 8 event kinds; e2e: discover → unlock → roll → resolve →
-  exhaustion.
-- rationale: largest catch-up alongside Phase 18; closes the
-  exploration ⇄ engine duplication of unlock logic.
-- estimated phases: 1
-- conflicts: depends on Phase 18 (event-screen consumer side) and
-  Phase 21 (combat-prelude wiring). Most likely place to surface a
-  real engine-vs-mobile contract mismatch — may need an engine
-  patch release mid-flight.
-
 ### [score 4.0] Phase 24 — `PersistenceAdapter` re-grounding
 
 - block: III (alignment / hygiene)
@@ -176,6 +158,17 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted 2026-05-15 → status Phase 23 — URGENT] [score 9.5] MapEvents engine consumer migration
+
+- promoted via `/oversight` 2026-05-15 (mid-`/march` halt) because engine 0.7.0 (`ee3b9ad`) removed `processNode` / `ProcessNodeResult` / `ProcessedEvent` from the top-level surface in favour of `resolveMapEvent` / `ResolvedEvent` / `ResolveMapEventResult` and the 8 typed `MapEventKind` payloads.
+- Assigned **Phase 23** in `plan/steps/01_build_plan.md` Status block.
+- block: III became blocking — Phase 6's event subsystem references the removed types, so verify is RED across the project until the migration ships.
+- source: cross-repo versioning audit (integrated 2026-05-15) + the immediate verify-red triggered by `ee3b9ad`.
+- Score: bumped from 6.5 to 9.5 because the migration is now mandatory (was alignment/hygiene; is now unblocker for everything downstream).
+- Scope (per ROADMAP §3 Phase 23 + current need): replace mobile event slice from `ProcessNodeResult` to `ResolveMapEventResult`; rewrite `event.engine.ts` composition against `ResolvedEvent` + 8 MapEvent kinds (encounter / interaction / gathering / rest / village / cutscene / hazard / loot-cache); rewrite `event-assets.ts` slug map; rewrite `eventActions.processCurrentNode` (likely renamed `resolveCurrentMapEvent`); update e2e fixtures; `moveToAction` may also switch from local fixture-driven unlock to engine `revealAdjacent`/`markNodeConsumed`.
+- Brief: to be drafted via `/plan-a-phase phase 23` before shipping.
+- Sized **3–4 ticks** per ROADMAP. Likely sub-tick decomposition mirrors Phase 6's (store slice → action layer → screen → close-out).
 
 ### [promoted 2026-05-15 → status Phase 19] [score 5.0] `selectHasActiveEvent` real wiring
 

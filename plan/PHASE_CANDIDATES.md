@@ -159,16 +159,31 @@ warranted a full phase promotion:
 
 ## Promoted
 
-### [promoted 2026-05-15 → status Phase 23 — URGENT] [score 9.5] MapEvents engine consumer migration
+### [shipped 2026-05-15 → status Phase 23] [score 9.5] MapEvents engine consumer migration ✅
 
-- promoted via `/oversight` 2026-05-15 (mid-`/march` halt) because engine 0.7.0 (`ee3b9ad`) removed `processNode` / `ProcessNodeResult` / `ProcessedEvent` from the top-level surface in favour of `resolveMapEvent` / `ResolvedEvent` / `ResolveMapEventResult` and the 8 typed `MapEventKind` payloads.
-- Assigned **Phase 23** in `plan/steps/01_build_plan.md` Status block.
-- block: III became blocking — Phase 6's event subsystem references the removed types, so verify is RED across the project until the migration ships.
-- source: cross-repo versioning audit (integrated 2026-05-15) + the immediate verify-red triggered by `ee3b9ad`.
-- Score: bumped from 6.5 to 9.5 because the migration is now mandatory (was alignment/hygiene; is now unblocker for everything downstream).
-- Scope (per ROADMAP §3 Phase 23 + current need): replace mobile event slice from `ProcessNodeResult` to `ResolveMapEventResult`; rewrite `event.engine.ts` composition against `ResolvedEvent` + 8 MapEvent kinds (encounter / interaction / gathering / rest / village / cutscene / hazard / loot-cache); rewrite `event-assets.ts` slug map; rewrite `eventActions.processCurrentNode` (likely renamed `resolveCurrentMapEvent`); update e2e fixtures; `moveToAction` may also switch from local fixture-driven unlock to engine `revealAdjacent`/`markNodeConsumed`.
-- Brief: to be drafted via `/plan-a-phase phase 23` before shipping.
-- Sized **3–4 ticks** per ROADMAP. Likely sub-tick decomposition mirrors Phase 6's (store slice → action layer → screen → close-out).
+Promoted urgently via `/oversight` 2026-05-15 (mid-`/march` halt)
+because engine 0.7.0 (`ee3b9ad`) removed `processNode` /
+`ProcessNodeResult` / `ProcessedEvent` from the top-level surface
+in favour of `resolveMapEvent` / `ResolvedEvent` /
+`ResolveMapEventResult` plus 8 typed `MapEventKind` payloads.
+Phase 6's event subsystem referenced the removed types; verify
+was RED across the project until this migration shipped.
+
+**Shipped** across four sub-ticks on 2026-05-15:
+- `f7d4212` — Tick A: type migration + fixtures
+- `3eb49c2` — Tick B: action rename `processCurrentNode` → `resolveCurrentMapEvent`
+- `ec7b52c` — Tick C: screen render coverage for new kinds
+- `<closeout>` — Tick D: build plan flip, phase log, candidate row → Drained, Phase 26 un-deferred, issue #31 mirror close
+
+Restored verify from RED → 337/337. 8 engine kinds composed
+(encounter, interaction, gathering, rest, village, cutscene,
+hazard, loot-cache); new procedural illustrations for village /
+cutscene / hazard; VM shape stable; screen layer untouched.
+
+Out of scope (deferred to a follow-up candidate per the brief):
+exploration `moveToAction` migration to engine `revealAdjacent` /
+`markNodeConsumed`. The local fixture-driven unlock in
+`state/actions.ts:moveToAction` stays for now.
 
 ### [promoted 2026-05-15 → status Phase 19] [score 5.0] `selectHasActiveEvent` real wiring
 

@@ -174,49 +174,37 @@ commit that ships the phase.
       `state.event.pending` (plus a combat short-circuit per
       Spec 08 Q4). No standalone commit needed; the brief
       called this absorption out upfront.
-- [ ] Phase 23 — Migrate event subsystem from `processNode` /
+- [x] Phase 23 — Migrate event subsystem from `processNode` /
       `ProcessNodeResult` to `resolveMapEvent` / `ResolvedEvent`.
-      **Promoted via `/oversight` 2026-05-15** (urgent — user
-      bumped `axiomancer-mechanics` to `^0.7.0` in commit
-      `ee3b9ad`, which removed `processNode` / `ProcessNodeResult`
-      / `ProcessedEvent` from the engine's top-level surface;
-      Phase 6's event slice and presenters reference the
-      removed types, so the verify gate is RED across the whole
-      codebase until this migration ships). Block III row 23
-      from `plan/PHASE_CANDIDATES.md` becomes blocking. Scope:
-      replace `state/store.ts` `MobileEventSlice.pending` from
-      `ProcessNodeResult | null` to `ResolveMapEventResult |
-      null` (or whatever the new shape is named in 0.7.0);
-      rewrite `state/presenters/event.engine.ts` composition
-      against `ResolvedEvent` + the 8 MapEvent kinds
-      (encounter, interaction, gathering, rest, village,
-      cutscene, hazard, loot-cache); rewrite
-      `state/presenters/event-assets.ts` slug mapping; rewrite
-      `state/actions.ts` `processCurrentNode` (probably now
-      `resolveCurrentMapEvent`); update e2e fixtures. **Sized
-      3–4 ticks** per the original ROADMAP §3 Phase 23 estimate.
-      Brief to be drafted via `/plan-a-phase phase 23` before
-      shipping. Conflicts: this is on the same surface area
-      Phase 6 just touched; expect the migration to feel like
-      Phase 6 redux with a different engine call.
+      Shipped across four sub-ticks on 2026-05-15: Tick A type
+      migration + fixtures (`f7d4212`), Tick B action layer
+      rename `processCurrentNode` → `resolveCurrentMapEvent`
+      (`3eb49c2`), Tick C screen render coverage for the five
+      new kinds (`ec7b52c`), Tick D close-out (this commit).
+      Restored verify from RED → 337 / 337. Brief at
+      `plan/phases/phase_23_mapevents_migration.md`. Spec 08
+      product answers (A / C / B / Future spec / Yes) carried
+      through unchanged; VM shape stable; screen layer
+      untouched. 8 engine kinds composed (encounter,
+      interaction, gathering, rest, village, cutscene, hazard,
+      loot-cache); new procedural illustrations for village /
+      cutscene / hazard.
 - [ ] Phase 26 — Drain stale presenter stubs (audit gaps B, L,
-      partially M). **DEFERRED behind Phase 23** as of
-      2026-05-15 — the migration to `resolveMapEvent` invalidates
-      the brief's planned `selectHasActiveEvent` consumer touch
-      (the selector is fine, but the underlying slice shape is
-      changing). Re-plan Phase 26 after Phase 23 ships. The
-      uncommitted Phase 26 work from this `/march` tick was
-      discarded; issue `#30` (Phase 26 mirror) stays open with
-      a deferral comment. Promoted from `plan/PHASE_CANDIDATES.md`
-      via `/oversight` 2026-05-15 (score 7.0; renumbered from
-      candidate "Phase 17" because Token Crucible took the 17
-      slot). One tick once Phase 23 unblocks. Three drains: (1)
-      `navigation.engine.ts`'s three TODO returns →
-      `selectHasActiveEvent` / `selectPlayer.level` /
+      partially M). **Unblocked 2026-05-15** — Phase 23 shipped;
+      the event slice shape is now stable on
+      `ResolveMapEventResult`. The Phase 26 brief at
+      `plan/phases/phase_26_drain_presenter_stubs.md` is
+      unchanged and ready to ship; the original three drains
+      still apply: (1) `navigation.engine.ts`'s three TODO
+      returns → `selectHasActiveEvent` / `selectPlayer.level` /
       `selectMoralMeter`; (2) `combat.engine.ts:289`
       `STANCE_DERIVED` placeholder → engine `deriveStats`;
-      (3) sweep stale comments in `state/actions.ts`. Brief at
-      `plan/phases/phase_26_drain_presenter_stubs.md`.
+      (3) sweep stale comments in `state/actions.ts`. Promoted
+      from `plan/PHASE_CANDIDATES.md` via `/oversight`
+      2026-05-15 (score 7.0; renumbered from candidate
+      "Phase 17" because Token Crucible took the 17 slot).
+      Issue `#30` (Phase 26 mirror) still open — comment on
+      it with the un-defer signal when this commit lands.
 
 > **After phase 26:** the loop transitions to `/iterate` —
 > bug findings, presenter refactors, asset backlog, ongoing
@@ -451,3 +439,14 @@ adapter).
   step that populates missing derivedStats/nonCombatStats using
   engine helpers; character presenter null-guards removed;
   verify green at 260/260)
+- phase 23 — f7d4212 / 3eb49c2 / ec7b52c / <this commit> —
+  event subsystem migration to engine 0.7.0 (ResolveMapEventResult
+  / ResolvedEvent / 8 typed MapEvent kinds; engine 0.6 →
+  0.7 drift recovery; four sub-ticks: type migration +
+  fixtures, action rename processCurrentNode →
+  resolveCurrentMapEvent, screen render coverage for new
+  kinds, close-out; +new procedural illustrations for
+  village / cutscene / hazard; restored verify from RED →
+  337/337; engine pin tightened to exact 0.7.0 in the
+  preceding oversight commit c698073 to stop further
+  auto-bump drift)

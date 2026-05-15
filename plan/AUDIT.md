@@ -96,6 +96,38 @@
 
 ## Done
 
+### [3.5b] Visual-smoke pipeline — `smoke-screens.mjs` + baseline workflow ✅
+
+- proposed: 2026-05-15 (shipped silently in commit `796d7b7`
+  "Add smoke" before being tracked here — filed retroactively
+  via `/oversight` 2026-05-15 per user direction)
+- category: tests (coverage gap — visual regression, sibling
+  to the [3.5] bundler smoke)
+- impact: 4 (catches rendered-output regressions the bundler
+  smoke can't see: layout shifts, asset drift, theme breakage;
+  works hand-in-hand with the export-time smoke from [3.5])
+- ease: 4 (Playwright-driven; baseline-approve flow + diff
+  artefacts; opt-in like its bundler-smoke sibling)
+- **Resolved 2026-05-15.** Two-part landing in commit `796d7b7`:
+  - **(script)** `scripts/smoke-screens.mjs` (350 lines) drives
+    `expo export --platform web` then snapshots a configured
+    screen list, comparing against committed
+    `screenshots/baseline/*` PNGs. `scripts/baseline-approve.mjs`
+    promotes `screenshots/current/` over the baselines after
+    review.
+  - **(test)** `scripts/__tests__/smoke-screens.test.ts` (180
+    lines) covers the hermetic helpers (argument building, diff
+    classification, exit-code contract).
+  - **(.gitignore)** `screenshots/baseline/` committed; ephemeral
+    `screenshots/current/`, `screenshots/diff/`, `.smoke-dist/`
+    ignored (this commit).
+- residual / follow-ups (iterate-shaped, not blocking):
+  - Not yet wired into `.github/workflows/verify.yml` —
+    Playwright + a real export is heavier than the [3.5] bundler
+    smoke; CI wiring deserves its own audit row if/when needed.
+  - Baseline coverage starts small (see
+    `screenshots/baseline/README.md` for the seeded surface list).
+
 ### [3.5] Add a bundler smoke test (boot Expo + curl `/` + assert 200) ✅
 
 - proposed: 2026-05-14, filed via `/oversight` from user note

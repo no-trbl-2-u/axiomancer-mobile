@@ -3,6 +3,13 @@
 > Last pass: 2026-05-14 at commit 2a2b0b6
 > Pass count: 1
 
+> Next /march directive (set via oversight 2026-05-15):
+> run `/critique` pass 2. Rationale: shipping queue is empty
+> (Phases 6 + 16 [skipped] on external blockers, AUDIT Pending
+> [needs-user-call]-only, candidates drained); critique pass 2
+> with a fresh viewport is the cheapest way to refill the
+> iterate hopper. Self-expires once pass 2 lands.
+
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
 > for the contract.

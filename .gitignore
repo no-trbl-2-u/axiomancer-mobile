@@ -24,6 +24,11 @@ expo-env.d.ts
 # Playwright MCP scratch
 .playwright-mcp/
 
+# Visual-smoke artefacts (baseline PNGs are committed; current + diff are not)
+.smoke-dist/
+screenshots/current/
+screenshots/diff/
+
 # debug
 npm-debug.*
 yarn-debug.*

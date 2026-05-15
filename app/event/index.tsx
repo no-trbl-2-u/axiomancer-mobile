@@ -223,7 +223,7 @@ export default function EventScreen() {
 
             <View style={styles.choices}>
                 <SectionLabel size={10} style={{ marginBottom: 6 }}>
-                    ✠ WHAT WILL YOU DO?
+                    ✠ A RECKONING
                 </SectionLabel>
                 {vm.choices.map((choice, i) => (
                     <ChoiceRow

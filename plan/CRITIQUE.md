@@ -15,15 +15,6 @@
 
 ## Pending
 
-### [MED] /docs/combat.md — "Stance-derived stats" section references deleted `STANCE_DERIVED` constant
-- pass: 4 (commit 2a2c0aa)
-- viewport: repository
-- category: comprehension
-- observation: The doc bullet still names `STANCE_DERIVED` as a "placeholder preserved from the pre-Spec-04 mock" and says "Spec 05 swaps them for engine `deriveStats` reads." Phase 26 deleted the constant and wired `deriveStancePerformance` against `player.derivedStats`. A fresh maintainer reading the doc looks for code that no longer exists and a future swap that already happened.
-- evidence: `docs/combat.md:117-119`.
-- suggested fix: Rewrite the bullet to reflect the post-Phase-26 reality — stance cards now read from `player.derivedStats` via `deriveStancePerformance` (combat.engine.ts).
-- source: reader
-
 ### [LOW] /state/presenters/event.engine.ts — cutscene 'ON' button label too terse for the register
 - pass: 4 (commit 2a2c0aa)
 - viewport: repository
@@ -71,6 +62,17 @@
 - source: reader
 
 ## Done
+
+### [MED] /docs/combat.md — "Stance-derived stats" section references deleted `STANCE_DERIVED` constant ✅
+- pass: 4 (commit 2a2c0aa)
+- viewport: repository
+- category: comprehension
+- observation: Doc named deleted constant + future swap that already happened.
+- evidence: `docs/combat.md:117-119`.
+- suggested fix: Refresh bullet to post-Phase-26 reality.
+- source: reader
+- issue: #42
+- **Resolved 2026-05-15.** Bullet rewritten to describe `deriveStancePerformance` reading `player.derivedStats` (emotional/physical/mental triples, Math.round at the mapper boundary). Verify green at 357/357. Closes #42. See commit `583dc55`.
 
 ### [MED] /state/actions.ts — pickEventChoice JSDoc still names removed `processNode` API ✅
 - pass: 4 (commit 2a2c0aa)

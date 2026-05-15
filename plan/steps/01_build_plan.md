@@ -76,17 +76,21 @@ commit that ships the phase.
       `plan/phases/phase_5_character_screen_wiring.md` for the
       retroactive brief.
 - [skipped] Phase 6 — Spec 08: Event screen wiring. **Blocked
-      on engine Spec 09 store/orchestration + a pinned narrative
-      contract** (engine Spec 08 world loop is already in the
-      package; `createGameStore` does not expose
-      `moveToNode` / `processNode` / dialogue yet; no
-      `activeEvent` / `resolveEvent` / `EventChoice[]` — those
-      names remain illustrative). See
-      `plan/phases/phase_6_event_screen_wiring.md` for the
-      blocker brief and `plan/AUDIT.md`'s
+      on mobile Spec 08's five open product questions only**
+      — the engine-side blocker is RESOLVED in
+      `axiomancer-mechanics@0.6.0`: `createGameStore` now
+      exposes `moveToNode(nodeId)`, `processNode()`, and
+      `applyDialogue(tree, choice)` on `GameActions` (see
+      `node_modules/axiomancer-mechanics/dist/Game/store.d.ts`).
+      The `activeEvent` / `resolveEvent` / `EventChoice[]`
+      names from the mobile spec are still illustrative; the
+      mobile presenter has to compose them from
+      `ProcessNodeResult` / `ProcessedEvent` / `DialogueTree`.
+      See `plan/phases/phase_6_event_screen_wiring.md` for the
+      updated blocker brief and `plan/AUDIT.md`'s
       `[needs-user-call]` row for resolution paths. Un-skip
-      by flipping back to `[ ]` once the contract lands **and**
-      mobile Spec 08's open questions are answered.
+      by flipping back to `[ ]` once mobile Spec 08's open
+      questions are answered.
 - [x] Phase 7 — Spec 09: `AsyncStorage` persistence adapter.
       Shipped on main across commits `aa187cd` (e2e), `09bc44e`
       (specs / adapter / migrations) and `2f8ecea` (layout
@@ -229,15 +233,18 @@ hermetic e2e at `state/e2e/character.engine.test.ts`,
 
 ### Phase 6 — Spec 08: Event screen wiring
 
-Same shape. Depends on **engine Spec 09** (orchestration: wire
-`moveToNode` / `processNode` / dialogue resolution into
-`createGameStore` or an agreed successor) **plus** a pinned
-narrative/event contract for the Event tab — engine **Spec 08
-world content is already implemented**; the blocker is not “no
-world loop” but “no store-level narrative API + open product
-questions”. If still absent when the phase is reached, keep the
-`[skipped]` row in `01_build_plan.md` and the `[needs-user-call]`
-AUDIT entry. Brief from `specs/08-event-screen-wiring.md`.
+Same shape. **Engine dependency satisfied as of
+`axiomancer-mechanics@0.6.0`** — `createGameStore` exposes
+`moveToNode` / `processNode` / `applyDialogue` on
+`GameActions`, and `ProcessNodeResult` / `ProcessedEvent` /
+`DialogueTree` / `MapEvent` types are public. The remaining
+blocker is the **five open product questions in
+`specs/08-event-screen-wiring.md`** (VM kind split,
+machine-readable vs descriptive consequences, slug→asset map
+location, mid-combat events, skip-button behaviour). While those
+remain unanswered the `[skipped]` row stays; the
+`[needs-user-call]` AUDIT entry tracks resolution. Brief from
+`specs/08-event-screen-wiring.md`.
 
 ### Phase 7 — Spec 09: AsyncStorage persistence
 

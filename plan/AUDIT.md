@@ -86,38 +86,37 @@
 - source signal: `missing-e2e.md` user note (archived into this
   row 2026-05-14 — original file deleted from working tree)
 
-### [needs-user-call] Phase 6 (Spec 08 — Event screen wiring) blocked on engine Spec 09 + narrative contract
+### [needs-user-call] Phase 6 (Spec 08 — Event screen wiring) blocked on five open product questions
 
 - category: external-dependency / build-plan
 - impact: 4 (Phase 6 is mid-stack but its blocker doesn't gate
   Phases 7–13; the loop routes around)
-- ease: 2 (requires engine **Spec 09** orchestration / store wiring
-  and/or a published package bump the autonomous loop cannot
-  author alone)
-- next: **user action required** — `axiomancer-mechanics@0.4.1`
-  does not expose a mobile-trivial “pending narrative + resolve
-  choice” slice (`activeEvent` / `resolveEvent` / `EventChoice[]`
-  are **illustrative** names from the mobile spec, not real
-  exports). **What *does* ship today (engine Spec 08, done):**
-  `moveToNode`, `processNode`, `ProcessNodeResult` / `ProcessedEvent`,
-  `MapEvent` / `UniqueEvent`, `completeUniqueEvent`, branching NPC
-  dialogue via `DialogueTree` + `applyDialogueChoice` (see mechanics
-  `docs/world.md`). **`createGameStore` gap (engine Spec 09):** the
-  public store still does not wrap world movement / `processNode` /
-  dialogue picks — the Event tab cannot match the combat-tab pattern
-  until orchestration + product contract land. Bump or monorepo
-  link when Spec 09 ships; un-skip Phase 6 after the contract is
-  pinned **and** the five product questions in
+- ease: 3 (engine half is now done — only product calls remain)
+- next: **user action required (product, not engine)** — the
+  engine half closed in `axiomancer-mechanics@0.6.0`:
+  `createGameStore` exposes `moveToNode(nodeId)`,
+  `processNode()`, and `applyDialogue(tree, choice)` on
+  `GameActions` (see
+  `node_modules/axiomancer-mechanics/dist/Game/store.d.ts`),
+  on top of the existing `ProcessNodeResult` / `ProcessedEvent`
+  / `MapEvent` / `UniqueEvent` / `DialogueTree` /
+  `applyDialogueChoice` surface. `activeEvent` /
+  `resolveEvent` / `EventChoice[]` remain **illustrative**
+  names — the mobile presenter has to compose them from
+  `ProcessNodeResult` and the current dialogue node. Un-skip
+  Phase 6 after the five product questions in
   `specs/08-event-screen-wiring.md` are answered.
 - in the meantime: Phase 6's row is marked `[skipped]` in
   `plan/steps/01_build_plan.md`; the autonomous loop routes
   to Phase 7 (Spec 09 — AsyncStorage persistence) and beyond.
   See `plan/phases/phase_6_event_screen_wiring.md` for the
-  blocker brief and three resolution paths (bump, defer, or
-  stub-ship — the loop *chose not to* stub-ship).
-- additional user-call: even after the engine + store wiring
-  land, mobile Spec 08's five open questions are all unanswered
-  in `specs/08-event-screen-wiring.md`. Those are product calls.
+  blocker brief and the three resolution paths (answer the
+  questions, defer, or stub-ship — the loop *chose not to*
+  stub-ship).
+- engine-side resolution (2026-05-15): mechanics bumped from
+  0.4.x → 0.6.0; package.json pinned to `"latest"` so future
+  bumps land automatically. Verify gate green at 260/260
+  after the bump.
 
 ## Done
 

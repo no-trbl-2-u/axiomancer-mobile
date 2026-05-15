@@ -31,7 +31,7 @@
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
-    "axiomancer-mechanics": "^0.6.0",
+    "axiomancer-mechanics": "latest",
     "dotenv": "^17.4.2",
     "expo": "~54.0.33",
     "expo-constants": "~18.0.13",

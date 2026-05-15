@@ -1,10 +1,12 @@
 # Phase 6 — Spec 08: Event screen wiring
 
-> **Status: [SKIPPED — blocked on engine Spec 09 + narrative contract].** This
-> phase cannot ship autonomously. The autonomous loop logged
-> this brief on its first attempt, marked the build-plan row
-> `[skipped]`, and routed to Phase 7. See `plan/AUDIT.md`'s
-> `[needs-user-call]` row for the resolution path.
+> **Status: [SKIPPED — blocked on five open product questions].** The
+> engine half of the blocker cleared in
+> `axiomancer-mechanics@0.6.0`; the remaining gate is product
+> calls in `specs/08-event-screen-wiring.md`. The autonomous loop
+> still cannot ship this autonomously and routes to the next
+> phase. See `plan/AUDIT.md`'s `[needs-user-call]` row for the
+> resolution path.
 
 ## Blocker
 
@@ -17,25 +19,23 @@ actions.resolveEvent(choiceId)
 event.choices: EventChoice[]
 ```
 
-The installed package (`axiomancer-mechanics ^0.4.1`) **does**
-export the Spec 08 **world** layer (`moveToNode`, `processNode`,
-`applyDialogueChoice`, `DialogueTree`, `MapEvent`, … — see
-mechanics `docs/world.md`), but **`createGameStore` does not**
-expose movement / node processing / dialogue as actions, and
-there is still no first-class “pending map event with choice
-IDs” model. The **narrow** gap for Phase 6 is: **orchestration +
-pinned mobile contract** (engine Spec 09) **and** answered
-product questions in the mobile spec.
+As of `axiomancer-mechanics@0.6.0`, the engine-side gap is
+closed: `createGameStore` exposes `moveToNode(nodeId)`,
+`processNode()`, and `applyDialogue(tree, choice)` on
+`GameActions` (see
+`node_modules/axiomancer-mechanics/dist/Game/store.d.ts`), and
+the public surface includes `ProcessNodeResult` /
+`ProcessedEvent` / `MapEvent` / `UniqueEvent` /
+`completeUniqueEvent` / `DialogueTree` /
+`applyDialogueChoice`. The mobile presenter has to **compose**
+`activeEvent` / `EventChoice[]` from `ProcessNodeResult` and
+the current dialogue node — there is still no first-class
+"pending map event with choice IDs" slice, by design — but
+the engine no longer blocks the wiring.
 
-The mobile spec previously quoted “TBD pending engine Spec 08 /
-09”; **Spec 08 is done** — the remaining dependency is **Spec 09**
-(and possibly a small follow-up if the product wants
-`MapEvent`-level choices beyond NPC dialogue).
-
-In addition, all five of Spec 08's open questions are
-**unanswered** in the spec file. Even if the engine APIs
-existed, the autonomous loop would have to invent answers
-about:
+The remaining blocker is product: all five of Spec 08's open
+questions are **unanswered** in the spec file. The autonomous
+loop would have to invent answers about:
 
 1. The VM kind split (`combat-prelude` vs. `narrative-choice`,
    or one unified shape).
@@ -49,14 +49,13 @@ These are product calls, not implementation calls.
 
 ## Paths forward (for the user)
 
-1. **Ship engine Spec 09** (or bump `axiomancer-mechanics` once
-   it contains that work): `createGameStore` must expose the
-   exploration / node / narrative actions the Event tab needs,
-   **or** document an official pure-function workflow the mobile
-   app composes. Un-skip Phase 6 by flipping `[skipped]` → `[ ]`
-   once the contract is pinned **and** the five open questions
-   in `specs/08-event-screen-wiring.md` are answered; the next
-   `/march` tick then ships the phase autonomously.
+1. **Answer the five open questions** in
+   `specs/08-event-screen-wiring.md` (the engine half is now
+   present in `axiomancer-mechanics@0.6.0`: `moveToNode`,
+   `processNode`, and `applyDialogue` are on `GameActions`).
+   Un-skip Phase 6 by flipping `[skipped]` → `[ ]` once the
+   product questions are pinned; the next `/march` tick then
+   ships the phase autonomously.
 2. **Defer Spec 08 indefinitely** — leave `[skipped]`. The
    product flow still works for combat / character /
    inventory / exploration; Spec 08 is the quest-narrative
@@ -114,9 +113,11 @@ placeholder.
 
 ## Follow-ups (out of scope this skip-tick)
 
-- Engine Spec 09 / package tracking. When orchestration + the
-  pinned narrative contract land, add a ready-to-action item
-  if the mobile repo still needs a version bump.
-- The five open product questions in Spec 08 are independent
-  of the engine bump and can be answered any time — answering
-  them early de-risks the eventual ship.
+- The five open product questions in Spec 08 can be answered
+  any time — answering them is now the *only* gate left to
+  unblock this phase.
+- ~~Engine Spec 09 / package tracking~~ — **closed
+  2026-05-15.** `axiomancer-mechanics@0.6.0` ships
+  `moveToNode` / `processNode` / `applyDialogue` on
+  `GameActions`; verified by 260/260 hermetic tests passing
+  on the mobile side after the bump.

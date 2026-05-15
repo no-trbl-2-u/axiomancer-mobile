@@ -1,12 +1,16 @@
 import {
+    createEventEmitter,
     createGameStore,
     nullAdapter,
     type DialogueTree,
+    type GameEvent,
+    type GameEventEmitter,
     type GameState,
     type GameStore,
     type PersistenceAdapter,
     type ResolveMapEventResult,
     type StoreApi,
+    type TypedGameEvent,
 } from 'axiomancer-mechanics';
 
 /**
@@ -24,6 +28,13 @@ export interface MobileEventSlice {
 
 export type AppStoreState = GameStore & {
     event: MobileEventSlice;
+    /**
+     * Mobile-private ring buffer of recent engine events. Populated by
+     * the emitter wired in `createAppStore`. Capacity 20, newest-first.
+     * Leading underscore signals "mobile-only, not engine state". Not
+     * persisted (see `wrapDeflectingAdapter`).
+     */
+    _recentEvents: ReadonlyArray<TypedGameEvent>;
 };
 
 export type AppStore = StoreApi<AppStoreState>;
@@ -38,6 +49,9 @@ export const EMPTY_EVENT_SLICE: MobileEventSlice = Object.freeze({
     dialogueCursor: null,
     history: Object.freeze([]),
 });
+
+/** Ring-buffer capacity for `_recentEvents`. Small enough not to bloat memory or save payloads. */
+export const RECENT_EVENTS_CAPACITY = 20;
 
 /**
  * The engine auto-persists on every dispatch as of
@@ -67,10 +81,25 @@ function wrapDeflectingAdapter(real: PersistenceAdapter) {
     return { adapter, withPassthrough };
 }
 
+/**
+ * Per-store emitter registry. The emitter instance is held outside the
+ * store's serialized state (zustand setState would treat it as state
+ * and serialize on every dispatch). Consumers that need the emitter
+ * directly (e.g. the `useGameEvents` hook, Phase 25 Tick B) look it
+ * up here.
+ */
+const EMITTER_BY_STORE = new WeakMap<AppStore, GameEventEmitter>();
+
+/** Test-and-dev escape hatch: return the emitter attached to this store, or `null` if none was wired. */
+export function getEmitterForStore(store: AppStore): GameEventEmitter | null {
+    return EMITTER_BY_STORE.get(store) ?? null;
+}
+
 export function createAppStore(options: CreateAppStoreOptions = {}): AppStore {
     const { adapter: real = nullAdapter, overrides } = options;
     const { adapter, withPassthrough } = wrapDeflectingAdapter(real);
-    const engineStore = createGameStore(adapter, overrides);
+    const emitter = createEventEmitter();
+    const engineStore = createGameStore(adapter, overrides, emitter);
     const store = engineStore as unknown as AppStore;
 
     // Engine's `save()` writes through `adapter.save(...)`. Gate the
@@ -79,7 +108,20 @@ export function createAppStore(options: CreateAppStoreOptions = {}): AppStore {
     store.setState({
         save: () => withPassthrough(engineSave),
         event: EMPTY_EVENT_SLICE,
+        _recentEvents: [],
     });
+
+    // Subscribe AFTER initial setState so the empty buffer is the
+    // starting state. Future engine dispatches push onto the buffer.
+    emitter.onAny((event: GameEvent) => {
+        const typed = event as TypedGameEvent;
+        const prev = store.getState()._recentEvents;
+        const next = [typed, ...prev].slice(0, RECENT_EVENTS_CAPACITY);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        store.setState({ _recentEvents: next } as any);
+    });
+
+    EMITTER_BY_STORE.set(store, emitter);
 
     return store;
 }

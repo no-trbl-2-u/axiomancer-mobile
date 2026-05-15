@@ -183,7 +183,7 @@ describe('selectInventoryViewModel: empty state', () => {
 
         expect(vm.isEmpty).toBe(true);
         expect(vm.items).toHaveLength(0);
-        expect(vm.emptyMessage).toMatch(/empty/i);
+        expect(vm.emptyMessage).toMatch(/nothing|empty/i);
     });
 
     it('every tab count is 0 when inventory is empty', () => {

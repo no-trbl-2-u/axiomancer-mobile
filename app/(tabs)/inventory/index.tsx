@@ -72,7 +72,7 @@ function ItemGlyph({ category, sub }: { category: InventoryCategory; sub: string
     return <ActionIcon kind="scroll" size={32} color={AXM.sulfur} />;
 }
 
-function EmptySack() {
+function EmptySack({ message }: { message: string }) {
     return (
         <View style={styles.emptyOuter} testID="inventory-empty">
             <Svg viewBox="0 0 64 64" width={64} height={64} fill="none" stroke={AXM.bone} strokeWidth={2}>
@@ -80,7 +80,7 @@ function EmptySack() {
                 <Path d="M22 18 V 12 A 10 10 0 0 1 42 12 V 18" />
                 <Path d="M22 30 Q 32 22 42 30" strokeLinecap="round" />
             </Svg>
-            <Text style={styles.emptyText}>Thy sack is empty.</Text>
+            <Text style={styles.emptyText}>{message}</Text>
         </View>
     );
 }
@@ -172,7 +172,7 @@ export default function InventoryScreen() {
             </View>
 
             {vm.isEmpty ? (
-                <EmptySack />
+                <EmptySack message={vm.emptyMessage} />
             ) : (
                 <View style={styles.gridOuter}>
                     {CATEGORY_ORDER.filter((cat) => grouped[cat].length > 0).map((cat) => (

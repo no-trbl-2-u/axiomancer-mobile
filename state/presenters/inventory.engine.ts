@@ -74,7 +74,7 @@ export interface InventoryViewModel {
     expandedItemId: string | null;
     /** True when the inventory is empty — the screen shows the empty state. */
     isEmpty: boolean;
-    /** Empty-state copy (Q4=A — "Thy sack is empty."). */
+    /** Empty-state copy. Per bearings 2026-05-15 no second-person archaic pronouns (drops the earlier "Thy sack…" phrasing). */
     emptyMessage: string;
 }
 
@@ -109,7 +109,7 @@ const SLOT_LABELS: Record<Equipment['slot'], string> = {
 };
 
 const BURDEN_MAX = 50;
-const EMPTY_MESSAGE = 'Thy sack is empty.';
+const EMPTY_MESSAGE = 'Nothing in the sack.';
 
 // ---------------------------------------------------------------------------
 // Helpers

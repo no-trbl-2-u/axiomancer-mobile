@@ -159,7 +159,7 @@ export interface AppActions {
      *  - narrative-choice + NPC dialogue with cursor -> applyDialogue;
      *    advance cursor if `nextNode !== null`, else clear
      *  - narrative-choice + auto-resolve (rest/gather/treasure/quest)
-     *    -> clear (engine already advanced state via processNode)
+     *    -> clear (engine already advanced state via resolveMapEvent)
      */
     pickEventChoice: (choiceId: string) => void;
     /** Clear the pending event without dispatching any engine call. */

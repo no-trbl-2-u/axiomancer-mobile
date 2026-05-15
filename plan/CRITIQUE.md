@@ -33,15 +33,6 @@
 - suggested fix: Rewrite the bullet to reflect the post-Phase-26 reality — stance cards now read from `player.derivedStats` via `deriveStancePerformance` (combat.engine.ts).
 - source: reader
 
-### [MED] /state/presenters/event.engine.ts — narrative-choice titles mix HUD-imperative with ritual register
-- pass: 4 (commit 2a2c0aa)
-- viewport: repository
-- category: voice
-- observation: Three of the four new narrative kinds compose titles with HUD-style second-person imperatives (`'YOU REST'`, `'YOU GATHER'`, `'YOU TAKE'`) while the hazard branch uses a poetic article-prefix title (`'THE AIR TURNS'`) and the village branch uses the NPC's proper name. The badges above them already follow the ritual `A X` pattern (`A QUIET PLACE`, `A GATHERING`, `A FIND`); the titles undo that with imperatives.
-- evidence: `state/presenters/event.engine.ts:245,263,267,439`.
-- suggested fix: Align rest / gather / loot titles to the hazard/village register, e.g. `THE FIRE LOWERS`, `THE BRUSH YIELDS`, `THE CACHE OPENS`. Keep the `A X` badge above; drop the `YOU` opener.
-- source: reader
-
 ### [LOW] /state/presenters/event.engine.ts — cutscene 'ON' button label too terse for the register
 - pass: 4 (commit 2a2c0aa)
 - viewport: repository
@@ -98,6 +89,17 @@
 - source: reader
 
 ## Done
+
+### [MED] /state/presenters/event.engine.ts — narrative-choice titles mix HUD-imperative with ritual register ✅
+- pass: 4 (commit 2a2c0aa)
+- viewport: repository
+- category: voice
+- observation: Three titles used HUD-imperative `YOU REST/GATHER/TAKE` while hazard/village/interaction branches used ritual phrasing.
+- evidence: `state/presenters/event.engine.ts:245,263,267`.
+- suggested fix: Article-prefix ritual titles.
+- source: reader
+- issue: #39
+- **Resolved 2026-05-15.** `YOU REST → THE FIRE LOWERS`, `YOU GATHER → THE BRUSH YIELDS`, `YOU TAKE → THE CACHE OPENS`. Three string changes; matches the hazard branch's `THE AIR TURNS` pattern. Verify green at 357/357. Closes #39. See commit `8449ce9`.
 
 ### [MED] /app/(tabs)/combat.tsx — skill-availability hint "X of Y available — STANCE LOCKED" reads as a status bar ✅
 - pass: 2 (commit d967f27)

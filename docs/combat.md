@@ -115,8 +115,12 @@ goes away once engine Spec 04 lands.
 - **Item** action — disabled until Spec 06 wires the inventory's
   consumable picker into combat.
 - **Stance-derived stats** — the numbers shown on each stance card
-  (`STANCE_DERIVED`) are placeholders preserved from the pre-Spec-04
-  mock. Spec 05 swaps them for engine `deriveStats` reads.
+  read from `player.derivedStats` via `deriveStancePerformance` in
+  `state/presenters/combat.engine.ts` (Phase 26, commit `d8d2e33`).
+  The presenter maps the engine's three stat dimensions —
+  `emotional*` (Heart), `physical*` (Body), `mental*` (Mind) — onto
+  the `{attack, skill, defense}` triple per stance, rounded at the
+  mapper boundary because engine stats are real-valued.
 
 ## Tests
 

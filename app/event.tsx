@@ -132,15 +132,16 @@ export default function EventScreen() {
 
   return (
     <ScreenBg>
-      {/* Variant toggle (for demo) */}
-      <View style={styles.toggleRow}>
-        <TouchableOpacity onPress={() => setVariant('encounter')} style={[styles.toggleBtn, variant === 'encounter' && styles.toggleBtnActive]}>
-          <Text style={[styles.toggleText, variant === 'encounter' && styles.toggleTextActive]}>ENCOUNTER</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setVariant('boss')} style={[styles.toggleBtn, variant === 'boss' && styles.toggleBtnActive]}>
-          <Text style={[styles.toggleText, variant === 'boss' && styles.toggleTextActive]}>BOSS</Text>
-        </TouchableOpacity>
-      </View>
+      {__DEV__ && (
+        <View style={styles.toggleRow} testID="event-variant-toggle-dev">
+          <TouchableOpacity onPress={() => setVariant('encounter')} style={[styles.toggleBtn, variant === 'encounter' && styles.toggleBtnActive]}>
+            <Text style={[styles.toggleText, variant === 'encounter' && styles.toggleTextActive]}>ENCOUNTER</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setVariant('boss')} style={[styles.toggleBtn, variant === 'boss' && styles.toggleBtnActive]}>
+            <Text style={[styles.toggleText, variant === 'boss' && styles.toggleTextActive]}>BOSS</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Illustration */}
       <View style={[styles.illustration, { height: isBoss ? 360 : 320 }]}>

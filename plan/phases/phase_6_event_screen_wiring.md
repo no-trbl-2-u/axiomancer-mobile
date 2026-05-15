@@ -1,6 +1,20 @@
 # Phase 6 — Spec 08: Event screen wiring
 
-> **Status: [ ] — unblocked 2026-05-15 via `/oversight`.**
+> **\[SUPERSEDED 2026-05-15 by Phase 23 — engine 0.7.0 migration\]**
+>
+> This brief documents the Phase 6 implementation that shipped
+> against `axiomancer-mechanics@0.6.0` (commits `2c4d2b0` / `31e42f0`
+> / `beba7d4` / `87d0b4c`). Engine 0.7.0 (commit `ee3b9ad`)
+> removed `processNode` / `ProcessNodeResult` / `ProcessedEvent`
+> in favour of `resolveMapEvent` / `ResolvedEvent` /
+> `ResolveMapEventResult`; the event-subsystem rewrite for the
+> new engine surface is **Phase 23**. See
+> `plan/phases/phase_23_mapevents_migration.md` for the live
+> shape; this brief stays as historical record of what shipped
+> against 0.6.0 and the Spec 08 product-question rationale
+> (A / C / B / Future spec / Yes) which still binds.
+
+> **Status: [x] — shipped 2026-05-15.**
 > Engine surface present in `axiomancer-mechanics@0.6.0`; all
 > five product questions in `specs/08-event-screen-wiring.md`
 > answered in-spec at lines 63 / 72 / 80 / 85 / 89

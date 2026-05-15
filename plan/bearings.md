@@ -76,7 +76,8 @@ against. The game has no online accounts; everything is local.
 |---|---|---|---|---|
 | 01 | GitHub | `GH_TOKEN` in `.env` (sourced from `gh auth token`; scopes `repo`, `read:org`, `gist`, `workflow`) | OK | Repo at `no-trbl-2-u/axiomancer-mobile`. Used by `/triage` and `ship-a-phase` Step 2.5 (phase mirror). |
 | 02 | EAS Build (Expo) | _(not wired — see `[needs-user-call]` below)_ | STUB | `eas.json` exists with preview / production profiles. `EXPO_TOKEN` needed when the deploy gate stops being a stub. |
-| 03 | npm (engine package) | n/a | OK | `axiomancer-mechanics` consumed via `npm install`. |
+| 03 | npm (engine package) | n/a | OK | `axiomancer-mechanics` consumed via `npm install`. Pinned **exact** to `0.7.0` after the 0.6 → 0.7 drift incident (`/oversight` 2026-05-15); bumps require an explicit edit + migration phase. |
+| 04 | Claude Design | <https://claude.ai/design/p/019e0f5a-a0f0-753b-be1e-8939e6011384> | OK | Upstream design source for product features the user ships from. Examples: Token Crucible (commit `261a238`, retroactive Phase 17). When a `feat: … — port from design handoff` commit shows up, the design source is here. `/plan-a-phase` reads this URL when a design handoff is referenced. |
 
 The `setup/NN_*.md` runbooks are not yet authored — they're
 queued in phase candidates. Until then, treat `agents.md`

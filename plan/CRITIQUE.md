@@ -45,15 +45,6 @@
 - suggested fix: Update the JSDoc reference to `app/event/index.tsx`; add to Phase 26's checklist alongside the navigation.engine.ts entry.
 - source: reader
 
-### [MED] /components/EventGate.tsx — JSDoc claims `selectHasActiveEvent` is a no-op; Spec 08 shipped
-- pass: 3 (commit aaa6dbd)
-- viewport: repository
-- category: comprehension
-- observation: The gate's JSDoc reads "Spec 08 will make `selectHasActiveEvent` non-trivial. Until then this is a no-op and the modal is reached manually via `router.push('/event')`." But Spec 08 just shipped (`87d0b4c`); the selector is real (event.engine.ts:100-107) and the gate's `useEffect` fires route pushes in production. The comment misleads a fresh maintainer into thinking the gate is dormant.
-- evidence: `components/EventGate.tsx:12-14` vs the now-real `selectHasActiveEvent` body at `state/presenters/event.engine.ts:100-107` and the slice population in `state/actions.ts:760-779`.
-- suggested fix: Rewrite the JSDoc to describe what the gate actually does post-Phase-6 — "Whenever an event becomes active (`selectHasActiveEvent`), push the player into `/event`. Lives outside the tab tree so the modal stacks above the current tab."
-- source: reader
-
 ### [MED] /app/(tabs)/combat.tsx — skill-availability hint "X of Y available — STANCE LOCKED" reads as a status bar
 - pass: 2 (commit d967f27)
 - viewport: repository
@@ -92,6 +83,16 @@
 - source: reader
 
 ## Done
+
+### [MED] /components/EventGate.tsx — JSDoc claims `selectHasActiveEvent` is a no-op; Spec 08 shipped ✅
+- pass: 3 (commit aaa6dbd)
+- viewport: repository
+- category: comprehension
+- observation: The gate's JSDoc said "Spec 08 will make `selectHasActiveEvent` non-trivial. Until then this is a no-op..." — but Spec 08 had shipped.
+- evidence: `components/EventGate.tsx:12-14`.
+- suggested fix: Rewrite the JSDoc to match the post-Phase-6 reality.
+- source: reader
+- **Resolved 2026-05-15 via `/oversight` (drop-now).** Phase 23 (the engine-0.7.0 migration in progress) will re-touch the event surface and rewrite this JSDoc as part of its close-out (Tick C/D in `plan/phases/phase_23_mapevents_migration.md`); filing this row as a standalone iterate target would be double-work. Resolution rolled into Phase 23's commit chain.
 
 ### [HIGH] /state/presenters/combat.engine.ts — phase banner copy still says "CHOOSE THY STANCE" / "DECLARE THY ACTION" ✅
 - pass: 3 (commit aaa6dbd)

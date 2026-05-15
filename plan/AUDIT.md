@@ -64,17 +64,6 @@
 
 ## Pending
 
-### [design-source] Token Crucible (commit `261a238`) — where does the design handoff live?
-
-- category: process (loop visibility)
-- source: `/oversight` 2026-05-15
-- impact: 4 (the autonomous loop shipped 9 phases without knowing about an upstream design system; future handoffs will keep coming through the user as code commits unless the loop can read the design source directly)
-- ease: 8 (user names a location; loop adds a `design/` reference per `skills/plan-a-phase.md` §3.4–§3.6 conventions)
-- next: **user action** — answer one or both:
-  1. Where does the "design handoff" content live? (Figma board / Linear doc / `.cursor` skill / a markdown file outside the repo / etc.)
-  2. Should the loop track that source for future handoffs, so features like Token Crucible can be candidate-filed before they ship rather than backfilled retroactively?
-- in the meantime: Phase 17 row in the Status block is `[x]` (backfilled). A retroactive brief at `plan/phases/phase_17_token_crucible.md` is on the to-do list — not blocking, but useful so the next critique pass / iterate audit can see what the feature is supposed to do.
-- watch: any future commit subject starting with `feat:` that introduces a new top-level surface (`app/*.tsx`, new `components/*`) and references "design handoff" — same pattern.
 
 ### [needs-engine-release] `axiomancer-mechanics@0.6.1+` — top-level `skillLibrary` / `getSkillById` re-export + dist `types.d.ts`
 
@@ -109,6 +98,12 @@
 - estimated score: 3.8
 
 ## Done
+
+### [design-source] Token Crucible (commit `261a238`) — design lives in Claude Design ✅
+
+- category: process (loop visibility)
+- source: `/oversight` 2026-05-15
+- **Resolved 2026-05-15.** User confirmed the Token Crucible design (and the broader upstream design source for handoffs like it) lives in **Claude Design** at: <https://claude.ai/design/p/019e0f5a-a0f0-753b-be1e-8939e6011384>. Reference added to `plan/bearings.md` under "External services". Future `feat: <X> — port from design handoff` commits should land alongside a candidate row before shipping, and `/plan-a-phase` reads this URL when a design handoff is referenced.
 
 ### [needs-user-call] Phase 6 (Spec 08 — Event screen wiring) — RESOLVED ✅
 

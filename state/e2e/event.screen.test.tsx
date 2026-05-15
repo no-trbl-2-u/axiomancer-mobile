@@ -25,7 +25,7 @@ import {
 } from '@/state/GameStoreProvider';
 import { createAppStore, EMPTY_EVENT_SLICE, type AppStore } from '@/state/store';
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
-import type { ProcessNodeResult } from 'axiomancer-mechanics';
+import type { ResolveMapEventResult } from 'axiomancer-mechanics';
 
 import EventScreen from '@/app/event/index';
 
@@ -41,13 +41,13 @@ function withProvider(store: AppStore, child: React.ReactNode) {
     return <GameStoreProvider store={store}>{child}</GameStoreProvider>;
 }
 
-function setPending(store: AppStore, result: ProcessNodeResult) {
+function setPending(store: AppStore, result: ResolveMapEventResult) {
     store.setState({
         event: { ...EMPTY_EVENT_SLICE, pending: result },
     });
 }
 
-function encounter(isBoss = false): ProcessNodeResult {
+function encounter(isBoss = false): ResolveMapEventResult {
     const enemy = {
         id: 'cairn-rot',
         name: 'Cairn-rot',
@@ -55,21 +55,22 @@ function encounter(isBoss = false): ProcessNodeResult {
         health: 24,
     } as never;
     return {
-        gameState: undefined as never,
+        state: undefined as never,
         event: { kind: 'encounter', encounter: { enemy }, isBoss },
-        objectivesProgressed: [],
-        questsCompleted: [],
-        message: 'A figure stirs.',
     };
 }
 
-function rest(message: string, healed = 6): ProcessNodeResult {
+function rest(healed = 6): ResolveMapEventResult {
     return {
-        gameState: undefined as never,
+        state: undefined as never,
         event: { kind: 'rest', healed },
-        objectivesProgressed: [],
-        questsCompleted: [],
-        message,
+    };
+}
+
+function cutscene(lines: ReadonlyArray<string>): ResolveMapEventResult {
+    return {
+        state: undefined as never,
+        event: { kind: 'cutscene', lines },
     };
 }
 
@@ -102,7 +103,7 @@ describe('EventScreen render', () => {
 
     it('shows consequence chips on a rest event (+heal HP)', () => {
         const store = makeStore();
-        setPending(store, rest('A quiet place.', 7));
+        setPending(store, rest(7));
 
         const { getByTestId } = render(
             withProvider(store, <EventScreen />),
@@ -112,10 +113,9 @@ describe('EventScreen render', () => {
         expect(chips).toBeTruthy();
     });
 
-    it('shows the SKIP button when canSkip is true (rest with long body)', () => {
+    it('shows the SKIP button when canSkip is true (cutscene)', () => {
         const store = makeStore();
-        const long = 'You rest. '.repeat(40);
-        setPending(store, rest(long, 1));
+        setPending(store, cutscene(['A vision. A reckoning.']));
 
         const { getByTestId } = render(
             withProvider(store, <EventScreen />),
@@ -124,9 +124,9 @@ describe('EventScreen render', () => {
         expect(getByTestId('event-skip')).toBeTruthy();
     });
 
-    it('omits the SKIP button when canSkip is false (rest with short body)', () => {
+    it('omits the SKIP button when canSkip is false (short rest)', () => {
         const store = makeStore();
-        setPending(store, rest('Brief rest.', 1));
+        setPending(store, rest(1));
 
         const { queryByTestId } = render(
             withProvider(store, <EventScreen />),

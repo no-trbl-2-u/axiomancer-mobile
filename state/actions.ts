@@ -30,8 +30,8 @@ import {
     incrementFriendship as combatIncrementFriendship,
     isConsumable,
     isEquipment,
-    processNode as enginePureProcessNode,
     resolveCombatRound,
+    resolveMapEvent,
     unlockNode as worldUnlockNode,
     type Character,
     type CombatPhase,
@@ -44,7 +44,7 @@ import {
     type GameState,
     type Item,
     type MapName,
-    type ProcessNodeResult,
+    type ResolveMapEventResult,
     type Stance,
     type WorldMap,
     type WorldState,
@@ -141,12 +141,17 @@ export interface AppActions {
     changeMap: (mapName: MapName) => void;
     save: () => void;
     /**
-     * Run `processNode()` on the current node, cache the
-     * `ProcessNodeResult` in the mobile event slice, and apply the
-     * resulting `gameState` to the engine store. No-ops while combat is
-     * active (Spec 08 Q4 = Future spec).
+     * Run `resolveMapEvent(state)` on the current node, cache the
+     * `ResolveMapEventResult` in the mobile event slice, and apply
+     * the resulting `state` to the engine store. No-ops while combat
+     * is active (Spec 08 Q4 = Future spec).
      *
      * Returns `true` when an event was produced (kind !== 'none').
+     *
+     * (Phase 23 Tick B renames this method to `resolveCurrentMapEvent`
+     * once all callers update; for now the body uses the new engine
+     * call but keeps the old method name to avoid touching the
+     * GameStoreProvider + screen wiring in Tick A.)
      */
     processCurrentNode: () => boolean;
     /**
@@ -756,24 +761,24 @@ function processCurrentNodeAction(store: AppStore): boolean {
     if (state.combat !== null) return false;
 
     const gameState = state as unknown as GameState;
-    const result: ProcessNodeResult = enginePureProcessNode(gameState);
+    const result: ResolveMapEventResult = resolveMapEvent(gameState);
 
-    // Spread the advanced gameState onto the store. `event` is mobile-only
-    // and survives because `result.gameState` does not include it.
+    // Spread the advanced state onto the store. `event` is mobile-only
+    // and survives because `result.state` does not include it.
     const nextEvent = {
         ...(state.event ?? EMPTY_EVENT_SLICE),
         pending: result,
-        // If the processed event is an NPC node with a DialogueTree, seed
-        // the dialogue cursor at the tree's root so `selectEventViewModel`
-        // composes against the right node.
+        // If the resolved event is an interaction with a DialogueTree,
+        // seed the dialogue cursor at the tree's root so
+        // `selectEventViewModel` composes against the right node.
         dialogueCursor:
-            result.event.kind === 'npc' && result.event.dialogue
+            result.event.kind === 'interaction' && result.event.dialogue
                 ? { tree: result.event.dialogue, nodeId: result.event.dialogue.rootId }
                 : null,
         history: [],
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    store.setState({ ...result.gameState, event: nextEvent } as any);
+    store.setState({ ...result.state, event: nextEvent } as any);
 
     return result.event.kind !== 'none';
 }
@@ -847,9 +852,9 @@ function pickEventChoiceAction(store: AppStore, choiceId: string): void {
         return;
     }
 
-    // narrative-choice auto-resolve path (rest / gather / treasure / quest /
-    // shop / npc-without-dialogue). Engine already advanced gameState via
-    // processNode; just clear the event slice.
+    // narrative-choice auto-resolve path (rest / gathering / loot-cache /
+    // interaction-without-dialogue / village / cutscene / hazard). Engine
+    // already advanced state via resolveMapEvent; just clear the event slice.
     clearEventSlice(store);
 }
 

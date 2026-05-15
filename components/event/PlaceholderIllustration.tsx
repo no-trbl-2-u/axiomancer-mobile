@@ -26,7 +26,7 @@ export function PlaceholderIllustration({ slug }: { slug: EventArtSlug }) {
                     <Path d="M170 200 q 17 -20 34 0" stroke={AXM.blood} strokeWidth={1.5} fill="none" />
                 </G>
             )}
-            {slug === 'gather' && (
+            {slug === 'gathering' && (
                 <G>
                     {[60, 120, 180, 240, 300].map((x, i) => (
                         <G key={i}>
@@ -36,7 +36,7 @@ export function PlaceholderIllustration({ slug }: { slug: EventArtSlug }) {
                     ))}
                 </G>
             )}
-            {slug === 'treasure' && (
+            {slug === 'loot-cache' && (
                 <G transform="translate(187 170)">
                     <Path d="M-40 -10 L -40 30 L 40 30 L 40 -10 L 30 -20 L -30 -20 Z"
                         fill="#1a1810" stroke={AXM.sulfur} strokeWidth={2} />
@@ -44,12 +44,35 @@ export function PlaceholderIllustration({ slug }: { slug: EventArtSlug }) {
                     <Path d="M-40 -10 L 40 -10" stroke={AXM.sulfur} strokeWidth={1.5} />
                 </G>
             )}
-            {slug === 'npc-generic' && (
+            {slug === 'interaction-generic' && (
                 <G transform="translate(187 170)">
                     <Ellipse cx={0} cy={-10} rx={18} ry={22} fill="#0a0a0a" stroke={AXM.parchment} strokeWidth={2} />
                     <Path d="M-25 25 L -25 70 L 25 70 L 25 25 Z" fill="#06050a" stroke={AXM.parchment} strokeWidth={1.5} />
                     <Circle cx={-6} cy={-12} r={2} fill={AXM.parchment} />
                     <Circle cx={6} cy={-12} r={2} fill={AXM.parchment} />
+                </G>
+            )}
+            {slug === 'village' && (
+                <G transform="translate(187 200)">
+                    {[-80, -30, 30, 80].map((x, i) => (
+                        <G key={i} transform={`translate(${x} 0)`}>
+                            <Path d="M-20 0 L 0 -25 L 20 0 L 20 30 L -20 30 Z" fill="#0a0a0a" stroke={AXM.parchment} strokeWidth={1.5} />
+                            <Path d="M-5 10 L 5 10 L 5 28 L -5 28 Z" fill={AXM.parchment} opacity={0.4} />
+                        </G>
+                    ))}
+                </G>
+            )}
+            {slug === 'cutscene' && (
+                <G transform="translate(187 150)">
+                    <Circle cx={0} cy={0} r={50} fill="none" stroke={AXM.sulfur} strokeWidth={1.5} opacity={0.6} />
+                    <Circle cx={0} cy={0} r={30} fill="none" stroke={AXM.sulfur} strokeWidth={1} opacity={0.4} />
+                    <Path d="M-10 0 L 10 0 M 0 -10 L 0 10" stroke={AXM.parchment} strokeWidth={1} />
+                </G>
+            )}
+            {slug === 'hazard' && (
+                <G transform="translate(187 180)">
+                    <Path d="M-50 30 L 0 -40 L 50 30 Z" fill="none" stroke={AXM.blood} strokeWidth={2} />
+                    <Path d="M0 -20 L 0 10 M 0 18 L 0 24" stroke={AXM.blood} strokeWidth={2} />
                 </G>
             )}
         </Svg>

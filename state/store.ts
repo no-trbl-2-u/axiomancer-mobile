@@ -5,19 +5,19 @@ import {
     type GameState,
     type GameStore,
     type PersistenceAdapter,
-    type ProcessNodeResult,
+    type ResolveMapEventResult,
     type StoreApi,
 } from 'axiomancer-mechanics';
 
 /**
  * Mobile-only state slice for the event modal. The engine returns
- * `ProcessNodeResult` synchronously from `processNode()`; the store
- * caches it so the screen can survive re-mounts and present a skip
- * affordance over long bodies. `dialogueCursor` advances as the player
- * walks an NPC `DialogueTree` via `applyDialogue`.
+ * `ResolveMapEventResult` synchronously from `resolveMapEvent(state)`;
+ * the store caches it so the screen can survive re-mounts and present
+ * a skip affordance over long bodies. `dialogueCursor` advances as the
+ * player walks an NPC `DialogueTree` via `applyDialogue`.
  */
 export interface MobileEventSlice {
-    pending: ProcessNodeResult | null;
+    pending: ResolveMapEventResult | null;
     dialogueCursor: { tree: DialogueTree; nodeId: string } | null;
     history: ReadonlyArray<{ nodeId: string; choiceId: string }>;
 }

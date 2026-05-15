@@ -2,18 +2,22 @@
  * Screen-level presenter for `app/event` (full-screen modal).
  *
  * Composes `EventViewModel` from the mobile event slice
- * (`state.event.pending` + `state.event.dialogueCursor`) which is
- * populated by `eventActions.processCurrentNode()` after a successful
- * `processNode()` call on the engine. Two VM kinds drive screen
- * behaviour: `'combat-prelude'` (foe intro -> startCombat) and
- * `'narrative-choice'` (prose + choices -> applyDialogue or
- * auto-resolve).
+ * (`state.event.pending` + `state.event.dialogueCursor`) populated by
+ * `eventActions.processCurrentNode()` after `resolveMapEvent(state)`.
+ * Two VM kinds drive screen behaviour: `'combat-prelude'` (foe intro
+ * -> startCombat) and `'narrative-choice'` (prose + choices ->
+ * applyDialogue or auto-resolve).
  *
- * Spec 08 product Qs locked in `plan/phases/phase_6_event_screen_wiring.md`:
+ * Spec 08 product Qs locked (still binding after the 0.7.0 migration):
  *   Q1 = A (two kinds), Q2 = C (both description + machine-readable
  *   consequences), Q3 = B (mobile-local slug -> asset, see
  *   event-assets.ts), Q4 = Future spec (mid-combat events deferred),
  *   Q5 = Yes (skip affordance over long bodies).
+ *
+ * Engine-side surface (`axiomancer-mechanics@0.7.0`): pure
+ * `resolveMapEvent(state)` returns `{ state, event }` where `event`
+ * is a `ResolvedEvent` union over 8 kinds + 'none' (see
+ * `node_modules/axiomancer-mechanics/dist/World/MapEvents/types.d.ts`).
  */
 
 import type {
@@ -22,13 +26,18 @@ import type {
     DialogueTree,
     Encounter,
     Item,
-    ProcessedEvent,
-    ProcessNodeResult,
+    NPC,
+    ResolveMapEventResult,
+    ResolvedEvent,
 } from 'axiomancer-mechanics';
 import { getDialogueNode, visibleChoices } from 'axiomancer-mechanics';
 
 import type { AppStoreState } from '../store';
-import { selectEventArtSlug, type EventArtSlug } from './event-assets';
+import {
+    defaultBodyForEvent,
+    selectEventArtSlug,
+    type EventArtSlug,
+} from './event-assets';
 import { freezeViewModel } from './freeze';
 
 export type EventKind = 'combat-prelude' | 'narrative-choice';
@@ -81,7 +90,7 @@ export interface EventViewModel {
 const EMPTY_VM: EventViewModel = {
     kind: 'narrative-choice',
     variant: 'quest',
-    artSlug: 'npc-generic',
+    artSlug: 'interaction-generic',
     badge: 'NO EVENT',
     badgeAccentKey: 'bone',
     title: 'NO EVENT IN PROGRESS',
@@ -115,11 +124,11 @@ export function selectEventViewModel(state: AppStoreState): EventViewModel {
         return freezeViewModel(EMPTY_VM);
     }
     const slice = state.event;
-    const result = slice.pending as ProcessNodeResult;
-    const processed = result.event;
+    const result = slice.pending as ResolveMapEventResult;
+    const resolved = result.event;
 
-    if (processed.kind === 'encounter') {
-        return freezeViewModel(composeCombatPrelude(processed.encounter, processed.isBoss));
+    if (resolved.kind === 'encounter') {
+        return freezeViewModel(composeCombatPrelude(resolved.encounter, resolved.isBoss));
     }
 
     // Dialogue cursor takes precedence when walking an NPC tree.
@@ -129,8 +138,7 @@ export function selectEventViewModel(state: AppStoreState): EventViewModel {
         );
     }
 
-    // npc / rest / gather / treasure / quest / shop -> narrative-choice
-    return freezeViewModel(composeNarrative(processed, result.message));
+    return freezeViewModel(composeNarrative(resolved));
 }
 
 // -- composition helpers -----------------------------------------------------
@@ -199,7 +207,7 @@ function composeNpcDialogue(
     return {
         kind: 'narrative-choice',
         variant: 'npc',
-        artSlug: 'npc-generic',
+        artSlug: 'interaction-generic',
         badge: 'A VOICE',
         badgeAccentKey: 'parchment',
         title: ((node.speaker ?? 'A FIGURE') as string).toUpperCase(),
@@ -211,10 +219,23 @@ function composeNpcDialogue(
     };
 }
 
-function composeNarrative(processed: ProcessedEvent, message: string): EventViewModel {
-    const artSlug = selectEventArtSlug(processed);
-    switch (processed.kind) {
-        case 'rest': {
+function bodyFromPayload(event: ResolvedEvent): string {
+    // Each MapEventPayload has an optional description; the
+    // `ResolvedEvent` payload doesn't directly expose it on every
+    // discriminant (kind: 'encounter' has no description; kind:
+    // 'cutscene' has `lines`; others may or may not). The pure
+    // mapper here returns a kind-appropriate string.
+    if (event.kind === 'cutscene') {
+        return event.lines.join('\n\n');
+    }
+    return defaultBodyForEvent(event);
+}
+
+function composeNarrative(resolved: ResolvedEvent): EventViewModel {
+    const artSlug = selectEventArtSlug(resolved);
+    const body = bodyFromPayload(resolved);
+    switch (resolved.kind) {
+        case 'rest':
             return {
                 kind: 'narrative-choice',
                 variant: 'rest',
@@ -223,102 +244,41 @@ function composeNarrative(processed: ProcessedEvent, message: string): EventView
                 badgeAccentKey: 'parchment',
                 title: 'YOU REST',
                 subtitle: '',
-                body: message,
+                body,
                 choices: [
                     {
                         id: 'continue',
                         label: 'WALK ON',
                         description: 'Continue',
-                        consequences: [
-                            { kind: 'heal', amount: processed.healed },
-                        ],
+                        consequences: [{ kind: 'heal', amount: resolved.healed }],
                         iconKey: 'eye',
                         accentKey: 'parchment',
                         enabled: true,
                     },
                 ],
                 lore: null,
-                canSkip: message.length > 240,
+                canSkip: body.length > 240,
             };
-        }
-        case 'gather':
-            return composeItemBag('A GATHERING', 'YOU GATHER', message, processed.items, artSlug, 'gather');
-        case 'treasure':
-            return composeItemBag('A FIND', 'YOU TAKE', message, processed.items, artSlug, 'quest', processed.currency);
-        case 'quest':
-            return {
-                kind: 'narrative-choice',
-                variant: 'quest',
+        case 'gathering':
+            return composeItemBag('A GATHERING', 'YOU GATHER', body, resolved.items, artSlug, 'gather');
+        case 'loot-cache':
+            return composeItemBag(
+                'A FIND',
+                'YOU TAKE',
+                body,
+                resolved.items,
                 artSlug,
-                badge: processed.startedNew ? 'A QUEST BEGINS' : 'A QUEST FURTHERS',
-                badgeAccentKey: 'sulfur',
-                title: processed.questName.toUpperCase(),
-                subtitle: '',
-                body: message,
-                choices: [
-                    {
-                        id: 'acknowledge',
-                        label: 'SO BE IT',
-                        description: 'Continue',
-                        consequences: processed.startedNew
-                            ? [{ kind: 'quest-start', label: processed.questName }]
-                            : [{ kind: 'quest-progress', label: processed.questName }],
-                        iconKey: 'scroll',
-                        accentKey: 'sulfur',
-                        enabled: true,
-                    },
-                ],
-                lore: null,
-                canSkip: message.length > 240,
-            };
-        case 'shop':
-            return {
-                kind: 'narrative-choice',
-                variant: 'quest',
-                artSlug,
-                badge: 'A TRADER',
-                badgeAccentKey: 'parchment',
-                title: processed.npcName.toUpperCase(),
-                subtitle: '',
-                body: message,
-                choices: [
-                    {
-                        id: 'leave',
-                        label: 'LEAVE',
-                        description: 'Walk on (shop UI pending)',
-                        consequences: [],
-                        iconKey: 'flee',
-                        accentKey: 'bone',
-                        enabled: true,
-                    },
-                ],
-                lore: null,
-                canSkip: false,
-            };
-        case 'npc':
-            return {
-                kind: 'narrative-choice',
-                variant: 'npc',
-                artSlug,
-                badge: 'A VOICE',
-                badgeAccentKey: 'parchment',
-                title: processed.npcName.toUpperCase(),
-                subtitle: '',
-                body: message,
-                choices: [
-                    {
-                        id: 'acknowledge',
-                        label: 'SO BE IT',
-                        description: 'Continue',
-                        consequences: [],
-                        iconKey: 'scroll',
-                        accentKey: 'parchment',
-                        enabled: true,
-                    },
-                ],
-                lore: null,
-                canSkip: message.length > 240,
-            };
+                'quest',
+                resolved.currency,
+            );
+        case 'interaction':
+            return composeInteraction(resolved.npcName, body, artSlug);
+        case 'village':
+            return composeVillage(resolved.villageName, resolved.merchants, body, artSlug);
+        case 'cutscene':
+            return composeCutscene(body, artSlug);
+        case 'hazard':
+            return composeHazard(resolved.damage, resolved.effects, body, artSlug);
         case 'encounter':
         case 'none':
             return EMPTY_VM;
@@ -358,6 +318,135 @@ function composeItemBag(
                 consequences,
                 iconKey: 'scroll',
                 accentKey: 'sulfur',
+                enabled: true,
+            },
+        ],
+        lore: null,
+        canSkip: body.length > 240,
+    };
+}
+
+function composeInteraction(npcName: string, body: string, artSlug: EventArtSlug): EventViewModel {
+    return {
+        kind: 'narrative-choice',
+        variant: 'npc',
+        artSlug,
+        badge: 'A VOICE',
+        badgeAccentKey: 'parchment',
+        title: npcName.toUpperCase(),
+        subtitle: '',
+        body,
+        choices: [
+            {
+                id: 'acknowledge',
+                label: 'SO BE IT',
+                description: 'Continue',
+                consequences: [],
+                iconKey: 'scroll',
+                accentKey: 'parchment',
+                enabled: true,
+            },
+        ],
+        lore: null,
+        canSkip: body.length > 240,
+    };
+}
+
+function composeVillage(
+    villageName: string,
+    _merchants: ReadonlyArray<NPC>,
+    body: string,
+    artSlug: EventArtSlug,
+): EventViewModel {
+    // Shop UI is still out of scope (was already deferred under Spec
+    // 08's 'shop' kind). Render the village name + a single LEAVE
+    // choice; merchants list is ignored for now and lands when a shop
+    // surface ships.
+    return {
+        kind: 'narrative-choice',
+        variant: 'quest',
+        artSlug,
+        badge: 'A VILLAGE',
+        badgeAccentKey: 'parchment',
+        title: villageName.toUpperCase(),
+        subtitle: '',
+        body,
+        choices: [
+            {
+                id: 'leave',
+                label: 'LEAVE',
+                description: 'Walk on (shop UI pending)',
+                consequences: [],
+                iconKey: 'flee',
+                accentKey: 'bone',
+                enabled: true,
+            },
+        ],
+        lore: null,
+        canSkip: body.length > 240,
+    };
+}
+
+function composeCutscene(body: string, artSlug: EventArtSlug): EventViewModel {
+    return {
+        kind: 'narrative-choice',
+        variant: 'quest',
+        artSlug,
+        badge: 'A VISION',
+        badgeAccentKey: 'sulfur',
+        title: '',
+        subtitle: '',
+        body,
+        choices: [
+            {
+                id: 'acknowledge',
+                label: 'ON',
+                description: 'Continue',
+                consequences: [],
+                iconKey: 'eye',
+                accentKey: 'sulfur',
+                enabled: true,
+            },
+        ],
+        lore: null,
+        // Cutscenes are often long; skip is always available.
+        canSkip: true,
+    };
+}
+
+function composeHazard(
+    damage: number,
+    effects: ReadonlyArray<{ id?: string; name?: string }>,
+    body: string,
+    artSlug: EventArtSlug,
+): EventViewModel {
+    const consequences: EventConsequence[] = [];
+    if (damage > 0) {
+        consequences.push({ kind: 'damage', amount: damage });
+    }
+    for (const effect of effects) {
+        consequences.push({
+            kind: 'flag',
+            label: effect.name ?? effect.id ?? 'effect',
+        });
+    }
+    return {
+        kind: 'narrative-choice',
+        variant: 'quest',
+        artSlug,
+        badge: 'A HAZARD',
+        badgeAccentKey: 'blood',
+        title: 'THE AIR TURNS',
+        subtitle: '',
+        body,
+        choices: [
+            {
+                id: 'acknowledge',
+                label: 'ENDURE',
+                description: 'Continue',
+                consequences,
+                iconKey: 'eye',
+                accentKey: 'blood',
                 enabled: true,
             },
         ],

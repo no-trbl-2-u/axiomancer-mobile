@@ -1,21 +1,22 @@
 /**
- * Hermetic E2E Tests — Event art slug mapper.
+ * Hermetic E2E Tests — Event art slug mapper (engine 0.7.0 surface).
  *
- * Exhaustively pins `ProcessedEvent.kind` -> `EventArtSlug`. Pure
+ * Exhaustively pins `ResolvedEvent.kind` -> `EventArtSlug`. Pure
  * unit-shape: no store, no engine call.
  */
 
 import { describe, it, expect } from '@jest/globals';
-import type { ProcessedEvent } from 'axiomancer-mechanics';
+import type { ResolvedEvent } from 'axiomancer-mechanics';
 
 import {
     EVENT_ART_SLUGS,
+    defaultBodyForEvent,
     selectEventArtSlug,
 } from '@/state/presenters/event-assets';
 
 describe('selectEventArtSlug', () => {
     it('maps non-boss encounter to "encounter"', () => {
-        const ev: ProcessedEvent = {
+        const ev: ResolvedEvent = {
             kind: 'encounter',
             encounter: { enemy: { name: 'x' } as never },
             isBoss: false,
@@ -24,7 +25,7 @@ describe('selectEventArtSlug', () => {
     });
 
     it('maps boss encounter to "boss"', () => {
-        const ev: ProcessedEvent = {
+        const ev: ResolvedEvent = {
             kind: 'encounter',
             encounter: { enemy: { name: 'x' } as never },
             isBoss: true,
@@ -36,46 +37,65 @@ describe('selectEventArtSlug', () => {
         expect(selectEventArtSlug({ kind: 'rest', healed: 5 })).toBe('rest');
     });
 
-    it('maps gather to "gather"', () => {
-        expect(selectEventArtSlug({ kind: 'gather', items: [] })).toBe('gather');
+    it('maps gathering to "gathering"', () => {
+        expect(selectEventArtSlug({ kind: 'gathering', items: [] })).toBe('gathering');
     });
 
-    it('maps treasure to "treasure"', () => {
-        expect(selectEventArtSlug({ kind: 'treasure', items: [], currency: 0 })).toBe('treasure');
+    it('maps loot-cache to "loot-cache"', () => {
+        expect(selectEventArtSlug({ kind: 'loot-cache', items: [], currency: 0 })).toBe('loot-cache');
     });
 
-    it('maps npc to "npc-generic"', () => {
-        expect(selectEventArtSlug({ kind: 'npc', npcName: 'X' })).toBe('npc-generic');
+    it('maps interaction to "interaction-generic"', () => {
+        expect(selectEventArtSlug({ kind: 'interaction', npcName: 'X' })).toBe('interaction-generic');
     });
 
-    it('maps quest to "npc-generic"', () => {
-        expect(
-            selectEventArtSlug({ kind: 'quest', questName: 'X', startedNew: true }),
-        ).toBe('npc-generic');
+    it('maps village to "village"', () => {
+        expect(selectEventArtSlug({ kind: 'village', villageName: 'X', merchants: [] })).toBe('village');
     });
 
-    it('maps shop to "npc-generic"', () => {
-        expect(selectEventArtSlug({ kind: 'shop', npcName: 'X' })).toBe('npc-generic');
+    it('maps cutscene to "cutscene"', () => {
+        expect(selectEventArtSlug({ kind: 'cutscene', lines: [] })).toBe('cutscene');
     });
 
-    it('maps none to "npc-generic" (defensive fallback)', () => {
-        expect(selectEventArtSlug({ kind: 'none' })).toBe('npc-generic');
+    it('maps hazard to "hazard"', () => {
+        expect(selectEventArtSlug({ kind: 'hazard', effects: [], damage: 0 })).toBe('hazard');
+    });
+
+    it('maps none to "interaction-generic" (defensive fallback)', () => {
+        expect(selectEventArtSlug({ kind: 'none' })).toBe('interaction-generic');
     });
 
     it('every returned slug is a known EVENT_ART_SLUGS member', () => {
-        const cases: ProcessedEvent[] = [
+        const cases: ResolvedEvent[] = [
             { kind: 'encounter', encounter: { enemy: { name: 'x' } as never }, isBoss: false },
             { kind: 'encounter', encounter: { enemy: { name: 'x' } as never }, isBoss: true },
             { kind: 'rest', healed: 1 },
-            { kind: 'gather', items: [] },
-            { kind: 'treasure', items: [], currency: 0 },
-            { kind: 'npc', npcName: 'X' },
-            { kind: 'quest', questName: 'X', startedNew: false },
-            { kind: 'shop', npcName: 'X' },
+            { kind: 'gathering', items: [] },
+            { kind: 'loot-cache', items: [], currency: 0 },
+            { kind: 'interaction', npcName: 'X' },
+            { kind: 'village', villageName: 'X', merchants: [] },
+            { kind: 'cutscene', lines: [] },
+            { kind: 'hazard', effects: [], damage: 0 },
             { kind: 'none' },
         ];
         for (const ev of cases) {
             expect(EVENT_ART_SLUGS).toContain(selectEventArtSlug(ev));
         }
+    });
+});
+
+describe('defaultBodyForEvent', () => {
+    it('returns a non-empty string for kinds that need a default', () => {
+        expect(defaultBodyForEvent({ kind: 'rest', healed: 1 })).not.toBe('');
+        expect(defaultBodyForEvent({ kind: 'gathering', items: [] })).not.toBe('');
+        expect(defaultBodyForEvent({ kind: 'village', villageName: 'X', merchants: [] })).not.toBe('');
+    });
+
+    it('returns empty string for cutscene (caller provides lines)', () => {
+        expect(defaultBodyForEvent({ kind: 'cutscene', lines: [] })).toBe('');
+    });
+
+    it('returns empty string for none', () => {
+        expect(defaultBodyForEvent({ kind: 'none' })).toBe('');
     });
 });

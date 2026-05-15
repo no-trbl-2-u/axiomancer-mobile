@@ -7,11 +7,11 @@
 
 import { createGameStore, createEnemy } from 'axiomancer-mechanics';
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
-import { 
-    selectActiveTab, 
-    selectTabBadges, 
+import { createAppStore, EMPTY_EVENT_SLICE, type AppStore } from '@/state/store';
+import {
+    selectActiveTab,
+    selectTabBadges,
     selectNavigationViewModel,
-    type NavigationViewModel 
 } from '../presenters/navigation.engine';
 
 function makeEnemy() {
@@ -59,10 +59,10 @@ describe('navigation.engine', () => {
 
     describe('selectTabBadges', () => {
         it('returns empty badges for fresh game state', () => {
-            const store = createGameStore(createMemoryAdapter());
-            
+            const store: AppStore = createAppStore({ adapter: createMemoryAdapter() });
+
             const result = selectTabBadges(store.getState());
-            
+
             expect(result).toEqual({
                 exploration: null,
                 combat: null,
@@ -71,14 +71,92 @@ describe('navigation.engine', () => {
             });
         });
 
-        it('maintains stable badge object shape', () => {
-            const store = createGameStore(createMemoryAdapter());
-            
+        it('returns the same EMPTY_BADGES reference on consecutive calls in steady state', () => {
+            const store: AppStore = createAppStore({ adapter: createMemoryAdapter() });
+
             const result1 = selectTabBadges(store.getState());
             const result2 = selectTabBadges(store.getState());
-            
-            expect(Object.keys(result1)).toEqual(Object.keys(result2));
-            expect(result1).toEqual(result2);
+
+            // Reference equality — required to keep zustand `useStore` from
+            // looping over identity churn on the steady-state path.
+            expect(result1).toBe(result2);
+        });
+
+        it('surfaces an "event" badge on the character tab when an event is pending', () => {
+            const store: AppStore = createAppStore({ adapter: createMemoryAdapter() });
+            store.setState({
+                event: {
+                    ...EMPTY_EVENT_SLICE,
+                    pending: {
+                        state: undefined as never,
+                        event: { kind: 'rest', healed: 1 },
+                    },
+                },
+            });
+
+            const result = selectTabBadges(store.getState());
+
+            expect(result.character).toEqual({ text: '!', kind: 'event' });
+            expect(result.exploration).toBeNull();
+            expect(result.combat).toBeNull();
+            expect(result.inventory).toBeNull();
+        });
+
+        it('surfaces a "levelup" badge on the character tab when experience >= experienceToNextLevel', () => {
+            const store: AppStore = createAppStore({ adapter: createMemoryAdapter() });
+            const player = store.getState().player;
+            store.setState({
+                player: {
+                    ...player,
+                    experience: player.experienceToNextLevel ?? 100,
+                    experienceToNextLevel: player.experienceToNextLevel ?? 100,
+                } as never,
+            });
+
+            const result = selectTabBadges(store.getState());
+
+            expect(result.character).toEqual({ text: '↑', kind: 'levelup' });
+        });
+
+        it('prefers level-up over event badge when both fire simultaneously', () => {
+            const store: AppStore = createAppStore({ adapter: createMemoryAdapter() });
+            const player = store.getState().player;
+            store.setState({
+                player: {
+                    ...player,
+                    experience: player.experienceToNextLevel ?? 100,
+                    experienceToNextLevel: player.experienceToNextLevel ?? 100,
+                } as never,
+                event: {
+                    ...EMPTY_EVENT_SLICE,
+                    pending: {
+                        state: undefined as never,
+                        event: { kind: 'rest', healed: 1 },
+                    },
+                },
+            });
+
+            const result = selectTabBadges(store.getState());
+
+            expect(result.character?.kind).toBe('levelup');
+        });
+
+        it('suppresses the event badge while combat is active (engine short-circuit)', () => {
+            const store: AppStore = createAppStore({ adapter: createMemoryAdapter() });
+            store.setState({
+                combat: { phase: 'choose' } as never,
+                event: {
+                    ...EMPTY_EVENT_SLICE,
+                    pending: {
+                        state: undefined as never,
+                        event: { kind: 'rest', healed: 1 },
+                    },
+                },
+            });
+
+            const result = selectTabBadges(store.getState());
+
+            expect(result.character).toBeNull();
         });
     });
 

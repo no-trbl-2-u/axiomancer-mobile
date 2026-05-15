@@ -189,22 +189,23 @@ commit that ships the phase.
       interaction, gathering, rest, village, cutscene, hazard,
       loot-cache); new procedural illustrations for village /
       cutscene / hazard.
-- [ ] Phase 26 — Drain stale presenter stubs (audit gaps B, L,
-      partially M). **Unblocked 2026-05-15** — Phase 23 shipped;
-      the event slice shape is now stable on
-      `ResolveMapEventResult`. The Phase 26 brief at
-      `plan/phases/phase_26_drain_presenter_stubs.md` is
-      unchanged and ready to ship; the original three drains
-      still apply: (1) `navigation.engine.ts`'s three TODO
-      returns → `selectHasActiveEvent` / `selectPlayer.level` /
-      `selectMoralMeter`; (2) `combat.engine.ts:289`
-      `STANCE_DERIVED` placeholder → engine `deriveStats`;
-      (3) sweep stale comments in `state/actions.ts`. Promoted
-      from `plan/PHASE_CANDIDATES.md` via `/oversight`
-      2026-05-15 (score 7.0; renumbered from candidate
-      "Phase 17" because Token Crucible took the 17 slot).
-      Issue `#30` (Phase 26 mirror) still open — comment on
-      it with the un-defer signal when this commit lands.
+- [x] Phase 26 — Drain stale presenter stubs (audit gaps B, L,
+      partially M). Shipped 2026-05-15 in this commit. Three
+      drains in one tick: (1) `navigation.engine.ts` —
+      `selectTabBadges` reads `selectHasActiveEvent` for the
+      event badge and `player.experience` vs
+      `experienceToNextLevel` for the level-up badge; both
+      park on the character tab; `EMPTY_BADGES` reference
+      stability preserved on the steady-state path; (2)
+      `combat.engine.ts` — `STANCE_DERIVED` constant deleted;
+      `buildStanceOptions` now reads `player.derivedStats`
+      via the engine's three stat triples
+      (`emotional*` / `physical*` / `mental*`), rounded at
+      the mapper boundary; (3) `state/actions.ts` — file
+      header rewritten (drops `0.3.0` reference and
+      "engine Spec ~04" hedge); `skillLookup` comment names
+      Phase 16 explicitly. +5 hermetic tests. Brief at
+      `plan/phases/phase_26_drain_presenter_stubs.md`.
 
 > **After phase 26:** the loop transitions to `/iterate` —
 > bug findings, presenter refactors, asset backlog, ongoing
@@ -439,7 +440,7 @@ adapter).
   step that populates missing derivedStats/nonCombatStats using
   engine helpers; character presenter null-guards removed;
   verify green at 260/260)
-- phase 23 — f7d4212 / 3eb49c2 / ec7b52c / <this commit> —
+- phase 23 — f7d4212 / 3eb49c2 / ec7b52c / 93f4091 —
   event subsystem migration to engine 0.7.0 (ResolveMapEventResult
   / ResolvedEvent / 8 typed MapEvent kinds; engine 0.6 →
   0.7 drift recovery; four sub-ticks: type migration +
@@ -450,3 +451,12 @@ adapter).
   337/337; engine pin tightened to exact 0.7.0 in the
   preceding oversight commit c698073 to stop further
   auto-bump drift)
+- phase 26 — <this commit> — drain stale presenter stubs
+  (one tick: navigation.engine selectTabBadges reads
+  selectHasActiveEvent + player.experience vs
+  experienceToNextLevel; combat.engine STANCE_DERIVED
+  deleted and stance picker reads player.derivedStats via
+  the engine's emotional/physical/mental stat triples;
+  state/actions.ts file-header + line-420 skillLookup
+  comment swept to current 0.7.0 surface and Phase 16
+  reference; +5 hermetic tests; 342/342)

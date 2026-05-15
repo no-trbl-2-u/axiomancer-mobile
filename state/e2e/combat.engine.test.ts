@@ -237,6 +237,42 @@ describe('selectCombatViewModel: stance picker', () => {
             expect(opt.advantage).toBe('neutral');
         }
     });
+
+    it('derives stance attack/skill/defense from player.derivedStats (engine deriveStats), not a constant', () => {
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const player = store.getState().player;
+        // Inject deliberately asymmetric derived stats so the test fails
+        // if the presenter falls back to a flat constant. Heart-dimension
+        // engine stats are `emotional*`; body-dimension are `physical*`;
+        // mind-dimension are `mental*`.
+        store.setState({
+            player: {
+                ...player,
+                derivedStats: {
+                    ...player.derivedStats,
+                    emotionalAttack: 42,
+                    emotionalSkill: 17,
+                    emotionalDefense: 9,
+                    physicalAttack: 3,
+                    physicalSkill: 5,
+                    physicalDefense: 7,
+                    mentalAttack: 11,
+                    mentalSkill: 13,
+                    mentalDefense: 19,
+                } as never,
+            },
+        });
+
+        const vm = selectCombatViewModel(store.getState());
+
+        const heart = vm.stancePicker.options.find((o) => o.key === 'heart')?.derived;
+        const body = vm.stancePicker.options.find((o) => o.key === 'body')?.derived;
+        const mind = vm.stancePicker.options.find((o) => o.key === 'mind')?.derived;
+
+        expect(heart).toEqual({ attack: 42, skill: 17, defense: 9 });
+        expect(body).toEqual({ attack: 3, skill: 5, defense: 7 });
+        expect(mind).toEqual({ attack: 11, skill: 13, defense: 19 });
+    });
 });
 
 // ---------------------------------------------------------------------------

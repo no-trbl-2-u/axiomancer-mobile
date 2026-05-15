@@ -22,6 +22,7 @@
 import {
     FRIENDSHIP_COUNTER_MAX,
     determineAdvantage,
+    type DerivedStats,
     type GameStore,
 } from 'axiomancer-mechanics';
 import { useMemo } from 'react';
@@ -285,15 +286,39 @@ const BEATS: Record<StanceKey, StanceKey> = {
     mind: 'heart',
 };
 
-const STANCE_DERIVED: Record<StanceKey, { attack: number; skill: number; defense: number }> = {
-    // Placeholder numbers preserved from the pre-Spec-04 mock so the
-    // existing screen layout stays visually consistent. Spec 05 swaps
-    // these for engine reads via `deriveStats` once the character
-    // screen lands.
-    heart: { attack: 11, skill: 9, defense: 6 },
-    body: { attack: 13, skill: 7, defense: 10 },
-    mind: { attack: 8, skill: 14, defense: 8 },
-};
+/**
+ * Map a Character's engine `derivedStats` (nine values — three per
+ * Heart/Body/Mind dimension) to the stance picker's `{attack, skill,
+ * defense}` triple per stance. Rounds at the boundary because engine
+ * stats are real-valued (`baseStat * STAT_MULTIPLIERS.*`) but the
+ * HUD treats them as whole numbers. Returns zero-filled triples when
+ * `derivedStats` is absent (early boot / pre-migration fixtures).
+ */
+function deriveStancePerformance(
+    derivedStats: DerivedStats | undefined,
+): Record<StanceKey, { attack: number; skill: number; defense: number }> {
+    if (!derivedStats) {
+        const zero = { attack: 0, skill: 0, defense: 0 };
+        return { heart: zero, body: zero, mind: zero };
+    }
+    return {
+        heart: {
+            attack: Math.round(derivedStats.emotionalAttack ?? 0),
+            skill: Math.round(derivedStats.emotionalSkill ?? 0),
+            defense: Math.round(derivedStats.emotionalDefense ?? 0),
+        },
+        body: {
+            attack: Math.round(derivedStats.physicalAttack ?? 0),
+            skill: Math.round(derivedStats.physicalSkill ?? 0),
+            defense: Math.round(derivedStats.physicalDefense ?? 0),
+        },
+        mind: {
+            attack: Math.round(derivedStats.mentalAttack ?? 0),
+            skill: Math.round(derivedStats.mentalSkill ?? 0),
+            defense: Math.round(derivedStats.mentalDefense ?? 0),
+        },
+    };
+}
 
 const ACTION_DEFAULTS: readonly ActionOption[] = [
     {
@@ -489,8 +514,10 @@ function advantageLabelFor(kind: AdvantageKind): 'ADVANTAGE' | 'DISADVANTAGE' | 
 }
 
 function buildStanceOptions(
+    derivedStats: DerivedStats | undefined,
     enemyLastStance: StanceKey | null,
 ): readonly StanceOption[] {
+    const perStance = deriveStancePerformance(derivedStats);
     return (['heart', 'body', 'mind'] as const).map((key) => {
         const counters = BEATS[key];
         const weakTo = (Object.keys(BEATS) as StanceKey[]).find(
@@ -501,7 +528,7 @@ function buildStanceOptions(
             label: STANCE_LABEL[key],
             counters: STANCE_LABEL[counters],
             weakTo: STANCE_LABEL[weakTo],
-            derived: STANCE_DERIVED[key],
+            derived: perStance[key],
             advantage: stanceAdvantage(key, enemyLastStance),
         };
     });
@@ -709,7 +736,7 @@ export function selectCombatViewModel(
 
     if (combat === null) {
         const stancePicker: StancePickerSlice = {
-            options: buildStanceOptions(null),
+            options: buildStanceOptions(state.player?.derivedStats, null),
             selected: localUi.selectedStance ?? 'heart',
             canConfirm: false,
         };
@@ -797,7 +824,7 @@ export function selectCombatViewModel(
             ?? 'heart';
 
     const stancePicker: StancePickerSlice = {
-        options: buildStanceOptions(enemy.lastStance),
+        options: buildStanceOptions(playerEntity.derivedStats, enemy.lastStance),
         selected: previewStance,
         canConfirm: phase === 'choosing_stance',
     };

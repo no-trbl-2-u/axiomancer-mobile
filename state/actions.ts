@@ -1,16 +1,18 @@
 /**
  * Typed action layer for the engine store.
  *
- * Per Spec 04: the combat screen never dispatches engine reducers
+ * Per Spec 04 the combat screen never dispatches engine reducers
  * directly — it calls these actions. Each one wraps a small bit of
  * engine state and writes the result back through `updateCombat`.
  *
- * Resource (mana) accounting on the player today is a presentation
- * placeholder: `axiomancer-mechanics@0.3.0` does not ship a player
- * mana slice yet. The action layer stamps `mana`/`maxMana` onto the
- * in-combat `player` so the HUD has a number to render. Once the
- * engine ships resources (engine Spec ~04), drop the local accounting
- * and read straight from the engine.
+ * Resource (mana) accounting on the in-combat player is a
+ * presentation placeholder until Phase 21 (engine-driven skill
+ * resolution) wires the engine's per-resource pools. Today the
+ * action layer stamps `mana` / `maxMana` onto the in-combat `player`
+ * so the HUD has a number to render. Phase 16 is `[skipped]` pending
+ * an `axiomancer-mechanics` release that re-exports `skillLibrary` /
+ * `getSkillById`; once that lands and Phase 16 ships, the stop-gap
+ * pool gets replaced.
  */
 
 import {
@@ -418,9 +420,10 @@ export function createAppActions(store: AppStore): AppActions {
 
             // Hand-rolled skill lookup: the engine resolver needs one
             // when the player picks a skill. Today it returns null for
-            // every entry (engine Spec 04 will replace this with the
-            // real skill library). The presenter still surfaces the
-            // skill picker; the round just resolves as a basic action.
+            // every entry — Phase 16 (`[skipped]`, engine-release-gated)
+            // owns the wiring to the real engine skill library; the
+            // presenter still surfaces the skill picker so the round
+            // just resolves as a basic action until that lands.
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const skillLookup = (_id: string) => null as any;
 

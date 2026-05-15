@@ -9,39 +9,31 @@
 
 ## Pending
 
-### [ ] [score 5.5] CI workflow — run `pnpm verify` and `smoke:bundler` on every push to `main`
-
-- proposed: 2026-05-15, expand pass 3
-- source signals:
-  - `plan/AUDIT.md` Done row [3.5] "(partial)" — the audit row
-    flipped to `✅ (partial)` in commit `87f9175` with an explicit
-    follow-up: "CI workflow that runs `smoke:bundler` as a
-    separate job on every push to `main` is still pending."
-  - Commit history: 8 pushes to `main` since the bundler-smoke
-    script shipped, none of them gated by a remote-CI run. The
-    local `pnpm verify` is the only safety net.
-- rationale: The local verify gate runs on the maintainer's
-  workstation; a regression that boots on one machine but not
-  another (Node version, native deps, cache state) currently
-  has no chance of being caught before a user hits it. A
-  minimal Actions workflow that runs `pnpm verify` plus the new
-  `smoke:bundler` script on every push gives the loop a remote
-  green check — the missing complement to the local gate.
-- proposed scope: 1 phase, 1 file. Add
-  `.github/workflows/verify.yml`:
-  (a) trigger: `push` to `main` + `pull_request` against `main`,
-  (b) one job that installs Node 20, runs `npm ci`, runs
-      `npm run verify`,
-  (c) a second job (or matrix entry) that runs
-      `npm run smoke:bundler` with a 5-minute timeout.
-  Wire required-status-check on `main` so the loop knows when
-  a push wedged the build remotely.
-- estimated phases: 1
-- conflicts: none. Pure infrastructure; no engine surface.
-  Cost: GitHub Actions minutes (negligible for a personal
-  project; the smoke-bundler step is ~1 min on a warm cache).
+_(none — pass 3's CI-workflow candidate was small enough to ship
+this same march session; see `## Drained via /iterate` below.)_
 
 ## Drained via /iterate
+
+### [drained 2026-05-15] [score 5.5] CI workflow — run `pnpm verify` and `smoke:bundler` on every push to `main`
+
+Filed in expand pass 3 and shipped in the same march session by
+the next iterate tick — small enough (one workflow file) that a
+phase promotion would have added pure ceremony.
+
+- **Shipped:** `.github/workflows/verify.yml` (commit pending in
+  the same flow that drained this row). Two parallel jobs:
+  `verify` (lint + typecheck + jest, 10 min timeout) and
+  `smoke-bundler` (`expo export --platform web`, 15 min
+  timeout, `SMOKE_BUNDLER_TIMEOUT_MS=480000` for the cold-cache
+  CI runner). Triggers on `push` to `main` + `pull_request`
+  against `main`. Concurrency group cancels in-progress runs
+  on the same ref so a fast-following push doesn't queue.
+- **Source signals:** `plan/AUDIT.md` Done row [3.5] "(partial)"
+  CI-wiring follow-up; commit-history pattern of pushes to
+  `main` with no remote gate.
+- **Follow-up (optional):** wire the `verify` job as a required
+  status check on `main` via GitHub branch protection. That's a
+  Settings-tab toggle, not a file commit — user action.
 
 ### [drained 2026-05-15 across 3 iterate ticks] [score 6.5] Deploy/CI hardening — bundler smoke test + deploy-env runbook + `EXPO_TOKEN` auto-load
 

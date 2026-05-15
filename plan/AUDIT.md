@@ -62,7 +62,7 @@
 
 ## Pending
 
-### [3.5] Add a bundler smoke test (boot Expo + curl `/` + assert 200) ✅ (partial)
+### [3.5] Add a bundler smoke test (boot Expo + curl `/` + assert 200) ✅
 
 - proposed: 2026-05-14, filed via `/oversight` from user note
   `missing-e2e.md` (now archived into this finding)
@@ -77,18 +77,23 @@
   outside Jest because Metro spawns its own workers)
 - source signal: `missing-e2e.md` user note (archived into this
   row 2026-05-14 — original file deleted from working tree)
-- **Resolved (script + hermetic test) 2026-05-15.** Added
-  `scripts/smoke-bundler.mjs` that runs `expo export --platform
-  web` against a tmp output dir, then asserts `index.html` lands
-  with a non-trivial byte count. Exit contract mirrors
-  `deploy-check.mjs` (0 ok / 1 failed / 2 timeout / 3 config).
-  Hermetic helpers (`buildExportArgs`, `classifyExportResult`)
-  covered by `scripts/__tests__/smoke-bundler.test.ts`. Wired as
-  an opt-in `npm run smoke:bundler` — deliberately not part of
-  `pnpm verify` because a real export takes 30–60 s. **Follow-up:**
-  CI workflow that runs `smoke:bundler` as a separate job on
-  every push to `main` is still pending (rolled into a fresh
-  audit row when the CI surface gets attention).
+- **Resolved 2026-05-15.** Two-part landing:
+  - **(script + hermetic test)** `scripts/smoke-bundler.mjs`
+    runs `expo export --platform web` against a tmp output dir,
+    then asserts `index.html` lands with a non-trivial byte
+    count. Exit contract mirrors `deploy-check.mjs` (0 ok /
+    1 failed / 2 timeout / 3 config). Hermetic helpers
+    (`buildExportArgs`, `classifyExportResult`) covered by
+    `scripts/__tests__/smoke-bundler.test.ts`. Wired as an
+    opt-in `npm run smoke:bundler` — deliberately not part of
+    `pnpm verify` because a real export takes 30–60 s.
+  - **(CI wiring)** `.github/workflows/verify.yml` runs both
+    `npm run verify` and `npm run smoke:bundler` (with an
+    8-minute timeout via `SMOKE_BUNDLER_TIMEOUT_MS`) as parallel
+    jobs on every push to `main` and every PR against `main`.
+    Optional follow-up the loop cannot do itself: turn the
+    `verify` job into a required status check via branch
+    protection (Settings tab).
 
 ### [needs-user-call] Phase 6 (Spec 08 — Event screen wiring) blocked on five open product questions
 

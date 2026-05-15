@@ -147,7 +147,15 @@ commit that ships the phase.
       `state/mocks/combat.skills.fixture.ts` imports in the
       combat presenter with engine skill selectors, update e2e
       tests against engine fixtures, delete the mock file.
-      Brief to be drafted by `/plan-a-phase` on next reach.
+      Brief at `plan/phases/phase_16_engine_skills.md`.
+      **BLOCKED 2026-05-15:** `axiomancer-mechanics@0.6.0` does
+      not re-export `skillLibrary` / `getSkillById` from its
+      top-level index, and its published dist is missing several
+      `types.d.ts` files that would let us deep-import. Engine
+      release must add either the top-level re-export OR a
+      complete `./Skills` subpath export. See the brief's
+      "BLOCKED" header for the unblock recipe. Loop revisits
+      next `/march` tick once the engine ships.
 
 > **After phase 16:** the loop transitions to `/iterate` —
 > bug findings, presenter refactors, asset backlog, ongoing

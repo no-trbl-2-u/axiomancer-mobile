@@ -1,5 +1,37 @@
 # Phase 16 — Drain `combat.skills.fixture.ts`: wire engine skill library
 
+## ⚠ BLOCKED — engine package gap
+
+Discovered during the 2026-05-15 ship attempt: `axiomancer-mechanics@0.6.0`
+does **not** re-export `skillLibrary` or `getSkillById` from its top-level
+`./dist/index.d.ts`. The Skills submodule exists in dist
+(`./dist/Skills/skill.library.{js,d.ts}`) but is not surfaced through the
+package `exports` map (only `.` and `./node`).
+
+Attempted deep-import via `axiomancer-mechanics/dist/Skills` is rejected
+by TypeScript because the engine's published dist is also missing several
+internal `types.d.ts` files (`Skills/types.d.ts`, `Effects/types.d.ts`,
+`Combat/types.d.ts`) that the Skills index transitively imports — i.e.
+the dist is type-incomplete for that subpath.
+
+**Engine prerequisite (one of):**
+
+1. **Preferred — re-export from the top-level.** Add to
+   `axiomancer-mechanics/src/index.ts` under the Skills section:
+   `export { skillLibrary, getSkillById } from './Skills';`
+   Bump 0.6.0 → 0.6.1, publish, then `npm install` here.
+2. **Alternate — publish the Skills subpath.** Add a `./Skills` entry to
+   the engine `package.json` `exports` map and ensure all `types.d.ts`
+   files land in `dist/`.
+
+Until either lands, Phase 16 cannot ship — the picker would have nothing
+engine-backed to read. The build plan row stays `[ ]` (not `[skipped]`)
+so the next `/march` tick revisits once the engine ships.
+
+This brief's decisions below are still valid for the post-unblock attempt.
+
+---
+
 ## Outcome
 
 The combat presenter and action layer read skills from the engine

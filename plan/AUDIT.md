@@ -3,9 +3,11 @@
 > Latest findings from `/iterate audit`. Rewritten on each
 > audit pass. The Pending list at the bottom queues `/iterate`.
 
-> Bias: critique/comprehension (set via oversight 2026-05-15;
-> self-expired 2026-05-15 — all three named rows drained: see
-> `plan/CRITIQUE.md` Done).
+> Bias: voice (set via oversight 2026-05-15; targets the
+> pending `[3.8]` "Hands are empty." row + 2 pending voice/
+> a11y critique rows in `plan/CRITIQUE.md`). `/iterate` weights
+> voice-category rows 1.5×. Self-expires when the pending
+> voice rows drain.
 
 ## Top 5 findings (scored) — 2026-05-13
 
@@ -61,6 +63,29 @@
 - See Pending below — unchanged.
 
 ## Pending
+
+### [needs-engine-release] `axiomancer-mechanics@0.6.1+` — top-level `skillLibrary` / `getSkillById` re-export + dist `types.d.ts`
+
+- category: external-dependency (engine package)
+- source: `ROADMAP.md` §2.1 (cross-repo dependency chain), filed via `/oversight` 2026-05-15
+- impact: 5 (gates mobile Phase 16, Phase 20, Phase 21 — three roadmap rows blocked until this lands)
+- ease: 0 (mobile cannot fix; engine team only)
+- recipe (for the engine repo): add to `axiomancer-mechanics/src/index.ts`:
+  ```ts
+  export { skillLibrary, getSkillById } from './Skills';
+  ```
+  Plus ensure `Skills/types.d.ts`, `Effects/types.d.ts`,
+  `Combat/types.d.ts` land in `dist/` (currently missing per
+  the Phase 16 brief).
+- next: **user action — open an issue in `axiomancer-mechanics` when ready.**
+  Mobile loop has no work item here; this row exists so `/iterate`
+  and `/march` see the blocker and skip the dependent rows. Phase 16
+  in the Status block stays `[skipped]`; PHASE_CANDIDATES rows 20/21
+  stay un-promoted.
+- watch: re-check `node_modules/axiomancer-mechanics/dist/index.d.ts`
+  on every `pnpm install`. When `skillLibrary` is re-exported and the
+  three missing `types.d.ts` files are present, flip Phase 16 to `[ ]`
+  and promote Phase 20/21 from PHASE_CANDIDATES.
 
 ### [voice] Revise `app/(tabs)/combat.tsx:122` — "Thy hands are empty." → no second-person archaic pronouns
 

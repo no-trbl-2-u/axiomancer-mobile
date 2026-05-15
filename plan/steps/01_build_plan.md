@@ -75,22 +75,22 @@ commit that ships the phase.
       engine via selectCharacterViewModel") on 2026-05-13; see
       `plan/phases/phase_5_character_screen_wiring.md` for the
       retroactive brief.
-- [skipped] Phase 6 — Spec 08: Event screen wiring. **Blocked
-      on mobile Spec 08's five open product questions only**
-      — the engine-side blocker is RESOLVED in
-      `axiomancer-mechanics@0.6.0`: `createGameStore` now
-      exposes `moveToNode(nodeId)`, `processNode()`, and
-      `applyDialogue(tree, choice)` on `GameActions` (see
-      `node_modules/axiomancer-mechanics/dist/Game/store.d.ts`).
-      The `activeEvent` / `resolveEvent` / `EventChoice[]`
-      names from the mobile spec are still illustrative; the
-      mobile presenter has to compose them from
-      `ProcessNodeResult` / `ProcessedEvent` / `DialogueTree`.
-      See `plan/phases/phase_6_event_screen_wiring.md` for the
-      updated blocker brief and `plan/AUDIT.md`'s
-      `[needs-user-call]` row for resolution paths. Un-skip
-      by flipping back to `[ ]` once mobile Spec 08's open
-      questions are answered.
+- [ ] Phase 6 — Spec 08: Event screen wiring. **Unblocked
+      2026-05-15 via `/oversight`**: ROADMAP audit confirmed
+      all five product questions in
+      `specs/08-event-screen-wiring.md` are answered in-spec
+      (A / C / B / Future spec / Yes — see lines 63 / 72 / 80 /
+      85 / 89). Engine-side surface present in
+      `axiomancer-mechanics@0.6.0`: `createGameStore` exposes
+      `moveToNode(nodeId)`, `processNode()`, and
+      `applyDialogue(tree, choice)` on `GameActions`. Mobile
+      presenter has to compose `activeEvent` / `resolveEvent` /
+      `EventChoice[]` from `ProcessNodeResult` / `ProcessedEvent`
+      / `DialogueTree`. See `plan/phases/phase_6_event_screen_wiring.md`
+      for the current blocker brief (now stale — refresh on
+      next reach) and `ROADMAP.md` §3 Phase 18 for the
+      sub-phase breakdown (3–5 ticks suggested). Next
+      `/march`/`/ship-a-phase` reach can pick it up.
 - [x] Phase 7 — Spec 09: `AsyncStorage` persistence adapter.
       Shipped on main across commits `aa187cd` (e2e), `09bc44e`
       (specs / adapter / migrations) and `2f8ecea` (layout

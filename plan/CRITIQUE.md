@@ -9,15 +9,6 @@
 
 ## Pending
 
-### [HIGH] /app/event.tsx — dev-only ENCOUNTER/BOSS variant toggle shipped to players
-- pass: 2 (commit d967f27)
-- viewport: repository
-- category: comprehension
-- observation: The modal event screen renders a top-of-screen `ENCOUNTER` / `BOSS` toggle as two full-width tappable buttons — a stranger landing in this scene from `EventGate` will read it as a real choice and be confused. The accompanying comment literally tags it `for demo`.
-- evidence: `app/event.tsx:135-143`: `{/* Variant toggle (for demo) */}` … two `TouchableOpacity` rows rendered above the illustration.
-- suggested fix: Gate behind `__DEV__` (or remove entirely); the screen is the player-facing modal in production, not a dev sandbox.
-- source: reader
-
 ### [MED] /app/(tabs)/combat.tsx — "No items at hand. Coming soon." breaks voice on visible failure path
 - pass: 2 (commit d967f27)
 - viewport: repository
@@ -64,6 +55,17 @@
 - source: reader
 
 ## Done
+
+### [HIGH] /app/event.tsx — dev-only ENCOUNTER/BOSS variant toggle shipped to players ✅
+- pass: 2 (commit d967f27)
+- viewport: repository
+- category: comprehension
+- observation: The modal event screen rendered a top-of-screen `ENCOUNTER` / `BOSS` toggle as two full-width tappable buttons — a stranger landing in this scene from `EventGate` would read it as a real choice and be confused. The accompanying comment literally tagged it `for demo`.
+- evidence: `app/event.tsx:135-143`: `{/* Variant toggle (for demo) */}` … two `TouchableOpacity` rows rendered above the illustration.
+- suggested fix: Gate behind `__DEV__` (or remove entirely); the screen is the player-facing modal in production, not a dev sandbox.
+- source: reader
+- issue: #27
+- **Resolved 2026-05-15.** Wrapped the toggle JSX in `{__DEV__ && (...)}` in `app/event.tsx`. In production builds the toggle disappears entirely; in dev / Expo Go it stays so the team can still preview the boss illustration while Phase 6 (event screen wiring) is [skipped]. Default `variant` state remains `'encounter'`. Verify green at 287/287. Closes #27. See commit `c4fd3a4`.
 
 ### [LOW] /state/presenters/navigation.engine.ts — TODO comments break voice consistency ✅
 - pass: 1 (commit 2a2b0b6)

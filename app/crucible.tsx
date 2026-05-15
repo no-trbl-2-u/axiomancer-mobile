@@ -5,7 +5,8 @@
  * the combat HUD (ROADMAP gaps G and H).
  *
  * Presented as a fullscreen modal so it sits above the tab stack — same shape
- * as `app/event.tsx`.
+ * as `app/event/index.tsx` (folder-shaped route, registered as a Stack.Screen
+ * with `presentation: 'fullScreenModal'` in `app/_layout.tsx`).
  */
 
 import React from 'react';

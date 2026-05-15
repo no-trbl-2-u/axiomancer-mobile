@@ -1,14 +1,7 @@
 # Critique log
 
-> Last pass: 2026-05-14 at commit 2a2b0b6
-> Pass count: 1
-
-> Next /march directive (set via oversight 2026-05-15):
-> run `/critique` pass 2. Rationale: shipping queue is empty
-> (Phases 6 + 16 [skipped] on external blockers, AUDIT Pending
-> [needs-user-call]-only, candidates drained); critique pass 2
-> with a fresh viewport is the cheapest way to refill the
-> iterate hopper. Self-expires once pass 2 lands.
+> Last pass: 2026-05-15 at commit d967f27
+> Pass count: 2
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -16,8 +9,59 @@
 
 ## Pending
 
+### [HIGH] /app/event.tsx — dev-only ENCOUNTER/BOSS variant toggle shipped to players
+- pass: 2 (commit d967f27)
+- viewport: repository
+- category: comprehension
+- observation: The modal event screen renders a top-of-screen `ENCOUNTER` / `BOSS` toggle as two full-width tappable buttons — a stranger landing in this scene from `EventGate` will read it as a real choice and be confused. The accompanying comment literally tags it `for demo`.
+- evidence: `app/event.tsx:135-143`: `{/* Variant toggle (for demo) */}` … two `TouchableOpacity` rows rendered above the illustration.
+- suggested fix: Gate behind `__DEV__` (or remove entirely); the screen is the player-facing modal in production, not a dev sandbox.
+- source: reader
 
-_(none — critique queue drained 2026-05-15)_
+### [MED] /app/(tabs)/combat.tsx — "No items at hand. Coming soon." breaks voice on visible failure path
+- pass: 2 (commit d967f27)
+- viewport: repository
+- category: voice
+- observation: The Item-action toast string reads as a modern dev placeholder. It appears on the most-tapped failure path (player picks Item before items exist), making it the highest-frequency voice violation in combat.
+- evidence: `app/(tabs)/combat.tsx:123`: `setToast('No items at hand. Coming soon.');`
+- suggested fix: Rephrase in the project's terse/archaic register and drop the shipping-status aside, e.g. `setToast('Thy hands are empty.');`
+- source: reader
+
+### [MED] /app/(tabs)/combat.tsx — skill-availability hint "X of Y available — STANCE LOCKED" reads as a status bar
+- pass: 2 (commit d967f27)
+- viewport: repository
+- category: voice
+- observation: Combat skill-picker hint mixes lowercase progress with an ALLCAPS suffix and an em-dash separator; reads as a HUD readout rather than scripture.
+- evidence: `app/(tabs)/combat.tsx:656`: `{availableCount} of {totalCount} available — STANCE LOCKED`
+- suggested fix: Rephrase in ritual cadence, e.g. `{availableCount} of {totalCount} answer thee · stance bound.`
+- source: reader
+
+### [MED] /app/(tabs)/_layout.tsx — tab labels MAP / COMBAT / SHEET / SACK mix registers
+- pass: 2 (commit d967f27)
+- viewport: repository
+- category: navigation
+- observation: The four tab titles wobble as a coherent set — three are objects/places (MAP, SHEET, SACK) and one is an event/state (COMBAT). The four-letter rhythm is right but the register isn't unified.
+- evidence: `app/(tabs)/_layout.tsx` lines 98, 113, 128, 142: `title: 'MAP' / 'COMBAT' / 'SHEET' / 'SACK'`
+- suggested fix: Align to one register. Either all places (WILDS · STRIFE · SELF · SACK) or all verbs (ROAM · STRIKE · KNOW · BEAR). Pick whichever the bearings voice cue favors and apply across the four `<Tabs.Screen title>` calls.
+- source: reader
+
+### [MED] /app/(tabs)/exploration/index.tsx — map-node `accessibilityLabel` reads internal enum to screen readers
+- pass: 2 (commit d967f27)
+- viewport: repository
+- category: a11y
+- observation: The node `accessibilityLabel` template interpolates the raw `kind` value, so screen-reader users hear "Black Cairn — locked" / "— completed" / "— current" / "— available". The enum tokens aren't spoken English and break the screen's voice for assistive users.
+- evidence: `app/(tabs)/exploration/index.tsx:190`: `accessibilityLabel={`${n.label} — ${n.kind}`}`
+- suggested fix: Map kinds to phrases, e.g. `${n.label}, ${kind === 'locked' ? 'barred' : kind === 'completed' ? 'walked' : kind === 'current' ? 'where thou standest' : 'open'}`. Keep the same map in `exploration.copy.ts` if one exists.
+- source: reader
+
+### [LOW] /app/(tabs)/exploration/index.tsx — "Where next, pilgrim?" breaks the screen's own glyph + case convention
+- pass: 2 (commit d967f27)
+- viewport: repository
+- category: voice
+- observation: The exploration drawer's bottom heading uses a star glyph and sentence-case while every other section label on the same screen uses `✠` and ALLCAPS ritual prose. One label breaks the pattern.
+- evidence: `app/(tabs)/exploration/index.tsx:237`: `<SectionLabel size={10}>★ Where next, pilgrim?</SectionLabel>` versus siblings like `✠ BASE`, `✠ WORN & WIELDED`.
+- suggested fix: Unify to the screen's existing convention, e.g. `✠ WHITHER, PILGRIM?`
+- source: reader
 
 ## Done
 

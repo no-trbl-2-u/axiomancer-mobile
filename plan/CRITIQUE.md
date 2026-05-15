@@ -10,7 +10,11 @@
 ## Pending
 
 
-### [LOW] /state/presenters/navigation.engine.ts — TODO comments break voice consistency
+_(none — critique queue drained 2026-05-15)_
+
+## Done
+
+### [LOW] /state/presenters/navigation.engine.ts — TODO comments break voice consistency ✅
 - pass: 1 (commit 2a2b0b6)
 - viewport: repository
 - category: voice
@@ -18,8 +22,8 @@
 - evidence: navigation.engine.ts lines contain 'TODO: When engine exposes' which conflicts with the ritual/archaic voice guideline
 - suggested fix: Rewrite TODOs in archaic voice or use different comment style
 - source: reader
-
-## Done
+- issue: #23
+- **Resolved 2026-05-15.** Rewrote both `TODO`-prefixed comments in `state/presenters/navigation.engine.ts` to match the codebase's "Until / Once X ships…" pattern already used in `components/EventGate.tsx` and `state/presenters/character.engine.ts`. No behaviour change — `selectTabBadges` still returns `EMPTY_BADGES`. Closes #23.
 
 ### [MED] /app/_layout.tsx — deep link implementation status unclear ✅
 - pass: 1 (commit 2a2b0b6)

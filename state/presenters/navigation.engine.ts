@@ -46,8 +46,8 @@ export function selectActiveTab(state: GameStore): TabRoute {
 
 // Stable reference for the all-null badge state. Returning a fresh object
 // literal from a zustand selector triggers an infinite render loop because
-// `useStore` compares results by identity. While every badge slot is still
-// TODO/null, every caller gets this same frozen instance.
+// `useStore` compares results by identity. Until badge sources land,
+// every caller gets this same frozen instance.
 const EMPTY_BADGES: Record<TabRoute, TabBadge | null> = Object.freeze({
     exploration: null,
     combat: null,
@@ -63,8 +63,9 @@ const EMPTY_BADGES: Record<TabRoute, TabBadge | null> = Object.freeze({
  * the consumer with `useShallow` so identity churn doesn't loop the store.
  */
 export function selectTabBadges(_state: GameStore): Record<TabRoute, TabBadge | null> {
-    // TODO: derive level-up and event badges once the engine exposes XP /
-    // active-event state. Until then, return the stable EMPTY_BADGES sentinel.
+    // Level-up and event badges derive from engine XP / active-event
+    // state. Until the engine exposes those surfaces, return the stable
+    // EMPTY_BADGES sentinel.
     return EMPTY_BADGES;
 }
 

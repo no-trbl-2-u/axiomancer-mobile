@@ -187,7 +187,12 @@ export default function ExplorationScreen() {
                                 <TouchableOpacity
                                     key={n.id}
                                     accessibilityRole="button"
-                                    accessibilityLabel={`${n.label} — ${n.kind}`}
+                                    accessibilityLabel={`${n.label}, ${
+                                        n.kind === 'locked' ? 'sealed'
+                                            : n.kind === 'completed' ? 'walked'
+                                                : n.kind === 'current' ? 'here'
+                                                    : 'open'
+                                    }`}
                                     accessibilityState={{ disabled: n.kind !== 'available' }}
                                     onPress={() => onNodePress(n)}
                                     activeOpacity={n.kind === 'available' ? 0.7 : 1}

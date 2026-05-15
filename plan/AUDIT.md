@@ -3,6 +3,12 @@
 > Latest findings from `/iterate audit`. Rewritten on each
 > audit pass. The Pending list at the bottom queues `/iterate`.
 
+> Bias: critique/comprehension (set via oversight 2026-05-15).
+> `/iterate` weights critique-queue comprehension findings 1.5x
+> until the 3 pending rows in `plan/CRITIQUE.md` (deploy-env
+> docs, deep-link status comment, navigation.engine TODO voice)
+> are drained.
+
 ## Top 5 findings (scored) — 2026-05-13
 
 ### [3.8] Drain 8 lint warnings (unused imports + stale eslint-disable) — picked

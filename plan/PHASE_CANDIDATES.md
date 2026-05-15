@@ -9,9 +9,19 @@
 
 ## Pending
 
-### [ ] [score 5.5] Drain `combat.skills.fixture.ts` mock — wire engine skill selectors
+(empty — all candidates from expand pass 1 have been triaged)
 
-- proposed: 2026-05-14, expand pass 1
+## Promoted
+
+### [promoted 2026-05-15 → phase 16] [score 5.5] Drain `combat.skills.fixture.ts` mock — wire engine skill selectors
+
+- promoted via `/oversight` 2026-05-15.
+- Assigned **Phase 16** in `plan/steps/01_build_plan.md`. Brief
+  to be drafted by `/plan-a-phase` on next `/march` reach.
+- proposed scope: 1 phase. Replace `combat.skills.fixture.ts`
+  imports in the combat presenter with engine skill selectors
+  (`useGameState(selectActiveSkills)` or equivalent). Update
+  e2e tests against engine fixtures. Delete the mock file.
 - source signals:
   - `plan/AUDIT.md` Top 5 (score 2.0):
     "`state/mocks/combat.skills.fixture.ts` still mocks skills
@@ -25,17 +35,11 @@
   though engine Spec 04 shipped a real skill API. This is
   exactly the "drift between mobile and engine" failure mode
   that the bearings hard rule names. `/iterate` correctly
-  declines to pick it because the cleanest fix isn't a single
+  declined to pick it because the cleanest fix isn't a single
   edit — it needs to wire engine selectors into the combat
   presenter, update tests, and delete the fixture.
-- proposed scope: 1 phase. Replace `combat.skills.fixture.ts`
-  imports in the combat presenter with engine skill selectors
-  (`useGameState(selectActiveSkills)` or equivalent). Update
-  e2e tests against engine fixtures. Delete the mock file.
 - estimated phases: 1
 - conflicts: none. Pure refactor; engine API is stable.
-
-## Promoted
 
 ### [promoted 2026-05-14 → phase 14] [score 9.0] UI fixes: Character crash + Event tab → modal
 

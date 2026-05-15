@@ -133,8 +133,19 @@ commit that ships the phase.
       zero-fills otherwise). Drop the `(player as any)` casts
       and `?? 0` fallbacks introduced in Phase 14. See commit
       `c8e29a8`.
+- [ ] Phase 16 — Drain `combat.skills.fixture.ts` mock: wire
+      engine skill selectors into the combat presenter. Promoted
+      from `plan/PHASE_CANDIDATES.md` via `/oversight` on
+      2026-05-15 (score 5.5). Combat surface still reads a
+      hard-coded skills fixture even though engine Spec 04 has
+      shipped a real skill API — closes the last mobile/engine
+      drift named in the bearings hard rule. Scope: replace
+      `state/mocks/combat.skills.fixture.ts` imports in the
+      combat presenter with engine skill selectors, update e2e
+      tests against engine fixtures, delete the mock file.
+      Brief to be drafted by `/plan-a-phase` on next reach.
 
-> **After phase 15:** the loop transitions to `/iterate` —
+> **After phase 16:** the loop transitions to `/iterate` —
 > bug findings, presenter refactors, asset backlog, ongoing
 > audits. `/march` makes that transition automatic.
 

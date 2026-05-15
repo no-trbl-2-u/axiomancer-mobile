@@ -91,15 +91,6 @@
 - source: reader
 - **Deferred 2026-05-15 via oversight: needs design pass with the asset/icon palette.** Renaming tabs in isolation risks a churn cycle; the right time to revisit labels is when icon-label pairing is reconsidered together (Phase 12 polished icons but did not revisit labels). `/iterate` should skip this row until a design-pass phase is filed. Unblock by either (a) shipping a "Tabs design pass" phase that addresses icons + labels together, or (b) flipping back to `[MED]` with an explicit register pick.
 
-### [MED] /app/(tabs)/exploration/index.tsx — map-node `accessibilityLabel` reads internal enum to screen readers
-- pass: 2 (commit d967f27)
-- viewport: repository
-- category: a11y
-- observation: The node `accessibilityLabel` template interpolates the raw `kind` value, so screen-reader users hear "Black Cairn — locked" / "— completed" / "— current" / "— available". The enum tokens aren't spoken English and break the screen's voice for assistive users.
-- evidence: `app/(tabs)/exploration/index.tsx:190`: `accessibilityLabel={`${n.label} — ${n.kind}`}`
-- suggested fix: Map kinds to phrases — **no thee/thou per bearings update 2026-05-15** — e.g. `${n.label}, ${kind === 'locked' ? 'sealed' : kind === 'completed' ? 'walked' : kind === 'current' ? 'here' : 'open'}`. Keep the same map in `exploration.copy.ts` if one exists.
-- source: reader
-
 ### [LOW] /app/(tabs)/exploration/index.tsx — "Where next, pilgrim?" breaks the screen's own glyph + case convention
 - pass: 2 (commit d967f27)
 - viewport: repository
@@ -110,6 +101,17 @@
 - source: reader
 
 ## Done
+
+### [MED] /app/(tabs)/exploration/index.tsx — map-node `accessibilityLabel` reads internal enum to screen readers ✅
+- pass: 2 (commit d967f27)
+- viewport: repository
+- category: a11y
+- observation: Screen-reader users heard raw enum tokens (`locked` / `completed` / `current` / `available`).
+- evidence: `app/(tabs)/exploration/index.tsx:190`.
+- suggested fix: Map kinds to spoken phrases.
+- source: reader
+- issue: #35
+- **Resolved 2026-05-15.** `accessibilityLabel` now maps `locked → sealed`, `completed → walked`, `current → here`, `available → open` — ritual single-word descriptors, no second-person pronouns. Verify green at 342/342. Closes #35. See commit `3f33d72`.
 
 ### [MED] /state/presenters/event.engine.ts — choice descriptions double-uppercased between presenter and screen ✅
 - pass: 3 (commit aaa6dbd)

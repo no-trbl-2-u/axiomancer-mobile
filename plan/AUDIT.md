@@ -58,9 +58,9 @@
 - next: future tick — sized like a small refactor, not a
   one-tick fix
 
-### [needs-user-call] Phase 6 (Spec 08 — Event screen wiring) blocked on engine Spec 09 + narrative contract
+### [needs-user-call] Phase 6 (Spec 08 — Event screen wiring) — RESOLVED ✅
 
-- See Pending below — unchanged.
+- Resolved 2026-05-15 — Phase 6 shipped. See Done section for details.
 
 ## Pending
 
@@ -108,39 +108,20 @@
 - source: oversight 2026-05-15
 - estimated score: 3.8
 
-### [needs-user-call] Phase 6 (Spec 08 — Event screen wiring) blocked on five open product questions
-
-- category: external-dependency / build-plan
-- impact: 4 (Phase 6 is mid-stack but its blocker doesn't gate
-  Phases 7–13; the loop routes around)
-- ease: 3 (engine half is now done — only product calls remain)
-- next: **user action required (product, not engine)** — the
-  engine half closed in `axiomancer-mechanics@0.6.0`:
-  `createGameStore` exposes `moveToNode(nodeId)`,
-  `processNode()`, and `applyDialogue(tree, choice)` on
-  `GameActions` (see
-  `node_modules/axiomancer-mechanics/dist/Game/store.d.ts`),
-  on top of the existing `ProcessNodeResult` / `ProcessedEvent`
-  / `MapEvent` / `UniqueEvent` / `DialogueTree` /
-  `applyDialogueChoice` surface. `activeEvent` /
-  `resolveEvent` / `EventChoice[]` remain **illustrative**
-  names — the mobile presenter has to compose them from
-  `ProcessNodeResult` and the current dialogue node. Un-skip
-  Phase 6 after the five product questions in
-  `specs/08-event-screen-wiring.md` are answered.
-- in the meantime: Phase 6's row is marked `[skipped]` in
-  `plan/steps/01_build_plan.md`; the autonomous loop routes
-  to Phase 7 (Spec 09 — AsyncStorage persistence) and beyond.
-  See `plan/phases/phase_6_event_screen_wiring.md` for the
-  blocker brief and the three resolution paths (answer the
-  questions, defer, or stub-ship — the loop *chose not to*
-  stub-ship).
-- engine-side resolution (2026-05-15): mechanics bumped from
-  0.4.x → 0.6.0; package.json pinned to `"latest"` so future
-  bumps land automatically. Verify gate green at 260/260
-  after the bump.
-
 ## Done
+
+### [needs-user-call] Phase 6 (Spec 08 — Event screen wiring) — RESOLVED ✅
+
+- **Resolved 2026-05-15.** Phase 6 shipped end-to-end across
+  four sub-tick commits: `2c4d2b0` (presenter + store slice),
+  `31e42f0` (action layer), `beba7d4` (screen refactor),
+  `87d0b4c` (close-out). The five product questions were
+  already answered in the spec body (A / C / B / Future spec /
+  Yes); the `[skipped]` rationale was stale and got flipped
+  via `/oversight` earlier today. Spec 08 marked DONE at H1.
+  Verify green at 321/321.
+
+
 
 ### [3.5b] Visual-smoke pipeline — `smoke-screens.mjs` + baseline workflow ✅
 

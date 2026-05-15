@@ -27,26 +27,6 @@
 > (shipped `261a238`). Other candidate numbers (18–25) stay
 > as filed.
 
-### [score 8.5] Phase 18 — Un-skip Phase 6: Event screen wiring against `processNode` + `applyDialogue`
-
-- block: I (mobile-only, ready) **— also tracked in Status block as Phase 6 (now `[ ]`)**
-- source: cross-repo versioning audit (integrated 2026-05-15), closes audit gap A (consumer side) / E / J
-- proposed scope: 1 phase, 3–5 ticks. Replace `selectEventViewModel`'s
-  `STUB_VM` with composition from `ProcessNodeResult` + current
-  `DialogueNode`; two VM kinds (`combat-prelude`, `narrative-choice`);
-  machine-readable consequences; mobile-local slug→asset map;
-  skip button; `eventActions.pickChoice` dispatching
-  `applyDialogue`; `app/event.tsx` → folder + presenter +
-  e2e. Sub-phases drafted in `plan/phases/phase_6_event_screen_wiring.md`.
-- rationale: highest-impact mobile-only catch-up. Unblocks user-visible
-  event flow that's been `[skipped]` for 4 days. All 5 Spec 08
-  product questions answered in-spec.
-- estimated phases: 1 (or 3–5 sub-phases at plan-time)
-- conflicts: this is the same work as Phase 6 in the Status block.
-  Promotion should reconcile, not duplicate. **Resolved:** Phase 6
-  row is the canonical Status entry; this candidate row documents
-  the audit-shaped breakdown.
-
 ### [score 5.5] Phase 20 — Drain `combat.skills.fixture.ts` (engine Spec 04b consumer)
 
 - block: II (engine-release-gated)
@@ -132,6 +112,21 @@
   e2e need updates.
 
 ## Drained via /iterate
+
+### [drained 2026-05-15 → Status block Phase 6] [score 8.5] Phase 18 — Event screen wiring against `processNode` + `applyDialogue`
+
+This candidate was filed as the audit-shaped breakdown of the
+Status block Phase 6 row; both pointed at the same work. Phase 6
+shipped end-to-end across four sub-tick commits on 2026-05-15:
+
+- `2c4d2b0` — Tick A: presenter + store slice (selectEventViewModel composes from ProcessNodeResult; selectHasActiveEvent reads engine truth)
+- `31e42f0` — Tick B: action layer (eventActions.processCurrentNode / pickEventChoice / dismissEvent)
+- `beba7d4` — Tick C: screen refactor (`app/event.tsx` → `app/event/index.tsx`; illustrations to `components/event/`; consequence chips; skip button)
+- `87d0b4c` — Tick D: close-out (Spec 08 acceptance ticked; Phase 6 row flipped; phase log entry)
+
+Spec 08 marked `[DONE on 2026-05-15 — see commit beba7d4]`. All
+five product questions resolved (A / C / B / Future spec / Yes).
++34 hermetic tests; verify green at 321/321.
 
 ### [drained 2026-05-15] [score 5.5] CI workflow — run `pnpm verify` and `smoke:bundler` on every push to `main`
 

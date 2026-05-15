@@ -60,15 +60,6 @@
 - suggested fix: Either derive the subtitle from `enemy.description` if the engine carries one, or rotate over a small per-tier table keyed on `enemy.level` so repeated boss encounters don't share the same omen.
 - source: reader
 
-### [MED] /app/crucible.tsx — file-level JSDoc points at dead `app/event.tsx` path
-- pass: 3 (commit aaa6dbd)
-- viewport: repository
-- category: comprehension
-- observation: The Crucible's doc comment cites `app/event.tsx` as the modal-pattern reference, but Phase 6 Tick C (`beba7d4`) moved that file to `app/event/index.tsx`. A fresh maintainer reading the Crucible doc to learn the modal pattern follows a dead path. Phase 26's drain-stubs brief catches the `navigation.engine.ts` copy of this reference but not the Crucible one.
-- evidence: `app/crucible.tsx:8`: `* as `app/event.tsx`.` ; the file at that path no longer exists.
-- suggested fix: Update the JSDoc reference to `app/event/index.tsx`; add to Phase 26's checklist alongside the navigation.engine.ts entry.
-- source: reader
-
 ### [needs-user-call] /app/(tabs)/_layout.tsx — tab labels MAP / COMBAT / SHEET / SACK mix registers
 - pass: 2 (commit d967f27)
 - viewport: repository
@@ -89,6 +80,17 @@
 - source: reader
 
 ## Done
+
+### [MED] /app/crucible.tsx — file-level JSDoc points at dead `app/event.tsx` path ✅
+- pass: 3 (commit aaa6dbd)
+- viewport: repository
+- category: comprehension
+- observation: JSDoc cited removed `app/event.tsx`; Phase 6 Tick C moved it to `app/event/index.tsx`.
+- evidence: `app/crucible.tsx:8`.
+- suggested fix: Update reference.
+- source: reader
+- issue: #40
+- **Resolved 2026-05-15.** JSDoc now points at `app/event/index.tsx` and names the `app/_layout.tsx` Stack.Screen registration for context. Verify green at 357/357. Closes #40. See commit `5696c23`.
 
 ### [MED] /state/presenters/event.engine.ts — narrative-choice titles mix HUD-imperative with ritual register ✅
 - pass: 4 (commit 2a2c0aa)

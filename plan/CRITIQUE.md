@@ -15,15 +15,6 @@
 
 ## Pending
 
-### [MED] /state/actions.ts — pickEventChoice JSDoc still names removed `processNode` API
-- pass: 4 (commit 2a2c0aa)
-- viewport: repository
-- category: comprehension
-- observation: Phase 23 migrated the engine surface from `processNode` to `resolveMapEvent`, but the JSDoc on `pickEventChoice`'s narrative-choice branch description still says "engine already advanced state via processNode". A fresh maintainer grep-searching for `processNode` finds only this stale docstring fragment, no implementation.
-- evidence: `state/actions.ts:162`: `*    -> clear (engine already advanced state via processNode)`
-- suggested fix: Replace `processNode` with `resolveMapEvent` in the JSDoc comment to match the 0.7.0 surface.
-- source: reader
-
 ### [MED] /docs/combat.md — "Stance-derived stats" section references deleted `STANCE_DERIVED` constant
 - pass: 4 (commit 2a2c0aa)
 - viewport: repository
@@ -80,6 +71,17 @@
 - source: reader
 
 ## Done
+
+### [MED] /state/actions.ts — pickEventChoice JSDoc still names removed `processNode` API ✅
+- pass: 4 (commit 2a2c0aa)
+- viewport: repository
+- category: comprehension
+- observation: Phase 23 migrated to `resolveMapEvent`; JSDoc still mentioned `processNode`.
+- evidence: `state/actions.ts:162`.
+- suggested fix: Replace with `resolveMapEvent`.
+- source: reader
+- issue: #41
+- **Resolved 2026-05-15.** One-comment-line edit. `grep -rn processNode state/ app/ components/` now empty. Verify green at 357/357. Closes #41. See commit `133ce07`.
 
 ### [MED] /app/crucible.tsx — file-level JSDoc points at dead `app/event.tsx` path ✅
 - pass: 3 (commit aaa6dbd)

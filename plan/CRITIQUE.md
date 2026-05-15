@@ -15,17 +15,18 @@
 - category: voice
 - observation: Combat skill-picker hint mixes lowercase progress with an ALLCAPS suffix and an em-dash separator; reads as a HUD readout rather than scripture.
 - evidence: `app/(tabs)/combat.tsx:656`: `{availableCount} of {totalCount} available — STANCE LOCKED`
-- suggested fix: Rephrase in ritual cadence, e.g. `{availableCount} of {totalCount} answer thee · stance bound.`
+- suggested fix: Rephrase in ritual cadence — **no thee/thou per bearings update 2026-05-15** — e.g. `{availableCount} of {totalCount} open · stance bound.` Keeps the em-dot ritual rhythm and lowercase ritual cadence without second-person archaic pronouns.
 - source: reader
 
-### [MED] /app/(tabs)/_layout.tsx — tab labels MAP / COMBAT / SHEET / SACK mix registers
+### [needs-user-call] /app/(tabs)/_layout.tsx — tab labels MAP / COMBAT / SHEET / SACK mix registers
 - pass: 2 (commit d967f27)
 - viewport: repository
 - category: navigation
 - observation: The four tab titles wobble as a coherent set — three are objects/places (MAP, SHEET, SACK) and one is an event/state (COMBAT). The four-letter rhythm is right but the register isn't unified.
 - evidence: `app/(tabs)/_layout.tsx` lines 98, 113, 128, 142: `title: 'MAP' / 'COMBAT' / 'SHEET' / 'SACK'`
-- suggested fix: Align to one register. Either all places (WILDS · STRIFE · SELF · SACK) or all verbs (ROAM · STRIKE · KNOW · BEAR). Pick whichever the bearings voice cue favors and apply across the four `<Tabs.Screen title>` calls.
+- suggested fix: Align to one register. Either all places (WILDS · STRIFE · SELF · SACK) or all verbs (ROAM · STRIKE · KNOW · BEAR).
 - source: reader
+- **Deferred 2026-05-15 via oversight: needs design pass with the asset/icon palette.** Renaming tabs in isolation risks a churn cycle; the right time to revisit labels is when icon-label pairing is reconsidered together (Phase 12 polished icons but did not revisit labels). `/iterate` should skip this row until a design-pass phase is filed. Unblock by either (a) shipping a "Tabs design pass" phase that addresses icons + labels together, or (b) flipping back to `[MED]` with an explicit register pick.
 
 ### [MED] /app/(tabs)/exploration/index.tsx — map-node `accessibilityLabel` reads internal enum to screen readers
 - pass: 2 (commit d967f27)
@@ -33,7 +34,7 @@
 - category: a11y
 - observation: The node `accessibilityLabel` template interpolates the raw `kind` value, so screen-reader users hear "Black Cairn — locked" / "— completed" / "— current" / "— available". The enum tokens aren't spoken English and break the screen's voice for assistive users.
 - evidence: `app/(tabs)/exploration/index.tsx:190`: `accessibilityLabel={`${n.label} — ${n.kind}`}`
-- suggested fix: Map kinds to phrases, e.g. `${n.label}, ${kind === 'locked' ? 'barred' : kind === 'completed' ? 'walked' : kind === 'current' ? 'where thou standest' : 'open'}`. Keep the same map in `exploration.copy.ts` if one exists.
+- suggested fix: Map kinds to phrases — **no thee/thou per bearings update 2026-05-15** — e.g. `${n.label}, ${kind === 'locked' ? 'sealed' : kind === 'completed' ? 'walked' : kind === 'current' ? 'here' : 'open'}`. Keep the same map in `exploration.copy.ts` if one exists.
 - source: reader
 
 ### [LOW] /app/(tabs)/exploration/index.tsx — "Where next, pilgrim?" breaks the screen's own glyph + case convention

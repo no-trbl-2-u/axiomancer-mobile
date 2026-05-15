@@ -177,7 +177,10 @@ Authoritative file: [`theme/axm.ts`](../theme/axm.ts).
   - **Bebas Neue** — sans labels (buttons, section labels).
   - **JetBrains Mono** — numerics (HP / damage / rolls).
 - **Voice:** terse, archaic, ritual. Avoid modern fluff in
-  in-game copy.
+  in-game copy. **No second-person archaic pronouns** (thee /
+  thou / thy / thine / ye) — those tip into Renaissance-fair
+  territory. Keep the register *cold and old*, not theatrical.
+  Set via oversight 2026-05-15.
 
 ## Plan expansion posture
 

@@ -86,7 +86,7 @@ const APP_ROOT = path.resolve(__dirname, '..', '..', 'app');
 const EXPECTED_ROUTE_FILES: ReadonlySet<string> = new Set([
     './_layout.tsx',
     './index.tsx',
-    './event.tsx',
+    './event/index.tsx',
     './crucible.tsx',
     './(tabs)/_layout.tsx',
     './(tabs)/character/index.tsx',

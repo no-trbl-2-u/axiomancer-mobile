@@ -40,6 +40,58 @@ or build a development client.
 | `npx tsc --noEmit`  | Type-check.                                                  |
 | `npm test`          | Run Jest. **Not wired yet — pull `specs/01-test-harness-setup.md` first.** |
 
+## Deploy environment
+
+This repo does not auto-deploy from `main`. Native builds are produced on
+demand by [EAS Build](https://docs.expo.dev/build/introduction/) (Expo's
+cloud build service); the `deploy:*` scripts are thin wrappers that load
+`.env` and shell out to the `eas` CLI.
+
+One-time setup on a fresh checkout:
+
+```bash
+cp .env.example .env          # populate, then edit
+npm install -g eas-cli        # if you don't already have it
+eas login                     # one-time browser auth
+```
+
+Set these vars in `.env` (all listed in `.env.example`):
+
+| Var                | Required for                      | Where to get it                                       |
+| ------------------ | --------------------------------- | ----------------------------------------------------- |
+| `EXPO_TOKEN`       | `deploy:preview`, `deploy:production`, `deploy:check` polling | https://expo.dev/settings/access-tokens (scopes: `builds:read`, `projects:read`) |
+| `EAS_PROJECT_ID`   | optional — EAS CLI auto-detects from `app.json` | `eas project:info` |
+| `DEPLOY_PROVIDER`  | switch `deploy:check` between real polling (`eas`) and stub (`none`, default) | choose per environment |
+
+Running a build:
+
+```bash
+npm run deploy:preview        # verify gate + eas build android --profile preview
+npm run deploy:production     # verify gate + eas build --platform all --profile production
+```
+
+Both scripts run `npm run verify` first; a red verify gate blocks the
+build before any cloud minutes are consumed. The `with-env.mjs` wrapper
+exists because npm does not auto-load `.env`, but `eas build` needs
+`EXPO_TOKEN` visible in its environment.
+
+After pushing to `main`, the shipping skills (`/ship-a-phase`,
+`/iterate`) call `npm run deploy:check` to confirm a build exists for the
+pushed commit. With `DEPLOY_PROVIDER=none` (the default), this is a stub
+that prints HEAD and exits per the contract documented in
+`scripts/deploy-check.mjs`:
+
+```
+exit 0  →  deploy ready (artifact uploaded)
+exit 1  →  deploy errored / failed
+exit 2  →  timeout / no build matched commit yet
+exit 3  →  config / auth (EXPO_TOKEN missing or rejected)
+```
+
+When you set `DEPLOY_PROVIDER=eas` and provide `EXPO_TOKEN`, the same
+script polls the EAS Build API for the build matching the current HEAD
+commit and returns the real exit code.
+
 ## Project layout
 
 ```

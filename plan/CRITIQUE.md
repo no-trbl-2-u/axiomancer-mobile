@@ -10,15 +10,6 @@
 ## Pending
 
 
-### [MED] /package.json — deploy environment setup unclear
-- pass: 1 (commit 2a2b0b6)
-- viewport: repository
-- category: comprehension
-- observation: Deploy commands exist but appear to require manual environment setup not documented for new maintainers
-- evidence: package.json lines 21-22: deploy commands reference scripts/with-env.mjs and eas build but env setup is unclear
-- suggested fix: Add quick start section for deploy environment setup
-- source: reader
-
 ### [MED] /app/_layout.tsx — deep link implementation status unclear
 - pass: 1 (commit 2a2b0b6)
 - viewport: repository
@@ -38,6 +29,17 @@
 - source: reader
 
 ## Done
+
+### [MED] /package.json — deploy environment setup unclear ✅
+- pass: 1 (commit 2a2b0b6)
+- viewport: repository
+- category: comprehension
+- observation: Deploy commands exist but appear to require manual environment setup not documented for new maintainers
+- evidence: package.json lines 21-22: deploy commands reference scripts/with-env.mjs and eas build but env setup is unclear
+- suggested fix: Add quick start section for deploy environment setup
+- source: reader
+- issue: #20
+- **Resolved 2026-05-15.** Added a "Deploy environment" section to README.md covering `.env.example` setup, the EXPO_TOKEN / EAS_PROJECT_ID / DEPLOY_PROVIDER table, build commands, and the `deploy:check` stub contract. Closes #20.
 
 ### [HIGH] /README.md — broken TODO.md reference ✅
 - pass: 1 (commit 2a2b0b6)

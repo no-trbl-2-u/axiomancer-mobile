@@ -15,6 +15,7 @@
 
 import {
     appendLog as combatAppendLog,
+    applyDialogueChoice,
     setPhase as combatSetPhase,
     setPlayerAction as combatSetPlayerAction,
     setPlayerStance as combatSetPlayerStance,
@@ -24,20 +25,26 @@ import {
     determineCombatEnd,
     determineEnemyAction,
     getCoastalMap,
+    getDialogueNode,
     healCharacter,
     incrementFriendship as combatIncrementFriendship,
     isConsumable,
     isEquipment,
+    processNode as enginePureProcessNode,
     resolveCombatRound,
     unlockNode as worldUnlockNode,
     type Character,
     type CombatPhase,
     type CombatState,
     type Consumable,
+    type DialogueChoice,
+    type DialogueTree,
     type Enemy,
     type Equipment,
+    type GameState,
     type Item,
     type MapName,
+    type ProcessNodeResult,
     type Stance,
     type WorldMap,
     type WorldState,
@@ -49,7 +56,7 @@ import {
     COMBAT_SKILLS_FIXTURE,
     type CombatSkillFixture,
 } from './mocks/combat.skills.fixture';
-import type { AppStore } from './store';
+import { EMPTY_EVENT_SLICE, type AppStore } from './store';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -133,6 +140,27 @@ export interface AppActions {
     /** Swap the active map within the current continent. */
     changeMap: (mapName: MapName) => void;
     save: () => void;
+    /**
+     * Run `processNode()` on the current node, cache the
+     * `ProcessNodeResult` in the mobile event slice, and apply the
+     * resulting `gameState` to the engine store. No-ops while combat is
+     * active (Spec 08 Q4 = Future spec).
+     *
+     * Returns `true` when an event was produced (kind !== 'none').
+     */
+    processCurrentNode: () => boolean;
+    /**
+     * Resolve the currently-pending event by id. Branches on VM kind:
+     *  - combat-prelude + 'fight'  -> startCombat(encounter.enemy); clear
+     *  - combat-prelude + 'flee'   -> clear (no combat)
+     *  - narrative-choice + NPC dialogue with cursor -> applyDialogue;
+     *    advance cursor if `nextNode !== null`, else clear
+     *  - narrative-choice + auto-resolve (rest/gather/treasure/quest)
+     *    -> clear (engine already advanced state via processNode)
+     */
+    pickEventChoice: (choiceId: string) => void;
+    /** Clear the pending event without dispatching any engine call. */
+    dismissEvent: () => void;
 }
 
 export interface UseItemResult {
@@ -507,6 +535,9 @@ export function createAppActions(store: AppStore): AppActions {
         moveTo: (nodeId) => moveToAction(store, nodeId),
         changeMap: (mapName) => changeMapAction(store, mapName),
         save: () => store.getState().save(),
+        processCurrentNode: () => processCurrentNodeAction(store),
+        pickEventChoice: (choiceId) => pickEventChoiceAction(store, choiceId),
+        dismissEvent: () => dismissEventAction(store),
     };
 }
 
@@ -713,4 +744,115 @@ function changeMapAction(store: AppStore, mapName: MapName): void {
     const nextWorld = worldChangeMap(world, nextMap);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     store.setState({ world: nextWorld } as any);
+}
+
+// ---------------------------------------------------------------------------
+// Event actions (Spec 08 — Phase 6 Tick B)
+// ---------------------------------------------------------------------------
+
+function processCurrentNodeAction(store: AppStore): boolean {
+    const state = store.getState();
+    // Spec 08 Q4 = Future spec: do not stack events on top of combat.
+    if (state.combat !== null) return false;
+
+    const gameState = state as unknown as GameState;
+    const result: ProcessNodeResult = enginePureProcessNode(gameState);
+
+    // Spread the advanced gameState onto the store. `event` is mobile-only
+    // and survives because `result.gameState` does not include it.
+    const nextEvent = {
+        ...(state.event ?? EMPTY_EVENT_SLICE),
+        pending: result,
+        // If the processed event is an NPC node with a DialogueTree, seed
+        // the dialogue cursor at the tree's root so `selectEventViewModel`
+        // composes against the right node.
+        dialogueCursor:
+            result.event.kind === 'npc' && result.event.dialogue
+                ? { tree: result.event.dialogue, nodeId: result.event.dialogue.rootId }
+                : null,
+        history: [],
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    store.setState({ ...result.gameState, event: nextEvent } as any);
+
+    return result.event.kind !== 'none';
+}
+
+function clearEventSlice(store: AppStore): void {
+    store.setState({ event: EMPTY_EVENT_SLICE });
+}
+
+function pickEventChoiceAction(store: AppStore, choiceId: string): void {
+    const state = store.getState();
+    const slice = state.event;
+    if (!slice || slice.pending === null) return;
+
+    const processed = slice.pending.event;
+
+    // combat-prelude path
+    if (processed.kind === 'encounter') {
+        if (choiceId === 'fight') {
+            const enemy = processed.encounter.enemy as Enemy;
+            store.getState().startCombat(enemy);
+            const after = store.getState().combat;
+            if (after !== null) {
+                store.getState().updateCombat(ensureManaOnCombatPlayer(after));
+            }
+            clearEventSlice(store);
+            return;
+        }
+        if (choiceId === 'flee') {
+            clearEventSlice(store);
+            return;
+        }
+        // Unknown choice id on combat-prelude — defensive no-op.
+        return;
+    }
+
+    // npc dialogue path (cursor-driven)
+    if (slice.dialogueCursor !== null) {
+        const { tree, nodeId } = slice.dialogueCursor;
+        const node = getDialogueNode(tree, nodeId);
+        const choice = (node.choices ?? []).find((c: DialogueChoice) => c.id === choiceId);
+        if (!choice) {
+            // Unknown choice on dialogue node — defensive no-op.
+            return;
+        }
+
+        // applyDialogue advances engine state. Mobile-side: walk the cursor.
+        store.getState().applyDialogue(tree, choice);
+        const nextState = store.getState() as unknown as GameState;
+        const result = applyDialogueChoice(nextState, tree, choice);
+
+        const nextHistory = [
+            ...(slice.history as ReadonlyArray<{ nodeId: string; choiceId: string }>),
+            { nodeId, choiceId },
+        ];
+
+        if (result.nextNode !== null) {
+            store.setState({
+                event: {
+                    ...slice,
+                    dialogueCursor: {
+                        tree,
+                        nodeId: result.nextNode.id ?? nodeId,
+                    },
+                    history: nextHistory,
+                },
+            });
+        } else {
+            // Dialogue tree exhausted — clear the event.
+            clearEventSlice(store);
+        }
+        return;
+    }
+
+    // narrative-choice auto-resolve path (rest / gather / treasure / quest /
+    // shop / npc-without-dialogue). Engine already advanced gameState via
+    // processNode; just clear the event slice.
+    clearEventSlice(store);
+}
+
+function dismissEventAction(store: AppStore): void {
+    clearEventSlice(store);
 }

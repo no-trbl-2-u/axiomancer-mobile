@@ -13,6 +13,7 @@ import { afterEach, describe, it, expect, jest } from '@jest/globals';
 import type { ProcessNodeResult } from 'axiomancer-mechanics';
 
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
+import { createAppActions } from '@/state/actions';
 import { createAppStore, type AppStore, EMPTY_EVENT_SLICE } from '@/state/store';
 import {
     selectEventViewModel,
@@ -240,6 +241,81 @@ describe('selectEventViewModel: narrative-choice composition', () => {
         setPending(store, makeRestResult(1, 'You rest briefly.'));
         const vm = selectEventViewModel(store.getState());
         expect(vm.canSkip).toBe(false);
+    });
+});
+
+describe('eventActions.pickEventChoice', () => {
+    it('combat-prelude + fight -> startCombat called with encounter enemy; pending clears', () => {
+        const store = makeStore();
+        const actions = createAppActions(store);
+        const encounterResult = makeEncounterResult();
+        setPending(store, encounterResult);
+        const startCombatSpy = jest.spyOn(store.getState(), 'startCombat');
+
+        actions.pickEventChoice('fight');
+
+        expect(startCombatSpy).toHaveBeenCalledTimes(1);
+        // setState happens after spy installation; pending should be cleared
+        expect(store.getState().event.pending).toBeNull();
+    });
+
+    it('combat-prelude + flee -> no engine dispatch; pending clears', () => {
+        const store = makeStore();
+        const actions = createAppActions(store);
+        setPending(store, makeEncounterResult());
+        const startCombatSpy = jest.spyOn(store.getState(), 'startCombat');
+
+        actions.pickEventChoice('flee');
+
+        expect(startCombatSpy).not.toHaveBeenCalled();
+        expect(store.getState().event.pending).toBeNull();
+    });
+
+    it('narrative-choice auto-resolve (rest) clears pending without engine dispatch', () => {
+        const store = makeStore();
+        const actions = createAppActions(store);
+        setPending(store, makeRestResult(3, 'A rest.'));
+
+        actions.pickEventChoice('continue');
+
+        expect(store.getState().event.pending).toBeNull();
+    });
+
+    it('unknown choice id on combat-prelude is a defensive no-op (pending stays)', () => {
+        const store = makeStore();
+        const actions = createAppActions(store);
+        setPending(store, makeEncounterResult());
+
+        actions.pickEventChoice('explode');
+
+        expect(store.getState().event.pending).not.toBeNull();
+    });
+});
+
+describe('eventActions.dismissEvent', () => {
+    it('clears the event slice without dispatching engine calls', () => {
+        const store = makeStore();
+        const actions = createAppActions(store);
+        setPending(store, makeRestResult(1, 'A rest.'));
+        expect(selectHasActiveEvent(store.getState())).toBe(true);
+
+        actions.dismissEvent();
+
+        expect(store.getState().event.pending).toBeNull();
+        expect(selectHasActiveEvent(store.getState())).toBe(false);
+    });
+});
+
+describe('eventActions.processCurrentNode', () => {
+    it('no-ops while combat is active (Spec 08 Q4)', () => {
+        const store = makeStore();
+        const actions = createAppActions(store);
+        store.setState({ combat: { phase: 'choose' } as never });
+
+        const produced = actions.processCurrentNode();
+
+        expect(produced).toBe(false);
+        expect(store.getState().event.pending).toBeNull();
     });
 });
 

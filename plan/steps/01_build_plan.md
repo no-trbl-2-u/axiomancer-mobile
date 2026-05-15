@@ -206,19 +206,23 @@ commit that ships the phase.
       "engine Spec ~04" hedge); `skillLookup` comment names
       Phase 16 explicitly. +5 hermetic tests. Brief at
       `plan/phases/phase_26_drain_presenter_stubs.md`.
-- [ ] Phase 25 — Typed event surface consumer (engine 12 / 21
-      catch-up). Promoted from `plan/PHASE_CANDIDATES.md` via
-      `/oversight` 2026-05-15 (score 5.0). 2-tick refactor.
-      Scope: subscribe to engine `createEventEmitter`; route
-      the 11 typed events (combat / world / level-up /
-      inventory / dialogue / save / load) to the combat log
-      presenter via the matching `is*Event` guards; drop the
-      bespoke severity inference in
-      `state/actions.ts:summarizeRoundEvents` and let
-      typed-event payloads drive log copy. Brief to be drafted
-      via `/plan-a-phase phase 25` before shipping. Conflicts:
-      touches the round-by-round log shape — combat screen
-      snapshots and e2e need updates.
+- [x] Phase 25 — Typed event surface consumer (engine 12 / 21
+      catch-up). Shipped across two sub-ticks on 2026-05-15:
+      Tick A emitter wiring + ring-buffer presenter
+      (`3d2f497`), Tick B `useGameEvents` hook + close-out
+      (this commit). Brief at
+      `plan/phases/phase_25_typed_events.md`. Engine
+      `createEventEmitter()` now flows through the mobile
+      store; 10 typed events land in a mobile-private
+      `_recentEvents` tail (capacity 20, newest-first).
+      Consumers narrow via the engine's `is*Event` guards.
+      The brief's original "drop bespoke severity inference"
+      goal was revised at plan time — engine `combat:round`
+      payload is `{state}` only, no per-event detail — so
+      `summarizeRoundEvents` stays. Phase 25 wires the
+      channel; specific consumers (level-up badge auto-clear,
+      inventory feedback, dialogue cursor confirmation) ship
+      as iterate rows.
 
 > **After phase 25:** the loop transitions back to `/iterate` —
 > bug findings, presenter refactors, asset backlog, ongoing
@@ -464,7 +468,7 @@ adapter).
   337/337; engine pin tightened to exact 0.7.0 in the
   preceding oversight commit c698073 to stop further
   auto-bump drift)
-- phase 26 — <this commit> — drain stale presenter stubs
+- phase 26 — d8d2e33 — drain stale presenter stubs
   (one tick: navigation.engine selectTabBadges reads
   selectHasActiveEvent + player.experience vs
   experienceToNextLevel; combat.engine STANCE_DERIVED
@@ -473,3 +477,15 @@ adapter).
   state/actions.ts file-header + line-420 skillLookup
   comment swept to current 0.7.0 surface and Phase 16
   reference; +5 hermetic tests; 342/342)
+- phase 25 — 3d2f497 / <this commit> — typed event surface
+  consumer (two ticks: A wires GameEventEmitter through
+  createAppStore + new mobile-private _recentEvents ring
+  buffer + selectRecentEngineEvents presenter; B adds
+  useGameEvents React hook + close-out). Engine 10 typed
+  events now flow to mobile; consumers narrow via is*Event
+  guards from axiomancer-mechanics. +15 hermetic tests
+  (11 emitter contract + 4 hook subscription); 357/357.
+  Bespoke severity inference in summarizeRoundEvents
+  remained intact — engine combat:round payload is
+  {state} only; the brief revised the original "drop
+  inference" goal at plan time.

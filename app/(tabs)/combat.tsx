@@ -119,7 +119,7 @@ export default function CombatScreen() {
             return;
         }
         if (key === 'item') {
-            setToast('No items at hand. Coming soon.');
+            setToast('Thy hands are empty.');
             return;
         }
         actions.setPlayerAction(key);

@@ -3,11 +3,10 @@
 > Latest findings from `/iterate audit`. Rewritten on each
 > audit pass. The Pending list at the bottom queues `/iterate`.
 
-> Bias: voice (set via oversight 2026-05-15; targets the
-> pending `[3.8]` "Hands are empty." row + 2 pending voice/
-> a11y critique rows in `plan/CRITIQUE.md`). `/iterate` weights
-> voice-category rows 1.5×. Self-expires when the pending
-> voice rows drain.
+> Bias: none (reset via oversight 2026-05-15 after the voice
+> queue drained from 4 critique rows to 2 across multiple
+> `/iterate` ticks; remaining voice rows compete fairly with
+> a11y / comprehension rows at baseline).
 
 ## Top 5 findings (scored) — 2026-05-13
 

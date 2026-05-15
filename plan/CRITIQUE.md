@@ -6,6 +6,12 @@
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
 > for the contract.
+>
+> **Pass-5 policy (set via `/oversight` 2026-05-15):** pause new
+> critique passes until the Pending count drains to ≤ 3 rows.
+> Rationale: pass 4 added 6 findings while /iterate drained 3 in
+> the same window — net +3. Without a pause, the queue grows
+> unboundedly. Re-run `/critique` only when Pending is small.
 
 ## Pending
 

@@ -90,11 +90,11 @@
 ### [voice] Revise `app/(tabs)/combat.tsx:122` — "Thy hands are empty." → no second-person archaic pronouns
 
 - category: voice (bearings compliance)
-- impact: 4 (one of the most-tapped toast paths in combat; same surface as the just-shipped fix, so the fix has high visibility)
+- impact: 7 (bumped from 4 via `/oversight` 2026-05-15 — this is the most-tapped failure toast in combat and clearly violates the no-thee/thou rule shipped in `14a9395`; the row has been pending across many ticks because lower-rated critique rows kept outranking it)
 - ease: 9.5 (one-line string change; sibling fix landed in commit `176cc80`)
 - next: `setToast('Hands are empty.');` per the oversight 2026-05-15 option-description (user explicitly cited "Hands are empty." as the preferred phrasing when picking "Dial it back — ritual but no thee/thou"). bearings.md updated in commit `14a9395` with the new no-thee/thou rule.
 - source: oversight 2026-05-15
-- estimated score: 3.8
+- estimated score: **6.65** (impact 7 × ease 9.5 / 10; bumped from 3.8 via `/oversight` 2026-05-15 to surface this above the remaining MED critique rows at 4.0)
 
 ## Done
 

@@ -80,18 +80,6 @@
 - estimated phases: 1 (or iterate row if diff is empty)
 - conflicts: none.
 
-### [score 5.0] Phase 25 — Typed event surface consumer (engine 12/21 catch-up)
-
-- block: III (alignment / hygiene)
-- source: cross-repo versioning audit (integrated 2026-05-15), closes audit gap D
-- proposed scope: 1 phase, 2 ticks. Subscribe to `createEventEmitter`;
-  route typed events to combat log presenter via `is*Event` guards;
-  drop bespoke severity inference in `actions.ts`.
-- rationale: lets copy / severity live in one place (engine), not
-  re-derived per round in mobile.
-- estimated phases: 1
-- conflicts: touches round-by-round log shape — screen snapshots /
-  e2e need updates.
 
 ## Drained via /iterate
 
@@ -158,6 +146,17 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted 2026-05-15 → status Phase 25] [score 5.0] Typed event surface consumer
+
+- promoted via `/oversight` 2026-05-15.
+- Assigned **Phase 25** in `plan/steps/01_build_plan.md` Status block.
+- block: III (alignment / hygiene); 2-tick refactor.
+- source: cross-repo versioning audit (integrated 2026-05-15), closes audit gap D.
+- Scope: subscribe to engine `createEventEmitter`; route the 11 typed events (TypedCombatStartedEvent / TypedCombatRoundEvent / TypedCombatEndedEvent / TypedWorldMovedEvent / TypedWorldProcessedEvent / TypedLevelUpEvent / TypedInventoryChangedEvent / TypedDialogueAppliedEvent / TypedGameSavedEvent / TypedGameLoadedEvent) to the combat log presenter via the matching `is*Event` guards (`isCombatStartedEvent` etc.). Drop the bespoke severity inference in `state/actions.ts:summarizeRoundEvents` and let typed-event payload drive log copy.
+- Brief: to be drafted via `/plan-a-phase phase 25` when the loop reaches it.
+- Rationale: copy + severity authoring lives in one place (engine), not re-derived per round in mobile.
+- Conflicts: touches the round-by-round log shape — screen snapshots / e2e need updates.
 
 ### [shipped 2026-05-15 → status Phase 23] [score 9.5] MapEvents engine consumer migration ✅
 

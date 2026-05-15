@@ -206,11 +206,24 @@ commit that ships the phase.
       "engine Spec ~04" hedge); `skillLookup` comment names
       Phase 16 explicitly. +5 hermetic tests. Brief at
       `plan/phases/phase_26_drain_presenter_stubs.md`.
+- [ ] Phase 25 — Typed event surface consumer (engine 12 / 21
+      catch-up). Promoted from `plan/PHASE_CANDIDATES.md` via
+      `/oversight` 2026-05-15 (score 5.0). 2-tick refactor.
+      Scope: subscribe to engine `createEventEmitter`; route
+      the 11 typed events (combat / world / level-up /
+      inventory / dialogue / save / load) to the combat log
+      presenter via the matching `is*Event` guards; drop the
+      bespoke severity inference in
+      `state/actions.ts:summarizeRoundEvents` and let
+      typed-event payloads drive log copy. Brief to be drafted
+      via `/plan-a-phase phase 25` before shipping. Conflicts:
+      touches the round-by-round log shape — combat screen
+      snapshots and e2e need updates.
 
-> **After phase 26:** the loop transitions to `/iterate` —
+> **After phase 25:** the loop transitions back to `/iterate` —
 > bug findings, presenter refactors, asset backlog, ongoing
 > audits. `/march` makes that transition automatic. (Block II
-> phases 20/21 and Block III phases 22/24/25 in
+> phases 20/21 and Block III phases 22/24 in
 > `plan/PHASE_CANDIDATES.md` are gated on engine releases or
 > stay below promotion threshold; `/expand` re-evaluates.)
 

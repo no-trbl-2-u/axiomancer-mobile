@@ -10,15 +10,6 @@
 ## Pending
 
 
-### [MED] /app/_layout.tsx — deep link implementation status unclear
-- pass: 1 (commit 2a2b0b6)
-- viewport: repository
-- category: comprehension
-- observation: Deep linking handlers are stubbed with TODO comments indicating incomplete implementation
-- evidence: app/_layout.tsx lines 72-82: handleDeepLink function has logic but comments suggest incomplete functionality
-- suggested fix: Complete deep link implementation or document current limitations
-- source: reader
-
 ### [LOW] /state/presenters/navigation.engine.ts — TODO comments break voice consistency
 - pass: 1 (commit 2a2b0b6)
 - viewport: repository
@@ -29,6 +20,17 @@
 - source: reader
 
 ## Done
+
+### [MED] /app/_layout.tsx — deep link implementation status unclear ✅
+- pass: 1 (commit 2a2b0b6)
+- viewport: repository
+- category: comprehension
+- observation: Deep linking handlers are stubbed with TODO comments indicating incomplete implementation
+- evidence: app/_layout.tsx lines 72-82: handleDeepLink function has logic but comments suggest incomplete functionality
+- suggested fix: Complete deep link implementation or document current limitations
+- source: reader
+- issue: #21
+- **Resolved 2026-05-15.** Removed the dead `handleDeepLink` `useEffect` block from `app/_layout.tsx` (both branches were no-ops); replaced with a comment block documenting that deep linking is declared in `app.json` but not yet wired to navigation, plus the implementation notes needed when it gets wired. Also dropped the now-unused `expo-linking` import. Closes #21.
 
 ### [MED] /package.json — deploy environment setup unclear ✅
 - pass: 1 (commit 2a2b0b6)

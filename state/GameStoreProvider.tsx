@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useMemo, useRef } from 'react';
 import { useStore } from 'zustand/react';
-import type { GameStore, PersistenceAdapter } from 'axiomancer-mechanics';
-import { createAppStore, type AppStore } from './store';
+import type { PersistenceAdapter } from 'axiomancer-mechanics';
+import { createAppStore, type AppStore, type AppStoreState } from './store';
 import { createAppActions, type AppActions } from './actions';
 
 interface GameStoreContextValue {
@@ -53,7 +53,7 @@ function useGameStoreContext(): GameStoreContextValue {
  * selected value changes by reference identity. Prefer per-field selectors
  * (e.g. `useGameState(s => s.player.hp)`) to keep re-renders narrow.
  */
-export function useGameState<U>(selector: (state: GameStore) => U): U {
+export function useGameState<U>(selector: (state: AppStoreState) => U): U {
     const { store } = useGameStoreContext();
     return useStore(store, selector);
 }

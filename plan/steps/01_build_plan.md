@@ -76,8 +76,8 @@ commit that ships the phase.
       `plan/phases/phase_5_character_screen_wiring.md` for the
       retroactive brief.
 - [ ] Phase 6 — Spec 08: Event screen wiring. **Unblocked
-      2026-05-15 via `/oversight`**: ROADMAP audit confirmed
-      all five product questions in
+      2026-05-15 via `/oversight`**: cross-repo versioning
+      audit confirmed all five product questions in
       `specs/08-event-screen-wiring.md` are answered in-spec
       (A / C / B / Future spec / Yes — see lines 63 / 72 / 80 /
       85 / 89). Engine-side surface present in
@@ -86,10 +86,8 @@ commit that ships the phase.
       `applyDialogue(tree, choice)` on `GameActions`. Mobile
       presenter has to compose `activeEvent` / `resolveEvent` /
       `EventChoice[]` from `ProcessNodeResult` / `ProcessedEvent`
-      / `DialogueTree`. See `plan/phases/phase_6_event_screen_wiring.md`
-      for the current blocker brief (now stale — refresh on
-      next reach) and `ROADMAP.md` §3 Phase 18 for the
-      sub-phase breakdown (3–5 ticks suggested). Next
+      / `DialogueTree`. Brief: `plan/phases/phase_6_event_screen_wiring.md`
+      (full shipping brief, 4 sub-ticks marked). Next
       `/march`/`/ship-a-phase` reach can pick it up.
 - [x] Phase 7 — Spec 09: `AsyncStorage` persistence adapter.
       Shipped on main across commits `aa187cd` (e2e), `09bc44e`
@@ -154,10 +152,48 @@ commit that ships the phase.
       re-attempting `/ship-a-phase` every tick; flip back to
       `[ ]` (or let `/oversight` flip it) once a new engine
       release lands with the exports.
+- [x] Phase 17 — Token Crucible: five-resource pool UI (port
+      from design handoff). Shipped in commit `261a238`
+      ("feat: Token Crucible — port five-resource pool UI from
+      design handoff") on 2026-05-15. Added `app/crucible.tsx`,
+      `components/TokenCrucible.tsx`, `components/tokens.tsx`,
+      `state/mocks/tokens.fixture.ts`; touched
+      `app/(tabs)/character/index.tsx`, `app/_layout.tsx`,
+      `state/e2e/route-tree.engine.test.ts`. **Backfilled
+      retroactively** via `/oversight` 2026-05-15 — the row
+      exists for traceability; the feature shipped directly
+      by the user from a design handoff outside the autonomous
+      loop. Retroactive brief at `plan/phases/phase_17_token_crucible.md`
+      (to be drafted; see `plan/AUDIT.md` `[design-source]` row
+      for the open question about where the handoff lives).
+- [ ] Phase 19 — `selectHasActiveEvent` real wiring. Promoted
+      from `plan/PHASE_CANDIDATES.md` via `/oversight`
+      2026-05-15 (score 5.0). Half-tick follow-on to Phase 6:
+      replace the `false` return in `state/presenters/event.engine.ts`
+      with a read against the event slice created in Phase 6.
+      **Likely closes as drained by Phase 6's Tick D** (the
+      Phase 6 brief absorbs this work inline); the row exists
+      for traceability if Phase 6 splits and Tick D is
+      deferred.
+- [ ] Phase 26 — Drain stale presenter stubs (audit gaps B, L,
+      partially M). Promoted from `plan/PHASE_CANDIDATES.md`
+      via `/oversight` 2026-05-15 (score 7.0; renumbered from
+      candidate "Phase 17" because Token Crucible took the 17
+      slot). One tick. Three drains: (1)
+      `navigation.engine.ts`'s three TODO returns →
+      `selectHasActiveEvent` / `selectPlayer.level` /
+      `selectMoralMeter`; (2) `combat.engine.ts:289`
+      `STANCE_DERIVED` placeholder → engine `deriveStats`;
+      (3) sweep stale comments in `state/actions.ts`. Brief
+      to be drafted by `/plan-a-phase phase 26`. Conflicts:
+      none — Phase 6 ships `selectHasActiveEvent` first.
 
-> **After phase 16:** the loop transitions to `/iterate` —
+> **After phase 26:** the loop transitions to `/iterate` —
 > bug findings, presenter refactors, asset backlog, ongoing
-> audits. `/march` makes that transition automatic.
+> audits. `/march` makes that transition automatic. (Block II
+> phases 20/21 and Block III phases 22/23/24/25 in
+> `plan/PHASE_CANDIDATES.md` are gated on engine releases or
+> stay below promotion threshold; `/expand` re-evaluates.)
 
 > **Note on the deploy gate before phase 11 ships:** auto-deploy
 > is **not** a thing for this project. `npm run deploy:check` is

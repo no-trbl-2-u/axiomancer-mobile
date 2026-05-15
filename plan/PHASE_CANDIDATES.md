@@ -1,6 +1,6 @@
 # Phase candidates
 
-> Last pass: 2026-05-15 at commit e521e2f (via /oversight from ROADMAP.md)
+> Last pass: 2026-05-15 at commit 32a14b0 (via /oversight)
 > Pass count: 5
 > Posture: bold
 
@@ -10,73 +10,50 @@
 ## Pending
 
 > Pass 5 backlog (2026-05-15) — filed via `/oversight` from
-> `ROADMAP.md` after the cross-repo versioning audit landed in
-> commit `e521e2f`. Each row maps to a phase block in
-> `ROADMAP.md` §3 and §4. Block I (17/18/19) is mobile-only
-> catch-up — ready to promote. Block II (20/21) waits on the
-> engine 0.6.1 republish (see the `[needs-engine-release]` row
-> in `plan/AUDIT.md`). Block III (22/23/24/25) is alignment /
-> hygiene — lower urgency. `/oversight` reviews these for
-> promotion to `plan/steps/01_build_plan.md` Status block;
-> meanwhile `/march` continues against Phase 6 + 16 + audit
-> pending rows.
-
-### [score 7.0] Phase 17 — Drain stale presenter stubs (engine 10 + Spec 05 catch-up)
-
-- block: I (mobile-only, ready)
-- source: `ROADMAP.md` §3 Block I "Phase 17", closes audit items B, L, partially M
-- proposed scope: 1 phase / 1 tick. Replace `navigation.engine.ts`'s
-  three TODO returns with real reads (`selectHasActiveEvent`,
-  `selectPlayer.level`, `selectMoralMeter`); replace
-  `combat.engine.ts:289` `STANCE_DERIVED` placeholder with engine
-  `deriveStats` calls; sweep stale "until Spec NN ships" comments
-  in `state/actions.ts`.
-- rationale: smallest mobile-only roadmap row; ships against the
-  current `axiomancer-mechanics@0.6.0`. Drains 3 presenter TODOs
-  in one tick.
-- estimated phases: 1
-- conflicts: none.
+> the cross-repo versioning audit integrated 2026-05-15
+> (the source ROADMAP.md doc was committed in `e521e2f` and
+> deleted in `32a14b0` once the candidates here captured its
+> contents). Each row is one mobile-side phase. Block I
+> (presenter stubs / event screen / event-gate) is mobile-only
+> catch-up. Block II (skills) waits on the engine 0.6.1
+> republish (see the `[needs-engine-release]` row in
+> `plan/AUDIT.md`). Block III (presets / map events /
+> persistence / typed events) is alignment / hygiene — lower
+> urgency.
+>
+> Phase-number reservation: candidate Phase 17 has been
+> **renumbered to Phase 26** because Phase 17 in the Status
+> block is now retroactively assigned to Token Crucible
+> (shipped `261a238`). Other candidate numbers (18–25) stay
+> as filed.
 
 ### [score 8.5] Phase 18 — Un-skip Phase 6: Event screen wiring against `processNode` + `applyDialogue`
 
 - block: I (mobile-only, ready) **— also tracked in Status block as Phase 6 (now `[ ]`)**
-- source: `ROADMAP.md` §3 Block I "Phase 18", closes A (consumer side), E, J
+- source: cross-repo versioning audit (integrated 2026-05-15), closes audit gap A (consumer side) / E / J
 - proposed scope: 1 phase, 3–5 ticks. Replace `selectEventViewModel`'s
   `STUB_VM` with composition from `ProcessNodeResult` + current
   `DialogueNode`; two VM kinds (`combat-prelude`, `narrative-choice`);
   machine-readable consequences; mobile-local slug→asset map;
   skip button; `eventActions.pickChoice` dispatching
   `applyDialogue`; `app/event.tsx` → folder + presenter +
-  e2e. Sub-phases per ROADMAP §3.
+  e2e. Sub-phases drafted in `plan/phases/phase_6_event_screen_wiring.md`.
 - rationale: highest-impact mobile-only catch-up. Unblocks user-visible
-  event flow that's been `[skipped]` for 4 days. ROADMAP audit
-  confirmed all 5 product questions are answered.
+  event flow that's been `[skipped]` for 4 days. All 5 Spec 08
+  product questions answered in-spec.
 - estimated phases: 1 (or 3–5 sub-phases at plan-time)
 - conflicts: this is the same work as Phase 6 in the Status block.
-  Promotion should reconcile, not duplicate. Recommend: leave
-  Phase 6 row as the canonical Status entry; this candidate row
-  documents the roadmap-shaped breakdown.
-
-### [score 5.0] Phase 19 — `selectHasActiveEvent` real wiring
-
-- block: I (mobile-only, ready)
-- source: `ROADMAP.md` §3 Block I "Phase 19", closes A (gating direction)
-- proposed scope: ½ tick. Wire `selectHasActiveEvent` against engine
-  truth (replaces `false` return); unblocks the third TODO in Phase
-  17 + gates `EventGate` in `app/_layout.tsx`.
-- rationale: half-tick follow-on to Phase 18; could fold into 18 at
-  plan-time if the loop prefers. Kept separate so `/critique` can
-  bracket it.
-- estimated phases: 1 (or fold into 18)
-- conflicts: depends on Phase 18 landing first.
+  Promotion should reconcile, not duplicate. **Resolved:** Phase 6
+  row is the canonical Status entry; this candidate row documents
+  the audit-shaped breakdown.
 
 ### [score 5.5] Phase 20 — Drain `combat.skills.fixture.ts` (engine Spec 04b consumer)
 
 - block: II (engine-release-gated)
-- source: `ROADMAP.md` §3 Block II "Phase 20", closes G
+- source: cross-repo versioning audit (integrated 2026-05-15), closes audit gap G
 - **Already filed as Phase 16 in `plan/steps/01_build_plan.md` with
   status `[skipped]` pending engine release.** This candidate row
-  exists for ROADMAP traceability; do not double-promote. When the
+  exists for cross-repo-audit traceability; do not double-promote. When the
   engine ships 0.6.1 with the `skillLibrary` re-export, flip the
   Phase 16 row in the Status block.
 - conflicts: same work as Status block Phase 16. Resolve by
@@ -85,7 +62,7 @@
 ### [score 6.0] Phase 21 — Engine-driven skill resolution (`executeSkill` wiring)
 
 - block: II (engine-release-gated, depends on 20)
-- source: `ROADMAP.md` §3 Block II "Phase 21", closes H
+- source: cross-repo versioning audit (integrated 2026-05-15), closes audit gap H
 - proposed scope: 1 phase, 2–3 ticks. `resolveRound` stops downgrading
   `action: 'skill'` → `'attack'`; pass real `skillLookup` built from
   `getSkillById`; drain placeholder mana model in favour of engine
@@ -101,7 +78,7 @@
 ### [score 4.5] Phase 22 — Character presets adoption (engine 18 consumer)
 
 - block: III (alignment / hygiene)
-- source: `ROADMAP.md` §3 Block III "Phase 22", closes F
+- source: cross-repo versioning audit (integrated 2026-05-15), closes audit gap F
 - proposed scope: 1 phase, 1–2 ticks. Roster picker overlay
   (`__DEV__` or boot) using `characterPresets`;
   `buildCharacterFromPreset` replaces existing boot path; e2e per
@@ -114,7 +91,7 @@
 ### [score 6.5] Phase 23 — MapEvents engine consumer (engine 23/24/25 catch-up)
 
 - block: III (alignment / hygiene, large)
-- source: `ROADMAP.md` §3 Block III "Phase 23", closes I
+- source: cross-repo versioning audit (integrated 2026-05-15), closes audit gap I
 - proposed scope: 1 phase, 3–4 ticks. `moveToAction` switches to
   `processNode` / `resolveMapEvent`; `state/exploration-maps/`
   reduced to visual-layout-only; engine drives unlock propagation
@@ -132,7 +109,7 @@
 ### [score 4.0] Phase 24 — `PersistenceAdapter` re-grounding
 
 - block: III (alignment / hygiene)
-- source: `ROADMAP.md` §3 Block III "Phase 24", closes K
+- source: cross-repo versioning audit (integrated 2026-05-15), closes audit gap K
 - proposed scope: 1 phase, 1 tick (likely iterate-shaped). Diff
   mobile's adapter against engine's `PersistenceAdapter` interface;
   delete local re-declaration; reconcile migrations
@@ -144,7 +121,7 @@
 ### [score 5.0] Phase 25 — Typed event surface consumer (engine 12/21 catch-up)
 
 - block: III (alignment / hygiene)
-- source: `ROADMAP.md` §3 Block III "Phase 25", closes D
+- source: cross-repo versioning audit (integrated 2026-05-15), closes audit gap D
 - proposed scope: 1 phase, 2 ticks. Subscribe to `createEventEmitter`;
   route typed events to combat log presenter via `is*Event` guards;
   drop bespoke severity inference in `actions.ts`.
@@ -204,6 +181,28 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted 2026-05-15 → status Phase 19] [score 5.0] `selectHasActiveEvent` real wiring
+
+- promoted via `/oversight` 2026-05-15.
+- Assigned **Phase 19** in `plan/steps/01_build_plan.md` Status block.
+- Scope: ½ tick. Replace `selectHasActiveEvent`'s `false` return
+  with a read against the new event slice added in Phase 6 (`state.event.pending !== null && pending.event.kind !== 'none'`).
+- **Note:** the work is folded into `plan/phases/phase_6_event_screen_wiring.md` Tick D (Phase 6 closes it inline). The Phase 19 row exists for traceability; if Phase 6 ships Tick D, Phase 19 closes as drained by Phase 6's final commit. If Phase 6 splits and Tick D is deferred, Phase 19 ships standalone.
+
+### [promoted 2026-05-15 → status Phase 26] [score 7.0] Drain stale presenter stubs (engine 10 + Spec 05 catch-up)
+
+- promoted via `/oversight` 2026-05-15 (renumbered from candidate "Phase 17" because Token Crucible took the Phase 17 slot in the Status block).
+- Assigned **Phase 26** in `plan/steps/01_build_plan.md` Status block.
+- block: I (mobile-only, ready against `axiomancer-mechanics@0.6.0`).
+- source: cross-repo versioning audit (integrated 2026-05-15), closes audit gaps B, L, partially M.
+- Scope: 1 tick. Three drains in one phase:
+  - Replace `navigation.engine.ts`'s three TODO returns with real reads (`selectHasActiveEvent` once the event slice exists, `selectPlayer.level`, `selectMoralMeter`).
+  - Replace `combat.engine.ts:289` `STANCE_DERIVED` placeholder with engine `deriveStats` calls.
+  - Sweep stale "until Spec NN ships" / "engine 0.3.x" comments in `state/actions.ts`.
+- Rationale: smallest mobile-only audit row; ships against the current engine package.
+- Brief: to be drafted by `/plan-a-phase phase 26` when the loop reaches it.
+- Conflicts: none. Phase 6's Tick D wires `selectHasActiveEvent` first; Phase 26 then reads it from navigation.
 
 ### [promoted 2026-05-15 → phase 16] [score 5.5] Drain `combat.skills.fixture.ts` mock — wire engine skill selectors
 

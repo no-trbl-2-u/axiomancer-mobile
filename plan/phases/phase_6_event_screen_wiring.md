@@ -6,10 +6,9 @@
 > answered in-spec at lines 63 / 72 / 80 / 85 / 89
 > (A / C / B / Future spec / Yes).
 >
-> Sized **3–5 ticks** per `ROADMAP.md` §3 Block I Phase 18.
-> One brief; `/ship-a-phase` can split at the sub-tick
-> boundaries marked below. **Do not touch files in the active
-> Token Crucible WIP branch** — see Cross-links → Out.
+> Sized **3–5 ticks** per the cross-repo versioning audit
+> integrated 2026-05-15. One brief; `/ship-a-phase` can split
+> at the sub-tick boundaries marked below.
 
 ## Outcome
 
@@ -184,7 +183,7 @@ hermetic test in `state/e2e/event.engine.test.ts`. The new
 
 **Retro-fit (out of scope, follow-up):**
 
-- `selectHasActiveEvent` consumer in `state/presenters/navigation.engine.ts` — currently a stub returning `false`; ROADMAP Phase 17 + 19 own that drain. This phase only flips `selectHasActiveEvent` itself; the navigation badge follow-on lands separately.
+- `selectHasActiveEvent` consumer in `state/presenters/navigation.engine.ts` — currently a stub returning `false`. Status block Phase 26 (presenter-stub drain) owns the navigation-side read; Status block Phase 19 owns flipping `selectHasActiveEvent` itself if Phase 6's Tick D doesn't absorb it. This brief assumes Tick D flips `selectHasActiveEvent`; the navigation badge follow-on lands in Phase 26.
 
 ## Decisions made upfront — DO NOT ASK
 
@@ -260,19 +259,17 @@ Questions block. Authority order per `skills/plan-a-phase.md`
 8. **No `app/(tabs)/*` mutation:** Phase 6 does NOT modify any
    file under `app/(tabs)/`. The exploration screen's
    `moveToAction` already dispatches the engine's world-move;
-   wiring `processNode` into that dispatch chain is a Phase 17
-   / Phase 19 concern (ROADMAP §3 Block I), not this phase.
+   wiring `processNode` into that dispatch chain is a Phase 26
+   (presenter stubs) / Phase 23 (MapEvents consumer, candidate)
+   concern, not this phase.
 
-9. **Coordinate with Crucible WIP:** `app/_layout.tsx` and
-   `state/e2e/route-tree.engine.test.ts` are modified in the
-   user's uncommitted Token Crucible work (HEAD has
-   `261a238` "Token Crucible port" + uncommitted residue).
-   Phase 6 does NOT need to edit `app/_layout.tsx` — the
-   event stack screen is already registered. The
-   `route-tree` test patch for `app/event/index.tsx` must be
-   rebased on top of any Crucible-side changes; if conflict
-   surfaces, ship Phase 6 against the Crucible-merged tree
-   rather than reverting Crucible work.
+9. **Coordinate with Crucible:** `app/_layout.tsx` and
+   `state/e2e/route-tree.engine.test.ts` were modified in
+   commit `261a238` "Token Crucible port" (now Status block
+   Phase 17). Phase 6 does NOT need to edit `app/_layout.tsx` —
+   the event stack screen is already registered. The
+   `route-tree` test patch for `app/event/index.tsx` rebases
+   on top of the Crucible changes already in place.
 
 ## SEO / metadata / output schema
 
@@ -388,9 +385,10 @@ verify-gate green can land between them. Suggested split:
   Update `state/e2e/route-tree.engine.test.ts`. Tick the Spec 08
   acceptance checklist. Flip Phase 6 `[ ]` -> `[x]` with the
   final commit hash. **`selectHasActiveEvent` flips to engine
-  truth here** (technically Phase 19's concern in ROADMAP, but
-  it's a one-line return now that the slice exists; folding it
-  in is cheaper than a follow-up phase).
+  truth here** — this absorbs Status block Phase 19's scope.
+  If Tick D ships green, Phase 19 closes as drained-by-Phase-6
+  in the same commit; if Tick D is deferred, Phase 19 ships
+  standalone.
 
 If `/ship-a-phase` reaches verify-red between sub-ticks, halt
 and re-plan; do not stack work on a red gate.
@@ -466,14 +464,14 @@ After all sub-ticks land:
 6. `specs/08-event-screen-wiring.md` Acceptance checklist all five boxes ticked; H1 carries `[DONE on <date> — see commit <sha>]`.
 7. Phase 6 row in `plan/steps/01_build_plan.md` flipped `[ ]` -> `[x]` with the final commit hash.
 8. Phase log entry appended (after the Per-phase scope section in `01_build_plan.md` per existing convention).
-9. ROADMAP §3 Block I marks Phase 18 as drained (link to the Phase 6 commits).
+9. `plan/PHASE_CANDIDATES.md` Phase 18 row (cross-repo audit Block I) marks as drained — link to the Phase 6 commits in its `## Drained via /iterate` analogue (or note inline).
 10. `pnpm verify` green; full hermetic suite passes.
 
 ## Follow-ups (out of scope this phase)
 
 - **`'shop'` ProcessedEvent handling.** Engine emits this kind for shop nodes; mobile renders nothing today. Future spec — needs a separate shop UI surface, not a narrative-choice subtype.
-- **Navigation badge for active events.** `state/presenters/navigation.engine.ts` carries a stub `TODO: When engine exposes a way to check for active events` (now resolvable via `selectHasActiveEvent`). ROADMAP §3 Phase 17 drains this.
-- **`moveToAction` -> `processNode` integration.** Exploration's `moveToAction` in `state/actions.ts` currently re-implements unlock propagation locally. ROADMAP §3 Phase 23 swaps this to `processNode`, at which point Phase 6's event slice receives data automatically. Until then, `eventActions.processCurrentNode()` is dispatched explicitly from the exploration screen after a successful move.
-- **`MapEvent` (8 kinds) full coverage.** Today `ProcessedEvent` discriminates only on the 8 enum cases; richer `MapEvent` typing (engine Phase 23 / 24 / 25) gives finer presenter mapping — ROADMAP §3 Phase 23.
+- **Navigation badge for active events.** `state/presenters/navigation.engine.ts` carries a stub `TODO: When engine exposes a way to check for active events` (now resolvable via `selectHasActiveEvent`). Status block Phase 26 drains this.
+- **`moveToAction` -> `processNode` integration.** Exploration's `moveToAction` in `state/actions.ts` currently re-implements unlock propagation locally. Candidate Phase 23 (MapEvents engine consumer) swaps this to `processNode`, at which point Phase 6's event slice receives data automatically. Until then, `eventActions.processCurrentNode()` is dispatched explicitly from the exploration screen after a successful move.
+- **`MapEvent` (8 kinds) full coverage.** Today `ProcessedEvent` discriminates only on the 8 enum cases; richer `MapEvent` typing (engine phases 23 / 24 / 25 on the engine side) gives finer presenter mapping — candidate Phase 23 (mobile-side consumer).
 - **Combat-prelude richer choices.** Engine encounter result only carries the foe; FIGHT/FLEE/SNEAK/PARLEY are not engine-modelled (the SNEAK/PARLEY rows in the current `EVENT_DATA.encounter` are mock-only). Phase 6 ships FIGHT/FLEE only on combat-prelude; SNEAK/PARLEY wait for engine support.
-- **`selectMoralMeter` surfacing.** ROADMAP §3 Phase 17. Not blocking event wiring.
+- **`selectMoralMeter` surfacing.** Status block Phase 26 (presenter-stub drain). Not blocking event wiring.

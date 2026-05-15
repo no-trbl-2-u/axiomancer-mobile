@@ -64,10 +64,22 @@
 
 ## Pending
 
+### [design-source] Token Crucible (commit `261a238`) — where does the design handoff live?
+
+- category: process (loop visibility)
+- source: `/oversight` 2026-05-15
+- impact: 4 (the autonomous loop shipped 9 phases without knowing about an upstream design system; future handoffs will keep coming through the user as code commits unless the loop can read the design source directly)
+- ease: 8 (user names a location; loop adds a `design/` reference per `skills/plan-a-phase.md` §3.4–§3.6 conventions)
+- next: **user action** — answer one or both:
+  1. Where does the "design handoff" content live? (Figma board / Linear doc / `.cursor` skill / a markdown file outside the repo / etc.)
+  2. Should the loop track that source for future handoffs, so features like Token Crucible can be candidate-filed before they ship rather than backfilled retroactively?
+- in the meantime: Phase 17 row in the Status block is `[x]` (backfilled). A retroactive brief at `plan/phases/phase_17_token_crucible.md` is on the to-do list — not blocking, but useful so the next critique pass / iterate audit can see what the feature is supposed to do.
+- watch: any future commit subject starting with `feat:` that introduces a new top-level surface (`app/*.tsx`, new `components/*`) and references "design handoff" — same pattern.
+
 ### [needs-engine-release] `axiomancer-mechanics@0.6.1+` — top-level `skillLibrary` / `getSkillById` re-export + dist `types.d.ts`
 
 - category: external-dependency (engine package)
-- source: `ROADMAP.md` §2.1 (cross-repo dependency chain), filed via `/oversight` 2026-05-15
+- source: cross-repo versioning audit (integrated 2026-05-15), filed via `/oversight` 2026-05-15
 - impact: 5 (gates mobile Phase 16, Phase 20, Phase 21 — three roadmap rows blocked until this lands)
 - ease: 0 (mobile cannot fix; engine team only)
 - recipe (for the engine repo): add to `axiomancer-mechanics/src/index.ts`:

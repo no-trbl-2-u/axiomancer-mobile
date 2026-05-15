@@ -27,15 +27,6 @@
 - suggested fix: Rephrase to ritual register without second-person address — e.g. `✠ CHOOSE` or `✠ THE PATHS` or `✠ A RECKONING`.
 - source: reader
 
-### [MED] /state/presenters/inventory.engine.ts — empty-state copy still says "Thy sack is empty."
-- pass: 3 (commit aaa6dbd)
-- viewport: repository
-- category: voice
-- observation: Same banned-pronoun pattern as the combat item-toast that already got rewritten in commit `176cc80`. The string lives in the presenter constant, gets cited in a Q4 JSDoc that pre-dates the bearings change, AND is hard-coded again in the screen body (violates Hard Rule #8: content stays in the proper layer, not in screens).
-- evidence: `state/presenters/inventory.engine.ts:77` (`Q4=A — "Thy sack is empty."`) and `:112` (`const EMPTY_MESSAGE = 'Thy sack is empty.';`); `app/(tabs)/inventory/index.tsx:83` `<Text style={styles.emptyText}>Thy sack is empty.</Text>` (hardcoded literal).
-- suggested fix: Rephrase to e.g. `The sack hangs slack.` or `Nothing in the sack.` Drop the screen-side hardcoded literal — source it from the presenter only. Refresh the Q4 JSDoc note to point at the bearings update.
-- source: reader
-
 ### [MED] /app/crucible.tsx — file-level JSDoc points at dead `app/event.tsx` path
 - pass: 3 (commit aaa6dbd)
 - viewport: repository
@@ -83,6 +74,17 @@
 - source: reader
 
 ## Done
+
+### [MED] /state/presenters/inventory.engine.ts — empty-state copy still says "Thy sack is empty." ✅
+- pass: 3 (commit aaa6dbd)
+- viewport: repository
+- category: voice
+- observation: Banned-pronoun violation; also hardcoded in the screen layer (Hard Rule #8 violation).
+- evidence: `state/presenters/inventory.engine.ts:112` + `app/(tabs)/inventory/index.tsx:83`.
+- suggested fix: Rephrase + drop the hardcoded literal.
+- source: reader
+- issue: #32
+- **Resolved 2026-05-15.** Rephrased to `'Nothing in the sack.'` `EmptySack` component now takes a `message` prop sourced from `vm.emptyMessage`. Q4 JSDoc note updated to point at the bearings rule. Verify green at 342/342. Closes #32. See commit `068322e`.
 
 ### [MED] /components/EventGate.tsx — JSDoc claims `selectHasActiveEvent` is a no-op; Spec 08 shipped ✅
 - pass: 3 (commit aaa6dbd)

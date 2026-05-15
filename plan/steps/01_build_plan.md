@@ -124,15 +124,15 @@ commit that ships the phase.
       `derivedStats` / `nonCombatStats` with `?? {}` / `?? 0`.
       Verify gate green at 249 / 249. See
       `plan/phases/phase_14_ui_fixes.md`.
-- [ ] Phase 15 — Persistence migration: backfill missing engine
+- [x] Phase 15 — Persistence migration: backfill missing engine
       state fields on save load. Promoted from
       `plan/PHASE_CANDIDATES.md` via `/oversight` on 2026-05-14
       (score 6.0). Add a `schemaVersion N → N+1` step that
       populates `derivedStats` / `nonCombatStats` from
       `attributes` / `archetype` (engine helpers if available,
       zero-fills otherwise). Drop the `(player as any)` casts
-      and `?? 0` fallbacks introduced in Phase 14. Brief to be
-      drafted by `/plan-a-phase` on next reach.
+      and `?? 0` fallbacks introduced in Phase 14. See commit
+      `c8e29a8`.
 
 > **After phase 15:** the loop transitions to `/iterate` —
 > bug findings, presenter refactors, asset backlog, ongoing
@@ -348,3 +348,8 @@ adapter).
   `selectCharacterViewModel` null-guards `derivedStats` /
   `nonCombatStats` with `?? {}` / `?? 0`; brief verified by
   /march on 2026-05-14; verify green at 249/249)
+- phase 15 — c8e29a8 — persistence migration v1→v2 backfill
+  engine state fields (schema version bumped to 2 with migration
+  step that populates missing derivedStats/nonCombatStats using
+  engine helpers; character presenter null-guards removed;
+  verify green at 260/260)

@@ -72,15 +72,6 @@
 - suggested fix: Update the JSDoc reference to `app/event/index.tsx`; add to Phase 26's checklist alongside the navigation.engine.ts entry.
 - source: reader
 
-### [MED] /app/(tabs)/combat.tsx — skill-availability hint "X of Y available — STANCE LOCKED" reads as a status bar
-- pass: 2 (commit d967f27)
-- viewport: repository
-- category: voice
-- observation: Combat skill-picker hint mixes lowercase progress with an ALLCAPS suffix and an em-dash separator; reads as a HUD readout rather than scripture.
-- evidence: `app/(tabs)/combat.tsx:656`: `{availableCount} of {totalCount} available — STANCE LOCKED`
-- suggested fix: Rephrase in ritual cadence — **no thee/thou per bearings update 2026-05-15** — e.g. `{availableCount} of {totalCount} open · stance bound.` Keeps the em-dot ritual rhythm and lowercase ritual cadence without second-person archaic pronouns.
-- source: reader
-
 ### [needs-user-call] /app/(tabs)/_layout.tsx — tab labels MAP / COMBAT / SHEET / SACK mix registers
 - pass: 2 (commit d967f27)
 - viewport: repository
@@ -101,6 +92,17 @@
 - source: reader
 
 ## Done
+
+### [MED] /app/(tabs)/combat.tsx — skill-availability hint "X of Y available — STANCE LOCKED" reads as a status bar ✅
+- pass: 2 (commit d967f27)
+- viewport: repository
+- category: voice
+- observation: Mixed register: lowercase progress + ALLCAPS suffix + em-dash separator. HUD readout, not scripture.
+- evidence: `app/(tabs)/combat.tsx:656`.
+- suggested fix: Lowercase ritual + em-dot separator.
+- source: reader
+- issue: #36
+- **Resolved 2026-05-15.** `{N} of {M} available — STANCE LOCKED` → `{N} of {M} open · stance bound.` One-line copy change. Verify green at 342/342. Closes #36. See commit `62fc19b`.
 
 ### [MED] /app/(tabs)/exploration/index.tsx — map-node `accessibilityLabel` reads internal enum to screen readers ✅
 - pass: 2 (commit d967f27)

@@ -123,29 +123,26 @@ function buildBase(player: Character): readonly BaseStatRow[] {
 }
 
 function buildDerived(player: Character): readonly DerivedStatRow[] {
-    // Old persisted saves may lack derivedStats — fall back to zeros so the
-    // screen renders instead of crashing. A migration in state/persistence/
-    // should backfill missing fields on load; this guard is cheap insurance.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const d = (player as any).derivedStats ?? {};
+    // derivedStats are guaranteed present after v1→v2 persistence migration
+    const d = player.derivedStats;
     return [
-        { label: 'PHYSICAL', attack: d.physicalAttack ?? 0, skill: d.physicalSkill ?? 0, defense: d.physicalDefense ?? 0 },
-        { label: 'MENTAL',   attack: d.mentalAttack   ?? 0, skill: d.mentalSkill   ?? 0, defense: d.mentalDefense   ?? 0 },
-        { label: 'EMOTIONAL',attack: d.emotionalAttack ?? 0, skill: d.emotionalSkill ?? 0, defense: d.emotionalDefense ?? 0 },
+        { label: 'PHYSICAL', attack: d.physicalAttack, skill: d.physicalSkill, defense: d.physicalDefense },
+        { label: 'MENTAL',   attack: d.mentalAttack,   skill: d.mentalSkill,   defense: d.mentalDefense },
+        { label: 'EMOTIONAL',attack: d.emotionalAttack, skill: d.emotionalSkill, defense: d.emotionalDefense },
     ];
 }
 
 function buildSaves(player: Character): readonly SaveOrTestRow[] {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const n = (player as any).nonCombatStats ?? {};
+    // nonCombatStats are guaranteed present after v1→v2 persistence migration
+    const n = player.nonCombatStats;
     const sign = (v: number) => (v >= 0 ? `+${v}` : `${v}`);
     return [
-        { label: 'Body Save',  value: String(n.physicalSave  ?? 0) },
-        { label: 'Mind Save',  value: String(n.mentalSave    ?? 0) },
-        { label: 'Heart Save', value: String(n.emotionalSave ?? 0) },
-        { label: 'Body Test',  value: sign(n.physicalTest    ?? 0) },
-        { label: 'Mind Test',  value: sign(n.mentalTest      ?? 0) },
-        { label: 'Heart Test', value: sign(n.emotionalTest   ?? 0) },
+        { label: 'Body Save',  value: String(n.physicalSave) },
+        { label: 'Mind Save',  value: String(n.mentalSave) },
+        { label: 'Heart Save', value: String(n.emotionalSave) },
+        { label: 'Body Test',  value: sign(n.physicalTest) },
+        { label: 'Mind Test',  value: sign(n.mentalTest) },
+        { label: 'Heart Test', value: sign(n.emotionalTest) },
     ];
 }
 
@@ -188,8 +185,8 @@ function buildEquipment(player: Character): readonly EquipmentSlotRow[] {
  */
 export function selectCharacterViewModel(state: GameStore): CharacterViewModel {
     const player = state.player;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const luck: number = (player as any).derivedStats?.luck ?? 0;
+    // derivedStats.luck is guaranteed present after v1→v2 persistence migration
+    const luck: number = player.derivedStats.luck;
 
     return freezeViewModel({
         displayName: player.name,

@@ -1,0 +1,212 @@
+/**
+ * Hermetic e2e tests for persistence schema migrations.
+ * 
+ * Covers the v1 → v2 migration that backfills missing derivedStats
+ * and nonCombatStats fields using engine derivation helpers.
+ */
+
+import { deriveStats, deriveNonCombatStats } from 'axiomancer-mechanics';
+import { unwrap, wrap, CURRENT_SCHEMA_VERSION, DEFAULT_MIGRATIONS, type StoredEnvelope } from '../migrations';
+
+describe('migrations.engine', () => {
+    describe('v1 → v2 migration', () => {
+        const mockBaseStats = {
+            heart: 10,
+            body: 12,
+            mind: 8,
+        };
+
+        const mockV1GameState = {
+            player: {
+                name: 'Test Player',
+                level: 1,
+                experience: 0,
+                experienceToNextLevel: 100,
+                baseStats: mockBaseStats,
+                inventory: [],
+                currency: 0,
+                effects: [],
+                knownSkills: [],
+                equippedSkills: [],
+            },
+            combat: null,
+            world: {
+                currentMap: 'coastal',
+                currentNode: 'start',
+                visitedNodes: ['start'],
+                unlockedMaps: ['coastal'],
+                completedMaps: [],
+                questLog: {},
+                moralMeter: 0,
+                uniqueEvents: {},
+            },
+            version: '0.4.0',
+        };
+
+        test('adds missing derivedStats to v1 save', () => {
+            const v1Envelope: StoredEnvelope = {
+                schemaVersion: 1,
+                state: mockV1GameState,
+            };
+
+            const migrated = unwrap(v1Envelope);
+            const expectedDerived = deriveStats(mockBaseStats);
+
+            expect(migrated.player.derivedStats).toEqual(expectedDerived);
+        });
+
+        test('adds missing nonCombatStats to v1 save', () => {
+            const v1Envelope: StoredEnvelope = {
+                schemaVersion: 1,
+                state: mockV1GameState,
+            };
+
+            const migrated = unwrap(v1Envelope);
+            const expectedNonCombat = deriveNonCombatStats(mockBaseStats);
+
+            expect(migrated.player.nonCombatStats).toEqual(expectedNonCombat);
+        });
+
+        test('preserves existing derivedStats if present', () => {
+            const existingDerived = {
+                physicalAttack: 999,
+                physicalSkill: 999,
+                physicalDefense: 999,
+                mentalAttack: 999,
+                mentalSkill: 999,
+                mentalDefense: 999,
+                emotionalAttack: 999,
+                emotionalSkill: 999,
+                emotionalDefense: 999,
+                luck: 999,
+            };
+
+            const v1WithDerived = {
+                ...mockV1GameState,
+                player: {
+                    ...mockV1GameState.player,
+                    derivedStats: existingDerived,
+                },
+            };
+
+            const v1Envelope: StoredEnvelope = {
+                schemaVersion: 1,
+                state: v1WithDerived,
+            };
+
+            const migrated = unwrap(v1Envelope);
+
+            expect(migrated.player.derivedStats).toEqual(existingDerived);
+        });
+
+        test('preserves existing nonCombatStats if present', () => {
+            const existingNonCombat = {
+                physicalSave: 888,
+                mentalSave: 888,
+                emotionalSave: 888,
+                physicalTest: 888,
+                mentalTest: 888,
+                emotionalTest: 888,
+                maxHealth: 888,
+            };
+
+            const v1WithNonCombat = {
+                ...mockV1GameState,
+                player: {
+                    ...mockV1GameState.player,
+                    nonCombatStats: existingNonCombat,
+                },
+            };
+
+            const v1Envelope: StoredEnvelope = {
+                schemaVersion: 1,
+                state: v1WithNonCombat,
+            };
+
+            const migrated = unwrap(v1Envelope);
+
+            expect(migrated.player.nonCombatStats).toEqual(existingNonCombat);
+        });
+
+        test('throws on malformed player data', () => {
+            const malformedEnvelope: StoredEnvelope = {
+                schemaVersion: 1,
+                state: {
+                    player: null, // Missing player
+                },
+            };
+
+            expect(() => unwrap(malformedEnvelope)).toThrow('Migration v1→v2: missing player.baseStats');
+        });
+
+        test('throws on missing baseStats', () => {
+            const malformedEnvelope: StoredEnvelope = {
+                schemaVersion: 1,
+                state: {
+                    player: {
+                        name: 'Test',
+                        // missing baseStats
+                    },
+                },
+            };
+
+            expect(() => unwrap(malformedEnvelope)).toThrow('Migration v1→v2: missing player.baseStats');
+        });
+
+        test('throws on invalid baseStats structure', () => {
+            const malformedEnvelope: StoredEnvelope = {
+                schemaVersion: 1,
+                state: {
+                    player: {
+                        baseStats: {
+                            heart: 'invalid', // Should be number
+                            body: 10,
+                            mind: 10,
+                        },
+                    },
+                },
+            };
+
+            expect(() => unwrap(malformedEnvelope)).toThrow('Migration v1→v2: invalid baseStats structure');
+        });
+
+        test('v2 saves bypass migration', () => {
+            const v2State = {
+                ...mockV1GameState,
+                player: {
+                    ...mockV1GameState.player,
+                    derivedStats: deriveStats(mockBaseStats),
+                    nonCombatStats: deriveNonCombatStats(mockBaseStats),
+                },
+            };
+
+            const v2Envelope: StoredEnvelope = {
+                schemaVersion: 2,
+                state: v2State,
+            };
+
+            const result = unwrap(v2Envelope);
+            
+            expect(result).toEqual(v2State);
+        });
+    });
+
+    describe('migration infrastructure', () => {
+        test('current schema version is 2', () => {
+            expect(CURRENT_SCHEMA_VERSION).toBe(2);
+        });
+
+        test('DEFAULT_MIGRATIONS contains v1→v2 migration', () => {
+            expect(DEFAULT_MIGRATIONS[1]).toBeDefined();
+            expect(typeof DEFAULT_MIGRATIONS[1]).toBe('function');
+        });
+
+        test('wrap creates envelope with current schema version', () => {
+            const mockState = {} as any;
+            const envelope = wrap(mockState);
+
+            expect(envelope.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+            expect(envelope.state).toBe(mockState);
+        });
+    });
+});

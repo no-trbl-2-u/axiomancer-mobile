@@ -121,7 +121,8 @@ function buildEquipmentModal(player: Character, item: Item): ItemModalViewModel 
     // Equipment in this engine snapshot carries no stat modifiers, so
     // the deltas are all 0 today. The contract stabilises the UI ahead
     // of engine Spec ~05 shipping real modifiers.
-    const before: DerivedStats = player.derivedStats ?? deriveStats(player.baseStats);
+    // derivedStats are guaranteed present after v1→v2 persistence migration
+    const before: DerivedStats = player.derivedStats;
     const after: DerivedStats = before;
     const statDeltas: StatDelta[] = [
         delta('PHYS ATK', before.physicalAttack, after.physicalAttack),

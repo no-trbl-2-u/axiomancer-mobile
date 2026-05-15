@@ -1,13 +1,67 @@
 # Critique log
 
-> Last pass: 2026-05-15 at commit aaa6dbd
-> Pass count: 3
+> Last pass: 2026-05-15 at commit 2a2c0aa
+> Pass count: 4
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
 > for the contract.
 
 ## Pending
+
+### [MED] /state/actions.ts — pickEventChoice JSDoc still names removed `processNode` API
+- pass: 4 (commit 2a2c0aa)
+- viewport: repository
+- category: comprehension
+- observation: Phase 23 migrated the engine surface from `processNode` to `resolveMapEvent`, but the JSDoc on `pickEventChoice`'s narrative-choice branch description still says "engine already advanced state via processNode". A fresh maintainer grep-searching for `processNode` finds only this stale docstring fragment, no implementation.
+- evidence: `state/actions.ts:162`: `*    -> clear (engine already advanced state via processNode)`
+- suggested fix: Replace `processNode` with `resolveMapEvent` in the JSDoc comment to match the 0.7.0 surface.
+- source: reader
+
+### [MED] /docs/combat.md — "Stance-derived stats" section references deleted `STANCE_DERIVED` constant
+- pass: 4 (commit 2a2c0aa)
+- viewport: repository
+- category: comprehension
+- observation: The doc bullet still names `STANCE_DERIVED` as a "placeholder preserved from the pre-Spec-04 mock" and says "Spec 05 swaps them for engine `deriveStats` reads." Phase 26 deleted the constant and wired `deriveStancePerformance` against `player.derivedStats`. A fresh maintainer reading the doc looks for code that no longer exists and a future swap that already happened.
+- evidence: `docs/combat.md:117-119`.
+- suggested fix: Rewrite the bullet to reflect the post-Phase-26 reality — stance cards now read from `player.derivedStats` via `deriveStancePerformance` (combat.engine.ts).
+- source: reader
+
+### [MED] /state/presenters/event.engine.ts — narrative-choice titles mix HUD-imperative with ritual register
+- pass: 4 (commit 2a2c0aa)
+- viewport: repository
+- category: voice
+- observation: Three of the four new narrative kinds compose titles with HUD-style second-person imperatives (`'YOU REST'`, `'YOU GATHER'`, `'YOU TAKE'`) while the hazard branch uses a poetic article-prefix title (`'THE AIR TURNS'`) and the village branch uses the NPC's proper name. The badges above them already follow the ritual `A X` pattern (`A QUIET PLACE`, `A GATHERING`, `A FIND`); the titles undo that with imperatives.
+- evidence: `state/presenters/event.engine.ts:245,263,267,439`.
+- suggested fix: Align rest / gather / loot titles to the hazard/village register, e.g. `THE FIRE LOWERS`, `THE BRUSH YIELDS`, `THE CACHE OPENS`. Keep the `A X` badge above; drop the `YOU` opener.
+- source: reader
+
+### [LOW] /state/presenters/event.engine.ts — cutscene 'ON' button label too terse for the register
+- pass: 4 (commit 2a2c0aa)
+- viewport: repository
+- category: voice
+- observation: Cutscene's continue affordance is a one-syllable mono-word in ALL CAPS that doesn't match the ritual register of its siblings (`WALK ON`, `SO BE IT`, `ENDURE`, `TAKE IT`, `LEAVE`). Reads as debug UI in a Gothic frame, especially next to the `A VISION` badge.
+- evidence: `state/presenters/event.engine.ts:403`: `label: 'ON'`.
+- suggested fix: Use `WALK ON` (already lives in the rest branch) or `WITNESS` to match surrounding voice.
+- source: reader
+
+### [LOW] /state/presenters/event.engine.ts — village `merchants` argument received and discarded
+- pass: 4 (commit 2a2c0aa)
+- viewport: repository
+- category: consistency
+- observation: `composeVillage` takes `_merchants: ReadonlyArray<NPC>` with a comment that shop UI is deferred and the data is ignored. A fresh maintainer reading the VM sees a single-choice `LEAVE` screen and wonders why the engine payload carries merchant data at all. The deferred-surface signal is invisible to the screen.
+- evidence: `state/presenters/event.engine.ts:355-388`.
+- suggested fix: Either drop the argument entirely (cleaner) or surface `merchants.length` in the subtitle (`'N stalls'`) so the deferred surface is visible in-VM.
+- source: reader
+
+### [LOW] /state/presenters/event.engine.ts — combat-prelude boss subtitle is the same cryptic line for every boss
+- pass: 4 (commit 2a2c0aa)
+- viewport: repository
+- category: voice
+- observation: `composeCombatPrelude` sets `subtitle: 'fourth seal · third sigh'` whenever `isBoss === true`. Fine for one boss as flavour; reads as copy-paste when every boss encounter opens with the same omen. Phase 23 didn't introduce this, but the new `ResolvedEvent` shape now exposes per-encounter data (`encounter.enemy.name`, `level`) so a per-boss line is finally cheap.
+- evidence: `state/presenters/event.engine.ts:176`: `subtitle: isBoss ? 'fourth seal · third sigh' : 'something stirs'`.
+- suggested fix: Either derive the subtitle from `enemy.description` if the engine carries one, or rotate over a small per-tier table keyed on `enemy.level` so repeated boss encounters don't share the same omen.
+- source: reader
 
 ### [MED] /state/presenters/event.engine.ts — choice descriptions double-uppercased between presenter and screen
 - pass: 3 (commit aaa6dbd)

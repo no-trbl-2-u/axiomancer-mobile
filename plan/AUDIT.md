@@ -64,7 +64,7 @@
 
 ## Pending
 
-### [3.5] Add a bundler smoke test (boot Expo + curl `/` + assert 200)
+### [3.5] Add a bundler smoke test (boot Expo + curl `/` + assert 200) ✅ (partial)
 
 - proposed: 2026-05-14, filed via `/oversight` from user note
   `missing-e2e.md` (now archived into this finding)
@@ -77,14 +77,20 @@
   2026-05-14 `EACCES` cache-dir incident surfaced)
 - ease: 4 (small Node script + CI workflow; needs to run
   outside Jest because Metro spawns its own workers)
-- next: write `scripts/smoke-bundler.mjs` that runs
-  `expo export` (or `expo start --offline` in background),
-  curls `/` and asserts a 200 with the root `<div>`, tears
-  down. Hook it into `pnpm verify` as an opt-in step and to
-  CI as a separate job. Document the failure-mode contract
-  alongside `scripts/deploy-check.mjs`.
 - source signal: `missing-e2e.md` user note (archived into this
   row 2026-05-14 — original file deleted from working tree)
+- **Resolved (script + hermetic test) 2026-05-15.** Added
+  `scripts/smoke-bundler.mjs` that runs `expo export --platform
+  web` against a tmp output dir, then asserts `index.html` lands
+  with a non-trivial byte count. Exit contract mirrors
+  `deploy-check.mjs` (0 ok / 1 failed / 2 timeout / 3 config).
+  Hermetic helpers (`buildExportArgs`, `classifyExportResult`)
+  covered by `scripts/__tests__/smoke-bundler.test.ts`. Wired as
+  an opt-in `npm run smoke:bundler` — deliberately not part of
+  `pnpm verify` because a real export takes 30–60 s. **Follow-up:**
+  CI workflow that runs `smoke:bundler` as a separate job on
+  every push to `main` is still pending (rolled into a fresh
+  audit row when the CI surface gets attention).
 
 ### [needs-user-call] Phase 6 (Spec 08 — Event screen wiring) blocked on five open product questions
 

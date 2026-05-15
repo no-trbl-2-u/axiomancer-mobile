@@ -74,6 +74,38 @@ function cutscene(lines: ReadonlyArray<string>): ResolveMapEventResult {
     };
 }
 
+function village(villageName: string): ResolveMapEventResult {
+    return {
+        state: undefined as never,
+        event: { kind: 'village', villageName, merchants: [] },
+    };
+}
+
+function hazard(damage: number): ResolveMapEventResult {
+    return {
+        state: undefined as never,
+        event: { kind: 'hazard', effects: [], damage },
+    };
+}
+
+function lootCache(items: ReadonlyArray<{ id: string; name: string }>, currency = 0): ResolveMapEventResult {
+    return {
+        state: undefined as never,
+        event: {
+            kind: 'loot-cache',
+            items: items.map((i) => ({ ...i, category: 'material' } as never)),
+            currency,
+        },
+    };
+}
+
+function interaction(npcName: string): ResolveMapEventResult {
+    return {
+        state: undefined as never,
+        event: { kind: 'interaction', npcName },
+    };
+}
+
 describe('EventScreen render', () => {
     it('renders combat-prelude with FIGHT and FLEE choices for a non-boss encounter', () => {
         const store = makeStore();
@@ -144,6 +176,70 @@ describe('EventScreen render', () => {
 
         expect(getByTestId('event-empty')).toBeTruthy();
         expect(getByText('NO EVENT IN PROGRESS')).toBeTruthy();
+    });
+
+    it('renders a village event with the village name and a LEAVE choice', () => {
+        const store = makeStore();
+        setPending(store, village('Hollow Mire'));
+
+        const { getByTestId, getByText } = render(
+            withProvider(store, <EventScreen />),
+        );
+
+        expect(getByText('HOLLOW MIRE')).toBeTruthy();
+        expect(getByTestId('event-choice-leave')).toBeTruthy();
+    });
+
+    it('renders a hazard event with an ENDURE choice and damage consequence chip', () => {
+        const store = makeStore();
+        setPending(store, hazard(4));
+
+        const { getByTestId, getByText } = render(
+            withProvider(store, <EventScreen />),
+        );
+
+        expect(getByText('ENDURE')).toBeTruthy();
+        expect(getByTestId('event-consequence-chips')).toBeTruthy();
+    });
+
+    it('renders a loot-cache event with a TAKE IT choice and item chips', () => {
+        const store = makeStore();
+        setPending(
+            store,
+            lootCache([{ id: 'coin', name: 'Tarnished coin' }], 5),
+        );
+
+        const { getByText, getByTestId } = render(
+            withProvider(store, <EventScreen />),
+        );
+
+        expect(getByText('TAKE IT')).toBeTruthy();
+        expect(getByTestId('event-consequence-chips')).toBeTruthy();
+    });
+
+    it('renders an interaction event with a single SO BE IT choice and the npc name', () => {
+        const store = makeStore();
+        setPending(store, interaction('A Stranger'));
+
+        const { getByText } = render(
+            withProvider(store, <EventScreen />),
+        );
+
+        expect(getByText('A STRANGER')).toBeTruthy();
+        expect(getByText('SO BE IT')).toBeTruthy();
+    });
+
+    it('renders a cutscene event with the joined lines as body text', () => {
+        const store = makeStore();
+        setPending(store, cutscene(['First line.', 'Second line.']));
+
+        const { getByText } = render(
+            withProvider(store, <EventScreen />),
+        );
+
+        // Body merges lines with \n\n; both substrings should be present.
+        expect(getByText(/First line\./)).toBeTruthy();
+        expect(getByText(/Second line\./)).toBeTruthy();
     });
 });
 

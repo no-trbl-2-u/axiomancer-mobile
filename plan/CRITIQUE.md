@@ -9,15 +9,6 @@
 
 ## Pending
 
-### [MED] /app/(tabs)/combat.tsx — "No items at hand. Coming soon." breaks voice on visible failure path
-- pass: 2 (commit d967f27)
-- viewport: repository
-- category: voice
-- observation: The Item-action toast string reads as a modern dev placeholder. It appears on the most-tapped failure path (player picks Item before items exist), making it the highest-frequency voice violation in combat.
-- evidence: `app/(tabs)/combat.tsx:123`: `setToast('No items at hand. Coming soon.');`
-- suggested fix: Rephrase in the project's terse/archaic register and drop the shipping-status aside, e.g. `setToast('Thy hands are empty.');`
-- source: reader
-
 ### [MED] /app/(tabs)/combat.tsx — skill-availability hint "X of Y available — STANCE LOCKED" reads as a status bar
 - pass: 2 (commit d967f27)
 - viewport: repository
@@ -55,6 +46,17 @@
 - source: reader
 
 ## Done
+
+### [MED] /app/(tabs)/combat.tsx — "No items at hand. Coming soon." breaks voice on visible failure path ✅
+- pass: 2 (commit d967f27)
+- viewport: repository
+- category: voice
+- observation: The Item-action toast string read as a modern dev placeholder. It appeared on the most-tapped failure path (player picks Item before items exist), making it the highest-frequency voice violation in combat.
+- evidence: `app/(tabs)/combat.tsx:122`: `setToast('No items at hand. Coming soon.');`
+- suggested fix: Rephrase in the project's terse/archaic register and drop the shipping-status aside, e.g. `setToast('Thy hands are empty.');`
+- source: reader
+- issue: #28
+- **Resolved 2026-05-15.** Replaced the toast string with `'Thy hands are empty.'` Verify green at 287/287. Closes #28. See commit `176cc80`.
 
 ### [HIGH] /app/event.tsx — dev-only ENCOUNTER/BOSS variant toggle shipped to players ✅
 - pass: 2 (commit d967f27)

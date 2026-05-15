@@ -90,7 +90,7 @@ function ChoiceRow({
             <ActionIcon kind={choice.iconKey} size={24} color={accent} />
             <View style={{ flex: 1 }}>
                 <Text style={styles.choiceLabel}>{choice.label}</Text>
-                <Text style={styles.choiceSub}>{choice.description.toUpperCase()}</Text>
+                <Text style={styles.choiceSub}>{choice.description}</Text>
                 <ConsequenceChips consequences={choice.consequences} />
             </View>
             <Text style={[styles.choiceArrow, { color: accent }]}>›</Text>
@@ -319,6 +319,7 @@ const styles = StyleSheet.create({
         color: AXM.bone,
         letterSpacing: 1,
         marginTop: 2,
+        textTransform: 'uppercase',
     },
     choiceArrow: { fontFamily: FONTS.gothic, fontSize: 18 },
     chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },

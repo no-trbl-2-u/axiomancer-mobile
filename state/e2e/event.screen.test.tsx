@@ -7,7 +7,7 @@
  */
 
 import { afterEach, describe, it, expect, jest } from '@jest/globals';
-import { fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
 
 jest.mock('expo-router', () => ({
@@ -23,7 +23,7 @@ import {
     GameStoreProvider,
     useGameActions,
 } from '@/state/GameStoreProvider';
-import { createAppStore, EMPTY_EVENT_SLICE, type AppStore } from '@/state/store';
+import { createAppStore, EMPTY_EVENT_SLICE, getEmitterForStore, type AppStore } from '@/state/store';
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
 import type { ResolveMapEventResult } from 'axiomancer-mechanics';
 
@@ -278,5 +278,48 @@ describe('EventScreen choice dispatch', () => {
         fireEvent.press(getByTestId('event-choice-fight'));
         expect(spy).toBeTruthy();
         expect(spy as unknown as jest.Mock).toHaveBeenCalledWith('fight');
+    });
+});
+
+describe('EventScreen dialogue confirmation flash (Phase 29 Tick C)', () => {
+    it('renders a ✓ next to the choice row that matches a dialogue:applied event', () => {
+        jest.useFakeTimers();
+        const store = makeStore();
+        setPending(store, encounter(false));
+
+        const { queryByTestId, getByTestId } = render(
+            withProvider(store, <EventScreen />),
+        );
+
+        // No confirmation before any dialogue:applied fires.
+        expect(queryByTestId('event-choice-fight-confirmed')).toBeNull();
+
+        // Fire dialogue:applied carrying a choice whose id matches a
+        // rendered choice row.
+        const emitter = getEmitterForStore(store);
+        expect(emitter).not.toBeNull();
+        act(() => {
+            emitter!.emit({
+                type: 'dialogue:applied',
+                payload: {
+                    action: {
+                        type: 'APPLY_DIALOGUE',
+                        payload: { choice: { id: 'fight' } },
+                    },
+                    state: store.getState(),
+                } as never,
+            });
+        });
+
+        // Flash should be visible immediately after the event.
+        expect(getByTestId('event-choice-fight-confirmed')).toBeTruthy();
+
+        // Auto-clears after the 500ms TTL.
+        act(() => {
+            jest.advanceTimersByTime(600);
+        });
+        expect(queryByTestId('event-choice-fight-confirmed')).toBeNull();
+
+        jest.useRealTimers();
     });
 });

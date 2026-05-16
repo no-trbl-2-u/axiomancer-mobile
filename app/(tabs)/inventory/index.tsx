@@ -25,13 +25,6 @@ const CATEGORY_ORDER: readonly InventoryCategory[] = [
     'quest',
 ] as const;
 
-const CATEGORY_HEADERS: Record<InventoryCategory, string> = {
-    equipment: '✠ WORN & WIELDED',
-    consumable: '✠ PHIALS & SOPS',
-    material: '✠ STUFF',
-    quest: '✠ SEALED',
-};
-
 function ItemGlyph({ category, sub }: { category: InventoryCategory; sub: string | null }) {
     if (category === 'equipment' && sub === 'Weapon') {
         return <ActionIcon kind="sword" size={32} color={AXM.parchment} />;
@@ -138,7 +131,7 @@ export default function InventoryScreen() {
     return (
         <ScreenBg>
             <View style={styles.header}>
-                <SectionLabel size={9} color={AXM.bone}>SACK · WALLET · BURDEN</SectionLabel>
+                <SectionLabel size={9} color={AXM.bone}>{vm.sectionHeader}</SectionLabel>
                 <View style={styles.headerRow}>
                     <Text style={styles.title}>INVENTORY</Text>
                     <View style={styles.shillingBox}>
@@ -180,7 +173,7 @@ export default function InventoryScreen() {
                 <View style={styles.gridOuter}>
                     {CATEGORY_ORDER.filter((cat) => grouped[cat].length > 0).map((cat) => (
                         <View key={cat} style={styles.categorySection}>
-                            <SectionLabel size={10}>{CATEGORY_HEADERS[cat]}</SectionLabel>
+                            <SectionLabel size={10}>{vm.categoryHeaders[cat]}</SectionLabel>
                             <View style={styles.grid}>
                                 {grouped[cat].map((it) => (
                                     <ItemCard

@@ -536,3 +536,20 @@ describe('inventory lifecycle: persistence hook', () => {
         expect(saveSpy).toHaveBeenCalledTimes(1);
     });
 });
+
+// ---------------------------------------------------------------------------
+// Screen chrome moved to the VM (CRITIQUE [LOW] pass 5 — Hard Rule #8)
+// ---------------------------------------------------------------------------
+
+describe('selectInventoryViewModel: chrome strings', () => {
+    it('exposes the section eyebrow and per-category headers on the VM', () => {
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const vm: InventoryViewModel = selectInventoryViewModel(store.getState());
+
+        expect(vm.sectionHeader).toBe('SACK · WALLET · BURDEN');
+        expect(vm.categoryHeaders.equipment).toBe('✠ WORN & WIELDED');
+        expect(vm.categoryHeaders.consumable).toBe('✠ PHIALS & SOPS');
+        expect(vm.categoryHeaders.material).toBe('✠ STUFF');
+        expect(vm.categoryHeaders.quest).toBe('✠ SEALED');
+    });
+});

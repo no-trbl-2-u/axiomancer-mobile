@@ -76,6 +76,18 @@ export interface InventoryViewModel {
     isEmpty: boolean;
     /** Empty-state copy. Per bearings 2026-05-15 no second-person archaic pronouns (drops the earlier "Thy sack…" phrasing). */
     emptyMessage: string;
+    /**
+     * Display header above the category list (rendered uppercased by
+     * the view). Lives on the presenter so the screen has no inline
+     * ritual literal (Hard Rule #8).
+     */
+    sectionHeader: string;
+    /**
+     * Per-category section labels, in the order categories appear on
+     * the screen. Lives on the presenter so the view layer carries no
+     * literal copy.
+     */
+    categoryHeaders: Record<InventoryCategory, string>;
 }
 
 // ---------------------------------------------------------------------------
@@ -89,6 +101,15 @@ const TAB_ORDER: readonly InventoryTab[] = [
     'material',
     'quest',
 ] as const;
+
+/** Display strings for the inventory screen's chrome. */
+const SECTION_HEADER = 'SACK · WALLET · BURDEN';
+const CATEGORY_HEADERS: Record<InventoryCategory, string> = {
+    equipment: '✠ WORN & WIELDED',
+    consumable: '✠ PHIALS & SOPS',
+    material: '✠ STUFF',
+    quest: '✠ SEALED',
+};
 
 const TAB_LABELS: Record<InventoryTab, string> = {
     all: 'ALL',
@@ -256,5 +277,7 @@ export function selectInventoryViewModel(
         expandedItemId: localUi.expandedItemId ?? null,
         isEmpty: rows.length === 0,
         emptyMessage: EMPTY_MESSAGE,
+        sectionHeader: SECTION_HEADER,
+        categoryHeaders: CATEGORY_HEADERS,
     });
 }

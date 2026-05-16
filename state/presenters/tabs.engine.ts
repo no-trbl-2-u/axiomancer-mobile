@@ -1,10 +1,11 @@
 /**
- * Pure presenter for the tab bar visibility.
+ * Pure presenter for the tab bar visibility and labels.
  *
  * Combat is mutually exclusive with exploration — the player cannot move
  * around the world while in a fight, and there is no out-of-combat
  * "combat" screen to enter, so the bottom tab bar shows exactly one of
- * {MAP, COMBAT} at any time.
+ * the exploration / combat pair at any time. Display strings live on
+ * `TAB_TITLES` below.
  *
  * Tested in state/e2e/tabs.engine.test.ts.
  */

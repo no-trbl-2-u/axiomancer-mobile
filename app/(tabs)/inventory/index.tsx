@@ -155,6 +155,9 @@ export default function InventoryScreen() {
                 {vm.tabs.map((t) => (
                     <TouchableOpacity
                         key={t.key}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${t.label}${t.count > 0 ? `, ${t.count} ${t.count === 1 ? 'item' : 'items'}` : ''}`}
+                        accessibilityState={{ selected: activeTab === t.key }}
                         onPress={() => setActiveTab(t.key)}
                         style={[styles.tab, activeTab === t.key && styles.tabActive]}
                         testID={`tab-${t.key}`}
@@ -234,12 +237,16 @@ export default function InventoryScreen() {
                                 )}
                                 <View style={styles.modalActions}>
                                     <TouchableOpacity
+                                        accessibilityRole="button"
+                                        accessibilityLabel="Cancel"
                                         onPress={() => setModalItemId(null)}
                                         style={[styles.modalBtn, styles.modalBtnCancel]}
                                     >
                                         <Text style={[styles.modalBtnText, { color: AXM.bone }]}>CANCEL</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity
+                                        accessibilityRole="button"
+                                        accessibilityLabel={modalVm.confirmLabel}
                                         onPress={onConfirmModal}
                                         style={styles.modalBtn}
                                         testID="modal-confirm"
@@ -276,8 +283,16 @@ interface ItemCardProps {
 }
 
 function ItemCard({ item, expanded, onTap, onUseOrEquip, onDiscard }: ItemCardProps) {
+    const itemLabel = item.equipped
+        ? `${item.name}, worn`
+        : item.quantity > 1
+            ? `${item.name}, ${item.quantity}`
+            : item.name;
     return (
         <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel={itemLabel}
+            accessibilityState={{ expanded }}
             onPress={onTap}
             style={[
                 styles.itemCard,
@@ -313,6 +328,8 @@ function ItemCard({ item, expanded, onTap, onUseOrEquip, onDiscard }: ItemCardPr
                     <View style={styles.actionsRow}>
                         {item.canUse && (
                             <TouchableOpacity
+                                accessibilityRole="button"
+                                accessibilityLabel={item.category === 'equipment' ? `Equip ${item.name}` : `Use ${item.name}`}
                                 style={styles.actionBtn}
                                 onPress={onUseOrEquip}
                                 testID={`use-${item.id}`}
@@ -324,6 +341,8 @@ function ItemCard({ item, expanded, onTap, onUseOrEquip, onDiscard }: ItemCardPr
                         )}
                         {item.canDiscard && (
                             <TouchableOpacity
+                                accessibilityRole="button"
+                                accessibilityLabel={`Discard ${item.name}`}
                                 style={[styles.actionBtn, styles.discardBtn]}
                                 onPress={onDiscard}
                                 testID={`discard-${item.id}`}

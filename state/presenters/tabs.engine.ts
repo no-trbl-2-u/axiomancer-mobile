@@ -18,6 +18,29 @@ export interface TabsViewModel {
     hiddenTabs: TabKey[];
 }
 
+/**
+ * Display titles for the bottom tab bar, keyed by route name.
+ * Lives on the presenter so the screen has no inline string
+ * literals on the navigation chrome (Hard Rule #8). Pinned by
+ * `state/e2e/tabs.engine.test.ts` — Phase 30 Tick B added this
+ * extraction in response to a user-observed runtime regression
+ * where the tab labels rendered as `{ TAB NAME }"--index"`
+ * literally (the user saw raw template-string output in place of
+ * the configured titles). Pinning the strings here makes any
+ * future regression visible at verify time even if the
+ * `_layout.tsx` `title:` props end up bypassed.
+ *
+ * Phase 31 (Tabs design pass) edits this constant directly:
+ * the chosen register is **all places** —
+ * `WILDS · STRIFE · SELF · SACK`.
+ */
+export const TAB_TITLES: Record<TabKey, string> = {
+    exploration: 'MAP',
+    combat: 'COMBAT',
+    character: 'SHEET',
+    inventory: 'SACK',
+};
+
 const ALWAYS_VISIBLE: TabKey[] = ['character', 'inventory'];
 
 export function selectVisibleTabs(inCombat: boolean): TabsViewModel {

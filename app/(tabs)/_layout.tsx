@@ -4,7 +4,7 @@ import { StyleSheet, View, Text } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { AXM, FONTS } from '@/theme/axm';
 import { useCombatMode } from '@/state/combat-mode';
-import { isTabHidden } from '@/state/presenters/tabs.engine';
+import { isTabHidden, TAB_TITLES } from '@/state/presenters/tabs.engine';
 import { useGameState } from '@/state/GameStoreProvider';
 import { selectTabBadges } from '@/state/presenters/navigation.engine';
 
@@ -95,7 +95,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="exploration"
         options={{
-          title: 'MAP',
+          title: TAB_TITLES.exploration,
+          tabBarLabel: TAB_TITLES.exploration,
           tabBarIcon: ({ color, size }) => (
             <TabIconWithBadge 
               kind="eye" 
@@ -110,7 +111,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="combat"
         options={{
-          title: 'COMBAT',
+          title: TAB_TITLES.combat,
+          tabBarLabel: TAB_TITLES.combat,
           tabBarIcon: ({ color, size }) => (
             <TabIconWithBadge 
               kind="sword" 
@@ -125,7 +127,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="character"
         options={{
-          title: 'SHEET',
+          title: TAB_TITLES.character,
+          tabBarLabel: TAB_TITLES.character,
           tabBarIcon: ({ color, size }) => (
             <TabIconWithBadge 
               kind="crown" 
@@ -139,7 +142,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="inventory"
         options={{
-          title: 'SACK',
+          title: TAB_TITLES.inventory,
+          tabBarLabel: TAB_TITLES.inventory,
           tabBarIcon: ({ color, size }) => (
             <TabIconWithBadge
               kind="bag"

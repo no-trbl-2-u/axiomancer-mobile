@@ -10,7 +10,7 @@
 
 import { afterEach, describe, it, expect, jest } from '@jest/globals';
 
-import { isTabHidden, selectVisibleTabs, type TabKey } from '@/state/presenters/tabs.engine';
+import { isTabHidden, selectVisibleTabs, TAB_TITLES, type TabKey } from '@/state/presenters/tabs.engine';
 
 afterEach(() => {
     jest.restoreAllMocks();
@@ -135,5 +135,45 @@ describe('selectVisibleTabs: purity', () => {
 
         // A subsequent call still returns the canonical value.
         expect(selectVisibleTabs(false).visibleTabs).not.toContain('combat');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// TAB_TITLES contract — Phase 30 Tick B
+// ---------------------------------------------------------------------------
+
+describe('TAB_TITLES: tab-label contract', () => {
+    it('exposes a non-empty string title for every TabKey', () => {
+        const keys: TabKey[] = ['exploration', 'combat', 'character', 'inventory'];
+        for (const key of keys) {
+            expect(typeof TAB_TITLES[key]).toBe('string');
+            expect(TAB_TITLES[key].length).toBeGreaterThan(0);
+        }
+    });
+
+    it('contains no `{...}` or `${...}` template-string leaks', () => {
+        // Tick B contract: the user-observed runtime regression
+        // rendered tab labels as `{ TAB NAME }"--index"` literally.
+        // Pin that no title carries an unresolved template-shape.
+        const leakRe = /\{[\s\w.-]+\}|\$\{[^}]+\}/;
+        for (const [key, title] of Object.entries(TAB_TITLES)) {
+            expect({ key, title, leaks: leakRe.test(title) }).toEqual({
+                key,
+                title,
+                leaks: false,
+            });
+        }
+    });
+
+    it('matches the canonical pre-Phase-31 register (places + COMBAT)', () => {
+        // Pinned for traceability — Phase 31 (Tabs design pass)
+        // flips this to the all-places register
+        // (WILDS · STRIFE · SELF · SACK). Update this assertion at
+        // that time; the leak-check above stays stable across the
+        // rename.
+        expect(TAB_TITLES.exploration).toBe('MAP');
+        expect(TAB_TITLES.combat).toBe('COMBAT');
+        expect(TAB_TITLES.character).toBe('SHEET');
+        expect(TAB_TITLES.inventory).toBe('SACK');
     });
 });

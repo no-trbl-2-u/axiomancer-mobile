@@ -9,42 +9,6 @@
 
 ## Pending
 
-### [score 6.6] Phase 27 — Exploration `moveToAction` migration to engine `revealAdjacent` / `markNodeConsumed`
-
-- proposed: 2026-05-15, expand pass 6
-- source signals:
-  - Phase 23 brief (`plan/phases/phase_23_mapevents_migration.md` §Cross-links → Retro-fit) explicitly out-of-scope'd this migration as a separate phase candidate.
-  - Phase 23 close-out commit `93f4091` carried "out of scope (deferred): exploration `moveToAction` migration to engine `revealAdjacent` / `markNodeConsumed`. File a new candidate row if/when wanted."
-  - Original cross-repo versioning audit (integrated 2026-05-15) audit gap I.
-- rationale: Mobile's `moveToAction` in `state/actions.ts:645` re-implements unlock propagation locally via `worldCompleteNode` + `worldUnlockNode` and a `getMapLayout` fixture. Engine 0.7.0 ships `revealAdjacent(state, nodeId)` and `markNodeConsumed(state, nodeId)` reducers that handle the same lifecycle. Mobile re-implementing keeps two sources of truth for what's reachable.
-- proposed scope: 1 phase, 1–2 ticks. Replace the local `worldCompleteNode`/`worldUnlockNode` chain + `getMapLayout` traversal with engine `revealAdjacent` (after move) + `markNodeConsumed` (after event resolution). `state/exploration-maps/` reduced to visual-layout-only (positions, hand-drawn edges); the unlock graph comes from the engine. Update e2e to assert engine-driven unlock propagation.
-- estimated phases: 1
-- conflicts: none. Phase 23 (event migration) shipped; this is the parallel exploration-side migration and the natural follow-on.
-
-### [score 6.5] Phase 28 — Token Crucible retroactive brief + hermetic test coverage
-
-- proposed: 2026-05-15, expand pass 6
-- source signals:
-  - Phase 17 row in `plan/steps/01_build_plan.md` (Crucible shipped `261a238` retroactively) names "retroactive brief at `plan/phases/phase_17_token_crucible.md` (to be drafted)" — never authored.
-  - `state/e2e/` has zero `crucible*` files; `state/presenters/` has zero `token*` presenter; the four Crucible files (`app/crucible.tsx`, `components/TokenCrucible.tsx`, `components/tokens.tsx`, `state/mocks/tokens.fixture.ts`) ship without any hermetic coverage.
-  - The `[design-source]` AUDIT row resolved 2026-05-15 named Claude Design as the source of the feature; the loop's next time critiquing or iterating Crucible has nothing in-repo to anchor against.
-- rationale: Phase 17 was backfilled as `[x]` for traceability but skipped both the brief and the hermetic-tests-alongside-code rule from bearings. Three failure paths (a future engine bump that breaks the token math, a /critique pass that finds a voice violation in the Crucible UI, a new contributor reading the screen cold) all need a Crucible brief + tests to anchor.
-- proposed scope: 1 phase, 1–2 ticks. (1) Draft `plan/phases/phase_17_token_crucible.md` retroactively from the design URL + commit `261a238`. (2) Extract a `selectTokenCrucibleViewModel` presenter from the current in-component logic in `components/TokenCrucible.tsx`. (3) Add hermetic e2e: VM shape contract, token rules render, deep-freeze invariant.
-- estimated phases: 1
-- conflicts: none. Pure backfill + alignment with existing screen-wiring patterns.
-
-### [score 6.5] Phase 29 — Typed-event consumers (level-up badge auto-clear, inventory feedback, dialogue confirmation)
-
-- proposed: 2026-05-15, expand pass 6
-- source signals:
-  - Phase 25 brief (`plan/phases/phase_25_typed_events.md` §Follow-ups) names three concrete consumers as out-of-scope: level-up badge auto-clear, inventory toast feedback, dialogue-applied cursor confirmation.
-  - Phase 25 close-out commit `8baf594` reaffirms: "specific consumers ship as iterate rows."
-  - Each consumer alone is iterate-shaped (~½ tick), but they cluster — they all subscribe via the just-shipped `useGameEvents` hook against different typed events. Bundling them into one phase amortizes the hook-pattern setup.
-- rationale: Phase 25 shipped the channel; without consumers, the `_recentEvents` buffer is observable-but-unused. Three small surfaces give the channel real load: navigation tab badge clearing (subscribe to `character:levelup`), inventory action toast (subscribe to `inventory:changed`), event modal cursor confirmation (subscribe to `dialogue:applied`).
-- proposed scope: 1 phase, 1 tick (could split into 3 sub-ticks A/B/C if needed). For each consumer: add a small handler via `useGameEvents`, update the relevant presenter or local state, add a hermetic e2e case. No new infrastructure.
-- estimated phases: 1
-- conflicts: none. Pure consumer-side wiring; Phase 25's hook is the substrate.
-
 
 
 > Pass 5 backlog (2026-05-15) — filed via `/oversight` from
@@ -184,6 +148,34 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted 2026-05-15 → status Phase 27] [score 6.6] Exploration moveToAction migration
+
+- promoted via `/oversight` 2026-05-15 (alongside Phase 28 + 29).
+- Assigned **Phase 27** in `plan/steps/01_build_plan.md` Status block.
+- block: III (alignment / hygiene). 1-2 ticks.
+- source: cross-repo versioning audit (integrated 2026-05-15) audit gap I + Phase 23 brief follow-up + Phase 23 close-out commit `93f4091`.
+- Scope: replace `state/actions.ts:moveToAction` local `worldCompleteNode`/`worldUnlockNode` chain + `getMapLayout` traversal with engine `revealAdjacent` (after move) + `markNodeConsumed` (after event resolution). Reduce `state/exploration-maps/` to visual-layout-only. Update e2e to assert engine-driven unlock propagation.
+- Brief: to be drafted via `/plan-a-phase phase 27` when the loop reaches it.
+
+### [promoted 2026-05-15 → status Phase 28] [score 6.5] Token Crucible retroactive brief + hermetic tests
+
+- promoted via `/oversight` 2026-05-15 (alongside Phase 27 + 29).
+- Assigned **Phase 28** in `plan/steps/01_build_plan.md` Status block.
+- block: III (alignment / hygiene). 1-2 ticks.
+- source: Phase 17 backfill row (missing brief reference), zero `state/e2e/crucible*` test files, bearings hard rule (tests-alongside-code) violation.
+- Scope: (1) Draft `plan/phases/phase_17_token_crucible.md` retroactively. (2) Extract `selectTokenCrucibleViewModel` presenter from `components/TokenCrucible.tsx` in-component logic. (3) Add hermetic e2e: VM shape contract, token rules render, deep-freeze invariant.
+- Brief: drafted inline during `/ship-a-phase` (item 1 of the scope is the brief itself).
+
+### [promoted 2026-05-15 → status Phase 29] [score 6.5] Typed-event consumers
+
+- promoted via `/oversight` 2026-05-15 (alongside Phase 27 + 28).
+- Assigned **Phase 29** in `plan/steps/01_build_plan.md` Status block.
+- block: III (alignment / hygiene, post-Phase-25). 1 tick (or 3 sub-ticks).
+- source: Phase 25 brief follow-ups list (level-up badge auto-clear, inventory feedback, dialogue confirmation), all gated on the just-shipped `useGameEvents` hook.
+- Scope: three small consumer subscriptions via `useGameEvents` — (a) clear `LEVELUP_BADGE` on `character:levelup` after character-screen visit; (b) inventory toast on `inventory:changed`; (c) event modal cursor confirmation on `dialogue:applied`. Hermetic e2e per consumer.
+- Brief: to be drafted via `/plan-a-phase phase 29`.
+
 
 ### [promoted 2026-05-15 → status Phase 25] [score 5.0] Typed event surface consumer
 

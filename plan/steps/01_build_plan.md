@@ -223,8 +223,45 @@ commit that ships the phase.
       channel; specific consumers (level-up badge auto-clear,
       inventory feedback, dialogue cursor confirmation) ship
       as iterate rows.
+- [ ] Phase 27 — Exploration `moveToAction` migration to engine
+      `revealAdjacent` / `markNodeConsumed`. Promoted via
+      `/oversight` 2026-05-15 (score 6.6). 1-2 ticks. Replace
+      `state/actions.ts:moveToAction` local
+      `worldCompleteNode` / `worldUnlockNode` chain with engine
+      `revealAdjacent` (after move) + `markNodeConsumed` (after
+      event resolution). `state/exploration-maps/` reduced to
+      visual-layout-only. Update e2e to assert engine-driven
+      unlock propagation. Brief to be drafted via
+      `/plan-a-phase phase 27` before shipping. Conflicts: none
+      (Phase 23 shipped the event-side migration; this is the
+      parallel exploration-side migration).
+- [ ] Phase 28 — Token Crucible retroactive brief + hermetic
+      test coverage. Promoted via `/oversight` 2026-05-15
+      (score 6.5). 1-2 ticks. (1) Draft
+      `plan/phases/phase_17_token_crucible.md` retroactively
+      from commit `261a238` + the Claude Design URL. (2) Extract
+      `selectTokenCrucibleViewModel` presenter from current
+      in-component logic in `components/TokenCrucible.tsx`.
+      (3) Add hermetic e2e: VM shape contract, token rules
+      render, deep-freeze invariant. Closes the
+      bearings-hard-rule violation that Phase 17 backfilled
+      without tests-alongside-code. Brief drafting can happen
+      inline during `/ship-a-phase`.
+- [ ] Phase 29 — Typed-event consumers (level-up badge
+      auto-clear, inventory feedback, dialogue confirmation).
+      Promoted via `/oversight` 2026-05-15 (score 6.5). 1 tick
+      (3 sub-ticks possible). For each consumer: subscribe via
+      `useGameEvents` (shipped Phase 25), update relevant
+      presenter or local state, add hermetic e2e case. Three
+      surfaces: (a) navigation badge clears LEVELUP_BADGE on
+      `character:levelup` after the user visits the character
+      screen; (b) inventory action toast on
+      `inventory:changed`; (c) event modal confirmation on
+      `dialogue:applied`. Brief to be drafted via
+      `/plan-a-phase phase 29` (or inline). No new
+      infrastructure — Phase 25's hook is the substrate.
 
-> **After phase 25:** the loop transitions back to `/iterate` —
+> **After phase 29:** the loop transitions back to `/iterate` —
 > bug findings, presenter refactors, asset backlog, ongoing
 > audits. `/march` makes that transition automatic. (Block II
 > phases 20/21 and Block III phases 22/24 in

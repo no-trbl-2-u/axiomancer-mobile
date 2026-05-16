@@ -165,6 +165,14 @@ export interface ActionPickerSlice {
      * the VM so view-layer code carries no ritual copy (Hard Rule #8).
      */
     fleeHint: string;
+    /**
+     * Toast string surfaced when the player taps the Item action.
+     * The action is a no-op until Spec 06 wires the combat-side
+     * inventory picker; until then the screen flashes this string.
+     * Presenter-sourced (Hard Rule #8) — siblings `fleeMessage` /
+     * `fleeHint` did the same earlier.
+     */
+    itemMessage: string;
 }
 
 export interface SkillOption {
@@ -772,6 +780,7 @@ export function selectCombatViewModel(
                 fleeAvailable: true,
                 fleeMessage: 'No fleeing yet.',
                 fleeHint: 'or … flee like a craven (luck save)',
+                itemMessage: 'Hands are empty.',
             },
             skillPicker,
             resolve: resolveSliceFromState(null, null, null),
@@ -884,6 +893,7 @@ export function selectCombatViewModel(
             fleeAvailable: true,
             fleeMessage: 'No fleeing yet.',
             fleeHint: 'or … flee like a craven (luck save)',
+            itemMessage: 'Hands are empty.',
         },
         skillPicker,
         resolve: resolveSliceFromState(

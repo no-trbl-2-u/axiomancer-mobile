@@ -637,4 +637,15 @@ describe('selectCombatViewModel: presenter-sourced ritual copy', () => {
         expect(typeof vm.actionPicker.fleeHint).toBe('string');
         expect(vm.actionPicker.fleeHint.length).toBeGreaterThan(0);
     });
+
+    it('exposes itemMessage so the combat screen renders no literal item-toast copy', () => {
+        const store = createGameStore(createMemoryAdapter());
+        const idle = selectCombatViewModel(store.getState());
+
+        expect(idle.actionPicker.itemMessage).toBe('Hands are empty.');
+
+        store.getState().startCombat(makeEnemy());
+        const active = selectCombatViewModel(store.getState());
+        expect(active.actionPicker.itemMessage).toBe('Hands are empty.');
+    });
 });

@@ -119,12 +119,12 @@ export default function CombatScreen() {
             return;
         }
         if (key === 'item') {
-            setToast('Hands are empty.');
+            setToast(vm.actionPicker.itemMessage);
             return;
         }
         actions.setPlayerAction(key);
         actions.resolveRound();
-    }, [actions]);
+    }, [actions, vm.actionPicker.itemMessage]);
 
     const onPickSkill = useCallback((skill: SkillOption) => {
         if (!skill.enabled) return;

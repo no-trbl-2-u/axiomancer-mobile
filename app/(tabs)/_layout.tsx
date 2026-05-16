@@ -161,6 +161,21 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="memoir"
+        options={{
+          title: TAB_TITLES.memoir,
+          tabBarLabel: TAB_TITLES.memoir,
+          tabBarIcon: ({ color, size }) => (
+            <TabIconWithBadge
+              kind="scroll"
+              color={color}
+              size={size}
+              badge={badges.memoir}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="inventory"
         options={{
           title: TAB_TITLES.inventory,

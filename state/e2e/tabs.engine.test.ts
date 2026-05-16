@@ -70,23 +70,23 @@ describe('selectVisibleTabs: mutual exclusion', () => {
 
 describe('selectVisibleTabs: always-visible tabs', () => {
     it.each([false, true])(
-        'always shows SHEET and SACK (inCombat=%p)',
+        'always shows SELF, MEMOIR, and SACK (inCombat=%p)',
         (inCombat) => {
             const vm = selectVisibleTabs(inCombat);
 
             expect(vm.visibleTabs).toEqual(
-                expect.arrayContaining(['character', 'inventory']),
+                expect.arrayContaining(['character', 'memoir', 'inventory']),
             );
             expect(vm.hiddenTabs).not.toEqual(
-                expect.arrayContaining(['character', 'inventory']),
+                expect.arrayContaining(['character', 'memoir', 'inventory']),
             );
         },
     );
 
-    it('returns 3 visible tabs (1 positional + 2 always-visible)', () => {
+    it('returns 4 visible tabs (1 positional + 3 always-visible) post-Phase-33', () => {
         for (const inCombat of [false, true]) {
             const vm = selectVisibleTabs(inCombat);
-            expect(vm.visibleTabs).toHaveLength(3);
+            expect(vm.visibleTabs).toHaveLength(4);
         }
     });
 
@@ -101,7 +101,7 @@ describe('selectVisibleTabs: always-visible tabs', () => {
 // ---------------------------------------------------------------------------
 
 describe('isTabHidden: agreement with selectVisibleTabs', () => {
-    const allTabs: TabKey[] = ['exploration', 'combat', 'character', 'inventory'];
+    const allTabs: TabKey[] = ['exploration', 'combat', 'character', 'memoir', 'inventory'];
 
     it.each([false, true])(
         'agrees with selectVisibleTabs for every tab when inCombat=%p',
@@ -144,7 +144,7 @@ describe('selectVisibleTabs: purity', () => {
 
 describe('TAB_TITLES: tab-label contract', () => {
     it('exposes a non-empty string title for every TabKey', () => {
-        const keys: TabKey[] = ['exploration', 'combat', 'character', 'inventory'];
+        const keys: TabKey[] = ['exploration', 'combat', 'character', 'memoir', 'inventory'];
         for (const key of keys) {
             expect(typeof TAB_TITLES[key]).toBe('string');
             expect(TAB_TITLES[key].length).toBeGreaterThan(0);
@@ -165,16 +165,16 @@ describe('TAB_TITLES: tab-label contract', () => {
         }
     });
 
-    it('matches the post-Phase-31 all-places register', () => {
-        // Phase 31 (Tabs design pass, 2026-05-16) flipped from the
-        // mixed-register pre-fix set (MAP · COMBAT · SHEET · SACK —
-        // three places + one event-state) to a coherent all-places
-        // register the user picked via `/oversight`. The
-        // template-leak invariant above stayed stable across the
-        // rename.
+    it('matches the post-Phase-33 register (places + MEMOIR fifth tab)', () => {
+        // Phase 31 (2026-05-16) flipped from the mixed-register
+        // pre-fix set (MAP · COMBAT · SHEET · SACK) to a coherent
+        // all-places register. Phase 33 (2026-05-16) added MEMOIR as
+        // a fifth route. The template-leak invariant above stays
+        // stable across both renames.
         expect(TAB_TITLES.exploration).toBe('WILDS');
         expect(TAB_TITLES.combat).toBe('STRIFE');
         expect(TAB_TITLES.character).toBe('SELF');
+        expect(TAB_TITLES.memoir).toBe('MEMOIR');
         expect(TAB_TITLES.inventory).toBe('SACK');
     });
 });

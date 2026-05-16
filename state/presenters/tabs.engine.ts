@@ -10,7 +10,7 @@
  * Tested in state/e2e/tabs.engine.test.ts.
  */
 
-export type TabKey = 'exploration' | 'combat' | 'character' | 'inventory';
+export type TabKey = 'exploration' | 'combat' | 'character' | 'memoir' | 'inventory';
 
 export interface TabsViewModel {
     /** Tabs the user can currently see in the bottom bar, in display order. */
@@ -36,15 +36,20 @@ export interface TabsViewModel {
  * (`MAP · COMBAT · SHEET · SACK` — three places + one
  * event-state) to the coherent all-places register the user
  * picked via `/oversight`: `WILDS · STRIFE · SELF · SACK`.
+ *
+ * Phase 33 (MEMOIR tab, 2026-05-16) added the journal surface
+ * as a fifth route. Display order in the bottom bar:
+ * exploration/combat → character → memoir → inventory.
  */
 export const TAB_TITLES: Record<TabKey, string> = {
     exploration: 'WILDS',
     combat: 'STRIFE',
     character: 'SELF',
+    memoir: 'MEMOIR',
     inventory: 'SACK',
 };
 
-const ALWAYS_VISIBLE: TabKey[] = ['character', 'inventory'];
+const ALWAYS_VISIBLE: TabKey[] = ['character', 'memoir', 'inventory'];
 
 export function selectVisibleTabs(inCombat: boolean): TabsViewModel {
     const positional: TabKey = inCombat ? 'combat' : 'exploration';

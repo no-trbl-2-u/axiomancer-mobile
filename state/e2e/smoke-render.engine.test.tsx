@@ -56,6 +56,7 @@ import CharacterScreen from '@/app/(tabs)/character';
 import InventoryScreen from '@/app/(tabs)/inventory';
 import CombatScreen from '@/app/(tabs)/combat';
 import ExplorationScreen from '@/app/(tabs)/exploration';
+import MemoirScreen from '@/app/(tabs)/memoir';
 import EventScreen from '@/app/event';
 
 afterEach(() => {
@@ -148,6 +149,11 @@ describe('smoke-render: each primary surface', () => {
         expect(() => render(withProviders(store, <ExplorationScreen />))).not.toThrow();
     });
 
+    it('renders the Memoir tab at fresh-store boot without throwing', () => {
+        const store = makeStore();
+        expect(() => render(withProviders(store, <MemoirScreen />))).not.toThrow();
+    });
+
     it('renders the Event modal at fresh-store boot (empty event) without throwing', () => {
         const store = makeStore();
         expect(() => render(withProviders(store, <EventScreen />))).not.toThrow();
@@ -199,6 +205,12 @@ describe('smoke-render: primary body is non-empty (no blank screens)', () => {
         expectNonEmptyBody(collectVisibleStrings(api), 'exploration');
     });
 
+    it('Memoir tab paints visible text (empty journal still renders eyebrows + empty-state copy)', () => {
+        const store = makeStore();
+        const api = render(withProviders(store, <MemoirScreen />));
+        expectNonEmptyBody(collectVisibleStrings(api), 'memoir');
+    });
+
     it('Event modal paints visible text in its empty-event state', () => {
         const store = makeStore();
         const api = render(withProviders(store, <EventScreen />));
@@ -229,6 +241,12 @@ describe('smoke-render: no template-string leaks in rendered output', () => {
         const store = makeStore();
         const api = render(withProviders(store, <ExplorationScreen />));
         expectNoTemplateLeaks(collectVisibleStrings(api), 'exploration');
+    });
+
+    it('Memoir tab renders no `{ ... }` template strings', () => {
+        const store = makeStore();
+        const api = render(withProviders(store, <MemoirScreen />));
+        expectNoTemplateLeaks(collectVisibleStrings(api), 'memoir');
     });
 
     it('Event modal renders no `{ ... }` template strings (empty event)', () => {

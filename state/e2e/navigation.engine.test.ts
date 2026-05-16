@@ -67,6 +67,7 @@ describe('navigation.engine', () => {
                 exploration: null,
                 combat: null,
                 character: null,
+                memoir: null,
                 inventory: null,
             });
         });
@@ -216,6 +217,7 @@ describe('navigation.engine', () => {
                     exploration: null,
                     combat: null,
                     character: null,
+                    memoir: null,
                     inventory: null,
                 }),
             });

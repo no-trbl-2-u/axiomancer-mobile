@@ -12,7 +12,7 @@ import type { AppStoreState } from '../store';
 import { selectHasActiveEvent } from './event.engine';
 import { freezeViewModel } from './freeze';
 
-export type TabRoute = 'exploration' | 'combat' | 'character' | 'inventory';
+export type TabRoute = 'exploration' | 'combat' | 'character' | 'memoir' | 'inventory';
 
 export interface TabBadge {
     /** Badge text (e.g., '!', '↑'). */
@@ -57,6 +57,7 @@ const EMPTY_BADGES: Record<TabRoute, TabBadge | null> = Object.freeze({
     exploration: null,
     combat: null,
     character: null,
+    memoir: null,
     inventory: null,
 }) as Record<TabRoute, TabBadge | null>;
 
@@ -96,6 +97,7 @@ export function selectTabBadges(state: AppStoreState): Record<TabRoute, TabBadge
         exploration: null,
         combat: null,
         character: levelupReady ? LEVELUP_BADGE : EVENT_BADGE,
+        memoir: null,
         inventory: null,
     };
 }

@@ -197,15 +197,7 @@ export default function EventScreen() {
     const isBoss = vm.variant === 'boss';
     const illustrationHeight = isBoss ? 360 : 320;
     const badgeAccent = resolveAccent(vm.badgeAccentKey);
-    // Combat-prelude variants get the design-handoff "STRIFE STIRS"
-    // chrome: a header strip (red triangle + ENCOUNTER / BOSS ·
-    // ENCOUNTER eyebrow in blood) above the illustration, plus a
-    // diagonal blood sash in the illustration's top-left corner.
-    // Paced (narrative-choice) variants keep the existing corner
-    // badge so the seam reads two-shells (per design canvas
-    // decisions doc §IX).
-    const isCombatPrelude = vm.kind === 'combat-prelude';
-    const preludeEyebrow = isBoss ? 'BOSS · ENCOUNTER' : 'ENCOUNTER';
+    const preludeChrome = vm.preludeChrome;
 
     if (!hasEvent) {
         return (
@@ -234,20 +226,20 @@ export default function EventScreen() {
 
     return (
         <ScreenBg>
-            {isCombatPrelude && (
+            {preludeChrome !== null && (
                 <View style={styles.preludeHeader} testID="event-prelude-header">
                     <Svg width={10} height={10} viewBox="0 0 10 10">
                         <SvgPath d="M5 1 L 7 7 L 3 7 Z" fill={AXM.blood} />
                     </Svg>
-                    <Text style={styles.preludeHeaderText}>{preludeEyebrow}</Text>
+                    <Text style={styles.preludeHeaderText}>{preludeChrome.eyebrow}</Text>
                 </View>
             )}
             <View style={[styles.illustration, { height: illustrationHeight }]}>
                 <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#06050a' }]} />
                 <EventArt slug={vm.artSlug} />
-                {isCombatPrelude ? (
+                {preludeChrome !== null ? (
                     <View style={styles.strifeSash} testID="event-strife-sash">
-                        <Text style={styles.strifeSashText}>STRIFE STIRS</Text>
+                        <Text style={styles.strifeSashText}>{preludeChrome.sashLabel}</Text>
                     </View>
                 ) : (
                     <View style={styles.badge}>

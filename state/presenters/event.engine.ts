@@ -72,6 +72,21 @@ export interface EventChoice {
     enabled: boolean;
 }
 
+/**
+ * Combat-prelude chrome strings, populated only on `kind: 'combat-prelude'`
+ * VMs. Phase 32 (Claude Design handoff, 2026-05-16) ported the prototype's
+ * encounter-modal header strip (red triangle + ENCOUNTER eyebrow) plus the
+ * diagonal "STRIFE STIRS" sash overlaying the illustration. Routing both
+ * strings through the VM keeps the view layer free of inline literals per
+ * Hard Rule #8 — the screen reads `vm.preludeChrome` and paints if set.
+ */
+export interface PreludeChrome {
+    /** Eyebrow text rendered in the header strip above the illustration. */
+    eyebrow: string;
+    /** Label on the diagonal sash overlaying the illustration top-left. */
+    sashLabel: string;
+}
+
 export interface EventViewModel {
     kind: EventKind;
     variant: EventVariant;
@@ -85,6 +100,8 @@ export interface EventViewModel {
     lore: string | null;
     /** True iff the screen should show a skip affordance over long prose. */
     canSkip: boolean;
+    /** Populated only on combat-prelude variants. `null` for narrative-choice. */
+    preludeChrome: PreludeChrome | null;
 }
 
 const EMPTY_VM: EventViewModel = {
@@ -99,6 +116,7 @@ const EMPTY_VM: EventViewModel = {
     choices: [],
     lore: null,
     canSkip: false,
+    preludeChrome: null,
 };
 
 /**
@@ -116,6 +134,27 @@ export function selectHasActiveEvent(state: AppStoreState): boolean {
 }
 
 /**
+ * Phase 32 design-handoff port (2026-05-16): backfill `preludeChrome`
+ * on a freshly-composed VM so each `composeX` function can stay
+ * focused on its own concerns. Combat-prelude variants get the
+ * "STRIFE STIRS" sash + ENCOUNTER / BOSS · ENCOUNTER eyebrow; every
+ * other kind gets `null`. The strings live here (presenter), not in
+ * the screen, per Hard Rule #8.
+ */
+function withPreludeChrome(vm: Omit<EventViewModel, 'preludeChrome'>): EventViewModel {
+    if (vm.kind !== 'combat-prelude') {
+        return { ...vm, preludeChrome: null };
+    }
+    return {
+        ...vm,
+        preludeChrome: {
+            eyebrow: vm.variant === 'boss' ? 'BOSS · ENCOUNTER' : 'ENCOUNTER',
+            sashLabel: 'STRIFE STIRS',
+        },
+    };
+}
+
+/**
  * Returns the event view-model. When no event is active, returns the
  * empty-state VM (the screen shows "no event in progress").
  */
@@ -128,17 +167,21 @@ export function selectEventViewModel(state: AppStoreState): EventViewModel {
     const resolved = result.event;
 
     if (resolved.kind === 'encounter') {
-        return freezeViewModel(composeCombatPrelude(resolved.encounter, resolved.isBoss));
+        return freezeViewModel(
+            withPreludeChrome(composeCombatPrelude(resolved.encounter, resolved.isBoss)),
+        );
     }
 
     // Dialogue cursor takes precedence when walking an NPC tree.
     if (slice.dialogueCursor !== null) {
         return freezeViewModel(
-            composeNpcDialogue(slice.dialogueCursor.tree, slice.dialogueCursor.nodeId, state),
+            withPreludeChrome(
+                composeNpcDialogue(slice.dialogueCursor.tree, slice.dialogueCursor.nodeId, state),
+            ),
         );
     }
 
-    return freezeViewModel(composeNarrative(resolved));
+    return freezeViewModel(withPreludeChrome(composeNarrative(resolved)));
 }
 
 // -- composition helpers -----------------------------------------------------
@@ -157,7 +200,7 @@ const BOSS_OMEN_BY_LEVEL: readonly string[] = [
     'fifth seal · the long count',
 ];
 
-function composeCombatPrelude(encounter: Encounter, isBoss: boolean): EventViewModel {
+function composeCombatPrelude(encounter: Encounter, isBoss: boolean): Omit<EventViewModel, 'preludeChrome'> {
     const enemy = encounter.enemy;
     const badge = isBoss ? 'OMEN OF DOOM' : 'ENCOUNTER';
     const choices: EventChoice[] = [
@@ -211,7 +254,7 @@ function composeNpcDialogue(
     tree: DialogueTree,
     nodeId: string,
     state: AppStoreState,
-): EventViewModel {
+): Omit<EventViewModel, 'preludeChrome'> {
     const node: DialogueNode = getDialogueNode(tree, nodeId);
     const activeNames: string[] = state.quests.active.map((q: { name: string }) => q.name);
     const ctx = {
@@ -257,7 +300,7 @@ function bodyFromPayload(event: ResolvedEvent): string {
     return defaultBodyForEvent(event);
 }
 
-function composeNarrative(resolved: ResolvedEvent): EventViewModel {
+function composeNarrative(resolved: ResolvedEvent): Omit<EventViewModel, 'preludeChrome'> {
     const artSlug = selectEventArtSlug(resolved);
     const body = bodyFromPayload(resolved);
     switch (resolved.kind) {
@@ -319,7 +362,7 @@ function composeItemBag(
     artSlug: EventArtSlug,
     variant: EventVariant,
     currency?: number,
-): EventViewModel {
+): Omit<EventViewModel, 'preludeChrome'> {
     const consequences: EventConsequence[] = items.map((item) => ({
         kind: 'item',
         label: item.name,
@@ -352,7 +395,7 @@ function composeItemBag(
     };
 }
 
-function composeInteraction(npcName: string, body: string, artSlug: EventArtSlug): EventViewModel {
+function composeInteraction(npcName: string, body: string, artSlug: EventArtSlug): Omit<EventViewModel, 'preludeChrome'> {
     return {
         kind: 'narrative-choice',
         variant: 'npc',
@@ -383,7 +426,7 @@ function composeVillage(
     merchants: ReadonlyArray<NPC>,
     body: string,
     artSlug: EventArtSlug,
-): EventViewModel {
+): Omit<EventViewModel, 'preludeChrome'> {
     // Shop UI is still out of scope (was already deferred under Spec
     // 08's 'shop' kind). Render the village name + a single LEAVE
     // choice. Surface `merchants.length` in the subtitle so the
@@ -417,7 +460,7 @@ function composeVillage(
     };
 }
 
-function composeCutscene(body: string, artSlug: EventArtSlug): EventViewModel {
+function composeCutscene(body: string, artSlug: EventArtSlug): Omit<EventViewModel, 'preludeChrome'> {
     return {
         kind: 'narrative-choice',
         variant: 'quest',
@@ -449,7 +492,7 @@ function composeHazard(
     effects: ReadonlyArray<{ id?: string; name?: string }>,
     body: string,
     artSlug: EventArtSlug,
-): EventViewModel {
+): Omit<EventViewModel, 'preludeChrome'> {
     const consequences: EventConsequence[] = [];
     if (damage > 0) {
         consequences.push({ kind: 'damage', amount: damage });

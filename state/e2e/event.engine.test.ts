@@ -242,6 +242,56 @@ describe('selectEventViewModel: combat-prelude composition', () => {
     });
 });
 
+// ---------------------------------------------------------------------------
+// preludeChrome — Phase 32 (Claude Design handoff port, 2026-05-16)
+//
+// `vm.preludeChrome` is the design handoff's STRIFE-STIRS header chrome
+// (eyebrow + diagonal sash) lifted off the screen and onto the VM per
+// Hard Rule #8 (no inline display strings in the view layer). Combat-
+// prelude variants populate it; every other kind returns `null`.
+// ---------------------------------------------------------------------------
+
+describe('selectEventViewModel: preludeChrome contract', () => {
+    it('populates preludeChrome on a non-boss combat-prelude with ENCOUNTER eyebrow', () => {
+        const store = makeStore();
+        setPending(store, makeEncounterResult({ isBoss: false }));
+        const vm = selectEventViewModel(store.getState());
+
+        expect(vm.preludeChrome).not.toBeNull();
+        expect(vm.preludeChrome).toEqual({
+            eyebrow: 'ENCOUNTER',
+            sashLabel: 'STRIFE STIRS',
+        });
+    });
+
+    it('populates preludeChrome on a boss combat-prelude with BOSS · ENCOUNTER eyebrow', () => {
+        const store = makeStore();
+        setPending(store, makeEncounterResult({ isBoss: true }));
+        const vm = selectEventViewModel(store.getState());
+
+        expect(vm.preludeChrome).toEqual({
+            eyebrow: 'BOSS · ENCOUNTER',
+            sashLabel: 'STRIFE STIRS',
+        });
+    });
+
+    it('returns preludeChrome: null on a narrative-choice variant (rest)', () => {
+        const store = makeStore();
+        setPending(store, makeRestResult(7));
+        const vm = selectEventViewModel(store.getState());
+
+        expect(vm.kind).toBe('narrative-choice');
+        expect(vm.preludeChrome).toBeNull();
+    });
+
+    it('returns preludeChrome: null on the empty-state VM (no active event)', () => {
+        const store = makeStore();
+        const vm = selectEventViewModel(store.getState());
+
+        expect(vm.preludeChrome).toBeNull();
+    });
+});
+
 describe('selectEventViewModel: narrative-choice composition', () => {
     it('maps a rest event to a single-choice VM with heal consequence', () => {
         const store = makeStore();

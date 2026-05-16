@@ -354,14 +354,18 @@ function composeInteraction(npcName: string, body: string, artSlug: EventArtSlug
 
 function composeVillage(
     villageName: string,
-    _merchants: ReadonlyArray<NPC>,
+    merchants: ReadonlyArray<NPC>,
     body: string,
     artSlug: EventArtSlug,
 ): EventViewModel {
     // Shop UI is still out of scope (was already deferred under Spec
     // 08's 'shop' kind). Render the village name + a single LEAVE
-    // choice; merchants list is ignored for now and lands when a shop
-    // surface ships.
+    // choice. Surface `merchants.length` in the subtitle so the
+    // deferred-shop signal is visible in-VM rather than hidden behind
+    // an underscore-prefixed unused arg.
+    const stallCount = merchants.length;
+    const subtitle =
+        stallCount === 0 ? '' : stallCount === 1 ? '1 stall' : `${stallCount} stalls`;
     return {
         kind: 'narrative-choice',
         variant: 'quest',
@@ -369,7 +373,7 @@ function composeVillage(
         badge: 'A VILLAGE',
         badgeAccentKey: 'parchment',
         title: villageName.toUpperCase(),
-        subtitle: '',
+        subtitle,
         body,
         choices: [
             {

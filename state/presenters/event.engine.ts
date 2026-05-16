@@ -405,7 +405,7 @@ function composeVillage(
             {
                 id: 'leave',
                 label: 'LEAVE',
-                description: 'Walk on (shop UI pending)',
+                description: 'Walk on',
                 consequences: [],
                 iconKey: 'flee',
                 accentKey: 'bone',

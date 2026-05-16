@@ -152,7 +152,11 @@ export interface ActionOption {
 
 export interface ActionPickerSlice {
     options: readonly ActionOption[];
-    /** Per Spec 04 Q6: flee is a no-op + "coming soon" toast. */
+    /**
+     * Per Spec 04 Q6: flee is a no-op; the screen shows `fleeMessage`
+     * as a toast instead of resolving a flee roll. Real flee semantics
+     * wait on an engine luck-save surface (no candidate yet).
+     */
     fleeAvailable: boolean;
     fleeMessage: string;
 }
@@ -754,7 +758,7 @@ export function selectCombatViewModel(
             actionPicker: {
                 options: ACTION_DEFAULTS,
                 fleeAvailable: true,
-                fleeMessage: 'Flee is coming soon — luck save TBD.',
+                fleeMessage: 'No fleeing yet.',
             },
             skillPicker,
             resolve: resolveSliceFromState(null, null, null),
@@ -864,7 +868,7 @@ export function selectCombatViewModel(
         actionPicker: {
             options: ACTION_DEFAULTS,
             fleeAvailable: true,
-            fleeMessage: 'Flee is coming soon — luck save TBD.',
+            fleeMessage: 'No fleeing yet.',
         },
         skillPicker,
         resolve: resolveSliceFromState(

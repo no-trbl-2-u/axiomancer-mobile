@@ -13,15 +13,6 @@
 
 ## Pending
 
-### [MED] /app/(tabs)/exploration/index.tsx — drawer empty-state + swipe hint hardcoded; voice mismatch
-- pass: 5 (commit dfb3358)
-- viewport: repository
-- category: consistency
-- observation: Drawer empty-state `"No paths remain from here."` and `"swipe →"` are hardcoded ritual copy at the view layer. The empty string reads sentence-case modern, not the article-prefix lowercase-ritual the rest of the screen uses (the eyebrow shipped `✠ WHITHER, PILGRIM?` last tick).
-- evidence: `app/(tabs)/exploration/index.tsx:244` (`<Text style={styles.swipeHint}>swipe →</Text>`), `:249` (`No paths remain from here.`).
-- suggested fix: Move both strings to `selectExplorationViewModel` (e.g. `vm.options.emptyMessage`, `vm.options.swipeHint`); rephrase the empty message as lowercase ritual (`the paths close.`).
-- source: reader
-
 ### [LOW] /app/(tabs)/character/index.tsx — "NO ACTIVE EFFECTS" hardcoded HUD-imperative
 - pass: 5 (commit dfb3358)
 - viewport: repository
@@ -60,6 +51,17 @@
 - **Deferred 2026-05-15 via oversight: needs design pass with the asset/icon palette.** Renaming tabs in isolation risks a churn cycle; the right time to revisit labels is when icon-label pairing is reconsidered together (Phase 12 polished icons but did not revisit labels). `/iterate` should skip this row until a design-pass phase is filed. Unblock by either (a) shipping a "Tabs design pass" phase that addresses icons + labels together, or (b) flipping back to `[MED]` with an explicit register pick.
 
 ## Done
+
+### [MED] /app/(tabs)/exploration/index.tsx — drawer empty-state + swipe hint hardcoded; voice mismatch ✅
+- pass: 5 (commit dfb3358)
+- viewport: repository
+- category: consistency
+- observation: Drawer empty-state `"No paths remain from here."` and `"swipe →"` were hardcoded ritual copy at the view layer; the empty string also read sentence-case modern rather than the article-prefix lowercase ritual used elsewhere.
+- evidence: `app/(tabs)/exploration/index.tsx:244` + `:249` pre-fix.
+- suggested fix: Move both strings to `selectExplorationViewModel`; rephrase as lowercase ritual.
+- source: reader
+- issue: #52
+- fixed in commit `6122db8` — `vm.drawerCopy.emptyMessage = 'the paths close.'` and `vm.drawerCopy.swipeHint`; both code paths populated; +2 hermetic shape + regression tests. 388/388 pass.
 
 ### [MED] /app/(tabs)/combat.tsx — hardcoded ritual copy violates Hard Rule #8 ✅
 - pass: 5 (commit dfb3358)

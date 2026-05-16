@@ -13,15 +13,6 @@
 
 ## Pending
 
-### [LOW] /app/(tabs)/inventory/index.tsx — static category headers + `SACK · WALLET · BURDEN` hardcoded
-- pass: 5 (commit dfb3358)
-- viewport: repository
-- category: consistency
-- observation: Inventory file was the headline target of the pass-3 voice / Hard-Rule-#8 drain that moved `emptyMessage` into the presenter, but the static `CATEGORY_HEADERS` table (`✠ WORN & WIELDED` / `✠ PHIALS & SOPS` / `✠ STUFF` / `✠ SEALED`) and the `SACK · WALLET · BURDEN` eyebrow remain at the view layer. Same shape of debt the pass-3 drain partially addressed.
-- evidence: `app/(tabs)/inventory/index.tsx:28-33` (CATEGORY_HEADERS), `:141` (`SACK · WALLET · BURDEN`).
-- suggested fix: Move both onto `selectInventoryViewModel` (mirrors the `emptyMessage` precedent from issue #32).
-- source: reader
-
 ### [LOW] /plan/steps/01_build_plan.md — Phase 17 row's "to be drafted" parenthetical lacks owner reference
 - pass: 5 (commit dfb3358)
 - viewport: repository
@@ -42,6 +33,17 @@
 - **Deferred 2026-05-15 via oversight: needs design pass with the asset/icon palette.** Renaming tabs in isolation risks a churn cycle; the right time to revisit labels is when icon-label pairing is reconsidered together (Phase 12 polished icons but did not revisit labels). `/iterate` should skip this row until a design-pass phase is filed. Unblock by either (a) shipping a "Tabs design pass" phase that addresses icons + labels together, or (b) flipping back to `[MED]` with an explicit register pick.
 
 ## Done
+
+### [LOW] /app/(tabs)/inventory/index.tsx — static category headers + `SACK · WALLET · BURDEN` hardcoded ✅
+- pass: 5 (commit dfb3358)
+- viewport: repository
+- category: consistency
+- observation: Section eyebrow + four category headers lived at the view layer; pass-3 had moved emptyMessage but skipped these.
+- evidence: `app/(tabs)/inventory/index.tsx:28-33` + `:141` pre-fix.
+- suggested fix: Move both onto `selectInventoryViewModel`.
+- source: reader
+- issue: #54
+- fixed in commit `17297af` — `vm.sectionHeader` + `vm.categoryHeaders` populated; screen reads via VM; +1 hermetic shape test. 390/390 pass.
 
 ### [LOW] /app/(tabs)/character/index.tsx — "NO ACTIVE EFFECTS" hardcoded HUD-imperative ✅
 - pass: 5 (commit dfb3358)

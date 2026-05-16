@@ -87,6 +87,32 @@ export interface PreludeChrome {
     sashLabel: string;
 }
 
+/**
+ * General event-screen chrome strings constant across every variant.
+ * Lifted onto the VM by /iterate (2026-05-16, addressing CRITIQUE pass 6
+ * HIGH finding) so the screen reads `vm.chrome.*` instead of carrying
+ * inline display literals per Hard Rule #8. Same pattern as pass 5's
+ * drains for combat.tsx, exploration drawer, inventory headers, and
+ * character empty-effects.
+ */
+export interface EventChrome {
+    /** Section eyebrow above the choice list. Active-state only. */
+    reckoningEyebrow: string;
+    /** Label on the skip affordance over long prose. */
+    skipLabel: string;
+    /** Empty-state back-row primary label. */
+    emptyBackLabel: string;
+    /** Empty-state back-row secondary label (under primary). */
+    emptyBackSub: string;
+}
+
+export const EVENT_CHROME: EventChrome = {
+    reckoningEyebrow: '✠ A RECKONING',
+    skipLabel: 'SKIP ›',
+    emptyBackLabel: 'BACK',
+    emptyBackSub: 'RETURN',
+};
+
 export interface EventViewModel {
     kind: EventKind;
     variant: EventVariant;
@@ -102,6 +128,8 @@ export interface EventViewModel {
     canSkip: boolean;
     /** Populated only on combat-prelude variants. `null` for narrative-choice. */
     preludeChrome: PreludeChrome | null;
+    /** General chrome strings (eyebrow, skip, empty-state back). Constant across variants. */
+    chrome: EventChrome;
 }
 
 const EMPTY_VM: EventViewModel = {
@@ -117,6 +145,7 @@ const EMPTY_VM: EventViewModel = {
     lore: null,
     canSkip: false,
     preludeChrome: null,
+    chrome: EVENT_CHROME,
 };
 
 /**
@@ -155,6 +184,18 @@ function withPreludeChrome(vm: Omit<EventViewModel, 'preludeChrome'>): EventView
 }
 
 /**
+ * Stamp the constant `chrome` block onto compose results. Sibling of
+ * `withPreludeChrome`. Both wrappers run on every active VM so the
+ * compose functions can stay focused on per-event composition without
+ * touching chrome strings.
+ */
+function withChrome(
+    vm: Omit<EventViewModel, 'preludeChrome' | 'chrome'>,
+): Omit<EventViewModel, 'preludeChrome'> {
+    return { ...vm, chrome: EVENT_CHROME };
+}
+
+/**
  * Returns the event view-model. When no event is active, returns the
  * empty-state VM (the screen shows "no event in progress").
  */
@@ -168,7 +209,9 @@ export function selectEventViewModel(state: AppStoreState): EventViewModel {
 
     if (resolved.kind === 'encounter') {
         return freezeViewModel(
-            withPreludeChrome(composeCombatPrelude(resolved.encounter, resolved.isBoss)),
+            withPreludeChrome(
+                withChrome(composeCombatPrelude(resolved.encounter, resolved.isBoss)),
+            ),
         );
     }
 
@@ -176,12 +219,14 @@ export function selectEventViewModel(state: AppStoreState): EventViewModel {
     if (slice.dialogueCursor !== null) {
         return freezeViewModel(
             withPreludeChrome(
-                composeNpcDialogue(slice.dialogueCursor.tree, slice.dialogueCursor.nodeId, state),
+                withChrome(
+                    composeNpcDialogue(slice.dialogueCursor.tree, slice.dialogueCursor.nodeId, state),
+                ),
             ),
         );
     }
 
-    return freezeViewModel(withPreludeChrome(composeNarrative(resolved)));
+    return freezeViewModel(withPreludeChrome(withChrome(composeNarrative(resolved))));
 }
 
 // -- composition helpers -----------------------------------------------------
@@ -200,7 +245,7 @@ const BOSS_OMEN_BY_LEVEL: readonly string[] = [
     'fifth seal · the long count',
 ];
 
-function composeCombatPrelude(encounter: Encounter, isBoss: boolean): Omit<EventViewModel, 'preludeChrome'> {
+function composeCombatPrelude(encounter: Encounter, isBoss: boolean): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
     const enemy = encounter.enemy;
     const badge = isBoss ? 'OMEN OF DOOM' : 'ENCOUNTER';
     const choices: EventChoice[] = [
@@ -254,7 +299,7 @@ function composeNpcDialogue(
     tree: DialogueTree,
     nodeId: string,
     state: AppStoreState,
-): Omit<EventViewModel, 'preludeChrome'> {
+): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
     const node: DialogueNode = getDialogueNode(tree, nodeId);
     const activeNames: string[] = state.quests.active.map((q: { name: string }) => q.name);
     const ctx = {
@@ -300,7 +345,7 @@ function bodyFromPayload(event: ResolvedEvent): string {
     return defaultBodyForEvent(event);
 }
 
-function composeNarrative(resolved: ResolvedEvent): Omit<EventViewModel, 'preludeChrome'> {
+function composeNarrative(resolved: ResolvedEvent): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
     const artSlug = selectEventArtSlug(resolved);
     const body = bodyFromPayload(resolved);
     switch (resolved.kind) {
@@ -362,7 +407,7 @@ function composeItemBag(
     artSlug: EventArtSlug,
     variant: EventVariant,
     currency?: number,
-): Omit<EventViewModel, 'preludeChrome'> {
+): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
     const consequences: EventConsequence[] = items.map((item) => ({
         kind: 'item',
         label: item.name,
@@ -395,7 +440,7 @@ function composeItemBag(
     };
 }
 
-function composeInteraction(npcName: string, body: string, artSlug: EventArtSlug): Omit<EventViewModel, 'preludeChrome'> {
+function composeInteraction(npcName: string, body: string, artSlug: EventArtSlug): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
     return {
         kind: 'narrative-choice',
         variant: 'npc',
@@ -426,7 +471,7 @@ function composeVillage(
     merchants: ReadonlyArray<NPC>,
     body: string,
     artSlug: EventArtSlug,
-): Omit<EventViewModel, 'preludeChrome'> {
+): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
     // Shop UI is still out of scope (was already deferred under Spec
     // 08's 'shop' kind). Render the village name + a single LEAVE
     // choice. Surface `merchants.length` in the subtitle so the
@@ -460,7 +505,7 @@ function composeVillage(
     };
 }
 
-function composeCutscene(body: string, artSlug: EventArtSlug): Omit<EventViewModel, 'preludeChrome'> {
+function composeCutscene(body: string, artSlug: EventArtSlug): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
     return {
         kind: 'narrative-choice',
         variant: 'quest',
@@ -492,7 +537,7 @@ function composeHazard(
     effects: ReadonlyArray<{ id?: string; name?: string }>,
     body: string,
     artSlug: EventArtSlug,
-): Omit<EventViewModel, 'preludeChrome'> {
+): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
     const consequences: EventConsequence[] = [];
     if (damage > 0) {
         consequences.push({ kind: 'damage', amount: damage });

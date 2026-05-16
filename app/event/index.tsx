@@ -214,8 +214,8 @@ export default function EventScreen() {
                     >
                         <ActionIcon kind="flee" size={24} color={AXM.bone} />
                         <View style={{ flex: 1 }}>
-                            <Text style={styles.choiceLabel}>BACK</Text>
-                            <Text style={styles.choiceSub}>RETURN</Text>
+                            <Text style={styles.choiceLabel}>{vm.chrome.emptyBackLabel}</Text>
+                            <Text style={styles.choiceSub}>{vm.chrome.emptyBackSub}</Text>
                         </View>
                         <Text style={[styles.choiceArrow, { color: AXM.bone }]}>›</Text>
                     </TouchableOpacity>
@@ -288,14 +288,14 @@ export default function EventScreen() {
                         style={styles.skipBtn}
                         testID="event-skip"
                     >
-                        <Text style={styles.skipText}>SKIP ›</Text>
+                        <Text style={styles.skipText}>{vm.chrome.skipLabel}</Text>
                     </TouchableOpacity>
                 )}
             </View>
 
             <View style={styles.choices}>
                 <SectionLabel size={10} style={{ marginBottom: 6 }}>
-                    ✠ A RECKONING
+                    {vm.chrome.reckoningEyebrow}
                 </SectionLabel>
                 {vm.choices.map((choice, i) => (
                     <ChoiceRow

@@ -292,6 +292,61 @@ describe('selectEventViewModel: preludeChrome contract', () => {
     });
 });
 
+// ---------------------------------------------------------------------------
+// chrome — /iterate 2026-05-16 (CRITIQUE pass 6 HIGH drain)
+//
+// `vm.chrome` lifts the four general-event display literals
+// (RECKONING eyebrow, SKIP label, empty-state BACK / RETURN labels) off
+// `app/event/index.tsx` and onto the VM per Hard Rule #8. Constant
+// across every variant; populated by `withChrome` and `EMPTY_VM`.
+// ---------------------------------------------------------------------------
+
+describe('selectEventViewModel: chrome contract', () => {
+    it('populates chrome on the empty-state VM (no active event)', () => {
+        const store = makeStore();
+        const vm = selectEventViewModel(store.getState());
+
+        expect(vm.chrome).toEqual({
+            reckoningEyebrow: '✠ A RECKONING',
+            skipLabel: 'SKIP ›',
+            emptyBackLabel: 'BACK',
+            emptyBackSub: 'RETURN',
+        });
+    });
+
+    it('populates the same chrome on combat-prelude variants', () => {
+        const store = makeStore();
+        setPending(store, makeEncounterResult({ isBoss: false }));
+        const vm = selectEventViewModel(store.getState());
+
+        expect(vm.chrome.reckoningEyebrow).toBe('✠ A RECKONING');
+        expect(vm.chrome.skipLabel).toBe('SKIP ›');
+        expect(vm.chrome.emptyBackLabel).toBe('BACK');
+        expect(vm.chrome.emptyBackSub).toBe('RETURN');
+    });
+
+    it('populates the same chrome on narrative-choice variants (rest)', () => {
+        const store = makeStore();
+        setPending(store, makeRestResult(7));
+        const vm = selectEventViewModel(store.getState());
+
+        expect(vm.chrome.reckoningEyebrow).toBe('✠ A RECKONING');
+        expect(vm.chrome.skipLabel).toBe('SKIP ›');
+    });
+
+    it('chrome is the same object reference across calls (frozen, stable)', () => {
+        const store = makeStore();
+        setPending(store, makeEncounterResult({ isBoss: false }));
+        const vm1 = selectEventViewModel(store.getState());
+        setPending(store, makeRestResult(7));
+        const vm2 = selectEventViewModel(store.getState());
+
+        // Same string literals across variants (the screen never sees
+        // a "no eyebrow"/"different eyebrow" state).
+        expect(vm1.chrome).toEqual(vm2.chrome);
+    });
+});
+
 describe('selectEventViewModel: narrative-choice composition', () => {
     it('maps a rest event to a single-choice VM with heal consequence', () => {
         const store = makeStore();

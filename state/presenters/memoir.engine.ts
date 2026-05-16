@@ -120,6 +120,84 @@ const DEFAULT_PHILOSOPHICAL: PhilosophicalAlignment = Object.freeze({
     provisional: true,
 }) as PhilosophicalAlignment;
 
+/**
+ * Moral-meter band lookup (Tick C). Bands per Phase 33 brief
+ * §"Sub-tick decomposition / Tick C": -100..-66 RUTHLESS, -65..-34
+ * STERN, -33..33 UNDECLARED, 34..65 BENEVOLENT, 66..100 SAINTLY.
+ * Pure function; chip is frozen to keep referential equality stable
+ * across calls with the same band (lets the screen's React.memo see
+ * a stable chip reference).
+ */
+const MORAL_BANDS: ReadonlyArray<{
+    min: number;
+    max: number;
+    label: string;
+    tintKey: MoralAlignment['chip']['tintKey'];
+}> = Object.freeze([
+    { min: -100, max: -66, label: 'RUTHLESS', tintKey: 'blood' },
+    { min: -65, max: -34, label: 'STERN', tintKey: 'rust' },
+    { min: -33, max: 33, label: 'UNDECLARED', tintKey: 'bone' },
+    { min: 34, max: 65, label: 'BENEVOLENT', tintKey: 'sulfur' },
+    { min: 66, max: 100, label: 'SAINTLY', tintKey: 'parchment' },
+]);
+
+const MORAL_CHIP_BY_BAND: ReadonlyMap<string, MoralAlignment['chip']> = new Map(
+    MORAL_BANDS.map(
+        (b): [string, MoralAlignment['chip']] => [
+            b.label,
+            Object.freeze({ label: b.label, tintKey: b.tintKey }) as MoralAlignment['chip'],
+        ],
+    ),
+);
+
+function buildMoralAlignment(rawValue: unknown): MoralAlignment {
+    const value: number = typeof rawValue === 'number' && Number.isFinite(rawValue) ? rawValue : 0;
+    const clamped = Math.max(-100, Math.min(100, value));
+    const band =
+        MORAL_BANDS.find((b) => clamped >= b.min && clamped <= b.max) ?? MORAL_BANDS[2];
+    const chip = MORAL_CHIP_BY_BAND.get(band.label) ?? DEFAULT_MORAL.chip;
+    return Object.freeze({ value: clamped, chip }) as MoralAlignment;
+}
+
+/**
+ * Provisional philosophical alignment (Tick C). Reads
+ * `state.player.baseStats` (engine shape: `{ heart, body, mind }`,
+ * lowercase keys per `Game/game.reducer.js:32`). Highest stat wins;
+ * pairwise ties favour Heart (per brief §"Tick C"). A 3-way tie
+ * returns `untested.` so the player sees an empty-state chip rather
+ * than a spuriously-emitted alignment.
+ */
+const PHILOSOPHICAL_BY_STAT: Readonly<Record<'heart' | 'body' | 'mind', string>> = Object.freeze({
+    heart: 'of the Heart',
+    body: 'of the Body',
+    mind: 'of the Mind',
+});
+
+const STAT_PROPER_NAME: Readonly<Record<'heart' | 'body' | 'mind', string>> = Object.freeze({
+    heart: 'Heart',
+    body: 'Body',
+    mind: 'Mind',
+});
+
+function buildPhilosophicalAlignment(rawBaseStats: unknown): PhilosophicalAlignment {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const stats = rawBaseStats as any;
+    const heart = typeof stats?.heart === 'number' && Number.isFinite(stats.heart) ? stats.heart : 0;
+    const body = typeof stats?.body === 'number' && Number.isFinite(stats.body) ? stats.body : 0;
+    const mind = typeof stats?.mind === 'number' && Number.isFinite(stats.mind) ? stats.mind : 0;
+    // 3-way tie → untested
+    if (heart === body && body === mind) return DEFAULT_PHILOSOPHICAL;
+    // Pairwise tie-break favours Heart per brief
+    const max = Math.max(heart, body, mind);
+    const winner: 'heart' | 'body' | 'mind' =
+        heart === max ? 'heart' : body === max ? 'body' : 'mind';
+    return Object.freeze({
+        label: PHILOSOPHICAL_BY_STAT[winner],
+        rationale: `${STAT_PROPER_NAME[winner]} is your largest measure (${max}).`,
+        provisional: true,
+    }) as PhilosophicalAlignment;
+}
+
 const FALLBACK_VM: MemoirViewModel = Object.freeze({
     headerEyebrow: '✠ THE BOOK OF DEEDS',
     headerSubline: 'gathering pages…',
@@ -257,6 +335,10 @@ export function selectMemoirViewModel(state: GameStore): MemoirViewModel {
         | undefined;
     const active = buildActiveRows(log?.active);
     const completed = buildCompletedRows(log?.completed);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const moralRaw = (state as any).moralMeter;
+    const moralAlignment = buildMoralAlignment(moralRaw);
+    const philosophicalAlignment = buildPhilosophicalAlignment(player?.baseStats);
     return freezeViewModel({
         ...FALLBACK_VM,
         headerSubline: subline,
@@ -265,5 +347,7 @@ export function selectMemoirViewModel(state: GameStore): MemoirViewModel {
             completed,
             forgotten: Object.freeze([]) as readonly MemoirQuestRow[],
         },
+        moralAlignment,
+        philosophicalAlignment,
     });
 }

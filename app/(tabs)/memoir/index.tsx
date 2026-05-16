@@ -11,6 +11,14 @@ import {
 } from '@/state/presenters/memoir.engine';
 import { AXM, FONTS } from '@/theme/axm';
 
+function resolveTint(key: MemoirViewModel['moralAlignment']['chip']['tintKey']): string {
+    if (key === 'blood') return AXM.blood;
+    if (key === 'rust') return AXM.rust;
+    if (key === 'sulfur') return AXM.sulfur;
+    if (key === 'parchment') return AXM.parchment;
+    return AXM.bone;
+}
+
 function QuestCard({ quest }: { quest: MemoirQuestRow }) {
     return (
         <View
@@ -149,15 +157,31 @@ export default function MemoirScreen() {
                 <View style={styles.section} testID="memoir-measure">
                     <SectionLabel size={10}>{vm.measureEyebrow}</SectionLabel>
                     <View style={styles.measureRow}>
-                        <View style={styles.measureChip}>
-                            <Text style={styles.measureLabel}>
+                        <View
+                            style={[
+                                styles.measureChip,
+                                { borderColor: resolveTint(vm.moralAlignment.chip.tintKey) },
+                            ]}
+                            testID="memoir-moral-chip"
+                        >
+                            <Text
+                                style={[
+                                    styles.measureLabel,
+                                    { color: resolveTint(vm.moralAlignment.chip.tintKey) },
+                                ]}
+                            >
                                 {vm.moralAlignment.chip.label}
                             </Text>
                         </View>
-                        <View style={styles.measureChip}>
+                        <View style={styles.measureChip} testID="memoir-philosophical-chip">
                             <Text style={styles.measureLabel}>
                                 {vm.philosophicalAlignment.label}
                             </Text>
+                            {vm.philosophicalAlignment.rationale.length > 0 && (
+                                <Text style={styles.measureRationale}>
+                                    {vm.philosophicalAlignment.rationale}
+                                </Text>
+                            )}
                         </View>
                     </View>
                     {vm.philosopherQuote !== null && (
@@ -251,6 +275,13 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: AXM.parchment,
         letterSpacing: 1,
+    },
+    measureRationale: {
+        fontFamily: FONTS.serifItalic,
+        fontSize: 10,
+        color: AXM.bone,
+        marginTop: 2,
+        lineHeight: 12,
     },
     quote: {
         fontFamily: FONTS.serifItalic,

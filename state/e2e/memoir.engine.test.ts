@@ -230,3 +230,123 @@ describe('selectMemoirViewModel: quests section', () => {
         expect(vm.quests.forgotten).toEqual([]);
     });
 });
+
+// ---------------------------------------------------------------------------
+// Tick C — moral + provisional philosophical alignment
+//
+// Bands per Phase 33 brief §"Tick C": -100..-66 RUTHLESS, -65..-34
+// STERN, -33..33 UNDECLARED, 34..65 BENEVOLENT, 66..100 SAINTLY.
+// Philosophical alignment: highest base stat wins, ties favour Heart,
+// 3-way tie returns the `untested.` empty state.
+// ---------------------------------------------------------------------------
+
+function setMoralMeter(store: ReturnType<typeof createGameStore>, value: number): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    store.setState({ moralMeter: value } as any);
+}
+
+function setBaseStats(
+    store: ReturnType<typeof createGameStore>,
+    stats: { heart: number; body: number; mind: number },
+): void {
+    const player = store.getState().player;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    store.setState({ player: { ...player, baseStats: stats } } as any);
+}
+
+describe('selectMemoirViewModel: moral alignment', () => {
+    it('defaults to UNDECLARED (bone tint) at moralMeter = 0', () => {
+        const store = createGameStore(createMemoryAdapter());
+        const vm = selectMemoirViewModel(store.getState());
+        expect(vm.moralAlignment.value).toBe(0);
+        expect(vm.moralAlignment.chip).toEqual({ label: 'UNDECLARED', tintKey: 'bone' });
+    });
+
+    it.each([
+        [-100, 'RUTHLESS', 'blood'],
+        [-70, 'RUTHLESS', 'blood'],
+        [-66, 'RUTHLESS', 'blood'],
+        [-65, 'STERN', 'rust'],
+        [-40, 'STERN', 'rust'],
+        [-34, 'STERN', 'rust'],
+        [-33, 'UNDECLARED', 'bone'],
+        [33, 'UNDECLARED', 'bone'],
+        [34, 'BENEVOLENT', 'sulfur'],
+        [50, 'BENEVOLENT', 'sulfur'],
+        [65, 'BENEVOLENT', 'sulfur'],
+        [66, 'SAINTLY', 'parchment'],
+        [100, 'SAINTLY', 'parchment'],
+    ])(
+        'maps moralMeter %p to band %s (tint %s)',
+        (value, label, tint) => {
+            const store = createGameStore(createMemoryAdapter());
+            setMoralMeter(store, value as number);
+            const vm = selectMemoirViewModel(store.getState());
+            expect(vm.moralAlignment.value).toBe(value);
+            expect(vm.moralAlignment.chip.label).toBe(label);
+            expect(vm.moralAlignment.chip.tintKey).toBe(tint);
+        },
+    );
+
+    it('clamps moralMeter outside [-100, 100] to the boundary band', () => {
+        const store = createGameStore(createMemoryAdapter());
+        setMoralMeter(store, 200);
+        let vm = selectMemoirViewModel(store.getState());
+        expect(vm.moralAlignment.value).toBe(100);
+        expect(vm.moralAlignment.chip.label).toBe('SAINTLY');
+
+        setMoralMeter(store, -500);
+        vm = selectMemoirViewModel(store.getState());
+        expect(vm.moralAlignment.value).toBe(-100);
+        expect(vm.moralAlignment.chip.label).toBe('RUTHLESS');
+    });
+});
+
+describe('selectMemoirViewModel: provisional philosophical alignment', () => {
+    it('returns untested when all three base stats are equal (3-way tie)', () => {
+        const store = createGameStore(createMemoryAdapter());
+        setBaseStats(store, { heart: 4, body: 4, mind: 4 });
+        const vm = selectMemoirViewModel(store.getState());
+        expect(vm.philosophicalAlignment.label).toBe('untested.');
+        expect(vm.philosophicalAlignment.rationale).toBe('');
+        expect(vm.philosophicalAlignment.provisional).toBe(true);
+    });
+
+    it('picks Heart as the largest measure with rationale', () => {
+        const store = createGameStore(createMemoryAdapter());
+        setBaseStats(store, { heart: 12, body: 5, mind: 7 });
+        const vm = selectMemoirViewModel(store.getState());
+        expect(vm.philosophicalAlignment.label).toBe('of the Heart');
+        expect(vm.philosophicalAlignment.rationale).toBe('Heart is your largest measure (12).');
+    });
+
+    it('picks Body as the largest measure with rationale', () => {
+        const store = createGameStore(createMemoryAdapter());
+        setBaseStats(store, { heart: 3, body: 10, mind: 6 });
+        const vm = selectMemoirViewModel(store.getState());
+        expect(vm.philosophicalAlignment.label).toBe('of the Body');
+        expect(vm.philosophicalAlignment.rationale).toBe('Body is your largest measure (10).');
+    });
+
+    it('picks Mind as the largest measure with rationale', () => {
+        const store = createGameStore(createMemoryAdapter());
+        setBaseStats(store, { heart: 2, body: 4, mind: 9 });
+        const vm = selectMemoirViewModel(store.getState());
+        expect(vm.philosophicalAlignment.label).toBe('of the Mind');
+        expect(vm.philosophicalAlignment.rationale).toBe('Mind is your largest measure (9).');
+    });
+
+    it('breaks a Heart/Body tie in favour of Heart (per brief)', () => {
+        const store = createGameStore(createMemoryAdapter());
+        setBaseStats(store, { heart: 8, body: 8, mind: 3 });
+        const vm = selectMemoirViewModel(store.getState());
+        expect(vm.philosophicalAlignment.label).toBe('of the Heart');
+    });
+
+    it('breaks a Body/Mind tie in favour of Body (highest non-Heart wins)', () => {
+        const store = createGameStore(createMemoryAdapter());
+        setBaseStats(store, { heart: 2, body: 6, mind: 6 });
+        const vm = selectMemoirViewModel(store.getState());
+        expect(vm.philosophicalAlignment.label).toBe('of the Body');
+    });
+});

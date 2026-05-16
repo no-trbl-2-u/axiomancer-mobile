@@ -145,13 +145,105 @@ const FALLBACK_VM: MemoirViewModel = Object.freeze({
 }) as MemoirViewModel;
 
 /**
+ * Synthesize a one-line text for a quest objective. The engine's
+ * `QuestObjective` runtime shape carries `{id, type, target,
+ * currentCount, requiredCount}` plus an optional human-readable
+ * `text` / `label` / `description` field (engine fixtures vary).
+ * Read whichever's present; fall back to a synthetic
+ * `<type> <target>` line so the screen always has SOMETHING to
+ * render. Progress fraction is appended only when the engine
+ * actually returns a useful count.
+ */
+function synthesizeObjectiveText(objective: unknown): string {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const o = objective as any;
+    const provided: string | undefined =
+        (typeof o?.text === 'string' && o.text) ||
+        (typeof o?.label === 'string' && o.label) ||
+        (typeof o?.description === 'string' && o.description) ||
+        undefined;
+    if (provided) return provided;
+    const verb: string =
+        typeof o?.type === 'string' && o.type.length > 0 ? String(o.type) : 'task';
+    const target: string =
+        typeof o?.target === 'string' && o.target.length > 0 ? `: ${o.target}` : '';
+    return `${verb}${target}`;
+}
+
+function buildActiveRows(activeQuests: unknown): ReadonlyArray<MemoirQuestRow> {
+    if (!Array.isArray(activeQuests)) return Object.freeze([]) as readonly MemoirQuestRow[];
+    return Object.freeze(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        activeQuests.map((q: any) => {
+            const name: string = typeof q?.name === 'string' ? q.name : '';
+            const description: string =
+                typeof q?.description === 'string' ? q.description : '';
+            const rawObjectives = Array.isArray(q?.objectives) ? q.objectives : [];
+            const objectives = Object.freeze(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                rawObjectives.map((o: any) => {
+                    const currentCount =
+                        typeof o?.currentCount === 'number' ? o.currentCount : 0;
+                    const requiredCount =
+                        typeof o?.requiredCount === 'number' && o.requiredCount > 0
+                            ? o.requiredCount
+                            : 1;
+                    return Object.freeze({
+                        id: typeof o?.id === 'string' ? o.id : `obj-${name}`,
+                        text: synthesizeObjectiveText(o),
+                        done: currentCount >= requiredCount,
+                    });
+                }),
+            ) as readonly { id: string; text: string; done: boolean }[];
+            return Object.freeze({
+                id: name || 'unnamed',
+                name: name || 'unnamed',
+                description,
+                status: 'active' as const,
+                objectives,
+            });
+        }),
+    ) as readonly MemoirQuestRow[];
+}
+
+function buildCompletedRows(
+    completedNames: unknown,
+): ReadonlyArray<MemoirQuestRow> {
+    if (!Array.isArray(completedNames)) return Object.freeze([]) as readonly MemoirQuestRow[];
+    return Object.freeze(
+        completedNames.map((name) => {
+            const safeName = typeof name === 'string' ? name : 'unnamed';
+            return Object.freeze({
+                id: safeName,
+                name: safeName,
+                description: '',
+                status: 'completed' as const,
+                objectives: Object.freeze([]) as readonly {
+                    id: string;
+                    text: string;
+                    done: boolean;
+                }[],
+            });
+        }),
+    ) as readonly MemoirQuestRow[];
+}
+
+/**
  * Pure mapper from game state → `MemoirViewModel`.
  *
  * Tick A: returns the FALLBACK shape with the player's display
  * name substituted into the header sub-line where available.
- * Ticks B-D populate the four sections in turn; the shape contract
- * pinned by `state/e2e/memoir.engine.test.ts` is stable across those
- * extensions.
+ * Tick B (this commit): quests section reads `state.quests`
+ * (engine `QuestLog`). Active rows mirror the engine's `Quest`
+ * objects with their objectives; completed rows mirror the
+ * engine's `completed: QuestName[]` (engine drops the full Quest
+ * on completion — the row carries just the name). Forgotten
+ * stays empty: the engine has no failed-quest concept today, so
+ * the field is reserved for future expansion without forcing a
+ * schema change.
+ * Ticks C-D populate alignment + chronicle in turn; the shape
+ * contract pinned by `state/e2e/memoir.engine.test.ts` stays
+ * stable across those extensions.
  */
 export function selectMemoirViewModel(state: GameStore): MemoirViewModel {
     const player = state.player;
@@ -159,8 +251,19 @@ export function selectMemoirViewModel(state: GameStore): MemoirViewModel {
         player && typeof player.name === 'string' && player.name.length > 0
             ? `${player.name}, pilgrim.`
             : FALLBACK_VM.headerSubline;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const log = (state as any).quests as
+        | { available?: unknown; active?: unknown; completed?: unknown }
+        | undefined;
+    const active = buildActiveRows(log?.active);
+    const completed = buildCompletedRows(log?.completed);
     return freezeViewModel({
         ...FALLBACK_VM,
         headerSubline: subline,
+        quests: {
+            active,
+            completed,
+            forgotten: Object.freeze([]) as readonly MemoirQuestRow[],
+        },
     });
 }

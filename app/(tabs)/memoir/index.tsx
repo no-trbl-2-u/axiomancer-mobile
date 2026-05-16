@@ -6,14 +6,46 @@ import { SectionLabel } from '@/components/SectionLabel';
 import { useGameState } from '@/state/GameStoreProvider';
 import {
     selectMemoirViewModel,
+    type MemoirQuestRow,
     type MemoirViewModel,
 } from '@/state/presenters/memoir.engine';
 import { AXM, FONTS } from '@/theme/axm';
 
+function QuestCard({ quest }: { quest: MemoirQuestRow }) {
+    return (
+        <View
+            style={[
+                styles.questCard,
+                quest.status === 'completed' && styles.questCardCompleted,
+            ]}
+            testID={`memoir-quest-${quest.id}`}
+        >
+            <Text style={styles.questName}>{quest.name}</Text>
+            {quest.description.length > 0 && (
+                <Text style={styles.questDescription}>{quest.description}</Text>
+            )}
+            {quest.objectives.length > 0 && (
+                <View style={styles.objectiveList}>
+                    {quest.objectives.map((o) => (
+                        <Text
+                            key={o.id}
+                            style={[styles.objectiveLine, o.done && styles.objectiveDone]}
+                        >
+                            {o.done ? '✓ ' : '○ '}
+                            {o.text}
+                        </Text>
+                    ))}
+                </View>
+            )}
+        </View>
+    );
+}
+
 /**
  * MEMOIR screen — read-only journal surface. Phase 33 Tick A
  * renders the four section shells with presenter-sourced
- * empty-state copy; Ticks B-D fill in the real reads.
+ * empty-state copy; Tick B (this commit) renders quest cards
+ * from `state.quests`. Ticks C-D fill in alignment + chronicle.
  *
  * Subscribes to slim slices and memo's the VM (Phase 30 Tick A
  * pattern) — `useGameState(selectMemoirViewModel)` would churn
@@ -84,6 +116,9 @@ export default function MemoirScreen() {
                                     <SectionLabel size={9} color={AXM.bone}>
                                         {vm.questsActiveEyebrow}
                                     </SectionLabel>
+                                    {vm.quests.active.map((q) => (
+                                        <QuestCard key={q.id} quest={q} />
+                                    ))}
                                 </View>
                             )}
                             {vm.quests.completed.length > 0 && (
@@ -91,6 +126,9 @@ export default function MemoirScreen() {
                                     <SectionLabel size={9} color={AXM.bone}>
                                         {vm.questsCompletedEyebrow}
                                     </SectionLabel>
+                                    {vm.quests.completed.map((q) => (
+                                        <QuestCard key={q.id} quest={q} />
+                                    ))}
                                 </View>
                             )}
                             {vm.quests.forgotten.length > 0 && (
@@ -98,6 +136,9 @@ export default function MemoirScreen() {
                                     <SectionLabel size={9} color={AXM.bone}>
                                         {vm.questsForgottenEyebrow}
                                     </SectionLabel>
+                                    {vm.quests.forgotten.map((q) => (
+                                        <QuestCard key={q.id} quest={q} />
+                                    ))}
                                 </View>
                             )}
                         </>
@@ -166,6 +207,36 @@ const styles = StyleSheet.create({
         marginTop: 1,
     },
     questGroup: { marginTop: 6 },
+    questCard: {
+        marginTop: 4,
+        padding: 6,
+        paddingHorizontal: 8,
+        borderWidth: 1,
+        borderColor: AXM.ash,
+        backgroundColor: '#100d0a',
+    },
+    questCardCompleted: { opacity: 0.55 },
+    questName: {
+        fontFamily: FONTS.gothic,
+        fontSize: 14,
+        color: AXM.parchment,
+        letterSpacing: 1,
+    },
+    questDescription: {
+        fontFamily: FONTS.serifItalic,
+        fontSize: 10,
+        color: AXM.bone,
+        marginTop: 2,
+        lineHeight: 13,
+    },
+    objectiveList: { marginTop: 4, gap: 2 },
+    objectiveLine: {
+        fontFamily: FONTS.mono,
+        fontSize: 9,
+        color: AXM.bone,
+        letterSpacing: 0.5,
+    },
+    objectiveDone: { color: AXM.sulfur, textDecorationLine: 'line-through' },
     measureRow: { flexDirection: 'row', gap: 6, marginTop: 6 },
     measureChip: {
         flex: 1,

@@ -143,6 +143,20 @@ export function selectEventViewModel(state: AppStoreState): EventViewModel {
 
 // -- composition helpers -----------------------------------------------------
 
+/**
+ * Boss subtitle fallback when `enemy.description` is empty (which the
+ * Enemy type says shouldn't happen, but be defensive). Rotates over
+ * the player-facing level so repeat encounters at the same tier still
+ * read consistently but different tiers each get their own omen.
+ */
+const BOSS_OMEN_BY_LEVEL: readonly string[] = [
+    'first seal · first sigh',
+    'second seal · waking',
+    'third seal · the hush',
+    'fourth seal · third sigh',
+    'fifth seal · the long count',
+];
+
 function composeCombatPrelude(encounter: Encounter, isBoss: boolean): EventViewModel {
     const enemy = encounter.enemy;
     const badge = isBoss ? 'OMEN OF DOOM' : 'ENCOUNTER';
@@ -166,6 +180,18 @@ function composeCombatPrelude(encounter: Encounter, isBoss: boolean): EventViewM
             enabled: !isBoss,
         },
     ];
+    let subtitle: string;
+    if (isBoss) {
+        const description = enemy.description?.trim() ?? '';
+        if (description.length > 0) {
+            subtitle = description;
+        } else {
+            const idx = Math.max(0, (enemy.level - 1) % BOSS_OMEN_BY_LEVEL.length);
+            subtitle = BOSS_OMEN_BY_LEVEL[idx] ?? 'fourth seal · third sigh';
+        }
+    } else {
+        subtitle = 'something stirs';
+    }
     return {
         kind: 'combat-prelude',
         variant: isBoss ? 'boss' : 'encounter',
@@ -173,7 +199,7 @@ function composeCombatPrelude(encounter: Encounter, isBoss: boolean): EventViewM
         badge,
         badgeAccentKey: 'blood',
         title: enemy.name.toUpperCase(),
-        subtitle: isBoss ? 'fourth seal · third sigh' : 'something stirs',
+        subtitle,
         body: `Level ${enemy.level}. ${enemy.health} HP.`,
         choices,
         lore: null,

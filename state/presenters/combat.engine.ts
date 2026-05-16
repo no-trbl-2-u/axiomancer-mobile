@@ -261,6 +261,17 @@ export interface CombatViewModel {
      * e.g. `'iv vs i'`. Numerals are the player and enemy round counts.
      */
     roundToken: string;
+    /**
+     * Visible placeholder rendered while the combat tab is bootstrapping
+     * its mock encounter (the brief window between mount and the
+     * `actions.startCombat` useEffect firing). The pre-Phase-30 screen
+     * rendered an empty `<View>` here, which the user observed as
+     * "combat encounter is blank." Surfacing this string makes the
+     * loading state visible. Lowercase ritual register; the view
+     * renders with `textTransform: 'uppercase'` (Hard Rule #8 — no
+     * view-layer literals).
+     */
+    loadingMessage: string;
     /** Accessibility labels for interactive elements. */
     a11y: {
         stanceHeart: string;
@@ -786,6 +797,7 @@ export function selectCombatViewModel(
             resolve: resolveSliceFromState(null, null, null),
             log: [],
             logEmptyMessage: 'The air shivers. Combat begins.',
+            loadingMessage: 'the field stirs.',
             phaseHeader: PHASE_LABELS.choosing_stance,
             phaseIndex: 0,
             phaseOrder: PHASE_ORDER,
@@ -903,6 +915,7 @@ export function selectCombatViewModel(
         ),
         log,
         logEmptyMessage: 'The air shivers. Combat begins.',
+        loadingMessage: 'the field stirs.',
         phaseHeader: PHASE_LABELS[phase] ?? PHASE_LABELS.choosing_stance,
         phaseIndex,
         phaseOrder: PHASE_ORDER,

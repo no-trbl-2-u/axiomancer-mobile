@@ -90,10 +90,11 @@ function seedPhase(
 describe('CombatScreen: phase coverage', () => {
     it('renders the bootstrap (loading) view when no combat is active', () => {
         const store = makeStore();
-        // Override the in-effect startCombat that the screen would
-        // dispatch on mount: GameStoreProvider runs the screen inside
-        // a synchronous render which then schedules useEffect. The
-        // first render output is the loading state.
+        // In jest the auto-bootstrap useEffect fires synchronously, so
+        // the final tree shows the full combat layout, not the loading
+        // branch. The loading-state contract is pinned at the VM level
+        // in `combat.engine.test.ts` ("exposes a visible loadingMessage
+        // …") — the screen renders `vm.loadingMessage` from that field.
         const tree = render(withProviders(store, <CombatScreen />));
         expect(tree.toJSON()).not.toBeNull();
     });

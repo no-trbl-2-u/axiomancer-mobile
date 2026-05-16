@@ -648,4 +648,24 @@ describe('selectCombatViewModel: presenter-sourced ritual copy', () => {
         const active = selectCombatViewModel(store.getState());
         expect(active.actionPicker.itemMessage).toBe('Hands are empty.');
     });
+
+    it('exposes a visible loadingMessage so the combat tab never renders a blank placeholder', () => {
+        // Phase 30 Tick C contract: the pre-fix loading placeholder
+        // was an empty `<View>`, which the user observed as "combat
+        // encounter is blank." The VM now surfaces visible copy that
+        // the screen renders during the brief mount → bootstrap
+        // window so the screen never collapses to a void.
+        const store = createGameStore(createMemoryAdapter());
+        const idle = selectCombatViewModel(store.getState());
+
+        expect(typeof idle.loadingMessage).toBe('string');
+        expect(idle.loadingMessage.trim().length).toBeGreaterThan(0);
+        expect(idle.loadingMessage).toBe('the field stirs.');
+
+        // Still populated once combat is active so the field exists
+        // even on the unreachable side of the screen branch.
+        store.getState().startCombat(makeEnemy());
+        const active = selectCombatViewModel(store.getState());
+        expect(active.loadingMessage).toBe('the field stirs.');
+    });
 });

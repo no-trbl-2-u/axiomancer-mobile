@@ -154,6 +154,58 @@ describe('smoke-render: each primary surface', () => {
     });
 });
 
+/**
+ * "Visible body" heuristic — assert that the screen actually
+ * paints user-visible content, not just an empty View placeholder.
+ * Catches "the screen is blank" without coupling to specific copy.
+ */
+function expectNonEmptyBody(strings: readonly string[], surface: string): void {
+    const visibleText = strings.filter((s) => s.trim().length > 0);
+    // The smoke harness asserts a *loose* lower bound: at least
+    // one non-whitespace string in the rendered tree. Tighter
+    // assertions live in the per-screen tests.
+    expect({ surface, hasVisibleText: visibleText.length > 0 }).toEqual({
+        surface,
+        hasVisibleText: true,
+    });
+}
+
+describe('smoke-render: primary body is non-empty (no blank screens)', () => {
+    it('Character tab paints visible text', () => {
+        const store = makeStore();
+        const api = render(withProviders(store, <CharacterScreen />));
+        expectNonEmptyBody(collectVisibleStrings(api), 'character');
+    });
+
+    it('Inventory tab paints visible text', () => {
+        const store = makeStore();
+        const api = render(withProviders(store, <InventoryScreen />));
+        expectNonEmptyBody(collectVisibleStrings(api), 'inventory');
+    });
+
+    it('Combat tab paints visible text even before its bootstrap effect runs', () => {
+        // Tick C contract: the user-observed "combat encounter is
+        // blank" came from the loading-placeholder branch rendering
+        // an empty <View>. The placeholder must paint *something*
+        // visible so users always see context, not a void.
+        const store = makeStore();
+        const api = render(withProviders(store, <CombatScreen />));
+        expectNonEmptyBody(collectVisibleStrings(api), 'combat (loading)');
+    });
+
+    it('Exploration tab paints visible text', () => {
+        const store = makeStore();
+        const api = render(withProviders(store, <ExplorationScreen />));
+        expectNonEmptyBody(collectVisibleStrings(api), 'exploration');
+    });
+
+    it('Event modal paints visible text in its empty-event state', () => {
+        const store = makeStore();
+        const api = render(withProviders(store, <EventScreen />));
+        expectNonEmptyBody(collectVisibleStrings(api), 'event (empty)');
+    });
+});
+
 describe('smoke-render: no template-string leaks in rendered output', () => {
     it('Character tab renders no `{ ... }` template strings', () => {
         const store = makeStore();

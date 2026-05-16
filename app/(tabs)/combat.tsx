@@ -153,10 +153,17 @@ export default function CombatScreen() {
     }, [actions, exitCombat, router]);
 
     if (!vm.isInCombat) {
-        // First render before useEffect runs the bootstrap. Render the
-        // chrome but skip the inner layout — keeps the screen snappy
-        // and prevents transient `hp=0` flashes.
-        return <ScreenBg><View testID="combat-screen-loading" /></ScreenBg>;
+        // First render before useEffect runs the bootstrap. The pre-
+        // Phase-30 placeholder was an empty <View>, which the user
+        // observed as "combat encounter is blank" — the visible
+        // `loadingMessage` keeps the screen from collapsing to a void.
+        return (
+            <ScreenBg>
+                <View style={styles.loadingWrap} testID="combat-screen-loading">
+                    <Text style={styles.loadingText}>{vm.loadingMessage}</Text>
+                </View>
+            </ScreenBg>
+        );
     }
 
     return (
@@ -776,6 +783,14 @@ function ResolvePanel({
 // ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
+    loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
+    loadingText: {
+        fontFamily: FONTS.mono,
+        fontSize: 12,
+        letterSpacing: 2,
+        color: AXM.bone,
+        textTransform: 'uppercase',
+    },
     enemyPanel: { position: 'relative', padding: 6, paddingHorizontal: 10, height: 200, overflow: 'hidden' },
     enemySvg: { position: 'absolute', right: -10, bottom: -8, opacity: 0.95 },
     enemyInfo: { position: 'absolute', top: 10, left: 12, right: 110 },

@@ -52,16 +52,18 @@
 - source: reader
 - **Deferred 2026-05-15 via oversight: needs design pass with the asset/icon palette.** Renaming tabs in isolation risks a churn cycle; the right time to revisit labels is when icon-label pairing is reconsidered together (Phase 12 polished icons but did not revisit labels). `/iterate` should skip this row until a design-pass phase is filed. Unblock by either (a) shipping a "Tabs design pass" phase that addresses icons + labels together, or (b) flipping back to `[MED]` with an explicit register pick.
 
-### [LOW] /app/(tabs)/exploration/index.tsx — "Where next, pilgrim?" breaks the screen's own glyph + case convention
+## Done
+
+### [LOW] /app/(tabs)/exploration/index.tsx — "Where next, pilgrim?" breaks the screen's own glyph + case convention ✅
 - pass: 2 (commit d967f27)
 - viewport: repository
 - category: voice
-- observation: The exploration drawer's bottom heading uses a star glyph and sentence-case while every other section label on the same screen uses `✠` and ALLCAPS ritual prose. One label breaks the pattern.
-- evidence: `app/(tabs)/exploration/index.tsx:237`: `<SectionLabel size={10}>★ Where next, pilgrim?</SectionLabel>` versus siblings like `✠ BASE`, `✠ WORN & WIELDED`.
-- suggested fix: Unify to the screen's existing convention, e.g. `✠ WHITHER, PILGRIM?`
+- observation: Star glyph + sentence case break the ✠+ALLCAPS pattern used elsewhere.
+- evidence: `app/(tabs)/exploration/index.tsx:242`.
+- suggested fix: Unify to ✠ + ALLCAPS ritual.
 - source: reader
-
-## Done
+- issue: #43
+- **Resolved 2026-05-15.** `★ Where next, pilgrim?` → `✠ WHITHER, PILGRIM?` Verify green at 357/357. Closes #43. See commit `d6849bc`.
 
 ### [MED] /docs/combat.md — "Stance-derived stats" section references deleted `STANCE_DERIVED` constant ✅
 - pass: 4 (commit 2a2c0aa)

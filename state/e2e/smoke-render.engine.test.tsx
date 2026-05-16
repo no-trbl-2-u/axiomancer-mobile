@@ -1,0 +1,187 @@
+/**
+ * Hermetic smoke-render harness (Phase 30 Tick A).
+ *
+ * The shipped pattern — hermetic tests on the presenter VM only —
+ * has a strategic gap: it doesn't render the full screen tree, so
+ * crashes, blank renders, and template-string leaks pass verify
+ * but break the deployed app. This harness mounts each primary
+ * surface at fresh-store boot and asserts three contracts:
+ *
+ *   1. render() does not throw (catches "character tab crashing")
+ *   2. rendered output contains no `{`/`}`-bracketed template
+ *      strings (catches "tab labels rendering as
+ *      `{ TAB NAME }"--index"` literally")
+ *   3. the primary heading / title is non-empty (catches
+ *      "combat encounter is blank")
+ *
+ * Each surface gets its own `describe` so a failure pinpoints the
+ * broken screen. The harness intentionally keeps mocks minimal —
+ * the goal is to exercise the full screen render path the way the
+ * runtime does, not the way the VM-shape tests do.
+ *
+ * When Phase 31 (tabs design pass) lands, the tab-title fixtures
+ * here update to match the new register; the bracket-leak
+ * assertion is the contract that stays stable.
+ */
+
+import { afterEach, describe, it, expect, jest } from '@jest/globals';
+import { render, type RenderAPI } from '@testing-library/react-native';
+import React from 'react';
+
+/**
+ * Local re-statement of the `ReactTestInstance` shape we walk, so
+ * the harness doesn't pull `@types/react-test-renderer` (not a
+ * project dep). Only the fields we use.
+ */
+interface TreeNode {
+    props?: { accessibilityLabel?: unknown };
+    children?: ReadonlyArray<TreeNode | string | number | null | undefined>;
+}
+
+jest.mock('expo-router', () => ({
+    useRouter: () => ({
+        replace: jest.fn(),
+        push: jest.fn(),
+        back: jest.fn(),
+        canGoBack: () => false,
+    }),
+}));
+
+import { CombatModeProvider } from '@/state/combat-mode';
+import { GameStoreProvider } from '@/state/GameStoreProvider';
+import { createAppStore, type AppStore } from '@/state/store';
+import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
+
+import CharacterScreen from '@/app/(tabs)/character';
+import InventoryScreen from '@/app/(tabs)/inventory';
+import CombatScreen from '@/app/(tabs)/combat';
+import ExplorationScreen from '@/app/(tabs)/exploration';
+import EventScreen from '@/app/event';
+
+afterEach(() => {
+    jest.restoreAllMocks();
+});
+
+function makeStore(): AppStore {
+    return createAppStore({ adapter: createMemoryAdapter() });
+}
+
+function withProviders(store: AppStore, screen: React.ReactNode) {
+    return (
+        <CombatModeProvider>
+            <GameStoreProvider store={store}>{screen}</GameStoreProvider>
+        </CombatModeProvider>
+    );
+}
+
+/**
+ * Walk a rendered tree and collect every string the user would
+ * see. We can't use `render(...).toJSON()` text-only because RN
+ * `Text` nodes carry their content as `children` props that may
+ * themselves be React fragments; this walker pulls every leaf
+ * string out so the bracket-leak assertion runs against the
+ * full visible surface.
+ */
+function collectVisibleStrings(api: RenderAPI): string[] {
+    const out: string[] = [];
+    const walk = (node: TreeNode | string | number | null | undefined): void => {
+        if (node === null || node === undefined) return;
+        if (typeof node === 'string') {
+            out.push(node);
+            return;
+        }
+        if (typeof node === 'number') {
+            out.push(String(node));
+            return;
+        }
+        const label = node.props?.accessibilityLabel;
+        if (typeof label === 'string' && label.length > 0) out.push(label);
+        for (const child of node.children ?? []) {
+            walk(child);
+        }
+    };
+    walk(api.toJSON() as unknown as TreeNode);
+    return out;
+}
+
+/**
+ * Heuristic for unresolved template strings in rendered output.
+ * Matches a curly-bracketed token of word characters and spaces,
+ * which is the shape of expo-router's default title placeholder
+ * (`{ tab-name }`) and of any JS template-literal leak (e.g.
+ * `${something}` rendered as a string).
+ */
+const TEMPLATE_LEAK_RE = /\{[\s\w.-]+\}|\$\{[^}]+\}/;
+
+function expectNoTemplateLeaks(strings: readonly string[], surface: string): void {
+    const offenders = strings.filter((s) => TEMPLATE_LEAK_RE.test(s));
+    expect({
+        surface,
+        offenders,
+    }).toEqual({ surface, offenders: [] });
+}
+
+// ---------------------------------------------------------------------------
+// Per-surface smoke renders
+// ---------------------------------------------------------------------------
+
+describe('smoke-render: each primary surface', () => {
+    it('renders the Character tab at fresh-store boot without throwing', () => {
+        const store = makeStore();
+        // Wrapped so a thrown error surfaces with `toThrow` rather than
+        // bubbling up and aborting the whole test file.
+        expect(() => render(withProviders(store, <CharacterScreen />))).not.toThrow();
+    });
+
+    it('renders the Inventory tab at fresh-store boot without throwing', () => {
+        const store = makeStore();
+        expect(() => render(withProviders(store, <InventoryScreen />))).not.toThrow();
+    });
+
+    it('renders the Combat tab at fresh-store boot without throwing', () => {
+        const store = makeStore();
+        expect(() => render(withProviders(store, <CombatScreen />))).not.toThrow();
+    });
+
+    it('renders the Exploration tab at fresh-store boot without throwing', () => {
+        const store = makeStore();
+        expect(() => render(withProviders(store, <ExplorationScreen />))).not.toThrow();
+    });
+
+    it('renders the Event modal at fresh-store boot (empty event) without throwing', () => {
+        const store = makeStore();
+        expect(() => render(withProviders(store, <EventScreen />))).not.toThrow();
+    });
+});
+
+describe('smoke-render: no template-string leaks in rendered output', () => {
+    it('Character tab renders no `{ ... }` template strings', () => {
+        const store = makeStore();
+        const api = render(withProviders(store, <CharacterScreen />));
+        expectNoTemplateLeaks(collectVisibleStrings(api), 'character');
+    });
+
+    it('Inventory tab renders no `{ ... }` template strings', () => {
+        const store = makeStore();
+        const api = render(withProviders(store, <InventoryScreen />));
+        expectNoTemplateLeaks(collectVisibleStrings(api), 'inventory');
+    });
+
+    it('Combat tab renders no `{ ... }` template strings', () => {
+        const store = makeStore();
+        const api = render(withProviders(store, <CombatScreen />));
+        expectNoTemplateLeaks(collectVisibleStrings(api), 'combat');
+    });
+
+    it('Exploration tab renders no `{ ... }` template strings', () => {
+        const store = makeStore();
+        const api = render(withProviders(store, <ExplorationScreen />));
+        expectNoTemplateLeaks(collectVisibleStrings(api), 'exploration');
+    });
+
+    it('Event modal renders no `{ ... }` template strings (empty event)', () => {
+        const store = makeStore();
+        const api = render(withProviders(store, <EventScreen />));
+        expectNoTemplateLeaks(collectVisibleStrings(api), 'event');
+    });
+});

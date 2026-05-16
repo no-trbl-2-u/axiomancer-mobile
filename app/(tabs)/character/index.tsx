@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AXM, FONTS } from '@/theme/axm';
@@ -12,7 +12,16 @@ import { useGameState, useGameStore } from '@/state/GameStoreProvider';
 import { selectCharacterViewModel } from '@/state/presenters/character.engine';
 
 export default function CharacterScreen() {
-  const vm = useGameState(selectCharacterViewModel);
+  // Subscribe to stable slices to avoid getSnapshot identity churn:
+  // `selectCharacterViewModel` returns a frozen new object every call,
+  // which would loop `useSyncExternalStore` if used directly as a
+  // selector. Pull the underlying slice and memoize the VM downstream
+  // (mirrors the pattern fixed in event screen, Phase 6 Tick A).
+  const player = useGameState((s) => s.player);
+  const vm = useMemo(
+    () => selectCharacterViewModel({ player } as never),
+    [player],
+  );
   const router = useRouter();
   const store = useGameStore();
 

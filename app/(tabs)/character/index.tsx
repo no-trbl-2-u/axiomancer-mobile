@@ -18,9 +18,13 @@ export default function CharacterScreen() {
 
   // Phase 29 Tick A: acknowledge any pending level-up the moment the
   // character screen renders. The tab badge clears via
-  // `selectTabBadges` (which gates on `levelUpAcknowledged`).
+  // `selectTabBadges` (which gates on `levelUpAcknowledged`). Preserve
+  // any other notification fields (toast, etc.) on the slice.
   useEffect(() => {
-    store.setState({ notifications: { levelUpAcknowledged: true } });
+    const prev = store.getState().notifications;
+    store.setState({
+      notifications: { ...prev, levelUpAcknowledged: true },
+    });
   }, [store]);
 
   return (

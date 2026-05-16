@@ -27,16 +27,24 @@ export interface MobileEventSlice {
 }
 
 /**
- * Mobile-only notifications slice (Phase 29). Tracks "has the player
- * acknowledged the most recent level-up yet?" so the levelup tab
- * badge can clear after the character screen has been seen.
+ * Mobile-only notifications slice (Phase 29). Tracks:
  *
- * Default: `levelUpAcknowledged: true` — no pending level-up at
- * store init. Engine fires `character:levelup` → flip to `false`.
- * Character screen mount → flip to `true`.
+ * - `levelUpAcknowledged` — has the player acknowledged the most
+ *   recent level-up? Levelup tab badge clears when `true`. Engine
+ *   `character:levelup` flips to `false`; character-screen mount
+ *   flips back to `true`. (Tick A.)
+ * - `toast` — transient feedback string (e.g. inventory action
+ *   confirmation). The `<ToastHost>` in `app/_layout.tsx` clears
+ *   the field ~3 seconds after `id` changes. `id` increments per
+ *   new toast so listeners can detect fresh dispatches even if
+ *   `text` is identical. (Tick B.)
  */
 export interface MobileNotificationsSlice {
     levelUpAcknowledged: boolean;
+    toast: {
+        text: string | null;
+        id: number;
+    };
 }
 
 export type AppStoreState = GameStore & {
@@ -71,6 +79,7 @@ export const EMPTY_EVENT_SLICE: MobileEventSlice = Object.freeze({
  */
 export const DEFAULT_NOTIFICATIONS_SLICE: MobileNotificationsSlice = Object.freeze({
     levelUpAcknowledged: true,
+    toast: Object.freeze({ text: null, id: 0 }),
 });
 
 /** Ring-buffer capacity for `_recentEvents`. Small enough not to bloat memory or save payloads. */
@@ -150,8 +159,9 @@ export function createAppStore(options: CreateAppStoreOptions = {}): AppStore {
     // the character screen flips it back to true. See
     // `state/presenters/navigation.engine.ts` for the predicate.
     emitter.on('character:levelup', () => {
+        const prev = store.getState().notifications ?? DEFAULT_NOTIFICATIONS_SLICE;
         store.setState({
-            notifications: { levelUpAcknowledged: false },
+            notifications: { ...prev, levelUpAcknowledged: false },
         });
     });
 

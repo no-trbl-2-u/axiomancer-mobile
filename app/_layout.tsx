@@ -17,6 +17,7 @@ import { GameStoreProvider } from '@/state/GameStoreProvider';
 import { createAsyncStorageAdapter } from '@/state/persistence/asyncStorageAdapter';
 import { HardwareBackHandler } from '@/components/HardwareBackHandler';
 import { EventGate } from '@/components/EventGate';
+import { ToastHost } from '@/components/ToastHost';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -86,6 +87,7 @@ export default function RootLayout() {
         <StatusBar style="light" />
         <HardwareBackHandler />
         <EventGate />
+        <ToastHost />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="index" options={{ headerShown: false }} />

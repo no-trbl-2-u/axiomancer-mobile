@@ -84,6 +84,14 @@ export interface CharacterViewModel {
     luck: number;
     saves: readonly SaveOrTestRow[];
     effects: readonly CharacterEffectRow[];
+    /**
+     * Visible placeholder rendered when `effects` is empty. Lowercase
+     * ritual register; the screen renders verbatim (uppercased via
+     * `textTransform`) so the view layer carries no ritual literal
+     * (Hard Rule #8). Sibling to `a11y.effects` which is the
+     * full-sentence screen-reader analogue.
+     */
+    emptyEffectsMessage: string;
     equipment: readonly EquipmentSlotRow[];
     skills: readonly CharacterSkillRow[];
     /** Accessibility labels for character screen elements. */
@@ -205,6 +213,7 @@ export function selectCharacterViewModel(state: GameStore): CharacterViewModel {
         luck,
         saves: buildSaves(player),
         effects: buildEffects(player),
+        emptyEffectsMessage: 'none at hand.',
         equipment: buildEquipment(player),
         skills: [],
         a11y: {

@@ -427,4 +427,14 @@ describe('selectCharacterViewModel: a11y block', () => {
         // inline a11y literal for it either.
         expect(vm.a11y.crucibleOpen).toBe('Open Token Crucible.');
     });
+
+    it('exposes a lowercase-ritual emptyEffectsMessage so the screen renders no literal', () => {
+        const store = createGameStore(createMemoryAdapter());
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        // Lowercase ritual register — view renders via
+        // `textTransform: 'uppercase'`. No banned pronouns.
+        expect(vm.emptyEffectsMessage).toBe('none at hand.');
+    });
 });

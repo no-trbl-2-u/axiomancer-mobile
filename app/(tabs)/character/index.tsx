@@ -108,7 +108,7 @@ export default function CharacterScreen() {
         <SectionLabel size={10}>✠ AFFLICTIONS &amp; BLESSINGS</SectionLabel>
         <View style={styles.effectsList}>
           {vm.effects.length === 0 ? (
-            <Text style={styles.emptyLabel}>NO ACTIVE EFFECTS</Text>
+            <Text style={styles.emptyLabel}>{vm.emptyEffectsMessage}</Text>
           ) : (
             vm.effects.map((e) => (
               <View
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
   saveKey: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone },
   saveVal: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.parchment },
   effectsList: { marginTop: 4, gap: 4 },
-  emptyLabel: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.ash, letterSpacing: 1 },
+  emptyLabel: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.ash, letterSpacing: 1, textTransform: 'uppercase' },
   effectRow: { flexDirection: 'row', gap: 8, alignItems: 'center', borderWidth: 1, padding: 5, paddingHorizontal: 7 },
   effectTopRow: { flexDirection: 'row', justifyContent: 'space-between' },
   effectName: { fontFamily: FONTS.gothic, fontSize: 13, color: AXM.parchment, letterSpacing: 1 },

@@ -280,19 +280,17 @@ commit that ships the phase.
       invariant guard) — the render harness catches that class
       as a strict superset. Verify: 391 → 410 across the phase.
       Brief at `plan/phases/phase_30_hermetic_render_coverage.md`.
-- [ ] Phase 31 — Tabs design pass (icons + labels coherence).
+- [x] Phase 31 — Tabs design pass (all-places register).
       Promoted via `/oversight` 2026-05-16 with explicit register
-      pick: **all places** — `WILDS · STRIFE · SELF · SACK`. Was
-      filed as candidate Phase 30 (score 6.0) in expand pass 8
-      and renumbered on promotion. Unblocks the deferred
-      `[needs-user-call]` critique row (pass 2, commit `d967f27`).
-      Ships AFTER Phase 30 so the tab title pipeline is verified
-      working before strings change. 1 phase, 1-2 ticks: update
-      the four `title:` props in `app/(tabs)/_layout.tsx`;
-      reconcile icon-label pairing if any of the four nouns
-      imply different icons; +2-3 hermetic e2e cases that pin
-      the new titles via the Phase 30 render harness. Brief to
-      be drafted via `/plan-a-phase phase 31`.
+      pick from the user. Shipped in commit `542f7c9` — one-line
+      presenter edit of `TAB_TITLES` thanks to Phase 30 Tick B's
+      extraction. Strings flipped:
+      `MAP · COMBAT · SHEET · SACK` →
+      `WILDS · STRIFE · SELF · SACK`. Icons stay as-is (the new
+      noun-icon pairing is coherent). Drains the long-deferred
+      `[needs-user-call]` critique row from pass 2 (commit
+      `d967f27`). Verify: 410/410 unchanged. Brief at
+      `plan/phases/phase_31_tabs_design_pass.md`.
 
 > **After phase 31:** the loop transitions back to `/iterate` —
 > bug findings, presenter refactors, asset backlog, ongoing

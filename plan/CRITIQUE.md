@@ -1,19 +1,71 @@
 # Critique log
 
-> Last pass: 2026-05-15 at commit 2a2c0aa
-> Pass count: 4
+> Last pass: 2026-05-15 at commit dfb3358
+> Pass count: 5
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
 > for the contract.
 >
-> **Pass-5 policy (set via `/oversight` 2026-05-15):** pause new
-> critique passes until the Pending count drains to ≤ 3 rows.
-> Rationale: pass 4 added 6 findings while /iterate drained 3 in
-> the same window — net +3. Without a pause, the queue grows
-> unboundedly. Re-run `/critique` only when Pending is small.
+> **Pass-5 policy (set via `/oversight` 2026-05-15, satisfied):**
+> pause new critique passes until the Pending count drains to ≤ 3
+> rows. Pass 5 fired after the queue drained to 0 actionable rows.
 
 ## Pending
+
+### [MED] /app/(tabs)/character/index.tsx — `vm.a11y` block built but never consumed
+- pass: 5 (commit dfb3358)
+- viewport: repository
+- category: a11y
+- observation: `selectCharacterViewModel` builds a populated `a11y` block (characterName / level / experience / baseStats / derivedStats / saves / equipment / effects) but the screen never reads it. Grep for `a11y` in `app/(tabs)/character/index.tsx` returns 0 hits. Only line 147 has an a11y attribute (a hardcoded `accessibilityLabel="Open Token Crucible"`). Character is now the largest unlabeled surface post-inventory a11y drain.
+- evidence: `state/presenters/character.engine.ts:204-215` builds `a11y` strings; `app/(tabs)/character/index.tsx` consumes 0 of them.
+- suggested fix: Wire `vm.a11y.*` onto the section wrappers (header, BASE, DERIVED, SAVES & TESTS, AFFLICTIONS & BLESSINGS, WORN & WIELDED) as `accessibilityLabel`s; replace the inline Crucible literal with a presenter-sourced label.
+- source: reader
+
+### [MED] /app/(tabs)/combat.tsx — hardcoded ritual copy violates Hard Rule #8
+- pass: 5 (commit dfb3358)
+- viewport: repository
+- category: consistency
+- observation: Two ritual strings live at the view layer (battle-log empty `"The air shivers. Combat begins."` and flee row `"or … flee like a craven (luck save)"`). Voice drain across other screens routed equivalent copy through the presenter; combat skipped these two. The flee row even sits next to `vm.actionPicker.fleeMessage` which IS presenter-sourced.
+- evidence: `app/(tabs)/combat.tsx:259` (`The air shivers. Combat begins.`), `app/(tabs)/combat.tsx:577` (`or … flee like a craven (luck save)`).
+- suggested fix: Surface both strings on the combat VM (e.g. `vm.log.emptyMessage`, `vm.actionPicker.fleeHint`) and drop the literals.
+- source: reader
+
+### [MED] /app/(tabs)/exploration/index.tsx — drawer empty-state + swipe hint hardcoded; voice mismatch
+- pass: 5 (commit dfb3358)
+- viewport: repository
+- category: consistency
+- observation: Drawer empty-state `"No paths remain from here."` and `"swipe →"` are hardcoded ritual copy at the view layer. The empty string reads sentence-case modern, not the article-prefix lowercase-ritual the rest of the screen uses (the eyebrow shipped `✠ WHITHER, PILGRIM?` last tick).
+- evidence: `app/(tabs)/exploration/index.tsx:244` (`<Text style={styles.swipeHint}>swipe →</Text>`), `:249` (`No paths remain from here.`).
+- suggested fix: Move both strings to `selectExplorationViewModel` (e.g. `vm.options.emptyMessage`, `vm.options.swipeHint`); rephrase the empty message as lowercase ritual (`the paths close.`).
+- source: reader
+
+### [LOW] /app/(tabs)/character/index.tsx — "NO ACTIVE EFFECTS" hardcoded HUD-imperative
+- pass: 5 (commit dfb3358)
+- viewport: repository
+- category: voice
+- observation: Effect-section empty label is hardcoded ALLCAPS at the view layer rather than the lowercase-ritual + `textTransform: 'uppercase'` pattern unified across event / inventory / exploration in pass-3/4 drains. The presenter already builds the equivalent `a11y` string ("No active effects") — could be co-opted as the visual label too.
+- evidence: `app/(tabs)/character/index.tsx:95`: `<Text style={styles.emptyLabel}>NO ACTIVE EFFECTS</Text>`. Presenter analogue at `state/presenters/character.engine.ts:214`.
+- suggested fix: Add `emptyEffectsMessage: 'none at hand.'` (lowercase ritual, no banned pronouns) to the VM; render via `textTransform: 'uppercase'` style.
+- source: reader
+
+### [LOW] /app/(tabs)/inventory/index.tsx — static category headers + `SACK · WALLET · BURDEN` hardcoded
+- pass: 5 (commit dfb3358)
+- viewport: repository
+- category: consistency
+- observation: Inventory file was the headline target of the pass-3 voice / Hard-Rule-#8 drain that moved `emptyMessage` into the presenter, but the static `CATEGORY_HEADERS` table (`✠ WORN & WIELDED` / `✠ PHIALS & SOPS` / `✠ STUFF` / `✠ SEALED`) and the `SACK · WALLET · BURDEN` eyebrow remain at the view layer. Same shape of debt the pass-3 drain partially addressed.
+- evidence: `app/(tabs)/inventory/index.tsx:28-33` (CATEGORY_HEADERS), `:141` (`SACK · WALLET · BURDEN`).
+- suggested fix: Move both onto `selectInventoryViewModel` (mirrors the `emptyMessage` precedent from issue #32).
+- source: reader
+
+### [LOW] /plan/steps/01_build_plan.md — Phase 17 row's "to be drafted" parenthetical lacks owner reference
+- pass: 5 (commit dfb3358)
+- viewport: repository
+- category: comprehension
+- observation: Phase 17 row says "Retroactive brief at `plan/phases/phase_17_token_crucible.md` (to be drafted; see plan/AUDIT.md [design-source] row...)" but the brief file doesn't exist yet. A fresh maintainer pulling Phase 17 would expect the brief present and have to grep to find that Phase 28 owns the drafting. Worth a one-line cross-reference.
+- evidence: `plan/steps/01_build_plan.md:167-169`. `Glob plan/phases/phase_17_*.md` returns nothing.
+- suggested fix: Append `— drafted by Phase 28` to the Phase 17 row's `to be drafted` parenthetical so the owner is visible without grepping.
+- source: reader
 
 ### [needs-user-call] /app/(tabs)/_layout.tsx — tab labels MAP / COMBAT / SHEET / SACK mix registers
 - pass: 2 (commit d967f27)

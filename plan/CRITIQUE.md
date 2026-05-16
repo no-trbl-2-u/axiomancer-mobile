@@ -15,15 +15,6 @@
 
 ## Pending
 
-### [LOW] /state/presenters/event.engine.ts — combat-prelude boss subtitle is the same cryptic line for every boss
-- pass: 4 (commit 2a2c0aa)
-- viewport: repository
-- category: voice
-- observation: `composeCombatPrelude` sets `subtitle: 'fourth seal · third sigh'` whenever `isBoss === true`. Fine for one boss as flavour; reads as copy-paste when every boss encounter opens with the same omen. Phase 23 didn't introduce this, but the new `ResolvedEvent` shape now exposes per-encounter data (`encounter.enemy.name`, `level`) so a per-boss line is finally cheap.
-- evidence: `state/presenters/event.engine.ts:176`: `subtitle: isBoss ? 'fourth seal · third sigh' : 'something stirs'`.
-- suggested fix: Either derive the subtitle from `enemy.description` if the engine carries one, or rotate over a small per-tier table keyed on `enemy.level` so repeated boss encounters don't share the same omen.
-- source: reader
-
 ### [needs-user-call] /app/(tabs)/_layout.tsx — tab labels MAP / COMBAT / SHEET / SACK mix registers
 - pass: 2 (commit d967f27)
 - viewport: repository
@@ -35,6 +26,17 @@
 - **Deferred 2026-05-15 via oversight: needs design pass with the asset/icon palette.** Renaming tabs in isolation risks a churn cycle; the right time to revisit labels is when icon-label pairing is reconsidered together (Phase 12 polished icons but did not revisit labels). `/iterate` should skip this row until a design-pass phase is filed. Unblock by either (a) shipping a "Tabs design pass" phase that addresses icons + labels together, or (b) flipping back to `[MED]` with an explicit register pick.
 
 ## Done
+
+### [LOW] /state/presenters/event.engine.ts — combat-prelude boss subtitle is the same cryptic line for every boss ✅
+- pass: 4 (commit 2a2c0aa)
+- viewport: repository
+- category: voice
+- observation: Every boss opened with `'fourth seal · third sigh'`.
+- evidence: `state/presenters/event.engine.ts:176`.
+- suggested fix: Derive from `enemy.description` or rotate by level.
+- source: reader
+- issue: #46
+- **Resolved 2026-05-15.** Boss subtitle prefers trimmed `enemy.description`; falls back to a 5-entry per-level table (`first seal` / `second seal` / ... / `fifth seal`) keyed on `enemy.level - 1 % 5` so repeats at the same tier are consistent but different tiers each get their own omen. Verify green at 357/357. Closes #46. See commit `28676c6`.
 
 ### [LOW] /state/presenters/event.engine.ts — village `merchants` argument received and discarded ✅
 - pass: 4 (commit 2a2c0aa)

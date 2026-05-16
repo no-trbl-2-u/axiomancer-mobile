@@ -150,6 +150,7 @@ export default function EventScreen() {
                     <Text style={styles.bodyText}>{vm.body}</Text>
                     <TouchableOpacity
                         accessibilityRole="button"
+                        accessibilityLabel="Back"
                         onPress={onBack}
                         style={[styles.choiceRow, { borderColor: AXM.bone, backgroundColor: '#0a0a0a' }]}
                         testID="event-choice-back"

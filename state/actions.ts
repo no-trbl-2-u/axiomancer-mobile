@@ -32,8 +32,10 @@ import {
     incrementFriendship as combatIncrementFriendship,
     isConsumable,
     isEquipment,
+    markNodeConsumed,
     resolveCombatRound,
     resolveMapEvent,
+    revealAdjacent,
     unlockNode as worldUnlockNode,
     type Character,
     type CombatPhase,
@@ -710,10 +712,12 @@ function moveToAction(store: AppStore, nodeId: string): MoveToResult {
         },
     };
 
-    // Propagate unlocks for outbound edges declared in the layout fixture.
-    // The mobile-side fixture is the source of truth for the visual graph
-    // (the engine's `completeNode` only marks completion — it doesn't
-    // discover neighbours from the static `MapDefinition`).
+    // Propagate unlocks for outbound edges declared in the layout fixture
+    // (legacy `availableNodes` population — the screen reads this for
+    // the visual graph). The mobile fixture is the source of truth for
+    // the *visual* layout (positions + hand-drawn edges); the engine's
+    // `MapDefinition` registry is the source of truth for the unlock
+    // graph itself (Phase 27).
     const layout = getMapLayout(map.name);
     if (layout !== null) {
         const moved = layout.nodes.find((n) => n.id === nodeId);
@@ -728,6 +732,17 @@ function moveToAction(store: AppStore, nodeId: string): MoveToResult {
     nextWorld = {
         ...nextWorld,
         currentMap: writeCurrentNodeId(nextWorld.currentMap, nodeId),
+    };
+
+    // Phase 27: populate the engine's parallel data model
+    // (`discoveredNodes`) via `revealAdjacent`. The engine reads
+    // neighbours from `getMapDefinition(continent, name).nodes[].connectedNodes`
+    // — no mobile-side traversal needed. Coexists with the legacy
+    // `availableNodes` population above until the screen migrates
+    // (future Phase 30 TBD).
+    nextWorld = {
+        ...nextWorld,
+        currentMap: revealAdjacent(nextWorld.currentMap, nodeId),
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -762,6 +777,26 @@ function resolveCurrentMapEventAction(store: AppStore): boolean {
     const gameState = state as unknown as GameState;
     const result: ResolveMapEventResult = resolveMapEvent(gameState);
 
+    // Phase 27: when a non-'none' event resolves, mark the current
+    // node consumed in the engine's parallel data model
+    // (`consumedNodes`) so future encounters don't re-fire there.
+    // Coexists with legacy `completedNodes` (already populated by
+    // `moveToAction`'s `worldCompleteNode` call). Screen still reads
+    // legacy fields; Phase 30+ TBD migrates the read side.
+    let resolvedState: GameState = result.state;
+    if (result.event.kind !== 'none') {
+        const currentNodeId = resolvedState.world?.currentMap?.currentNode;
+        if (currentNodeId) {
+            resolvedState = {
+                ...resolvedState,
+                world: {
+                    ...resolvedState.world,
+                    currentMap: markNodeConsumed(resolvedState.world.currentMap, currentNodeId),
+                },
+            };
+        }
+    }
+
     // Spread the advanced state onto the store. `event` is mobile-only
     // and survives because `result.state` does not include it.
     const nextEvent = {
@@ -777,7 +812,7 @@ function resolveCurrentMapEventAction(store: AppStore): boolean {
         history: [],
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    store.setState({ ...result.state, event: nextEvent } as any);
+    store.setState({ ...resolvedState, event: nextEvent } as any);
 
     return result.event.kind !== 'none';
 }

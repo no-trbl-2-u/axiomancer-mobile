@@ -223,18 +223,19 @@ commit that ships the phase.
       channel; specific consumers (level-up badge auto-clear,
       inventory feedback, dialogue cursor confirmation) ship
       as iterate rows.
-- [ ] Phase 27 — Exploration `moveToAction` migration to engine
-      `revealAdjacent` / `markNodeConsumed`. Promoted via
-      `/oversight` 2026-05-15 (score 6.6). 1-2 ticks. Replace
-      `state/actions.ts:moveToAction` local
-      `worldCompleteNode` / `worldUnlockNode` chain with engine
-      `revealAdjacent` (after move) + `markNodeConsumed` (after
-      event resolution). `state/exploration-maps/` reduced to
-      visual-layout-only. Update e2e to assert engine-driven
-      unlock propagation. Brief to be drafted via
-      `/plan-a-phase phase 27` before shipping. Conflicts: none
-      (Phase 23 shipped the event-side migration; this is the
-      parallel exploration-side migration).
+- [x] Phase 27 — Exploration `moveToAction` migration to engine
+      `revealAdjacent` / `markNodeConsumed`. Shipped 2026-05-16
+      in this commit. Additive migration per the brief:
+      `moveToAction` adds `revealAdjacent` after the legacy
+      `worldUnlockNode` chain, populating the engine's parallel
+      `discoveredNodes` field; `resolveCurrentMapEvent` adds
+      `markNodeConsumed` after a non-`none` event resolves.
+      `state/exploration-maps/types.ts` JSDoc names the new
+      boundary ("visual-layout-only post-Phase-27"). +4
+      hermetic e2e cases pin the new behaviour and no-regression
+      on legacy fields. Screen + presenter migration deferred
+      to a future Phase 30 TBD. Brief at
+      `plan/phases/phase_27_exploration_migration.md`.
 - [ ] Phase 28 — Token Crucible retroactive brief + hermetic
       test coverage. Promoted via `/oversight` 2026-05-15
       (score 6.5). 1-2 ticks. (1) Draft
@@ -514,7 +515,7 @@ adapter).
   state/actions.ts file-header + line-420 skillLookup
   comment swept to current 0.7.0 surface and Phase 16
   reference; +5 hermetic tests; 342/342)
-- phase 25 — 3d2f497 / <this commit> — typed event surface
+- phase 25 — 3d2f497 / 8baf594 — typed event surface
   consumer (two ticks: A wires GameEventEmitter through
   createAppStore + new mobile-private _recentEvents ring
   buffer + selectRecentEngineEvents presenter; B adds
@@ -526,3 +527,16 @@ adapter).
   remained intact — engine combat:round payload is
   {state} only; the brief revised the original "drop
   inference" goal at plan time.
+- phase 27 — <this commit> — exploration moveToAction
+  migration (engine revealAdjacent / markNodeConsumed,
+  additive). moveToAction now populates the engine's parallel
+  discoveredNodes field after a successful move via
+  revealAdjacent (engine derives neighbours from
+  getMapDefinition). resolveCurrentMapEvent populates the
+  consumedNodes field after a non-'none' event resolves.
+  Legacy availableNodes / completedNodes writes stay for the
+  screen — screen + presenter migration to the new fields
+  deferred to a future Phase 30 TBD.
+  state/exploration-maps/types.ts JSDoc names the new
+  boundary explicitly (visual-layout-only post-Phase-27).
+  +4 hermetic e2e cases; 361/361.

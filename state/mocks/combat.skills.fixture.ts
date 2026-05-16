@@ -1,12 +1,13 @@
 /**
  * Placeholder combat skills the combat screen consumes.
  *
- * Per Spec 04 Q3 answer (A): the engine's skills system (engine Spec
- * 04) is not yet shipped, so the screen reads from this fixture until
- * it is. Replace the imports and the `STANCE_SKILLS` map with engine
- * reads once the engine exposes equipped/known skills on the player.
- *
- * TODO: replace with engine skills (axiomancer-mechanics — engine Spec 04).
+ * Per Spec 04 Q3 answer (A): the engine's skill library ships in
+ * `axiomancer-mechanics@0.7.0` under `dist/Skills/skill.library`
+ * (`skillLibrary` + `getSkillById`), but is not re-exported from the
+ * package top-level — see `plan/AUDIT.md` `[needs-engine-release]`
+ * row. Until the engine ships a release with the top-level re-export
+ * + the missing `Skills/types.d.ts` in dist, mobile reads from this
+ * fixture. Phase 16 (`[skipped]`) tracks the drain.
  */
 
 import type { StanceKey } from '../presenters/combat.engine';
@@ -28,7 +29,9 @@ export interface CombatSkillFixture {
     manaCost: number;
 }
 
-// TODO: replace with engine skills (axiomancer-mechanics — engine Spec 04).
+// Phase 16 [skipped] drains this when the engine ships the
+// `skillLibrary` / `getSkillById` top-level re-export. See file
+// header + `plan/AUDIT.md` `[needs-engine-release]` row.
 export const COMBAT_SKILLS_FIXTURE: readonly CombatSkillFixture[] = [
     {
         id: 'ad-hominem',

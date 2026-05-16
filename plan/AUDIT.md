@@ -3,52 +3,11 @@
 > Latest findings from `/iterate audit`. Rewritten on each
 > audit pass. The Pending list at the bottom queues `/iterate`.
 
-> Bias: tests (set via oversight 2026-05-16). Motivation:
-> three user-observed runtime bugs (character tab crash,
-> combat encounter blank, tab-label template leak) that the
-> hermetic VM-shape suite did not catch. The next `/iterate`
-> ticks should weight `tests` category 1.5x until the Phase 30
-> render-coverage harness lands. Once Phase 30 ships, reset
-> via `/oversight reset` (or update this line) so the bias
-> doesn't outlive the gap it addressed.
-
-## Top findings — 2026-05-16 (user-reported production bugs)
-
-> These are the same three bugs that motivated Phase 30 (hermetic
-> render coverage + production bug fix pass). They live both here
-> (so `/iterate` can pick them up if Phase 30 stalls or splits)
-> and on the build plan (where Phase 30 owns them). Score 9.5
-> across the board because they're user-visible and breaking
-> primary surfaces; ease is moderate because each fix has to land
-> a failing render-test first.
-
-### [9.0] Character tab is crashing on the deployed build
-- category: tests / bug
-- impact: 10 (the primary character surface is unreachable)
-- ease: 6 (needs a smoke-render test first to localize the
-  crash; then a targeted fix in `app/(tabs)/character/index.tsx`
-  or its presenter / sibling effects)
-- next: Phase 30 Tick C. Standalone iterate row only if Phase 30
-  is split or paused.
-
-### [9.0] Combat encounter screen is rendering blank
-- category: tests / bug
-- impact: 10 (combat is one of four tabs; the encounter screen
-  is the entry point into a fight from the event modal)
-- ease: 6 (smoke-render test → confirm whether `vm` is empty or
-  the screen shorts out a render path)
-- next: Phase 30 Tick D.
-
-### [9.5] Tab labels rendering as `{ TAB NAME }"--index"` literally
-- category: tests / bug
-- impact: 9 (every screen carries the broken label until tapped;
-  navigation appears non-functional)
-- ease: 7 (likely an expo-router title interpolation regression
-  in `app/(tabs)/_layout.tsx`; a smoke-render test should make
-  the failure mode obvious)
-- next: Phase 30 Tick B. Phase 31 (tabs design pass) **depends**
-  on this fix landing — otherwise the renamed strings would
-  render through the same broken pipeline.
+> Bias: none (reset 2026-05-16 after Phase 30 shipped the
+> hermetic render-coverage harness that addressed the gap the
+> `tests` bias was opened to weight; the three production-bug
+> rows below have moved to Done with their shipping-commit
+> references).
 
 ## Top 5 findings (scored) — 2026-05-13 (stale; archived below)
 
@@ -130,6 +89,43 @@
   and promote Phase 20/21 from PHASE_CANDIDATES.
 
 ## Done
+
+### [9.5] Tab labels rendering as `{ TAB NAME }"--index"` literally ✅
+- category: tests / bug
+- source: user report during oversight 2026-05-16
+- **Resolved 2026-05-16** via Phase 30 Tick B (commit `ab9f646`).
+  Source `_layout.tsx` already carried correct strings; defensive
+  fix layered two contracts: `TAB_TITLES` presenter constant
+  (state/presenters/tabs.engine.ts) + explicit `tabBarLabel:` on
+  every `<Tabs.Screen>` (the documented expo-router escape
+  hatch). Strings later flipped to the all-places register via
+  Phase 31 (`542f7c9` — `WILDS · STRIFE · SELF · SACK`). Live
+  tab-bar verification waits on the next manual EAS preview
+  build.
+
+### [9.0] Combat encounter screen is rendering blank ✅
+- category: tests / bug
+- source: user report during oversight 2026-05-16
+- **Resolved 2026-05-16** via Phase 30 Tick C (commit `fb53af0`).
+  The `!vm.isInCombat` loading branch returned an empty
+  `<View />` placeholder; replaced with visible
+  `<Text>{vm.loadingMessage}</Text>` rendering 'the field
+  stirs.' (lowercase ritual, uppercased via `textTransform`).
+  Tick C added the loadingMessage field to CombatViewModel +
+  populated both code paths + pinned the contract with a
+  hermetic test. Verify 410/410.
+
+### [9.0] Character tab is crashing on the deployed build ✅
+- category: tests / bug
+- source: user report during oversight 2026-05-16
+- **Resolved 2026-05-16** via Phase 30 Tick A (commit `5e24706`).
+  Diagnosed by the new smoke-render harness on its first run:
+  `useGameState(selectCharacterViewModel)` was churning
+  `useSyncExternalStore` because the presenter returned a
+  frozen-new object every call (same pattern previously fixed
+  in event screen). Refactored to slim-slice
+  `useGameState((s) => s.player)` + `useMemo` the VM. Verify
+  401/401 at Tick A close.
 
 ### [voice] Revise `app/(tabs)/combat.tsx:122` — "Thy hands are empty." → no second-person archaic pronouns ✅
 

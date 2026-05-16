@@ -30,14 +30,16 @@ export interface TabsViewModel {
  * future regression visible at verify time even if the
  * `_layout.tsx` `title:` props end up bypassed.
  *
- * Phase 31 (Tabs design pass) edits this constant directly:
- * the chosen register is **all places** —
- * `WILDS · STRIFE · SELF · SACK`.
+ * Phase 31 (Tabs design pass, 2026-05-16) flipped the four
+ * strings from the mixed-register pre-fix set
+ * (`MAP · COMBAT · SHEET · SACK` — three places + one
+ * event-state) to the coherent all-places register the user
+ * picked via `/oversight`: `WILDS · STRIFE · SELF · SACK`.
  */
 export const TAB_TITLES: Record<TabKey, string> = {
-    exploration: 'MAP',
-    combat: 'COMBAT',
-    character: 'SHEET',
+    exploration: 'WILDS',
+    combat: 'STRIFE',
+    character: 'SELF',
     inventory: 'SACK',
 };
 

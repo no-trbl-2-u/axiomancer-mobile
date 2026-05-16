@@ -165,15 +165,16 @@ describe('TAB_TITLES: tab-label contract', () => {
         }
     });
 
-    it('matches the canonical pre-Phase-31 register (places + COMBAT)', () => {
-        // Pinned for traceability — Phase 31 (Tabs design pass)
-        // flips this to the all-places register
-        // (WILDS · STRIFE · SELF · SACK). Update this assertion at
-        // that time; the leak-check above stays stable across the
+    it('matches the post-Phase-31 all-places register', () => {
+        // Phase 31 (Tabs design pass, 2026-05-16) flipped from the
+        // mixed-register pre-fix set (MAP · COMBAT · SHEET · SACK —
+        // three places + one event-state) to a coherent all-places
+        // register the user picked via `/oversight`. The
+        // template-leak invariant above stayed stable across the
         // rename.
-        expect(TAB_TITLES.exploration).toBe('MAP');
-        expect(TAB_TITLES.combat).toBe('COMBAT');
-        expect(TAB_TITLES.character).toBe('SHEET');
+        expect(TAB_TITLES.exploration).toBe('WILDS');
+        expect(TAB_TITLES.combat).toBe('STRIFE');
+        expect(TAB_TITLES.character).toBe('SELF');
         expect(TAB_TITLES.inventory).toBe('SACK');
     });
 });

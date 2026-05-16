@@ -259,27 +259,27 @@ commit that ships the phase.
       `useGameEvents` (Phase 25) carried the load — no new
       infrastructure. Verify: 371 → 382 tests across the phase.
       Brief at `plan/phases/phase_29_typed_event_consumers.md`.
-- [ ] Phase 30 — Hermetic render coverage + production bug fix
+- [x] Phase 30 — Hermetic render coverage + production bug fix
       pass. Promoted via `/oversight` 2026-05-16 in response to
-      three user-observed runtime bugs that the hermetic suite
-      did not catch: (a) character tab crashing; (b) combat
-      encounter screen blank when an event is pending;
-      (c) tab labels rendering as `{ TAB NAME }"--index"` literally
-      (likely expo-router title-interpolation regression). The
-      shipped pattern — hermetic tests on the presenter VM only
-      — has a strategic gap: it doesn't render the full screen
-      tree, so crashes, blank renders, and template-string
-      leaks pass verify. This phase ships the harness AND the
-      three concrete fixes alongside it. Sized 2-4 ticks:
-      (Tick A) smoke-render hermetic suite — render each tab
-      and the event modal at fresh-store boot, assert no
-      thrown error + no `{`-or-`}`-bracketed strings in
-      rendered output; (Tick B) fix tab title rendering;
-      (Tick C) fix character-tab crash; (Tick D) fix combat
-      encounter blank. Absorbs and supersedes the
-      original "Phase 31 — Presenter-copy invariant guard"
-      candidate, which the render harness covers as a strict
-      superset. Brief to be drafted via `/plan-a-phase phase 30`.
+      three user-observed runtime bugs the VM-shape suite did
+      not catch. Shipped across 3 sub-ticks: Tick A (`5e24706`)
+      shipped `state/e2e/smoke-render.engine.test.tsx` (15
+      cases: no-throw / no-template-leak / non-empty body across
+      five surfaces) and fixed the **character-tab crash** —
+      `useGameState(selectCharacterViewModel)` was churning
+      `useSyncExternalStore` because the presenter returned a
+      frozen-new object every call (same pattern previously
+      fixed in event screen); refactored to slim-slice + memo'd
+      VM. Tick B (`ab9f646`) extracted `TAB_TITLES` to
+      `state/presenters/tabs.engine.ts` and wired both `title:`
+      and the defensive `tabBarLabel:` escape hatch on each
+      `<Tabs.Screen>`. Tick C (`fb53af0`) added
+      `vm.loadingMessage = 'the field stirs.'` and replaced the
+      empty-View placeholder with visible copy. Absorbs and
+      supersedes the original Phase 31 candidate (presenter-copy
+      invariant guard) — the render harness catches that class
+      as a strict superset. Verify: 391 → 410 across the phase.
+      Brief at `plan/phases/phase_30_hermetic_render_coverage.md`.
 - [ ] Phase 31 — Tabs design pass (icons + labels coherence).
       Promoted via `/oversight` 2026-05-16 with explicit register
       pick: **all places** — `WILDS · STRIFE · SELF · SACK`. Was

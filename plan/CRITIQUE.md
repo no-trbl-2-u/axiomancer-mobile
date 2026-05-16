@@ -13,15 +13,6 @@
 
 ## Pending
 
-### [MED] /app/(tabs)/combat.tsx — hardcoded ritual copy violates Hard Rule #8
-- pass: 5 (commit dfb3358)
-- viewport: repository
-- category: consistency
-- observation: Two ritual strings live at the view layer (battle-log empty `"The air shivers. Combat begins."` and flee row `"or … flee like a craven (luck save)"`). Voice drain across other screens routed equivalent copy through the presenter; combat skipped these two. The flee row even sits next to `vm.actionPicker.fleeMessage` which IS presenter-sourced.
-- evidence: `app/(tabs)/combat.tsx:259` (`The air shivers. Combat begins.`), `app/(tabs)/combat.tsx:577` (`or … flee like a craven (luck save)`).
-- suggested fix: Surface both strings on the combat VM (e.g. `vm.log.emptyMessage`, `vm.actionPicker.fleeHint`) and drop the literals.
-- source: reader
-
 ### [MED] /app/(tabs)/exploration/index.tsx — drawer empty-state + swipe hint hardcoded; voice mismatch
 - pass: 5 (commit dfb3358)
 - viewport: repository
@@ -69,6 +60,17 @@
 - **Deferred 2026-05-15 via oversight: needs design pass with the asset/icon palette.** Renaming tabs in isolation risks a churn cycle; the right time to revisit labels is when icon-label pairing is reconsidered together (Phase 12 polished icons but did not revisit labels). `/iterate` should skip this row until a design-pass phase is filed. Unblock by either (a) shipping a "Tabs design pass" phase that addresses icons + labels together, or (b) flipping back to `[MED]` with an explicit register pick.
 
 ## Done
+
+### [MED] /app/(tabs)/combat.tsx — hardcoded ritual copy violates Hard Rule #8 ✅
+- pass: 5 (commit dfb3358)
+- viewport: repository
+- category: consistency
+- observation: Two ritual strings lived at the view layer — battle-log empty `"The air shivers. Combat begins."` and flee row `"or … flee like a craven (luck save)"`.
+- evidence: `app/(tabs)/combat.tsx:259` + `:577` pre-fix.
+- suggested fix: Surface both on the combat VM and drop the literals.
+- source: reader
+- issue: #51
+- fixed in commit `96636fc` — added `vm.logEmptyMessage` + `vm.actionPicker.fleeHint`; both code paths populated; +3 hermetic shape tests. 386/386 pass.
 
 ### [MED] /app/(tabs)/character/index.tsx — `vm.a11y` block built but never consumed ✅
 - pass: 5 (commit dfb3358)

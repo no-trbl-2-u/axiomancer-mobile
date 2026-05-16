@@ -3,11 +3,18 @@
 > Latest findings from `/iterate audit`. Rewritten on each
 > audit pass. The Pending list at the bottom queues `/iterate`.
 
-> Bias: none (reset 2026-05-16 after Phase 30 shipped the
-> hermetic render-coverage harness that addressed the gap the
-> `tests` bias was opened to weight; the three production-bug
-> rows below have moved to Done with their shipping-commit
-> references).
+> Bias: event-surface (set via `/oversight` 2026-05-16 after
+> critique pass 6 surfaced 5 findings clustered on
+> `app/event/index.tsx` + `state/presenters/event.engine.ts`).
+> `/iterate` weights cluster members 1.5× until the surface is
+> drained: HIGH literal-lift (BACK / RETURN / SKIP / RECKONING)
+> first, then the MED ENCOUNTER duplicate-const extraction,
+> then the two LOW voice tweaks (STRIFE STIRS chrome /
+> "Walk on. The world..." empty-state). Once those 4 rows
+> close, bias resets and `/iterate` resumes natural HIGH-first
+> ordering across the remaining queue (smoke-screens memoir +
+> SACK docs sweep). Prior bias was `none` (reset 2026-05-16
+> after Phase 30 shipped the hermetic render-coverage harness).
 
 ## Top 5 findings (scored) — 2026-05-13 (stale; archived below)
 
@@ -65,50 +72,6 @@
 ## Pending
 
 
-### [paused] Phase 33 — MEMOIR tab paused after ticks A + B (set via /oversight 2026-05-16)
-
-- category: phase-tracking
-- source: `/oversight` 2026-05-16 — user chose "Pause Phase 33"
-  in the questionnaire; did not specify a replacement bias.
-- observation: Phase 33 sub-ticks A (`6515cb5`, route + skeleton
-  VM + empty state) and B (`2f70eac`, quest list) shipped.
-  Sub-ticks C (alignment readouts) and D (story chronicle from
-  `_recentEvents`) remain. Build-plan row carries an inline
-  "Paused (set via /oversight 2026-05-16)" note so `/march`
-  skips it.
-- next: `/march` falls through Phase 33 → Phase 32 (also
-  deferred) → `/iterate` cascade. When the user wants to
-  resume, flip the row by removing the "Paused" note (or via
-  a follow-up `/oversight`).
-
-### [needs-user-call] Phase 32 — user thinks a port commit already landed under a different name; loop can't locate it
-
-- category: navigation / phase-tracking
-- source: `/oversight` 2026-05-16 free-form note: "I think I
-  committed the port already but it committed under a
-  different commit name."
-- observation: Phase 32's dispatch rule (`/march` detect-and-defer)
-  scans for `feat: <surface> — port from design handoff`
-  commits since the last `spec32 tick`. I grepped
-  `git log --since="2026-05-15" -- app/ components/` and every
-  recent commit is loop-driven (feat(spec29/30/33), fix:,
-  refactor:, perf:, a11y:). No commit matches a Claude Design
-  port shape. The user may be mis-remembering, or the port may
-  be on a non-main branch, or local-uncommitted.
-- next: **user action** — confirm one of: (a) point at the
-  commit hash (and I'll relax the dispatch rule to detect it +
-  ship the test-and-extract follow-up); (b) confirm the port
-  hasn't landed yet and I should keep waiting for the
-  canonical naming; (c) flip Phase 32 to `[skipped]` until you
-  resume.
-- handoff URL noted from oversight: still
-  <https://claude.ai/design/p/019e0f5a-a0f0-753b-be1e-8939e6011384>;
-  user added: "use the current prototype flow because some
-  parts of the flow might be stale." That guidance is captured
-  in the Claude Design prompt doc
-  (`docs/claude-design-prompt-2026-05-16.md`) as a
-  source-of-truth note near the top.
-
 ### [needs-engine-release] `axiomancer-mechanics@0.6.1+` — top-level `skillLibrary` / `getSkillById` re-export + dist `types.d.ts`
 
 - category: external-dependency (engine package)
@@ -141,6 +104,25 @@
   and promote Phase 20/21 from PHASE_CANDIDATES.
 
 ## Done
+
+### [needs-user-call] Phase 32 — port-commit ambiguity RESOLVED ✅
+- Resolved 2026-05-16 via `/oversight`. The prior oversight pass
+  filed this row when the user thought a port commit had landed
+  under a different name but the loop couldn't locate it. Since
+  then, commit `ff37b46`
+  ("feat: tabs + event combat-prelude — port from the design
+  handoff") landed as the canonical Phase 32 port, and
+  `08bcf5e` shipped its `spec32 tick A` presenter follow-up.
+  Phase 32's detect-and-defer dispatch rule now has a real
+  reference point; no more ambiguity. Row closed.
+
+### [paused] Phase 33 — MEMOIR tab paused after ticks A + B — RESUMED ✅
+- Filed 2026-05-16 via `/oversight` after the user paused
+  Phase 33 mid-flight (ticks A `6515cb5` + B `2f70eac` shipped;
+  C alignment + D chronicle remained). Resumed 2026-05-16 via a
+  later `/oversight` pass: the paused note is removed from the
+  build plan, Phase 33's row goes back to active `[ ]`, and
+  `/march` picks Phase 33 up again on the next tick.
 
 ### [9.5] Tab labels rendering as `{ TAB NAME }"--index"` literally ✅
 - category: tests / bug

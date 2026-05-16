@@ -333,14 +333,13 @@ commit that ships the phase.
       navigation-phase commit"). The bottom tab bar grows from 4
       visible tabs to 5 (WILDS/STRIFE pair + SELF + MEMOIR +
       SACK; WILDS and STRIFE remain mutually exclusive). Brief
-      at `plan/phases/phase_33_memoir_tab.md`.
-      **Paused (set via `/oversight` 2026-05-16) after ticks A
-      (`6515cb5`) + B (`2f70eac`) shipped.** `/march` skips this
-      row and falls through its cascade until the user explicitly
-      resumes Phase 33 (sub-ticks C alignment readouts + D story
-      chronicle remain). Reason: user-paused mid-phase, no
-      replacement bias specified — falling through to /iterate is
-      the intended next move.
+      at `plan/phases/phase_33_memoir_tab.md`. **Resumed via
+      `/oversight` 2026-05-16** after the pause that followed
+      ticks A (`6515cb5`) + B (`2f70eac`). Sub-ticks C (alignment
+      readouts) + D (story chronicle from `_recentEvents`) remain;
+      `/march` ships them in order on the next ticks where the
+      event-surface bias has cleared its top row (HIGH literal
+      lift) — see AUDIT.md "Bias" line.
 > bug findings, presenter refactors, asset backlog, ongoing
 > audits. `/march` makes that transition automatic. (Block II
 > phases 20/21 and Block III phases 22/24 in

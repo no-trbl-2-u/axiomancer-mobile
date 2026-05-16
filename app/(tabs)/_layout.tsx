@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { AXM, FONTS } from '@/theme/axm';
@@ -80,7 +80,28 @@ function TabIcon({ kind, color, size }: { kind: string; color: string; size: num
 
 export default function TabLayout() {
   const { inCombat } = useCombatMode();
-  const badges = useGameState(selectTabBadges);
+  // Subscribe to the slim slices `selectTabBadges` reads, then memo
+  // the badges object. The presenter returns a stable `EMPTY_BADGES`
+  // reference in the no-event / no-levelup steady state but a fresh
+  // object whenever a badge is active — passed directly to
+  // `useGameState`, the active-badge path would over-render this
+  // layout on every unrelated store change (engine events fire on
+  // most actions). Slim-slice + memo mirrors the character / event
+  // screen pattern.
+  const player = useGameState((s) => s.player);
+  const eventSlice = useGameState((s) => s.event);
+  const combat = useGameState((s) => s.combat);
+  const notifications = useGameState((s) => s.notifications);
+  const badges = useMemo(
+    () =>
+      selectTabBadges({
+        player,
+        event: eventSlice,
+        combat,
+        notifications,
+      } as never),
+    [player, eventSlice, combat, notifications],
+  );
 
   return (
     <Tabs

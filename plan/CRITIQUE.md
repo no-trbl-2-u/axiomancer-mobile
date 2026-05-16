@@ -13,15 +13,6 @@
 
 ## Pending
 
-### [LOW] /plan/steps/01_build_plan.md — Phase 17 row's "to be drafted" parenthetical lacks owner reference
-- pass: 5 (commit dfb3358)
-- viewport: repository
-- category: comprehension
-- observation: Phase 17 row says "Retroactive brief at `plan/phases/phase_17_token_crucible.md` (to be drafted; see plan/AUDIT.md [design-source] row...)" but the brief file doesn't exist yet. A fresh maintainer pulling Phase 17 would expect the brief present and have to grep to find that Phase 28 owns the drafting. Worth a one-line cross-reference.
-- evidence: `plan/steps/01_build_plan.md:167-169`. `Glob plan/phases/phase_17_*.md` returns nothing.
-- suggested fix: Append `— drafted by Phase 28` to the Phase 17 row's `to be drafted` parenthetical so the owner is visible without grepping.
-- source: reader
-
 ### [needs-user-call] /app/(tabs)/_layout.tsx — tab labels MAP / COMBAT / SHEET / SACK mix registers
 - pass: 2 (commit d967f27)
 - viewport: repository
@@ -33,6 +24,17 @@
 - **Deferred 2026-05-15 via oversight: needs design pass with the asset/icon palette.** Renaming tabs in isolation risks a churn cycle; the right time to revisit labels is when icon-label pairing is reconsidered together (Phase 12 polished icons but did not revisit labels). `/iterate` should skip this row until a design-pass phase is filed. Unblock by either (a) shipping a "Tabs design pass" phase that addresses icons + labels together, or (b) flipping back to `[MED]` with an explicit register pick.
 
 ## Done
+
+### [LOW] /plan/steps/01_build_plan.md — Phase 17 row's "to be drafted" parenthetical lacks owner reference ✅
+- pass: 5 (commit dfb3358)
+- viewport: repository
+- category: comprehension
+- observation: Phase 17 row referenced an unwritten brief at the time of critique.
+- evidence: `plan/steps/01_build_plan.md:167-169` pre-fix (and pre-Phase-28).
+- suggested fix: Append `— drafted by Phase 28` to the Phase 17 row.
+- source: reader
+- issue: #55
+- fixed in commit `ee64020`. The brief landed via Phase 28 (`ab3912a`) and the row already cited Phase 28; this fix replaced the remaining `<this commit>` placeholder with the actual hash so the pointer is concrete.
 
 ### [LOW] /app/(tabs)/inventory/index.tsx — static category headers + `SACK · WALLET · BURDEN` hardcoded ✅
 - pass: 5 (commit dfb3358)

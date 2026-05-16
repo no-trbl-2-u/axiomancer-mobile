@@ -40,13 +40,20 @@ export interface TabsViewModel {
  * Phase 33 (MEMOIR tab, 2026-05-16) added the journal surface
  * as a fifth route. Display order in the bottom bar:
  * exploration/combat → character → memoir → inventory.
+ *
+ * Phase 32 (Claude Design handoff port, 2026-05-16) renamed the
+ * fourth slot from `SACK` to `SATCHEL` — the design canvas
+ * decisions doc §V calls SACK out as register-mismatched ("SACK
+ * is bag-shaped slang"; SATCHEL preserves the period serif
+ * voice). Inventory section header (`inventory.engine.ts`)
+ * tracks the same rename so all places sit in one register.
  */
 export const TAB_TITLES: Record<TabKey, string> = {
     exploration: 'WILDS',
     combat: 'STRIFE',
     character: 'SELF',
     memoir: 'MEMOIR',
-    inventory: 'SACK',
+    inventory: 'SATCHEL',
 };
 
 const ALWAYS_VISIBLE: TabKey[] = ['character', 'memoir', 'inventory'];

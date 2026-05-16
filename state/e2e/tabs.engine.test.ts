@@ -70,7 +70,7 @@ describe('selectVisibleTabs: mutual exclusion', () => {
 
 describe('selectVisibleTabs: always-visible tabs', () => {
     it.each([false, true])(
-        'always shows SELF, MEMOIR, and SACK (inCombat=%p)',
+        'always shows SELF, MEMOIR, and SATCHEL (inCombat=%p)',
         (inCombat) => {
             const vm = selectVisibleTabs(inCombat);
 
@@ -165,16 +165,19 @@ describe('TAB_TITLES: tab-label contract', () => {
         }
     });
 
-    it('matches the post-Phase-33 register (places + MEMOIR fifth tab)', () => {
+    it('matches the post-handoff-port register (places + MEMOIR + SATCHEL rename)', () => {
         // Phase 31 (2026-05-16) flipped from the mixed-register
         // pre-fix set (MAP · COMBAT · SHEET · SACK) to a coherent
         // all-places register. Phase 33 (2026-05-16) added MEMOIR as
-        // a fifth route. The template-leak invariant above stays
-        // stable across both renames.
+        // a fifth route. Phase 32 (2026-05-16, Claude Design handoff
+        // port) renamed SACK → SATCHEL to fit the period serif
+        // register (`SACK` was bag-shaped slang flagged by the
+        // design canvas decisions doc). The template-leak invariant
+        // above stays stable across all three renames.
         expect(TAB_TITLES.exploration).toBe('WILDS');
         expect(TAB_TITLES.combat).toBe('STRIFE');
         expect(TAB_TITLES.character).toBe('SELF');
         expect(TAB_TITLES.memoir).toBe('MEMOIR');
-        expect(TAB_TITLES.inventory).toBe('SACK');
+        expect(TAB_TITLES.inventory).toBe('SATCHEL');
     });
 });

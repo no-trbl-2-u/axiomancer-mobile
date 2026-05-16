@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import Svg, { Path as SvgPath } from 'react-native-svg';
 
 import { isDialogueAppliedEvent } from 'axiomancer-mechanics';
 
@@ -196,6 +197,15 @@ export default function EventScreen() {
     const isBoss = vm.variant === 'boss';
     const illustrationHeight = isBoss ? 360 : 320;
     const badgeAccent = resolveAccent(vm.badgeAccentKey);
+    // Combat-prelude variants get the design-handoff "STRIFE STIRS"
+    // chrome: a header strip (red triangle + ENCOUNTER / BOSS ·
+    // ENCOUNTER eyebrow in blood) above the illustration, plus a
+    // diagonal blood sash in the illustration's top-left corner.
+    // Paced (narrative-choice) variants keep the existing corner
+    // badge so the seam reads two-shells (per design canvas
+    // decisions doc §IX).
+    const isCombatPrelude = vm.kind === 'combat-prelude';
+    const preludeEyebrow = isBoss ? 'BOSS · ENCOUNTER' : 'ENCOUNTER';
 
     if (!hasEvent) {
         return (
@@ -224,17 +234,31 @@ export default function EventScreen() {
 
     return (
         <ScreenBg>
+            {isCombatPrelude && (
+                <View style={styles.preludeHeader} testID="event-prelude-header">
+                    <Svg width={10} height={10} viewBox="0 0 10 10">
+                        <SvgPath d="M5 1 L 7 7 L 3 7 Z" fill={AXM.blood} />
+                    </Svg>
+                    <Text style={styles.preludeHeaderText}>{preludeEyebrow}</Text>
+                </View>
+            )}
             <View style={[styles.illustration, { height: illustrationHeight }]}>
                 <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#06050a' }]} />
                 <EventArt slug={vm.artSlug} />
-                <View style={styles.badge}>
-                    <Text
-                        style={[styles.badgeText, { color: badgeAccent, borderColor: badgeAccent }]}
-                    >
-                        {isBoss ? '☠ ' : '✠ '}
-                        {vm.badge}
-                    </Text>
-                </View>
+                {isCombatPrelude ? (
+                    <View style={styles.strifeSash} testID="event-strife-sash">
+                        <Text style={styles.strifeSashText}>STRIFE STIRS</Text>
+                    </View>
+                ) : (
+                    <View style={styles.badge}>
+                        <Text
+                            style={[styles.badgeText, { color: badgeAccent, borderColor: badgeAccent }]}
+                        >
+                            {isBoss ? '☠ ' : '✠ '}
+                            {vm.badge}
+                        </Text>
+                    </View>
+                )}
                 <Splatter
                     color={AXM.blood}
                     size={180}
@@ -297,6 +321,37 @@ export default function EventScreen() {
 
 const styles = StyleSheet.create({
     illustration: { margin: 8, marginTop: 0, position: 'relative', overflow: 'hidden' },
+    preludeHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingVertical: 6,
+        paddingHorizontal: 14,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(232, 223, 200, 0.12)',
+    },
+    preludeHeaderText: {
+        fontFamily: FONTS.sans,
+        fontSize: 10,
+        letterSpacing: 2.2,
+        color: AXM.blood,
+    },
+    strifeSash: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        backgroundColor: AXM.blood,
+        paddingTop: 3,
+        paddingBottom: 3,
+        paddingLeft: 14,
+        paddingRight: 18,
+    },
+    strifeSashText: {
+        fontFamily: FONTS.sans,
+        fontSize: 10,
+        letterSpacing: 1.4,
+        color: AXM.bg,
+    },
     badge: {
         position: 'absolute',
         top: 12,

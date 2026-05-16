@@ -103,7 +103,7 @@ const TAB_ORDER: readonly InventoryTab[] = [
 ] as const;
 
 /** Display strings for the inventory screen's chrome. */
-const SECTION_HEADER = 'SACK · WALLET · BURDEN';
+const SECTION_HEADER = 'SATCHEL · WALLET · BURDEN';
 const CATEGORY_HEADERS: Record<InventoryCategory, string> = {
     equipment: '✠ WORN & WIELDED',
     consumable: '✠ PHIALS & SOPS',

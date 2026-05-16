@@ -3,12 +3,54 @@
 > Latest findings from `/iterate audit`. Rewritten on each
 > audit pass. The Pending list at the bottom queues `/iterate`.
 
-> Bias: none (reset via oversight 2026-05-15 after the voice
-> queue drained from 4 critique rows to 2 across multiple
-> `/iterate` ticks; remaining voice rows compete fairly with
-> a11y / comprehension rows at baseline).
+> Bias: tests (set via oversight 2026-05-16). Motivation:
+> three user-observed runtime bugs (character tab crash,
+> combat encounter blank, tab-label template leak) that the
+> hermetic VM-shape suite did not catch. The next `/iterate`
+> ticks should weight `tests` category 1.5x until the Phase 30
+> render-coverage harness lands. Once Phase 30 ships, reset
+> via `/oversight reset` (or update this line) so the bias
+> doesn't outlive the gap it addressed.
 
-## Top 5 findings (scored) — 2026-05-13
+## Top findings — 2026-05-16 (user-reported production bugs)
+
+> These are the same three bugs that motivated Phase 30 (hermetic
+> render coverage + production bug fix pass). They live both here
+> (so `/iterate` can pick them up if Phase 30 stalls or splits)
+> and on the build plan (where Phase 30 owns them). Score 9.5
+> across the board because they're user-visible and breaking
+> primary surfaces; ease is moderate because each fix has to land
+> a failing render-test first.
+
+### [9.0] Character tab is crashing on the deployed build
+- category: tests / bug
+- impact: 10 (the primary character surface is unreachable)
+- ease: 6 (needs a smoke-render test first to localize the
+  crash; then a targeted fix in `app/(tabs)/character/index.tsx`
+  or its presenter / sibling effects)
+- next: Phase 30 Tick C. Standalone iterate row only if Phase 30
+  is split or paused.
+
+### [9.0] Combat encounter screen is rendering blank
+- category: tests / bug
+- impact: 10 (combat is one of four tabs; the encounter screen
+  is the entry point into a fight from the event modal)
+- ease: 6 (smoke-render test → confirm whether `vm` is empty or
+  the screen shorts out a render path)
+- next: Phase 30 Tick D.
+
+### [9.5] Tab labels rendering as `{ TAB NAME }"--index"` literally
+- category: tests / bug
+- impact: 9 (every screen carries the broken label until tapped;
+  navigation appears non-functional)
+- ease: 7 (likely an expo-router title interpolation regression
+  in `app/(tabs)/_layout.tsx`; a smoke-render test should make
+  the failure mode obvious)
+- next: Phase 30 Tick B. Phase 31 (tabs design pass) **depends**
+  on this fix landing — otherwise the renamed strings would
+  render through the same broken pipeline.
+
+## Top 5 findings (scored) — 2026-05-13 (stale; archived below)
 
 ### [3.8] Drain 8 lint warnings (unused imports + stale eslint-disable) — picked
 

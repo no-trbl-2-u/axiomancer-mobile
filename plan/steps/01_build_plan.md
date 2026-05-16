@@ -259,8 +259,42 @@ commit that ships the phase.
       `useGameEvents` (Phase 25) carried the load — no new
       infrastructure. Verify: 371 → 382 tests across the phase.
       Brief at `plan/phases/phase_29_typed_event_consumers.md`.
+- [ ] Phase 30 — Hermetic render coverage + production bug fix
+      pass. Promoted via `/oversight` 2026-05-16 in response to
+      three user-observed runtime bugs that the hermetic suite
+      did not catch: (a) character tab crashing; (b) combat
+      encounter screen blank when an event is pending;
+      (c) tab labels rendering as `{ TAB NAME }"--index"` literally
+      (likely expo-router title-interpolation regression). The
+      shipped pattern — hermetic tests on the presenter VM only
+      — has a strategic gap: it doesn't render the full screen
+      tree, so crashes, blank renders, and template-string
+      leaks pass verify. This phase ships the harness AND the
+      three concrete fixes alongside it. Sized 2-4 ticks:
+      (Tick A) smoke-render hermetic suite — render each tab
+      and the event modal at fresh-store boot, assert no
+      thrown error + no `{`-or-`}`-bracketed strings in
+      rendered output; (Tick B) fix tab title rendering;
+      (Tick C) fix character-tab crash; (Tick D) fix combat
+      encounter blank. Absorbs and supersedes the
+      original "Phase 31 — Presenter-copy invariant guard"
+      candidate, which the render harness covers as a strict
+      superset. Brief to be drafted via `/plan-a-phase phase 30`.
+- [ ] Phase 31 — Tabs design pass (icons + labels coherence).
+      Promoted via `/oversight` 2026-05-16 with explicit register
+      pick: **all places** — `WILDS · STRIFE · SELF · SACK`. Was
+      filed as candidate Phase 30 (score 6.0) in expand pass 8
+      and renumbered on promotion. Unblocks the deferred
+      `[needs-user-call]` critique row (pass 2, commit `d967f27`).
+      Ships AFTER Phase 30 so the tab title pipeline is verified
+      working before strings change. 1 phase, 1-2 ticks: update
+      the four `title:` props in `app/(tabs)/_layout.tsx`;
+      reconcile icon-label pairing if any of the four nouns
+      imply different icons; +2-3 hermetic e2e cases that pin
+      the new titles via the Phase 30 render harness. Brief to
+      be drafted via `/plan-a-phase phase 31`.
 
-> **After phase 29:** the loop transitions back to `/iterate` —
+> **After phase 31:** the loop transitions back to `/iterate` —
 > bug findings, presenter refactors, asset backlog, ongoing
 > audits. `/march` makes that transition automatic. (Block II
 > phases 20/21 and Block III phases 22/24 in

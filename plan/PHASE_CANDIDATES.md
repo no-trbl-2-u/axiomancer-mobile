@@ -82,71 +82,6 @@
 - estimated phases: 1 (or iterate row if diff is empty)
 - conflicts: none.
 
-### [score 6.0] Phase 30 — Tabs design pass (icons + labels coherence)
-
-- proposed: 2026-05-16, expand pass 8
-- source signals:
-  - `plan/CRITIQUE.md` Pending row `[needs-user-call]
-    /app/(tabs)/_layout.tsx` (pass 2, commit d967f27) — deferred
-    via `/oversight` 2026-05-15 with explicit unblock condition:
-    "ship a 'Tabs design pass' phase that addresses icons +
-    labels together."
-  - Phase 12 (`app/(tabs)/_layout.tsx` icon polish) shipped icon
-    work but did not revisit the four tab titles
-    (MAP / COMBAT / SHEET / SACK), leaving the register-mix
-    finding open.
-- rationale: real demand (oversight already wrote the unblock
-  contract); cheap-and-impactful (one screen, four strings, no
-  new infrastructure); single source of truth for register pick
-  prevents another round of pass-shaped voice churn on the
-  navigation surface. Two register candidates surfaced in the
-  critique row — all places (`WILDS · STRIFE · SELF · SACK`) or
-  all verbs (`ROAM · STRIKE · KNOW · BEAR`).
-- proposed scope: 1 phase, 1-2 ticks. Decide register; update
-  the four `title:` props in `app/(tabs)/_layout.tsx`; reconcile
-  icon-label pairing if the new labels imply different icons;
-  adjust the `selectTabBadges` a11y kinds if the role keys
-  change; +2-3 hermetic e2e cases pinning the new titles.
-- estimated phases: 1
-- conflicts: none with spec; promotion requires a register pick
-  (user decision) — `/oversight` should attach the chosen
-  register to the promotion.
-
-### [score 4.5] Phase 31 — Presenter-copy invariant guard
-
-- proposed: 2026-05-16, expand pass 8
-- source signals:
-  - Commit-pattern: 6 consecutive `fix:` / `a11y:` / voice
-    commits in the last 24h moved view-layer literals into
-    presenters (`96636fc`, `6122db8`, `69588e2`, `17297af`,
-    `1380a4f`, and the Phase 29 wiring around it). Hard-Rule-#8
-    enforcement was the single largest output of the loop in
-    that window.
-  - Pattern is canonical now (every screen reads ritual copy
-    via `vm.*`) but unenforced — a fresh contributor could
-    re-introduce inline literals and the verify gate would not
-    catch it. The next critique pass would.
-- rationale: the cost of finding-and-fixing each violation
-  through `/critique` → `/iterate` is roughly one full tick per
-  string. A hermetic guard catches them at verify time. Pattern
-  multiplicity = 5 screens touched = strong signal this is
-  worth automating, not "make work."
-- proposed scope: 1 phase, 1 tick. Add
-  `state/e2e/presenter-copy-invariant.test.ts` — grep each
-  `app/**/index.tsx` (and `combat.tsx`) for `<Text>…</Text>`
-  literals whose content matches a ritual-shape heuristic
-  (article-prefix lowercase, ALLCAPS multiword,
-  `✠ <TITLE>`), allowlist legitimate exceptions (testIDs,
-  tab labels until Phase 30 lands), fail the test if a new
-  one appears. Document the allowlist precedent in
-  `docs/presenters.md`.
-- estimated phases: 1
-- conflicts: false-positive risk on the tab labels until
-  Phase 30 ships; the allowlist handles that. Mild
-  philosophical conflict with `bearings.md` "tests pin
-  behaviour, not file shape" — the test pins a contract
-  (no inline ritual), which is borderline but defensible
-  given the recurring drain pattern.
 
 ## Drained via /iterate
 
@@ -231,6 +166,45 @@ warranted a full phase promotion:
 - source: Phase 17 backfill row (missing brief reference), zero `state/e2e/crucible*` test files, bearings hard rule (tests-alongside-code) violation.
 - Scope: (1) Draft `plan/phases/phase_17_token_crucible.md` retroactively. (2) Extract `selectTokenCrucibleViewModel` presenter from `components/TokenCrucible.tsx` in-component logic. (3) Add hermetic e2e: VM shape contract, token rules render, deep-freeze invariant.
 - Brief: drafted inline during `/ship-a-phase` (item 1 of the scope is the brief itself).
+
+### [promoted 2026-05-16 → status Phase 30] [score URGENT] Hermetic render coverage + production bug fix pass
+
+- promoted via `/oversight` 2026-05-16 in response to three
+  user-observed runtime bugs that the hermetic VM-shape suite
+  did not catch: character tab crashing; combat encounter
+  blank; tab labels rendering as `{ TAB NAME }"--index"`.
+- Assigned **Phase 30** in `plan/steps/01_build_plan.md` Status block.
+- block: critical (test-strategy gap + production bugs).
+- source: user report 2026-05-16 (during oversight).
+- Scope: Tick A — smoke-render harness covering each tab + the
+  event modal at fresh-store boot (no thrown error, no
+  `{`/`}`-bracketed template strings leaking, no empty-string
+  in primary headings). Tick B — fix the tab title rendering
+  bug. Tick C — fix the character-tab crash. Tick D — fix the
+  combat encounter blank state. Each Tick lands a failing test
+  first, then the fix.
+- Absorbs and supersedes the original "Phase 31 — Presenter-copy
+  invariant guard" candidate filed in expand pass 8 (now in
+  Rejected); the render harness covers that class of regression
+  as a strict superset.
+- Brief: to be drafted via `/plan-a-phase phase 30`.
+
+### [promoted 2026-05-16 → status Phase 31] [score 6.0] Tabs design pass — all-places register
+
+- promoted via `/oversight` 2026-05-16 with explicit register
+  pick: **all places** — `WILDS · STRIFE · SELF · SACK`.
+- Assigned **Phase 31** in `plan/steps/01_build_plan.md` Status block.
+- block: depends on Phase 30 (tab title pipeline must render
+  correctly before tab strings change).
+- source: was filed as candidate Phase 30 (score 6.0) in expand
+  pass 8 (this file); renumbered on promotion. Unblocks the
+  deferred `[needs-user-call]` critique row.
+- Scope: update the four `title:` props in
+  `app/(tabs)/_layout.tsx`; reconcile icon-label pairing if
+  any new noun implies a different icon; +2-3 hermetic e2e
+  cases that pin the new titles via the Phase 30 render
+  harness.
+- Brief: to be drafted via `/plan-a-phase phase 31`.
 
 ### [promoted 2026-05-15 → status Phase 29] [score 6.5] Typed-event consumers
 
@@ -354,7 +328,19 @@ exploration `moveToAction` migration to engine `revealAdjacent` /
 
 ## Rejected
 
-(empty — populated as `/oversight` rejects candidates)
+### [rejected 2026-05-16 — absorbed by Phase 30] [score 4.5] Presenter-copy invariant guard
+
+- proposed: 2026-05-16, expand pass 8.
+- Rejected on promotion of Phase 30 (hermetic render coverage).
+  The render-output harness catches a strict superset of
+  regressions: not just inline ritual literals but crashes,
+  blank renders, and template-string leaks (which were the
+  actual user-observed failures motivating the harness in the
+  first place). Shipping a separate inline-literal grep test
+  would duplicate the bug-class coverage.
+- The original signals remain valid (6+ commit Hard-Rule-#8
+  drain pattern); they're addressed by Phase 30 Tick A's
+  assertion contract.
 
 ## Considered (below threshold)
 

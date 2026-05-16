@@ -13,17 +13,17 @@
 
 ## Pending
 
-### [needs-user-call] /app/(tabs)/_layout.tsx — tab labels MAP / COMBAT / SHEET / SACK mix registers
+## Done
+
+### [needs-user-call] /app/(tabs)/_layout.tsx — tab labels MAP / COMBAT / SHEET / SACK mix registers ✅
 - pass: 2 (commit d967f27)
 - viewport: repository
 - category: navigation
-- observation: The four tab titles wobble as a coherent set — three are objects/places (MAP, SHEET, SACK) and one is an event/state (COMBAT). The four-letter rhythm is right but the register isn't unified.
-- evidence: `app/(tabs)/_layout.tsx` lines 98, 113, 128, 142: `title: 'MAP' / 'COMBAT' / 'SHEET' / 'SACK'`
-- suggested fix: Align to one register. Either all places (WILDS · STRIFE · SELF · SACK) or all verbs (ROAM · STRIKE · KNOW · BEAR).
+- observation: The four tab titles wobble as a coherent set — three are objects/places (MAP, SHEET, SACK) and one is an event/state (COMBAT).
+- evidence: `app/(tabs)/_layout.tsx` lines 98, 113, 128, 142.
+- suggested fix: Align to one register.
 - source: reader
-- **Deferred 2026-05-15 via oversight: needs design pass with the asset/icon palette.** Renaming tabs in isolation risks a churn cycle; the right time to revisit labels is when icon-label pairing is reconsidered together (Phase 12 polished icons but did not revisit labels). `/iterate` should skip this row until a design-pass phase is filed. Unblock by either (a) shipping a "Tabs design pass" phase that addresses icons + labels together, or (b) flipping back to `[MED]` with an explicit register pick.
-
-## Done
+- **Unblocked 2026-05-16 via `/oversight`** — promoted as Phase 31 (Tabs design pass) in `plan/steps/01_build_plan.md` with explicit register pick: **all places** (`WILDS · STRIFE · SELF · SACK`). Phase 31 ships after Phase 30 (hermetic render coverage) so the tab title pipeline is verified working before the strings change. Row moved Pending → Done; the fix lands as part of Phase 31's commit.
 
 ### [LOW] /plan/steps/01_build_plan.md — Phase 17 row's "to be drafted" parenthetical lacks owner reference ✅
 - pass: 5 (commit dfb3358)

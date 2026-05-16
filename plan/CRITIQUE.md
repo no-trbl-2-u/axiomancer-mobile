@@ -13,15 +13,6 @@
 
 ## Pending
 
-### [LOW] /app/(tabs)/character/index.tsx — "NO ACTIVE EFFECTS" hardcoded HUD-imperative
-- pass: 5 (commit dfb3358)
-- viewport: repository
-- category: voice
-- observation: Effect-section empty label is hardcoded ALLCAPS at the view layer rather than the lowercase-ritual + `textTransform: 'uppercase'` pattern unified across event / inventory / exploration in pass-3/4 drains. The presenter already builds the equivalent `a11y` string ("No active effects") — could be co-opted as the visual label too.
-- evidence: `app/(tabs)/character/index.tsx:95`: `<Text style={styles.emptyLabel}>NO ACTIVE EFFECTS</Text>`. Presenter analogue at `state/presenters/character.engine.ts:214`.
-- suggested fix: Add `emptyEffectsMessage: 'none at hand.'` (lowercase ritual, no banned pronouns) to the VM; render via `textTransform: 'uppercase'` style.
-- source: reader
-
 ### [LOW] /app/(tabs)/inventory/index.tsx — static category headers + `SACK · WALLET · BURDEN` hardcoded
 - pass: 5 (commit dfb3358)
 - viewport: repository
@@ -51,6 +42,17 @@
 - **Deferred 2026-05-15 via oversight: needs design pass with the asset/icon palette.** Renaming tabs in isolation risks a churn cycle; the right time to revisit labels is when icon-label pairing is reconsidered together (Phase 12 polished icons but did not revisit labels). `/iterate` should skip this row until a design-pass phase is filed. Unblock by either (a) shipping a "Tabs design pass" phase that addresses icons + labels together, or (b) flipping back to `[MED]` with an explicit register pick.
 
 ## Done
+
+### [LOW] /app/(tabs)/character/index.tsx — "NO ACTIVE EFFECTS" hardcoded HUD-imperative ✅
+- pass: 5 (commit dfb3358)
+- viewport: repository
+- category: voice
+- observation: Effect-section empty label was hardcoded ALLCAPS at the view layer rather than the lowercase-ritual + `textTransform: 'uppercase'` pattern unified across other screens.
+- evidence: `app/(tabs)/character/index.tsx:95` pre-fix.
+- suggested fix: Add `emptyEffectsMessage: 'none at hand.'` to the VM; render via `textTransform: 'uppercase'`.
+- source: reader
+- issue: #53
+- fixed in commit `69588e2` — `vm.emptyEffectsMessage = 'none at hand.'`; screen reads via the existing emptyLabel style augmented with `textTransform: 'uppercase'`. +1 shape test. 389/389 pass.
 
 ### [MED] /app/(tabs)/exploration/index.tsx — drawer empty-state + swipe hint hardcoded; voice mismatch ✅
 - pass: 5 (commit dfb3358)

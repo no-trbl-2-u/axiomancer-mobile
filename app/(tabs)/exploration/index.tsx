@@ -239,7 +239,7 @@ export default function ExplorationScreen() {
             {/* Node options drawer (Q6) — available next steps with thematic blurb */}
             <View style={styles.drawer}>
                 <View style={styles.drawerHeader}>
-                    <SectionLabel size={10}>★ Where next, pilgrim?</SectionLabel>
+                    <SectionLabel size={10}>✠ WHITHER, PILGRIM?</SectionLabel>
                     {vm.options.length > 1 && (
                         <Text style={styles.swipeHint}>swipe →</Text>
                     )}

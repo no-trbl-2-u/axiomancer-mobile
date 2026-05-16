@@ -19,12 +19,13 @@ import { StanceGlyph } from '@/components/StanceGlyph';
 import { TokenIcon, TokenCost } from '@/components/tokens';
 import {
     TOKEN,
-    TOKEN_KEYS,
-    TOKEN_SKILLS,
-    TOKEN_RULES,
-    canAfford,
     type TokenCounts,
+    type TokenKey,
 } from '@/state/mocks/tokens.fixture';
+import {
+    selectTokenCrucibleViewModel,
+    CRUCIBLE_STANCE_ORDER,
+} from '@/state/presenters/token-crucible.engine';
 
 export interface TokenCrucibleProps {
     tokens?: Partial<TokenCounts>;
@@ -36,11 +37,10 @@ const DEFAULT_POOL: TokenCounts = { body: 2, mind: 1, heart: 2, fallacy: 1, para
 
 export function TokenCrucible({ tokens = DEFAULT_POOL, showClose = false }: TokenCrucibleProps) {
     const router = useRouter();
-    const skillsByStance: Record<'heart' | 'body' | 'mind', typeof TOKEN_SKILLS> = {
-        heart: TOKEN_SKILLS.filter(s => s.stance === 'heart'),
-        body:  TOKEN_SKILLS.filter(s => s.stance === 'body'),
-        mind:  TOKEN_SKILLS.filter(s => s.stance === 'mind'),
-    };
+    // Normalize partial-pool input to a full TokenCounts then build the VM.
+    // The presenter handles the per-stance partition + castable-now check.
+    const pool: TokenCounts = { body: 0, mind: 0, heart: 0, fallacy: 0, paradox: 0, ...tokens };
+    const vm = selectTokenCrucibleViewModel(pool);
 
     return (
         <ScrollView
@@ -67,8 +67,8 @@ export function TokenCrucible({ tokens = DEFAULT_POOL, showClose = false }: Toke
             {/* CURRENT POOL */}
             <SectionLabel size={9} style={styles.boneLabel}>CURRENT POOL</SectionLabel>
             <View style={styles.poolBox}>
-                {TOKEN_KEYS.map(k => {
-                    const count = tokens[k] ?? 0;
+                {vm.tokenKeys.map((k: TokenKey) => {
+                    const count = vm.pool[k];
                     const owned = count > 0;
                     const color = owned ? TOKEN[k].color : AXM.bone;
                     return (
@@ -94,24 +94,24 @@ export function TokenCrucible({ tokens = DEFAULT_POOL, showClose = false }: Toke
             {/* RULES */}
             <SectionLabel size={9} style={styles.boneLabel}>HOW TOKENS ACCRUE</SectionLabel>
             <View style={styles.rulesBox}>
-                {TOKEN_RULES.map((rule, i) => (
+                {vm.rules.map((rule, i) => (
                     <View
                         key={i}
                         style={[
                             styles.ruleRow,
-                            i < TOKEN_RULES.length - 1 && styles.ruleRowDivider,
+                            i < vm.rules.length - 1 && styles.ruleRowDivider,
                         ]}
                     >
                         <View
                             style={[
                                 styles.ruleIcon,
-                                { backgroundColor: TOKEN[rule.kind].bg, borderColor: TOKEN[rule.kind].color },
+                                { backgroundColor: rule.meta.bg, borderColor: rule.meta.color },
                             ]}
                         >
-                            <TokenIcon kind={rule.kind} size={10} color={TOKEN[rule.kind].color} />
+                            <TokenIcon kind={rule.kind} size={10} color={rule.meta.color} />
                         </View>
                         <Text style={styles.ruleWhen}>{rule.when}</Text>
-                        <Text style={[styles.ruleAmount, { color: TOKEN[rule.kind].color }]}>{rule.amount}</Text>
+                        <Text style={[styles.ruleAmount, { color: rule.meta.color }]}>{rule.amount}</Text>
                     </View>
                 ))}
             </View>
@@ -119,7 +119,7 @@ export function TokenCrucible({ tokens = DEFAULT_POOL, showClose = false }: Toke
             {/* SKILL GRID */}
             <SectionLabel size={9} style={styles.boneLabel}>SKILL COSTS · 12 SKILLS</SectionLabel>
             <View style={styles.gridBox}>
-                {(['heart', 'body', 'mind'] as const).map((stance, si) => (
+                {CRUCIBLE_STANCE_ORDER.map((stance, si) => (
                     <View
                         key={stance}
                         style={[
@@ -133,8 +133,14 @@ export function TokenCrucible({ tokens = DEFAULT_POOL, showClose = false }: Toke
                                 {stance.toUpperCase()} STANCE
                             </SectionLabel>
                         </View>
-                        {skillsByStance[stance].map(s => {
-                            const afford = canAfford(s.cost, tokens);
+                        {vm.skillsByStance[stance].map((s) => {
+                            const afford = s.castableNow;
+                            // TokenCost still needs the raw cost shape; reconstruct
+                            // from cost entries for the chip component.
+                            const costRecord: Partial<TokenCounts> = {};
+                            for (const e of s.costEntries) {
+                                costRecord[e.kind] = e.amount;
+                            }
                             return (
                                 <View
                                     key={s.id}
@@ -157,7 +163,7 @@ export function TokenCrucible({ tokens = DEFAULT_POOL, showClose = false }: Toke
                                             numberOfLines={1}
                                         >{s.name}</Text>
                                     </View>
-                                    <TokenCost cost={s.cost} tokens={tokens} size={11} dense />
+                                    <TokenCost cost={costRecord} tokens={vm.pool} size={11} dense />
                                 </View>
                             );
                         })}

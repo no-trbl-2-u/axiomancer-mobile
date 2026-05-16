@@ -164,9 +164,9 @@ commit that ships the phase.
       retroactively** via `/oversight` 2026-05-15 — the row
       exists for traceability; the feature shipped directly
       by the user from a design handoff outside the autonomous
-      loop. Retroactive brief at `plan/phases/phase_17_token_crucible.md`
-      (to be drafted; see `plan/AUDIT.md` `[design-source]` row
-      for the open question about where the handoff lives).
+      loop. Retroactive brief at
+      `plan/phases/phase_17_token_crucible.md` — drafted via
+      Phase 28 (`<this commit>`).
 - [x] Phase 19 — `selectHasActiveEvent` real wiring. **Drained
       by Phase 6 Tick A** (`2c4d2b0`) — the rewrite of
       `state/presenters/event.engine.ts` flipped
@@ -236,18 +236,19 @@ commit that ships the phase.
       on legacy fields. Screen + presenter migration deferred
       to a future Phase 30 TBD. Brief at
       `plan/phases/phase_27_exploration_migration.md`.
-- [ ] Phase 28 — Token Crucible retroactive brief + hermetic
-      test coverage. Promoted via `/oversight` 2026-05-15
-      (score 6.5). 1-2 ticks. (1) Draft
-      `plan/phases/phase_17_token_crucible.md` retroactively
-      from commit `261a238` + the Claude Design URL. (2) Extract
-      `selectTokenCrucibleViewModel` presenter from current
-      in-component logic in `components/TokenCrucible.tsx`.
-      (3) Add hermetic e2e: VM shape contract, token rules
-      render, deep-freeze invariant. Closes the
-      bearings-hard-rule violation that Phase 17 backfilled
-      without tests-alongside-code. Brief drafting can happen
-      inline during `/ship-a-phase`.
+- [x] Phase 28 — Token Crucible retroactive brief + hermetic
+      test coverage. Shipped 2026-05-16 in this commit. Three
+      deliverables landed: (1) `plan/phases/phase_17_token_crucible.md`
+      retroactive brief authored from commit `261a238` + the
+      Claude Design URL; (2) `state/presenters/token-crucible.engine.ts`
+      extracted with `selectTokenCrucibleViewModel`;
+      `components/TokenCrucible.tsx` refactored to consume the
+      VM; (3) `state/e2e/token-crucible.engine.test.ts` adds
+      10 hermetic cases (VM shape, skill partition,
+      `canAfford` matrix, deep-freeze invariant). Closes the
+      bearings hard-rule violation that Phase 17 backfilled
+      without tests-alongside-code. Brief at
+      `plan/phases/phase_28_crucible_tests.md`.
 - [ ] Phase 29 — Typed-event consumers (level-up badge
       auto-clear, inventory feedback, dialogue confirmation).
       Promoted via `/oversight` 2026-05-15 (score 6.5). 1 tick
@@ -527,7 +528,7 @@ adapter).
   remained intact — engine combat:round payload is
   {state} only; the brief revised the original "drop
   inference" goal at plan time.
-- phase 27 — <this commit> — exploration moveToAction
+- phase 27 — 25ed90c — exploration moveToAction
   migration (engine revealAdjacent / markNodeConsumed,
   additive). moveToAction now populates the engine's parallel
   discoveredNodes field after a successful move via
@@ -540,3 +541,15 @@ adapter).
   state/exploration-maps/types.ts JSDoc names the new
   boundary explicitly (visual-layout-only post-Phase-27).
   +4 hermetic e2e cases; 361/361.
+- phase 28 — <this commit> — Token Crucible retroactive brief
+  + hermetic test coverage. Three deliverables in one tick:
+  (1) plan/phases/phase_17_token_crucible.md authored from
+  commit 261a238 + the Claude Design URL; (2)
+  state/presenters/token-crucible.engine.ts extracted with
+  selectTokenCrucibleViewModel; components/TokenCrucible.tsx
+  refactored to consume the VM; (3)
+  state/e2e/token-crucible.engine.test.ts adds 10 hermetic
+  cases (VM shape, skill partition, canAfford matrix,
+  deep-freeze invariant). Closes the bearings hard-rule
+  violation that Phase 17 backfilled without tests-alongside-
+  code. +10 tests; 371/371.

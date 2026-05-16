@@ -291,8 +291,22 @@ commit that ships the phase.
       `[needs-user-call]` critique row from pass 2 (commit
       `d967f27`). Verify: 410/410 unchanged. Brief at
       `plan/phases/phase_31_tabs_design_pass.md`.
-
-> **After phase 31:** the loop transitions back to `/iterate` —
+- [ ] Phase 32 — UI refresh from Claude Design handoff (rolling
+      port). Filed via `/plan-a-phase` 2026-05-16 with topic
+      "Update the UI with the new designs from Claude design."
+      Multi-tick **rolling phase** mirroring the Phase 17 →
+      Phase 28 pattern: each new design surface lands as a
+      user-driven `feat: <surface> — port from design handoff`
+      commit; the next `/march` tick extracts the presenter,
+      adds hermetic tests, and integrates the screen with the
+      smoke-render harness (Phase 30 Tick A). One sub-tick per
+      ported surface; phase closes when the user has finished
+      porting and the loop has tested every sub-tick. Design
+      source: Claude Design at
+      <https://claude.ai/design/p/019e0f5a-a0f0-753b-be1e-8939e6011384>
+      (authenticated; loop cannot fetch — user drives the port,
+      loop drives the tests + cleanup). Brief at
+      `plan/phases/phase_32_design_refresh.md`.
 > bug findings, presenter refactors, asset backlog, ongoing
 > audits. `/march` makes that transition automatic. (Block II
 > phases 20/21 and Block III phases 22/24 in

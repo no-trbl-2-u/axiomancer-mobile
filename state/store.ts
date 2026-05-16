@@ -26,8 +26,22 @@ export interface MobileEventSlice {
     history: ReadonlyArray<{ nodeId: string; choiceId: string }>;
 }
 
+/**
+ * Mobile-only notifications slice (Phase 29). Tracks "has the player
+ * acknowledged the most recent level-up yet?" so the levelup tab
+ * badge can clear after the character screen has been seen.
+ *
+ * Default: `levelUpAcknowledged: true` — no pending level-up at
+ * store init. Engine fires `character:levelup` → flip to `false`.
+ * Character screen mount → flip to `true`.
+ */
+export interface MobileNotificationsSlice {
+    levelUpAcknowledged: boolean;
+}
+
 export type AppStoreState = GameStore & {
     event: MobileEventSlice;
+    notifications: MobileNotificationsSlice;
     /**
      * Mobile-private ring buffer of recent engine events. Populated by
      * the emitter wired in `createAppStore`. Capacity 20, newest-first.
@@ -48,6 +62,15 @@ export const EMPTY_EVENT_SLICE: MobileEventSlice = Object.freeze({
     pending: null,
     dialogueCursor: null,
     history: Object.freeze([]),
+});
+
+/**
+ * Default notifications slice. `levelUpAcknowledged: true` because a
+ * fresh store has no pending level-up; the engine `character:levelup`
+ * event flips it to `false`.
+ */
+export const DEFAULT_NOTIFICATIONS_SLICE: MobileNotificationsSlice = Object.freeze({
+    levelUpAcknowledged: true,
 });
 
 /** Ring-buffer capacity for `_recentEvents`. Small enough not to bloat memory or save payloads. */
@@ -108,6 +131,7 @@ export function createAppStore(options: CreateAppStoreOptions = {}): AppStore {
     store.setState({
         save: () => withPassthrough(engineSave),
         event: EMPTY_EVENT_SLICE,
+        notifications: DEFAULT_NOTIFICATIONS_SLICE,
         _recentEvents: [],
     });
 
@@ -119,6 +143,16 @@ export function createAppStore(options: CreateAppStoreOptions = {}): AppStore {
         const next = [typed, ...prev].slice(0, RECENT_EVENTS_CAPACITY);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         store.setState({ _recentEvents: next } as any);
+    });
+
+    // Phase 29 Tick A: flip `levelUpAcknowledged` to false when the
+    // engine fires `character:levelup`. The badge re-arms; visiting
+    // the character screen flips it back to true. See
+    // `state/presenters/navigation.engine.ts` for the predicate.
+    emitter.on('character:levelup', () => {
+        store.setState({
+            notifications: { levelUpAcknowledged: false },
+        });
     });
 
     EMITTER_BY_STORE.set(store, emitter);

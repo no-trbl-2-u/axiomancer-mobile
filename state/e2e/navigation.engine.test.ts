@@ -102,7 +102,7 @@ describe('navigation.engine', () => {
             expect(result.inventory).toBeNull();
         });
 
-        it('surfaces a "levelup" badge on the character tab when experience >= experienceToNextLevel', () => {
+        it('surfaces a "levelup" badge on the character tab when XP-ready AND not acknowledged', () => {
             const store: AppStore = createAppStore({ adapter: createMemoryAdapter() });
             const player = store.getState().player;
             store.setState({
@@ -111,11 +111,54 @@ describe('navigation.engine', () => {
                     experience: player.experienceToNextLevel ?? 100,
                     experienceToNextLevel: player.experienceToNextLevel ?? 100,
                 } as never,
+                notifications: { levelUpAcknowledged: false },
             });
 
             const result = selectTabBadges(store.getState());
 
             expect(result.character).toEqual({ text: '↑', kind: 'levelup' });
+        });
+
+        it('hides the levelup badge when XP-ready but already acknowledged (Phase 29)', () => {
+            const store: AppStore = createAppStore({ adapter: createMemoryAdapter() });
+            const player = store.getState().player;
+            store.setState({
+                player: {
+                    ...player,
+                    experience: player.experienceToNextLevel ?? 100,
+                    experienceToNextLevel: player.experienceToNextLevel ?? 100,
+                } as never,
+                notifications: { levelUpAcknowledged: true },
+            });
+
+            const result = selectTabBadges(store.getState());
+
+            // Acknowledged: no badge.
+            expect(result.character).toBeNull();
+        });
+
+        it('re-arms the levelup badge when character:levelup fires after acknowledgment (Phase 29)', () => {
+            const store: AppStore = createAppStore({ adapter: createMemoryAdapter() });
+            const player = store.getState().player;
+            store.setState({
+                player: {
+                    ...player,
+                    experience: player.experienceToNextLevel ?? 100,
+                    experienceToNextLevel: player.experienceToNextLevel ?? 100,
+                } as never,
+                notifications: { levelUpAcknowledged: true },
+            });
+            // No badge yet (acknowledged).
+            expect(selectTabBadges(store.getState()).character).toBeNull();
+
+            // Fire engine character:levelup via the emitter.
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
+            const { getEmitterForStore } = require('@/state/store');
+            const emitter = getEmitterForStore(store);
+            emitter.emit({ type: 'character:levelup', payload: { state: store.getState() } });
+
+            // Now badge re-armed.
+            expect(selectTabBadges(store.getState()).character?.kind).toBe('levelup');
         });
 
         it('prefers level-up over event badge when both fire simultaneously', () => {
@@ -134,6 +177,7 @@ describe('navigation.engine', () => {
                         event: { kind: 'rest', healed: 1 },
                     },
                 },
+                notifications: { levelUpAcknowledged: false },
             });
 
             const result = selectTabBadges(store.getState());

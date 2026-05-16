@@ -72,13 +72,21 @@ const LEVELUP_BADGE: TabBadge = Object.freeze({ text: '↑', kind: 'levelup' });
  * When both predicates fire simultaneously, level-up wins — it's the
  * higher-agency action (stat-allocation prompt) versus a narrative
  * hint.
+ *
+ * Phase 29 Tick A: the levelup badge also requires
+ * `notifications.levelUpAcknowledged === false` — i.e. a fresh
+ * `character:levelup` engine event must have fired since the player
+ * last visited the character screen. Avoids nagging after the player
+ * has already seen the badge once.
  */
 export function selectTabBadges(state: AppStoreState): Record<TabRoute, TabBadge | null> {
     const hasEvent = selectHasActiveEvent(state);
     const player = state.player;
     const experience = Number(player?.experience ?? 0);
     const toNext = Number(player?.experienceToNextLevel ?? 0);
-    const levelupReady = toNext > 0 && experience >= toNext;
+    const xpReady = toNext > 0 && experience >= toNext;
+    const levelUpAcknowledged = state.notifications?.levelUpAcknowledged ?? true;
+    const levelupReady = xpReady && !levelUpAcknowledged;
 
     if (!hasEvent && !levelupReady) {
         return EMPTY_BADGES;

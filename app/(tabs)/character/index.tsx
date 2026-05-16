@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AXM, FONTS } from '@/theme/axm';
@@ -8,12 +8,20 @@ import { StanceGlyph } from '@/components/StanceGlyph';
 import { EffectGlyph } from '@/components/EffectGlyph';
 import { XpChain } from '@/components/XpChain';
 import { BodyDiagram } from '@/components/BodyDiagram';
-import { useGameState } from '@/state/GameStoreProvider';
+import { useGameState, useGameStore } from '@/state/GameStoreProvider';
 import { selectCharacterViewModel } from '@/state/presenters/character.engine';
 
 export default function CharacterScreen() {
   const vm = useGameState(selectCharacterViewModel);
   const router = useRouter();
+  const store = useGameStore();
+
+  // Phase 29 Tick A: acknowledge any pending level-up the moment the
+  // character screen renders. The tab badge clears via
+  // `selectTabBadges` (which gates on `levelUpAcknowledged`).
+  useEffect(() => {
+    store.setState({ notifications: { levelUpAcknowledged: true } });
+  }, [store]);
 
   return (
     <ScreenBg>

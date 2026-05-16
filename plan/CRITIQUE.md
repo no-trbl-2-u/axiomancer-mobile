@@ -17,26 +17,6 @@
 
 ## Pending
 
-### [HIGH] /app/event/index.tsx:217-218,291,298 — display literals still at view layer post Phase-32 port
-- pass: 6 (commit 08bcf5e)
-- viewport: repository
-- category: consistency
-- observation: After the Phase 32 prelude-chrome lift, four display
-  literals still live at the view layer (`BACK`, `RETURN`, `SKIP ›`,
-  `✠ A RECKONING`) — exact same Hard Rule #8 class that pass 5
-  closed for combat.tsx, exploration drawer, character
-  empty-effects, and inventory headers. The Phase 32 cleanup
-  focused on the prelude strip and stopped there.
-- evidence: `app/event/index.tsx:217` `<Text style={styles.choiceLabel}>BACK</Text>`;
-  `:218` `RETURN`; `:291` `SKIP ›`; `:298` `✠ A RECKONING`.
-  Neither `RECKONING` nor `BACK`/`RETURN`/`SKIP` appears in
-  `state/presenters/event.engine.ts`.
-- suggested fix: extend `EventViewModel` with the four chrome
-  strings (e.g. fold into `preludeChrome` or add a sibling
-  `chrome: { reckoningEyebrow, skipLabel, emptyBackLabel,
-  emptyBackSub }`) and read via `vm.chrome.*` in the screen.
-- source: web-fetch (reader sub-agent)
-
 ### [MED] /scripts/smoke-screens.mjs:34-42 + /scripts/__tests__/smoke-screens.test.ts:11-21,56 — memoir route missing from smoke coverage
 - pass: 6 (commit 08bcf5e)
 - viewport: repository
@@ -144,6 +124,21 @@
 - source: web-fetch (reader sub-agent)
 
 ## Done
+
+### [HIGH] /app/event/index.tsx:217-218,291,298 — display literals still at view layer post Phase-32 port ✅
+- pass: 6 (commit 08bcf5e); addressed at commit 994fb02
+- issue: #61
+- viewport: repository
+- category: consistency
+- observation: After the Phase 32 prelude-chrome lift, four
+  display literals (`BACK`, `RETURN`, `SKIP ›`, `✠ A RECKONING`)
+  still lived at the view layer — same Hard Rule #8 class pass 5
+  closed elsewhere.
+- fix: added `EventChrome` interface + `EVENT_CHROME` constant +
+  `withChrome` wrapper sibling to `withPreludeChrome`; lifted
+  all four strings off `app/event/index.tsx` onto `vm.chrome.*`;
+  +4 hermetic tests under `selectEventViewModel: chrome
+  contract`. Verify 428 / 428 (+4 from 424).
 
 ### [needs-user-call] /app/(tabs)/_layout.tsx — tab labels MAP / COMBAT / SHEET / SACK mix registers ✅
 - pass: 2 (commit d967f27)

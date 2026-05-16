@@ -313,6 +313,27 @@ commit that ships the phase.
       cascade. The loop never invents a port. See brief
       §"Dispatch rule (for `/march`)" for the full rule. Brief
       at `plan/phases/phase_32_design_refresh.md`.
+- [ ] Phase 33 — MEMOIR tab (journal: story / quests / alignment
+      / philosopher-quote slot). Filed via `/plan-a-phase`
+      2026-05-16. Adds a new fifth route at
+      `app/(tabs)/memoir/index.tsx` — a journal surface
+      summarizing story progress (recent typed-event chronicle),
+      active + completed quests (`state.quests` QuestLog),
+      moral + provisional philosophical alignment readouts
+      (`state.moralMeter` + a placeholder mapping derived from
+      highest base stat), and a slot for philosopher quotes
+      (rendered null until exact alignments are defined). 4
+      sub-ticks: route + tab registration + empty state (A);
+      quests section (B); alignment readouts (C); story
+      chronicle from `_recentEvents` (D). The philosopher-quote
+      lookup is a follow-up phase, gated on the user defining
+      alignments. **This is the deliberate navigation-phase
+      commit** that adds a new route per bearings line 97-101
+      ("route names do not [change] without a deliberate
+      navigation-phase commit"). The bottom tab bar grows from 4
+      visible tabs to 5 (WILDS/STRIFE pair + SELF + MEMOIR +
+      SACK; WILDS and STRIFE remain mutually exclusive). Brief
+      at `plan/phases/phase_33_memoir_tab.md`.
 > bug findings, presenter refactors, asset backlog, ongoing
 > audits. `/march` makes that transition automatic. (Block II
 > phases 20/21 and Block III phases 22/24 in

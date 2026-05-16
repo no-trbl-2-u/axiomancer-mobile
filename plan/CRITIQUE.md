@@ -15,15 +15,6 @@
 
 ## Pending
 
-### [LOW] /state/presenters/event.engine.ts — cutscene 'ON' button label too terse for the register
-- pass: 4 (commit 2a2c0aa)
-- viewport: repository
-- category: voice
-- observation: Cutscene's continue affordance is a one-syllable mono-word in ALL CAPS that doesn't match the ritual register of its siblings (`WALK ON`, `SO BE IT`, `ENDURE`, `TAKE IT`, `LEAVE`). Reads as debug UI in a Gothic frame, especially next to the `A VISION` badge.
-- evidence: `state/presenters/event.engine.ts:403`: `label: 'ON'`.
-- suggested fix: Use `WALK ON` (already lives in the rest branch) or `WITNESS` to match surrounding voice.
-- source: reader
-
 ### [LOW] /state/presenters/event.engine.ts — village `merchants` argument received and discarded
 - pass: 4 (commit 2a2c0aa)
 - viewport: repository
@@ -53,6 +44,17 @@
 - **Deferred 2026-05-15 via oversight: needs design pass with the asset/icon palette.** Renaming tabs in isolation risks a churn cycle; the right time to revisit labels is when icon-label pairing is reconsidered together (Phase 12 polished icons but did not revisit labels). `/iterate` should skip this row until a design-pass phase is filed. Unblock by either (a) shipping a "Tabs design pass" phase that addresses icons + labels together, or (b) flipping back to `[MED]` with an explicit register pick.
 
 ## Done
+
+### [LOW] /state/presenters/event.engine.ts — cutscene 'ON' button label too terse for the register ✅
+- pass: 4 (commit 2a2c0aa)
+- viewport: repository
+- category: voice
+- observation: Cutscene continue button `ON` didn't match the ritual register of sibling choice labels.
+- evidence: `state/presenters/event.engine.ts:403`.
+- suggested fix: `WALK ON` or `WITNESS`.
+- source: reader
+- issue: #44
+- **Resolved 2026-05-15.** `'ON'` → `'WITNESS'`. Matches the cutscene's `A VISION` badge cadence. Verify green at 357/357. Closes #44. See commit `0038d66`.
 
 ### [LOW] /app/(tabs)/exploration/index.tsx — "Where next, pilgrim?" breaks the screen's own glyph + case convention ✅
 - pass: 2 (commit d967f27)

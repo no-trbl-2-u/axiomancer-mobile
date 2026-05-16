@@ -166,7 +166,7 @@ commit that ships the phase.
       by the user from a design handoff outside the autonomous
       loop. Retroactive brief at
       `plan/phases/phase_17_token_crucible.md` — drafted via
-      Phase 28 (`<this commit>`).
+      Phase 28 (commit `ab3912a`).
 - [x] Phase 19 — `selectHasActiveEvent` real wiring. **Drained
       by Phase 6 Tick A** (`2c4d2b0`) — the rewrite of
       `state/presenters/event.engine.ts` flipped

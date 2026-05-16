@@ -65,6 +65,22 @@
 ## Pending
 
 
+### [paused] Phase 33 — MEMOIR tab paused after ticks A + B (set via /oversight 2026-05-16)
+
+- category: phase-tracking
+- source: `/oversight` 2026-05-16 — user chose "Pause Phase 33"
+  in the questionnaire; did not specify a replacement bias.
+- observation: Phase 33 sub-ticks A (`6515cb5`, route + skeleton
+  VM + empty state) and B (`2f70eac`, quest list) shipped.
+  Sub-ticks C (alignment readouts) and D (story chronicle from
+  `_recentEvents`) remain. Build-plan row carries an inline
+  "Paused (set via /oversight 2026-05-16)" note so `/march`
+  skips it.
+- next: `/march` falls through Phase 33 → Phase 32 (also
+  deferred) → `/iterate` cascade. When the user wants to
+  resume, flip the row by removing the "Paused" note (or via
+  a follow-up `/oversight`).
+
 ### [needs-user-call] Phase 32 — user thinks a port commit already landed under a different name; loop can't locate it
 
 - category: navigation / phase-tracking

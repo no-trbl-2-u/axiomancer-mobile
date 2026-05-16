@@ -249,19 +249,16 @@ commit that ships the phase.
       bearings hard-rule violation that Phase 17 backfilled
       without tests-alongside-code. Brief at
       `plan/phases/phase_28_crucible_tests.md`.
-- [ ] Phase 29 — Typed-event consumers (level-up badge
+- [x] Phase 29 — Typed-event consumers (level-up badge
       auto-clear, inventory feedback, dialogue confirmation).
-      Promoted via `/oversight` 2026-05-15 (score 6.5). 1 tick
-      (3 sub-ticks possible). For each consumer: subscribe via
-      `useGameEvents` (shipped Phase 25), update relevant
-      presenter or local state, add hermetic e2e case. Three
-      surfaces: (a) navigation badge clears LEVELUP_BADGE on
-      `character:levelup` after the user visits the character
-      screen; (b) inventory action toast on
-      `inventory:changed`; (c) event modal confirmation on
-      `dialogue:applied`. Brief to be drafted via
-      `/plan-a-phase phase 29` (or inline). No new
-      infrastructure — Phase 25's hook is the substrate.
+      Promoted via `/oversight` 2026-05-15 (score 6.5). Shipped
+      across 3 sub-ticks: Tick A `52a1803` (levelUp acknowledge
+      flag + selectTabBadges predicate); Tick B `2845d34`
+      (inventory action toast via `<ToastHost>` + pure mapper);
+      Tick C `861ff7f` (event-modal ✓ flash on `dialogue:applied`).
+      `useGameEvents` (Phase 25) carried the load — no new
+      infrastructure. Verify: 371 → 382 tests across the phase.
+      Brief at `plan/phases/phase_29_typed_event_consumers.md`.
 
 > **After phase 29:** the loop transitions back to `/iterate` —
 > bug findings, presenter refactors, asset backlog, ongoing

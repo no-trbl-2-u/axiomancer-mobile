@@ -13,15 +13,6 @@
 
 ## Pending
 
-### [MED] /app/(tabs)/character/index.tsx — `vm.a11y` block built but never consumed
-- pass: 5 (commit dfb3358)
-- viewport: repository
-- category: a11y
-- observation: `selectCharacterViewModel` builds a populated `a11y` block (characterName / level / experience / baseStats / derivedStats / saves / equipment / effects) but the screen never reads it. Grep for `a11y` in `app/(tabs)/character/index.tsx` returns 0 hits. Only line 147 has an a11y attribute (a hardcoded `accessibilityLabel="Open Token Crucible"`). Character is now the largest unlabeled surface post-inventory a11y drain.
-- evidence: `state/presenters/character.engine.ts:204-215` builds `a11y` strings; `app/(tabs)/character/index.tsx` consumes 0 of them.
-- suggested fix: Wire `vm.a11y.*` onto the section wrappers (header, BASE, DERIVED, SAVES & TESTS, AFFLICTIONS & BLESSINGS, WORN & WIELDED) as `accessibilityLabel`s; replace the inline Crucible literal with a presenter-sourced label.
-- source: reader
-
 ### [MED] /app/(tabs)/combat.tsx — hardcoded ritual copy violates Hard Rule #8
 - pass: 5 (commit dfb3358)
 - viewport: repository
@@ -78,6 +69,17 @@
 - **Deferred 2026-05-15 via oversight: needs design pass with the asset/icon palette.** Renaming tabs in isolation risks a churn cycle; the right time to revisit labels is when icon-label pairing is reconsidered together (Phase 12 polished icons but did not revisit labels). `/iterate` should skip this row until a design-pass phase is filed. Unblock by either (a) shipping a "Tabs design pass" phase that addresses icons + labels together, or (b) flipping back to `[MED]` with an explicit register pick.
 
 ## Done
+
+### [MED] /app/(tabs)/character/index.tsx — `vm.a11y` block built but never consumed ✅
+- pass: 5 (commit dfb3358)
+- viewport: repository
+- category: a11y
+- observation: `selectCharacterViewModel` built a populated `a11y` block but the screen consumed zero of it; the only inline a11y string was a hardcoded `accessibilityLabel="Open Token Crucible"` on the Crucible button.
+- evidence: `state/presenters/character.engine.ts:204-215` built `a11y` strings; `app/(tabs)/character/index.tsx` consumed 0 of them.
+- suggested fix: Wire `vm.a11y.*` onto the section wrappers + replace the inline Crucible literal with a presenter-sourced label.
+- source: reader
+- issue: #50
+- fixed in commit `1380a4f` — header / BASE / DERIVED / SAVES & TESTS / AFFLICTIONS & BLESSINGS / WORN & WIELDED + Crucible button all carry `accessibilityLabel={vm.a11y.<section>}`; added `vm.a11y.crucibleOpen` to the presenter. +1 shape test. 383/383 pass.
 
 ### [LOW] /state/presenters/event.engine.ts — combat-prelude boss subtitle is the same cryptic line for every boss ✅
 - pass: 4 (commit 2a2c0aa)

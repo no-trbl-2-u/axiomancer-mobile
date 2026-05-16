@@ -55,6 +55,8 @@ provider, so it is safe in `useEffect` dependency lists.
 
 ## Persistence
 
-Spec 02 ships with `nullAdapter` (no I/O). Spec 09 will swap in an
-`AsyncStorage`-backed adapter. The provider's `adapter` prop is the
-single seam — pass a `memoryAdapter` (see `app/test-utils/`) in tests.
+Spec 02 ships with `nullAdapter` (no I/O). Spec 09 (Phase 7) swapped
+in `createAsyncStorageAdapter` for runtime (`app/_layout.tsx`,
+commits `09bc44e` + `2f8ecea`); the provider's `adapter` prop is
+the single seam — pass a `memoryAdapter` (see `test-utils/`) in
+tests.

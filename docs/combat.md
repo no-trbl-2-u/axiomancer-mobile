@@ -56,7 +56,7 @@ round swaps the pager out for the resolve panel.
 | Phase | What renders | What the user can do | VM slice |
 |---|---|---|---|
 | `choosing_stance` | Three stance cards (Heart / Body / Mind) with derived stats and ADV / DIS badges relative to the enemy's last stance. | Tap a stance to commit. | `vm.stancePicker` |
-| `choosing_action` | Attack / Defend / Skill / Item action grid + flee link. | Tap Attack to dispatch a basic attack and resolve. Tap Skill to slide forward to the skill picker. Item / Flee surface a "coming soon" toast ([Q6](../specs/04-combat-screen-wiring.md) = C). | `vm.actionPicker` |
+| `choosing_action` | Attack / Defend / Skill / Item action grid + flee link. | Tap Attack to dispatch a basic attack and resolve. Tap Skill to slide forward to the skill picker. Item surfaces a `'Hands are empty.'` toast; Flee surfaces `vm.actionPicker.fleeMessage` (currently `'No fleeing yet.'`) — both are no-ops pending follow-up phases ([Q6](../specs/04-combat-screen-wiring.md) = C). | `vm.actionPicker` |
 | `choosing_skill` | Horizontal scroll of skill cards filtered by current stance; greys out skills with `wrong-stance` or `insufficient-mana`. Skills come from a fixture ([Q3](../specs/04-combat-screen-wiring.md) = A); the swap site lives in [`state/mocks/combat.skills.fixture.ts`](../state/mocks/combat.skills.fixture.ts). Phase 16 (`[skipped]`) drains this when the engine ships the top-level `skillLibrary` / `getSkillById` re-export — see `plan/AUDIT.md` `[needs-engine-release]`. | Tap an enabled skill to spend mana and resolve. | `vm.skillPicker` |
 | `resolving` | VS layout with player + enemy stance glyphs, advantage label, roll totals, and a damage / friendship banner. | Tap "Next Round" to clear `playerChoice` and return to `choosing_stance`. When the engine signals `endReason !== 'ongoing'` the button changes to "Depart". | `vm.resolve` |
 
@@ -111,7 +111,7 @@ goes away once engine Spec 04 lands.
 - **Skills** — see [Spec 04 Q3](../specs/04-combat-screen-wiring.md);
   fixture at [`state/mocks/combat.skills.fixture.ts`](../state/mocks/combat.skills.fixture.ts).
 - **Mana** — see "Placeholder mana" above.
-- **Flee** — surfaces a "coming soon" toast ([Q6](../specs/04-combat-screen-wiring.md)).
+- **Flee** — surfaces `vm.actionPicker.fleeMessage` (currently `'No fleeing yet.'`); presenter-sourced post-Phase-29 critique drain ([Q6](../specs/04-combat-screen-wiring.md)).
 - **Item** action — disabled until Spec 06 wires the inventory's
   consumable picker into combat.
 - **Stance-derived stats** — the numbers shown on each stance card

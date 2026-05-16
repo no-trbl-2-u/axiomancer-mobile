@@ -27,6 +27,41 @@ sub-ticks; the phase closes when the user signals "done with
 the design pass" via `/oversight` and the build plan flips it
 to `[x]`.
 
+## Dispatch rule (for `/march`)
+
+**Set via `/oversight` 2026-05-16: detect-and-defer.**
+
+`/march` is the autonomous outer dispatcher (`skills/march.md`).
+On a Phase 32 row that's still `[ ]`, the standard dispatch
+would hand off to `/ship-a-phase`. Phase 32 overrides that
+default with a detection step the loop runs first:
+
+1. Read the last `Phase 32 Tick <X>` sub-tick commit (search
+   `git log --grep='spec32 tick'`). If none exists, the
+   relevant "last point" is the Phase 32 brief commit itself.
+2. Look for any `feat: <surface> — port from design handoff`
+   commit that landed **after** that last point.
+   - **Found** → `/ship-a-phase` proceeds: extract presenter,
+     add hermetic tests, integrate with smoke-render harness.
+     The sub-tick body follows §"Sub-tick decomposition" item 2
+     ("Loop commit") below.
+   - **Not found** → `/march` **skips Phase 32** for this tick
+     and falls through to its normal cascade (data backlog →
+     expand → iterate). It logs `phase 32: no new port commit
+     since <last point> — defer.` and does NOT invent a port
+     from the design URL (which it can't fetch).
+
+The detect-and-defer rule preserves the rolling-phase contract:
+the user is the source of truth for porting; the loop never
+gets ahead of an actual port commit. Phase 32 stays `[ ]`
+across many `/march` ticks where no port has happened; that's
+expected, not stuck.
+
+If the user wants to *pause* Phase 32 entirely (e.g. they're
+not porting for the foreseeable future), they flip the row to
+`[skipped]` via `/oversight` — that removes Phase 32 from
+`/march`'s dispatch path until they flip it back to `[ ]`.
+
 ## Sub-tick decomposition
 
 Each sub-tick splits in two commits, mirroring the

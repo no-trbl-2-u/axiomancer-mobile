@@ -305,8 +305,14 @@ commit that ships the phase.
       source: Claude Design at
       <https://claude.ai/design/p/019e0f5a-a0f0-753b-be1e-8939e6011384>
       (authenticated; loop cannot fetch — user drives the port,
-      loop drives the tests + cleanup). Brief at
-      `plan/phases/phase_32_design_refresh.md`.
+      loop drives the tests + cleanup). **Dispatch rule (set via
+      `/oversight` 2026-05-16): detect-and-defer.** `/march`
+      reads recent commits for `feat: <surface> — port from
+      design handoff` since the last `spec32 tick` commit; if
+      none, it skips Phase 32 and falls through to its normal
+      cascade. The loop never invents a port. See brief
+      §"Dispatch rule (for `/march`)" for the full rule. Brief
+      at `plan/phases/phase_32_design_refresh.md`.
 > bug findings, presenter refactors, asset backlog, ongoing
 > audits. `/march` makes that transition automatic. (Block II
 > phases 20/21 and Block III phases 22/24 in

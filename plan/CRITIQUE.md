@@ -15,15 +15,6 @@
 
 ## Pending
 
-### [LOW] /state/presenters/event.engine.ts — village `merchants` argument received and discarded
-- pass: 4 (commit 2a2c0aa)
-- viewport: repository
-- category: consistency
-- observation: `composeVillage` takes `_merchants: ReadonlyArray<NPC>` with a comment that shop UI is deferred and the data is ignored. A fresh maintainer reading the VM sees a single-choice `LEAVE` screen and wonders why the engine payload carries merchant data at all. The deferred-surface signal is invisible to the screen.
-- evidence: `state/presenters/event.engine.ts:355-388`.
-- suggested fix: Either drop the argument entirely (cleaner) or surface `merchants.length` in the subtitle (`'N stalls'`) so the deferred surface is visible in-VM.
-- source: reader
-
 ### [LOW] /state/presenters/event.engine.ts — combat-prelude boss subtitle is the same cryptic line for every boss
 - pass: 4 (commit 2a2c0aa)
 - viewport: repository
@@ -44,6 +35,17 @@
 - **Deferred 2026-05-15 via oversight: needs design pass with the asset/icon palette.** Renaming tabs in isolation risks a churn cycle; the right time to revisit labels is when icon-label pairing is reconsidered together (Phase 12 polished icons but did not revisit labels). `/iterate` should skip this row until a design-pass phase is filed. Unblock by either (a) shipping a "Tabs design pass" phase that addresses icons + labels together, or (b) flipping back to `[MED]` with an explicit register pick.
 
 ## Done
+
+### [LOW] /state/presenters/event.engine.ts — village `merchants` argument received and discarded ✅
+- pass: 4 (commit 2a2c0aa)
+- viewport: repository
+- category: consistency
+- observation: Underscore-prefixed `_merchants` arg silently ignored; deferred-shop signal hidden in comment.
+- evidence: `state/presenters/event.engine.ts:355-388`.
+- suggested fix: Surface `merchants.length` in subtitle.
+- source: reader
+- issue: #45
+- **Resolved 2026-05-15.** Subtitle now shows `'1 stall'` / `'N stalls'` when merchants exist (empty when none, to keep small villages tidy). The deferred-shop signal is in-VM. Verify green at 357/357. Closes #45. See commit `72487ac`.
 
 ### [LOW] /state/presenters/event.engine.ts — cutscene 'ON' button label too terse for the register ✅
 - pass: 4 (commit 2a2c0aa)

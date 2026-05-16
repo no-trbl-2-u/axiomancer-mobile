@@ -400,7 +400,7 @@ function composeCutscene(body: string, artSlug: EventArtSlug): EventViewModel {
         choices: [
             {
                 id: 'acknowledge',
-                label: 'ON',
+                label: 'WITNESS',
                 description: 'Continue',
                 consequences: [],
                 iconKey: 'eye',

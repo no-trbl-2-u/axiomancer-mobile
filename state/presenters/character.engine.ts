@@ -96,6 +96,12 @@ export interface CharacterViewModel {
         saves: string;
         equipment: string;
         effects: string;
+        /**
+         * Label for the Token Crucible entry button. Lives on the
+         * presenter so the screen has no hardcoded a11y literals
+         * (Hard Rule #8 — content stays in the proper layer).
+         */
+        crucibleOpen: string;
     };
 }
 
@@ -209,9 +215,10 @@ export function selectCharacterViewModel(state: GameStore): CharacterViewModel {
             derivedStats: 'Derived statistics: attack, skill, and defense values',
             saves: 'Saving throws and ability tests',
             equipment: 'Equipment slots and equipped items',
-            effects: buildEffects(player).length > 0 
-                ? `${buildEffects(player).length} active effects` 
+            effects: buildEffects(player).length > 0
+                ? `${buildEffects(player).length} active effects`
                 : 'No active effects',
+            crucibleOpen: 'Open Token Crucible.',
         },
     });
 }

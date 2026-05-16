@@ -30,7 +30,11 @@ export default function CharacterScreen() {
   return (
     <ScreenBg>
       {/* Header */}
-      <View style={styles.header}>
+      <View
+        style={styles.header}
+        accessible
+        accessibilityLabel={`${vm.a11y.characterName}. ${vm.a11y.level}. ${vm.a11y.experience}.`}
+      >
         <SectionLabel size={9} color={AXM.bone}>{vm.subtitle}</SectionLabel>
         <View style={styles.headerRow}>
           <Text style={styles.characterName}>{vm.displayName}</Text>
@@ -48,7 +52,7 @@ export default function CharacterScreen() {
       </View>
 
       {/* Base Stats */}
-      <View style={styles.section}>
+      <View style={styles.section} accessible accessibilityLabel={vm.a11y.baseStats}>
         <SectionLabel size={10}>✠ BASE</SectionLabel>
         <View style={styles.baseRow}>
           {vm.base.map((r) => (
@@ -62,7 +66,7 @@ export default function CharacterScreen() {
       </View>
 
       {/* Derived Stats */}
-      <View style={styles.section}>
+      <View style={styles.section} accessible accessibilityLabel={vm.a11y.derivedStats}>
         <SectionLabel size={10}>✠ DERIVED</SectionLabel>
         <View style={styles.derivedTable}>
           <View style={[styles.derivedRow, styles.derivedHeader]}>
@@ -87,7 +91,7 @@ export default function CharacterScreen() {
       </View>
 
       {/* Saves & Tests */}
-      <View style={styles.section}>
+      <View style={styles.section} accessible accessibilityLabel={vm.a11y.saves}>
         <SectionLabel size={10}>✠ SAVES &amp; TESTS</SectionLabel>
         <View style={styles.savesGrid}>
           {vm.saves.map((s) => (
@@ -100,7 +104,7 @@ export default function CharacterScreen() {
       </View>
 
       {/* Afflictions & Blessings */}
-      <View style={styles.section}>
+      <View style={styles.section} accessible accessibilityLabel={vm.a11y.effects}>
         <SectionLabel size={10}>✠ AFFLICTIONS &amp; BLESSINGS</SectionLabel>
         <View style={styles.effectsList}>
           {vm.effects.length === 0 ? (
@@ -134,7 +138,7 @@ export default function CharacterScreen() {
       </View>
 
       {/* Equipment */}
-      <View style={styles.section}>
+      <View style={styles.section} accessible accessibilityLabel={vm.a11y.equipment}>
         <SectionLabel size={10}>✠ WORN &amp; WIELDED</SectionLabel>
         <View style={styles.equipRow}>
           <BodyDiagram />
@@ -157,7 +161,7 @@ export default function CharacterScreen() {
           onPress={() => router.push('/crucible')}
           style={({ pressed }) => [styles.crucibleBtn, pressed && { opacity: 0.7 }]}
           accessibilityRole="button"
-          accessibilityLabel="Open Token Crucible"
+          accessibilityLabel={vm.a11y.crucibleOpen}
         >
           <View style={{ flex: 1 }}>
             <Text style={styles.crucibleLabel}>✠ TOKEN CRUCIBLE</Text>

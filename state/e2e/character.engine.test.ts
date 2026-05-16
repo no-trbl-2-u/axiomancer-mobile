@@ -400,3 +400,31 @@ describe('selectCharacterViewModel: createCharacter fixture', () => {
         expect(vm.luck).toBeCloseTo(12);
     });
 });
+
+// ---------------------------------------------------------------------------
+// A11y wiring (AUDIT row [MED] /app/(tabs)/character — vm.a11y unused)
+// ---------------------------------------------------------------------------
+
+describe('selectCharacterViewModel: a11y block', () => {
+    it('surfaces the full set of section labels the character screen wires', () => {
+        const store = createGameStore(createMemoryAdapter());
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        // Every section the screen renders has a matching a11y label so
+        // the screen can wire `accessibilityLabel` without inventing
+        // strings at the view layer (Hard Rule #8).
+        expect(typeof vm.a11y.characterName).toBe('string');
+        expect(typeof vm.a11y.level).toBe('string');
+        expect(typeof vm.a11y.experience).toBe('string');
+        expect(typeof vm.a11y.baseStats).toBe('string');
+        expect(typeof vm.a11y.derivedStats).toBe('string');
+        expect(typeof vm.a11y.saves).toBe('string');
+        expect(typeof vm.a11y.equipment).toBe('string');
+        expect(typeof vm.a11y.effects).toBe('string');
+        // Crucible button label lives on the presenter (added when
+        // wiring the a11y block onto the screen) so the screen has no
+        // inline a11y literal for it either.
+        expect(vm.a11y.crucibleOpen).toBe('Open Token Crucible.');
+    });
+});

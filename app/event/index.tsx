@@ -42,7 +42,7 @@ function consequenceLabel(c: EventConsequence): string {
     return '';
 }
 
-function ConsequenceChips({ consequences }: { consequences: ReadonlyArray<EventConsequence> }) {
+function ConsequenceChips({ consequences }: { consequences: readonly EventConsequence[] }) {
     if (consequences.length === 0) return null;
     const shown = consequences.slice(0, 3);
     const overflow = consequences.length - shown.length;

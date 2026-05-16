@@ -1,17 +1,147 @@
 # Critique log
 
-> Last pass: 2026-05-15 at commit dfb3358
-> Pass count: 5
+> Last pass: 2026-05-16 at commit 08bcf5e
+> Pass count: 6
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
 > for the contract.
 >
-> **Pass-5 policy (set via `/oversight` 2026-05-15, satisfied):**
-> pause new critique passes until the Pending count drains to ≤ 3
-> rows. Pass 5 fired after the queue drained to 0 actionable rows.
+> **Pass-5 policy (set via `/oversight` 2026-05-15):** pause new
+> critique passes until the Pending count drains to ≤ 3 rows.
+> Pass 5 fired after the queue drained to 0. Pass 6 fired with
+> Pending=0 again (Phase 32 design-handoff port had just shipped;
+> the new surface deserved a fresh look). After pass 6 the
+> Pending count is 6 → the pause kicks in until `/iterate`
+> drains it back to ≤ 3.
 
 ## Pending
+
+### [HIGH] /app/event/index.tsx:217-218,291,298 — display literals still at view layer post Phase-32 port
+- pass: 6 (commit 08bcf5e)
+- viewport: repository
+- category: consistency
+- observation: After the Phase 32 prelude-chrome lift, four display
+  literals still live at the view layer (`BACK`, `RETURN`, `SKIP ›`,
+  `✠ A RECKONING`) — exact same Hard Rule #8 class that pass 5
+  closed for combat.tsx, exploration drawer, character
+  empty-effects, and inventory headers. The Phase 32 cleanup
+  focused on the prelude strip and stopped there.
+- evidence: `app/event/index.tsx:217` `<Text style={styles.choiceLabel}>BACK</Text>`;
+  `:218` `RETURN`; `:291` `SKIP ›`; `:298` `✠ A RECKONING`.
+  Neither `RECKONING` nor `BACK`/`RETURN`/`SKIP` appears in
+  `state/presenters/event.engine.ts`.
+- suggested fix: extend `EventViewModel` with the four chrome
+  strings (e.g. fold into `preludeChrome` or add a sibling
+  `chrome: { reckoningEyebrow, skipLabel, emptyBackLabel,
+  emptyBackSub }`) and read via `vm.chrome.*` in the screen.
+- source: web-fetch (reader sub-agent)
+
+### [MED] /scripts/smoke-screens.mjs:34-42 + /scripts/__tests__/smoke-screens.test.ts:11-21,56 — memoir route missing from smoke coverage
+- pass: 6 (commit 08bcf5e)
+- viewport: repository
+- category: consistency
+- observation: The smoke-screens ROUTES list and its mirror test
+  were not updated when Phase 33 added the MEMOIR tab; ROUTES
+  still lists 4 tabs (character / inventory / exploration /
+  combat) and the test description claims `all five primary
+  surfaces (root + 4 tabs)` — there are now 5 tabs, so visual
+  smoke coverage silently skips the new journal surface.
+- evidence: `scripts/smoke-screens.mjs:34-42` — `memoir` absent
+  from ROUTES; `scripts/__tests__/smoke-screens.test.ts:56`
+  `test('covers all five primary surfaces (root + 4 tabs)', …)`;
+  `app/(tabs)/memoir/index.tsx` exists (Phase 33 ticks A+B
+  shipped).
+- suggested fix: add `{ name: 'memoir', path: '/memoir' }` to
+  ROUTES in both files; bump test name to `six primary surfaces
+  (root + 5 tabs)`; add `'memoir'` to the arrayContaining
+  assertion.
+- source: web-fetch (reader sub-agent)
+
+### [MED] /plan/steps/01_build_plan.md + /plan/PHASE_CANDIDATES.md + /plan/phases/phase_{31,8}_*.md — SACK references not refreshed after SATCHEL rename
+- pass: 6 (commit 08bcf5e)
+- viewport: repository
+- category: docs
+- observation: Phase 32's SACK→SATCHEL rename landed in
+  `tabs.engine.ts` + `inventory.engine.ts` + the e2e tests, but
+  the build plan, candidate doc, phase 31 brief, and phase 8
+  brief all still spell the fourth tab `SACK` — a fresh
+  maintainer running `grep -r SACK` finds 11 files and has to
+  guess which strings are now-stale prose vs which are still
+  live (none are live; all 11 are docs).
+- evidence: `plan/steps/01_build_plan.md:288-289` post-Phase-31
+  line `WILDS · STRIFE · SELF · SACK`; `phase_31_…md:5,12,14`
+  `**all places** — WILDS · STRIFE · SELF · SACK`;
+  `phase_8_…md:29` `app/(tabs)/inventory/ # SACK tab`.
+- suggested fix: append a one-line `(later renamed SACK →
+  SATCHEL in Phase 32 — 2026-05-16)` annotation at the first
+  occurrence in each doc, OR sweep `SACK` → `SATCHEL` outside
+  historical-quote contexts (the critique Done rows can keep
+  SACK since they cite pre-Phase-31 state).
+- source: web-fetch (reader sub-agent)
+
+### [MED] /state/presenters/event.engine.ts:144-155 + :203-251 — `'ENCOUNTER'` literal duplicated between preludeChrome and badge
+- pass: 6 (commit 08bcf5e)
+- viewport: repository
+- category: consistency
+- observation: The prelude chrome's eyebrow string
+  `'ENCOUNTER'` / `'BOSS · ENCOUNTER'` is computed in
+  `withPreludeChrome`, while `composeCombatPrelude` separately
+  sets `badge = isBoss ? 'OMEN OF DOOM' : 'ENCOUNTER'` from the
+  same `isBoss`. Same `ENCOUNTER` literal lives in two places
+  derived from the same boolean. If a copy edit changes one,
+  the other drifts silently — the existing badge test asserts
+  `'OMEN OF DOOM'`, not the non-boss `'ENCOUNTER'`, so no test
+  catches the drift.
+- evidence: `state/presenters/event.engine.ts:151`
+  `eyebrow: vm.variant === 'boss' ? 'BOSS · ENCOUNTER' : 'ENCOUNTER'`;
+  `:205` `const badge = isBoss ? 'OMEN OF DOOM' : 'ENCOUNTER';`.
+- suggested fix: extract `const ENCOUNTER_LABEL = 'ENCOUNTER'`
+  at module scope and reference from both call sites; add a
+  hermetic test pinning the relationship
+  (`vm.preludeChrome.eyebrow.endsWith(ENCOUNTER_LABEL)` when
+  not boss, `vm.badge === ENCOUNTER_LABEL` when not boss).
+- source: web-fetch (reader sub-agent)
+
+### [LOW] /state/presenters/event.engine.ts:152 — `STRIFE STIRS` is verb-as-chrome
+- pass: 6 (commit 08bcf5e)
+- viewport: repository
+- category: voice
+- observation: Prelude chrome strings `ENCOUNTER` / `BOSS ·
+  ENCOUNTER` / `STRIFE STIRS` route through the VM correctly,
+  but `STRIFE STIRS` is stylistically odd as chrome: bearings
+  line 180 reserves UPPERCASE for chrome labels (TAB / SECTION)
+  and lowercase ritual for narrative. `STRIFE STIRS` reads as
+  narrative (subject + present-tense verb, sentence-shaped omen)
+  cased like chrome. The diagonal sash is a chrome element so
+  the rendering is defensible, but the phrasing tips toward
+  theatrical (`stirs` is the kind of present-tense verb the
+  bearings flag as fluff territory).
+- evidence: `state/presenters/event.engine.ts:152`
+  `sashLabel: 'STRIFE STIRS'`; `bearings.md:178-184` reserves
+  sans-uppercase for chrome and warns against modern fluff.
+- suggested fix: accept as intentional chrome and document the
+  verb-as-chrome exception in bearings, OR swap to a noun phrase
+  (e.g. `STRIFE`, `THE STRIFE`, `OMEN`) so chrome stays
+  noun-shaped.
+- source: web-fetch (reader sub-agent)
+
+### [LOW] /state/presenters/event.engine.ts:115 — empty-state body is second-person imperative + modern sentence-case
+- pass: 6 (commit 08bcf5e)
+- viewport: repository
+- category: voice
+- observation: Empty-state body `'Walk on. The world has not
+  yet stirred.'` is second-person imperative + sentence-case
+  modern — same shape pass 5 fixed for combat (`'The air
+  shivers. Combat begins.'` was moved to the VM and softened).
+  This one was moved to the VM but never re-voiced.
+- evidence: `state/presenters/event.engine.ts:115`
+  `body: 'Walk on. The world has not yet stirred.',` rendered
+  into `app/event/index.tsx:207`.
+- suggested fix: re-voice as lowercase ritual matching the
+  established `'the paths close.'` / `'none at hand.'` pattern
+  — e.g. `'the world is still.'` or `'no omen stirs.'`.
+- source: web-fetch (reader sub-agent)
 
 ## Done
 

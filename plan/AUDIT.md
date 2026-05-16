@@ -83,6 +83,14 @@
   and `/march` see the blocker and skip the dependent rows. Phase 16
   in the Status block stays `[skipped]`; PHASE_CANDIDATES rows 20/21
   stay un-promoted.
+- handoff doc: [`docs/engine-team-handoff-2026-05-16.md`](../docs/engine-team-handoff-2026-05-16.md).
+  Single-document brief written via `/oversight` 2026-05-16 to hand
+  off to the engine team. Covers three asks: top-level
+  `skillLibrary` re-export (Issue 1); broken `types.d.ts`
+  emission in 8 of 9 sub-paths (Issue 2 — real build bug found
+  during prep, not just mobile's problem); `PersistenceAdapter`
+  ergonomics (Issue 3). Each ask has a sanity-check command and
+  a phase-impact table.
 - watch: re-check `node_modules/axiomancer-mechanics/dist/index.d.ts`
   on every `pnpm install`. When `skillLibrary` is re-exported and the
   three missing `types.d.ts` files are present, flip Phase 16 to `[ ]`

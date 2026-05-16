@@ -377,3 +377,27 @@ describe('resolveCurrentMapEvent: engine consumedNodes population (Phase 27)', (
         }
     });
 });
+
+// ---------------------------------------------------------------------------
+// Drawer copy moved to the VM (CRITIQUE [MED] pass 5 — Hard Rule #8)
+// ---------------------------------------------------------------------------
+
+describe('selectExplorationViewModel: drawer copy', () => {
+    it('exposes a lowercase-ritual empty-state and swipe hint on the VM', () => {
+        const store = createGameStore(createMemoryAdapter());
+        const vm = selectExplorationViewModel(store.getState());
+
+        expect(vm.drawerCopy.emptyMessage).toBe('the paths close.');
+        expect(vm.drawerCopy.swipeHint).toBe('swipe →');
+    });
+
+    it('drops the prior sentence-case empty literal that mismatched the screen voice', () => {
+        const store = createGameStore(createMemoryAdapter());
+        const vm = selectExplorationViewModel(store.getState());
+
+        // Pin regression: the pre-fix copy started with a capital and
+        // an article. The voice unification dropped both.
+        expect(vm.drawerCopy.emptyMessage).not.toMatch(/^[A-Z]/);
+        expect(vm.drawerCopy.emptyMessage).not.toContain('No paths remain');
+    });
+});

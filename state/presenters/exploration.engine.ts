@@ -84,6 +84,13 @@ export interface ExplorationViewModel {
     actions: readonly ExplorationAction[];
     /** Next-step picker shown beneath the map (Q6). */
     options: readonly ExplorationOption[];
+    /**
+     * Drawer-strip copy. Lowercase ritual register; the screen renders
+     * verbatim so view-layer code carries no ritual copy (Hard Rule #8).
+     * `emptyMessage` is shown when `options` is empty; `swipeHint`
+     * appears in the drawer header when more than one option is listed.
+     */
+    drawerCopy: { emptyMessage: string; swipeHint: string };
     /** Optional event callout banner; `null` when no callout. */
     eventCallout: { title: string; iconKey: string } | null;
     /** Legend bottom strip — pre-formatted display strings. */
@@ -173,6 +180,11 @@ function buildActions(options: readonly ExplorationOption[]): ExplorationAction[
     }));
 }
 
+const DRAWER_COPY = {
+    emptyMessage: 'the paths close.',
+    swipeHint: 'swipe →',
+} as const;
+
 const FALLBACK_VM: ExplorationViewModel = {
     continent: 'CONTINENT · UNKNOWN',
     region: '—',
@@ -184,6 +196,7 @@ const FALLBACK_VM: ExplorationViewModel = {
     edges: [],
     actions: [],
     options: [],
+    drawerCopy: DRAWER_COPY,
     eventCallout: null,
     legend: { left: '● TRODDEN  ◌ OPEN  ✕ SHUT', right: '' },
 };
@@ -239,6 +252,7 @@ export function selectExplorationViewModel(state: GameStore): ExplorationViewMod
         edges,
         actions,
         options,
+        drawerCopy: DRAWER_COPY,
         eventCallout: null,
         legend: {
             left: '● TRODDEN  ◌ OPEN  ✕ SHUT',

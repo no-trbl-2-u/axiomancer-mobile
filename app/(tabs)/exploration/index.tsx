@@ -241,12 +241,12 @@ export default function ExplorationScreen() {
                 <View style={styles.drawerHeader}>
                     <SectionLabel size={10}>✠ WHITHER, PILGRIM?</SectionLabel>
                     {vm.options.length > 1 && (
-                        <Text style={styles.swipeHint}>swipe →</Text>
+                        <Text style={styles.swipeHint}>{vm.drawerCopy.swipeHint}</Text>
                     )}
                 </View>
                 {vm.options.length === 0 ? (
                     <View style={styles.drawerEmpty} testID="options-empty">
-                        <Text style={styles.drawerEmptyText}>No paths remain from here.</Text>
+                        <Text style={styles.drawerEmptyText}>{vm.drawerCopy.emptyMessage}</Text>
                     </View>
                 ) : (
                     <ScrollView

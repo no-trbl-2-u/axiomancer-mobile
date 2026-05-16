@@ -607,3 +607,34 @@ describe('selectCombatViewModel: store lifecycle', () => {
         expect(selectCombatViewModel(store.getState()).isInCombat).toBe(false);
     });
 });
+
+// ---------------------------------------------------------------------------
+// View-layer copy moved to the VM (CRITIQUE [MED] pass 5 — Hard Rule #8)
+// ---------------------------------------------------------------------------
+
+describe('selectCombatViewModel: presenter-sourced ritual copy', () => {
+    it('exposes a battle-log placeholder so the screen renders no literal copy', () => {
+        const store = createGameStore(createMemoryAdapter());
+        const vm = selectCombatViewModel(store.getState());
+
+        expect(vm.logEmptyMessage).toBe('The air shivers. Combat begins.');
+    });
+
+    it('exposes the flee-row sub-label so the action picker renders no literal copy', () => {
+        const store = createGameStore(createMemoryAdapter());
+        const vm = selectCombatViewModel(store.getState());
+
+        expect(vm.actionPicker.fleeHint).toBe('or … flee like a craven (luck save)');
+    });
+
+    it('still surfaces both copy fields once combat is active', () => {
+        const store = createGameStore(createMemoryAdapter());
+        store.getState().startCombat(makeEnemy());
+        const vm = selectCombatViewModel(store.getState());
+
+        expect(typeof vm.logEmptyMessage).toBe('string');
+        expect(vm.logEmptyMessage.length).toBeGreaterThan(0);
+        expect(typeof vm.actionPicker.fleeHint).toBe('string');
+        expect(vm.actionPicker.fleeHint.length).toBeGreaterThan(0);
+    });
+});

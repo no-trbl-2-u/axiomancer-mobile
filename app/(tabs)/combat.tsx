@@ -162,7 +162,7 @@ export default function CombatScreen() {
     return (
         <ScreenBg>
             <EnemyPanel vm={vm} />
-            <BattleLog log={vm.log} round={vm.round} />
+            <BattleLog log={vm.log} round={vm.round} emptyMessage={vm.logEmptyMessage} />
             <PlayerHud vm={vm} />
             <PhaseBottom
                 vm={vm}
@@ -249,15 +249,21 @@ function EnemyPanel({ vm }: { vm: CombatViewModel }) {
 // Battle log (Q4: full scroll + colour per severity)
 // ---------------------------------------------------------------------------
 
-function BattleLog({ log, round }: { log: readonly CombatLogEntryDisplay[]; round: number }) {
+function BattleLog({
+    log,
+    round,
+    emptyMessage,
+}: {
+    log: readonly CombatLogEntryDisplay[];
+    round: number;
+    emptyMessage: string;
+}) {
     return (
         <View style={styles.logWrap}>
             <View style={styles.logBox}>
                 <SectionLabel size={8} color={AXM.bone}>{`⚜ BATTLE LOG · ROUND ${round}`}</SectionLabel>
                 {log.length === 0 ? (
-                    <Text style={[styles.logLine, { color: AXM.bone }]}>
-                        The air shivers. Combat begins.
-                    </Text>
+                    <Text style={[styles.logLine, { color: AXM.bone }]}>{emptyMessage}</Text>
                 ) : (
                     <ScrollView
                         style={styles.logScroll}
@@ -426,6 +432,7 @@ function PickerCarousel({
                 <ActionPhase
                     options={vm.actionPicker.options}
                     fleeAvailable={vm.actionPicker.fleeAvailable}
+                    fleeHint={vm.actionPicker.fleeHint}
                     onPick={onPickAction}
                     onFlee={onFlee}
                 />
@@ -533,11 +540,13 @@ function StancePhase({
 function ActionPhase({
     options,
     fleeAvailable,
+    fleeHint,
     onPick,
     onFlee,
 }: {
     options: readonly ActionOption[];
     fleeAvailable: boolean;
+    fleeHint: string;
     onPick: (k: ActionOption['key']) => void;
     onFlee: () => void;
 }) {
@@ -574,7 +583,7 @@ function ActionPhase({
                     accessibilityRole="button"
                     accessibilityLabel="Flee combat"
                 >
-                    <Text style={action_styles.flee}>or … flee like a craven (luck save)</Text>
+                    <Text style={action_styles.flee}>{fleeHint}</Text>
                 </TouchableOpacity>
             )}
         </View>

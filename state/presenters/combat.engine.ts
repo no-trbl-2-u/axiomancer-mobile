@@ -159,6 +159,12 @@ export interface ActionPickerSlice {
      */
     fleeAvailable: boolean;
     fleeMessage: string;
+    /**
+     * Sub-label rendered beneath the flee button in the action picker.
+     * Lowercase ritual register; the screen renders verbatim. Lives on
+     * the VM so view-layer code carries no ritual copy (Hard Rule #8).
+     */
+    fleeHint: string;
 }
 
 export interface SkillOption {
@@ -230,6 +236,12 @@ export interface CombatViewModel {
     resolve: ResolveSlice;
     /** Full battle log; render in a scroll view. */
     log: readonly CombatLogEntryDisplay[];
+    /**
+     * Placeholder rendered when `log` is empty (combat just started).
+     * Lowercase ritual register; the screen renders verbatim — no
+     * view-layer literals (Hard Rule #8).
+     */
+    logEmptyMessage: string;
     /** Header line for the current phase. */
     phaseHeader: string;
     /** 0-based phase index for pip rendering (-1 when combat ended). */
@@ -759,10 +771,12 @@ export function selectCombatViewModel(
                 options: ACTION_DEFAULTS,
                 fleeAvailable: true,
                 fleeMessage: 'No fleeing yet.',
+                fleeHint: 'or … flee like a craven (luck save)',
             },
             skillPicker,
             resolve: resolveSliceFromState(null, null, null),
             log: [],
+            logEmptyMessage: 'The air shivers. Combat begins.',
             phaseHeader: PHASE_LABELS.choosing_stance,
             phaseIndex: 0,
             phaseOrder: PHASE_ORDER,
@@ -869,6 +883,7 @@ export function selectCombatViewModel(
             options: ACTION_DEFAULTS,
             fleeAvailable: true,
             fleeMessage: 'No fleeing yet.',
+            fleeHint: 'or … flee like a craven (luck save)',
         },
         skillPicker,
         resolve: resolveSliceFromState(
@@ -877,6 +892,7 @@ export function selectCombatViewModel(
             c,
         ),
         log,
+        logEmptyMessage: 'The air shivers. Combat begins.',
         phaseHeader: PHASE_LABELS[phase] ?? PHASE_LABELS.choosing_stance,
         phaseIndex,
         phaseOrder: PHASE_ORDER,

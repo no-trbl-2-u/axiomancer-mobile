@@ -277,7 +277,13 @@ Rule #8. None on the screen as literals.
    (rust)`, `-33..33 → 'UNDECLARED' (bone)`, `34..65 →
    'BENEVOLENT' (sulfur)`, `66..100 → 'SAINTLY' (parchment)`.
    Hermetic test pins the band boundaries; user can re-tune
-   in a one-line presenter edit.
+   in a one-line presenter edit. **Pending an alignment
+   document the user signaled they'll share soon (`/oversight`
+   2026-05-16) — the document will likely revise both labels
+   and cutoffs and may also redefine the philosophical
+   alignment heuristic in Decision §7. Tick C ships with the
+   placeholder; a follow-up commit re-tunes once the document
+   lands.**
 9. **Chronicle source = `state._recentEvents` only.** Not a
    separate persisted journal. The engine's ring buffer is
    the source of truth; capacity 20 means the chronicle

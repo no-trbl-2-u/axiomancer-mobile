@@ -1,15 +1,13 @@
 /**
- * MEMOIR presenter (Phase 33).
+ * MEMOIR presenter (Phase 33 — shipped).
  *
  * Pure mapper from `GameStore` to the journal surface's view-model.
- * Phase 33 Tick A ships the SHAPE only — every section returns an
- * empty / placeholder fixture so the screen mounts and tests can pin
- * the contract before the real reads land in Ticks B-D.
- *
- * - Tick A (this commit): VM shape + empty-section placeholders.
- * - Tick B: quests section reads `state.quests` (engine QuestLog).
- * - Tick C: moral + provisional philosophical alignment readouts.
- * - Tick D: chronicle from `state._recentEvents` (Phase 25 ring buffer).
+ * All four sections — chronicle, quests, moral + provisional
+ * philosophical alignment — read live engine state. The
+ * philosopher-quote slot stays `null` until exact alignments + a
+ * quote inventory ship in a follow-up phase. See the JSDoc on
+ * `selectMemoirViewModel` for the per-section read map and the
+ * Phase 33 sub-tick history.
  *
  * The screen consumes this VM via the slim-slice + `useMemo` pattern
  * (Phase 30 Tick A). Calling `useGameState(selectMemoirViewModel)`
@@ -470,21 +468,56 @@ function buildCompletedRows(
 }
 
 /**
- * Pure mapper from game state → `MemoirViewModel`.
+ * Pure mapper from game state → `MemoirViewModel`. Builds the full
+ * journal surface — header, chronicle, quests, alignment readouts —
+ * off the engine state in one pass.
  *
- * Tick A: returns the FALLBACK shape with the player's display
- * name substituted into the header sub-line where available.
- * Tick B (this commit): quests section reads `state.quests`
- * (engine `QuestLog`). Active rows mirror the engine's `Quest`
- * objects with their objectives; completed rows mirror the
- * engine's `completed: QuestName[]` (engine drops the full Quest
- * on completion — the row carries just the name). Forgotten
- * stays empty: the engine has no failed-quest concept today, so
- * the field is reserved for future expansion without forcing a
- * schema change.
- * Ticks C-D populate alignment + chronicle in turn; the shape
- * contract pinned by `state/e2e/memoir.engine.test.ts` stays
- * stable across those extensions.
+ * Each section reads from a distinct slice:
+ *
+ * - **Header sub-line** — substitutes the player's display name into
+ *   `"<name>, pilgrim."` when `state.player.name` is populated; falls
+ *   back to the FALLBACK header otherwise.
+ * - **Quests** — reads `state.quests` (engine `QuestLog`). Active
+ *   rows mirror the engine's `Quest` objects with their objectives;
+ *   completed rows mirror the engine's `completed: QuestName[]` (the
+ *   engine drops the full Quest on completion, so the row carries
+ *   just the name). `forgotten` stays empty — the engine has no
+ *   failed-quest concept today; the field is reserved for future
+ *   expansion without forcing a schema change.
+ * - **Moral alignment** — reads `state.moralMeter` (number in
+ *   [-100, 100]) and buckets into one of five bands per
+ *   `MORAL_BANDS` (RUTHLESS / STERN / UNDECLARED / BENEVOLENT /
+ *   SAINTLY) with a tint-key for the chip.
+ * - **Philosophical alignment** — provisional heuristic that reads
+ *   `state.player.baseStats` and picks the highest of
+ *   `{ heart, body, mind }`. Pairwise ties favour Heart; 3-way tie
+ *   returns the documented `untested.` empty state.
+ *   `provisional: true` until exact alignments are defined upstream.
+ * - **Chronicle** — reads `state._recentEvents` (Phase 25 ring
+ *   buffer, capacity 20) and folds typed events into reverse-
+ *   chronological `ChronicleEntry` rows via `buildChronicle`. Combat
+ *   outcomes → FELLED / ROUTED BY / PARLEYED WITH; levelups → ROSE
+ *   TO N; world:moved (continent transition only) → CROSSED INTO X;
+ *   dialogue:applied with extractable npcName → SPOKE WITH X. Other
+ *   event kinds are skipped per the brief. Capped at
+ *   `CHRONICLE_VISIBLE_CAP` (12) rows; the screen scrolls if more
+ *   exist.
+ * - **Philosopher quote** — currently always `null`. A follow-up
+ *   phase wires the lookup once exact alignments + a quote inventory
+ *   are defined.
+ *
+ * The view-model shape is pinned by `state/e2e/memoir.engine.test.ts`;
+ * extensions to any section must keep the contract stable.
+ *
+ * ## Phase 33 history
+ *
+ * Shipped across 4 sub-ticks on 2026-05-16, all closed via Phase 33's
+ * DoD tick (`6c1ddfa`):
+ * - Tick A `6515cb5` — route + skeleton VM + empty fixtures.
+ * - Tick B `2f70eac` — quests section reads `state.quests`.
+ * - Tick C `6105b90` — moral bands + provisional philosophical
+ *   alignment from `baseStats`.
+ * - Tick D `9ccdee2` — chronicle from `_recentEvents`.
  */
 export function selectMemoirViewModel(state: GameStore): MemoirViewModel {
     const player = state.player;

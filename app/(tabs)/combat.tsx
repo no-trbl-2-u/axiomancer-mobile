@@ -7,11 +7,20 @@
  * (`combat.phase`); the screen only previews the player's current
  * stance via local UI state until the player commits.
  *
- * Q5 carousel: the three pickers (stance / action / skill) sit in a
- * horizontal pager so the player can slide left from "action" to
- * reselect a stance, or slide right to "skills". The pager position
- * stays in sync with the engine phase. Resolving the round swaps the
- * pager out for the resolve panel.
+ * Phase layout (Phase 32 sub-tick C, commit `9222bf9` — port from
+ * the Claude Design handoff): the four phases stance / action /
+ * skill / resolving render as a vertical PhaseStack. Each row sits
+ * in one of three states:
+ *   - past    — collapsed to one line with a right-aligned summary
+ *               of the committed value (e.g. "BODY" / "STRIKE");
+ *   - current — expanded panel with the active picker inline +
+ *               sulfur dot indicator on the header strip;
+ *   - future  — dimmed label only in ash, no body.
+ * The skill row hides itself when the picked action wasn't 'skill'
+ * (driven by `vm.phaseStack[i].visible`). Pre-Phase-32 this surface
+ * was a horizontal swipe carousel; the swap removed the swipe-to-
+ * change-phase affordance — committed phases stay committed within
+ * a round.
  */
 
 import React, { useCallback, useEffect, useState } from 'react';
@@ -309,7 +318,7 @@ function PlayerHud({ vm }: { vm: CombatViewModel }) {
 }
 
 // ---------------------------------------------------------------------------
-// Phase bottom panel — header + carousel pager
+// Phase bottom panel — header + vertical PhaseStack
 // ---------------------------------------------------------------------------
 
 interface PhaseBottomProps {

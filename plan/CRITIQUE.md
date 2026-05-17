@@ -87,23 +87,6 @@
   contract`.
 - source: web-fetch (reader sub-agent)
 
-### [MED] /app/(tabs)/exploration/index.tsx:281,324 — drawer header + LEAGUES column label inline
-- pass: 8 (commit 9a4bdeb)
-- viewport: repository
-- category: voice
-- observation: `✠ WHITHER, PILGRIM?` drawer header
-  (pre-existing) and the step-card `LEAGUES` column label
-  (fresh from spec32 tick B) are inline in the view layer.
-  `vm.options[].leagues` was lifted but its column label
-  was missed.
-- evidence: `exploration/index.tsx:281`
-  `<SectionLabel size={10}>✠ WHITHER, PILGRIM?</SectionLabel>`;
-  `:324` `<Text style={styles.stepCardLeaguesLabel}>LEAGUES</Text>`.
-- suggested fix: add `vm.drawerCopy.title` (or new
-  `vm.drawerChrome.title`) + `vm.drawerCopy.leaguesLabel`;
-  render verbatim; pin in `state/e2e/exploration.engine.test.ts`.
-- source: web-fetch (reader sub-agent)
-
 ### [MED] /components/event/EncounterModalOverlay.tsx — no component test pins the overlay surface
 - pass: 8 (commit 9a4bdeb)
 - viewport: repository
@@ -164,6 +147,18 @@
   verb-as-chrome exception is now pinned in
   `plan/bearings.md` Hard Rules so future critique passes
   don't re-surface this row.
+
+### [MED] /app/(tabs)/exploration/index.tsx:281,324 — drawer header + LEAGUES column label lifted onto VM ✅
+- pass: 8 (commit 9a4bdeb); addressed at commit 6251e83
+- issue: #72
+- viewport: repository
+- category: voice
+- observation: WHITHER PILGRIM eyebrow + LEAGUES column label
+  were inline JSX; same Hard Rule #8 class drained pass 6/7.
+- fix: extended `ExplorationViewModel.drawerCopy` with `title`
+  + `leaguesLabel`; populated in `DRAWER_COPY` constant;
+  screen reads `vm.drawerCopy.title` + `…leaguesLabel`. 2
+  pins added to the existing drawer-copy test case.
 
 ### [MED] /plan/steps/01_build_plan.md:334-335 — Phase 33 row body refreshed SACK → SATCHEL ✅
 - pass: 7 (commit 3385951); addressed at commit 2f846a3

@@ -152,7 +152,7 @@ const EMPTY_VM: EventViewModel = {
     badgeAccentKey: 'bone',
     title: 'NO EVENT IN PROGRESS',
     subtitle: '',
-    body: 'Walk on. The world has not yet stirred.',
+    body: 'the world is still.',
     choices: [],
     lore: null,
     canSkip: false,

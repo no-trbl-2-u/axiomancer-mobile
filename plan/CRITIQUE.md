@@ -39,26 +39,6 @@
   here).
 - source: web-fetch (reader sub-agent)
 
-### [MED] /app/(tabs)/memoir/index.tsx + /state/presenters/memoir.engine.ts:358-359 — VM `emptyMoral` / `emptyPhilosophical` strings unconsumed
-- pass: 7 (commit 3385951)
-- viewport: repository
-- category: consistency
-- observation: VM exposes `emptyMoral` and `emptyPhilosophical`
-  strings but the screen's MeasureSection renders the chip
-  directly with no empty-state branch — same class as the
-  `vm.a11y` unconsumed-field finding that drained in pass 4.
-  Dead VM contract that drifts silently.
-- evidence: `memoir.engine.ts:358` `emptyMoral: 'the scales
-  are level.'`; `grep emptyMoral|emptyPhilosophical
-  app/(tabs)/memoir/index.tsx` → no matches.
-- suggested fix: consume both fields in the measure section
-  (render `emptyPhilosophical` when
-  `philosophicalAlignment.label === 'untested.'`; render
-  `emptyMoral` when `moralAlignment.chip.label ===
-  'UNDECLARED'`), OR drop the fields from the VM + the
-  contract test.
-- source: web-fetch (reader sub-agent)
-
 ### [LOW] /state/presenters/memoir.engine.ts:127,359 — `'untested.'` inconsistency between chip label and empty-state line
 - pass: 7 (commit 3385951)
 - viewport: repository
@@ -140,6 +120,22 @@
   verb-as-chrome exception is now pinned in
   `plan/bearings.md` Hard Rules so future critique passes
   don't re-surface this row.
+
+### [MED] /app/(tabs)/memoir/index.tsx + memoir.engine.ts:358-359 — VM `emptyMoral` / `emptyPhilosophical` strings now consumed ✅
+- pass: 7 (commit 3385951); addressed at commit 883af26
+- issue: #67
+- viewport: repository
+- category: consistency
+- observation: VM exposed `emptyMoral` + `emptyPhilosophical`
+  strings the screen never read — dead VM contract, same
+  class as the `vm.a11y` finding drained pass 4.
+- fix: MeasureSection now renders `emptyMoral` beneath the
+  moral chip when label === 'UNDECLARED'; renders
+  `emptyPhilosophical` beneath the philosophical chip when
+  label === 'untested.'. Satisfies the Phase 33 brief
+  §"Empty / loading / error states" copy contract. New
+  testIDs `memoir-moral-empty` + `memoir-philosophical-empty`
+  for future smoke-render pins.
 
 ### [MED] /state/presenters/memoir.engine.ts:236,244 — `PARLEYED WITH` for flee outcome → re-voiced to FLED ✅
 - pass: 7 (commit 3385951); addressed at commit 8717d8e

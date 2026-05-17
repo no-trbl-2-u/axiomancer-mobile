@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-05-16 at commit 3385951
-> Pass count: 7
+> Last pass: 2026-05-16 at commit 9a4bdeb
+> Pass count: 8
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -13,8 +13,13 @@
 > Pending=0 again. Pass 6 closed 3 of 6 findings via /iterate
 > (HIGH event.tsx chrome, MED ENCOUNTER dedup, LOW empty-state
 > voice). Pass 7 fired at Pending=3 (threshold met) — Phase 33
-> shipped 4 sub-ticks since pass 6 and the new MEMOIR surface
-> deserved a fresh look. After pass 7 Pending = 9 → pause
+> shipped 4 sub-ticks since pass 6. Pass 7 closed 5 of 6 (HIGH
+> memoir QuestCard glyphs, MED memoir JSDoc, MED PARLEYED→FLED,
+> MED memoir empty-fields, MED smoke-screens memoir; LOW STRIFE
+> STIRS accepted-as-design via oversight). Pass 8 fired at
+> Pending=3 (threshold met again) after 3 more Phase 32 sub-
+> ticks shipped (exploration step-cards, combat phase-stack,
+> encounter-modal-over-map). After pass 8 Pending = 9 → pause
 > re-engages until /iterate drains back to ≤ 3.
 
 ## Pending
@@ -79,6 +84,124 @@
   occurrence in each doc, OR sweep `SACK` → `SATCHEL` outside
   historical-quote contexts (the critique Done rows can keep
   SACK since they cite pre-Phase-31 state).
+- source: web-fetch (reader sub-agent)
+
+### [HIGH] /app/(tabs)/combat.tsx:761 — ResolvePanel button inlines `✠ DEPART` / `✠ NEXT ROUND`
+- pass: 8 (commit 9a4bdeb)
+- viewport: repository
+- category: voice
+- observation: ResolvePanel's continue button renders one of
+  two chrome literals (`'✠ DEPART'` when combat ended,
+  `'✠ NEXT ROUND'` otherwise) directly in JSX with no VM
+  field — Hard Rule #8 class, same shape as the event.tsx
+  chrome literals drained pass 6.
+- evidence: `app/(tabs)/combat.tsx:761`
+  `{isEnded ? '✠ DEPART' : '✠ NEXT ROUND'}`; no
+  `vm.resolve.continueLabel` field on `ResolveSlice`.
+- suggested fix: add `nextActionLabel: string` to
+  `ResolveSlice` in `state/presenters/combat.engine.ts`
+  (populated as 'DEPART' or 'NEXT ROUND' depending on phase),
+  render `{vm.resolve.nextActionLabel}`; pin in
+  `state/e2e/combat.engine.test.ts`.
+- source: web-fetch (reader sub-agent)
+
+### [HIGH] /app/(tabs)/combat.tsx:9-15,312 — file-level + section JSDoc still describes the removed swipe carousel
+- pass: 8 (commit 9a4bdeb)
+- viewport: repository
+- category: docs
+- observation: File-level JSDoc and the `PhaseBottom`
+  section banner still describe the horizontal swipe
+  carousel that was removed in commit `9222bf9` (Phase 32
+  sub-tick C). A first-time reader will look for swipe /
+  pager code that no longer exists.
+- evidence: `combat.tsx:10-14` `Q5 carousel: the three
+  pickers … sit in a horizontal pager so the player can
+  slide left … The pager position stays in sync …`;
+  `:312` `Phase bottom panel — header + carousel pager`.
+- suggested fix: rewrite both blocks to describe the
+  vertical phase-stack pattern (past collapsed → current
+  expanded → future dimmed) and reference the Phase 32
+  port commit `9222bf9`.
+- source: web-fetch (reader sub-agent)
+
+### [MED] /components/event/EncounterModalOverlay.tsx:42-43 — chrome strings at module scope instead of on `vm.preludeChrome`
+- pass: 8 (commit 9a4bdeb)
+- viewport: repository
+- category: voice
+- observation: Two encounter-modal chrome strings
+  (`SEAL_LABEL = 'SEALED · NO RETREAT'`,
+  `FLEE_DISABLED_HINT = 'no retreat from this one.'`) sit
+  at view-module scope. The established pattern from pass
+  6's `ENCOUNTER_LABEL` drain routes prelude chrome through
+  `vm.preludeChrome` so the presenter is the single source
+  of truth.
+- evidence: `EncounterModalOverlay.tsx:42-43` constants;
+  `state/presenters/event.engine.ts:83` `PreludeChrome`
+  interface carries only `eyebrow` + `sashLabel`.
+- suggested fix: extend `PreludeChrome` with `sealLabel`
+  + `fleeDisabledHint`; populate in `withPreludeChrome`;
+  render `vm.preludeChrome.sealLabel` / `…fleeDisabledHint`;
+  pin in `state/e2e/event.engine.test.ts: preludeChrome
+  contract`.
+- source: web-fetch (reader sub-agent)
+
+### [MED] /app/(tabs)/exploration/index.tsx:281,324 — drawer header + LEAGUES column label inline
+- pass: 8 (commit 9a4bdeb)
+- viewport: repository
+- category: voice
+- observation: `✠ WHITHER, PILGRIM?` drawer header
+  (pre-existing) and the step-card `LEAGUES` column label
+  (fresh from spec32 tick B) are inline in the view layer.
+  `vm.options[].leagues` was lifted but its column label
+  was missed.
+- evidence: `exploration/index.tsx:281`
+  `<SectionLabel size={10}>✠ WHITHER, PILGRIM?</SectionLabel>`;
+  `:324` `<Text style={styles.stepCardLeaguesLabel}>LEAGUES</Text>`.
+- suggested fix: add `vm.drawerCopy.title` (or new
+  `vm.drawerChrome.title`) + `vm.drawerCopy.leaguesLabel`;
+  render verbatim; pin in `state/e2e/exploration.engine.test.ts`.
+- source: web-fetch (reader sub-agent)
+
+### [MED] /components/event/EncounterModalOverlay.tsx — no component test pins the overlay surface
+- pass: 8 (commit 9a4bdeb)
+- viewport: repository
+- category: comprehension
+- observation: The new EncounterModalOverlay (~330 lines)
+  ships without a component test. The seam was pinned at
+  the presenter layer in spec32 tick D
+  (`encounter-modal seam`), but the overlay's mount
+  condition (`vm.kind !== 'combat-prelude'` early-return),
+  FLEE-disabled-for-boss branch, and non-dismissible
+  backdrop are all untested. A future refactor could break
+  the no-retreat invariant without any test failing.
+- evidence: `Glob '**/EncounterModalOverlay*'` returns only
+  the source file; `state/e2e/exploration.engine.test.ts:488-525`
+  covers the data layer only.
+- suggested fix: add `components/event/__tests__/EncounterModalOverlay.test.tsx`
+  with (a) returns null on non-combat-prelude VM,
+  (b) FLEE disabled when `variant === 'boss'`,
+  (c) backdrop has no onPress handler (assert
+  non-dismissibility).
+- source: web-fetch (reader sub-agent)
+
+### [LOW] /state/e2e/combat.engine.test.ts — buildPhaseStack `'ended'` branch untested
+- pass: 8 (commit 9a4bdeb)
+- viewport: repository
+- category: comprehension
+- observation: The phaseStack contract tests cover the
+  stance/action/skill/resolving states + past-summary
+  collapse, but never assert the `phase === 'ended'`
+  branch. The `currentPhase === 'ended' ? 'resolving' :
+  currentPhase` mapping in `buildPhaseStack` is untested
+  — a regression that collapsed every row to `past`
+  post-fight would ship green.
+- evidence: `grep "'ended'" state/e2e/combat.engine.test.ts`
+  → no matches in phaseStack section; `combat.engine.ts:393-409`
+  explicitly special-cases ended.
+- suggested fix: add one test — drive combat to
+  `phase === 'ended'`, assert
+  `phaseStack[3].state === 'current'` and
+  `phaseStack[3].label === 'IV · LET'`.
 - source: web-fetch (reader sub-agent)
 
 ## Done

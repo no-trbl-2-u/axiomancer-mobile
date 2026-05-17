@@ -59,27 +59,6 @@
   contract test.
 - source: web-fetch (reader sub-agent)
 
-### [MED] /state/presenters/memoir.engine.ts:236,244 — `PARLEYED WITH` / `talks turn aside.` for flee outcome reads as lying
-- pass: 7 (commit 3385951)
-- viewport: repository
-- category: voice
-- observation: Chronicle maps `combat:ended` outcome `'flee'`
-  to label `'PARLEYED WITH'` + body `'talks turn aside.'`.
-  The brief specified this mapping but a player who FLED
-  will see the journal claim they NEGOTIATED — the chronicle
-  reads as misleading rather than archaic. (The brief was
-  speculative — current combat mechanics have no parley
-  outcome — and the loop honored it literally; reader is
-  right that it lies.)
-- evidence: `memoir.engine.ts:236` outcome `'flee'` → label
-  `'PARLEYED WITH'`; `:244` body `'talks turn aside.'`.
-- suggested fix: rename label/body to something honest in
-  cold-old register — e.g. label `FLED` / `WITHDREW` /
-  `BROKE OFF` and body `the path bends away.` Update the
-  Tick D chronicle test fixture in lockstep
-  (`state/e2e/memoir.engine.test.ts:flee mapping case`).
-- source: web-fetch (reader sub-agent)
-
 ### [LOW] /state/presenters/memoir.engine.ts:127,359 — `'untested.'` inconsistency between chip label and empty-state line
 - pass: 7 (commit 3385951)
 - viewport: repository
@@ -161,6 +140,23 @@
   verb-as-chrome exception is now pinned in
   `plan/bearings.md` Hard Rules so future critique passes
   don't re-surface this row.
+
+### [MED] /state/presenters/memoir.engine.ts:236,244 — `PARLEYED WITH` for flee outcome → re-voiced to FLED ✅
+- pass: 7 (commit 3385951); addressed at commit 8717d8e
+- issue: #66
+- viewport: repository
+- category: voice
+- observation: Chronicle was mapping the flee outcome to
+  `'PARLEYED WITH'` / `'talks turn aside.'` — the engine has
+  no parley outcome today, so the journal was claiming the
+  player negotiated when they actually fled. Pass-7 reader
+  flagged it as lying; /oversight 2026-05-16 chose Re-voice
+  to FLED.
+- fix: `buildChronicle` flee branch now emits label `'FLED'`
+  + body `'the path bends away.'` matching the FELLED /
+  ROUTED BY register. JSDoc updated; test fixture flipped
+  in lockstep. PARLEYED WITH can return as its own mapping
+  when/if the engine ships a real parley outcome.
 
 ### [MED] /state/presenters/memoir.engine.ts:447-462 — `selectMemoirViewModel` JSDoc stale after Ticks C+D shipped ✅
 - pass: 7 (commit 3385951); addressed at commit c15c755

@@ -362,7 +362,7 @@ describe('selectMemoirViewModel: provisional philosophical alignment', () => {
 //
 // Per Phase 33 brief §"Tick D": mapper folds engine events into
 // reverse-chronological ChronicleEntry rows. Combat outcomes →
-// FELLED/ROUTED/PARLEYED; levelups → ROSE TO N; world:moved (continent
+// FELLED/ROUTED/FLED; levelups → ROSE TO N; world:moved (continent
 // change only) → CROSSED INTO X; dialogue:applied (when NPC name
 // extractable) → SPOKE WITH X. All other event kinds skipped.
 // ---------------------------------------------------------------------------
@@ -415,7 +415,7 @@ describe('selectMemoirViewModel: chronicle (Tick D)', () => {
         expect(vm.chronicle[0]?.body).toBe('the path turns dark.');
     });
 
-    it('maps a combat:ended flee event to PARLEYED WITH', () => {
+    it('maps a combat:ended flee event to FLED', () => {
         const store = createGameStore(createMemoryAdapter());
         setRecentEvents(store, [
             {
@@ -424,8 +424,8 @@ describe('selectMemoirViewModel: chronicle (Tick D)', () => {
             },
         ]);
         const vm = selectMemoirViewModel(store.getState());
-        expect(vm.chronicle[0]?.label).toBe('PARLEYED WITH');
-        expect(vm.chronicle[0]?.body).toBe('talks turn aside.');
+        expect(vm.chronicle[0]?.label).toBe('FLED');
+        expect(vm.chronicle[0]?.body).toBe('the path bends away.');
     });
 
     it('maps a character:levelup event to ROSE TO <level>', () => {

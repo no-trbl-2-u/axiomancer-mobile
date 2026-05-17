@@ -209,9 +209,14 @@ const STAT_PROPER_NAME: Readonly<Record<'heart' | 'body' | 'mind', string>> = Ob
  * ring buffer, capacity 20) and emits at most `CHRONICLE_VISIBLE_CAP`
  * entries in reverse-chronological order. Per Phase 33 brief §"Tick D":
  *
- * - `combat:ended` → "FELLED" / "ROUTED BY" / "PARLEYED WITH" depending
- *   on `report.outcome` (engine outcomes are 'victory' / 'defeat' /
- *   'flee'; the brief's "parleyed with" is the closest match for flee).
+ * - `combat:ended` → "FELLED" / "ROUTED BY" / "FLED" depending on
+ *   `report.outcome` (engine outcomes are 'victory' / 'defeat' /
+ *   'flee'). The Phase 33 brief originally targeted "PARLEYED WITH"
+ *   for the flee outcome; CRITIQUE pass 7 + /oversight 2026-05-16
+ *   reverted that to "FLED" because the engine has no parley outcome
+ *   today and the journal was reading as misleading (player fled,
+ *   chronicle claimed they negotiated). When/if engine ships a real
+ *   parley outcome, PARLEYED WITH can return as its own mapping.
  *   Enemy name is lost from the event payload after END_COMBAT (the
  *   reducer clears `state.combat`), so the body line carries the
  *   outcome flavour + xp grant rather than naming the foe.
@@ -249,7 +254,7 @@ function buildChronicle(rawEvents: unknown): ReadonlyArray<ChronicleEntry> {
                     ? 'FELLED'
                     : outcome === 'defeat'
                       ? 'ROUTED BY'
-                      : 'PARLEYED WITH';
+                      : 'FLED';
             const body =
                 outcome === 'victory'
                     ? xp > 0
@@ -257,7 +262,7 @@ function buildChronicle(rawEvents: unknown): ReadonlyArray<ChronicleEntry> {
                         : 'a foe falls.'
                     : outcome === 'defeat'
                       ? 'the path turns dark.'
-                      : 'talks turn aside.';
+                      : 'the path bends away.';
             entries.push(
                 Object.freeze({
                     id: `combat-${ordinal}`,
@@ -496,7 +501,7 @@ function buildCompletedRows(
  * - **Chronicle** — reads `state._recentEvents` (Phase 25 ring
  *   buffer, capacity 20) and folds typed events into reverse-
  *   chronological `ChronicleEntry` rows via `buildChronicle`. Combat
- *   outcomes → FELLED / ROUTED BY / PARLEYED WITH; levelups → ROSE
+ *   outcomes → FELLED / ROUTED BY / FLED; levelups → ROSE
  *   TO N; world:moved (continent transition only) → CROSSED INTO X;
  *   dialogue:applied with extractable npcName → SPOKE WITH X. Other
  *   event kinds are skipped per the brief. Capped at

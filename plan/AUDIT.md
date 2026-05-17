@@ -3,18 +3,25 @@
 > Latest findings from `/iterate audit`. Rewritten on each
 > audit pass. The Pending list at the bottom queues `/iterate`.
 
-> Bias: event-surface (set via `/oversight` 2026-05-16 after
-> critique pass 6 surfaced 5 findings clustered on
-> `app/event/index.tsx` + `state/presenters/event.engine.ts`).
-> `/iterate` weights cluster members 1.5× until the surface is
-> drained: HIGH literal-lift (BACK / RETURN / SKIP / RECKONING)
-> first, then the MED ENCOUNTER duplicate-const extraction,
-> then the two LOW voice tweaks (STRIFE STIRS chrome /
-> "Walk on. The world..." empty-state). Once those 4 rows
+> Bias: memoir-surface (set via `/oversight` 2026-05-16 after
+> critique pass 7 surfaced 4 MED findings clustered on
+> `state/presenters/memoir.engine.ts` +
+> `app/(tabs)/memoir/index.tsx` — same shape as the
+> event-surface cluster that followed the Phase 32 port).
+> `/iterate` weights cluster members 1.5× until the surface
+> drains: the 4 MED rows (JSDoc stale, `emptyMoral` /
+> `emptyPhilosophical` unconsumed, PARLEYED-WITH-for-flee
+> re-voice to FLED per oversight 2026-05-16, and the Phase 33
+> shipped-state body SACK → SATCHEL fix) plus the LOW
+> `'untested.'` chip-vs-narrative split. Once those rows
 > close, bias resets and `/iterate` resumes natural HIGH-first
-> ordering across the remaining queue (smoke-screens memoir +
-> SACK docs sweep). Prior bias was `none` (reset 2026-05-16
-> after Phase 30 shipped the hermetic render-coverage harness).
+> ordering across the remaining queue (smoke-screens memoir
+> route + SACK docs sweep). Prior event-surface bias closed
+> 2026-05-16 after 3 of 4 cluster rows drained
+> (HIGH event.tsx chrome `994fb02`, MED ENCOUNTER dedup
+> `11c47db`, LOW empty-state voice `d6bf779`); the 4th cluster
+> row (LOW STRIFE STIRS) is moving to Done as
+> `[accepted-as-design]` per oversight 2026-05-16.
 
 ## Top 5 findings (scored) — 2026-05-13 (stale; archived below)
 

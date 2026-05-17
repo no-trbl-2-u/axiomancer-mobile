@@ -182,6 +182,16 @@ Authoritative file: [`theme/axm.ts`](../theme/axm.ts).
   thou / thy / thine / ye) — those tip into Renaissance-fair
   territory. Keep the register *cold and old*, not theatrical.
   Set via oversight 2026-05-15.
+- **Verb-as-chrome exception (set via oversight 2026-05-16):**
+  uppercase chrome labels are usually nouns (`ENCOUNTER`,
+  `STRIFE`, `MEMOIR`, `WILDS`). One deliberate exception:
+  the encounter-modal diagonal sash on combat-prelude events
+  carries the in-world omen `STRIFE STIRS` — subject + verb
+  — because the sash reads as a diegetic flag struck onto
+  the encounter card rather than as plain UI chrome. Future
+  critique passes should treat this and similar
+  sash-as-omen patterns as design, not as fluff. New
+  exceptions land here via `/oversight`.
 
 ## Plan expansion posture
 

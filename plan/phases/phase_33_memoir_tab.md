@@ -77,7 +77,12 @@ flows belong to the surfaces that already drive engine state
   20, shipped Phase 25). Each engine event maps to one entry
   shape via a pure mapper:
   - `combat:ended` → "FELLED <enemy>" or "ROUTED BY <enemy>" or
-    "PARLEYED WITH <enemy>"
+    "PARLEYED WITH <enemy>" *(superseded by /oversight
+    2026-05-16: the flee outcome now maps to `FLED` /
+    `the path bends away.` instead — engine has no parley
+    outcome today, so "PARLEYED WITH" was reading as lying to
+    the player per CRITIQUE pass 7 reader. The PARLEYED label
+    can return when the engine adds a real parley outcome.)*
   - `character:levelup` → "ROSE TO <level>"
   - `world:moved` with continent change → "CROSSED INTO
     <continent>"

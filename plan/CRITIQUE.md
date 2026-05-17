@@ -162,30 +162,24 @@
   SACK since they cite pre-Phase-31 state).
 - source: web-fetch (reader sub-agent)
 
-### [LOW] /state/presenters/event.engine.ts:152 — `STRIFE STIRS` is verb-as-chrome
-- pass: 6 (commit 08bcf5e)
+## Done
+
+### [LOW] /state/presenters/event.engine.ts:152 — `STRIFE STIRS` is verb-as-chrome — `[accepted-as-design]` ✅
+- pass: 6 (commit 08bcf5e); resolved via /oversight 2026-05-16
 - viewport: repository
 - category: voice
-- observation: Prelude chrome strings `ENCOUNTER` / `BOSS ·
-  ENCOUNTER` / `STRIFE STIRS` route through the VM correctly,
-  but `STRIFE STIRS` is stylistically odd as chrome: bearings
-  line 180 reserves UPPERCASE for chrome labels (TAB / SECTION)
-  and lowercase ritual for narrative. `STRIFE STIRS` reads as
-  narrative (subject + present-tense verb, sentence-shaped omen)
-  cased like chrome. The diagonal sash is a chrome element so
-  the rendering is defensible, but the phrasing tips toward
-  theatrical (`stirs` is the kind of present-tense verb the
-  bearings flag as fluff territory).
-- evidence: `state/presenters/event.engine.ts:152`
-  `sashLabel: 'STRIFE STIRS'`; `bearings.md:178-184` reserves
-  sans-uppercase for chrome and warns against modern fluff.
-- suggested fix: accept as intentional chrome and document the
-  verb-as-chrome exception in bearings, OR swap to a noun phrase
-  (e.g. `STRIFE`, `THE STRIFE`, `OMEN`) so chrome stays
-  noun-shaped.
-- source: web-fetch (reader sub-agent)
-
-## Done
+- observation: Reader twice flagged the sash text as
+  sentence-shaped (subject + present-tense verb) cased like
+  chrome — bearings line 180 reserves uppercase for chrome
+  labels and lowercase ritual for narrative.
+- resolution: **Accepted as intentional design.** The sash
+  itself is a chrome element (diagonal flag at the
+  illustration's top-left), and the slightly-verb-shaped
+  phrasing reads as an in-world omen on the encounter card
+  rather than as inappropriate narrative-in-chrome. A
+  verb-as-chrome exception is now pinned in
+  `plan/bearings.md` Hard Rules so future critique passes
+  don't re-surface this row.
 
 ### [HIGH] /app/(tabs)/memoir/index.tsx:42 — QuestCard inlines objective bullet glyphs ✅
 - pass: 7 (commit 3385951); addressed at commit 40db0e3

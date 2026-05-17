@@ -14,6 +14,7 @@ describe('smoke-screens helpers', () => {
         { name: 'inventory', path: '/inventory' },
         { name: 'exploration', path: '/exploration' },
         { name: 'combat', path: '/combat' },
+        { name: 'memoir', path: '/memoir' },
     ]
 
     const DIFF_THRESHOLD_RATIO = 0.005
@@ -53,10 +54,17 @@ describe('smoke-screens helpers', () => {
     }
 
     describe('ROUTES', () => {
-        test('covers all five primary surfaces (root + 4 tabs)', () => {
+        test('covers all six primary surfaces (root + 5 tabs)', () => {
             const names = ROUTES.map((r) => r.name)
             expect(names).toEqual(
-                expect.arrayContaining(['root', 'character', 'inventory', 'exploration', 'combat']),
+                expect.arrayContaining([
+                    'root',
+                    'character',
+                    'inventory',
+                    'exploration',
+                    'combat',
+                    'memoir',
+                ]),
             )
         })
 

@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-05-16 at commit 08bcf5e
-> Pass count: 6
+> Last pass: 2026-05-16 at commit 3385951
+> Pass count: 7
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -10,12 +10,132 @@
 > **Pass-5 policy (set via `/oversight` 2026-05-15):** pause new
 > critique passes until the Pending count drains to ≤ 3 rows.
 > Pass 5 fired after the queue drained to 0. Pass 6 fired with
-> Pending=0 again (Phase 32 design-handoff port had just shipped;
-> the new surface deserved a fresh look). After pass 6 the
-> Pending count is 6 → the pause kicks in until `/iterate`
-> drains it back to ≤ 3.
+> Pending=0 again. Pass 6 closed 3 of 6 findings via /iterate
+> (HIGH event.tsx chrome, MED ENCOUNTER dedup, LOW empty-state
+> voice). Pass 7 fired at Pending=3 (threshold met) — Phase 33
+> shipped 4 sub-ticks since pass 6 and the new MEMOIR surface
+> deserved a fresh look. After pass 7 Pending = 9 → pause
+> re-engages until /iterate drains back to ≤ 3.
 
 ## Pending
+
+### [HIGH] /app/(tabs)/memoir/index.tsx:42 — QuestCard inlines objective bullet glyphs (`'✓ '` / `'○ '`)
+- pass: 7 (commit 3385951)
+- viewport: repository
+- category: consistency
+- observation: QuestCard renders objective rows with inline
+  glyph literals (`'✓ '` for done, `'○ '` for pending) at the
+  view layer — identical Hard Rule #8 class to the four
+  event.tsx chrome literals just drained in commit 994fb02.
+- evidence: `app/(tabs)/memoir/index.tsx:42` —
+  `{o.done ? '✓ ' : '○ '}`; engine `MemoirQuestRow.objectives`
+  exposes only `{id, text, done}` with no glyph slot.
+- suggested fix: move glyph choice into the presenter — either
+  compose the prefix into `text` (e.g. `'✓ slay the wolf'`) OR
+  add `bullet: '✓' | '○'` to the objective shape so the screen
+  renders `{o.bullet} {o.text}` with the literal living on the
+  VM.
+- source: web-fetch (reader sub-agent)
+
+### [MED] /plan/steps/01_build_plan.md:334-335 — Phase 33 shipped-state body says SACK post-rename
+- pass: 7 (commit 3385951)
+- viewport: repository
+- category: docs
+- observation: Phase 33's row body (touched in commit
+  `6c1ddfa` when ticked `[x]`) still spells the fourth tab
+  `SACK` — the Phase 32 SACK→SATCHEL rename predates Phase
+  33's close, so this row introduces a FRESH stale reference
+  inside post-rename narrative (distinct from the historical
+  SACK refs already in the Pending queue, which can keep
+  SACK as historical quotes).
+- evidence: `plan/steps/01_build_plan.md:334-335` —
+  `WILDS/STRIFE pair + SELF + MEMOIR + SACK; WILDS and STRIFE
+  remain mutually exclusive`.
+- suggested fix: replace `SACK` with `SATCHEL` on line 335
+  (Phase 33's body post-dates the rename; historical-quote
+  exemption from the existing SACK finding doesn't apply
+  here).
+- source: web-fetch (reader sub-agent)
+
+### [MED] /state/presenters/memoir.engine.ts:447-462 — `selectMemoirViewModel` JSDoc stale after Ticks C+D shipped
+- pass: 7 (commit 3385951)
+- viewport: repository
+- category: docs
+- observation: JSDoc still narrates Tick B as `(this commit)`
+  and describes Ticks C–D as future placeholders, even though
+  all four ticks have shipped (`9ccdee2` closed Phase 33). A
+  fresh maintainer reading this doc-block is told the chronicle
+  + alignment paths are placeholders when they populate from
+  `_recentEvents`, `moralMeter`, and `baseStats`.
+- evidence: `memoir.engine.ts:454` `Tick B (this commit):
+  quests section reads state.quests`; `:459` `Ticks C-D
+  populate alignment + chronicle in turn`.
+- suggested fix: rewrite the doc-block to describe the
+  shipped behaviour in present tense (quests / alignment /
+  chronicle all wired) and either delete the tick-by-tick
+  changelog or move it under a `Phase 33 history` heading.
+- source: web-fetch (reader sub-agent)
+
+### [MED] /app/(tabs)/memoir/index.tsx + /state/presenters/memoir.engine.ts:358-359 — VM `emptyMoral` / `emptyPhilosophical` strings unconsumed
+- pass: 7 (commit 3385951)
+- viewport: repository
+- category: consistency
+- observation: VM exposes `emptyMoral` and `emptyPhilosophical`
+  strings but the screen's MeasureSection renders the chip
+  directly with no empty-state branch — same class as the
+  `vm.a11y` unconsumed-field finding that drained in pass 4.
+  Dead VM contract that drifts silently.
+- evidence: `memoir.engine.ts:358` `emptyMoral: 'the scales
+  are level.'`; `grep emptyMoral|emptyPhilosophical
+  app/(tabs)/memoir/index.tsx` → no matches.
+- suggested fix: consume both fields in the measure section
+  (render `emptyPhilosophical` when
+  `philosophicalAlignment.label === 'untested.'`; render
+  `emptyMoral` when `moralAlignment.chip.label ===
+  'UNDECLARED'`), OR drop the fields from the VM + the
+  contract test.
+- source: web-fetch (reader sub-agent)
+
+### [MED] /state/presenters/memoir.engine.ts:236,244 — `PARLEYED WITH` / `talks turn aside.` for flee outcome reads as lying
+- pass: 7 (commit 3385951)
+- viewport: repository
+- category: voice
+- observation: Chronicle maps `combat:ended` outcome `'flee'`
+  to label `'PARLEYED WITH'` + body `'talks turn aside.'`.
+  The brief specified this mapping but a player who FLED
+  will see the journal claim they NEGOTIATED — the chronicle
+  reads as misleading rather than archaic. (The brief was
+  speculative — current combat mechanics have no parley
+  outcome — and the loop honored it literally; reader is
+  right that it lies.)
+- evidence: `memoir.engine.ts:236` outcome `'flee'` → label
+  `'PARLEYED WITH'`; `:244` body `'talks turn aside.'`.
+- suggested fix: rename label/body to something honest in
+  cold-old register — e.g. label `FLED` / `WITHDREW` /
+  `BROKE OFF` and body `the path bends away.` Update the
+  Tick D chronicle test fixture in lockstep
+  (`state/e2e/memoir.engine.test.ts:flee mapping case`).
+- source: web-fetch (reader sub-agent)
+
+### [LOW] /state/presenters/memoir.engine.ts:127,359 — `'untested.'` inconsistency between chip label and empty-state line
+- pass: 7 (commit 3385951)
+- viewport: repository
+- category: voice
+- observation: `'untested.'` is the only string in the VM that
+  ends with a period yet is used as BOTH a chip label (line
+  127, philosophical alignment when 3-way tie) AND an
+  empty-state line (line 359, `emptyPhilosophical`). Every
+  other alignment chip (`RUTHLESS`, `STERN`, `UNDECLARED`,
+  etc.) is ALL-CAPS chrome without punctuation; the
+  lowercase-with-period `untested.` reads as a stray
+  narrative fragment promoted into a chrome slot.
+- evidence: `memoir.engine.ts:127` `label: 'untested.'` (chip
+  label); `:359` `emptyPhilosophical: 'untested.'`.
+- suggested fix: decide whether the chip wants chrome
+  (e.g. `UNTESTED` no period, all-caps) or narrative
+  (`untested.` lowercase) and split the two strings — chip
+  in chrome register, empty-state line in narrative register.
+- source: web-fetch (reader sub-agent)
 
 ### [MED] /scripts/smoke-screens.mjs:34-42 + /scripts/__tests__/smoke-screens.test.ts:11-21,56 — memoir route missing from smoke coverage
 - pass: 6 (commit 08bcf5e)

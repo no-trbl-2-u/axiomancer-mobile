@@ -23,26 +23,6 @@
 
 ## Pending
 
-### [LOW] /state/presenters/memoir.engine.ts:127,359 — `'untested.'` inconsistency between chip label and empty-state line
-- pass: 7 (commit 3385951)
-- viewport: repository
-- category: voice
-- observation: `'untested.'` is the only string in the VM that
-  ends with a period yet is used as BOTH a chip label (line
-  127, philosophical alignment when 3-way tie) AND an
-  empty-state line (line 359, `emptyPhilosophical`). Every
-  other alignment chip (`RUTHLESS`, `STERN`, `UNDECLARED`,
-  etc.) is ALL-CAPS chrome without punctuation; the
-  lowercase-with-period `untested.` reads as a stray
-  narrative fragment promoted into a chrome slot.
-- evidence: `memoir.engine.ts:127` `label: 'untested.'` (chip
-  label); `:359` `emptyPhilosophical: 'untested.'`.
-- suggested fix: decide whether the chip wants chrome
-  (e.g. `UNTESTED` no period, all-caps) or narrative
-  (`untested.` lowercase) and split the two strings — chip
-  in chrome register, empty-state line in narrative register.
-- source: web-fetch (reader sub-agent)
-
 ### [MED] /components/event/EncounterModalOverlay.tsx — no component test pins the overlay surface
 - pass: 8 (commit 9a4bdeb)
 - viewport: repository
@@ -147,6 +127,20 @@
   verb-as-chrome exception is now pinned in
   `plan/bearings.md` Hard Rules so future critique passes
   don't re-surface this row.
+
+### [LOW] /state/presenters/memoir.engine.ts:127,359 — `'untested.'` chip/narrative register split ✅
+- pass: 7 (commit 3385951); addressed at commit aeec2c3
+- issue: #76
+- viewport: repository
+- category: voice
+- observation: Same `'untested.'` string used as both chip
+  label (chrome register expects ALL-CAPS no period) and
+  empty-state line (narrative register).
+- fix: chip label flipped to `'UNTESTED'` (matches RUTHLESS /
+  STERN / UNDECLARED / BENEVOLENT / SAINTLY); empty-state
+  line `emptyPhilosophical` unchanged at `'untested.'`. Screen
+  check + 2 test pins updated; JSDoc block added at the
+  constant explaining the split.
 
 ### [MED] /state/presenters/event.engine.ts:75-82 — PreludeChrome JSDoc refreshed to four-field reality ✅
 - pass: 9 (commit 65dc6ad); addressed at commit d843be8

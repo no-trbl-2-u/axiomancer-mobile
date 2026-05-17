@@ -59,6 +59,16 @@ export interface ExplorationAction {
     selected: boolean;
 }
 
+/**
+ * League indicator for the WHITHER, PILGRIM? step-cards — three buckets
+ * (I = closest, II = middle, III = farthest). Pure presenter derivation
+ * from Euclidean distance between the current node and the option node
+ * on the canonical 360×400 viewBox. Ported from the prototype's
+ * `StepCardClickable` (see `prototype.jsx:184-208` in the Claude Design
+ * handoff — every step-card carries a `leagues` glyph on its right).
+ */
+export type LeagueBucket = 'I' | 'II' | 'III';
+
 export interface ExplorationOption {
     /** Engine node id the option moves the player to. */
     nodeId: string;
@@ -66,6 +76,8 @@ export interface ExplorationOption {
     type: NodeType;
     /** Thematic blurb sourced from the layout fixture. */
     description: string;
+    /** Distance indicator for the step-card right column. */
+    leagues: LeagueBucket;
 }
 
 export interface ExplorationViewModel {
@@ -151,21 +163,42 @@ function buildEdges(
     return edges;
 }
 
+/**
+ * Bucket an Euclidean distance (in 360×400 viewBox pixels) into a
+ * three-band league indicator. Cutoffs are calibrated against the
+ * canonical layout fixtures — most "next step" hops sit in the 40-140
+ * range, so 80 / 160 gives a roughly even three-way split across the
+ * shipped maps. Pure function; tested in
+ * `state/e2e/exploration.engine.test.ts`.
+ */
+function leaguesFromDistance(d: number): LeagueBucket {
+    if (d <= 80) return 'I';
+    if (d <= 160) return 'II';
+    return 'III';
+}
+
 function buildOptions(
     layout: readonly NodeLayout[],
     available: readonly string[],
+    currentNodeId: string,
 ): ExplorationOption[] {
     const order = new Map(layout.map((n, i) => [n.id, i] as const));
+    const current = layout.find((n) => n.id === currentNodeId) ?? null;
     return available
         .filter((id) => order.has(id))
         .sort((a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0))
         .map((id) => {
             const n = layout.find((node) => node.id === id)!;
+            const distance =
+                current === null
+                    ? 0
+                    : Math.hypot(n.x - current.x, n.y - current.y);
             return {
                 nodeId: n.id,
                 label: n.label,
                 type: n.type,
                 description: n.description,
+                leagues: leaguesFromDistance(distance),
             };
         });
 }
@@ -237,7 +270,7 @@ export function selectExplorationViewModel(state: GameStore): ExplorationViewMod
         };
     });
 
-    const options = buildOptions(layout.nodes, available);
+    const options = buildOptions(layout.nodes, available, currentNodeId);
     const actions = buildActions(options);
     const edges = buildEdges(layout.nodes, completed, locked);
 

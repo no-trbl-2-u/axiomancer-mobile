@@ -240,9 +240,6 @@ export default function ExplorationScreen() {
             <View style={styles.drawer}>
                 <View style={styles.drawerHeader}>
                     <SectionLabel size={10}>✠ WHITHER, PILGRIM?</SectionLabel>
-                    {vm.options.length > 1 && (
-                        <Text style={styles.swipeHint}>{vm.drawerCopy.swipeHint}</Text>
-                    )}
                 </View>
                 {vm.options.length === 0 ? (
                     <View style={styles.drawerEmpty} testID="options-empty">
@@ -250,38 +247,44 @@ export default function ExplorationScreen() {
                     </View>
                 ) : (
                     <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.drawerScroll}
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={styles.stepCardScroll}
                     >
-                        {vm.options.map((opt, i) => {
-                            const ev = EVENT_BADGE[opt.type] ?? EVENT_BADGE.encounter;
+                        {vm.options.slice(0, 4).map((opt) => {
+                            const accent =
+                                opt.type === 'encounter' || opt.type === 'boss'
+                                    ? AXM.blood
+                                    : opt.type === 'treasure'
+                                      ? AXM.sulfur
+                                      : AXM.parchment;
                             return (
                                 <TouchableOpacity
                                     key={opt.nodeId}
-                                    style={[styles.optionCard, i === 0 && styles.optionCardSelected]}
+                                    style={[styles.stepCard, { borderLeftColor: accent }]}
                                     onPress={() => onOptionPress(opt)}
                                     accessibilityRole="button"
-                                    accessibilityLabel={`Travel to ${opt.label}`}
+                                    accessibilityLabel={`Travel to ${opt.label}, ${opt.leagues} leagues away`}
                                     testID={`option-${opt.nodeId}`}
                                 >
-                                    <View style={styles.optionHead}>
+                                    <View style={[styles.stepCardIconBox, { borderColor: AXM.bone }]}>
                                         <ActionIcon
                                             kind={OPTION_ICON[opt.type]}
-                                            size={20}
-                                            color={i === 0 ? AXM.sulfur : AXM.parchment}
+                                            size={18}
+                                            color={accent}
                                         />
-                                        <View style={[styles.optionBadge, { backgroundColor: ev.c }]}>
-                                            <Text style={styles.optionBadgeText}>{ev.label}</Text>
-                                        </View>
                                     </View>
-                                    <Text style={styles.optionLabel}>{opt.label}</Text>
-                                    <Text
-                                        style={[styles.optionDesc, i === 0 && { color: AXM.parchment }]}
-                                        numberOfLines={3}
-                                    >
-                                        {opt.description}
-                                    </Text>
+                                    <View style={styles.stepCardMid}>
+                                        <Text style={styles.stepCardTitle} numberOfLines={1}>
+                                            {opt.label}
+                                        </Text>
+                                        <Text style={styles.stepCardHint} numberOfLines={1}>
+                                            {opt.description.toUpperCase()}
+                                        </Text>
+                                    </View>
+                                    <View style={styles.stepCardLeagues}>
+                                        <Text style={styles.stepCardLeaguesLabel}>LEAGUES</Text>
+                                        <Text style={styles.stepCardLeaguesNum}>{opt.leagues}</Text>
+                                    </View>
                                 </TouchableOpacity>
                             );
                         })}
@@ -438,16 +441,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 4,
         paddingBottom: 4,
     },
-    swipeHint: {
-        fontFamily: FONTS.mono,
-        fontSize: 9,
-        color: AXM.bone,
-    },
-    drawerScroll: {
-        gap: 8,
-        paddingVertical: 4,
-        paddingHorizontal: 2,
-    },
     drawerEmpty: {
         marginHorizontal: 4,
         paddingVertical: 18,
@@ -461,45 +454,58 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: AXM.bone,
     },
-    optionCard: {
-        width: 180,
-        minHeight: 110,
+    stepCardScroll: {
+        gap: 6,
+        paddingVertical: 2,
+    },
+    stepCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        paddingVertical: 10,
+        paddingHorizontal: 12,
         backgroundColor: '#100d0a',
         borderWidth: 1,
-        borderColor: AXM.ash,
-        padding: 10,
-        gap: 6,
+        borderColor: 'rgba(232, 223, 200, 0.12)',
+        borderLeftWidth: 2,
     },
-    optionCardSelected: {
-        borderWidth: 2,
-        borderColor: AXM.sulfur,
-        backgroundColor: '#1a1410',
-    },
-    optionHead: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+    stepCardIconBox: {
+        width: 28,
+        height: 28,
+        borderWidth: 1,
+        backgroundColor: '#0a0a0a',
         alignItems: 'center',
+        justifyContent: 'center',
     },
-    optionBadge: {
-        paddingHorizontal: 4,
-        paddingVertical: 1,
+    stepCardMid: {
+        flex: 1,
+        minWidth: 0,
     },
-    optionBadgeText: {
-        fontFamily: FONTS.sans,
-        fontSize: 8,
-        letterSpacing: 1,
-        color: '#0a0a0a',
-    },
-    optionLabel: {
-        fontFamily: FONTS.gothic,
-        fontSize: 15,
+    stepCardTitle: {
+        fontFamily: FONTS.serif,
+        fontSize: 14,
         color: AXM.parchment,
-        lineHeight: 17,
+        lineHeight: 16,
     },
-    optionDesc: {
-        fontFamily: FONTS.serifItalic,
-        fontSize: 11,
+    stepCardHint: {
+        fontFamily: FONTS.sans,
+        fontSize: 9,
         color: AXM.bone,
-        lineHeight: 14,
+        letterSpacing: 1.6,
+        marginTop: 3,
+    },
+    stepCardLeagues: {
+        alignItems: 'flex-end',
+        gap: 2,
+    },
+    stepCardLeaguesLabel: {
+        fontFamily: FONTS.mono,
+        fontSize: 9,
+        color: AXM.bone,
+    },
+    stepCardLeaguesNum: {
+        fontFamily: FONTS.mono,
+        fontSize: 18,
+        color: AXM.parchment,
     },
 });

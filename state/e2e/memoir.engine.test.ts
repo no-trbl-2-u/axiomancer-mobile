@@ -350,3 +350,162 @@ describe('selectMemoirViewModel: provisional philosophical alignment', () => {
         expect(vm.philosophicalAlignment.label).toBe('of the Body');
     });
 });
+
+// ---------------------------------------------------------------------------
+// Tick D — chronicle from _recentEvents (Phase 25 ring buffer)
+//
+// Per Phase 33 brief §"Tick D": mapper folds engine events into
+// reverse-chronological ChronicleEntry rows. Combat outcomes →
+// FELLED/ROUTED/PARLEYED; levelups → ROSE TO N; world:moved (continent
+// change only) → CROSSED INTO X; dialogue:applied (when NPC name
+// extractable) → SPOKE WITH X. All other event kinds skipped.
+// ---------------------------------------------------------------------------
+
+type RecentEvent = {
+    type: string;
+    payload?: Record<string, unknown>;
+};
+
+function setRecentEvents(
+    store: ReturnType<typeof createGameStore>,
+    events: RecentEvent[],
+): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    store.setState({ _recentEvents: events } as any);
+}
+
+describe('selectMemoirViewModel: chronicle (Tick D)', () => {
+    it('returns an empty chronicle when _recentEvents is empty', () => {
+        const store = createGameStore(createMemoryAdapter());
+        const vm = selectMemoirViewModel(store.getState());
+        expect(vm.chronicle).toEqual([]);
+    });
+
+    it('maps a combat:ended victory event to FELLED with xp body', () => {
+        const store = createGameStore(createMemoryAdapter());
+        setRecentEvents(store, [
+            {
+                type: 'combat:ended',
+                payload: { report: { outcome: 'victory', xpGained: 7, loot: [] } },
+            },
+        ]);
+        const vm = selectMemoirViewModel(store.getState());
+        expect(vm.chronicle).toHaveLength(1);
+        expect(vm.chronicle[0]?.kind).toBe('combat:ended');
+        expect(vm.chronicle[0]?.label).toBe('FELLED');
+        expect(vm.chronicle[0]?.body).toBe('a foe falls. +7 xp.');
+    });
+
+    it('maps a combat:ended defeat event to ROUTED BY', () => {
+        const store = createGameStore(createMemoryAdapter());
+        setRecentEvents(store, [
+            {
+                type: 'combat:ended',
+                payload: { report: { outcome: 'defeat', xpGained: 0, loot: [] } },
+            },
+        ]);
+        const vm = selectMemoirViewModel(store.getState());
+        expect(vm.chronicle[0]?.label).toBe('ROUTED BY');
+        expect(vm.chronicle[0]?.body).toBe('the path turns dark.');
+    });
+
+    it('maps a combat:ended flee event to PARLEYED WITH', () => {
+        const store = createGameStore(createMemoryAdapter());
+        setRecentEvents(store, [
+            {
+                type: 'combat:ended',
+                payload: { report: { outcome: 'flee', xpGained: 0, loot: [] } },
+            },
+        ]);
+        const vm = selectMemoirViewModel(store.getState());
+        expect(vm.chronicle[0]?.label).toBe('PARLEYED WITH');
+        expect(vm.chronicle[0]?.body).toBe('talks turn aside.');
+    });
+
+    it('maps a character:levelup event to ROSE TO <level>', () => {
+        const store = createGameStore(createMemoryAdapter());
+        setRecentEvents(store, [
+            {
+                type: 'character:levelup',
+                payload: { state: { player: { level: 5 } } },
+            },
+        ]);
+        const vm = selectMemoirViewModel(store.getState());
+        expect(vm.chronicle[0]?.kind).toBe('character:levelup');
+        expect(vm.chronicle[0]?.label).toBe('ROSE TO 5');
+    });
+
+    it('emits world:moved only when the continent CHANGES', () => {
+        const store = createGameStore(createMemoryAdapter());
+        setRecentEvents(store, [
+            {
+                type: 'world:moved',
+                payload: { state: { world: { currentContinent: 'Ash Marches' } } },
+            },
+            {
+                type: 'world:moved',
+                payload: { state: { world: { currentContinent: 'Ash Marches' } } }, // same
+            },
+            {
+                type: 'world:moved',
+                payload: { state: { world: { currentContinent: 'Bell Vale' } } }, // change
+            },
+        ]);
+        const vm = selectMemoirViewModel(store.getState());
+        // reverse-chronological output of two non-redundant crossings
+        expect(vm.chronicle).toHaveLength(2);
+        expect(vm.chronicle[0]?.label).toBe('CROSSED INTO BELL VALE');
+        expect(vm.chronicle[1]?.label).toBe('CROSSED INTO ASH MARCHES');
+    });
+
+    it('maps a dialogue:applied event to SPOKE WITH <npc> when tree carries npcName', () => {
+        const store = createGameStore(createMemoryAdapter());
+        setRecentEvents(store, [
+            {
+                type: 'dialogue:applied',
+                payload: { action: { payload: { tree: { npcName: 'Old Marrow' } } } },
+            },
+        ]);
+        const vm = selectMemoirViewModel(store.getState());
+        expect(vm.chronicle[0]?.kind).toBe('dialogue:applied');
+        expect(vm.chronicle[0]?.label).toBe('SPOKE WITH OLD MARROW');
+    });
+
+    it('skips dialogue:applied events when no NPC name can be extracted', () => {
+        const store = createGameStore(createMemoryAdapter());
+        setRecentEvents(store, [
+            {
+                type: 'dialogue:applied',
+                payload: { action: { payload: { tree: {} } } }, // no npcName / name
+            },
+        ]);
+        const vm = selectMemoirViewModel(store.getState());
+        expect(vm.chronicle).toEqual([]);
+    });
+
+    it('skips noise event kinds (inventory:changed, combat:round, game:saved)', () => {
+        const store = createGameStore(createMemoryAdapter());
+        setRecentEvents(store, [
+            { type: 'inventory:changed', payload: { action: { type: 'ADD_ITEM' } } },
+            { type: 'combat:round', payload: { state: {} } },
+            { type: 'game:saved', payload: { state: {} } },
+        ]);
+        const vm = selectMemoirViewModel(store.getState());
+        expect(vm.chronicle).toEqual([]);
+    });
+
+    it('returns reverse-chronological entries and caps at 12 visible rows', () => {
+        const store = createGameStore(createMemoryAdapter());
+        // Build 15 levelup events with monotonically rising levels.
+        const events: RecentEvent[] = Array.from({ length: 15 }, (_, i) => ({
+            type: 'character:levelup',
+            payload: { state: { player: { level: i + 1 } } },
+        }));
+        setRecentEvents(store, events);
+        const vm = selectMemoirViewModel(store.getState());
+        expect(vm.chronicle).toHaveLength(12);
+        // Reverse-chronological: highest level appears first.
+        expect(vm.chronicle[0]?.label).toBe('ROSE TO 15');
+        expect(vm.chronicle[11]?.label).toBe('ROSE TO 4');
+    });
+});

@@ -17,8 +17,17 @@
  * frozen-new object every call.
  */
 
-import type { GameStore } from 'axiomancer-mechanics';
+import type { GameStore, TypedGameEvent } from 'axiomancer-mechanics';
+import {
+    isCombatEndedEvent,
+    isDialogueAppliedEvent,
+    isLevelUpEvent,
+    isWorldMovedEvent,
+} from 'axiomancer-mechanics';
 import { freezeViewModel } from './freeze';
+
+/** Visible chronicle entry cap. The screen scrolls if more exist. */
+const CHRONICLE_VISIBLE_CAP = 12;
 
 /**
  * One typed-event-derived chronicle row. Ticks D will populate from
@@ -178,6 +187,134 @@ const STAT_PROPER_NAME: Readonly<Record<'heart' | 'body' | 'mind', string>> = Ob
     body: 'Body',
     mind: 'Mind',
 });
+
+/**
+ * Tick D: chronicle mapper. Reads `state._recentEvents` (Phase 25
+ * ring buffer, capacity 20) and emits at most `CHRONICLE_VISIBLE_CAP`
+ * entries in reverse-chronological order. Per Phase 33 brief §"Tick D":
+ *
+ * - `combat:ended` → "FELLED" / "ROUTED BY" / "PARLEYED WITH" depending
+ *   on `report.outcome` (engine outcomes are 'victory' / 'defeat' /
+ *   'flee'; the brief's "parleyed with" is the closest match for flee).
+ *   Enemy name is lost from the event payload after END_COMBAT (the
+ *   reducer clears `state.combat`), so the body line carries the
+ *   outcome flavour + xp grant rather than naming the foe.
+ * - `character:levelup` → "ROSE TO <level>" with the new level read
+ *   off `event.payload.state.player.level`.
+ * - `world:moved` → "CROSSED INTO <continent>" only when the moved-to
+ *   continent differs from the most-recently-seen continent (cross-
+ *   event tracking inside the pure mapper — the input array is the
+ *   source of truth, no external state needed).
+ * - `dialogue:applied` → "SPOKE WITH <npc>" when the tree carries an
+ *   identifiable NPC name; defensively skipped when not extractable.
+ * - Every other event type (inventory:changed etc.) → skipped per
+ *   brief ("too noisy for a chronicle").
+ */
+function buildChronicle(rawEvents: unknown): ReadonlyArray<ChronicleEntry> {
+    if (!Array.isArray(rawEvents) || rawEvents.length === 0) {
+        return Object.freeze([]) as readonly ChronicleEntry[];
+    }
+    const events = rawEvents as ReadonlyArray<TypedGameEvent>;
+    const entries: ChronicleEntry[] = [];
+    let lastSeenContinent: string | null = null;
+    let ordinal = 0;
+    for (const e of events) {
+        ordinal += 1;
+        if (isCombatEndedEvent(e)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const report = (e.payload as any)?.report;
+            const outcome: string | undefined =
+                typeof report?.outcome === 'string' ? report.outcome : undefined;
+            if (!outcome) continue;
+            const xp: number =
+                typeof report?.xpGained === 'number' ? report.xpGained : 0;
+            const label =
+                outcome === 'victory'
+                    ? 'FELLED'
+                    : outcome === 'defeat'
+                      ? 'ROUTED BY'
+                      : 'PARLEYED WITH';
+            const body =
+                outcome === 'victory'
+                    ? xp > 0
+                        ? `a foe falls. +${xp} xp.`
+                        : 'a foe falls.'
+                    : outcome === 'defeat'
+                      ? 'the path turns dark.'
+                      : 'talks turn aside.';
+            entries.push(
+                Object.freeze({
+                    id: `combat-${ordinal}`,
+                    kind: 'combat:ended' as const,
+                    label,
+                    body,
+                }),
+            );
+            continue;
+        }
+        if (isLevelUpEvent(e)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const level = (e.payload as any)?.state?.player?.level;
+            if (typeof level !== 'number') continue;
+            entries.push(
+                Object.freeze({
+                    id: `levelup-${ordinal}`,
+                    kind: 'character:levelup' as const,
+                    label: `ROSE TO ${level}`,
+                    body: 'a measure deepens.',
+                }),
+            );
+            continue;
+        }
+        if (isWorldMovedEvent(e)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const world = (e.payload as any)?.state?.world;
+            const continent: string | undefined =
+                typeof world?.currentContinent === 'string'
+                    ? world.currentContinent
+                    : typeof world?.continent === 'string'
+                      ? world.continent
+                      : undefined;
+            if (!continent) continue;
+            if (lastSeenContinent !== null && continent === lastSeenContinent) continue;
+            lastSeenContinent = continent;
+            entries.push(
+                Object.freeze({
+                    id: `world-${ordinal}`,
+                    kind: 'world:moved' as const,
+                    label: `CROSSED INTO ${continent.toUpperCase()}`,
+                    body: 'new ground underfoot.',
+                }),
+            );
+            continue;
+        }
+        if (isDialogueAppliedEvent(e)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const tree = (e.payload as any)?.action?.payload?.tree;
+            const npcName: string | undefined =
+                typeof tree?.npcName === 'string' && tree.npcName.length > 0
+                    ? tree.npcName
+                    : typeof tree?.name === 'string' && tree.name.length > 0
+                      ? tree.name
+                      : undefined;
+            if (!npcName) continue;
+            entries.push(
+                Object.freeze({
+                    id: `dialogue-${ordinal}`,
+                    kind: 'dialogue:applied' as const,
+                    label: `SPOKE WITH ${npcName.toUpperCase()}`,
+                    body: 'words exchanged.',
+                }),
+            );
+            continue;
+        }
+        // every other event type → skip (inventory:changed, combat:round, …)
+    }
+    // Reverse-chronological + cap at the visible cutoff.
+    const reversed = entries.reverse();
+    const capped = reversed.slice(0, CHRONICLE_VISIBLE_CAP);
+    return Object.freeze(capped) as readonly ChronicleEntry[];
+}
 
 function buildPhilosophicalAlignment(rawBaseStats: unknown): PhilosophicalAlignment {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -339,9 +476,13 @@ export function selectMemoirViewModel(state: GameStore): MemoirViewModel {
     const moralRaw = (state as any).moralMeter;
     const moralAlignment = buildMoralAlignment(moralRaw);
     const philosophicalAlignment = buildPhilosophicalAlignment(player?.baseStats);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const recentEvents = (state as any)._recentEvents;
+    const chronicle = buildChronicle(recentEvents);
     return freezeViewModel({
         ...FALLBACK_VM,
         headerSubline: subline,
+        chronicle,
         quests: {
             active,
             completed,

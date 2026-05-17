@@ -470,3 +470,105 @@ describe('selectExplorationViewModel: LEAGUES bucket', () => {
         }
     });
 });
+
+// ---------------------------------------------------------------------------
+// Encounter modal seam — Phase 32 design-handoff port (spec32 tick D)
+//
+// Per `prototype.jsx` PtEventModal + `chats/chat1.md`. Tapping an
+// encounter / boss node populates the engine's pending event slice;
+// the exploration screen mounts <EncounterModalOverlay> when that
+// slice carries `kind === 'combat-prelude'`. These tests pin the
+// presenter-level behaviour the overlay depends on; the overlay itself
+// is hermetic (pure props in, dispatches out).
+// ---------------------------------------------------------------------------
+
+import { createAppStore } from '@/state/store';
+import { selectEventViewModel, selectHasActiveEvent } from '@/state/presenters/event.engine';
+
+describe('encounter-modal seam (Tick D)', () => {
+    function moveToFirstEncounter(): {
+        store: ReturnType<typeof createAppStore>;
+        actions: ReturnType<typeof createAppActions>;
+        encounterNodeId: string | null;
+    } {
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        const vm = selectExplorationViewModel(store.getState());
+        // Find the first available encounter / boss node in the starting
+        // map. The seam fires the same way for both kinds; the test
+        // doesn't depend on which.
+        const target = vm.nodes.find(
+            (n) => n.kind === 'available' && (n.type === 'encounter' || n.type === 'boss'),
+        );
+        if (target === undefined) {
+            return { store, actions, encounterNodeId: null };
+        }
+        actions.moveTo(target.id);
+        return { store, actions, encounterNodeId: target.id };
+    }
+
+    it('populates a combat-prelude event when the player arrives at an encounter node + resolves it', () => {
+        const { store, actions, encounterNodeId } = moveToFirstEncounter();
+        if (encounterNodeId === null) return; // map has no encounter; skip silently
+
+        // Pre-resolve: pending event slice may or may not exist; the
+        // contract is that AFTER resolveCurrentMapEvent fires, the
+        // event VM kind is 'combat-prelude' for an encounter node.
+        actions.resolveCurrentMapEvent();
+        const state = store.getState();
+        const hasEvent = selectHasActiveEvent(state as never);
+        const vm = selectEventViewModel(state as never);
+
+        expect(hasEvent).toBe(true);
+        expect(vm.kind).toBe('combat-prelude');
+        // Overlay mount condition lives on the screen
+        // (`hasEvent && vm.kind === 'combat-prelude'`); pin both halves
+        // so a future presenter rename of either symbol breaks the test
+        // rather than silently un-mounting the overlay.
+        expect(vm.preludeChrome).not.toBeNull();
+    });
+
+    it('fight choice dispatches startCombat + clears the pending event slice', () => {
+        const { store, actions, encounterNodeId } = moveToFirstEncounter();
+        if (encounterNodeId === null) return;
+        actions.resolveCurrentMapEvent();
+
+        expect(selectHasActiveEvent(store.getState() as never)).toBe(true);
+        expect((store.getState() as { combat: unknown }).combat).toBeNull();
+
+        actions.pickEventChoice('fight');
+
+        // After fight: combat is live, pending event slice cleared.
+        const after = store.getState();
+        expect((after as { combat: unknown }).combat).not.toBeNull();
+        expect(selectHasActiveEvent(after as never)).toBe(false);
+    });
+
+    it('flee choice clears the pending event slice without entering combat', () => {
+        const { store, actions, encounterNodeId } = moveToFirstEncounter();
+        if (encounterNodeId === null) return;
+        actions.resolveCurrentMapEvent();
+
+        const vm = selectEventViewModel(store.getState() as never);
+        const fleeChoice = vm.choices.find((c) => c.id === 'flee');
+        if (fleeChoice === undefined || !fleeChoice.enabled) return; // boss-only path
+
+        actions.pickEventChoice('flee');
+
+        const after = store.getState();
+        expect((after as { combat: unknown }).combat).toBeNull();
+        expect(selectHasActiveEvent(after as never)).toBe(false);
+    });
+
+    it('overlay mount condition is false when combat is already active (seam never re-opens mid-fight)', () => {
+        const { store, actions, encounterNodeId } = moveToFirstEncounter();
+        if (encounterNodeId === null) return;
+        actions.resolveCurrentMapEvent();
+        actions.pickEventChoice('fight');
+
+        // After fight commits, combat is live. selectHasActiveEvent
+        // gates on combat === null per the presenter (Q4=Future spec:
+        // no mid-combat events), so the overlay never re-mounts.
+        expect(selectHasActiveEvent(store.getState() as never)).toBe(false);
+    });
+});

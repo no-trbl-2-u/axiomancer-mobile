@@ -401,3 +401,72 @@ describe('selectExplorationViewModel: drawer copy', () => {
         expect(vm.drawerCopy.emptyMessage).not.toContain('No paths remain');
     });
 });
+
+// ---------------------------------------------------------------------------
+// LEAGUES bucket — Phase 32 design-handoff port (spec32 tick B)
+//
+// Ported from `prototype.jsx:184-208` (StepCardClickable). Each
+// available next-step option carries a `leagues: 'I' | 'II' | 'III'`
+// bucket derived from Euclidean distance on the canonical 360×400
+// viewBox between the current node and the option node. Cutoffs:
+// ≤80 = I, ≤160 = II, >160 = III.
+// ---------------------------------------------------------------------------
+
+describe('selectExplorationViewModel: LEAGUES bucket', () => {
+    it('populates a non-empty leagues value (I | II | III) on every option', () => {
+        const store = createGameStore(createMemoryAdapter());
+        const vm = selectExplorationViewModel(store.getState());
+
+        expect(vm.options.length).toBeGreaterThan(0);
+        for (const opt of vm.options) {
+            expect(['I', 'II', 'III']).toContain(opt.leagues);
+        }
+    });
+
+    it('buckets options monotonically by distance from the current node', () => {
+        const store = createGameStore(createMemoryAdapter());
+        const vm = selectExplorationViewModel(store.getState());
+
+        if (vm.options.length < 2) return;
+
+        const current = vm.nodes.find((n) => n.id === vm.currentNodeId);
+        expect(current).toBeDefined();
+        if (!current) return;
+
+        const distances = vm.options.map((opt) => {
+            const node = vm.nodes.find((n) => n.id === opt.nodeId);
+            return node ? Math.hypot(node.x - current.x, node.y - current.y) : 0;
+        });
+
+        // A smaller distance never gets a HIGHER league bucket than
+        // a larger distance.
+        const order: Record<'I' | 'II' | 'III', number> = { I: 1, II: 2, III: 3 };
+        for (let i = 0; i < vm.options.length; i++) {
+            for (let j = 0; j < vm.options.length; j++) {
+                if (i === j) continue;
+                if (distances[i] < distances[j]) {
+                    expect(order[vm.options[i].leagues]).toBeLessThanOrEqual(
+                        order[vm.options[j].leagues],
+                    );
+                }
+            }
+        }
+    });
+
+    it('respects the documented thresholds (≤80=I, ≤160=II, >160=III)', () => {
+        const store = createGameStore(createMemoryAdapter());
+        const vm = selectExplorationViewModel(store.getState());
+
+        const current = vm.nodes.find((n) => n.id === vm.currentNodeId);
+        if (!current) return;
+
+        for (const opt of vm.options) {
+            const node = vm.nodes.find((n) => n.id === opt.nodeId);
+            if (!node) continue;
+            const d = Math.hypot(node.x - current.x, node.y - current.y);
+            if (d <= 80) expect(opt.leagues).toBe('I');
+            else if (d <= 160) expect(opt.leagues).toBe('II');
+            else expect(opt.leagues).toBe('III');
+        }
+    });
+});

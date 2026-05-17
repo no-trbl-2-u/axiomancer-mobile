@@ -196,6 +196,12 @@ describe('selectMemoirViewModel: quests section', () => {
         // `<type>: <target>` line; the kill is unfinished (0/2).
         expect(quest.objectives[1].text).toBe('kill: cairn-watcher');
         expect(quest.objectives[1].done).toBe(false);
+
+        // CRITIQUE pass 7 HIGH drain: bullet glyph pinned on the VM
+        // (`'✓'` for done, `'○'` for pending) so the screen carries
+        // no display literals per Hard Rule #8.
+        expect(quest.objectives[0].bullet).toBe('✓');
+        expect(quest.objectives[1].bullet).toBe('○');
     });
 
     it('mirrors completed quest names as rows with no objectives (engine drops the Quest object on completion)', () => {

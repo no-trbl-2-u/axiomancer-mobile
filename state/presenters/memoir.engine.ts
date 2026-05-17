@@ -45,6 +45,18 @@ export interface ChronicleEntry {
 }
 
 /**
+ * Bullet glyphs for the objective rows. Pinned at module scope (lifted
+ * off `app/(tabs)/memoir/index.tsx` by /iterate addressing CRITIQUE
+ * pass 7 HIGH) so the view layer carries no display literals per Hard
+ * Rule #8. Same pattern as `EVENT_CHROME` / `ENCOUNTER_LABEL` /
+ * `EVENT_CHROME` constants in the event presenter.
+ */
+export const QUEST_OBJECTIVE_BULLET = Object.freeze({
+    done: '✓',
+    pending: '○',
+}) as { readonly done: '✓'; readonly pending: '○' };
+
+/**
  * One quest row. Tick B will populate from `state.quests`; Tick A
  * ships empty sub-sections.
  */
@@ -53,7 +65,13 @@ export interface MemoirQuestRow {
     name: string;
     description: string;
     status: 'active' | 'completed' | 'failed';
-    objectives: ReadonlyArray<{ id: string; text: string; done: boolean }>;
+    objectives: ReadonlyArray<{
+        id: string;
+        text: string;
+        done: boolean;
+        /** Display glyph for the row prefix — pinned per `QUEST_OBJECTIVE_BULLET`. */
+        bullet: '✓' | '○';
+    }>;
 }
 
 /**
@@ -403,13 +421,20 @@ function buildActiveRows(activeQuests: unknown): ReadonlyArray<MemoirQuestRow> {
                         typeof o?.requiredCount === 'number' && o.requiredCount > 0
                             ? o.requiredCount
                             : 1;
+                    const done = currentCount >= requiredCount;
                     return Object.freeze({
                         id: typeof o?.id === 'string' ? o.id : `obj-${name}`,
                         text: synthesizeObjectiveText(o),
-                        done: currentCount >= requiredCount,
+                        done,
+                        bullet: done ? QUEST_OBJECTIVE_BULLET.done : QUEST_OBJECTIVE_BULLET.pending,
                     });
                 }),
-            ) as readonly { id: string; text: string; done: boolean }[];
+            ) as readonly {
+                id: string;
+                text: string;
+                done: boolean;
+                bullet: '✓' | '○';
+            }[];
             return Object.freeze({
                 id: name || 'unnamed',
                 name: name || 'unnamed',
@@ -437,6 +462,7 @@ function buildCompletedRows(
                     id: string;
                     text: string;
                     done: boolean;
+                    bullet: '✓' | '○';
                 }[],
             });
         }),

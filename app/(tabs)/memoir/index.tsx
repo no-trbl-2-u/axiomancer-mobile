@@ -39,8 +39,7 @@ function QuestCard({ quest }: { quest: MemoirQuestRow }) {
                             key={o.id}
                             style={[styles.objectiveLine, o.done && styles.objectiveDone]}
                         >
-                            {o.done ? '✓ ' : '○ '}
-                            {o.text}
+                            {o.bullet} {o.text}
                         </Text>
                     ))}
                 </View>

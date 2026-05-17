@@ -33,15 +33,6 @@ interface EncounterModalOverlayProps {
     onFlee: () => void;
 }
 
-/**
- * Display strings for the seam chrome. Pinned at module scope per
- * Hard Rule #8 (no inline literals in the view layer). Chain bars
- * read top + bottom; the prototype's "SEALED · NO RETREAT" carries
- * the irreversible-commitment signal.
- */
-const SEAL_LABEL = 'SEALED · NO RETREAT';
-const FLEE_DISABLED_HINT = 'no retreat from this one.';
-
 export function EncounterModalOverlay({
     vm,
     onFight,
@@ -62,7 +53,7 @@ export function EncounterModalOverlay({
         >
             <View style={styles.backdrop} />
             <View style={styles.panel}>
-                <ChainBar />
+                <ChainBar label={vm.preludeChrome.sealLabel} />
 
                 <View style={styles.preludeHeader}>
                     <Svg width={10} height={10} viewBox="0 0 10 10">
@@ -134,23 +125,25 @@ export function EncounterModalOverlay({
                         <View style={{ flex: 1 }}>
                             <Text style={[styles.choiceLabel, { color: AXM.bone }]}>FLEE</Text>
                             {!fleeEnabled && (
-                                <Text style={styles.choiceSub}>{FLEE_DISABLED_HINT}</Text>
+                                <Text style={styles.choiceSub}>
+                                    {vm.preludeChrome.fleeDisabledHint}
+                                </Text>
                             )}
                         </View>
                     </TouchableOpacity>
                 </View>
 
-                <ChainBar />
+                <ChainBar label={vm.preludeChrome.sealLabel} />
             </View>
         </View>
     );
 }
 
-function ChainBar() {
+function ChainBar({ label }: { label: string }) {
     return (
         <View style={styles.chainBar} testID="encounter-modal-chain">
             <View style={styles.chainRule} />
-            <Text style={styles.chainText}>{SEAL_LABEL}</Text>
+            <Text style={styles.chainText}>{label}</Text>
             <View style={styles.chainRule} />
         </View>
     );

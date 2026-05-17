@@ -85,6 +85,20 @@ export interface PreludeChrome {
     eyebrow: string;
     /** Label on the diagonal sash overlaying the illustration top-left. */
     sashLabel: string;
+    /**
+     * Chain-bar label rendered top + bottom of the encounter modal
+     * overlay (`SEALED · NO RETREAT`). The diegetic irreversible-
+     * commitment signal — see `components/event/EncounterModalOverlay.tsx`
+     * (Phase 32 sub-tick D port; chats/chat1.md).
+     */
+    sealLabel: string;
+    /**
+     * Hint rendered beneath the FLEE button when the choice is
+     * disabled (typically on boss encounters where the engine event
+     * VM marks the flee choice `enabled: false`). Single source of
+     * truth for the "no retreat" copy across modal variants.
+     */
+    fleeDisabledHint: string;
 }
 
 /**
@@ -191,6 +205,8 @@ function withPreludeChrome(vm: Omit<EventViewModel, 'preludeChrome'>): EventView
         preludeChrome: {
             eyebrow: vm.variant === 'boss' ? `BOSS · ${ENCOUNTER_LABEL}` : ENCOUNTER_LABEL,
             sashLabel: 'STRIFE STIRS',
+            sealLabel: 'SEALED · NO RETREAT',
+            fleeDisabledHint: 'no retreat from this one.',
         },
     };
 }

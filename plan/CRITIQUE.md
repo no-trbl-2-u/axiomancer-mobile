@@ -59,27 +59,6 @@
   in chrome register, empty-state line in narrative register.
 - source: web-fetch (reader sub-agent)
 
-### [MED] /scripts/smoke-screens.mjs:34-42 + /scripts/__tests__/smoke-screens.test.ts:11-21,56 — memoir route missing from smoke coverage
-- pass: 6 (commit 08bcf5e)
-- viewport: repository
-- category: consistency
-- observation: The smoke-screens ROUTES list and its mirror test
-  were not updated when Phase 33 added the MEMOIR tab; ROUTES
-  still lists 4 tabs (character / inventory / exploration /
-  combat) and the test description claims `all five primary
-  surfaces (root + 4 tabs)` — there are now 5 tabs, so visual
-  smoke coverage silently skips the new journal surface.
-- evidence: `scripts/smoke-screens.mjs:34-42` — `memoir` absent
-  from ROUTES; `scripts/__tests__/smoke-screens.test.ts:56`
-  `test('covers all five primary surfaces (root + 4 tabs)', …)`;
-  `app/(tabs)/memoir/index.tsx` exists (Phase 33 ticks A+B
-  shipped).
-- suggested fix: add `{ name: 'memoir', path: '/memoir' }` to
-  ROUTES in both files; bump test name to `six primary surfaces
-  (root + 5 tabs)`; add `'memoir'` to the arrayContaining
-  assertion.
-- source: web-fetch (reader sub-agent)
-
 ### [MED] /plan/steps/01_build_plan.md + /plan/PHASE_CANDIDATES.md + /plan/phases/phase_{31,8}_*.md — SACK references not refreshed after SATCHEL rename
 - pass: 6 (commit 08bcf5e)
 - viewport: repository
@@ -120,6 +99,19 @@
   verb-as-chrome exception is now pinned in
   `plan/bearings.md` Hard Rules so future critique passes
   don't re-surface this row.
+
+### [MED] /scripts/smoke-screens.mjs:34-42 + test mirror — memoir route added to smoke coverage ✅
+- pass: 6 (commit 08bcf5e); addressed at commit 78bb861
+- issue: #68
+- viewport: repository
+- category: consistency
+- observation: ROUTES list + mirror test missed Phase 33's
+  MEMOIR tab; visual smoke coverage silently skipped the new
+  journal surface for the entire phase shipping window.
+- fix: added `{ name: 'memoir', path: '/memoir' }` to ROUTES
+  in both files; mirror test flipped from "five (4 tabs)" to
+  "six (5 tabs)" with `'memoir'` added to arrayContaining.
+  Baseline PNG generates on the next harness run.
 
 ### [MED] /app/(tabs)/memoir/index.tsx + memoir.engine.ts:358-359 — VM `emptyMoral` / `emptyPhilosophical` strings now consumed ✅
 - pass: 7 (commit 3385951); addressed at commit 883af26

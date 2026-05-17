@@ -63,30 +63,6 @@
   field is null."
 - source: web-fetch (reader sub-agent)
 
-### [LOW] /state/presenters/exploration.engine.ts:99-116 — `drawerCopy.swipeHint` is YAGNI dead-field
-- pass: 9 (commit 65dc6ad)
-- viewport: repository
-- category: consistency
-- observation: `drawerCopy.swipeHint` is declared on the VM
-  type, populated in `DRAWER_COPY`, and asserted by a test,
-  but no screen consumes it — the JSDoc admits it's a
-  `'legacy field'` kept for a hypothetical future horizontal
-  surface. A fresh maintainer reading the type hunts for
-  where `'swipe →'` renders and finds nothing. Same
-  dead-VM-field smell as the `vm.a11y` finding drained pass
-  4 and the `emptyMoral` / `emptyPhilosophical` finding
-  drained pass 7.
-- evidence: `exploration.engine.ts:113` `swipeHint: string;`
-  + `:229` `swipeHint: 'swipe →'`; `state/e2e/exploration.
-  engine.test.ts:391` asserts it; `grep swipeHint
-  app/(tabs)/exploration/index.tsx` → 0 matches.
-- suggested fix: remove `swipeHint` from the type +
-  `DRAWER_COPY` + test (YAGNI — re-add when the future
-  horizontal surface actually lands). Alternative: keep
-  with a `@deprecated` tag if a near-term surface is
-  expected.
-- source: web-fetch (reader sub-agent)
-
 ## Done
 
 ### [LOW] /state/presenters/event.engine.ts:152 — `STRIFE STIRS` is verb-as-chrome — `[accepted-as-design]` ✅
@@ -105,6 +81,18 @@
   verb-as-chrome exception is now pinned in
   `plan/bearings.md` Hard Rules so future critique passes
   don't re-surface this row.
+
+### [LOW] /state/presenters/exploration.engine.ts:99-116 — drawerCopy.swipeHint YAGNI dead-field deleted ✅
+- pass: 9 (commit 65dc6ad); addressed at commit 5a8c2ea
+- issue: #78
+- viewport: repository
+- category: consistency
+- observation: `swipeHint` declared + populated + tested
+  but unconsumed since Phase 32 dropped horizontal swipe.
+- fix: deleted from the VM type, JSDoc paragraph,
+  `DRAWER_COPY` constant, and test assertion. Same shape
+  as pass-4 `vm.a11y` and pass-7 `emptyMoral` drains.
+  Re-add if a future horizontal surface materializes.
 
 ### [MED] /components/event/EncounterModalOverlay.tsx — hermetic component test added ✅
 - pass: 8 (commit 9a4bdeb); addressed at commit 234c7a6

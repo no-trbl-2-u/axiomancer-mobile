@@ -332,7 +332,7 @@ commit that ships the phase.
       ("route names do not [change] without a deliberate
       navigation-phase commit"). The bottom tab bar grows from 4
       visible tabs to 5 (WILDS/STRIFE pair + SELF + MEMOIR +
-      SACK; WILDS and STRIFE remain mutually exclusive). Brief
+      SATCHEL; WILDS and STRIFE remain mutually exclusive). Brief
       at `plan/phases/phase_33_memoir_tab.md`. Shipped across
       four sub-ticks: A `6515cb5` (route + skeleton VM), B
       `2f70eac` (quests section), C `6105b90` (moral band +

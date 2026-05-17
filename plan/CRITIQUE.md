@@ -19,24 +19,6 @@
 
 ## Pending
 
-### [HIGH] /app/(tabs)/memoir/index.tsx:42 — QuestCard inlines objective bullet glyphs (`'✓ '` / `'○ '`)
-- pass: 7 (commit 3385951)
-- viewport: repository
-- category: consistency
-- observation: QuestCard renders objective rows with inline
-  glyph literals (`'✓ '` for done, `'○ '` for pending) at the
-  view layer — identical Hard Rule #8 class to the four
-  event.tsx chrome literals just drained in commit 994fb02.
-- evidence: `app/(tabs)/memoir/index.tsx:42` —
-  `{o.done ? '✓ ' : '○ '}`; engine `MemoirQuestRow.objectives`
-  exposes only `{id, text, done}` with no glyph slot.
-- suggested fix: move glyph choice into the presenter — either
-  compose the prefix into `text` (e.g. `'✓ slay the wolf'`) OR
-  add `bullet: '✓' | '○'` to the objective shape so the screen
-  renders `{o.bullet} {o.text}` with the literal living on the
-  VM.
-- source: web-fetch (reader sub-agent)
-
 ### [MED] /plan/steps/01_build_plan.md:334-335 — Phase 33 shipped-state body says SACK post-rename
 - pass: 7 (commit 3385951)
 - viewport: repository
@@ -204,6 +186,19 @@
 - source: web-fetch (reader sub-agent)
 
 ## Done
+
+### [HIGH] /app/(tabs)/memoir/index.tsx:42 — QuestCard inlines objective bullet glyphs ✅
+- pass: 7 (commit 3385951); addressed at commit 40db0e3
+- issue: #64
+- viewport: repository
+- category: consistency
+- observation: Inline `'✓ '` / `'○ '` glyphs at the view layer
+  — same Hard Rule #8 class pass 6 just closed for event.tsx.
+- fix: exported `QUEST_OBJECTIVE_BULLET = { done: '✓',
+  pending: '○' }` constant + extended `MemoirQuestRow.objectives`
+  with `bullet: '✓' | '○'`; screen now reads `{o.bullet}
+  {o.text}`. +2 pins added to the existing active-quests test
+  case. Verify 461 / 461 unchanged (pins inside existing case).
 
 ### [LOW] /state/presenters/event.engine.ts:115 — empty-state body is second-person imperative + modern sentence-case ✅
 - pass: 6 (commit 08bcf5e); addressed at commit d6bf779

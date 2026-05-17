@@ -43,26 +43,6 @@
   `phaseStack[3].label === 'IV · LET'`.
 - source: web-fetch (reader sub-agent)
 
-### [LOW] /components/event/EncounterModalOverlay.tsx:1-19 — file JSDoc never mentions `vm.preludeChrome`
-- pass: 9 (commit 65dc6ad)
-- viewport: repository
-- category: docs
-- observation: Overlay's file-level JSDoc describes the
-  backdrop / seal-chain / mount-conditions but never mentions
-  that all four display strings come from `vm.preludeChrome`
-  nor the `preludeChrome === null` early-return guard at
-  line 41. The doc still narrates the surface as if literals
-  lived inline.
-- evidence: `EncounterModalOverlay.tsx:1-19` lacks any
-  preludeChrome reference; `:41` `if (vm.kind !==
-  'combat-prelude' || vm.preludeChrome === null) return
-  null;`.
-- suggested fix: add a one-line note: "All display strings
-  (eyebrow, sash, seal-bar, flee hint) come from
-  `vm.preludeChrome`; component renders nothing when that
-  field is null."
-- source: web-fetch (reader sub-agent)
-
 ## Done
 
 ### [LOW] /state/presenters/event.engine.ts:152 — `STRIFE STIRS` is verb-as-chrome — `[accepted-as-design]` ✅
@@ -81,6 +61,19 @@
   verb-as-chrome exception is now pinned in
   `plan/bearings.md` Hard Rules so future critique passes
   don't re-surface this row.
+
+### [LOW] /components/event/EncounterModalOverlay.tsx:1-19 — JSDoc now mentions vm.preludeChrome contract ✅
+- pass: 9 (commit 65dc6ad); addressed at commit cfac6f1
+- issue: #79
+- viewport: repository
+- category: docs
+- observation: File JSDoc described backdrop / seal-chain /
+  mount-conditions but never the four-string `vm.preludeChrome`
+  contract or the `preludeChrome === null` defensive guard.
+- fix: appended a paragraph naming all four chrome strings,
+  documenting the defensive null return, and pointing at the
+  new `components/event/__tests__/EncounterModalOverlay.test.tsx`
+  for component-level pins.
 
 ### [LOW] /state/presenters/exploration.engine.ts:99-116 — drawerCopy.swipeHint YAGNI dead-field deleted ✅
 - pass: 9 (commit 65dc6ad); addressed at commit 5a8c2ea

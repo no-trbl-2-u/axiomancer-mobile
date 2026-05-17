@@ -23,26 +23,6 @@
 
 ## Pending
 
-### [LOW] /state/e2e/combat.engine.test.ts — buildPhaseStack `'ended'` branch untested
-- pass: 8 (commit 9a4bdeb)
-- viewport: repository
-- category: comprehension
-- observation: The phaseStack contract tests cover the
-  stance/action/skill/resolving states + past-summary
-  collapse, but never assert the `phase === 'ended'`
-  branch. The `currentPhase === 'ended' ? 'resolving' :
-  currentPhase` mapping in `buildPhaseStack` is untested
-  — a regression that collapsed every row to `past`
-  post-fight would ship green.
-- evidence: `grep "'ended'" state/e2e/combat.engine.test.ts`
-  → no matches in phaseStack section; `combat.engine.ts:393-409`
-  explicitly special-cases ended.
-- suggested fix: add one test — drive combat to
-  `phase === 'ended'`, assert
-  `phaseStack[3].state === 'current'` and
-  `phaseStack[3].label === 'IV · LET'`.
-- source: web-fetch (reader sub-agent)
-
 ## Done
 
 ### [LOW] /state/presenters/event.engine.ts:152 — `STRIFE STIRS` is verb-as-chrome — `[accepted-as-design]` ✅
@@ -61,6 +41,24 @@
   verb-as-chrome exception is now pinned in
   `plan/bearings.md` Hard Rules so future critique passes
   don't re-surface this row.
+
+### [LOW] /state/e2e/combat.engine.test.ts — buildPhaseStack `'ended'` branch pinned ✅
+- pass: 8 (commit 9a4bdeb); addressed at commit f87a5ec
+- issue: #80
+- viewport: repository
+- category: comprehension
+- observation: phaseStack contract tests covered every
+  non-ended phase but not the `currentPhase === 'ended' ?
+  'resolving' : currentPhase` special case in buildPhaseStack
+  — a regression dropping the special case would silently
+  collapse every row to past post-fight + stop rendering the
+  ResolvePanel.
+- fix: 1 test added — drive combat to `phase === 'ended'`,
+  assert phaseStack[3] stays current with key 'resolving'
+  and label 'IV · LET'; the three earlier rows are all past.
+  Inline comment explains why the special case matters so a
+  future reader doesn't strip it. Verify 487 / 487 (+1 from
+  486).
 
 ### [LOW] /components/event/EncounterModalOverlay.tsx:1-19 — JSDoc now mentions vm.preludeChrome contract ✅
 - pass: 9 (commit 65dc6ad); addressed at commit cfac6f1

@@ -16,6 +16,15 @@
  * Renders only when the active event VM has `kind === 'combat-prelude'`.
  * Caller (`app/(tabs)/exploration/index.tsx`) controls mount/unmount
  * via `selectHasActiveEvent` + `vm.kind`.
+ *
+ * All display strings (eyebrow, sash label, seal-bar label, flee-
+ * disabled hint) come from `vm.preludeChrome` — no inline literals
+ * per Hard Rule #8. The component returns `null` when
+ * `vm.preludeChrome === null` (defensive against narrative-choice
+ * variants slipping into the overlay path; the presenter normally
+ * guarantees `preludeChrome` is populated for `kind === 'combat-
+ * prelude'` VMs via `withPreludeChrome`). Component-level pins live
+ * in `components/event/__tests__/EncounterModalOverlay.test.tsx`.
  */
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';

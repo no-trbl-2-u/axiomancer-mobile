@@ -24,26 +24,6 @@
 
 ## Pending
 
-### [MED] /plan/steps/01_build_plan.md:334-335 — Phase 33 shipped-state body says SACK post-rename
-- pass: 7 (commit 3385951)
-- viewport: repository
-- category: docs
-- observation: Phase 33's row body (touched in commit
-  `6c1ddfa` when ticked `[x]`) still spells the fourth tab
-  `SACK` — the Phase 32 SACK→SATCHEL rename predates Phase
-  33's close, so this row introduces a FRESH stale reference
-  inside post-rename narrative (distinct from the historical
-  SACK refs already in the Pending queue, which can keep
-  SACK as historical quotes).
-- evidence: `plan/steps/01_build_plan.md:334-335` —
-  `WILDS/STRIFE pair + SELF + MEMOIR + SACK; WILDS and STRIFE
-  remain mutually exclusive`.
-- suggested fix: replace `SACK` with `SATCHEL` on line 335
-  (Phase 33's body post-dates the rename; historical-quote
-  exemption from the existing SACK finding doesn't apply
-  here).
-- source: web-fetch (reader sub-agent)
-
 ### [LOW] /state/presenters/memoir.engine.ts:127,359 — `'untested.'` inconsistency between chip label and empty-state line
 - pass: 7 (commit 3385951)
 - viewport: repository
@@ -184,6 +164,18 @@
   verb-as-chrome exception is now pinned in
   `plan/bearings.md` Hard Rules so future critique passes
   don't re-surface this row.
+
+### [MED] /plan/steps/01_build_plan.md:334-335 — Phase 33 row body refreshed SACK → SATCHEL ✅
+- pass: 7 (commit 3385951); addressed at commit 2f846a3
+- issue: #71
+- viewport: repository
+- category: docs
+- observation: Phase 33's row body (ticked `[x]` at `6c1ddfa`
+  after the rename) still spelled the fourth tab `SACK` —
+  fresh stale reference in post-rename narrative.
+- fix: single-line swap `SACK` → `SATCHEL` on line 335.
+  Historical-quote contexts (pre-Phase-31 quotes) still
+  covered by the standing SACK docs sweep row.
 
 ### [HIGH] /app/(tabs)/combat.tsx:9-15,312 — file-level + section JSDoc refreshed post phase-stack swap ✅
 - pass: 8 (commit 9a4bdeb); addressed at commit 5ffb330

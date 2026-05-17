@@ -75,10 +75,14 @@ export interface EventChoice {
 /**
  * Combat-prelude chrome strings, populated only on `kind: 'combat-prelude'`
  * VMs. Phase 32 (Claude Design handoff, 2026-05-16) ported the prototype's
- * encounter-modal header strip (red triangle + ENCOUNTER eyebrow) plus the
- * diagonal "STRIFE STIRS" sash overlaying the illustration. Routing both
- * strings through the VM keeps the view layer free of inline literals per
- * Hard Rule #8 — the screen reads `vm.preludeChrome` and paints if set.
+ * encounter-modal seam — header strip (red triangle + ENCOUNTER eyebrow),
+ * diagonal "STRIFE STIRS" sash overlaying the illustration, plus the
+ * non-dismissible SEALED · NO RETREAT chain bars and the FLEE-disabled
+ * hint added in pass-7/8 chrome lifts. Routing the four chrome strings
+ * (eyebrow, sash, seal-bar, flee-disabled hint) through the VM keeps
+ * the view layer free of inline literals per Hard Rule #8 — the screen
+ * reads `vm.preludeChrome` and paints if set, or returns null when the
+ * field is null (narrative-choice variants).
  */
 export interface PreludeChrome {
     /** Eyebrow text rendered in the header strip above the illustration. */

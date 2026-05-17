@@ -22,6 +22,11 @@ import {
     type ExplorationOption,
     type NodeType,
 } from '@/state/presenters/exploration.engine';
+import {
+    selectEventViewModel,
+    selectHasActiveEvent,
+} from '@/state/presenters/event.engine';
+import { EncounterModalOverlay } from '@/components/event/EncounterModalOverlay';
 
 const EVENT_BADGE: Record<NodeType, { c: string; label: string }> = {
     encounter: { c: AXM.blood, label: 'ENCOUNTER' },
@@ -51,11 +56,28 @@ export default function ExplorationScreen() {
     // Subscribe to the world slice so the screen re-renders on moves
     // and map transitions. The selector pattern is the same as inventory.
     const world = useGameState((s) => (s as unknown as { world: unknown }).world);
+    const eventSlice = useGameState((s) => s.event);
+    const combat = useGameState((s) => s.combat);
+    const quests = useGameState((s) => s.quests);
+    const flags = useGameState((s) => s.flags);
     const vm = useMemo(
         () => selectExplorationViewModel(store.getState()),
         // eslint-disable-next-line react-hooks/exhaustive-deps
         [store, world],
     );
+    // Encounter-modal overlay state (Phase 32 design-handoff port).
+    // The overlay mounts when the engine has a pending combat-prelude
+    // event and combat hasn't started yet. Same VM the standalone
+    // `app/event` route reads; this is a second consumer of it.
+    const eventVm = useMemo(
+        () => selectEventViewModel({ event: eventSlice, combat, quests, flags } as never),
+        [eventSlice, combat, quests, flags],
+    );
+    const hasEvent = useMemo(
+        () => selectHasActiveEvent({ event: eventSlice, combat } as never),
+        [eventSlice, combat],
+    );
+    const showEncounterModal = hasEvent && eventVm.kind === 'combat-prelude';
 
     const nodeById = useMemo(() => {
         const m = new Map<string, ExplorationNode>();
@@ -107,10 +129,27 @@ export default function ExplorationScreen() {
         // no-op (you've already been there). Current is informational.
         if (node.kind !== 'available') return;
         const result = actions.moveTo(node.id);
+        // Phase 32 design-handoff port (2026-05-16): encounter / boss
+        // taps no longer fast-path straight into combat. Instead the
+        // arrival resolves the map event, populating the pending event
+        // slice; the screen's render path then mounts
+        // <EncounterModalOverlay> over the map so the player must pick
+        // FIGHT or FLEE (chat1: "user cannot exit these modals"). The
+        // overlay's FIGHT handler does the enterCombat + router.replace
+        // when the player commits.
         if (result.moved && node.triggersCombat) {
-            enterCombat();
-            router.replace('/combat' as never);
+            actions.resolveCurrentMapEvent();
         }
+    };
+
+    const onEncounterFight = () => {
+        actions.pickEventChoice('fight');
+        enterCombat();
+        router.replace('/combat' as never);
+    };
+
+    const onEncounterFlee = () => {
+        actions.pickEventChoice('flee');
     };
 
     const onOptionPress = (option: ExplorationOption) => {
@@ -291,6 +330,14 @@ export default function ExplorationScreen() {
                     </ScrollView>
                 )}
             </View>
+
+            {showEncounterModal && (
+                <EncounterModalOverlay
+                    vm={eventVm}
+                    onFight={onEncounterFight}
+                    onFlee={onEncounterFlee}
+                />
+            )}
         </ScreenBg>
     );
 }

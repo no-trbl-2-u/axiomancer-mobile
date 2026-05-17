@@ -44,28 +44,6 @@
   in chrome register, empty-state line in narrative register.
 - source: web-fetch (reader sub-agent)
 
-### [MED] /plan/steps/01_build_plan.md + /plan/PHASE_CANDIDATES.md + /plan/phases/phase_{31,8}_*.md — SACK references not refreshed after SATCHEL rename
-- pass: 6 (commit 08bcf5e)
-- viewport: repository
-- category: docs
-- observation: Phase 32's SACK→SATCHEL rename landed in
-  `tabs.engine.ts` + `inventory.engine.ts` + the e2e tests, but
-  the build plan, candidate doc, phase 31 brief, and phase 8
-  brief all still spell the fourth tab `SACK` — a fresh
-  maintainer running `grep -r SACK` finds 11 files and has to
-  guess which strings are now-stale prose vs which are still
-  live (none are live; all 11 are docs).
-- evidence: `plan/steps/01_build_plan.md:288-289` post-Phase-31
-  line `WILDS · STRIFE · SELF · SACK`; `phase_31_…md:5,12,14`
-  `**all places** — WILDS · STRIFE · SELF · SACK`;
-  `phase_8_…md:29` `app/(tabs)/inventory/ # SACK tab`.
-- suggested fix: append a one-line `(later renamed SACK →
-  SATCHEL in Phase 32 — 2026-05-16)` annotation at the first
-  occurrence in each doc, OR sweep `SACK` → `SATCHEL` outside
-  historical-quote contexts (the critique Done rows can keep
-  SACK since they cite pre-Phase-31 state).
-- source: web-fetch (reader sub-agent)
-
 ### [MED] /components/event/EncounterModalOverlay.tsx — no component test pins the overlay surface
 - pass: 8 (commit 9a4bdeb)
 - viewport: repository
@@ -126,6 +104,24 @@
   verb-as-chrome exception is now pinned in
   `plan/bearings.md` Hard Rules so future critique passes
   don't re-surface this row.
+
+### [MED] /plan/ docs — SACK→SATCHEL sweep across briefs ✅
+- pass: 6 (commit 08bcf5e); addressed at commit b342553
+- issue: #74
+- viewport: repository
+- category: docs
+- observation: Phase 32's SACK→SATCHEL rename landed in
+  presenter + tests but plan/ docs still spelled SACK in
+  places; grep returned 16 hits and a fresh maintainer
+  couldn't tell historical from live.
+- fix: hybrid sweep — `phase_33_memoir_tab.md:254` flipped to
+  SATCHEL (was a current-state claim about live tab bar);
+  `phase_31_tabs_design_pass.md` + `phase_8_navigation_app_shell_polish.md`
+  gained a one-line breadcrumb at the top noting the
+  rename. Historical-quote contexts (rename narrative in
+  build plan, Phase 31 brief body, prior CRITIQUE Done rows,
+  AUDIT bias descriptions) left as-is — they quote what the
+  surface was at a given commit, not what it is now.
 
 ### [MED] /components/event/EncounterModalOverlay.tsx:42-43 — seal + flee-hint chrome routed through vm.preludeChrome ✅
 - pass: 8 (commit 9a4bdeb); addressed at commit ec5f875

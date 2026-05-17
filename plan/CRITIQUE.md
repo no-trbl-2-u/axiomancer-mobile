@@ -85,24 +85,6 @@
   `phaseStack[3].label === 'IV · LET'`.
 - source: web-fetch (reader sub-agent)
 
-### [MED] /state/presenters/event.engine.ts:75-82 — `PreludeChrome` JSDoc undercounts the interface
-- pass: 9 (commit 65dc6ad)
-- viewport: repository
-- category: docs
-- observation: JSDoc summary says the interface routes
-  `'both strings'` through the VM, but after pass-7/8 chrome
-  lifts the interface now carries 4 fields (`eyebrow`,
-  `sashLabel`, `sealLabel`, `fleeDisabledHint`). A fresh
-  maintainer reading the doc-block undercounts the surface.
-- evidence: `event.engine.ts:80-81` "Routing both strings
-  through the VM keeps the view layer free of inline
-  literals" while `PreludeChrome` (lines 83-102) declares
-  4 fields.
-- suggested fix: rewrite the JSDoc summary to
-  `'Routing the four chrome strings (eyebrow, sash, seal-bar,
-  flee-disabled hint) through the VM…'` and drop `'both'`.
-- source: web-fetch (reader sub-agent)
-
 ### [LOW] /components/event/EncounterModalOverlay.tsx:1-19 — file JSDoc never mentions `vm.preludeChrome`
 - pass: 9 (commit 65dc6ad)
 - viewport: repository
@@ -165,6 +147,19 @@
   verb-as-chrome exception is now pinned in
   `plan/bearings.md` Hard Rules so future critique passes
   don't re-surface this row.
+
+### [MED] /state/presenters/event.engine.ts:75-82 — PreludeChrome JSDoc refreshed to four-field reality ✅
+- pass: 9 (commit 65dc6ad); addressed at commit d843be8
+- issue: #75
+- viewport: repository
+- category: docs
+- observation: JSDoc said "both strings" but the interface
+  carried 4 fields after pass-7/8 chrome lifts — undercount.
+- fix: rewrote summary to enumerate all 4 strings (eyebrow,
+  sash, seal-bar, flee-disabled hint); noted the SEALED · NO
+  RETREAT chain bars + FLEE-disabled hint as the additions
+  from pass-7/8; added a note about the null branch the
+  EncounterModalOverlay early-return guard depends on.
 
 ### [MED] /plan/ docs — SACK→SATCHEL sweep across briefs ✅
 - pass: 6 (commit 08bcf5e); addressed at commit b342553

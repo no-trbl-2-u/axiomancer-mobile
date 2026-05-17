@@ -407,8 +407,15 @@ function buildPhaseStack(
                   : i === currentIdx
                     ? 'current'
                     : 'future';
+        // Skill row hides until the action picker commits 'skill', so the
+        // stack reads as 3 rows in the common (non-skill) flow and 4 rows
+        // when the player invokes a skill. Also visible when the engine
+        // is actively in `choosing_skill` (defensive — should imply
+        // pickedAction === 'skill' but guard against engine drift).
         const visible =
-            key === 'choosing_skill' ? pickedAction === 'skill' : true;
+            key === 'choosing_skill'
+                ? pickedAction === 'skill' || currentPhase === 'choosing_skill'
+                : true;
         let summary = '';
         if (state === 'past') {
             if (key === 'choosing_stance' && selectedStance !== null) {

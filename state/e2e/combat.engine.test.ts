@@ -669,3 +669,105 @@ describe('selectCombatViewModel: presenter-sourced ritual copy', () => {
         expect(active.loadingMessage).toBe('the field stirs.');
     });
 });
+
+// ---------------------------------------------------------------------------
+// Phase stack — Phase 32 design-handoff port (spec32 tick C)
+//
+// Ported from `prototype.jsx:238-281` (PhaseStackLive). The combat VM
+// exposes a `phaseStack` of four entries (stance → action → skill →
+// resolving). Each entry carries its state (past/current/future), a
+// display label, an optional past-summary string, and a `visible` flag
+// (false for the skill row when the picked action isn't 'skill').
+// ---------------------------------------------------------------------------
+
+describe('selectCombatViewModel: phaseStack contract (Tick C)', () => {
+    it('emits a 4-entry stack on the no-combat fallback with stance current and the rest future', () => {
+        const store = createGameStore(createMemoryAdapter());
+        const vm = selectCombatViewModel(store.getState());
+
+        expect(vm.phaseStack).toHaveLength(4);
+        expect(vm.phaseStack.map((e) => e.key)).toEqual([
+            'choosing_stance',
+            'choosing_action',
+            'choosing_skill',
+            'resolving',
+        ]);
+        expect(vm.phaseStack[0]?.state).toBe('current');
+        expect(vm.phaseStack[1]?.state).toBe('future');
+        expect(vm.phaseStack[2]?.state).toBe('future');
+        expect(vm.phaseStack[3]?.state).toBe('future');
+    });
+
+    it('emits the labels the screen renders verbatim (I·STAND, II·DO, III·CRAFT, IV·LET)', () => {
+        const store = createGameStore(createMemoryAdapter());
+        const vm = selectCombatViewModel(store.getState());
+
+        expect(vm.phaseStack[0]?.label).toBe('I · STAND');
+        expect(vm.phaseStack[1]?.label).toBe('II · DO');
+        expect(vm.phaseStack[2]?.label).toBe('III · CRAFT');
+        expect(vm.phaseStack[3]?.label).toBe('IV · LET');
+    });
+
+    it('hides the skill row on the no-combat fallback (action not yet picked as skill)', () => {
+        const store = createGameStore(createMemoryAdapter());
+        const vm = selectCombatViewModel(store.getState());
+
+        const byKey = Object.fromEntries(vm.phaseStack.map((e) => [e.key, e.visible]));
+        expect(byKey['choosing_stance']).toBe(true);
+        expect(byKey['choosing_action']).toBe(true);
+        expect(byKey['choosing_skill']).toBe(false);
+        expect(byKey['resolving']).toBe(true);
+    });
+
+    it('reveals the skill row once the engine enters choosing_skill phase', () => {
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
+        actions.setPlayerStance('mind');
+        actions.setCombatPhase('choosing_action');
+        actions.setCombatPhase('choosing_skill');
+        const vm = selectCombatViewModel(store.getState());
+
+        const skillEntry = vm.phaseStack.find((e) => e.key === 'choosing_skill');
+        expect(skillEntry?.visible).toBe(true);
+        expect(skillEntry?.state).toBe('current');
+    });
+
+    it('shifts states as the engine phase advances stance → action', () => {
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
+
+        let vm = selectCombatViewModel(store.getState());
+        expect(vm.phaseStack[0]?.state).toBe('current');
+
+        actions.setPlayerStance('body');
+        actions.setCombatPhase('choosing_action');
+        vm = selectCombatViewModel(store.getState());
+
+        expect(vm.phaseStack[0]?.state).toBe('past');
+        expect(vm.phaseStack[0]?.summary).toBe('BODY');
+        expect(vm.phaseStack[1]?.state).toBe('current');
+        expect(vm.phaseStack[2]?.state).toBe('future');
+        expect(vm.phaseStack[3]?.state).toBe('future');
+    });
+
+    it('past-row summary for the stance phase is the chosen stance in ALL CAPS', () => {
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
+        actions.setPlayerStance('heart');
+        actions.setCombatPhase('choosing_action');
+        const vm = selectCombatViewModel(store.getState());
+
+        expect(vm.phaseStack[0]?.summary).toBe('HEART');
+    });
+
+    it('every entry object is frozen so React.memo on the row sees stable references', () => {
+        const store = createGameStore(createMemoryAdapter());
+        const vm = selectCombatViewModel(store.getState());
+        for (const entry of vm.phaseStack) {
+            expect(Object.isFrozen(entry)).toBe(true);
+        }
+    });
+});

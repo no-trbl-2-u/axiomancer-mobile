@@ -445,7 +445,6 @@ function PhaseStack({
                                     <ResolvePanel
                                         resolve={vm.resolve}
                                         canContinue={vm.phase !== 'ended'}
-                                        isEnded={vm.phase === 'ended'}
                                         onContinue={onContinue}
                                         onLeave={onLeave}
                                     />
@@ -669,13 +668,11 @@ function SkillPhase({
 function ResolvePanel({
     resolve,
     canContinue,
-    isEnded,
     onContinue,
     onLeave,
 }: {
     resolve: ResolveSlice;
     canContinue: boolean;
-    isEnded: boolean;
     onContinue: () => void;
     onLeave: () => void;
 }) {
@@ -758,7 +755,7 @@ function ResolvePanel({
                 accessibilityLabel={canContinue ? 'Continue to next round' : 'Leave combat'}
             >
                 <Text style={resolve_styles.nextText}>
-                    {isEnded ? '✠ DEPART' : '✠ NEXT ROUND'}
+                    {resolve.nextActionLabel}
                 </Text>
             </TouchableOpacity>
         </View>

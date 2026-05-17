@@ -771,3 +771,42 @@ describe('selectCombatViewModel: phaseStack contract (Tick C)', () => {
         }
     });
 });
+
+// ---------------------------------------------------------------------------
+// ResolveSlice.nextActionLabel — CRITIQUE pass 8 HIGH drain
+//
+// Lifted off the screen (was inline `isEnded ? '✠ DEPART' : '✠ NEXT ROUND'`
+// in `app/(tabs)/combat.tsx:761`) onto the VM per Hard Rule #8. The
+// label is keyed off engine `phase`: `'✠ DEPART'` once `phase === 'ended'`,
+// `'✠ NEXT ROUND'` otherwise.
+// ---------------------------------------------------------------------------
+
+describe('selectCombatViewModel: resolve.nextActionLabel', () => {
+    it('returns NEXT ROUND on the no-combat fallback (idle store)', () => {
+        const store = createGameStore(createMemoryAdapter());
+        const vm = selectCombatViewModel(store.getState());
+
+        expect(vm.resolve.nextActionLabel).toBe('✠ NEXT ROUND');
+    });
+
+    it('returns NEXT ROUND while combat is still in a non-ended phase', () => {
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
+        const vm = selectCombatViewModel(store.getState());
+
+        expect(vm.phase).not.toBe('ended');
+        expect(vm.resolve.nextActionLabel).toBe('✠ NEXT ROUND');
+    });
+
+    it('flips to DEPART when combat phase reaches ended', () => {
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
+        actions.setCombatPhase('ended');
+        const vm = selectCombatViewModel(store.getState());
+
+        expect(vm.phase).toBe('ended');
+        expect(vm.resolve.nextActionLabel).toBe('✠ DEPART');
+    });
+});

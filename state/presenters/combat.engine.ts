@@ -214,7 +214,18 @@ export interface ResolveSlice {
     message: string;
     /** Pre-formatted header, e.g. `'❦ PARLEY · HEART OPENS'`. */
     header: string;
+    /**
+     * Continue-button label for the ResolvePanel — `'✠ NEXT ROUND'`
+     * mid-fight, `'✠ DEPART'` once combat has ended. Lifted onto the
+     * VM per Hard Rule #8 (CRITIQUE pass 8 HIGH drain); the screen
+     * reads `vm.resolve.nextActionLabel` rather than inlining the
+     * literals.
+     */
+    nextActionLabel: string;
 }
+
+const NEXT_ROUND_LABEL = '✠ NEXT ROUND';
+const DEPART_LABEL = '✠ DEPART';
 
 export interface CombatLogEntryDisplay {
     severity: LogSeverity;
@@ -810,6 +821,8 @@ function resolveSliceFromState(
         default:
             header = '… NO BLOW LANDS';
     }
+    const phaseRaw = String(combat?.phase ?? 'choosing_stance');
+    const nextActionLabel = phaseRaw === 'ended' ? DEPART_LABEL : NEXT_ROUND_LABEL;
     return {
         playerStance: pStance,
         enemyStance: eStance,
@@ -821,6 +834,7 @@ function resolveSliceFromState(
         primaryText,
         message,
         header,
+        nextActionLabel,
     };
 }
 

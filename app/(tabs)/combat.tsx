@@ -14,11 +14,8 @@
  * pager out for the resolve panel.
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
-    Dimensions,
-    NativeScrollEvent,
-    NativeSyntheticEvent,
     ScrollView,
     StyleSheet,
     Text,
@@ -37,7 +34,6 @@ import {
     useCombatViewModel,
     type ActionOption,
     type CombatLogEntryDisplay,
-    type CombatPhaseKey,
     type CombatViewModel,
     type ResolveSlice,
     type SkillOption,
@@ -75,12 +71,6 @@ const LOG_SEVERITY_COLOR: Record<CombatLogEntryDisplay['severity'], string> = {
     friendship: AXM.rust,
     system: AXM.bone,
 };
-
-const PICKER_PAGES: readonly CombatPhaseKey[] = [
-    'choosing_stance',
-    'choosing_action',
-    'choosing_skill',
-];
 
 // ---------------------------------------------------------------------------
 // Screen
@@ -349,125 +339,122 @@ function PhaseBottom({ vm, onPickStance, onPickAction, onPickSkill, onFlee, onCo
                 </View>
             </View>
 
-            {vm.phase === 'resolving' || vm.phase === 'ended' ? (
-                <ResolvePanel
-                    resolve={vm.resolve}
-                    canContinue={vm.phase !== 'ended'}
-                    isEnded={vm.phase === 'ended'}
-                    onContinue={onContinue}
-                    onLeave={onLeave}
-                />
-            ) : (
-                <PickerCarousel
-                    vm={vm}
-                    onPickStance={onPickStance}
-                    onPickAction={onPickAction}
-                    onPickSkill={onPickSkill}
-                    onFlee={onFlee}
-                />
-            )}
+            <PhaseStack
+                vm={vm}
+                onPickStance={onPickStance}
+                onPickAction={onPickAction}
+                onPickSkill={onPickSkill}
+                onFlee={onFlee}
+                onContinue={onContinue}
+                onLeave={onLeave}
+            />
         </View>
     );
 }
 
 // ---------------------------------------------------------------------------
-// Picker carousel (stance / action / skill)
+// Phase stack — vertical list of phase rows
+//
+// Phase 32 design-handoff port (2026-05-16) per prototype.jsx:238-281.
+// Replaces the horizontal swipe carousel with a vertical stack:
+//   - past rows collapse to a single line with a right-aligned
+//     summary value (e.g. 'BODY', 'STRIKE');
+//   - the current row expands into a panel with the active picker
+//     inline and a sulfur dot indicator;
+//   - future rows render label-only in ash.
+// The skill row hides itself when the picked action isn't 'skill'
+// (the presenter signals this via `entry.visible`).
 // ---------------------------------------------------------------------------
 
-function PickerCarousel({
+function PhaseStack({
     vm,
     onPickStance,
     onPickAction,
     onPickSkill,
     onFlee,
+    onContinue,
+    onLeave,
 }: {
     vm: CombatViewModel;
     onPickStance: (s: StanceKey) => void;
     onPickAction: (k: ActionOption['key']) => void;
     onPickSkill: (s: SkillOption) => void;
     onFlee: () => void;
+    onContinue: () => void;
+    onLeave: () => void;
 }) {
-    const scrollRef = useRef<ScrollView | null>(null);
-    const initialWidth = Dimensions.get('window').width || 360;
-    const [pageWidth, setPageWidth] = useState<number>(initialWidth);
-    const targetIndex = PICKER_PAGES.indexOf(vm.phase);
-    const onCarouselSwipe = useGameActionsPhaseChanger();
-
-    useEffect(() => {
-        if (scrollRef.current && targetIndex >= 0 && pageWidth > 0) {
-            scrollRef.current.scrollTo({ x: targetIndex * pageWidth, animated: true });
-        }
-    }, [targetIndex, pageWidth]);
-
-    const onMomentumScrollEnd = useCallback(
-        (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-            const x = e.nativeEvent.contentOffset.x;
-            const index = pageWidth > 0 ? Math.round(x / pageWidth) : 0;
-            const nextPhase = PICKER_PAGES[index];
-            if (nextPhase !== undefined && nextPhase !== vm.phase) {
-                onCarouselSwipe(nextPhase);
-            }
-        },
-        [pageWidth, vm.phase, onCarouselSwipe],
-    );
-
-    const onLayout = useCallback((e: { nativeEvent: { layout: { width: number } } }) => {
-        const w = e.nativeEvent.layout.width;
-        if (w > 0) setPageWidth((prev) => (prev === w ? prev : w));
-    }, []);
-
     return (
-        <ScrollView
-            ref={scrollRef}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={onMomentumScrollEnd}
-            scrollEventThrottle={16}
-            onLayout={onLayout}
-            accessibilityLabel="Combat picker carousel"
-        >
-            <View style={[carousel_styles.page, { width: pageWidth }]} testID="carousel-page-stance">
-                <StancePhase
-                    options={vm.stancePicker.options}
-                    selected={vm.stancePicker.selected}
-                    onPick={onPickStance}
-                    a11yLabels={vm.a11y}
-                />
-            </View>
-            <View style={[carousel_styles.page, { width: pageWidth }]} testID="carousel-page-action">
-                <ActionPhase
-                    options={vm.actionPicker.options}
-                    fleeAvailable={vm.actionPicker.fleeAvailable}
-                    fleeHint={vm.actionPicker.fleeHint}
-                    onPick={onPickAction}
-                    onFlee={onFlee}
-                />
-            </View>
-            <View style={[carousel_styles.page, { width: pageWidth }]} testID="carousel-page-skill">
-                <SkillPhase
-                    skills={vm.skillPicker.skills}
-                    availableCount={vm.skillPicker.availableCount}
-                    totalCount={vm.skillPicker.totalCount}
-                    onPick={onPickSkill}
-                />
-            </View>
-        </ScrollView>
-    );
-}
-
-// Helper: closure over `useGameActions` so the swipe handler can
-// dispatch phase changes without re-fetching the actions on every
-// momentum scroll event.
-function useGameActionsPhaseChanger() {
-    const actions = useGameActions();
-    return useCallback(
-        (phase: CombatPhaseKey) => {
-            if (phase === 'choosing_stance' || phase === 'choosing_action' || phase === 'choosing_skill') {
-                actions.setCombatPhase(phase);
-            }
-        },
-        [actions],
+        <View style={stack_styles.column} testID="combat-phase-stack">
+            {vm.phaseStack
+                .filter((entry) => entry.visible)
+                .map((entry) => (
+                    <View
+                        key={entry.key}
+                        style={[
+                            stack_styles.row,
+                            entry.state === 'current' && stack_styles.rowCurrent,
+                        ]}
+                        testID={`phase-stack-row-${entry.key}`}
+                    >
+                        <View style={stack_styles.rowHeader}>
+                            <Text
+                                style={[
+                                    stack_styles.rowLabel,
+                                    entry.state === 'past' && { color: AXM.bone },
+                                    entry.state === 'future' && { color: AXM.ash },
+                                ]}
+                            >
+                                {entry.label}
+                            </Text>
+                            <View style={stack_styles.rowRule} />
+                            {entry.state === 'past' && entry.summary.length > 0 && (
+                                <Text style={stack_styles.rowSummary}>{entry.summary}</Text>
+                            )}
+                            {entry.state === 'current' && (
+                                <View style={stack_styles.rowDot} />
+                            )}
+                        </View>
+                        {entry.state === 'current' && (
+                            <View style={stack_styles.rowBody}>
+                                {entry.key === 'choosing_stance' && (
+                                    <StancePhase
+                                        options={vm.stancePicker.options}
+                                        selected={vm.stancePicker.selected}
+                                        onPick={onPickStance}
+                                        a11yLabels={vm.a11y}
+                                    />
+                                )}
+                                {entry.key === 'choosing_action' && (
+                                    <ActionPhase
+                                        options={vm.actionPicker.options}
+                                        fleeAvailable={vm.actionPicker.fleeAvailable}
+                                        fleeHint={vm.actionPicker.fleeHint}
+                                        onPick={onPickAction}
+                                        onFlee={onFlee}
+                                    />
+                                )}
+                                {entry.key === 'choosing_skill' && (
+                                    <SkillPhase
+                                        skills={vm.skillPicker.skills}
+                                        availableCount={vm.skillPicker.availableCount}
+                                        totalCount={vm.skillPicker.totalCount}
+                                        onPick={onPickSkill}
+                                    />
+                                )}
+                                {(entry.key === 'resolving') && (
+                                    <ResolvePanel
+                                        resolve={vm.resolve}
+                                        canContinue={vm.phase !== 'ended'}
+                                        isEnded={vm.phase === 'ended'}
+                                        onContinue={onContinue}
+                                        onLeave={onLeave}
+                                    />
+                                )}
+                            </View>
+                        )}
+                    </View>
+                ))}
+        </View>
     );
 }
 
@@ -829,8 +816,33 @@ const styles = StyleSheet.create({
     toastText: { fontFamily: FONTS.serifItalic, fontSize: 12, color: AXM.parchment },
 });
 
-const carousel_styles = StyleSheet.create({
-    page: { paddingHorizontal: 2 },
+const stack_styles = StyleSheet.create({
+    column: { flexDirection: 'column', gap: 8 },
+    row: { padding: 8, paddingHorizontal: 12 },
+    rowCurrent: {
+        backgroundColor: '#100d0a',
+        borderWidth: 1,
+        borderColor: 'rgba(232, 223, 200, 0.12)',
+        padding: 12,
+        paddingTop: 12,
+        paddingBottom: 14,
+    },
+    rowHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    rowLabel: {
+        fontFamily: FONTS.sans,
+        fontSize: 10,
+        letterSpacing: 2.2,
+        color: AXM.parchment,
+    },
+    rowRule: { flex: 1, height: 1, backgroundColor: 'rgba(232, 223, 200, 0.12)' },
+    rowSummary: {
+        fontFamily: FONTS.sans,
+        fontSize: 9,
+        letterSpacing: 1.4,
+        color: AXM.bone,
+    },
+    rowDot: { width: 5, height: 5, backgroundColor: AXM.sulfur },
+    rowBody: { marginTop: 10 },
 });
 
 const stance_styles = StyleSheet.create({

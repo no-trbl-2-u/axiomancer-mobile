@@ -221,6 +221,50 @@ export interface CombatLogEntryDisplay {
     text: string;
 }
 
+/**
+ * One row in the prototype's vertical phase stack — the centerpiece of
+ * the STRIFE redesign per `prototype.jsx:238-281` (PhaseStackLive).
+ * The four engine phases (stance → action → skill → resolving) render
+ * as a vertical list, each in one of three states:
+ *
+ *   - `past`    : collapsed one-line summary with the chosen value
+ *                 (e.g. `'BODY'`, `'STRIKE'`); dim caption color.
+ *   - `current` : expanded panel with the active picker inline and a
+ *                 sulfur dot indicator on the header strip.
+ *   - `future`  : dimmed label only; ash color; no body.
+ *
+ * The skill row only appears when the action picked was `'skill'`
+ * (`visible: false` otherwise). Lifted onto the VM so the screen
+ * carries no phase-label or summary literals (Hard Rule #8).
+ */
+export type PhaseStackEntryState = 'past' | 'current' | 'future';
+
+export interface PhaseStackEntry {
+    /** Engine phase key (matches `CombatViewModel.phase`). */
+    key: CombatPhaseKey;
+    /**
+     * Display label — `"I · STAND"` / `"II · DO"` / `"III · CRAFT"` /
+     * `"IV · LET"`. Mono-shaped numerals + sans uppercase verb.
+     */
+    label: string;
+    /** Render state relative to the current engine phase. */
+    state: PhaseStackEntryState;
+    /**
+     * Past-state summary value (e.g. `'BODY'` for a committed stance,
+     * `'STRIKE'` for a committed attack). Empty string when no summary
+     * is available (engine doesn't preserve the action/skill choice
+     * across phase changes today; stance is the only field surfaced
+     * here for this port).
+     */
+    summary: string;
+    /**
+     * False for the skill row when the player picked a non-skill action
+     * (so the skill phase doesn't render in the stack). True for every
+     * other row regardless of state.
+     */
+    visible: boolean;
+}
+
 export interface CombatViewModel {
     /** True when the engine has an active `combat` slice. */
     isInCombat: boolean;
@@ -256,6 +300,14 @@ export interface CombatViewModel {
     phaseIndex: number;
     /** Ordered phase keys (matches the pips). */
     phaseOrder: readonly CombatPhaseKey[];
+    /**
+     * Vertical phase stack (Phase 32 design-handoff port, 2026-05-16).
+     * One entry per phase in render order, each carrying its state
+     * (past/current/future), label, and past-summary. Drives the
+     * `PhaseStack` component on `app/(tabs)/combat.tsx` which
+     * replaced the horizontal swipe carousel.
+     */
+    phaseStack: readonly PhaseStackEntry[];
     /**
      * Pre-formatted "round token" used in the phase header / VS panel,
      * e.g. `'iv vs i'`. Numerals are the player and enemy round counts.
@@ -307,6 +359,73 @@ const PHASE_LABELS: Record<CombatPhaseKey, string> = {
     resolving: '✠ FATE SETTLES',
     ended: '✠ THE FIGHT IS OVER',
 };
+
+/**
+ * Vertical-stack labels per prototype.jsx:247 — mono-shaped Roman
+ * numeral + sans uppercase verb. Distinct from `PHASE_LABELS` (which
+ * powers the top-of-screen header strip with the `✠` flourish). The
+ * stack labels are tighter so the past-row collapses cleanly to a
+ * single line.
+ */
+const PHASE_STACK_LABELS: Record<CombatPhaseKey, string> = {
+    choosing_stance: 'I · STAND',
+    choosing_action: 'II · DO',
+    choosing_skill: 'III · CRAFT',
+    resolving: 'IV · LET',
+    ended: 'IV · LET',
+};
+
+const PHASE_STACK_ORDER: readonly CombatPhaseKey[] = [
+    'choosing_stance',
+    'choosing_action',
+    'choosing_skill',
+    'resolving',
+];
+
+/**
+ * Build the vertical phase-stack rows from the current engine phase +
+ * picker state. Past-state summary is the chosen value where available
+ * (stance is preserved on the engine via `state.combat.playerStance`;
+ * action and skill are not buffered across phase changes today, so
+ * those rows return empty-string summary and the screen renders just
+ * the label on past rows).
+ */
+function buildPhaseStack(
+    currentPhase: CombatPhaseKey,
+    selectedStance: StanceKey | null,
+    pickedAction: ActionKey | null,
+): readonly PhaseStackEntry[] {
+    const currentIdx = PHASE_STACK_ORDER.indexOf(
+        currentPhase === 'ended' ? 'resolving' : currentPhase,
+    );
+    return PHASE_STACK_ORDER.map((key, i): PhaseStackEntry => {
+        const state: PhaseStackEntryState =
+            currentIdx < 0
+                ? 'future'
+                : i < currentIdx
+                  ? 'past'
+                  : i === currentIdx
+                    ? 'current'
+                    : 'future';
+        const visible =
+            key === 'choosing_skill' ? pickedAction === 'skill' : true;
+        let summary = '';
+        if (state === 'past') {
+            if (key === 'choosing_stance' && selectedStance !== null) {
+                summary = STANCE_LABEL[selectedStance];
+            } else if (key === 'choosing_action' && pickedAction !== null) {
+                summary = pickedAction.toUpperCase();
+            }
+        }
+        return Object.freeze({
+            key,
+            label: PHASE_STACK_LABELS[key],
+            state,
+            summary,
+            visible,
+        });
+    });
+}
 
 const STANCE_LABEL: Record<StanceKey, string> = {
     heart: 'HEART',
@@ -801,6 +920,7 @@ export function selectCombatViewModel(
             phaseHeader: PHASE_LABELS.choosing_stance,
             phaseIndex: 0,
             phaseOrder: PHASE_ORDER,
+            phaseStack: buildPhaseStack('choosing_stance', null, null),
             roundToken: 'i vs i',
             a11y: buildCombatA11y(EMPTY_ENEMY, EMPTY_PLAYER, 'choosing_stance', 1, false),
         };
@@ -919,6 +1039,11 @@ export function selectCombatViewModel(
         phaseHeader: PHASE_LABELS[phase] ?? PHASE_LABELS.choosing_stance,
         phaseIndex,
         phaseOrder: PHASE_ORDER,
+        phaseStack: buildPhaseStack(
+            phase,
+            toStanceKey(c.playerChoice?.stance ?? null),
+            (c.playerChoice?.action ?? null) as ActionKey | null,
+        ),
         roundToken,
         a11y: buildCombatA11y(enemy, player, phase, round, isInCombat),
     };

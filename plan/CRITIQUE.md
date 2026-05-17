@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-05-16 at commit 9a4bdeb
-> Pass count: 8
+> Last pass: 2026-05-17 at commit 65dc6ad
+> Pass count: 9
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -9,18 +9,17 @@
 >
 > **Pass-5 policy (set via `/oversight` 2026-05-15):** pause new
 > critique passes until the Pending count drains to ≤ 3 rows.
-> Pass 5 fired after the queue drained to 0. Pass 6 fired with
-> Pending=0 again. Pass 6 closed 3 of 6 findings via /iterate
-> (HIGH event.tsx chrome, MED ENCOUNTER dedup, LOW empty-state
-> voice). Pass 7 fired at Pending=3 (threshold met) — Phase 33
-> shipped 4 sub-ticks since pass 6. Pass 7 closed 5 of 6 (HIGH
-> memoir QuestCard glyphs, MED memoir JSDoc, MED PARLEYED→FLED,
-> MED memoir empty-fields, MED smoke-screens memoir; LOW STRIFE
-> STIRS accepted-as-design via oversight). Pass 8 fired at
-> Pending=3 (threshold met again) after 3 more Phase 32 sub-
-> ticks shipped (exploration step-cards, combat phase-stack,
-> encounter-modal-over-map). After pass 8 Pending = 9 → pause
-> re-engages until /iterate drains back to ≤ 3.
+> Pass 5/6/7/8 history: each fired at Pending ≤ 3, filed 6
+> findings, drained most via /iterate, repeated. Pass 8 closed
+> 6 of 6 (HIGHs combat ResolvePanel chrome + combat JSDoc rot;
+> MEDs Phase 33 row body SACK, exploration drawer literals,
+> EncounterModalOverlay chrome on VM, SACK docs sweep). Pass 9
+> fired at Pending=3 (threshold met) but the 12 commits since
+> pass 8 were all /iterate drains — no new surface shipped, so
+> the reader was asked for a quick walk. Pass 9 surfaced only
+> 3 small findings (all docs/YAGNI), validating the "drain-
+> first, critique-later" rhythm. After pass 9 Pending = 6 →
+> pause re-engages until /iterate drains back to ≤ 3.
 
 ## Pending
 
@@ -84,6 +83,68 @@
   `phase === 'ended'`, assert
   `phaseStack[3].state === 'current'` and
   `phaseStack[3].label === 'IV · LET'`.
+- source: web-fetch (reader sub-agent)
+
+### [MED] /state/presenters/event.engine.ts:75-82 — `PreludeChrome` JSDoc undercounts the interface
+- pass: 9 (commit 65dc6ad)
+- viewport: repository
+- category: docs
+- observation: JSDoc summary says the interface routes
+  `'both strings'` through the VM, but after pass-7/8 chrome
+  lifts the interface now carries 4 fields (`eyebrow`,
+  `sashLabel`, `sealLabel`, `fleeDisabledHint`). A fresh
+  maintainer reading the doc-block undercounts the surface.
+- evidence: `event.engine.ts:80-81` "Routing both strings
+  through the VM keeps the view layer free of inline
+  literals" while `PreludeChrome` (lines 83-102) declares
+  4 fields.
+- suggested fix: rewrite the JSDoc summary to
+  `'Routing the four chrome strings (eyebrow, sash, seal-bar,
+  flee-disabled hint) through the VM…'` and drop `'both'`.
+- source: web-fetch (reader sub-agent)
+
+### [LOW] /components/event/EncounterModalOverlay.tsx:1-19 — file JSDoc never mentions `vm.preludeChrome`
+- pass: 9 (commit 65dc6ad)
+- viewport: repository
+- category: docs
+- observation: Overlay's file-level JSDoc describes the
+  backdrop / seal-chain / mount-conditions but never mentions
+  that all four display strings come from `vm.preludeChrome`
+  nor the `preludeChrome === null` early-return guard at
+  line 41. The doc still narrates the surface as if literals
+  lived inline.
+- evidence: `EncounterModalOverlay.tsx:1-19` lacks any
+  preludeChrome reference; `:41` `if (vm.kind !==
+  'combat-prelude' || vm.preludeChrome === null) return
+  null;`.
+- suggested fix: add a one-line note: "All display strings
+  (eyebrow, sash, seal-bar, flee hint) come from
+  `vm.preludeChrome`; component renders nothing when that
+  field is null."
+- source: web-fetch (reader sub-agent)
+
+### [LOW] /state/presenters/exploration.engine.ts:99-116 — `drawerCopy.swipeHint` is YAGNI dead-field
+- pass: 9 (commit 65dc6ad)
+- viewport: repository
+- category: consistency
+- observation: `drawerCopy.swipeHint` is declared on the VM
+  type, populated in `DRAWER_COPY`, and asserted by a test,
+  but no screen consumes it — the JSDoc admits it's a
+  `'legacy field'` kept for a hypothetical future horizontal
+  surface. A fresh maintainer reading the type hunts for
+  where `'swipe →'` renders and finds nothing. Same
+  dead-VM-field smell as the `vm.a11y` finding drained pass
+  4 and the `emptyMoral` / `emptyPhilosophical` finding
+  drained pass 7.
+- evidence: `exploration.engine.ts:113` `swipeHint: string;`
+  + `:229` `swipeHint: 'swipe →'`; `state/e2e/exploration.
+  engine.test.ts:391` asserts it; `grep swipeHint
+  app/(tabs)/exploration/index.tsx` → 0 matches.
+- suggested fix: remove `swipeHint` from the type +
+  `DRAWER_COPY` + test (YAGNI — re-add when the future
+  horizontal surface actually lands). Alternative: keep
+  with a `@deprecated` tag if a near-term surface is
+  expected.
 - source: web-fetch (reader sub-agent)
 
 ## Done

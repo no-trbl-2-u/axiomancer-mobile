@@ -39,25 +39,6 @@
   here).
 - source: web-fetch (reader sub-agent)
 
-### [MED] /state/presenters/memoir.engine.ts:447-462 — `selectMemoirViewModel` JSDoc stale after Ticks C+D shipped
-- pass: 7 (commit 3385951)
-- viewport: repository
-- category: docs
-- observation: JSDoc still narrates Tick B as `(this commit)`
-  and describes Ticks C–D as future placeholders, even though
-  all four ticks have shipped (`9ccdee2` closed Phase 33). A
-  fresh maintainer reading this doc-block is told the chronicle
-  + alignment paths are placeholders when they populate from
-  `_recentEvents`, `moralMeter`, and `baseStats`.
-- evidence: `memoir.engine.ts:454` `Tick B (this commit):
-  quests section reads state.quests`; `:459` `Ticks C-D
-  populate alignment + chronicle in turn`.
-- suggested fix: rewrite the doc-block to describe the
-  shipped behaviour in present tense (quests / alignment /
-  chronicle all wired) and either delete the tick-by-tick
-  changelog or move it under a `Phase 33 history` heading.
-- source: web-fetch (reader sub-agent)
-
 ### [MED] /app/(tabs)/memoir/index.tsx + /state/presenters/memoir.engine.ts:358-359 — VM `emptyMoral` / `emptyPhilosophical` strings unconsumed
 - pass: 7 (commit 3385951)
 - viewport: repository
@@ -180,6 +161,20 @@
   verb-as-chrome exception is now pinned in
   `plan/bearings.md` Hard Rules so future critique passes
   don't re-surface this row.
+
+### [MED] /state/presenters/memoir.engine.ts:447-462 — `selectMemoirViewModel` JSDoc stale after Ticks C+D shipped ✅
+- pass: 7 (commit 3385951); addressed at commit c15c755
+- issue: #65
+- viewport: repository
+- category: docs
+- observation: JSDoc still narrated Tick B as `(this commit)`
+  and described Ticks C-D as future placeholders, even though
+  all four ticks shipped on 2026-05-16.
+- fix: rewrote the `selectMemoirViewModel` JSDoc in present
+  tense (one paragraph per VM section with read source +
+  current behaviour); moved the tick-by-tick changelog into a
+  `## Phase 33 history` subsection. Refreshed the file-level
+  JSDoc to drop the pre-ship framing.
 
 ### [HIGH] /app/(tabs)/memoir/index.tsx:42 — QuestCard inlines objective bullet glyphs ✅
 - pass: 7 (commit 3385951); addressed at commit 40db0e3

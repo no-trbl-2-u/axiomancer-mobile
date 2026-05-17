@@ -22,28 +22,6 @@
 
 ## Pending
 
-### [MED] /state/presenters/inventory.engine.ts:133 — `EMPTY_MESSAGE` says "sack" after SATCHEL chrome sweep
-- pass: 10 (commit 306e3f1)
-- viewport: repository
-- category: consistency
-- observation: Inventory empty-state copy still reads
-  `'Nothing in the sack.'` after the Phase 32 SACK→SATCHEL
-  rename swept the tab title (`tabs.engine.ts:56`) and section
-  header (`inventory.engine.ts:106`). The narrative line is
-  now the only `sack` reference left and reads inconsistent
-  against the `SATCHEL · WALLET · BURDEN` chrome a few lines
-  above. Rename-aftermath crumb — the pass-3 fix on
-  2026-05-15 deliberately set this string, then the Phase 32
-  rename on 2026-05-16 swept chrome but not narrative.
-- evidence: `state/presenters/inventory.engine.ts:133` `const
-  EMPTY_MESSAGE = 'Nothing in the sack.';` two lines below
-  `SECTION_HEADER = 'SATCHEL · WALLET · BURDEN'`.
-- suggested fix: change `EMPTY_MESSAGE` to `'Nothing in the
-  satchel.'` (preserves the established lowercase ritual
-  register; aligns the only surviving `sack` reference with
-  the renamed chrome).
-- source: web-fetch (reader sub-agent)
-
 ## Done
 
 ### [LOW] /state/presenters/event.engine.ts:152 — `STRIFE STIRS` is verb-as-chrome — `[accepted-as-design]` ✅
@@ -62,6 +40,19 @@
   verb-as-chrome exception is now pinned in
   `plan/bearings.md` Hard Rules so future critique passes
   don't re-surface this row.
+
+### [MED] /state/presenters/inventory.engine.ts:133 — EMPTY_MESSAGE 'sack' → 'satchel' (Phase 32 catch-up) ✅
+- pass: 10 (commit 306e3f1); addressed at commit 2822455
+- issue: #81
+- viewport: repository
+- category: consistency
+- observation: Phase 32 SACK→SATCHEL rename swept chrome but
+  not this narrative line; the empty-state copy was the only
+  surviving 'sack' on the inventory surface.
+- fix: single-string flip in `state/presenters/inventory.
+  engine.ts:133` — `'Nothing in the sack.'` → `'Nothing in
+  the satchel.'`. Lowercase ritual register preserved; no
+  test asserted on the literal. Verify 487 / 487 unchanged.
 
 ### [LOW] /state/e2e/combat.engine.test.ts — buildPhaseStack `'ended'` branch pinned ✅
 - pass: 8 (commit 9a4bdeb); addressed at commit f87a5ec

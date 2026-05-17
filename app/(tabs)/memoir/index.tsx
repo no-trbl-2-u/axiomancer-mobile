@@ -171,6 +171,11 @@ export default function MemoirScreen() {
                             >
                                 {vm.moralAlignment.chip.label}
                             </Text>
+                            {vm.moralAlignment.chip.label === 'UNDECLARED' && (
+                                <Text style={styles.measureEmpty} testID="memoir-moral-empty">
+                                    {vm.emptyMoral}
+                                </Text>
+                            )}
                         </View>
                         <View style={styles.measureChip} testID="memoir-philosophical-chip">
                             <Text style={styles.measureLabel}>
@@ -179,6 +184,11 @@ export default function MemoirScreen() {
                             {vm.philosophicalAlignment.rationale.length > 0 && (
                                 <Text style={styles.measureRationale}>
                                     {vm.philosophicalAlignment.rationale}
+                                </Text>
+                            )}
+                            {vm.philosophicalAlignment.label === 'untested.' && (
+                                <Text style={styles.measureEmpty} testID="memoir-philosophical-empty">
+                                    {vm.emptyPhilosophical}
                                 </Text>
                             )}
                         </View>
@@ -280,6 +290,13 @@ const styles = StyleSheet.create({
         fontSize: 10,
         color: AXM.bone,
         marginTop: 2,
+        lineHeight: 12,
+    },
+    measureEmpty: {
+        fontFamily: FONTS.serifItalic,
+        fontSize: 10,
+        color: AXM.bone,
+        marginTop: 4,
         lineHeight: 12,
     },
     quote: {

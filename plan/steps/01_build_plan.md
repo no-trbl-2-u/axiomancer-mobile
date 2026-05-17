@@ -313,7 +313,7 @@ commit that ships the phase.
       cascade. The loop never invents a port. See brief
       §"Dispatch rule (for `/march`)" for the full rule. Brief
       at `plan/phases/phase_32_design_refresh.md`.
-- [ ] Phase 33 — MEMOIR tab (journal: story / quests / alignment
+- [x] Phase 33 — MEMOIR tab (journal: story / quests / alignment
       / philosopher-quote slot). Filed via `/plan-a-phase`
       2026-05-16. Adds a new fifth route at
       `app/(tabs)/memoir/index.tsx` — a journal surface
@@ -333,13 +333,16 @@ commit that ships the phase.
       navigation-phase commit"). The bottom tab bar grows from 4
       visible tabs to 5 (WILDS/STRIFE pair + SELF + MEMOIR +
       SACK; WILDS and STRIFE remain mutually exclusive). Brief
-      at `plan/phases/phase_33_memoir_tab.md`. **Resumed via
-      `/oversight` 2026-05-16** after the pause that followed
-      ticks A (`6515cb5`) + B (`2f70eac`). Sub-ticks C (alignment
-      readouts) + D (story chronicle from `_recentEvents`) remain;
-      `/march` ships them in order on the next ticks where the
-      event-surface bias has cleared its top row (HIGH literal
-      lift) — see AUDIT.md "Bias" line.
+      at `plan/phases/phase_33_memoir_tab.md`. Shipped across
+      four sub-ticks: A `6515cb5` (route + skeleton VM), B
+      `2f70eac` (quests section), C `6105b90` (moral band +
+      provisional philosophical alignment), D `9ccdee2`
+      (chronicle from `_recentEvents`). Paused between B and C
+      via `/oversight` 2026-05-16; resumed via `/oversight`
+      after the event-surface critique cluster's HIGH row
+      cleared (`994fb02`). Verify green at 459/459. The
+      philosopher-quote slot stays `null` until exact alignments
+      + a quote inventory are defined (follow-up phase).
 > bug findings, presenter refactors, asset backlog, ongoing
 > audits. `/march` makes that transition automatic. (Block II
 > phases 20/21 and Block III phases 22/24 in

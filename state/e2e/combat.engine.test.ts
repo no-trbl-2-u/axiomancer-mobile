@@ -770,6 +770,34 @@ describe('selectCombatViewModel: phaseStack contract (Tick C)', () => {
             expect(Object.isFrozen(entry)).toBe(true);
         }
     });
+
+    it('keeps the resolving row current when engine phase is ended (LET row never collapses to past)', () => {
+        // Pins the `currentPhase === 'ended' ? 'resolving' : currentPhase`
+        // special case in `buildPhaseStack` (combat.engine.ts). Without
+        // this special case, ended-phase combat would collapse every
+        // row to `past` (no row matches `'ended'` in PHASE_STACK_ORDER)
+        // and the ResolvePanel that lives in the IV·LET row body
+        // would never render — leaving the player on a "fight is
+        // over" screen with no way to leave.
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
+        actions.setCombatPhase('ended');
+        const vm = selectCombatViewModel(store.getState());
+
+        expect(vm.phase).toBe('ended');
+        // IV · LET row stays current so its body (the ResolvePanel
+        // with DEPART button) keeps rendering after the fight ends.
+        expect(vm.phaseStack[3]?.key).toBe('resolving');
+        expect(vm.phaseStack[3]?.label).toBe('IV · LET');
+        expect(vm.phaseStack[3]?.state).toBe('current');
+        // The three earlier rows are all past (the fight is over).
+        expect(vm.phaseStack[0]?.state).toBe('past');
+        expect(vm.phaseStack[1]?.state).toBe('past');
+        // Skill row visibility may vary (depends on whether the
+        // player picked skill); only assert its state is past.
+        expect(vm.phaseStack[2]?.state).toBe('past');
+    });
 });
 
 // ---------------------------------------------------------------------------

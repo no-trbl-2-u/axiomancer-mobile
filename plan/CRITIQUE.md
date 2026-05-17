@@ -23,28 +23,6 @@
 
 ## Pending
 
-### [MED] /components/event/EncounterModalOverlay.tsx — no component test pins the overlay surface
-- pass: 8 (commit 9a4bdeb)
-- viewport: repository
-- category: comprehension
-- observation: The new EncounterModalOverlay (~330 lines)
-  ships without a component test. The seam was pinned at
-  the presenter layer in spec32 tick D
-  (`encounter-modal seam`), but the overlay's mount
-  condition (`vm.kind !== 'combat-prelude'` early-return),
-  FLEE-disabled-for-boss branch, and non-dismissible
-  backdrop are all untested. A future refactor could break
-  the no-retreat invariant without any test failing.
-- evidence: `Glob '**/EncounterModalOverlay*'` returns only
-  the source file; `state/e2e/exploration.engine.test.ts:488-525`
-  covers the data layer only.
-- suggested fix: add `components/event/__tests__/EncounterModalOverlay.test.tsx`
-  with (a) returns null on non-combat-prelude VM,
-  (b) FLEE disabled when `variant === 'boss'`,
-  (c) backdrop has no onPress handler (assert
-  non-dismissibility).
-- source: web-fetch (reader sub-agent)
-
 ### [LOW] /state/e2e/combat.engine.test.ts — buildPhaseStack `'ended'` branch untested
 - pass: 8 (commit 9a4bdeb)
 - viewport: repository
@@ -127,6 +105,20 @@
   verb-as-chrome exception is now pinned in
   `plan/bearings.md` Hard Rules so future critique passes
   don't re-surface this row.
+
+### [MED] /components/event/EncounterModalOverlay.tsx — hermetic component test added ✅
+- pass: 8 (commit 9a4bdeb); addressed at commit 234c7a6
+- issue: #77
+- viewport: repository
+- category: comprehension
+- observation: New ~330-line overlay shipped without a
+  component test — mount conditions, FLEE-disabled-for-boss
+  branch, and non-dismissible backdrop all unguarded.
+- fix: new file `components/event/__tests__/EncounterModalOverlay.test.tsx`
+  with 8 hermetic cases across 3 describe blocks (mount
+  conditions / FLEE-disabled-for-boss / non-dismissible
+  backdrop). Verify 486 / 486 (+8 from 478; suite count
+  29 → 30).
 
 ### [LOW] /state/presenters/memoir.engine.ts:127,359 — `'untested.'` chip/narrative register split ✅
 - pass: 7 (commit 3385951); addressed at commit aeec2c3

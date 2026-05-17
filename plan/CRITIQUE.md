@@ -66,27 +66,6 @@
   SACK since they cite pre-Phase-31 state).
 - source: web-fetch (reader sub-agent)
 
-### [MED] /components/event/EncounterModalOverlay.tsx:42-43 — chrome strings at module scope instead of on `vm.preludeChrome`
-- pass: 8 (commit 9a4bdeb)
-- viewport: repository
-- category: voice
-- observation: Two encounter-modal chrome strings
-  (`SEAL_LABEL = 'SEALED · NO RETREAT'`,
-  `FLEE_DISABLED_HINT = 'no retreat from this one.'`) sit
-  at view-module scope. The established pattern from pass
-  6's `ENCOUNTER_LABEL` drain routes prelude chrome through
-  `vm.preludeChrome` so the presenter is the single source
-  of truth.
-- evidence: `EncounterModalOverlay.tsx:42-43` constants;
-  `state/presenters/event.engine.ts:83` `PreludeChrome`
-  interface carries only `eyebrow` + `sashLabel`.
-- suggested fix: extend `PreludeChrome` with `sealLabel`
-  + `fleeDisabledHint`; populate in `withPreludeChrome`;
-  render `vm.preludeChrome.sealLabel` / `…fleeDisabledHint`;
-  pin in `state/e2e/event.engine.test.ts: preludeChrome
-  contract`.
-- source: web-fetch (reader sub-agent)
-
 ### [MED] /components/event/EncounterModalOverlay.tsx — no component test pins the overlay surface
 - pass: 8 (commit 9a4bdeb)
 - viewport: repository
@@ -147,6 +126,21 @@
   verb-as-chrome exception is now pinned in
   `plan/bearings.md` Hard Rules so future critique passes
   don't re-surface this row.
+
+### [MED] /components/event/EncounterModalOverlay.tsx:42-43 — seal + flee-hint chrome routed through vm.preludeChrome ✅
+- pass: 8 (commit 9a4bdeb); addressed at commit ec5f875
+- issue: #73
+- viewport: repository
+- category: voice
+- observation: Two encounter-modal chrome strings parked at
+  view-module scope (`SEAL_LABEL`, `FLEE_DISABLED_HINT`)
+  instead of flowing through `vm.preludeChrome` per the
+  established pattern from pass 6's ENCOUNTER_LABEL drain.
+- fix: extended `PreludeChrome` with `sealLabel` +
+  `fleeDisabledHint`; populated in `withPreludeChrome`;
+  `ChainBar` takes label as prop; overlay reads both off the
+  VM. The two existing `preludeChrome contract` shape pins
+  now include the full 4-field VM in lockstep.
 
 ### [MED] /app/(tabs)/exploration/index.tsx:281,324 — drawer header + LEAGUES column label lifted onto VM ✅
 - pass: 8 (commit 9a4bdeb); addressed at commit 6251e83

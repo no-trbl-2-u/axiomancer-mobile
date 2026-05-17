@@ -86,25 +86,6 @@
   SACK since they cite pre-Phase-31 state).
 - source: web-fetch (reader sub-agent)
 
-### [HIGH] /app/(tabs)/combat.tsx:761 — ResolvePanel button inlines `✠ DEPART` / `✠ NEXT ROUND`
-- pass: 8 (commit 9a4bdeb)
-- viewport: repository
-- category: voice
-- observation: ResolvePanel's continue button renders one of
-  two chrome literals (`'✠ DEPART'` when combat ended,
-  `'✠ NEXT ROUND'` otherwise) directly in JSX with no VM
-  field — Hard Rule #8 class, same shape as the event.tsx
-  chrome literals drained pass 6.
-- evidence: `app/(tabs)/combat.tsx:761`
-  `{isEnded ? '✠ DEPART' : '✠ NEXT ROUND'}`; no
-  `vm.resolve.continueLabel` field on `ResolveSlice`.
-- suggested fix: add `nextActionLabel: string` to
-  `ResolveSlice` in `state/presenters/combat.engine.ts`
-  (populated as 'DEPART' or 'NEXT ROUND' depending on phase),
-  render `{vm.resolve.nextActionLabel}`; pin in
-  `state/e2e/combat.engine.test.ts`.
-- source: web-fetch (reader sub-agent)
-
 ### [HIGH] /app/(tabs)/combat.tsx:9-15,312 — file-level + section JSDoc still describes the removed swipe carousel
 - pass: 8 (commit 9a4bdeb)
 - viewport: repository
@@ -222,6 +203,19 @@
   verb-as-chrome exception is now pinned in
   `plan/bearings.md` Hard Rules so future critique passes
   don't re-surface this row.
+
+### [HIGH] /app/(tabs)/combat.tsx:761 — ResolvePanel `✠ DEPART` / `✠ NEXT ROUND` chrome lifted onto VM ✅
+- pass: 8 (commit 9a4bdeb); addressed at commit 0981e46
+- issue: #69
+- viewport: repository
+- category: voice
+- observation: Continue button inlined two chrome literals
+  in JSX — same Hard Rule #8 class drained pass 6 / pass 7.
+- fix: added `nextActionLabel: string` to `ResolveSlice`
+  (phase-driven), pinned `NEXT_ROUND_LABEL` + `DEPART_LABEL`
+  at module scope, dropped unused `isEnded` prop from
+  ResolvePanel, +3 hermetic pins. Verify 478 / 478 (+3 from
+  475).
 
 ### [MED] /scripts/smoke-screens.mjs:34-42 + test mirror — memoir route added to smoke coverage ✅
 - pass: 6 (commit 08bcf5e); addressed at commit 78bb861

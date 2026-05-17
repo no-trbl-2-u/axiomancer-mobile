@@ -113,6 +113,18 @@ export const EVENT_CHROME: EventChrome = {
     emptyBackSub: 'RETURN',
 };
 
+/**
+ * Single source of truth for the non-boss encounter label that the
+ * prelude eyebrow and the badge BOTH derive from. CRITIQUE pass 6 MED
+ * flagged the duplicate literal: `withPreludeChrome` and
+ * `composeCombatPrelude` previously hard-coded `'ENCOUNTER'` separately,
+ * with no test pinning them together, so a copy edit on one would have
+ * silently drifted from the other. Centralizing here makes the
+ * relationship explicit and lets a single test (in
+ * `state/e2e/event.engine.test.ts`) pin both call sites.
+ */
+export const ENCOUNTER_LABEL = 'ENCOUNTER';
+
 export interface EventViewModel {
     kind: EventKind;
     variant: EventVariant;
@@ -177,7 +189,7 @@ function withPreludeChrome(vm: Omit<EventViewModel, 'preludeChrome'>): EventView
     return {
         ...vm,
         preludeChrome: {
-            eyebrow: vm.variant === 'boss' ? 'BOSS · ENCOUNTER' : 'ENCOUNTER',
+            eyebrow: vm.variant === 'boss' ? `BOSS · ${ENCOUNTER_LABEL}` : ENCOUNTER_LABEL,
             sashLabel: 'STRIFE STIRS',
         },
     };
@@ -247,7 +259,7 @@ const BOSS_OMEN_BY_LEVEL: readonly string[] = [
 
 function composeCombatPrelude(encounter: Encounter, isBoss: boolean): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
     const enemy = encounter.enemy;
-    const badge = isBoss ? 'OMEN OF DOOM' : 'ENCOUNTER';
+    const badge = isBoss ? 'OMEN OF DOOM' : ENCOUNTER_LABEL;
     const choices: EventChoice[] = [
         {
             id: 'fight',

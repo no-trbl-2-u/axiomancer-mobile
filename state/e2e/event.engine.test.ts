@@ -16,6 +16,7 @@ import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
 import { createAppActions } from '@/state/actions';
 import { createAppStore, type AppStore, EMPTY_EVENT_SLICE } from '@/state/store';
 import {
+    ENCOUNTER_LABEL,
     selectEventViewModel,
     selectHasActiveEvent,
     type EventViewModel,
@@ -289,6 +290,29 @@ describe('selectEventViewModel: preludeChrome contract', () => {
         const vm = selectEventViewModel(store.getState());
 
         expect(vm.preludeChrome).toBeNull();
+    });
+
+    // CRITIQUE pass 6 MED — the prelude eyebrow and the corner badge
+    // both derive 'ENCOUNTER' from the same isBoss boolean. Pin both
+    // call sites against the exported ENCOUNTER_LABEL constant so a
+    // copy edit cannot silently drift one from the other.
+    it('badge and preludeChrome.eyebrow both derive from ENCOUNTER_LABEL on a non-boss encounter', () => {
+        const store = makeStore();
+        setPending(store, makeEncounterResult({ isBoss: false }));
+        const vm = selectEventViewModel(store.getState());
+
+        expect(vm.badge).toBe(ENCOUNTER_LABEL);
+        expect(vm.preludeChrome?.eyebrow).toBe(ENCOUNTER_LABEL);
+    });
+
+    it('preludeChrome.eyebrow ends with ENCOUNTER_LABEL on a boss encounter', () => {
+        const store = makeStore();
+        setPending(store, makeEncounterResult({ isBoss: true }));
+        const vm = selectEventViewModel(store.getState());
+
+        expect(vm.preludeChrome?.eyebrow.endsWith(ENCOUNTER_LABEL)).toBe(true);
+        // Boss badge is intentionally separate (OMEN OF DOOM), not ENCOUNTER_LABEL.
+        expect(vm.badge).not.toBe(ENCOUNTER_LABEL);
     });
 });
 

@@ -101,16 +101,11 @@ export interface ExplorationViewModel {
      * uppercase chrome where chrome. The screen renders every field
      * verbatim so view-layer code carries no display literals
      * (Hard Rule #8). `emptyMessage` shows when `options` is empty;
-     * `swipeHint` reads in the drawer header when more than one
-     * option is listed (legacy field — the Phase 32 step-card port
-     * dropped horizontal swipe; kept for any future horizontal
-     * surface). `title` is the section eyebrow above the step-card
-     * list; `leaguesLabel` is the right-column header on each
-     * step-card.
+     * `title` is the section eyebrow above the step-card list;
+     * `leaguesLabel` is the right-column header on each step-card.
      */
     drawerCopy: {
         emptyMessage: string;
-        swipeHint: string;
         title: string;
         leaguesLabel: string;
     };
@@ -226,7 +221,6 @@ function buildActions(options: readonly ExplorationOption[]): ExplorationAction[
 
 const DRAWER_COPY = {
     emptyMessage: 'the paths close.',
-    swipeHint: 'swipe →',
     title: '✠ WHITHER, PILGRIM?',
     leaguesLabel: 'LEAGUES',
 } as const;

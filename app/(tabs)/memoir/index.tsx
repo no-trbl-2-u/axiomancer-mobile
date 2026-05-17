@@ -186,7 +186,7 @@ export default function MemoirScreen() {
                                     {vm.philosophicalAlignment.rationale}
                                 </Text>
                             )}
-                            {vm.philosophicalAlignment.label === 'untested.' && (
+                            {vm.philosophicalAlignment.label === 'UNTESTED' && (
                                 <Text style={styles.measureEmpty} testID="memoir-philosophical-empty">
                                     {vm.emptyPhilosophical}
                                 </Text>

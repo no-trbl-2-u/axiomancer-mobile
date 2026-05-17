@@ -90,7 +90,7 @@ export interface MoralAlignment {
  * alignments swaps the mapping without schema change.
  */
 export interface PhilosophicalAlignment {
-    /** Display label: 'of the Heart' / 'of the Body' / 'of the Mind' / 'untested'. */
+    /** Display label: 'of the Heart' / 'of the Body' / 'of the Mind' / 'UNTESTED'. */
     label: string;
     /** One-line rationale shown beneath the label (or empty in the untested state). */
     rationale: string;
@@ -139,8 +139,20 @@ const DEFAULT_MORAL: MoralAlignment = Object.freeze({
     chip: Object.freeze({ label: 'UNDECLARED', tintKey: 'bone' }),
 }) as MoralAlignment;
 
+/**
+ * Empty-state philosophical alignment when no stat has emerged as
+ * the player's largest measure (3-way tie). The chip label sits in
+ * chrome register (`UNTESTED`, all-caps, no period) so it visually
+ * rhymes with the other alignment chips (RUTHLESS / STERN /
+ * UNDECLARED / BENEVOLENT / SAINTLY). The screen pairs the chip
+ * with the narrative empty-state line `vm.emptyPhilosophical`
+ * (`'untested.'`, lowercase + period) per the brief's
+ * empty-state copy contract. CRITIQUE pass 7 LOW drain split the
+ * two registers — before, both strings were `'untested.'`, which
+ * read as a stray narrative fragment promoted into a chrome slot.
+ */
 const DEFAULT_PHILOSOPHICAL: PhilosophicalAlignment = Object.freeze({
-    label: 'untested.',
+    label: 'UNTESTED',
     rationale: '',
     provisional: true,
 }) as PhilosophicalAlignment;
@@ -189,7 +201,7 @@ function buildMoralAlignment(rawValue: unknown): MoralAlignment {
  * `state.player.baseStats` (engine shape: `{ heart, body, mind }`,
  * lowercase keys per `Game/game.reducer.js:32`). Highest stat wins;
  * pairwise ties favour Heart (per brief §"Tick C"). A 3-way tie
- * returns `untested.` so the player sees an empty-state chip rather
+ * returns the `UNTESTED` chip + `untested.` narrative line so the player sees an empty-state chip rather
  * than a spuriously-emitted alignment.
  */
 const PHILOSOPHICAL_BY_STAT: Readonly<Record<'heart' | 'body' | 'mind', string>> = Object.freeze({
@@ -496,7 +508,7 @@ function buildCompletedRows(
  * - **Philosophical alignment** — provisional heuristic that reads
  *   `state.player.baseStats` and picks the highest of
  *   `{ heart, body, mind }`. Pairwise ties favour Heart; 3-way tie
- *   returns the documented `untested.` empty state.
+ *   returns the documented `UNTESTED` chip + `untested.` narrative empty state.
  *   `provisional: true` until exact alignments are defined upstream.
  * - **Chronicle** — reads `state._recentEvents` (Phase 25 ring
  *   buffer, capacity 20) and folds typed events into reverse-

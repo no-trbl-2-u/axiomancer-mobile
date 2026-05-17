@@ -54,7 +54,11 @@ describe('selectMemoirViewModel: shape contract', () => {
         expect(vm.moralAlignment.value).toBe(0);
         expect(vm.moralAlignment.chip.label).toBe('UNDECLARED');
         expect(vm.moralAlignment.chip.tintKey).toBe('bone');
-        expect(vm.philosophicalAlignment.label).toBe('untested.');
+        // Chip label sits in chrome register (UNTESTED, no period);
+        // the narrative empty-state line is `emptyPhilosophical`
+        // (`untested.`, lowercase + period). CRITIQUE pass 7 LOW
+        // drain split the two registers.
+        expect(vm.philosophicalAlignment.label).toBe('UNTESTED');
         expect(vm.philosophicalAlignment.provisional).toBe(true);
 
         // Quote slot — null until a follow-up phase wires alignments.
@@ -309,11 +313,14 @@ describe('selectMemoirViewModel: moral alignment', () => {
 });
 
 describe('selectMemoirViewModel: provisional philosophical alignment', () => {
-    it('returns untested when all three base stats are equal (3-way tie)', () => {
+    it('returns UNTESTED chip when all three base stats are equal (3-way tie)', () => {
         const store = createGameStore(createMemoryAdapter());
         setBaseStats(store, { heart: 4, body: 4, mind: 4 });
         const vm = selectMemoirViewModel(store.getState());
-        expect(vm.philosophicalAlignment.label).toBe('untested.');
+        // Chip label is chrome register (UNTESTED, no period). The
+        // matching narrative line is on `vm.emptyPhilosophical`
+        // (`'untested.'`) and renders beneath the chip.
+        expect(vm.philosophicalAlignment.label).toBe('UNTESTED');
         expect(vm.philosophicalAlignment.rationale).toBe('');
         expect(vm.philosophicalAlignment.provisional).toBe(true);
     });

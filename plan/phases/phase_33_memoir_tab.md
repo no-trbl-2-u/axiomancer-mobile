@@ -251,7 +251,7 @@ Rule #8. None on the screen as literals.
 2. **Tab visibility = always visible.** Joins
    `['character', 'inventory']` in `ALWAYS_VISIBLE`; not gated
    by combat. Bottom bar grows to 5 visible (one of WILDS /
-   STRIFE swapping based on combat, plus SELF, MEMOIR, SACK).
+   STRIFE swapping based on combat, plus SELF, MEMOIR, SATCHEL).
 3. **Tab icon kind = `'scroll'`** (or `'tome'`, builder's call
    when implementing Tick A; pick the name that matches the
    existing `TabIcon` switch convention). Placeholder SVG;

@@ -1,5 +1,14 @@
 # Phase 8 — Spec 10: Navigation + app-shell polish
 
+> **Tab titles superseded:** Phase 31 (2026-05-16) flipped the
+> mixed-register `MAP · COMBAT · SHEET · SACK` set to coherent
+> places `WILDS · STRIFE · SELF · SACK`; Phase 32 (2026-05-16,
+> port from the Claude Design handoff, commit `ff37b46`) then
+> renamed SACK → SATCHEL. The `# SACK tab` comment below in the
+> route tree describes the original Phase 8 tab label, not the
+> live one. See `state/presenters/tabs.engine.ts:TAB_TITLES`
+> for the current register.
+
 ## Outcome
 
 Polish Expo Router navigation with deep links, smart cold-start routing, tab badges, back-button behavior, and status bar per-screen adaptation.

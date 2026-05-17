@@ -5,6 +5,13 @@
 > **all places** — `WILDS · STRIFE · SELF · SACK`.
 > Unblocks the deferred `[needs-user-call]` critique row
 > (pass 2, commit `d967f27`).
+>
+> **Subsequent rename (Phase 32 — port from the Claude Design
+> handoff, 2026-05-16, commit `ff37b46`):** SACK → SATCHEL.
+> The live tab title is `SATCHEL` now; every `SACK` in this
+> brief reads as the Phase 31 shipped state, not the current
+> string. See `state/presenters/tabs.engine.ts:TAB_TITLES` for
+> the live register.
 
 ## Outcome
 

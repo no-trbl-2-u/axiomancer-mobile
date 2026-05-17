@@ -60,29 +60,6 @@
   SACK since they cite pre-Phase-31 state).
 - source: web-fetch (reader sub-agent)
 
-### [MED] /state/presenters/event.engine.ts:144-155 + :203-251 — `'ENCOUNTER'` literal duplicated between preludeChrome and badge
-- pass: 6 (commit 08bcf5e)
-- viewport: repository
-- category: consistency
-- observation: The prelude chrome's eyebrow string
-  `'ENCOUNTER'` / `'BOSS · ENCOUNTER'` is computed in
-  `withPreludeChrome`, while `composeCombatPrelude` separately
-  sets `badge = isBoss ? 'OMEN OF DOOM' : 'ENCOUNTER'` from the
-  same `isBoss`. Same `ENCOUNTER` literal lives in two places
-  derived from the same boolean. If a copy edit changes one,
-  the other drifts silently — the existing badge test asserts
-  `'OMEN OF DOOM'`, not the non-boss `'ENCOUNTER'`, so no test
-  catches the drift.
-- evidence: `state/presenters/event.engine.ts:151`
-  `eyebrow: vm.variant === 'boss' ? 'BOSS · ENCOUNTER' : 'ENCOUNTER'`;
-  `:205` `const badge = isBoss ? 'OMEN OF DOOM' : 'ENCOUNTER';`.
-- suggested fix: extract `const ENCOUNTER_LABEL = 'ENCOUNTER'`
-  at module scope and reference from both call sites; add a
-  hermetic test pinning the relationship
-  (`vm.preludeChrome.eyebrow.endsWith(ENCOUNTER_LABEL)` when
-  not boss, `vm.badge === ENCOUNTER_LABEL` when not boss).
-- source: web-fetch (reader sub-agent)
-
 ### [LOW] /state/presenters/event.engine.ts:152 — `STRIFE STIRS` is verb-as-chrome
 - pass: 6 (commit 08bcf5e)
 - viewport: repository
@@ -124,6 +101,22 @@
 - source: web-fetch (reader sub-agent)
 
 ## Done
+
+### [MED] /state/presenters/event.engine.ts:144-155 + :203-251 — `'ENCOUNTER'` literal duplicated between preludeChrome and badge ✅
+- pass: 6 (commit 08bcf5e); addressed at commit 11c47db
+- issue: #62
+- viewport: repository
+- category: consistency
+- observation: Same `ENCOUNTER` literal lived in two places
+  derived from the same `isBoss` boolean (`withPreludeChrome`
+  eyebrow + `composeCombatPrelude` badge) with no test pinning
+  the relationship — silent-drift risk on any copy edit.
+- fix: exported `ENCOUNTER_LABEL = 'ENCOUNTER'` module constant
+  referenced from both sites; +2 hermetic pins under
+  `selectEventViewModel: preludeChrome contract` (non-boss
+  asserts both equal `ENCOUNTER_LABEL`, boss asserts eyebrow
+  ends with it + badge diverges to `OMEN OF DOOM`).
+  Verify 461 / 461 (+2 from 459).
 
 ### [HIGH] /app/event/index.tsx:217-218,291,298 — display literals still at view layer post Phase-32 port ✅
 - pass: 6 (commit 08bcf5e); addressed at commit 994fb02

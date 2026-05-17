@@ -278,7 +278,7 @@ export default function ExplorationScreen() {
             {/* Node options drawer (Q6) — available next steps with thematic blurb */}
             <View style={styles.drawer}>
                 <View style={styles.drawerHeader}>
-                    <SectionLabel size={10}>✠ WHITHER, PILGRIM?</SectionLabel>
+                    <SectionLabel size={10}>{vm.drawerCopy.title}</SectionLabel>
                 </View>
                 {vm.options.length === 0 ? (
                     <View style={styles.drawerEmpty} testID="options-empty">
@@ -321,7 +321,7 @@ export default function ExplorationScreen() {
                                         </Text>
                                     </View>
                                     <View style={styles.stepCardLeagues}>
-                                        <Text style={styles.stepCardLeaguesLabel}>LEAGUES</Text>
+                                        <Text style={styles.stepCardLeaguesLabel}>{vm.drawerCopy.leaguesLabel}</Text>
                                         <Text style={styles.stepCardLeaguesNum}>{opt.leagues}</Text>
                                     </View>
                                 </TouchableOpacity>

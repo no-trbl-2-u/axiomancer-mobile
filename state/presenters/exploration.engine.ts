@@ -97,12 +97,23 @@ export interface ExplorationViewModel {
     /** Next-step picker shown beneath the map (Q6). */
     options: readonly ExplorationOption[];
     /**
-     * Drawer-strip copy. Lowercase ritual register; the screen renders
-     * verbatim so view-layer code carries no ritual copy (Hard Rule #8).
-     * `emptyMessage` is shown when `options` is empty; `swipeHint`
-     * appears in the drawer header when more than one option is listed.
+     * Drawer-strip copy. Lowercase ritual register where narrative;
+     * uppercase chrome where chrome. The screen renders every field
+     * verbatim so view-layer code carries no display literals
+     * (Hard Rule #8). `emptyMessage` shows when `options` is empty;
+     * `swipeHint` reads in the drawer header when more than one
+     * option is listed (legacy field — the Phase 32 step-card port
+     * dropped horizontal swipe; kept for any future horizontal
+     * surface). `title` is the section eyebrow above the step-card
+     * list; `leaguesLabel` is the right-column header on each
+     * step-card.
      */
-    drawerCopy: { emptyMessage: string; swipeHint: string };
+    drawerCopy: {
+        emptyMessage: string;
+        swipeHint: string;
+        title: string;
+        leaguesLabel: string;
+    };
     /** Optional event callout banner; `null` when no callout. */
     eventCallout: { title: string; iconKey: string } | null;
     /** Legend bottom strip — pre-formatted display strings. */
@@ -216,6 +227,8 @@ function buildActions(options: readonly ExplorationOption[]): ExplorationAction[
 const DRAWER_COPY = {
     emptyMessage: 'the paths close.',
     swipeHint: 'swipe →',
+    title: '✠ WHITHER, PILGRIM?',
+    leaguesLabel: 'LEAGUES',
 } as const;
 
 const FALLBACK_VM: ExplorationViewModel = {

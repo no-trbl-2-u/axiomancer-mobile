@@ -83,24 +83,23 @@
   noun-shaped.
 - source: web-fetch (reader sub-agent)
 
-### [LOW] /state/presenters/event.engine.ts:115 — empty-state body is second-person imperative + modern sentence-case
-- pass: 6 (commit 08bcf5e)
+## Done
+
+### [LOW] /state/presenters/event.engine.ts:115 — empty-state body is second-person imperative + modern sentence-case ✅
+- pass: 6 (commit 08bcf5e); addressed at commit d6bf779
+- issue: #63
 - viewport: repository
 - category: voice
 - observation: Empty-state body `'Walk on. The world has not
-  yet stirred.'` is second-person imperative + sentence-case
-  modern — same shape pass 5 fixed for combat (`'The air
-  shivers. Combat begins.'` was moved to the VM and softened).
-  This one was moved to the VM but never re-voiced.
-- evidence: `state/presenters/event.engine.ts:115`
-  `body: 'Walk on. The world has not yet stirred.',` rendered
-  into `app/event/index.tsx:207`.
-- suggested fix: re-voice as lowercase ritual matching the
-  established `'the paths close.'` / `'none at hand.'` pattern
-  — e.g. `'the world is still.'` or `'no omen stirs.'`.
-- source: web-fetch (reader sub-agent)
-
-## Done
+  yet stirred.'` was second-person imperative + modern
+  sentence-case; moved to the VM in pass 5 but never re-voiced
+  to match the lowercase-ritual register adopted everywhere else.
+- fix: re-voiced to `'the world is still.'` — lowercase ritual
+  matching `'the paths close.'` / `'none at hand.'`. Avoided
+  the verb `stirred` so the empty-state body doesn't echo the
+  `STRIFE STIRS` chrome sash. No test added (existing shape
+  test still covers the field; pinning the exact string would
+  over-constrain). Verify 461 / 461.
 
 ### [MED] /state/presenters/event.engine.ts:144-155 + :203-251 — `'ENCOUNTER'` literal duplicated between preludeChrome and badge ✅
 - pass: 6 (commit 08bcf5e); addressed at commit 11c47db

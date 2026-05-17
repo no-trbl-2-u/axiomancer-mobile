@@ -86,25 +86,6 @@
   SACK since they cite pre-Phase-31 state).
 - source: web-fetch (reader sub-agent)
 
-### [HIGH] /app/(tabs)/combat.tsx:9-15,312 — file-level + section JSDoc still describes the removed swipe carousel
-- pass: 8 (commit 9a4bdeb)
-- viewport: repository
-- category: docs
-- observation: File-level JSDoc and the `PhaseBottom`
-  section banner still describe the horizontal swipe
-  carousel that was removed in commit `9222bf9` (Phase 32
-  sub-tick C). A first-time reader will look for swipe /
-  pager code that no longer exists.
-- evidence: `combat.tsx:10-14` `Q5 carousel: the three
-  pickers … sit in a horizontal pager so the player can
-  slide left … The pager position stays in sync …`;
-  `:312` `Phase bottom panel — header + carousel pager`.
-- suggested fix: rewrite both blocks to describe the
-  vertical phase-stack pattern (past collapsed → current
-  expanded → future dimmed) and reference the Phase 32
-  port commit `9222bf9`.
-- source: web-fetch (reader sub-agent)
-
 ### [MED] /components/event/EncounterModalOverlay.tsx:42-43 — chrome strings at module scope instead of on `vm.preludeChrome`
 - pass: 8 (commit 9a4bdeb)
 - viewport: repository
@@ -203,6 +184,21 @@
   verb-as-chrome exception is now pinned in
   `plan/bearings.md` Hard Rules so future critique passes
   don't re-surface this row.
+
+### [HIGH] /app/(tabs)/combat.tsx:9-15,312 — file-level + section JSDoc refreshed post phase-stack swap ✅
+- pass: 8 (commit 9a4bdeb); addressed at commit 5ffb330
+- issue: #70
+- viewport: repository
+- category: docs
+- observation: File JSDoc + line-321 section banner still
+  described the horizontal swipe carousel removed in
+  `9222bf9` — actively misleading for fresh maintainers.
+- fix: rewrote the Q5-carousel paragraph in present tense
+  describing the vertical PhaseStack pattern (past/current/
+  future states, sulfur dot indicator, swap removed the
+  swipe-to-change-phase affordance); section banner flipped
+  to "header + vertical PhaseStack". Reference commit
+  `9222bf9` for the port history.
 
 ### [HIGH] /app/(tabs)/combat.tsx:761 — ResolvePanel `✠ DEPART` / `✠ NEXT ROUND` chrome lifted onto VM ✅
 - pass: 8 (commit 9a4bdeb); addressed at commit 0981e46

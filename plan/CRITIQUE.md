@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-05-17 at commit 65dc6ad
-> Pass count: 9
+> Last pass: 2026-05-17 at commit 306e3f1
+> Pass count: 10
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -9,19 +9,40 @@
 >
 > **Pass-5 policy (set via `/oversight` 2026-05-15):** pause new
 > critique passes until the Pending count drains to ≤ 3 rows.
-> Pass 5/6/7/8 history: each fired at Pending ≤ 3, filed 6
-> findings, drained most via /iterate, repeated. Pass 8 closed
-> 6 of 6 (HIGHs combat ResolvePanel chrome + combat JSDoc rot;
-> MEDs Phase 33 row body SACK, exploration drawer literals,
-> EncounterModalOverlay chrome on VM, SACK docs sweep). Pass 9
-> fired at Pending=3 (threshold met) but the 12 commits since
-> pass 8 were all /iterate drains — no new surface shipped, so
-> the reader was asked for a quick walk. Pass 9 surfaced only
-> 3 small findings (all docs/YAGNI), validating the "drain-
-> first, critique-later" rhythm. After pass 9 Pending = 6 →
-> pause re-engages until /iterate drains back to ≤ 3.
+> Pass 5-9 history: each pass fired at Pending ≤ 3, filed
+> findings, drained via /iterate, repeated. Pass 9 fired at
+> Pending=3 and filed 3 small findings (all docs/YAGNI),
+> validating the "drain-first, critique-later" rhythm. Pass 10
+> fired at Pending=0 (loop at drain steady-state) and surfaced
+> just 1 MED finding (rename-aftermath crumb — `'Nothing in
+> the sack.'` survived the Phase 32 SACK→SATCHEL chrome sweep
+> because narrative copy wasn't on its hit-list). After pass
+> 10 Pending = 1 → still below pass-5 threshold, gate stays
+> open for whenever the rate-limit hits again.
 
 ## Pending
+
+### [MED] /state/presenters/inventory.engine.ts:133 — `EMPTY_MESSAGE` says "sack" after SATCHEL chrome sweep
+- pass: 10 (commit 306e3f1)
+- viewport: repository
+- category: consistency
+- observation: Inventory empty-state copy still reads
+  `'Nothing in the sack.'` after the Phase 32 SACK→SATCHEL
+  rename swept the tab title (`tabs.engine.ts:56`) and section
+  header (`inventory.engine.ts:106`). The narrative line is
+  now the only `sack` reference left and reads inconsistent
+  against the `SATCHEL · WALLET · BURDEN` chrome a few lines
+  above. Rename-aftermath crumb — the pass-3 fix on
+  2026-05-15 deliberately set this string, then the Phase 32
+  rename on 2026-05-16 swept chrome but not narrative.
+- evidence: `state/presenters/inventory.engine.ts:133` `const
+  EMPTY_MESSAGE = 'Nothing in the sack.';` two lines below
+  `SECTION_HEADER = 'SATCHEL · WALLET · BURDEN'`.
+- suggested fix: change `EMPTY_MESSAGE` to `'Nothing in the
+  satchel.'` (preserves the established lowercase ritual
+  register; aligns the only surviving `sack` reference with
+  the renamed chrome).
+- source: web-fetch (reader sub-agent)
 
 ## Done
 

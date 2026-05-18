@@ -7,6 +7,15 @@
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
 > for the contract.
 >
+> **Next-pass directive (set via `/oversight` 2026-05-18):** the
+> loop has been idle for ~25h after the iterate→expand cascade
+> drained to Pending=0 and PHASE_CANDIDATES filed `no candidates`
+> on pass 12. The next `/march` tick should fire `/critique`
+> pass 11 unconditionally — the pass-5 drain-first gate is open
+> (Pending=0), and a fresh external-observer pass is the cheapest
+> way to refill the queue with signal the prior passes may have
+> missed.
+>
 > **Pass-5 policy (set via `/oversight` 2026-05-15):** pause new
 > critique passes until the Pending count drains to ≤ 3 rows.
 > Pass 5-9 history: each pass fired at Pending ≤ 3, filed

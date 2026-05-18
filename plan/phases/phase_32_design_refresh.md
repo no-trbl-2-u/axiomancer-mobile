@@ -5,6 +5,16 @@
 > the new designs from Claude design." Mirrors the
 > Phase 17 → Phase 28 pattern that shipped Token Crucible from
 > this same design source.
+>
+> **Refreshed via `/oversight` 2026-05-18.** Ticks A–D have
+> shipped (see Sub-tick log below). Loop has been idle ~25h
+> after tick D's `[MED EMPTY_MESSAGE sack→satchel]` catch-up
+> cleared the post-rename narrative debt. No new port commit
+> has landed since `7dab20c` (encounter modal seam port,
+> 2026-05-17), so `/march`'s detect-and-defer is firing
+> correctly. **Resume condition:** user pushes the next
+> `feat: <surface> — port from design handoff` commit; the
+> following `/march` tick picks up tick E.
 
 ## Outcome
 
@@ -61,6 +71,37 @@ If the user wants to *pause* Phase 32 entirely (e.g. they're
 not porting for the foreseeable future), they flip the row to
 `[skipped]` via `/oversight` — that removes Phase 32 from
 `/march`'s dispatch path until they flip it back to `[ ]`.
+
+## Sub-tick log
+
+Tracks every shipped Phase 32 sub-tick. Added via `/oversight`
+2026-05-18 (the rolling phase had no log section originally;
+the build plan's Phase 32 row already pointed here for context,
+but the brief itself didn't enumerate ticks). Each entry: user
+port commit → loop follow-up commit.
+
+| Tick | User port | Loop follow-up | Surface |
+|---|---|---|---|
+| A | `ff37b46` — tabs + event combat-prelude | `08bcf5e` — event combat-prelude chrome presenter + hermetic tests | Event combat-prelude chrome (drawer / tabs) |
+| B | `70c9f7a` — exploration step-cards + LEAGUES | `8c5f985` — exploration step-cards presenter + hermetic tests | Exploration drawer step-cards |
+| C | `9222bf9` — combat phase-stack | `843f304` — combat phase-stack presenter + hermetic tests | Combat phase-stack readout |
+| D | `7dab20c` — encounter modal seam | `bf13539` — encounter modal seam presenter + hermetic tests | Encounter modal over map seam |
+
+**Tick-D catch-ups** (post-tick repairs from `/critique` + audit
+passes drained against the new surfaces, not separate ticks):
+
+- `6251e83` — exploration drawer literal lift (`WHITHER
+  PILGRIM` + `LEAGUES` onto VM, Hard Rule #8 close-out).
+- `234c7a6` — EncounterModalOverlay hermetic component test
+  (3 contracts pinned).
+- `cfac6f1` — EncounterModalOverlay JSDoc refresh
+  (vm.preludeChrome contract).
+- `aeec2c3` — memoir alignment chip `'untested.'` split
+  (chrome + narrative).
+- `2822455` — inventory EMPTY_MESSAGE `'sack'` → `'satchel'`
+  (Phase 32 SACK → SATCHEL chrome-sweep narrative catch-up).
+
+Next: tick E (awaiting user port commit per dispatch rule).
 
 ## Sub-tick decomposition
 

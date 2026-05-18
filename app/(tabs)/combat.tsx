@@ -196,7 +196,7 @@ function EnemyPanel({ vm }: { vm: CombatViewModel }) {
     const lastStance: StanceKey = vm.enemy.lastStance ?? 'mind';
     return (
         <View style={styles.enemyPanel}>
-            <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#100d0a' }]} />
+            <View style={[StyleSheet.absoluteFillObject, { backgroundColor: AXM.panelBg }]} />
             <Splatter color={AXM.blood} size={120} seed={17} style={{ position: 'absolute', top: -10, left: -10, opacity: 0.6 }} />
 
             <Svg viewBox="0 0 200 200" width={180} height={200} style={styles.enemySvg}>
@@ -801,7 +801,7 @@ const styles = StyleSheet.create({
     logScroll: { flex: 1, marginTop: 2 },
     logLine: { fontFamily: FONTS.serif, fontSize: 11, lineHeight: 14, marginTop: 1 },
     playerWrap: { padding: 4, paddingHorizontal: 10, paddingBottom: 0 },
-    playerBar: { backgroundColor: '#100d0a', padding: 5, paddingHorizontal: 8, borderWidth: 1, borderColor: AXM.ash, flexDirection: 'row', gap: 8, alignItems: 'center' },
+    playerBar: { backgroundColor: AXM.panelBg, padding: 5, paddingHorizontal: 8, borderWidth: 1, borderColor: AXM.ash, flexDirection: 'row', gap: 8, alignItems: 'center' },
     playerBarItem: { flex: 1 },
     playerEffects: { flexDirection: 'row', gap: 3 },
     phaseSection: { padding: 8, paddingHorizontal: 10, paddingBottom: 14 },
@@ -815,7 +815,7 @@ const styles = StyleSheet.create({
     pipInactive: { backgroundColor: AXM.ash },
     toast: {
         position: 'absolute', bottom: 32, left: 24, right: 24,
-        backgroundColor: '#100d0a',
+        backgroundColor: AXM.panelBg,
         borderWidth: 1, borderColor: AXM.bone,
         padding: 10, alignItems: 'center',
     },
@@ -826,7 +826,7 @@ const stack_styles = StyleSheet.create({
     column: { flexDirection: 'column', gap: 8 },
     row: { padding: 8, paddingHorizontal: 12 },
     rowCurrent: {
-        backgroundColor: '#100d0a',
+        backgroundColor: AXM.panelBg,
         borderWidth: 1,
         borderColor: 'rgba(232, 223, 200, 0.12)',
         padding: 12,

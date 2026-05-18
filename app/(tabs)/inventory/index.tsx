@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
     grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
     itemCard: {
         width: '31.5%',
-        backgroundColor: '#100d0a',
+        backgroundColor: AXM.panelBg,
         padding: 6,
         minHeight: 92,
         position: 'relative',
@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
     modalCard: {
         width: '100%',
         maxWidth: 380,
-        backgroundColor: '#100d0a',
+        backgroundColor: AXM.panelBg,
         borderWidth: 1,
         borderColor: AXM.parchment,
         padding: 16,

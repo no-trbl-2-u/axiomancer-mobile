@@ -493,7 +493,7 @@ const styles = StyleSheet.create({
         gap: 12,
         paddingVertical: 10,
         paddingHorizontal: 12,
-        backgroundColor: '#100d0a',
+        backgroundColor: AXM.panelBg,
         borderWidth: 1,
         borderColor: 'rgba(232, 223, 200, 0.12)',
         borderLeftWidth: 2,

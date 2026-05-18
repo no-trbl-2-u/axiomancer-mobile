@@ -196,7 +196,7 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: '#100d0a',
+    backgroundColor: AXM.panelBg,
     borderTopColor: AXM.ash,
     borderTopWidth: 1,
     height: 60,

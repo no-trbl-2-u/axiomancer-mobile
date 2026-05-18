@@ -34,7 +34,7 @@
 ## Done
 
 ### [MED] /state/presenters/event.engine.ts:323 — combat-prelude `body` lowercase ritual register ✅
-- pass: 12 (commit a836031); addressed at commit <pending>
+- pass: 12 (commit a836031); addressed at commit 3b54f98
 - issue: #87
 - viewport: repository
 - category: voice

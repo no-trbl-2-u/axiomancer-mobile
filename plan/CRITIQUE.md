@@ -57,30 +57,6 @@
   state.
 - source: web-fetch (reader sub-agent)
 
-### [MED] /app/(tabs)/memoir/index.tsx:249,280 — hex literal `'#100d0a'` should consume `AXM.panelBg`
-- pass: 11 (commit 5be0022)
-- issue: #82
-- viewport: repository
-- category: consistency
-- observation: MemoirScreen's `questCard` and `measureChip`
-  StyleSheet entries inline the raw hex `'#100d0a'` for
-  `backgroundColor`. `theme/axm.ts:11` already exports
-  `panelBg: '#100d0a'` — same value, named for this exact
-  use. Bearings line 109 locks the theme-token contract
-  ("no hex literals in components"). Memoir is the newest
-  surface (Phase 33) and is otherwise good about tokens
-  (consumes AXM.ash / AXM.parchment / AXM.bone / AXM.sulfur
-  / AXM.blood / AXM.rust at lines 14-19, 226, 248, 262); the
-  two `panelBg` cases slipped because the token name doesn't
-  match the visual concept ("panel" vs "card / chip").
-- evidence: `app/(tabs)/memoir/index.tsx:249,280` both
-  contain `backgroundColor: '#100d0a',`; `theme/axm.ts:11`
-  contains `panelBg: '#100d0a',`.
-- suggested fix: replace both `'#100d0a'` literals with
-  `AXM.panelBg` in the memoir StyleSheet. One-line edits
-  ×2; no behavioural change.
-- source: web-fetch (reader sub-agent)
-
 ### [LOW] /state/presenters/inventory.engine.ts:133 — `EMPTY_MESSAGE` is the only sentence-cased narrative empty-state
 - pass: 11 (commit 5be0022)
 - viewport: repository
@@ -134,6 +110,21 @@
 - source: web-fetch (reader sub-agent)
 
 ## Done
+
+### [MED] /app/(tabs)/memoir/index.tsx:249,280 — hex literal `'#100d0a'` → `AXM.panelBg` ✅
+- pass: 11 (commit 5be0022); addressed at commit 8a4f69c
+- issue: #82
+- viewport: repository
+- category: consistency
+- observation: MemoirScreen's `questCard` and `measureChip`
+  StyleSheet entries inlined the raw hex `'#100d0a'` for
+  `backgroundColor`, despite `theme/axm.ts:11` already
+  exporting `panelBg: '#100d0a'` named for this exact use.
+  Bearings line 109 locks "no hex literals in components".
+- fix: two mechanical replacements
+  (`backgroundColor: '#100d0a'` → `backgroundColor: AXM.panelBg`)
+  in `app/(tabs)/memoir/index.tsx:249,280`. Same value, no
+  behavioural delta. Verify 487 / 487 unchanged.
 
 ### [LOW] /state/presenters/event.engine.ts:152 — `STRIFE STIRS` is verb-as-chrome — `[accepted-as-design]` ✅
 - pass: 6 (commit 08bcf5e); resolved via /oversight 2026-05-16

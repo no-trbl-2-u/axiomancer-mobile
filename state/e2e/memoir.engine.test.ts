@@ -310,6 +310,22 @@ describe('selectMemoirViewModel: moral alignment', () => {
         expect(vm.moralAlignment.value).toBe(-100);
         expect(vm.moralAlignment.chip.label).toBe('RUTHLESS');
     });
+
+    it('marks moralAlignment.isEmpty true only in the undeclared band', () => {
+        const store = createGameStore(createMemoryAdapter());
+        // -33..33 band → empty
+        setMoralMeter(store, 0);
+        expect(selectMemoirViewModel(store.getState()).moralAlignment.isEmpty).toBe(true);
+        setMoralMeter(store, -33);
+        expect(selectMemoirViewModel(store.getState()).moralAlignment.isEmpty).toBe(true);
+        setMoralMeter(store, 33);
+        expect(selectMemoirViewModel(store.getState()).moralAlignment.isEmpty).toBe(true);
+        // outside the undeclared band → not empty
+        setMoralMeter(store, -34);
+        expect(selectMemoirViewModel(store.getState()).moralAlignment.isEmpty).toBe(false);
+        setMoralMeter(store, 50);
+        expect(selectMemoirViewModel(store.getState()).moralAlignment.isEmpty).toBe(false);
+    });
 });
 
 describe('selectMemoirViewModel: provisional philosophical alignment', () => {

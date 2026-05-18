@@ -33,6 +33,7 @@
 
 ### [LOW] /app/(tabs)/memoir/index.tsx:174,189 — view layer pins behaviour to label-literal comparisons
 - pass: 11 (commit 5be0022)
+- issue: #85
 - viewport: repository
 - category: consistency
 - observation: MemoirScreen renders the moral / philosophical

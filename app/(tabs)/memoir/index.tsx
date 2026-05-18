@@ -171,7 +171,7 @@ export default function MemoirScreen() {
                             >
                                 {vm.moralAlignment.chip.label}
                             </Text>
-                            {vm.moralAlignment.chip.label === 'UNDECLARED' && (
+                            {vm.moralAlignment.isEmpty && (
                                 <Text style={styles.measureEmpty} testID="memoir-moral-empty">
                                     {vm.emptyMoral}
                                 </Text>
@@ -186,7 +186,7 @@ export default function MemoirScreen() {
                                     {vm.philosophicalAlignment.rationale}
                                 </Text>
                             )}
-                            {vm.philosophicalAlignment.label === 'UNTESTED' && (
+                            {vm.philosophicalAlignment.rationale.length === 0 && (
                                 <Text style={styles.measureEmpty} testID="memoir-philosophical-empty">
                                     {vm.emptyPhilosophical}
                                 </Text>

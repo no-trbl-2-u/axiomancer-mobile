@@ -81,6 +81,13 @@ export interface MoralAlignment {
     value: number;
     /** Display chip — band label + theme tint key. */
     chip: { label: string; tintKey: 'blood' | 'rust' | 'bone' | 'sulfur' | 'parchment' };
+    /**
+     * `true` for the default/undeclared band; the screen renders its
+     * empty-state hint when this is set rather than pinning to the
+     * `'UNDECLARED'` label literal (which is free to be renamed in a
+     * later voice pass without breaking the conditional).
+     */
+    isEmpty: boolean;
 }
 
 /**
@@ -137,6 +144,7 @@ export interface MemoirViewModel {
 const DEFAULT_MORAL: MoralAlignment = Object.freeze({
     value: 0,
     chip: Object.freeze({ label: 'UNDECLARED', tintKey: 'bone' }),
+    isEmpty: true,
 }) as MoralAlignment;
 
 /**
@@ -193,7 +201,11 @@ function buildMoralAlignment(rawValue: unknown): MoralAlignment {
     const band =
         MORAL_BANDS.find((b) => clamped >= b.min && clamped <= b.max) ?? MORAL_BANDS[2];
     const chip = MORAL_CHIP_BY_BAND.get(band.label) ?? DEFAULT_MORAL.chip;
-    return Object.freeze({ value: clamped, chip }) as MoralAlignment;
+    return Object.freeze({
+        value: clamped,
+        chip,
+        isEmpty: band.label === DEFAULT_MORAL.chip.label,
+    }) as MoralAlignment;
 }
 
 /**

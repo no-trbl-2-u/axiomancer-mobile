@@ -74,7 +74,7 @@
 ## Done
 
 ### [MED] /app/(tabs)/inventory/index.tsx:149 — `'— bare —'` lifted onto `EquipmentDockViewModel.bareLabel` ✅
-- pass: 14 (commit 2a23047); addressed at commit <pending>
+- pass: 14 (commit 2a23047); addressed at commit 594105b
 - issue: #91
 - viewport: repository
 - category: voice

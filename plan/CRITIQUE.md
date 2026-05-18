@@ -31,34 +31,22 @@
 
 ## Pending
 
-### [MED] /components/StatusCard.tsx:56 — hex literal `'#100d0a'` should consume `AXM.panelBg`
-- pass: 13 (commit ce4f851)
+## Done
+
+### [MED] /components/StatusCard.tsx:56 — hex literal `'#100d0a'` → `AXM.panelBg` ✅
+- pass: 13 (commit ce4f851); addressed at commit <pending>
+- issue: #88
 - viewport: repository
 - category: consistency
-- observation: StatusCard's `card` style hard-codes
-  `backgroundColor: '#100d0a'` at the view layer — the exact
-  same literal that pass 11 drained from memoir (`8a4f69c`)
-  and pass 12 drained from character (`9531270`). StatusCard
-  is a reusable component; Hard Rule #8 + bearings line 109
-  apply more strongly here than to one-off screens.
-- evidence: `components/StatusCard.tsx:56`
-  `backgroundColor: '#100d0a',` inside StyleSheet.create.
-  `theme/axm.ts:11` exports `panelBg: '#100d0a'` for this
-  case.
-- broader terrain (informational, NOT this row's scope):
-  reader counted 8 additional `'#100d0a'` occurrences across
-  4 other files (`combat.tsx` ×4 lines 199/804/818/829;
-  `inventory/index.tsx` ×2 lines 388/448; `exploration/
-  index.tsx` ×1 line 496; `_layout.tsx` ×1 line 199). Per
-  the established one-component-at-a-time pattern (memoir,
-  character) the reader filed only StatusCard. Future passes
-  will surface the rest, or a /jot can request a sweep.
-- suggested fix: replace `backgroundColor: '#100d0a'` with
-  `backgroundColor: AXM.panelBg` at
-  `components/StatusCard.tsx:56`.
-- source: web-fetch (reader sub-agent)
-
-## Done
+- observation: StatusCard's `card` style hard-coded
+  `'#100d0a'` — same literal pass 11 / pass 12 drained from
+  memoir + character. Reusable component, Hard Rule #8.
+- fix: one-line replace `backgroundColor: '#100d0a'` →
+  `backgroundColor: AXM.panelBg` in
+  `components/StatusCard.tsx:56`. Verify 488/488 unchanged.
+  Broader hex-literal terrain (8 more `'#100d0a'` in
+  combat/inventory/exploration/_layout) noted on the row's
+  pending-state body for future passes.
 
 ### [MED] /state/presenters/event.engine.ts:323 — combat-prelude `body` lowercase ritual register ✅
 - pass: 12 (commit a836031); addressed at commit 3b54f98

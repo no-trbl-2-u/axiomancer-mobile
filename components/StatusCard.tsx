@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     padding: 8,
     paddingHorizontal: 10,
     paddingBottom: 10,
-    backgroundColor: '#100d0a',
+    backgroundColor: AXM.panelBg,
   },
   row: {
     flexDirection: 'row',

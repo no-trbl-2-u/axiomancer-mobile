@@ -7,6 +7,15 @@
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
 > for the contract.
 >
+> **Next-pass directive (set via `/oversight` 2026-05-18, 2nd
+> call):** the next `/march` tick should fire `/critique` pass
+> 14 unconditionally, bypassing the 12-commit gate. Loop is at
+> a clean idle (CRITIQUE Pending=0, cascade-cadence gate
+> silent); user wants fresh signal to drain rather than wait
+> for the gate to reopen naturally. After pass 14 fires the
+> directive clears; subsequent passes follow the standard
+> rate-limit.
+>
 > **Next-pass directive (set via `/oversight` 2026-05-18):** the
 > loop has been idle for ~25h after the iterate→expand cascade
 > drained to Pending=0 and PHASE_CANDIDATES filed `no candidates`

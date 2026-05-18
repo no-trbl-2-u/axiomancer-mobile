@@ -43,7 +43,7 @@ function makeCombatPreludeVm(overrides: Partial<EventViewModel> = {}): EventView
         badgeAccentKey: 'blood',
         title: 'CAIRN-ROT',
         subtitle: 'something stirs',
-        body: 'Level 1. 10 HP.',
+        body: 'level 1 · 10 hp.',
         choices: [
             {
                 id: 'fight',

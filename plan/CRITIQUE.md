@@ -31,34 +31,29 @@
 
 ## Pending
 
-### [MED] /state/presenters/event.engine.ts:323 — combat-prelude `body` is a sentence-case stat block, not lowercase ritual prose
-- pass: 12 (commit a836031)
+## Done
+
+### [MED] /state/presenters/event.engine.ts:323 — combat-prelude `body` lowercase ritual register ✅
+- pass: 12 (commit a836031); addressed at commit <pending>
+- issue: #87
 - viewport: repository
 - category: voice
-- observation: Combat-prelude `body` is built as
-  `` `Level ${enemy.level}. ${enemy.health} HP.` `` — sentence
-  case, period-separated stat block. The screen renders this
-  under a drop-cap on `vm.body[0]` as primary narrative
-  prose (`app/event/index.tsx:270-277`,
-  `<Text style={styles.bodyText}>`). Every sibling prelude /
-  narrative body holds lowercase ritual register:
-  `event.engine.ts:173` `'the world is still.'`,
-  `:313` `'something stirs'`,
-  `:213` `'no retreat from this one.'`. A drop-cap-styled
-  'L' over `'Level 3. 18 HP.'` reads as a modern stat sheet,
-  not the cold/old voice the bearings target (line 184).
-- evidence: `state/presenters/event.engine.ts:323`
-  `body: \`Level ${enemy.level}. ${enemy.health} HP.\`,`
-  rendered via `app/event/index.tsx:270-277` inside
-  `<Text style={styles.bodyText}>` with `dropCap` on
-  `vm.body[0]`.
-- suggested fix: rephrase to lowercase ritual prose, e.g.
-  `` body: `level ${enemy.level} · ${enemy.health} hp.` `` —
-  drops the period-separated stat-sheet shape and slips back
-  into the lowercase register every sibling body uses.
-- source: web-fetch (reader sub-agent)
-
-## Done
+- observation: Combat-prelude `body` was sentence-case stat
+  block `'Level N. M HP.'` rendered under a drop-cap as
+  primary narrative prose, while every sibling prelude /
+  narrative body holds lowercase ritual register
+  (`'the world is still.'`, `'something stirs'`, `'no
+  retreat from this one.'`).
+- fix: changed `body` to
+  `` `level ${enemy.level} · ${enemy.health} hp.` `` in
+  `state/presenters/event.engine.ts:323`. Lowercases the
+  shape, swaps the period separator for a middot (matches
+  other chrome separators across the surface like
+  `'CONTINENT · UNKNOWN'`, `'MAP ii of vii'`-style
+  formatting), drops 'HP' to 'hp' for register consistency.
+  Updated the one test fixture pinning the old literal
+  (`components/event/__tests__/EncounterModalOverlay.test.tsx:46`).
+  Verify 488 / 488 unchanged.
 
 ### [MED] /app/(tabs)/character/index.tsx:226,229,253 — hex literal `'#100d0a'` × 3 → `AXM.panelBg` ✅
 - pass: 12 (commit a836031); addressed at commit 9531270

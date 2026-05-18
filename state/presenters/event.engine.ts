@@ -320,7 +320,7 @@ function composeCombatPrelude(encounter: Encounter, isBoss: boolean): Omit<Event
         badgeAccentKey: 'blood',
         title: enemy.name.toUpperCase(),
         subtitle,
-        body: `Level ${enemy.level}. ${enemy.health} HP.`,
+        body: `level ${enemy.level} · ${enemy.health} hp.`,
         choices,
         lore: null,
         canSkip: false,

@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-05-18 at commit 5be0022
-> Pass count: 11
+> Last pass: 2026-05-18 at commit a836031
+> Pass count: 12
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -30,6 +30,56 @@
 > open for whenever the rate-limit hits again.
 
 ## Pending
+
+### [MED] /state/presenters/event.engine.ts:323 — combat-prelude `body` is a sentence-case stat block, not lowercase ritual prose
+- pass: 12 (commit a836031)
+- viewport: repository
+- category: voice
+- observation: Combat-prelude `body` is built as
+  `` `Level ${enemy.level}. ${enemy.health} HP.` `` — sentence
+  case, period-separated stat block. The screen renders this
+  under a drop-cap on `vm.body[0]` as primary narrative
+  prose (`app/event/index.tsx:270-277`,
+  `<Text style={styles.bodyText}>`). Every sibling prelude /
+  narrative body holds lowercase ritual register:
+  `event.engine.ts:173` `'the world is still.'`,
+  `:313` `'something stirs'`,
+  `:213` `'no retreat from this one.'`. A drop-cap-styled
+  'L' over `'Level 3. 18 HP.'` reads as a modern stat sheet,
+  not the cold/old voice the bearings target (line 184).
+- evidence: `state/presenters/event.engine.ts:323`
+  `body: \`Level ${enemy.level}. ${enemy.health} HP.\`,`
+  rendered via `app/event/index.tsx:270-277` inside
+  `<Text style={styles.bodyText}>` with `dropCap` on
+  `vm.body[0]`.
+- suggested fix: rephrase to lowercase ritual prose, e.g.
+  `` body: `level ${enemy.level} · ${enemy.health} hp.` `` —
+  drops the period-separated stat-sheet shape and slips back
+  into the lowercase register every sibling body uses.
+- source: web-fetch (reader sub-agent)
+
+### [MED] /app/(tabs)/character/index.tsx:226,229,253 — hex literal `'#100d0a'` × 3 should consume `AXM.panelBg`
+- pass: 12 (commit a836031)
+- viewport: repository
+- category: consistency
+- observation: Three style entries on the character screen
+  hard-code `'#100d0a'` (`baseCard`, `derivedTable`,
+  `slotCell`) — the exact same literal / use case that pass
+  11 drained from memoir (commit `8a4f69c`,
+  `'#100d0a'` → `AXM.panelBg`). `theme/axm.ts:11` exports
+  `panelBg: '#100d0a'` precisely for this surface; bearings
+  line 109 reads "no hex literals in components." The
+  character screen drifted in the opposite direction of the
+  memoir fix.
+- evidence: `app/(tabs)/character/index.tsx:226`
+  `baseCard: { ..., backgroundColor: '#100d0a', ... }`;
+  `:229` `derivedTable: { ..., backgroundColor: '#100d0a', ... }`;
+  `:253` `slotCell: { ..., backgroundColor: '#100d0a' }`.
+  `theme/axm.ts:11` `panelBg: '#100d0a'`.
+- suggested fix: replace the three `'#100d0a'` literals with
+  `AXM.panelBg` in `app/(tabs)/character/index.tsx`; mirror
+  the memoir pass-11 fix (`8a4f69c`) exactly.
+- source: web-fetch (reader sub-agent)
 
 ## Done
 

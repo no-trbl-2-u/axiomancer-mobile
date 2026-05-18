@@ -334,7 +334,14 @@ Return cleanly. Loop's next tick re-audits.
      `/expand` instead of stopping. "Make things brilliant
      when delivery is not." Log "no actionable iterate work
      — handing to expand" and execute `skills/expand.md`
-     procedure end-to-end.
+     procedure end-to-end. The cascade respects
+     `expand.md` Step 0.5's **cascade-cadence gate** — if
+     the last expand pass was < 12 commits AND < 6 hours
+     ago, the cascaded `/expand` exits silently with no
+     commit, and this iterate tick returns cleanly. Set
+     via `/oversight` 2026-05-18 after the loop produced
+     15 consecutive no-op `expand: pass N — no candidates`
+     metadata bumps over ~3 hours of idle.
    - **strict** posture → stop and report. Site is
      well-iterated.
 7. **`git pull` divergence.**

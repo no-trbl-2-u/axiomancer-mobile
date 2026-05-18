@@ -31,6 +31,36 @@
 
 ## Pending
 
+### [MED] /app/(tabs)/* + /app/(tabs)/_layout.tsx — drain remaining 8× hex literal `'#100d0a'` → `AXM.panelBg` (sweep)
+- pass: 13 follow-up; filed via `/oversight` 2026-05-18
+- viewport: repository
+- category: consistency
+- observation: Three prior critique findings already drained
+  `'#100d0a'` from memoir (pass 11, commit `8a4f69c`),
+  character ×3 (pass 12, commit `9531270`), and StatusCard
+  (pass 13, commit `8b3747b`). Eight more occurrences of the
+  same literal remain across four files:
+  - `app/(tabs)/combat.tsx`: lines 199, 804, 818, 829 (×4)
+  - `app/(tabs)/inventory/index.tsx`: lines 388, 448 (×2)
+  - `app/(tabs)/exploration/index.tsx`: line 496 (×1)
+  - `app/(tabs)/_layout.tsx`: line 199 (×1)
+
+  `/oversight` 2026-05-18 explicitly directed a one-commit
+  sweep instead of the prior one-component-at-a-time pattern
+  (5 separate ticks × 2 commits each would be ~10 commits
+  for a uniform literal → token mapping). Same token
+  (`AXM.panelBg = '#100d0a'` at `theme/axm.ts:11`); same fix
+  shape; no behavioural delta.
+- evidence: grep `'#100d0a'` across `app/` returns the eight
+  occurrences above (filed via reader pass 13 + verification
+  in oversight commit).
+- suggested fix: single `fix(theme): drain remaining '#100d0a'
+  literals → AXM.panelBg` commit replacing all 8 occurrences
+  with `AXM.panelBg`. Mirrors the prior memoir / character /
+  StatusCard fixes exactly. Verify must stay green at 488.
+- source: /oversight 2026-05-18 (consolidated reader-pass-13
+  terrain note)
+
 ## Done
 
 ### [MED] /components/StatusCard.tsx:56 — hex literal `'#100d0a'` → `AXM.panelBg` ✅

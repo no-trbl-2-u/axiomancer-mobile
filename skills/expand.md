@@ -172,6 +172,36 @@ git pull --ff-only
 Read `bearings.md` for posture. If **strict** → exit 0
 immediately with a one-line log. No commit.
 
+### Step 0.5 — Cascade-cadence gate (set via `/oversight` 2026-05-18)
+
+If this `/expand` invocation was a **cascade from `/iterate`** (the
+"no actionable iterate work" → `/expand` path in `iterate.md` §6
+failure mode 6), check the rate-limit window before proceeding:
+
+- Last expand pass was **< 12 commits ago** AND **< 6 hours ago**
+  → **exit 0 immediately with no commit**. Log to stdout:
+  `expand: cascade-cadence gate (last pass <K> commits ago,
+  <H> hours ago) — skip, no commit.`
+
+The march-level expand gate (≥20 commits / ≥48h) only applies
+when `/march` itself dispatches `/expand` directly. Iterate's
+cascade bypasses that gate and was historically firing every
+tick when the loop hit idle — generating consecutive
+`expand: pass N — no candidates` metadata-bump commits with no
+new signal. The cadence rule above suppresses those no-op
+commits at idle while still letting the march-level direct
+dispatch run at its normal cadence.
+
+When the gate fires, the parent `/march` tick still returns
+cleanly; the loop is just silent for that tick. The next tick
+re-evaluates; if substantive product has shipped or the
+post-cascade cooldown has elapsed, expand proceeds normally.
+
+If this `/expand` invocation was **not** a cascade (it was
+called directly via `/expand` or by `/march`'s own rate-limited
+expand-gate at Step 3c), the gate does not apply — proceed to
+Step 1.
+
 ### Step 1 — Read signals (in parallel)
 
 Per §4. Each source is a separate read; main agent merges.

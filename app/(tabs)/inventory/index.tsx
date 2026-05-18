@@ -65,6 +65,148 @@ function ItemGlyph({ category, sub }: { category: InventoryCategory; sub: string
     return <ActionIcon kind="scroll" size={32} color={AXM.sulfur} />;
 }
 
+/**
+ * Equipment Dock — paper-doll surface ported from the Claude Design
+ * handoff (`design/screens/inventory.jsx::EquipmentDock`). Renders the
+ * 7 wearable slots in a 4-row grid around a gothic hooded silhouette,
+ * so worn vs. unworn is unmistakable at a glance. Worn slots get a
+ * sulfur border + item name; empty slots show dashed "— bare —". The
+ * slot-filter / equip-preview behaviour from chat 1 ships as a
+ * follow-up port.
+ */
+type SlotKey = 'head' | 'body' | 'weapon' | 'armor' | 'hands' | 'feet' | 'accessory';
+
+const DOCK_ROWS: ReadonlyArray<readonly [SlotKey, SlotKey | null]> = [
+    ['head', 'body'],
+    ['weapon', 'armor'],
+    ['hands', 'accessory'],
+    ['feet', null],
+] as const;
+
+const SLOT_TITLE: Record<SlotKey, string> = {
+    head: 'HEAD',
+    body: 'BODY',
+    weapon: 'WEAPON',
+    armor: 'ARMOR',
+    hands: 'HANDS',
+    feet: 'FEET',
+    accessory: 'TRINKET',
+};
+
+function PaperDoll() {
+    return (
+        <Svg viewBox="0 0 70 180" width={52} height={140} fill="none">
+            {/* halo */}
+            <Circle cx={35} cy={22} r={20} stroke={AXM.sulfur} strokeWidth={0.6} strokeOpacity={0.4} strokeDasharray="1 2" />
+            {/* hood */}
+            <Path d="M35 6 C 16 6 12 26 16 46 L 54 46 C 58 26 54 6 35 6 Z" fill="#0a0807" stroke={AXM.parchment} strokeWidth={1.2} />
+            {/* face cavity */}
+            <Path d="M24 22 L 46 22 L 44 38 L 35 44 L 26 38 Z" fill={AXM.bg} stroke={AXM.ash} strokeWidth={0.6} />
+            {/* torso */}
+            <Path d="M18 48 L 52 48 L 56 92 L 14 92 Z" fill="#0a0807" stroke={AXM.parchment} strokeWidth={1.2} />
+            {/* arms */}
+            <Path d="M14 50 L 6 90 L 12 92 L 18 56 Z" fill="#0a0807" stroke={AXM.parchment} strokeWidth={1.2} />
+            <Path d="M56 50 L 64 90 L 58 92 L 52 56 Z" fill="#0a0807" stroke={AXM.parchment} strokeWidth={1.2} />
+            {/* hands */}
+            <Circle cx={9} cy={94} r={4} fill="#0a0807" stroke={AXM.parchment} strokeWidth={1} />
+            <Circle cx={61} cy={94} r={4} fill="#0a0807" stroke={AXM.parchment} strokeWidth={1} />
+            {/* legs */}
+            <Path d="M18 92 L 14 158 L 26 158 L 30 92 Z" fill="#0a0807" stroke={AXM.parchment} strokeWidth={1.2} />
+            <Path d="M40 92 L 44 158 L 56 158 L 52 92 Z" fill="#0a0807" stroke={AXM.parchment} strokeWidth={1.2} />
+            {/* feet */}
+            <Path d="M12 158 L 12 168 L 28 168 L 28 158 Z" fill="#0a0807" stroke={AXM.parchment} strokeWidth={1} />
+            <Path d="M42 158 L 42 168 L 58 168 L 58 158 Z" fill="#0a0807" stroke={AXM.parchment} strokeWidth={1} />
+        </Svg>
+    );
+}
+
+function SlotCard({ slotKey, item }: { slotKey: SlotKey | null; item: InventoryItemRow | null }) {
+    if (slotKey === null) {
+        return <View style={styles.dockSlotEmpty} />;
+    }
+    const filled = item !== null;
+    return (
+        <View
+            style={[
+                styles.dockSlot,
+                filled ? styles.dockSlotFilled : styles.dockSlotBare,
+            ]}
+            testID={`dock-slot-${slotKey}`}
+        >
+            <View style={[styles.dockSlotGlyph, filled ? styles.dockSlotGlyphFilled : styles.dockSlotGlyphBare]}>
+                {filled ? (
+                    <ItemGlyph category="equipment" sub={item.sub} />
+                ) : (
+                    <Text style={styles.dockSlotEmptyMark}>∅</Text>
+                )}
+            </View>
+            <View style={styles.dockSlotText}>
+                <Text style={styles.dockSlotLabel}>{SLOT_TITLE[slotKey]}</Text>
+                <Text
+                    numberOfLines={1}
+                    style={filled ? styles.dockSlotItemName : styles.dockSlotItemBare}
+                >
+                    {filled ? item.name : '— bare —'}
+                </Text>
+            </View>
+        </View>
+    );
+}
+
+function EquipmentDock({ items }: { items: readonly InventoryItemRow[] }) {
+    const worn = useMemo<Partial<Record<SlotKey, InventoryItemRow>>>(() => {
+        const map: Partial<Record<SlotKey, InventoryItemRow>> = {};
+        for (const it of items) {
+            if (it.category !== 'equipment' || !it.equipped || it.sub === null) continue;
+            const slot = it.sub.toLowerCase() as SlotKey;
+            if (slot in SLOT_TITLE && !(slot in map)) {
+                map[slot] = it;
+            }
+        }
+        return map;
+    }, [items]);
+
+    return (
+        <View style={styles.dock} testID="equipment-dock">
+            {/* iron rivets in each corner */}
+            {[
+                [4, 4],
+                [undefined, 4],
+                [4, undefined],
+                [undefined, undefined],
+            ].map(([left, top], i) => (
+                <View
+                    key={i}
+                    style={[
+                        styles.dockRivet,
+                        left !== undefined ? { left } : { right: 4 },
+                        top !== undefined ? { top } : { bottom: 4 },
+                    ]}
+                />
+            ))}
+            <View style={styles.dockHeaderRow}>
+                <SectionLabel size={9} color={AXM.bone}>✠ WORN UPON THE BODY</SectionLabel>
+                <Text style={styles.dockHint}>WORN VS. UNWORN AT A GLANCE</Text>
+            </View>
+            <View style={styles.dockGrid}>
+                <View style={styles.dockCol}>
+                    {DOCK_ROWS.map(([L], r) => (
+                        <SlotCard key={r} slotKey={L} item={worn[L] ?? null} />
+                    ))}
+                </View>
+                <View style={styles.dockSilhouette}>
+                    <PaperDoll />
+                </View>
+                <View style={styles.dockCol}>
+                    {DOCK_ROWS.map(([, R], r) => (
+                        <SlotCard key={r} slotKey={R} item={R ? worn[R] ?? null : null} />
+                    ))}
+                </View>
+            </View>
+        </View>
+    );
+}
+
 function EmptySack({ message }: { message: string }) {
     return (
         <View style={styles.emptyOuter} testID="inventory-empty">
@@ -96,6 +238,16 @@ export default function InventoryScreen() {
         () => selectInventoryViewModel(store.getState(), { activeTab, expandedItemId }),
         // eslint-disable-next-line react-hooks/exhaustive-deps
         [store, activeTab, expandedItemId, player],
+    );
+
+    // Equipment Dock needs the full inventory regardless of active tab,
+    // so it can render the 7 worn-slot states even when the user is on
+    // "PHIALS"/"STUFF"/"SEALED". Cheap to re-derive via the selector
+    // with activeTab='all'; follow-up presenter port will hoist this.
+    const allItems = useMemo(
+        () => selectInventoryViewModel(store.getState(), { activeTab: 'all', expandedItemId: null }).items,
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [store, player],
     );
 
     const modalVm = useMemo<ItemModalViewModel | null>(() => {
@@ -143,6 +295,8 @@ export default function InventoryScreen() {
                     <StatBar value={vm.burden} max={vm.burdenMax} color={AXM.rust} label="BURDEN · STONE" height={9} />
                 </View>
             </View>
+
+            <EquipmentDock items={allItems} />
 
             <View style={styles.tabRow}>
                 {vm.tabs.map((t) => (
@@ -475,4 +629,118 @@ const styles = StyleSheet.create({
     },
     modalBtnCancel: { borderColor: AXM.bone },
     modalBtnText: { fontFamily: FONTS.gothic, fontSize: 13, letterSpacing: 1.5, color: AXM.parchment },
+
+    // ── Equipment Dock (Phase 32 tick E port) ──────────────────────────
+    dock: {
+        marginHorizontal: 10,
+        marginTop: 8,
+        backgroundColor: '#0d0a08',
+        borderWidth: 1,
+        borderColor: AXM.ash,
+        padding: 8,
+        paddingHorizontal: 10,
+        paddingBottom: 10,
+        position: 'relative',
+    },
+    dockRivet: {
+        position: 'absolute',
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: '#3a3530',
+    },
+    dockHeaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 6,
+    },
+    dockHint: {
+        fontFamily: FONTS.mono,
+        fontSize: 7,
+        color: AXM.bone,
+        letterSpacing: 1.4,
+    },
+    dockGrid: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
+    },
+    dockCol: {
+        flex: 1,
+        flexDirection: 'column',
+        gap: 4,
+    },
+    dockSilhouette: {
+        width: 60,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    dockSlot: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
+        padding: 3,
+        paddingHorizontal: 5,
+        height: 34,
+    },
+    dockSlotEmpty: {
+        height: 34,
+    },
+    dockSlotFilled: {
+        backgroundColor: AXM.panelBg,
+        borderWidth: 1.5,
+        borderColor: AXM.sulfur,
+    },
+    dockSlotBare: {
+        borderWidth: 1.5,
+        borderColor: AXM.ash,
+        borderStyle: 'dashed',
+    },
+    dockSlotGlyph: {
+        width: 22,
+        height: 22,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    dockSlotGlyphFilled: {
+        backgroundColor: '#06050a',
+        borderWidth: 1,
+        borderColor: AXM.ash,
+    },
+    dockSlotGlyphBare: {
+        borderWidth: 1,
+        borderColor: AXM.ash,
+        borderStyle: 'dashed',
+    },
+    dockSlotEmptyMark: {
+        fontFamily: FONTS.gothic,
+        fontSize: 12,
+        color: AXM.ash,
+    },
+    dockSlotText: {
+        flex: 1,
+        minWidth: 0,
+    },
+    dockSlotLabel: {
+        fontFamily: FONTS.mono,
+        fontSize: 7,
+        letterSpacing: 1.3,
+        color: AXM.bone,
+        lineHeight: 8,
+    },
+    dockSlotItemName: {
+        fontFamily: FONTS.gothic,
+        fontSize: 10.5,
+        color: AXM.parchment,
+        lineHeight: 12,
+        marginTop: 1,
+    },
+    dockSlotItemBare: {
+        fontFamily: FONTS.serifItalic,
+        fontSize: 9,
+        color: AXM.ash,
+        lineHeight: 11,
+        marginTop: 1,
+    },
 });

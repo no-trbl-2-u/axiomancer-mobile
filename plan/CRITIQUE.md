@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-05-17 at commit 306e3f1
-> Pass count: 10
+> Last pass: 2026-05-18 at commit 5be0022
+> Pass count: 11
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -30,6 +30,107 @@
 > open for whenever the rate-limit hits again.
 
 ## Pending
+
+### [MED] /state/presenters/exploration.engine.ts:288 — `dayDisplay` hardcoded `'XXIV'` silently lies about in-game day
+- pass: 11 (commit 5be0022)
+- viewport: repository
+- category: comprehension
+- observation: The populated selector branch ships
+  `dayDisplay: 'XXIV'` as a fixed Roman numeral while the
+  field's JSDoc at line 87 reads `In-game day number (Roman
+  numerals already formatted)` — the contract claims a live
+  value but the implementation is a stub. The FALLBACK_VM
+  correctly emits `'I'`; the screen at
+  `app/(tabs)/exploration/index.tsx:174` renders
+  `vm.dayDisplay` verbatim into the day chrome. Every player
+  on every map currently sees "day XXIV" regardless of
+  progression — misleading both for players and any
+  maintainer reading the VM contract.
+- evidence: `state/presenters/exploration.engine.ts:288`
+  `dayDisplay: 'XXIV',` vs. line 87 JSDoc and line 232
+  `dayDisplay: 'I'` in FALLBACK_VM.
+- suggested fix: either wire `dayDisplay` from the engine's
+  day counter via a `toRoman()` helper, or — if the engine
+  doesn't yet expose day state — delete the field + its
+  screen consumer and re-add via /expand when a real day
+  counter ships. Don't ship a placeholder presented as live
+  state.
+- source: web-fetch (reader sub-agent)
+
+### [MED] /app/(tabs)/memoir/index.tsx:249,280 — hex literal `'#100d0a'` should consume `AXM.panelBg`
+- pass: 11 (commit 5be0022)
+- viewport: repository
+- category: consistency
+- observation: MemoirScreen's `questCard` and `measureChip`
+  StyleSheet entries inline the raw hex `'#100d0a'` for
+  `backgroundColor`. `theme/axm.ts:11` already exports
+  `panelBg: '#100d0a'` — same value, named for this exact
+  use. Bearings line 109 locks the theme-token contract
+  ("no hex literals in components"). Memoir is the newest
+  surface (Phase 33) and is otherwise good about tokens
+  (consumes AXM.ash / AXM.parchment / AXM.bone / AXM.sulfur
+  / AXM.blood / AXM.rust at lines 14-19, 226, 248, 262); the
+  two `panelBg` cases slipped because the token name doesn't
+  match the visual concept ("panel" vs "card / chip").
+- evidence: `app/(tabs)/memoir/index.tsx:249,280` both
+  contain `backgroundColor: '#100d0a',`; `theme/axm.ts:11`
+  contains `panelBg: '#100d0a',`.
+- suggested fix: replace both `'#100d0a'` literals with
+  `AXM.panelBg` in the memoir StyleSheet. One-line edits
+  ×2; no behavioural change.
+- source: web-fetch (reader sub-agent)
+
+### [LOW] /state/presenters/inventory.engine.ts:133 — `EMPTY_MESSAGE` is the only sentence-cased narrative empty-state
+- pass: 11 (commit 5be0022)
+- viewport: repository
+- category: voice
+- observation: After the Phase 32 SACK → SATCHEL sweep and
+  pass-10 catch-up (commit `2822455`),
+  `EMPTY_MESSAGE = 'Nothing in the satchel.'` still uses
+  sentence case (capital `N`). Every sibling presenter ships
+  its narrative empty-state in lowercase: memoir's `'the
+  page is bare.'`, `'no errands written here.'`, `'the
+  scales are level.'`, `'untested.'`; exploration's `'the
+  paths close.'`; character's `'none at hand.'`; event's
+  `'the world is still.'`; combat's `'the field stirs.'`.
+  Inventory is the sole outlier — bearings line 184 reserves
+  uppercase for chrome, lowercase for ritual narrative.
+- evidence: `state/presenters/inventory.engine.ts:133`
+  `const EMPTY_MESSAGE = 'Nothing in the satchel.';` vs. 7
+  other presenters all shipping lowercase ritual
+  empty-states (see paths above).
+- suggested fix: change to `'nothing in the satchel.'` so
+  the inventory empty-state aligns with the lowercase
+  narrative rule applied across every sibling presenter.
+- source: web-fetch (reader sub-agent)
+
+### [LOW] /app/(tabs)/memoir/index.tsx:174,189 — view layer pins behaviour to label-literal comparisons
+- pass: 11 (commit 5be0022)
+- viewport: repository
+- category: consistency
+- observation: MemoirScreen renders the moral / philosophical
+  empty-state lines conditionally on
+  `vm.moralAlignment.chip.label === 'UNDECLARED'` (line 174)
+  and `vm.philosophicalAlignment.label === 'UNTESTED'` (line
+  189). Both labels live on the presenter
+  (`memoir.engine.ts:139,156` — `DEFAULT_MORAL.chip.label`,
+  `DEFAULT_PHILOSOPHICAL.label`). If a future voice pass
+  renames either band (e.g. `'UNDECLARED'` → `'UNJUDGED'`),
+  the empty-state line silently stops rendering because the
+  screen's literal still matches the old name. The cleaner
+  pattern is to expose explicit empty-state flags
+  (`isMoralEmpty`, `isPhilosophicalEmpty`) on the VM —
+  equivalent to how event / inventory / exploration empty
+  states expose a boolean or empty-string contract rather
+  than label equality.
+- evidence: `app/(tabs)/memoir/index.tsx:174` `{vm.moralAlignment.chip.label === 'UNDECLARED' && (`
+  and `:189` `{vm.philosophicalAlignment.label === 'UNTESTED' && (`.
+- suggested fix: add `isEmpty: boolean` to the
+  `MoralAlignment` and `PhilosophicalAlignment` VM kinds
+  (or check `rationale === ''` for philosophical, since
+  that's already the empty-state signal). Update the screen
+  to consume `vm.<x>.isEmpty` instead of comparing labels.
+- source: web-fetch (reader sub-agent)
 
 ## Done
 

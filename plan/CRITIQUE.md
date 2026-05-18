@@ -31,8 +31,10 @@
 
 ## Pending
 
-### [LOW] /app/(tabs)/memoir/index.tsx:174,189 — view layer pins behaviour to label-literal comparisons
-- pass: 11 (commit 5be0022)
+## Done
+
+### [LOW] /app/(tabs)/memoir/index.tsx:174,189 — view layer label-literal comparisons → isEmpty / rationale.length ✅
+- pass: 11 (commit 5be0022); addressed at commit 0e173a4
 - issue: #85
 - viewport: repository
 - category: consistency
@@ -40,27 +42,17 @@
   empty-state lines conditionally on
   `vm.moralAlignment.chip.label === 'UNDECLARED'` (line 174)
   and `vm.philosophicalAlignment.label === 'UNTESTED'` (line
-  189). Both labels live on the presenter
-  (`memoir.engine.ts:139,156` — `DEFAULT_MORAL.chip.label`,
-  `DEFAULT_PHILOSOPHICAL.label`). If a future voice pass
-  renames either band (e.g. `'UNDECLARED'` → `'UNJUDGED'`),
-  the empty-state line silently stops rendering because the
-  screen's literal still matches the old name. The cleaner
-  pattern is to expose explicit empty-state flags
-  (`isMoralEmpty`, `isPhilosophicalEmpty`) on the VM —
-  equivalent to how event / inventory / exploration empty
-  states expose a boolean or empty-string contract rather
-  than label equality.
-- evidence: `app/(tabs)/memoir/index.tsx:174` `{vm.moralAlignment.chip.label === 'UNDECLARED' && (`
-  and `:189` `{vm.philosophicalAlignment.label === 'UNTESTED' && (`.
-- suggested fix: add `isEmpty: boolean` to the
-  `MoralAlignment` and `PhilosophicalAlignment` VM kinds
-  (or check `rationale === ''` for philosophical, since
-  that's already the empty-state signal). Update the screen
-  to consume `vm.<x>.isEmpty` instead of comparing labels.
-- source: web-fetch (reader sub-agent)
-
-## Done
+  189). A future voice pass that renames either band would
+  silently break the conditional.
+- fix: added `isEmpty: boolean` to MoralAlignment VM kind;
+  DEFAULT_MORAL ships `isEmpty: true`; buildMoralAlignment
+  derives it from `band.label === DEFAULT_MORAL.chip.label`
+  (encapsulates rename within memoir.engine.ts). Screen
+  swaps to `vm.moralAlignment.isEmpty` and (for
+  philosophical) `vm.philosophicalAlignment.rationale.length
+  === 0` — symmetric with line 184's existing
+  `rationale.length > 0` guard. +1 hermetic test pinning the
+  isEmpty contract. Verify 488 / 488 (was 487).
 
 ### [LOW] /state/presenters/inventory.engine.ts:133 — `EMPTY_MESSAGE` lowercased ('Nothing' → 'nothing') ✅
 - pass: 11 (commit 5be0022); addressed at commit b90bf73

@@ -35,7 +35,7 @@
 
 ### [MED] sweep — 8× hex literal `'#100d0a'` → `AXM.panelBg` across combat/inventory/exploration/_layout ✅
 - pass: 13 follow-up; filed via `/oversight` 2026-05-18;
-  addressed at commit <pending>
+  addressed at commit 9339e3e
 - issue: #89
 - viewport: repository
 - category: consistency

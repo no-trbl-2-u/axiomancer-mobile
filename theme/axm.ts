@@ -10,6 +10,7 @@ export const AXM = {
   ash: '#3a3530',
   panelBg: '#100d0a',
   deepBg: '#06050a',
+  dockBg: '#0d0a08',
 } as const;
 
 export const FONTS = {

@@ -58,6 +58,40 @@ export interface InventoryTabRow {
     count: number;
 }
 
+/**
+ * One paper-doll Equipment Dock slot. The dock surface ported in
+ * commit `02beaeb` ("inventory equipment dock — port from design
+ * handoff") renders 7 of these in a 4-row grid around a gothic
+ * silhouette so worn vs. unworn is unmistakable at a glance.
+ *
+ * `key` mirrors the engine `Equipment.slot` union ("head", "body",
+ * "weapon", "armor", "hands", "feet", "accessory"). `label` is the
+ * uppercase chrome label for the slot. `item` is the currently-worn
+ * equipment row (first equipment item per slot per the
+ * `selectCharacterViewModel` convention) or `null` when the slot is
+ * bare.
+ */
+export interface EquipmentDockSlot {
+    key: Equipment['slot'];
+    label: string;
+    /** First equipped item in this slot, or `null`. */
+    item: { id: string; name: string; sub: string | null } | null;
+}
+
+/**
+ * The Equipment Dock view-model. Independent of the active tab —
+ * tapping "PHIALS" should still show the player's worn equipment in
+ * the dock above the tabs.
+ */
+export interface EquipmentDockViewModel {
+    /** All 7 slots in the design's display order (head, body, weapon, armor, hands, accessory, feet). */
+    slots: readonly EquipmentDockSlot[];
+    /** Section eyebrow on the dock outer panel (ritual lowercase chrome). */
+    headerLabel: string;
+    /** One-line hint under the eyebrow ("WORN VS. UNWORN AT A GLANCE"). */
+    hintLabel: string;
+}
+
 export interface InventoryViewModel {
     /** Tabs in display order. */
     tabs: readonly InventoryTabRow[];
@@ -88,6 +122,13 @@ export interface InventoryViewModel {
      * literal copy.
      */
     categoryHeaders: Record<InventoryCategory, string>;
+    /**
+     * Paper-doll Equipment Dock above the tabs (Phase 32 sub-tick E).
+     * Computed from the full inventory (independent of active-tab
+     * filter) so the dock keeps showing worn slots regardless of
+     * which tab the user is on.
+     */
+    equipmentDock: EquipmentDockViewModel;
 }
 
 // ---------------------------------------------------------------------------
@@ -131,6 +172,42 @@ const SLOT_LABELS: Record<Equipment['slot'], string> = {
 
 const BURDEN_MAX = 50;
 const EMPTY_MESSAGE = 'nothing in the satchel.';
+
+/**
+ * Equipment Dock display order — matches the design handoff's 4-row
+ * paper-doll grid: head, body / weapon, armor / hands, accessory /
+ * feet. `feet` sits alone in the fourth row in the screen layout;
+ * the array order here keeps the VM stable and lets the view do its
+ * own grid pairing.
+ */
+const DOCK_SLOT_ORDER: readonly Equipment['slot'][] = [
+    'head',
+    'body',
+    'weapon',
+    'armor',
+    'hands',
+    'accessory',
+    'feet',
+] as const;
+
+/**
+ * Uppercase chrome label per slot — distinct from `SLOT_LABELS`
+ * (which is title-case "Weapon" / "Armor" for the item-row sub
+ * field). The dock chrome uses TRINKET for accessory per the design
+ * (chat 1's "HEAD, WEAPON, HANDS, FEET, BODY, ARMOR, TRINKET" list).
+ */
+const DOCK_SLOT_TITLE: Record<Equipment['slot'], string> = {
+    head: 'HEAD',
+    body: 'BODY',
+    weapon: 'WEAPON',
+    armor: 'ARMOR',
+    hands: 'HANDS',
+    feet: 'FEET',
+    accessory: 'TRINKET',
+};
+
+const DOCK_HEADER_LABEL = '✠ WORN UPON THE BODY';
+const DOCK_HINT_LABEL = 'WORN VS. UNWORN AT A GLANCE';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -254,6 +331,42 @@ function computeBurden(rows: readonly InventoryItemRow[]): number {
     return Math.min(BURDEN_MAX, total);
 }
 
+/**
+ * Resolve the item-row's `sub` field back to the engine slot key.
+ * `subFor` produces title-case slot labels ("Weapon" / "Body" / etc.)
+ * from `SLOT_LABELS`; reverse the mapping here so the dock can build
+ * its `worn` map without re-importing the engine's Equipment type at
+ * the screen.
+ */
+const SUB_TO_SLOT: Record<string, Equipment['slot']> = Object.fromEntries(
+    (Object.entries(SLOT_LABELS) as ReadonlyArray<[Equipment['slot'], string]>).map(
+        ([slot, sub]) => [sub, slot],
+    ),
+) as Record<string, Equipment['slot']>;
+
+function buildEquipmentDock(rows: readonly InventoryItemRow[]): EquipmentDockViewModel {
+    const worn: Partial<Record<Equipment['slot'], InventoryItemRow>> = {};
+    for (const r of rows) {
+        if (r.category !== 'equipment' || !r.equipped || r.sub === null) continue;
+        const slot = SUB_TO_SLOT[r.sub];
+        if (slot === undefined) continue;
+        if (slot in worn) continue;
+        worn[slot] = r;
+    }
+    return {
+        slots: DOCK_SLOT_ORDER.map((slot) => {
+            const row = worn[slot] ?? null;
+            return {
+                key: slot,
+                label: DOCK_SLOT_TITLE[slot],
+                item: row === null ? null : { id: row.id, name: row.name, sub: row.sub },
+            };
+        }),
+        headerLabel: DOCK_HEADER_LABEL,
+        hintLabel: DOCK_HINT_LABEL,
+    };
+}
+
 // ---------------------------------------------------------------------------
 // Public selector
 // ---------------------------------------------------------------------------
@@ -279,5 +392,6 @@ export function selectInventoryViewModel(
         emptyMessage: EMPTY_MESSAGE,
         sectionHeader: SECTION_HEADER,
         categoryHeaders: CATEGORY_HEADERS,
+        equipmentDock: buildEquipmentDock(rows),
     });
 }

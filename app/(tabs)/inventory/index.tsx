@@ -9,6 +9,8 @@ import { StatBar } from '@/components/StatBar';
 import { useGameActions, useGameState, useGameStore } from '@/state/GameStoreProvider';
 import {
     selectInventoryViewModel,
+    type EquipmentDockSlot,
+    type EquipmentDockViewModel,
     type InventoryCategory,
     type InventoryItemRow,
     type InventoryTab,
@@ -69,30 +71,13 @@ function ItemGlyph({ category, sub }: { category: InventoryCategory; sub: string
  * Equipment Dock — paper-doll surface ported from the Claude Design
  * handoff (`design/screens/inventory.jsx::EquipmentDock`). Renders the
  * 7 wearable slots in a 4-row grid around a gothic hooded silhouette,
- * so worn vs. unworn is unmistakable at a glance. Worn slots get a
- * sulfur border + item name; empty slots show dashed "— bare —". The
- * slot-filter / equip-preview behaviour from chat 1 ships as a
- * follow-up port.
+ * so worn vs. unworn is unmistakable at a glance. The 7 slot states
+ * come from the presenter (`vm.equipmentDock`, Phase 32 sub-tick E),
+ * paired into a 4-row grid by index here in the view (head|body /
+ * weapon|armor / hands|accessory / feet|—). Slot-filter and
+ * equip-preview behaviour are out of scope for this sub-tick —
+ * follow-up ports per chat 1's later iterations.
  */
-type SlotKey = 'head' | 'body' | 'weapon' | 'armor' | 'hands' | 'feet' | 'accessory';
-
-const DOCK_ROWS: ReadonlyArray<readonly [SlotKey, SlotKey | null]> = [
-    ['head', 'body'],
-    ['weapon', 'armor'],
-    ['hands', 'accessory'],
-    ['feet', null],
-] as const;
-
-const SLOT_TITLE: Record<SlotKey, string> = {
-    head: 'HEAD',
-    body: 'BODY',
-    weapon: 'WEAPON',
-    armor: 'ARMOR',
-    hands: 'HANDS',
-    feet: 'FEET',
-    accessory: 'TRINKET',
-};
-
 function PaperDoll() {
     return (
         <Svg viewBox="0 0 70 180" width={52} height={140} fill="none">
@@ -120,52 +105,56 @@ function PaperDoll() {
     );
 }
 
-function SlotCard({ slotKey, item }: { slotKey: SlotKey | null; item: InventoryItemRow | null }) {
-    if (slotKey === null) {
+/** Pair the flat slot list into 4 rows of {left, right} per the design grid. */
+function pairDockRows(
+    slots: readonly EquipmentDockSlot[],
+): ReadonlyArray<readonly [EquipmentDockSlot, EquipmentDockSlot | null]> {
+    // Design order: head, body / weapon, armor / hands, accessory / feet, —.
+    // Presenter ships the 7 slots in that order (state/presenters/inventory.engine.ts
+    // `DOCK_SLOT_ORDER`). Pair index 0..1, 2..3, 4..5, and trailing 6 alone.
+    return [
+        [slots[0], slots[1]] as const,
+        [slots[2], slots[3]] as const,
+        [slots[4], slots[5]] as const,
+        [slots[6], null] as const,
+    ];
+}
+
+function SlotCard({ slot }: { slot: EquipmentDockSlot | null }) {
+    if (slot === null) {
         return <View style={styles.dockSlotEmpty} />;
     }
-    const filled = item !== null;
+    const filled = slot.item !== null;
     return (
         <View
             style={[
                 styles.dockSlot,
                 filled ? styles.dockSlotFilled : styles.dockSlotBare,
             ]}
-            testID={`dock-slot-${slotKey}`}
+            testID={`dock-slot-${slot.key}`}
         >
             <View style={[styles.dockSlotGlyph, filled ? styles.dockSlotGlyphFilled : styles.dockSlotGlyphBare]}>
-                {filled ? (
-                    <ItemGlyph category="equipment" sub={item.sub} />
+                {filled && slot.item !== null ? (
+                    <ItemGlyph category="equipment" sub={slot.item.sub} />
                 ) : (
                     <Text style={styles.dockSlotEmptyMark}>∅</Text>
                 )}
             </View>
             <View style={styles.dockSlotText}>
-                <Text style={styles.dockSlotLabel}>{SLOT_TITLE[slotKey]}</Text>
+                <Text style={styles.dockSlotLabel}>{slot.label}</Text>
                 <Text
                     numberOfLines={1}
                     style={filled ? styles.dockSlotItemName : styles.dockSlotItemBare}
                 >
-                    {filled ? item.name : '— bare —'}
+                    {filled && slot.item !== null ? slot.item.name : '— bare —'}
                 </Text>
             </View>
         </View>
     );
 }
 
-function EquipmentDock({ items }: { items: readonly InventoryItemRow[] }) {
-    const worn = useMemo<Partial<Record<SlotKey, InventoryItemRow>>>(() => {
-        const map: Partial<Record<SlotKey, InventoryItemRow>> = {};
-        for (const it of items) {
-            if (it.category !== 'equipment' || !it.equipped || it.sub === null) continue;
-            const slot = it.sub.toLowerCase() as SlotKey;
-            if (slot in SLOT_TITLE && !(slot in map)) {
-                map[slot] = it;
-            }
-        }
-        return map;
-    }, [items]);
-
+function EquipmentDock({ vm }: { vm: EquipmentDockViewModel }) {
+    const rows = useMemo(() => pairDockRows(vm.slots), [vm.slots]);
     return (
         <View style={styles.dock} testID="equipment-dock">
             {/* iron rivets in each corner */}
@@ -185,21 +174,21 @@ function EquipmentDock({ items }: { items: readonly InventoryItemRow[] }) {
                 />
             ))}
             <View style={styles.dockHeaderRow}>
-                <SectionLabel size={9} color={AXM.bone}>✠ WORN UPON THE BODY</SectionLabel>
-                <Text style={styles.dockHint}>WORN VS. UNWORN AT A GLANCE</Text>
+                <SectionLabel size={9} color={AXM.bone}>{vm.headerLabel}</SectionLabel>
+                <Text style={styles.dockHint}>{vm.hintLabel}</Text>
             </View>
             <View style={styles.dockGrid}>
                 <View style={styles.dockCol}>
-                    {DOCK_ROWS.map(([L], r) => (
-                        <SlotCard key={r} slotKey={L} item={worn[L] ?? null} />
+                    {rows.map(([L], r) => (
+                        <SlotCard key={r} slot={L} />
                     ))}
                 </View>
                 <View style={styles.dockSilhouette}>
                     <PaperDoll />
                 </View>
                 <View style={styles.dockCol}>
-                    {DOCK_ROWS.map(([, R], r) => (
-                        <SlotCard key={r} slotKey={R} item={R ? worn[R] ?? null : null} />
+                    {rows.map(([, R], r) => (
+                        <SlotCard key={r} slot={R} />
                     ))}
                 </View>
             </View>
@@ -238,16 +227,6 @@ export default function InventoryScreen() {
         () => selectInventoryViewModel(store.getState(), { activeTab, expandedItemId }),
         // eslint-disable-next-line react-hooks/exhaustive-deps
         [store, activeTab, expandedItemId, player],
-    );
-
-    // Equipment Dock needs the full inventory regardless of active tab,
-    // so it can render the 7 worn-slot states even when the user is on
-    // "PHIALS"/"STUFF"/"SEALED". Cheap to re-derive via the selector
-    // with activeTab='all'; follow-up presenter port will hoist this.
-    const allItems = useMemo(
-        () => selectInventoryViewModel(store.getState(), { activeTab: 'all', expandedItemId: null }).items,
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [store, player],
     );
 
     const modalVm = useMemo<ItemModalViewModel | null>(() => {
@@ -296,7 +275,7 @@ export default function InventoryScreen() {
                 </View>
             </View>
 
-            <EquipmentDock items={allItems} />
+            <EquipmentDock vm={vm.equipmentDock} />
 
             <View style={styles.tabRow}>
                 {vm.tabs.map((t) => (
@@ -634,7 +613,7 @@ const styles = StyleSheet.create({
     dock: {
         marginHorizontal: 10,
         marginTop: 8,
-        backgroundColor: '#0d0a08',
+        backgroundColor: AXM.dockBg,
         borderWidth: 1,
         borderColor: AXM.ash,
         padding: 8,

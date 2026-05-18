@@ -553,3 +553,63 @@ describe('selectInventoryViewModel: chrome strings', () => {
         expect(vm.categoryHeaders.quest).toBe('✠ SEALED');
     });
 });
+
+// ---------------------------------------------------------------------------
+// Equipment Dock — Phase 32 sub-tick E (port from design handoff)
+// ---------------------------------------------------------------------------
+
+describe('selectInventoryViewModel: equipmentDock', () => {
+    const expectedSlotOrder: ReadonlyArray<{ key: string; label: string }> = [
+        { key: 'head', label: 'HEAD' },
+        { key: 'body', label: 'BODY' },
+        { key: 'weapon', label: 'WEAPON' },
+        { key: 'armor', label: 'ARMOR' },
+        { key: 'hands', label: 'HANDS' },
+        { key: 'accessory', label: 'TRINKET' },
+        { key: 'feet', label: 'FEET' },
+    ];
+
+    it('ships 7 slots in the design grid order with chrome labels and null items by default', () => {
+        const store = createGameStore(createMemoryAdapter());
+        const vm: InventoryViewModel = selectInventoryViewModel(store.getState());
+
+        expect(vm.equipmentDock.headerLabel).toBe('✠ WORN UPON THE BODY');
+        expect(vm.equipmentDock.hintLabel).toBe('WORN VS. UNWORN AT A GLANCE');
+        expect(vm.equipmentDock.slots).toHaveLength(7);
+        vm.equipmentDock.slots.forEach((slot, i) => {
+            expect(slot.key).toBe(expectedSlotOrder[i].key);
+            expect(slot.label).toBe(expectedSlotOrder[i].label);
+            expect(slot.item).toBeNull();
+        });
+    });
+
+    it('fills the weapon slot with the equipped weapon row when one is in inventory', () => {
+        const store = makeStore([sword('long-blade-1')]);
+        const vm: InventoryViewModel = selectInventoryViewModel(store.getState());
+
+        const weaponSlot = vm.equipmentDock.slots.find((s) => s.key === 'weapon');
+        expect(weaponSlot).toBeDefined();
+        expect(weaponSlot!.item).toEqual({
+            id: 'long-blade-1',
+            name: 'Long Blade',
+            sub: 'Weapon',
+        });
+    });
+
+    it('shows only the first equipped item per slot (mirrors selectCharacterViewModel convention)', () => {
+        const store = makeStore([sword('long-blade-1'), dagger('bone-dagger-1')]);
+        const vm: InventoryViewModel = selectInventoryViewModel(store.getState());
+
+        const weaponSlot = vm.equipmentDock.slots.find((s) => s.key === 'weapon');
+        // First weapon in inventory wins; dagger appears as un-equipped in vm.items.
+        expect(weaponSlot!.item?.id).toBe('long-blade-1');
+    });
+
+    it('leaves slots null when the player carries no equipment in that slot', () => {
+        const store = makeStore([potion('phial-1'), ash('ash-1', 3)]);
+        const vm: InventoryViewModel = selectInventoryViewModel(store.getState());
+        for (const slot of vm.equipmentDock.slots) {
+            expect(slot.item).toBeNull();
+        }
+    });
+});

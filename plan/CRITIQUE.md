@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-05-18 at commit a836031
-> Pass count: 12
+> Last pass: 2026-05-18 at commit ce4f851
+> Pass count: 13
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -30,6 +30,33 @@
 > open for whenever the rate-limit hits again.
 
 ## Pending
+
+### [MED] /components/StatusCard.tsx:56 — hex literal `'#100d0a'` should consume `AXM.panelBg`
+- pass: 13 (commit ce4f851)
+- viewport: repository
+- category: consistency
+- observation: StatusCard's `card` style hard-codes
+  `backgroundColor: '#100d0a'` at the view layer — the exact
+  same literal that pass 11 drained from memoir (`8a4f69c`)
+  and pass 12 drained from character (`9531270`). StatusCard
+  is a reusable component; Hard Rule #8 + bearings line 109
+  apply more strongly here than to one-off screens.
+- evidence: `components/StatusCard.tsx:56`
+  `backgroundColor: '#100d0a',` inside StyleSheet.create.
+  `theme/axm.ts:11` exports `panelBg: '#100d0a'` for this
+  case.
+- broader terrain (informational, NOT this row's scope):
+  reader counted 8 additional `'#100d0a'` occurrences across
+  4 other files (`combat.tsx` ×4 lines 199/804/818/829;
+  `inventory/index.tsx` ×2 lines 388/448; `exploration/
+  index.tsx` ×1 line 496; `_layout.tsx` ×1 line 199). Per
+  the established one-component-at-a-time pattern (memoir,
+  character) the reader filed only StatusCard. Future passes
+  will surface the rest, or a /jot can request a sweep.
+- suggested fix: replace `backgroundColor: '#100d0a'` with
+  `backgroundColor: AXM.panelBg` at
+  `components/StatusCard.tsx:56`.
+- source: web-fetch (reader sub-agent)
 
 ## Done
 

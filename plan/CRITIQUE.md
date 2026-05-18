@@ -61,7 +61,7 @@
 ## Done
 
 ### [MED] /app/(tabs)/character/index.tsx:226,229,253 — hex literal `'#100d0a'` × 3 → `AXM.panelBg` ✅
-- pass: 12 (commit a836031); addressed at commit <pending>
+- pass: 12 (commit a836031); addressed at commit 9531270
 - issue: #86
 - viewport: repository
 - category: consistency

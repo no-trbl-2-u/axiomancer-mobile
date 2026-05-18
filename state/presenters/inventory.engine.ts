@@ -33,6 +33,16 @@ export type InventoryTab = 'all' | InventoryCategory;
 export interface InventoryLocalUi {
     activeTab?: InventoryTab;
     expandedItemId?: string | null;
+    /**
+     * When set, the equipment slot the user has tapped in the
+     * Equipment Dock to filter the sack to compatible items
+     * (Phase 32 sub-tick F). The filter overrides `activeTab` —
+     * the screen sets `activeTab='all'` whenever it picks a slot,
+     * and the presenter additionally guards against the case where
+     * a stale tab is still set (slot filter wins). `null` / omitted
+     * → no slot filter.
+     */
+    selectedSlot?: Equipment['slot'] | null;
 }
 
 export interface InventoryItemRow {
@@ -92,6 +102,20 @@ export interface EquipmentDockViewModel {
     hintLabel: string;
     /** Empty-slot copy (lowercase ritual register, framed with em-dashes per the design). */
     bareLabel: string;
+    /**
+     * Slot-filter banner copy & state (Phase 32 sub-tick F).
+     * `selectedSlot` mirrors the user pick; `bannerEyebrow` /
+     * `bannerSlotLabel` / `bannerClearLabel` are the chrome strings
+     * the screen renders when a slot is active. `bannerSlotLabel`
+     * resolves to the dock slot's `label` (e.g. "WEAPON") so the
+     * screen doesn't have to reach back through `slots`. `null` /
+     * empty when no slot is selected; the screen treats `null` as
+     * "do not render the banner".
+     */
+    selectedSlot: Equipment['slot'] | null;
+    bannerEyebrow: string;
+    bannerSlotLabel: string;
+    bannerClearLabel: string;
 }
 
 export interface InventoryViewModel {
@@ -211,6 +235,8 @@ const DOCK_SLOT_TITLE: Record<Equipment['slot'], string> = {
 const DOCK_HEADER_LABEL = '✠ WORN UPON THE BODY';
 const DOCK_HINT_LABEL = 'WORN VS. UNWORN AT A GLANCE';
 const DOCK_BARE_LABEL = '— bare —';
+const DOCK_BANNER_EYEBROW = 'FITTING SLOT';
+const DOCK_BANNER_CLEAR_LABEL = 'CLEAR ✕';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -347,7 +373,10 @@ const SUB_TO_SLOT: Record<string, Equipment['slot']> = Object.fromEntries(
     ),
 ) as Record<string, Equipment['slot']>;
 
-function buildEquipmentDock(rows: readonly InventoryItemRow[]): EquipmentDockViewModel {
+function buildEquipmentDock(
+    rows: readonly InventoryItemRow[],
+    selectedSlot: Equipment['slot'] | null,
+): EquipmentDockViewModel {
     const worn: Partial<Record<Equipment['slot'], InventoryItemRow>> = {};
     for (const r of rows) {
         if (r.category !== 'equipment' || !r.equipped || r.sub === null) continue;
@@ -356,19 +385,32 @@ function buildEquipmentDock(rows: readonly InventoryItemRow[]): EquipmentDockVie
         if (slot in worn) continue;
         worn[slot] = r;
     }
+    const slots = DOCK_SLOT_ORDER.map((slot) => {
+        const row = worn[slot] ?? null;
+        return {
+            key: slot,
+            label: DOCK_SLOT_TITLE[slot],
+            item: row === null ? null : { id: row.id, name: row.name, sub: row.sub },
+        };
+    });
     return {
-        slots: DOCK_SLOT_ORDER.map((slot) => {
-            const row = worn[slot] ?? null;
-            return {
-                key: slot,
-                label: DOCK_SLOT_TITLE[slot],
-                item: row === null ? null : { id: row.id, name: row.name, sub: row.sub },
-            };
-        }),
+        slots,
         headerLabel: DOCK_HEADER_LABEL,
         hintLabel: DOCK_HINT_LABEL,
         bareLabel: DOCK_BARE_LABEL,
+        selectedSlot,
+        bannerEyebrow: DOCK_BANNER_EYEBROW,
+        bannerSlotLabel: selectedSlot === null ? '' : DOCK_SLOT_TITLE[selectedSlot],
+        bannerClearLabel: DOCK_BANNER_CLEAR_LABEL,
     };
+}
+
+function filterRowsBySlot(
+    rows: readonly InventoryItemRow[],
+    slot: Equipment['slot'],
+): readonly InventoryItemRow[] {
+    const targetSub = SLOT_LABELS[slot];
+    return rows.filter((r) => r.category === 'equipment' && r.sub === targetSub);
 }
 
 // ---------------------------------------------------------------------------
@@ -382,7 +424,13 @@ export function selectInventoryViewModel(
     const inventory = state.player?.inventory ?? [];
     const rows = buildRows(inventory);
     const activeTab = localUi.activeTab ?? 'all';
-    const items = filterRowsByTab(rows, activeTab);
+    const selectedSlot = localUi.selectedSlot ?? null;
+    // Slot filter overrides tab filter — the screen sets activeTab='all'
+    // when picking a slot, but we guard here too so a stale tab pick
+    // can't leak through when the consumer is e.g. a hermetic test.
+    const items = selectedSlot === null
+        ? filterRowsByTab(rows, activeTab)
+        : filterRowsBySlot(rows, selectedSlot);
 
     return freezeViewModel({
         tabs: buildTabs(rows),
@@ -396,6 +444,6 @@ export function selectInventoryViewModel(
         emptyMessage: EMPTY_MESSAGE,
         sectionHeader: SECTION_HEADER,
         categoryHeaders: CATEGORY_HEADERS,
-        equipmentDock: buildEquipmentDock(rows),
+        equipmentDock: buildEquipmentDock(rows, selectedSlot),
     });
 }

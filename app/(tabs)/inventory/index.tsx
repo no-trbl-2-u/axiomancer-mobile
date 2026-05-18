@@ -269,9 +269,9 @@ export default function InventoryScreen() {
     const actions = useGameActions();
 
     const vm = useMemo(
-        () => selectInventoryViewModel(store.getState(), { activeTab, expandedItemId }),
+        () => selectInventoryViewModel(store.getState(), { activeTab, expandedItemId, selectedSlot }),
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [store, activeTab, expandedItemId, player],
+        [store, activeTab, expandedItemId, selectedSlot, player],
     );
 
     const modalVm = useMemo<ItemModalViewModel | null>(() => {
@@ -302,27 +302,11 @@ export default function InventoryScreen() {
         [actions],
     );
 
-    // Slot-filter overrides the tab filter when active. Map the dock's
-    // slot key back to the item-row `sub` (the existing presenter
-    // contract emits 'Weapon' / 'Armor' / 'Head' / 'Body' / 'Hands' /
-    // 'Feet' / 'Accessory' as title-case strings). Only equipment with
-    // a matching sub passes the filter.
-    const SLOT_KEY_TO_SUB: Record<EquipmentDockSlot['key'], string> = {
-        head: 'Head',
-        body: 'Body',
-        weapon: 'Weapon',
-        armor: 'Armor',
-        hands: 'Hands',
-        feet: 'Feet',
-        accessory: 'Accessory',
-    };
-    const filteredItems = useMemo(() => {
-        if (selectedSlot === null) return vm.items;
-        const targetSub = SLOT_KEY_TO_SUB[selectedSlot];
-        return vm.items.filter((r) => r.category === 'equipment' && r.sub === targetSub);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [vm.items, selectedSlot]);
-    const grouped = useMemo(() => groupByCategory(filteredItems), [filteredItems]);
+    // vm.items already accounts for slot-filter vs tab-filter on the
+    // presenter side (sub-tick F lifted the inline SLOT_KEY_TO_SUB map
+    // onto the presenter as `filterRowsBySlot`). Screen consumes
+    // vm.items unconditionally now.
+    const grouped = useMemo(() => groupByCategory(vm.items), [vm.items]);
 
     return (
         <ScreenBg>
@@ -342,12 +326,12 @@ export default function InventoryScreen() {
 
             <EquipmentDock vm={vm.equipmentDock} selectedSlot={selectedSlot} onSelectSlot={onSelectSlot} />
 
-            {selectedSlot !== null && (
+            {vm.equipmentDock.selectedSlot !== null && (
                 <View style={styles.slotBanner} testID="slot-filter-banner">
                     <View>
-                        <Text style={styles.slotBannerEyebrow}>FITTING SLOT</Text>
+                        <Text style={styles.slotBannerEyebrow}>{vm.equipmentDock.bannerEyebrow}</Text>
                         <Text style={styles.slotBannerLabel}>
-                            ✦ {vm.equipmentDock.slots.find((s) => s.key === selectedSlot)?.label ?? ''}
+                            ✦ {vm.equipmentDock.bannerSlotLabel}
                         </Text>
                     </View>
                     <TouchableOpacity
@@ -357,7 +341,7 @@ export default function InventoryScreen() {
                         style={styles.slotBannerClear}
                         testID="slot-filter-clear"
                     >
-                        <Text style={styles.slotBannerClearText}>CLEAR ✕</Text>
+                        <Text style={styles.slotBannerClearText}>{vm.equipmentDock.bannerClearLabel}</Text>
                     </TouchableOpacity>
                 </View>
             )}

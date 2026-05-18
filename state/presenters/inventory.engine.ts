@@ -130,7 +130,7 @@ const SLOT_LABELS: Record<Equipment['slot'], string> = {
 };
 
 const BURDEN_MAX = 50;
-const EMPTY_MESSAGE = 'Nothing in the satchel.';
+const EMPTY_MESSAGE = 'nothing in the satchel.';
 
 // ---------------------------------------------------------------------------
 // Helpers

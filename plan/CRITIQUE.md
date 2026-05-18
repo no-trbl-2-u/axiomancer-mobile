@@ -31,30 +31,6 @@
 
 ## Pending
 
-### [LOW] /state/presenters/inventory.engine.ts:133 — `EMPTY_MESSAGE` is the only sentence-cased narrative empty-state
-- pass: 11 (commit 5be0022)
-- viewport: repository
-- category: voice
-- observation: After the Phase 32 SACK → SATCHEL sweep and
-  pass-10 catch-up (commit `2822455`),
-  `EMPTY_MESSAGE = 'Nothing in the satchel.'` still uses
-  sentence case (capital `N`). Every sibling presenter ships
-  its narrative empty-state in lowercase: memoir's `'the
-  page is bare.'`, `'no errands written here.'`, `'the
-  scales are level.'`, `'untested.'`; exploration's `'the
-  paths close.'`; character's `'none at hand.'`; event's
-  `'the world is still.'`; combat's `'the field stirs.'`.
-  Inventory is the sole outlier — bearings line 184 reserves
-  uppercase for chrome, lowercase for ritual narrative.
-- evidence: `state/presenters/inventory.engine.ts:133`
-  `const EMPTY_MESSAGE = 'Nothing in the satchel.';` vs. 7
-  other presenters all shipping lowercase ritual
-  empty-states (see paths above).
-- suggested fix: change to `'nothing in the satchel.'` so
-  the inventory empty-state aligns with the lowercase
-  narrative rule applied across every sibling presenter.
-- source: web-fetch (reader sub-agent)
-
 ### [LOW] /app/(tabs)/memoir/index.tsx:174,189 — view layer pins behaviour to label-literal comparisons
 - pass: 11 (commit 5be0022)
 - viewport: repository
@@ -84,6 +60,21 @@
 - source: web-fetch (reader sub-agent)
 
 ## Done
+
+### [LOW] /state/presenters/inventory.engine.ts:133 — `EMPTY_MESSAGE` lowercased ('Nothing' → 'nothing') ✅
+- pass: 11 (commit 5be0022); addressed at commit b90bf73
+- issue: #84
+- viewport: repository
+- category: voice
+- observation: `EMPTY_MESSAGE = 'Nothing in the satchel.'`
+  was the sole sentence-cased narrative empty-state across
+  every presenter; sibling surfaces all ship lowercase
+  ritual register (bearings line 184).
+- fix: one-character edit, `'Nothing'` → `'nothing'` in
+  `state/presenters/inventory.engine.ts:133`. Aligns
+  inventory with the 7 other lowercase ritual empty-states
+  shipped by sibling presenters. Verify 487/487 unchanged;
+  no test asserted on the literal.
 
 ### [MED] /state/presenters/exploration.engine.ts:288 — `dayDisplay` 'XXIV' YAGNI deletion ✅
 - pass: 11 (commit 5be0022); addressed at commit 4913ab9

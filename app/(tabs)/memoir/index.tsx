@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 8,
         borderWidth: 1,
         borderColor: AXM.ash,
-        backgroundColor: '#100d0a',
+        backgroundColor: AXM.panelBg,
     },
     questCardCompleted: { opacity: 0.55 },
     questName: {
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         borderWidth: 1,
         borderColor: AXM.ash,
-        backgroundColor: '#100d0a',
+        backgroundColor: AXM.panelBg,
     },
     measureLabel: {
         fontFamily: FONTS.gothic,

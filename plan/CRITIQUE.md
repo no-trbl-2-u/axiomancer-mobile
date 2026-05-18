@@ -59,6 +59,7 @@
 
 ### [MED] /app/(tabs)/memoir/index.tsx:249,280 — hex literal `'#100d0a'` should consume `AXM.panelBg`
 - pass: 11 (commit 5be0022)
+- issue: #82
 - viewport: repository
 - category: consistency
 - observation: MemoirScreen's `questCard` and `measureChip`

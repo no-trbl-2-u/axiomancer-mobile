@@ -40,30 +40,6 @@
 
 ## Pending
 
-### [MED] /app/(tabs)/inventory/index.tsx:149 — `'— bare —'` literal at view layer (Hard Rule #8)
-- pass: 14 (commit 2a23047)
-- viewport: repository
-- category: voice
-- observation: `SlotCard` renders the empty-slot copy `'— bare
-  —'` as an inline literal in the JSX rather than reading
-  from the presenter. Sibling literals on the same component
-  surface — `headerLabel` and `hintLabel` — already live on
-  the VM (`inventory.engine.ts:209,210`). This bare-slot
-  string was missed during the test/extract pass (tick E).
-  Direct precedent: the drained `EMPTY_MESSAGE` lift, the
-  drained PreludeChrome literal lifts, the drained memoir
-  `isEmpty` extraction (which also folded literals into
-  presenter contract).
-- evidence: `app/(tabs)/inventory/index.tsx:149`
-  `{filled && slot.item !== null ? slot.item.name : '— bare —'}`.
-  No matching field on `EquipmentDockViewModel`.
-- suggested fix: add `bareLabel: string` to
-  `EquipmentDockViewModel`, constant `DOCK_BARE_LABEL = '— bare —'`
-  in `inventory.engine.ts`. Screen reads
-  `vm.equipmentDock.bareLabel` in `SlotCard`. One hermetic
-  case pinning the new field.
-- source: web-fetch (reader sub-agent)
-
 ### [LOW] /app/(tabs)/inventory/index.tsx:30-66 — `ItemGlyph` lacks per-slot variants (5 of 7 dock slots render identical glyph)
 - pass: 14 (commit 2a23047)
 - viewport: repository
@@ -96,6 +72,22 @@
 - source: web-fetch (reader sub-agent)
 
 ## Done
+
+### [MED] /app/(tabs)/inventory/index.tsx:149 — `'— bare —'` lifted onto `EquipmentDockViewModel.bareLabel` ✅
+- pass: 14 (commit 2a23047); addressed at commit <pending>
+- issue: #91
+- viewport: repository
+- category: voice
+- observation: `SlotCard` rendered the empty-slot copy
+  `'— bare —'` as an inline literal at the view layer. Hard
+  Rule #8 violation; sibling chrome (`headerLabel`,
+  `hintLabel`) already on the VM.
+- fix: added `bareLabel: string` to `EquipmentDockViewModel`;
+  `DOCK_BARE_LABEL = '— bare —'` constant in
+  `inventory.engine.ts`; `buildEquipmentDock` emits it.
+  Screen's `SlotCard` now takes a `bareLabel` prop and reads
+  `vm.bareLabel` from the dock VM. +1 hermetic case pinning
+  the new field. Verify 492/492 unchanged.
 
 ### [MED] /app/(tabs)/inventory/index.tsx PaperDoll — 10× `"#0a0807"` → `AXM.silhouette` ✅
 - pass: 14 (commit 2a23047); addressed at commit 2a22a74

@@ -575,6 +575,7 @@ describe('selectInventoryViewModel: equipmentDock', () => {
 
         expect(vm.equipmentDock.headerLabel).toBe('✠ WORN UPON THE BODY');
         expect(vm.equipmentDock.hintLabel).toBe('WORN VS. UNWORN AT A GLANCE');
+        expect(vm.equipmentDock.bareLabel).toBe('— bare —');
         expect(vm.equipmentDock.slots).toHaveLength(7);
         vm.equipmentDock.slots.forEach((slot, i) => {
             expect(slot.key).toBe(expectedSlotOrder[i].key);

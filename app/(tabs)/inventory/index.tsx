@@ -120,7 +120,7 @@ function pairDockRows(
     ];
 }
 
-function SlotCard({ slot }: { slot: EquipmentDockSlot | null }) {
+function SlotCard({ slot, bareLabel }: { slot: EquipmentDockSlot | null; bareLabel: string }) {
     if (slot === null) {
         return <View style={styles.dockSlotEmpty} />;
     }
@@ -146,7 +146,7 @@ function SlotCard({ slot }: { slot: EquipmentDockSlot | null }) {
                     numberOfLines={1}
                     style={filled ? styles.dockSlotItemName : styles.dockSlotItemBare}
                 >
-                    {filled && slot.item !== null ? slot.item.name : '— bare —'}
+                    {filled && slot.item !== null ? slot.item.name : bareLabel}
                 </Text>
             </View>
         </View>
@@ -180,7 +180,7 @@ function EquipmentDock({ vm }: { vm: EquipmentDockViewModel }) {
             <View style={styles.dockGrid}>
                 <View style={styles.dockCol}>
                     {rows.map(([L], r) => (
-                        <SlotCard key={r} slot={L} />
+                        <SlotCard key={r} slot={L} bareLabel={vm.bareLabel} />
                     ))}
                 </View>
                 <View style={styles.dockSilhouette}>
@@ -188,7 +188,7 @@ function EquipmentDock({ vm }: { vm: EquipmentDockViewModel }) {
                 </View>
                 <View style={styles.dockCol}>
                     {rows.map(([, R], r) => (
-                        <SlotCard key={r} slot={R} />
+                        <SlotCard key={r} slot={R} bareLabel={vm.bareLabel} />
                     ))}
                 </View>
             </View>

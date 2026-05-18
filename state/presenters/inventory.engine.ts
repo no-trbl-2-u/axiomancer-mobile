@@ -90,6 +90,8 @@ export interface EquipmentDockViewModel {
     headerLabel: string;
     /** One-line hint under the eyebrow ("WORN VS. UNWORN AT A GLANCE"). */
     hintLabel: string;
+    /** Empty-slot copy (lowercase ritual register, framed with em-dashes per the design). */
+    bareLabel: string;
 }
 
 export interface InventoryViewModel {
@@ -208,6 +210,7 @@ const DOCK_SLOT_TITLE: Record<Equipment['slot'], string> = {
 
 const DOCK_HEADER_LABEL = '✠ WORN UPON THE BODY';
 const DOCK_HINT_LABEL = 'WORN VS. UNWORN AT A GLANCE';
+const DOCK_BARE_LABEL = '— bare —';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -364,6 +367,7 @@ function buildEquipmentDock(rows: readonly InventoryItemRow[]): EquipmentDockVie
         }),
         headerLabel: DOCK_HEADER_LABEL,
         hintLabel: DOCK_HINT_LABEL,
+        bareLabel: DOCK_BARE_LABEL,
     };
 }
 

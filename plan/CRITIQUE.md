@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-05-18 at commit ce4f851
-> Pass count: 13
+> Last pass: 2026-05-18 at commit 2a23047
+> Pass count: 14
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -39,6 +39,88 @@
 > open for whenever the rate-limit hits again.
 
 ## Pending
+
+### [MED] /app/(tabs)/inventory/index.tsx:87-103 — `PaperDoll` SVG inlines `'#0a0807'` × 10 (needs new theme token)
+- pass: 14 (commit 2a23047)
+- viewport: repository
+- category: consistency
+- observation: The new `PaperDoll` silhouette ships 10 inline
+  `fill="#0a0807"` literals across hood/torso/arms/hands/legs
+  /feet (lines 87, 91, 93, 94, 96, 97, 99, 100, 102, 103).
+  Same Hard Rule #8 / bearings line 109 class as the just-
+  drained 8× `'#100d0a'` sweep (commit `9339e3e`) and the
+  StatusCard / character / memoir drains. The value is close
+  to but distinct from `AXM.dockBg = '#0d0a08'` (panel) and
+  `AXM.deepBg = '#06050a'` (void), so a separate token is
+  warranted with the warmer-panel/cooler-void distinction
+  spelled out. The design source (`design/handoff-2026-05-16/
+  project/screens/inventory.jsx:160,168,175,176`) uses the
+  same hex inline, but the port should still route through
+  `theme/axm.ts` per bearings.
+- evidence: 10 occurrences of `fill="#0a0807"` in PaperDoll;
+  none of the other Svg components in the file inline hex
+  literals — they all use AXM tokens.
+- suggested fix: add `AXM.silhouette = '#0a0807'` to
+  `theme/axm.ts` with a comment distinguishing it from
+  `dockBg` and `deepBg` (silhouette = paper-doll fill, warmer
+  than deepBg but cooler than dockBg). Replace the 10 fills
+  with `AXM.silhouette`.
+- source: web-fetch (reader sub-agent)
+
+### [MED] /app/(tabs)/inventory/index.tsx:149 — `'— bare —'` literal at view layer (Hard Rule #8)
+- pass: 14 (commit 2a23047)
+- viewport: repository
+- category: voice
+- observation: `SlotCard` renders the empty-slot copy `'— bare
+  —'` as an inline literal in the JSX rather than reading
+  from the presenter. Sibling literals on the same component
+  surface — `headerLabel` and `hintLabel` — already live on
+  the VM (`inventory.engine.ts:209,210`). This bare-slot
+  string was missed during the test/extract pass (tick E).
+  Direct precedent: the drained `EMPTY_MESSAGE` lift, the
+  drained PreludeChrome literal lifts, the drained memoir
+  `isEmpty` extraction (which also folded literals into
+  presenter contract).
+- evidence: `app/(tabs)/inventory/index.tsx:149`
+  `{filled && slot.item !== null ? slot.item.name : '— bare —'}`.
+  No matching field on `EquipmentDockViewModel`.
+- suggested fix: add `bareLabel: string` to
+  `EquipmentDockViewModel`, constant `DOCK_BARE_LABEL = '— bare —'`
+  in `inventory.engine.ts`. Screen reads
+  `vm.equipmentDock.bareLabel` in `SlotCard`. One hermetic
+  case pinning the new field.
+- source: web-fetch (reader sub-agent)
+
+### [LOW] /app/(tabs)/inventory/index.tsx:30-66 — `ItemGlyph` lacks per-slot variants (5 of 7 dock slots render identical glyph)
+- pass: 14 (commit 2a23047)
+- viewport: repository
+- category: design-fidelity
+- observation: `ItemGlyph`'s default branch handles every
+  non-Weapon/non-Armor equipment subtype (Head, Body, Hands,
+  Feet, Accessory) with a single quad-path glyph (line 37-40).
+  When the Equipment Dock is fully kitted, 5 of its 7 slot
+  cards show the same icon — undermining the dock's whole
+  "WORN VS. UNWORN AT A GLANCE" hint copy. The vendored
+  design source `design/handoff-2026-05-16/project/screens/
+  inventory.jsx:513-541` ships 5 bespoke per-slot SVG paths
+  (helmet-with-horns for Head, finger-silhouettes for Hands,
+  boot for Feet, breastplate-with-shoulders for Body, ring-
+  with-stone for Accessory). The Phase 32 tick E port lifted
+  the dock layout and chrome but stopped short of the
+  per-slot iconography.
+- evidence: `app/(tabs)/inventory/index.tsx:37-43` —
+  `<Path d="M6 8 L 26 8 L 22 26 L 10 26 Z" />` fallback for
+  Head/Body/Hands/Feet/Accessory. Design has distinct
+  `if (cat === 'equipment' && sub === '<slot>')` branches at
+  `design/handoff-2026-05-16/project/screens/inventory.jsx:
+  513-541`.
+- suggested fix: port the 5 per-slot SVG paths from
+  `design/handoff-2026-05-16/project/screens/inventory.jsx:
+  513-541` into the existing `ItemGlyph` (`react-native-svg`
+  primitives instead of inline `<svg>`). One commit; same
+  category as a Phase 32 sub-tick (likely sub-tick F:
+  "inventory item glyphs — port from design handoff").
+- source: web-fetch (reader sub-agent)
 
 ## Done
 

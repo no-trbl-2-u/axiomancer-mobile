@@ -31,32 +31,6 @@
 
 ## Pending
 
-### [MED] /state/presenters/exploration.engine.ts:288 — `dayDisplay` hardcoded `'XXIV'` silently lies about in-game day
-- pass: 11 (commit 5be0022)
-- viewport: repository
-- category: comprehension
-- observation: The populated selector branch ships
-  `dayDisplay: 'XXIV'` as a fixed Roman numeral while the
-  field's JSDoc at line 87 reads `In-game day number (Roman
-  numerals already formatted)` — the contract claims a live
-  value but the implementation is a stub. The FALLBACK_VM
-  correctly emits `'I'`; the screen at
-  `app/(tabs)/exploration/index.tsx:174` renders
-  `vm.dayDisplay` verbatim into the day chrome. Every player
-  on every map currently sees "day XXIV" regardless of
-  progression — misleading both for players and any
-  maintainer reading the VM contract.
-- evidence: `state/presenters/exploration.engine.ts:288`
-  `dayDisplay: 'XXIV',` vs. line 87 JSDoc and line 232
-  `dayDisplay: 'I'` in FALLBACK_VM.
-- suggested fix: either wire `dayDisplay` from the engine's
-  day counter via a `toRoman()` helper, or — if the engine
-  doesn't yet expose day state — delete the field + its
-  screen consumer and re-add via /expand when a real day
-  counter ships. Don't ship a placeholder presented as live
-  state.
-- source: web-fetch (reader sub-agent)
-
 ### [LOW] /state/presenters/inventory.engine.ts:133 — `EMPTY_MESSAGE` is the only sentence-cased narrative empty-state
 - pass: 11 (commit 5be0022)
 - viewport: repository
@@ -110,6 +84,31 @@
 - source: web-fetch (reader sub-agent)
 
 ## Done
+
+### [MED] /state/presenters/exploration.engine.ts:288 — `dayDisplay` 'XXIV' YAGNI deletion ✅
+- pass: 11 (commit 5be0022); addressed at commit 4913ab9
+- issue: #83
+- viewport: repository
+- category: comprehension
+- observation: Populated selector branch shipped
+  `dayDisplay: 'XXIV'` as a fixed Roman numeral while the
+  field's JSDoc claimed a live in-game day value. Every
+  player on every map saw "day XXIV" regardless of
+  progression.
+- fix: confirmed engine surface has no `day` / `turn` /
+  `stepCount` state (`node_modules/axiomancer-mechanics/dist/`
+  has no day field). Per suggested-fix branch B (delete when
+  engine doesn't expose state), deleted the `dayDisplay`
+  field from `ExplorationViewModel` interface (line 88), the
+  FALLBACK_VM (line 230), and the populated branch (line
+  288); deleted the screen's `dayBox` / `dayLabel` / `dayNum`
+  block (`app/(tabs)/exploration/index.tsx:172-175`) and the
+  three matching StyleSheet entries; dropped the
+  `expect(typeof vm.dayDisplay).toBe('string')` line in
+  `state/e2e/exploration.engine.test.ts:37`. Same YAGNI
+  pattern previously used for `swipeHint` (commit `5a8c2ea`).
+  Verify 487 / 487 unchanged. Re-add via /expand when a real
+  engine day counter ships.
 
 ### [MED] /app/(tabs)/memoir/index.tsx:249,280 — hex literal `'#100d0a'` → `AXM.panelBg` ✅
 - pass: 11 (commit 5be0022); addressed at commit 8a4f69c

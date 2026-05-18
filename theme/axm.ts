@@ -19,6 +19,15 @@ export const AXM = {
    * `<PaperDoll>` (`app/(tabs)/inventory/index.tsx`).
    */
   silhouette: '#0a0807',
+  /**
+   * Selection / hover-emphasis fill — darkest-warm-yellow tinted
+   * background used when a control is in a sulfur-bordered active
+   * state (e.g. the Equipment Dock's slot-filter selection and the
+   * "FITTING SLOT" banner). Pairs with a sulfur border + sulfur
+   * accent text. From the design handoff
+   * (`design/handoff-2026-05-16/project/screens/inventory.jsx:61,313`).
+   */
+  selectFill: '#1f1a0a',
 } as const;
 
 export const FONTS = {

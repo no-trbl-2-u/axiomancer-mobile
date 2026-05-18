@@ -120,16 +120,31 @@ function pairDockRows(
     ];
 }
 
-function SlotCard({ slot, bareLabel }: { slot: EquipmentDockSlot | null; bareLabel: string }) {
+function SlotCard({
+    slot,
+    bareLabel,
+    selected,
+    onPress,
+}: {
+    slot: EquipmentDockSlot | null;
+    bareLabel: string;
+    selected: boolean;
+    onPress: (key: EquipmentDockSlot['key'] | null) => void;
+}) {
     if (slot === null) {
         return <View style={styles.dockSlotEmpty} />;
     }
     const filled = slot.item !== null;
     return (
-        <View
+        <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel={`${slot.label} slot${filled && slot.item ? `, ${slot.item.name}` : ', empty'}`}
+            accessibilityState={{ selected }}
+            onPress={() => onPress(selected ? null : slot.key)}
             style={[
                 styles.dockSlot,
                 filled ? styles.dockSlotFilled : styles.dockSlotBare,
+                selected && styles.dockSlotSelected,
             ]}
             testID={`dock-slot-${slot.key}`}
         >
@@ -149,11 +164,19 @@ function SlotCard({ slot, bareLabel }: { slot: EquipmentDockSlot | null; bareLab
                     {filled && slot.item !== null ? slot.item.name : bareLabel}
                 </Text>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 }
 
-function EquipmentDock({ vm }: { vm: EquipmentDockViewModel }) {
+function EquipmentDock({
+    vm,
+    selectedSlot,
+    onSelectSlot,
+}: {
+    vm: EquipmentDockViewModel;
+    selectedSlot: EquipmentDockSlot['key'] | null;
+    onSelectSlot: (key: EquipmentDockSlot['key'] | null) => void;
+}) {
     const rows = useMemo(() => pairDockRows(vm.slots), [vm.slots]);
     return (
         <View style={styles.dock} testID="equipment-dock">
@@ -180,7 +203,13 @@ function EquipmentDock({ vm }: { vm: EquipmentDockViewModel }) {
             <View style={styles.dockGrid}>
                 <View style={styles.dockCol}>
                     {rows.map(([L], r) => (
-                        <SlotCard key={r} slot={L} bareLabel={vm.bareLabel} />
+                        <SlotCard
+                            key={r}
+                            slot={L}
+                            bareLabel={vm.bareLabel}
+                            selected={L !== null && selectedSlot === L.key}
+                            onPress={onSelectSlot}
+                        />
                     ))}
                 </View>
                 <View style={styles.dockSilhouette}>
@@ -188,7 +217,13 @@ function EquipmentDock({ vm }: { vm: EquipmentDockViewModel }) {
                 </View>
                 <View style={styles.dockCol}>
                     {rows.map(([, R], r) => (
-                        <SlotCard key={r} slot={R} bareLabel={vm.bareLabel} />
+                        <SlotCard
+                            key={r}
+                            slot={R}
+                            bareLabel={vm.bareLabel}
+                            selected={R !== null && selectedSlot === R.key}
+                            onPress={onSelectSlot}
+                        />
                     ))}
                 </View>
             </View>
@@ -213,6 +248,16 @@ export default function InventoryScreen() {
     const [activeTab, setActiveTab] = useState<InventoryTab>('all');
     const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
     const [modalItemId, setModalItemId] = useState<string | null>(null);
+    // Phase 32 sub-tick F follow-up: tap a dock slot to filter the sack
+    // to compatible items. selectedSlot === null when no filter active;
+    // selecting filter clears the tab pick (mirrors design — slot filter
+    // and tab filter are mutually exclusive). Re-tapping the same slot
+    // clears the filter.
+    const [selectedSlot, setSelectedSlot] = useState<EquipmentDockSlot['key'] | null>(null);
+    const onSelectSlot = useCallback((key: EquipmentDockSlot['key'] | null) => {
+        setSelectedSlot(key);
+        if (key !== null) setActiveTab('all');
+    }, []);
 
     // Subscribe to `player` so the screen re-renders on inventory changes.
     // The selector pattern (`useGameState(s => selectVM(s, localUi))`) breaks
@@ -257,7 +302,27 @@ export default function InventoryScreen() {
         [actions],
     );
 
-    const grouped = useMemo(() => groupByCategory(vm.items), [vm.items]);
+    // Slot-filter overrides the tab filter when active. Map the dock's
+    // slot key back to the item-row `sub` (the existing presenter
+    // contract emits 'Weapon' / 'Armor' / 'Head' / 'Body' / 'Hands' /
+    // 'Feet' / 'Accessory' as title-case strings). Only equipment with
+    // a matching sub passes the filter.
+    const SLOT_KEY_TO_SUB: Record<EquipmentDockSlot['key'], string> = {
+        head: 'Head',
+        body: 'Body',
+        weapon: 'Weapon',
+        armor: 'Armor',
+        hands: 'Hands',
+        feet: 'Feet',
+        accessory: 'Accessory',
+    };
+    const filteredItems = useMemo(() => {
+        if (selectedSlot === null) return vm.items;
+        const targetSub = SLOT_KEY_TO_SUB[selectedSlot];
+        return vm.items.filter((r) => r.category === 'equipment' && r.sub === targetSub);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [vm.items, selectedSlot]);
+    const grouped = useMemo(() => groupByCategory(filteredItems), [filteredItems]);
 
     return (
         <ScreenBg>
@@ -275,9 +340,29 @@ export default function InventoryScreen() {
                 </View>
             </View>
 
-            <EquipmentDock vm={vm.equipmentDock} />
+            <EquipmentDock vm={vm.equipmentDock} selectedSlot={selectedSlot} onSelectSlot={onSelectSlot} />
 
-            <View style={styles.tabRow}>
+            {selectedSlot !== null && (
+                <View style={styles.slotBanner} testID="slot-filter-banner">
+                    <View>
+                        <Text style={styles.slotBannerEyebrow}>FITTING SLOT</Text>
+                        <Text style={styles.slotBannerLabel}>
+                            ✦ {vm.equipmentDock.slots.find((s) => s.key === selectedSlot)?.label ?? ''}
+                        </Text>
+                    </View>
+                    <TouchableOpacity
+                        accessibilityRole="button"
+                        accessibilityLabel="Clear slot filter"
+                        onPress={() => setSelectedSlot(null)}
+                        style={styles.slotBannerClear}
+                        testID="slot-filter-clear"
+                    >
+                        <Text style={styles.slotBannerClearText}>CLEAR ✕</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
+            <View style={[styles.tabRow, selectedSlot !== null && styles.tabRowDimmed]}>
                 {vm.tabs.map((t) => (
                     <TouchableOpacity
                         key={t.key}
@@ -721,5 +806,52 @@ const styles = StyleSheet.create({
         color: AXM.ash,
         lineHeight: 11,
         marginTop: 1,
+    },
+    dockSlotSelected: {
+        borderWidth: 2,
+        borderColor: AXM.sulfur,
+        backgroundColor: AXM.selectFill,
+    },
+
+    // ── Slot filter banner (Phase 32 sub-tick F-feed port) ──────────────
+    slotBanner: {
+        marginHorizontal: 10,
+        marginTop: 6,
+        marginBottom: 6,
+        padding: 5,
+        paddingHorizontal: 10,
+        backgroundColor: AXM.selectFill,
+        borderWidth: 1.5,
+        borderColor: AXM.sulfur,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    slotBannerEyebrow: {
+        fontFamily: FONTS.mono,
+        fontSize: 8,
+        color: AXM.bone,
+        letterSpacing: 1.4,
+    },
+    slotBannerLabel: {
+        fontFamily: FONTS.gothic,
+        fontSize: 14,
+        color: AXM.sulfur,
+        letterSpacing: 1.5,
+    },
+    slotBannerClear: {
+        padding: 3,
+        paddingHorizontal: 6,
+        borderWidth: 1,
+        borderColor: AXM.parchment,
+    },
+    slotBannerClearText: {
+        fontFamily: FONTS.mono,
+        fontSize: 9,
+        letterSpacing: 1.4,
+        color: AXM.parchment,
+    },
+    tabRowDimmed: {
+        opacity: 0.4,
     },
 });

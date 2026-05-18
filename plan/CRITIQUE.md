@@ -58,30 +58,22 @@
   into the lowercase register every sibling body uses.
 - source: web-fetch (reader sub-agent)
 
-### [MED] /app/(tabs)/character/index.tsx:226,229,253 — hex literal `'#100d0a'` × 3 should consume `AXM.panelBg`
-- pass: 12 (commit a836031)
+## Done
+
+### [MED] /app/(tabs)/character/index.tsx:226,229,253 — hex literal `'#100d0a'` × 3 → `AXM.panelBg` ✅
+- pass: 12 (commit a836031); addressed at commit <pending>
+- issue: #86
 - viewport: repository
 - category: consistency
-- observation: Three style entries on the character screen
-  hard-code `'#100d0a'` (`baseCard`, `derivedTable`,
-  `slotCell`) — the exact same literal / use case that pass
-  11 drained from memoir (commit `8a4f69c`,
-  `'#100d0a'` → `AXM.panelBg`). `theme/axm.ts:11` exports
-  `panelBg: '#100d0a'` precisely for this surface; bearings
-  line 109 reads "no hex literals in components." The
-  character screen drifted in the opposite direction of the
-  memoir fix.
-- evidence: `app/(tabs)/character/index.tsx:226`
-  `baseCard: { ..., backgroundColor: '#100d0a', ... }`;
-  `:229` `derivedTable: { ..., backgroundColor: '#100d0a', ... }`;
-  `:253` `slotCell: { ..., backgroundColor: '#100d0a' }`.
-  `theme/axm.ts:11` `panelBg: '#100d0a'`.
-- suggested fix: replace the three `'#100d0a'` literals with
-  `AXM.panelBg` in `app/(tabs)/character/index.tsx`; mirror
-  the memoir pass-11 fix (`8a4f69c`) exactly.
-- source: web-fetch (reader sub-agent)
-
-## Done
+- observation: Three style entries (`baseCard`, `derivedTable`,
+  `slotCell`) hard-coded `'#100d0a'` — same literal / use case
+  pass 11 drained from memoir (commit `8a4f69c`). Bearings
+  line 109 locks "no hex literals in components".
+- fix: three mechanical replacements
+  (`backgroundColor: '#100d0a'` → `backgroundColor: AXM.panelBg`)
+  in `app/(tabs)/character/index.tsx:226,229,253`. Mirrors
+  the memoir pass-11 fix exactly. Same value; no behavioural
+  delta. Verify 488 / 488 unchanged.
 
 ### [LOW] /app/(tabs)/memoir/index.tsx:174,189 — view layer label-literal comparisons → isEmpty / rationale.length ✅
 - pass: 11 (commit 5be0022); addressed at commit 0e173a4

@@ -34,7 +34,6 @@ describe('selectExplorationViewModel: shape contract', () => {
         expect(typeof vm.continent).toBe('string');
         expect(typeof vm.region).toBe('string');
         expect(typeof vm.regionProgress).toBe('string');
-        expect(typeof vm.dayDisplay).toBe('string');
         expect(typeof vm.mapId).toBe('string');
         expect(typeof vm.currentNodeId).toBe('string');
         expect(Array.isArray(vm.nodes)).toBe(true);

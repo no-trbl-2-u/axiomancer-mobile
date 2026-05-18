@@ -169,10 +169,6 @@ export default function ExplorationScreen() {
                     <Text style={styles.regionTitle}>{vm.region}</Text>
                     <Text style={styles.regionSub}>{vm.regionProgress}</Text>
                 </View>
-                <View style={styles.dayBox}>
-                    <Text style={styles.dayLabel}>DAY</Text>
-                    <Text style={styles.dayNum}>{vm.dayDisplay}</Text>
-                </View>
             </View>
 
             {/* Node Graph */}
@@ -364,20 +360,6 @@ const styles = StyleSheet.create({
         color: AXM.bone,
         fontStyle: 'italic',
         marginTop: 1,
-    },
-    dayBox: {
-        alignItems: 'flex-end',
-    },
-    dayLabel: {
-        fontFamily: FONTS.mono,
-        fontSize: 10,
-        color: AXM.bone,
-    },
-    dayNum: {
-        fontFamily: FONTS.gothic,
-        fontSize: 22,
-        color: AXM.sulfur,
-        lineHeight: 24,
     },
     graphWrap: {
         marginHorizontal: 10,

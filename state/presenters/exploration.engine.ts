@@ -85,8 +85,6 @@ export interface ExplorationViewModel {
     region: string;
     /** Localised "Map ii of vii" string. */
     regionProgress: string;
-    /** In-game day number (Roman numerals already formatted). */
-    dayDisplay: string;
     /** Engine map id (used to drive map transitions). */
     mapId: string;
     /** Engine node id of the player's current location. */
@@ -229,7 +227,6 @@ const FALLBACK_VM: ExplorationViewModel = {
     continent: 'CONTINENT · UNKNOWN',
     region: '—',
     regionProgress: '',
-    dayDisplay: 'I',
     mapId: '',
     currentNodeId: '',
     nodes: [],
@@ -285,7 +282,6 @@ export function selectExplorationViewModel(state: GameStore): ExplorationViewMod
         continent: layout.continent,
         region: layout.region,
         regionProgress: layout.regionProgress,
-        dayDisplay: 'XXIV',
         mapId: world.currentMap.name,
         currentNodeId,
         nodes,

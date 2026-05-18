@@ -98,7 +98,7 @@
 ## Done
 
 ### [MED] /app/(tabs)/inventory/index.tsx PaperDoll — 10× `"#0a0807"` → `AXM.silhouette` ✅
-- pass: 14 (commit 2a23047); addressed at commit <pending>
+- pass: 14 (commit 2a23047); addressed at commit 2a22a74
 - issue: #90
 - viewport: repository
 - category: consistency

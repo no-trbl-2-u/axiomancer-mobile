@@ -40,33 +40,6 @@
 
 ## Pending
 
-### [MED] /app/(tabs)/inventory/index.tsx:87-103 — `PaperDoll` SVG inlines `'#0a0807'` × 10 (needs new theme token)
-- pass: 14 (commit 2a23047)
-- viewport: repository
-- category: consistency
-- observation: The new `PaperDoll` silhouette ships 10 inline
-  `fill="#0a0807"` literals across hood/torso/arms/hands/legs
-  /feet (lines 87, 91, 93, 94, 96, 97, 99, 100, 102, 103).
-  Same Hard Rule #8 / bearings line 109 class as the just-
-  drained 8× `'#100d0a'` sweep (commit `9339e3e`) and the
-  StatusCard / character / memoir drains. The value is close
-  to but distinct from `AXM.dockBg = '#0d0a08'` (panel) and
-  `AXM.deepBg = '#06050a'` (void), so a separate token is
-  warranted with the warmer-panel/cooler-void distinction
-  spelled out. The design source (`design/handoff-2026-05-16/
-  project/screens/inventory.jsx:160,168,175,176`) uses the
-  same hex inline, but the port should still route through
-  `theme/axm.ts` per bearings.
-- evidence: 10 occurrences of `fill="#0a0807"` in PaperDoll;
-  none of the other Svg components in the file inline hex
-  literals — they all use AXM tokens.
-- suggested fix: add `AXM.silhouette = '#0a0807'` to
-  `theme/axm.ts` with a comment distinguishing it from
-  `dockBg` and `deepBg` (silhouette = paper-doll fill, warmer
-  than deepBg but cooler than dockBg). Replace the 10 fills
-  with `AXM.silhouette`.
-- source: web-fetch (reader sub-agent)
-
 ### [MED] /app/(tabs)/inventory/index.tsx:149 — `'— bare —'` literal at view layer (Hard Rule #8)
 - pass: 14 (commit 2a23047)
 - viewport: repository
@@ -123,6 +96,21 @@
 - source: web-fetch (reader sub-agent)
 
 ## Done
+
+### [MED] /app/(tabs)/inventory/index.tsx PaperDoll — 10× `"#0a0807"` → `AXM.silhouette` ✅
+- pass: 14 (commit 2a23047); addressed at commit <pending>
+- issue: #90
+- viewport: repository
+- category: consistency
+- observation: The Phase 32 tick E port shipped `PaperDoll`
+  with 10 inline `fill="#0a0807"` literals. Same Hard Rule #8
+  class as the just-drained 8× `'#100d0a'` sweep.
+- fix: added `AXM.silhouette = '#0a0807'` to `theme/axm.ts`
+  with a JSDoc comment placing it visually between `deepBg`
+  (void) and `dockBg` (panel) — warmer than deepBg, cooler
+  than dockBg. Replaced 10 `fill="#0a0807"` with
+  `fill={AXM.silhouette}`. Same value; no behavioural delta.
+  Verify 492/492 unchanged.
 
 ### [MED] sweep — 8× hex literal `'#100d0a'` → `AXM.panelBg` across combat/inventory/exploration/_layout ✅
 - pass: 13 follow-up; filed via `/oversight` 2026-05-18;

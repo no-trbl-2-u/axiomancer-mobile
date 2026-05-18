@@ -11,6 +11,14 @@ export const AXM = {
   panelBg: '#100d0a',
   deepBg: '#06050a',
   dockBg: '#0d0a08',
+  /**
+   * Paper-doll silhouette fill. Warmer than `deepBg` (void) and
+   * cooler than `dockBg` (panel) — sits visually between the two so
+   * the hooded figure reads as carved out of the dock surface
+   * rather than punched through it. Used in the Equipment Dock
+   * `<PaperDoll>` (`app/(tabs)/inventory/index.tsx`).
+   */
+  silhouette: '#0a0807',
 } as const;
 
 export const FONTS = {

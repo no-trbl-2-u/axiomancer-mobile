@@ -34,7 +34,7 @@
 ## Done
 
 ### [MED] /components/StatusCard.tsx:56 — hex literal `'#100d0a'` → `AXM.panelBg` ✅
-- pass: 13 (commit ce4f851); addressed at commit <pending>
+- pass: 13 (commit ce4f851); addressed at commit 8b3747b
 - issue: #88
 - viewport: repository
 - category: consistency

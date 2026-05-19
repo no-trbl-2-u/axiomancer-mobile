@@ -40,38 +40,26 @@
 
 ## Pending
 
-### [LOW] /app/(tabs)/inventory/index.tsx:30-66 — `ItemGlyph` lacks per-slot variants (5 of 7 dock slots render identical glyph)
-- pass: 14 (commit 2a23047)
+## Done
+
+### [LOW] /app/(tabs)/inventory/index.tsx:30-66 — per-slot `ItemGlyph` variants ported (helmet / gauntlet / boot / breastplate / ring) ✅
+- pass: 14 (commit 2a23047); addressed at commit <pending>
 - viewport: repository
 - category: design-fidelity
-- observation: `ItemGlyph`'s default branch handles every
-  non-Weapon/non-Armor equipment subtype (Head, Body, Hands,
-  Feet, Accessory) with a single quad-path glyph (line 37-40).
-  When the Equipment Dock is fully kitted, 5 of its 7 slot
-  cards show the same icon — undermining the dock's whole
-  "WORN VS. UNWORN AT A GLANCE" hint copy. The vendored
-  design source `design/handoff-2026-05-16/project/screens/
-  inventory.jsx:513-541` ships 5 bespoke per-slot SVG paths
-  (helmet-with-horns for Head, finger-silhouettes for Hands,
-  boot for Feet, breastplate-with-shoulders for Body, ring-
-  with-stone for Accessory). The Phase 32 tick E port lifted
-  the dock layout and chrome but stopped short of the
-  per-slot iconography.
-- evidence: `app/(tabs)/inventory/index.tsx:37-43` —
-  `<Path d="M6 8 L 26 8 L 22 26 L 10 26 Z" />` fallback for
-  Head/Body/Hands/Feet/Accessory. Design has distinct
-  `if (cat === 'equipment' && sub === '<slot>')` branches at
+- observation: ItemGlyph fell through to one quad-path glyph
+  for Head/Body/Hands/Feet/Accessory — 5 of 7 Equipment Dock
+  slots rendered identically when filled, undermining the
+  dock's "WORN VS. UNWORN AT A GLANCE" hint copy.
+- fix: ported the 5 bespoke per-slot SVG paths from
   `design/handoff-2026-05-16/project/screens/inventory.jsx:
-  513-541`.
-- suggested fix: port the 5 per-slot SVG paths from
-  `design/handoff-2026-05-16/project/screens/inventory.jsx:
-  513-541` into the existing `ItemGlyph` (`react-native-svg`
-  primitives instead of inline `<svg>`). One commit; same
-  category as a Phase 32 sub-tick (likely sub-tick F:
-  "inventory item glyphs — port from design handoff").
-- source: web-fetch (reader sub-agent)
+  513-541` to `app/(tabs)/inventory/index.tsx` ItemGlyph,
+  translating `<svg>/<path>/<circle>` to react-native-svg
+  primitives (`Svg`/`Path`/`Circle`). Each branch carries a
+  one-line glyph-meaning comment (helmet w/ horns, gauntlet
+  pair, boot profile, breastplate w/ shoulders, ring w/
+  stone). Verify 497/497 unchanged.
 
-## Done
+
 
 ### [MED] /app/(tabs)/inventory/index.tsx:149 — `'— bare —'` lifted onto `EquipmentDockViewModel.bareLabel` ✅
 - pass: 14 (commit 2a23047); addressed at commit 594105b

@@ -34,6 +34,55 @@ function ItemGlyph({ category, sub }: { category: InventoryCategory; sub: string
     if (category === 'equipment' && sub === 'Armor') {
         return <ActionIcon kind="shield" size={32} color={AXM.parchment} />;
     }
+    // Per-slot bespoke glyphs ported from
+    // `design/handoff-2026-05-16/project/screens/inventory.jsx:513-541`.
+    // Without these, the Equipment Dock's "WORN VS. UNWORN AT A GLANCE"
+    // hint copy is undermined because 5 of 7 slots fall through to a
+    // single generic quad-path. CRITIQUE pass 14 finding #91.
+    if (category === 'equipment' && sub === 'Head') {
+        // Helmet — dome arched over the brow, two horns / tine streaks.
+        return (
+            <Svg viewBox="0 0 32 32" width={32} height={32} fill="none" stroke={AXM.parchment} strokeWidth={2}>
+                <Path d="M6 18 C 6 8 26 8 26 18 L 24 26 L 8 26 Z" />
+                <Path d="M10 6 L 8 14 M 22 6 L 24 14" />
+            </Svg>
+        );
+    }
+    if (category === 'equipment' && sub === 'Hands') {
+        // Gauntlet pair — vertical fingers above a wrist cuff.
+        return (
+            <Svg viewBox="0 0 32 32" width={32} height={32} fill="none" stroke={AXM.parchment} strokeWidth={2}>
+                <Path d="M10 6 L 10 18 L 8 22 L 8 28 L 22 28 L 22 22 L 24 18 L 24 6" />
+                <Path d="M14 4 L 14 18 M 18 4 L 18 18" strokeWidth={1.5} />
+            </Svg>
+        );
+    }
+    if (category === 'equipment' && sub === 'Feet') {
+        // Boot in profile — shaft + tongue + sole.
+        return (
+            <Svg viewBox="0 0 32 32" width={32} height={32} fill="none" stroke={AXM.parchment} strokeWidth={2}>
+                <Path d="M8 8 L 14 8 L 14 18 L 26 22 L 26 26 L 8 26 Z" />
+            </Svg>
+        );
+    }
+    if (category === 'equipment' && sub === 'Body') {
+        // Breastplate with shoulders — splayed yoke + bevelled torso.
+        return (
+            <Svg viewBox="0 0 32 32" width={32} height={32} fill="none" stroke={AXM.parchment} strokeWidth={2}>
+                <Path d="M8 6 L 4 10 L 10 14 L 10 28 L 22 28 L 22 14 L 28 10 L 24 6 L 20 6 L 16 9 L 12 6 Z" />
+            </Svg>
+        );
+    }
+    if (category === 'equipment' && sub === 'Accessory') {
+        // Ring with stone — band + sulfur-filled gem + triangle setting.
+        return (
+            <Svg viewBox="0 0 32 32" width={32} height={32} fill="none" stroke={AXM.parchment} strokeWidth={2}>
+                <Circle cx={16} cy={18} r={8} />
+                <Circle cx={16} cy={18} r={3} fill={AXM.sulfur} />
+                <Path d="M16 4 L 18 10 L 14 10 Z" fill={AXM.parchment} />
+            </Svg>
+        );
+    }
     if (category === 'equipment') {
         return (
             <Svg viewBox="0 0 32 32" width={32} height={32} fill="none" stroke={AXM.parchment} strokeWidth={2}>

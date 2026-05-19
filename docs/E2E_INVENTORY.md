@@ -68,7 +68,8 @@ assertions.
 | `store.engine.test.ts` | P2 | `createAppStore` lifecycle: load / save gating (explicit-only); `_recentEvents` initialized; engine-store passthrough | 4 | 11 |
 | `tabs.engine.test.ts` | P1 | Tab visibility mutex: MAP ⊕ COMBAT (never both); combat-prelude detection feeds the mutex | 6 | 11 |
 | `token-crucible.engine.test.ts` | P1 (pure) | Token-Crucible VM: skill-library partition; `canAfford` matrix; deep-freeze invariant | 4 | 10 |
-| **Totals (`state/e2e/`)** | | | **117** | **395** |
+| `aesthetic-mode.engine.test.tsx` | P3 | `useAesthetic` context: default 'canonical', AsyncStorage hydration (valid / corrupt), setMode write-through, toggle round-trip, provider guard (Phase 50 tick A) | 3 | 10 |
+| **Totals (`state/e2e/`)** | | | **120** | **405** |
 
 ## 4. Inventory — `state/persistence/e2e/`
 

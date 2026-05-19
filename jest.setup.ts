@@ -20,3 +20,12 @@ jest.mock('expo-haptics', () => ({
 }));
 
 require('react-native-reanimated/mock');
+
+// AsyncStorage's native module isn't available in a Jest-Node
+// environment; route every consumer through the package's official
+// in-memory mock. Persistence-specific suites still scope cleanup
+// via `AsyncStorage.clear()` in their own afterEach.
+jest.mock('@react-native-async-storage/async-storage', () =>
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
+);

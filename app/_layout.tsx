@@ -13,6 +13,7 @@ import * as NavigationBar from 'expo-navigation-bar';
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { AestheticModeProvider } from '@/state/aesthetic-mode';
 import { CombatModeProvider } from '@/state/combat-mode';
 import { GameStoreProvider } from '@/state/GameStoreProvider';
 import { createAsyncStorageAdapter } from '@/state/persistence/asyncStorageAdapter';
@@ -85,6 +86,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <GameStoreProvider adapter={persistenceAdapter}>
+        <AestheticModeProvider>
         <CombatModeProvider>
           <StatusBar style="light" />
           <HardwareBackHandler />
@@ -103,6 +105,7 @@ export default function RootLayout() {
             />
           </Stack>
         </CombatModeProvider>
+        </AestheticModeProvider>
       </GameStoreProvider>
     </GestureHandlerRootView>
   );

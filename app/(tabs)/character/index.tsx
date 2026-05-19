@@ -2,6 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AXM, FONTS } from '@/theme/axm';
+import { AestheticDevToggle } from '@/components/AestheticDevToggle';
 import { ScreenBg } from '@/components/ScreenBg';
 import { SectionLabel } from '@/components/SectionLabel';
 import { StanceGlyph } from '@/components/StanceGlyph';
@@ -208,6 +209,7 @@ export default function CharacterScreen() {
           </View>
         </View>
       )}
+      <AestheticDevToggle />
     </ScreenBg>
   );
 }

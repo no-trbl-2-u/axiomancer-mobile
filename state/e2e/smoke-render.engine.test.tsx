@@ -47,6 +47,7 @@ jest.mock('expo-router', () => ({
     }),
 }));
 
+import { AestheticModeProvider } from '@/state/aesthetic-mode';
 import { CombatModeProvider } from '@/state/combat-mode';
 import { GameStoreProvider } from '@/state/GameStoreProvider';
 import { createAppStore, type AppStore } from '@/state/store';
@@ -69,9 +70,11 @@ function makeStore(): AppStore {
 
 function withProviders(store: AppStore, screen: React.ReactNode) {
     return (
-        <CombatModeProvider>
-            <GameStoreProvider store={store}>{screen}</GameStoreProvider>
-        </CombatModeProvider>
+        <AestheticModeProvider>
+            <CombatModeProvider>
+                <GameStoreProvider store={store}>{screen}</GameStoreProvider>
+            </CombatModeProvider>
+        </AestheticModeProvider>
     );
 }
 

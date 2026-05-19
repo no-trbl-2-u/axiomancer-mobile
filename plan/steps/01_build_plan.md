@@ -597,6 +597,42 @@ phase row.
       its own `feat(spec50 tick X): <surface> codex variant`
       commit; phase closes when the user signals
       "codex toggle complete" via `/oversight`.
+- [ ] Phase 51 — `axiomancer-mechanics` bump 0.7.0 → 0.10.0
+      (filed via `/oversight` 2026-05-19, 8th call). The cron
+      generated `docs/engine-upgrade-0.7.0-to-0.10.0.md` at
+      commit `30c03ca` covering the surface diff; this row is
+      the shipping unit. Two required pieces:
+
+      - **Schema migration v2 → v3** in
+        `state/persistence/migrations.ts` for the new
+        top-level `state.alignment: PhilosophicalAlignment`
+        field added in engine Phase 42. Default to
+        `{ epistemic: 0, ethical: 0, metaphysical: 0 }` per the
+        engine's `defaultAlignment()`. Add a hermetic case to
+        `state/persistence/e2e/asyncStorageAdapter.engine.test.ts`
+        that loads a `schemaVersion: 2` envelope and asserts
+        `alignment` equals the default.
+      - **Pin bump** in `package.json` from `"0.7.0"` →
+        `"0.10.0"` (still exact). `WorldMap` → `MapState`
+        rename already pre-applied in commit `7a8c8e5`, so the
+        bump itself is a one-line edit + `pnpm install`.
+
+      Verify gate: `pnpm exec tsc --noEmit`, full `pnpm test`,
+      `pnpm exec eslint . --max-warnings=0`. Sanity-check
+      handoff items per the upgrade-guide §5: `skillLibrary` /
+      `getSkillById` still expected undefined at top-level
+      (engine Phase 50 not yet shipped); 8 of 9
+      `dist/<sub>/types.d.ts` still expected missing. Keep
+      local stop-gaps in `state/mocks/combat.skills.fixture.ts`
+      and the local `PersistenceAdapter` shim until engine
+      0.10.1 lands those fixes.
+
+      **Ordering:** ships AFTER Phase 50 per `/oversight`
+      2026-05-19. Phase 50 (cold-codex) is purely UI and
+      doesn't touch the engine boundary, so no conflict.
+      Single commit, no rolling sub-ticks. Commit message:
+      `feat(spec51): bump axiomancer-mechanics 0.7.0 → 0.10.0
+      + v2→v3 alignment migration`.
 
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh

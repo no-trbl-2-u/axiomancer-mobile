@@ -566,6 +566,37 @@ phase row.
       engine exposes real `player.tokens` (gated alongside
       Phase 20/21 engine-release work). Verify 535/535
       unchanged.
+- [ ] Phase 50 — Cold-codex aesthetic toggle (filed via
+      `/oversight` 2026-05-19, 7th call). Promotes the
+      design-spec.md item 4 candidate that was reserved for
+      `Phase 25` originally (Phase 25 already taken by typed-
+      event consumer; renumbered to 50). Adds a togglable
+      aesthetic mode `'canonical' | 'codex'` covering combat /
+      event / exploration per chat 2 §"Open caveats" — the
+      stripped-back monochrome variant for high-stakes
+      surfaces. Rolling phase, multi-tick:
+
+      - Tick A: aesthetic context (`useAesthetic()`) +
+        `__DEV__` toggle in bearings or a hidden setting +
+        AppStorage persistence; default 'canonical'.
+      - Tick B: combat codex variant — bone-and-ash chrome,
+        heavier hairlines, drops sulfur saturation on the
+        action / stance pickers.
+      - Tick C: event codex variant — same treatment on the
+        EncounterModalOverlay + paced event shell.
+      - Tick D: exploration codex variant — map nodes + step-
+        cards desaturated.
+      - Tick E (follow-up): extend to SELF + SATCHEL surfaces
+        if user commits to the direction (chat 2 explicitly
+        notes this as a follow-up not part of the initial
+        port).
+
+      Design source: `screens-canonical.jsx` variant branches
+      keyed on `variant === 'codex'` (every screen function
+      takes `{ variant = 'canonical' }`). Each subtick lands
+      its own `feat(spec50 tick X): <surface> codex variant`
+      commit; phase closes when the user signals
+      "codex toggle complete" via `/oversight`.
 
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh

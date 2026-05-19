@@ -383,10 +383,15 @@ regression check for the routing/gesture bug surfaced
       `'EQUIP'` when bare-slot, `'WORN'` when target is itself
       worn. Existing test reshaped to assert the new label;
       +1 new test for the bare-slot+WORN path. Verify 509/509.
-- [ ] Phase 37 — Inventory item slot tag (`design-spec.md`
-      item 3). Small mono eyebrow rendering
-      `vm.row.sub.toUpperCase()` on every equipment item card
-      so the slot affordance is visible without expanding.
+- [x] Phase 37 — Inventory item slot tag. Shipped: small mono
+      eyebrow `SLOT · <NAME>` on every collapsed equipment
+      ItemCard (uses the existing `row.sub` field uppercased).
+      Hidden when expanded (the expanded "WOULD EQUIP TO" /
+      "EQUIPPED IN" block covers the same affordance more
+      visibly) and on non-equipment rows. Ports `design/
+      handoff-2026-05-16/project/screens/inventory.jsx:382-388`.
+      Verify 509/509 unchanged (presenter contract untouched —
+      slot tag reads existing `vm.row.sub`).
 - [ ] Phase 38 — Combat phase-stack collapse (`design-spec.md`
       item 5). Past combat phases collapse to one-line
       summaries; current expands; future stay future. Extends

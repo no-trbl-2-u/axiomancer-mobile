@@ -555,6 +555,22 @@ function ItemCard({ item, expanded, onTap, onUseOrEquip, onDiscard }: ItemCardPr
                 {item.name}
             </Text>
 
+            {/*
+              * Per-row slot tag (Phase 37 port design spec). Mono
+              * eyebrow showing the slot affordance so the player
+              * sees "where this goes" without expanding the card.
+              * Ports `design/handoff-2026-05-16/project/screens/
+              * inventory.jsx:382-388`'s SLOT · <NAME> tag.
+              * Hidden when expanded (the expanded "WOULD EQUIP TO"
+              * / "EQUIPPED IN" block covers the same affordance
+              * more visibly) and on non-equipment rows.
+              */}
+            {item.category === 'equipment' && !expanded && item.sub !== null && (
+                <Text style={styles.itemSlotTag} testID={`slot-tag-${item.id}`}>
+                    SLOT · {item.sub.toUpperCase()}
+                </Text>
+            )}
+
             {item.quantity > 1 && (
                 <View style={styles.qtyBadge}>
                     <Text style={styles.qtyText}>×{item.quantity}</Text>
@@ -1008,5 +1024,14 @@ const styles = StyleSheet.create({
     },
     replaceDeltaChipTextNeg: {
         color: AXM.blood,
+    },
+
+    // ── Per-row slot tag (Phase 37 port) ──────────────────────────────
+    itemSlotTag: {
+        fontFamily: FONTS.mono,
+        fontSize: 7,
+        color: AXM.bone,
+        letterSpacing: 1.2,
+        marginTop: 1,
     },
 });

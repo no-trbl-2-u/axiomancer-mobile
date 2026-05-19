@@ -437,11 +437,23 @@ regression check for the routing/gesture bug surfaced
       entirely in the diegetic-stack path. +3 hermetic
       tests pinning the new selector contract. Verify
       514/514 (was 511; +3).
-- [ ] Phase 41 — Combat aftermath banner (`design-spec.md`
-      item 8). Brief overlay banner after combat victory
-      (~2500ms auto-dismiss) before returning the player to
-      the map. Design source: `prototype.jsx:550-560`
-      (`PtAftermathBanner`) + flow at lines 65-77.
+- [x] Phase 41 — Combat aftermath banner. Shipped: new
+      `components/AftermathBanner.tsx` (parchment-on-panelBg
+      panel, sulfur 1px border, 2500ms auto-dismiss timer
+      matching the design's prototype). One-shot
+      `lastOutcome` signal added to `state/combat-mode.tsx`
+      (`'victory' | 'defeat' | 'flee' | 'parley'`) with
+      `exitCombatWith(outcome)` + `clearLastOutcome()`
+      API. Combat screen's `onContinueRound` branches on
+      enemy.hp / player.hp / friendshipCounter to signal the
+      correct outcome on the way out; early DEPART path
+      stays silent (uses plain `exitCombat`). Exploration
+      screen mounts the banner only for `'victory'` and
+      `'parley'` outcomes (the IT IS DONE eyebrow fits
+      both — copy varies: "The foe fell." vs "The foe
+      yielded."). +6 hermetic combat-mode tests pinning the
+      signal + auto-clear semantics. Verify 520/520 (was 514;
+      +6).
 - [ ] Phase 42 — Combat-tab mutex extension to encounter modal
       (`design-spec.md` item 9). Flip the combat-tab slot
       earlier — while the encounter modal is mounted but

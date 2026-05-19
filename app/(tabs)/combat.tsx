@@ -87,7 +87,7 @@ const LOG_SEVERITY_COLOR: Record<CombatLogEntryDisplay['severity'], string> = {
 
 export default function CombatScreen() {
     const router = useRouter();
-    const { exitCombat } = useCombatMode();
+    const { exitCombat, exitCombatWith } = useCombatMode();
     const combat = useGameState((s) => s.combat);
     const [selectedStance, setSelectedStance] = useState<StanceKey>('heart');
     const vm = useCombatViewModel({ selectedStance });
@@ -132,14 +132,30 @@ export default function CombatScreen() {
     }, [actions]);
 
     const onContinueRound = useCallback(() => {
-        if (vm.enemy.hp <= 0 || vm.player.hp <= 0 || vm.friendshipCounter >= vm.friendshipCounterMax) {
+        // Combat-end outcome resolution for the aftermath banner (Phase 41
+        // port). Order matters: friendship max BEFORE enemy HP because a
+        // parley fight ends when the friendship counter hits the cap even
+        // if the enemy hasn't dropped. Player HP <= 0 is the defeat branch.
+        if (vm.friendshipCounter >= vm.friendshipCounterMax) {
             actions.endCombat();
-            exitCombat();
+            exitCombatWith('parley');
+            router.replace('/exploration' as never);
+            return;
+        }
+        if (vm.enemy.hp <= 0) {
+            actions.endCombat();
+            exitCombatWith('victory');
+            router.replace('/exploration' as never);
+            return;
+        }
+        if (vm.player.hp <= 0) {
+            actions.endCombat();
+            exitCombatWith('defeat');
             router.replace('/exploration' as never);
             return;
         }
         actions.nextRound();
-    }, [actions, exitCombat, router, vm.enemy.hp, vm.player.hp, vm.friendshipCounter, vm.friendshipCounterMax]);
+    }, [actions, exitCombatWith, router, vm.enemy.hp, vm.player.hp, vm.friendshipCounter, vm.friendshipCounterMax]);
 
     const onFlee = useCallback(() => {
         setToast(vm.actionPicker.fleeMessage);
@@ -147,6 +163,8 @@ export default function CombatScreen() {
 
     const onLeaveCombat = useCallback(() => {
         actions.endCombat();
+        // `onLeaveCombat` is the early-exit DEPART path before the
+        // resolve phase; treat as 'flee' (the banner stays silent).
         exitCombat();
         router.replace('/exploration' as never);
     }, [actions, exitCombat, router]);

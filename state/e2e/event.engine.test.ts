@@ -300,6 +300,32 @@ describe('selectEventViewModel: combat-prelude composition', () => {
         expect(vm.badge).toBe('OMEN OF DOOM');
         expect(vm.choices.find((c) => c.id === 'flee')?.enabled).toBe(false);
     });
+
+    // Phase 43 port — boss encounters swap FIGHT/FLEE labels for
+    // STRIKE/KNEEL per the design's chat-1 spec. Choice IDs stay
+    // the same so the screen's onFight/onFlee handlers still
+    // dispatch correctly.
+    it('non-boss encounters keep FIGHT/FLEE labels (Phase 43)', () => {
+        const store = makeStore();
+        setPending(store, makeEncounterResult({ isBoss: false }));
+        const vm = selectEventViewModel(store.getState());
+
+        expect(vm.choices.find((c) => c.id === 'fight')?.label).toBe('FIGHT');
+        expect(vm.choices.find((c) => c.id === 'flee')?.label).toBe('FLEE');
+    });
+
+    it('boss encounters relabel choices to STRIKE/KNEEL (Phase 43)', () => {
+        const store = makeStore();
+        setPending(store, makeEncounterResult({ isBoss: true }));
+        const vm = selectEventViewModel(store.getState());
+
+        expect(vm.choices.find((c) => c.id === 'fight')?.label).toBe('STRIKE');
+        expect(vm.choices.find((c) => c.id === 'flee')?.label).toBe('KNEEL');
+        // KNEEL stays disabled — no engine-side "submit to boss"
+        // mechanic exists yet; the label honors the design's
+        // intent that boss combat reads ritually differently.
+        expect(vm.choices.find((c) => c.id === 'flee')?.enabled).toBe(false);
+    });
 });
 
 // ---------------------------------------------------------------------------

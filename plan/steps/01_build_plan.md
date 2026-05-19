@@ -466,13 +466,18 @@ regression check for the routing/gesture bug surfaced
       === 'event-combat'`. +4 hermetic cases (paced/prelude
       mutual exclusion, mid-combat short-circuit). Verify
       524/524 (was 520; +4).
-- [ ] Phase 43 — Encounter modal boss kneel/strike variant
-      (`design-spec.md` item 10). Boss encounters expose
-      `KNEEL` / `STRIKE` instead of `FIGHT/SNEAK/PARLEY/FLEE`.
-      Engine surface check first — if `Enemy.isBoss` (or
-      equivalent) isn't exposed, file a `[needs-engine-release]`
-      row and pause this phase. Design source:
-      `screens-modal.jsx::BossModal`.
+- [x] Phase 43 — Encounter modal boss kneel/strike variant.
+      Shipped: `composeCombatPrelude` now relabels the two
+      choice buttons when `isBoss` is true — FIGHT → STRIKE,
+      FLEE → KNEEL. Choice IDs stay `'fight'` / `'flee'` so
+      the screen's onFight/onFlee handlers still dispatch
+      correctly. KNEEL stays engine-disabled (matches the
+      current boss-blocks-flee semantics; no "submit to
+      boss" mechanic exists yet). +2 hermetic cases pinning
+      the label swap on boss vs the FIGHT/FLEE retention on
+      non-boss. Verify 526/526 (was 524; +2). No engine
+      surface gate needed — `isBoss` was already on
+      `ResolveMapEventResult`.
 
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh

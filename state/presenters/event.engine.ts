@@ -318,10 +318,19 @@ const BOSS_OMEN_BY_LEVEL: readonly string[] = [
 function composeCombatPrelude(encounter: Encounter, isBoss: boolean): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
     const enemy = encounter.enemy;
     const badge = isBoss ? 'OMEN OF DOOM' : ENCOUNTER_LABEL;
+    // Phase 43 port: boss encounters swap FIGHT/FLEE labels for
+    // STRIKE/KNEEL per the design's chat-1 spec ("KNEEL / STRIKE for
+    // boss"). Choice IDs stay 'fight' / 'flee' so the screen's
+    // existing handlers (onFight/onFlee) still dispatch correctly —
+    // KNEEL is semantically engine-equivalent to FLEE today (still
+    // disabled on bosses; no engine-side "kneel to a boss" mechanic
+    // exists yet), but the label honors the design's intent that the
+    // ritual register differs from a regular encounter's
+    // fight-or-flee binary.
     const choices: EventChoice[] = [
         {
             id: 'fight',
-            label: 'FIGHT',
+            label: isBoss ? 'STRIKE' : 'FIGHT',
             description: isBoss ? 'Combat · BOSS' : 'Combat · turns',
             consequences: [],
             iconKey: 'sword',
@@ -330,8 +339,8 @@ function composeCombatPrelude(encounter: Encounter, isBoss: boolean): Omit<Event
         },
         {
             id: 'flee',
-            label: 'FLEE',
-            description: 'Luck Save',
+            label: isBoss ? 'KNEEL' : 'FLEE',
+            description: isBoss ? 'Submission · sealed' : 'Luck Save',
             consequences: [],
             iconKey: 'flee',
             accentKey: 'bone',

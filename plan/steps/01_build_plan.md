@@ -361,16 +361,19 @@ regression check for the routing/gesture bug surfaced
       folder route at `X/index.tsx` exists. Catches both
       classes that bit on 2026-05-19 (`3a14f5f`). Verify
       502/502 (was 497; +5).
-- [ ] Phase 35 — Inventory equip-preview stat deltas
-      (`design-spec.md` item 1). Extend `InventoryItemRow` (or
-      a sibling presenter) with a `replacePreview` field
-      surfacing stat-delta vs the currently-worn item in the
-      same slot. Screen renders the deltas on expanded
-      equipment cards. Design source:
-      `design/handoff-2026-05-16/project/screens/inventory.jsx`
-      lines 357-380 (`computeDelta`) + 388-432
-      (`StatDeltaBlock`). Subject: `feat: inventory
-      equip-preview deltas — port design spec`.
+- [x] Phase 35 — Inventory equip-preview stat deltas. Shipped:
+      added `ReplacePreview` interface + `replacePreview: ReplacePreview
+      | null` on `InventoryItemRow`. Presenter `buildRows` now
+      runs a second pass that computes signed net deltas from
+      `Equipment.statModifiers` (skips multipliers for v1) when
+      a non-equipped equipment item has an equipped sibling in
+      the same slot. Screen renders a blood-rail replace block
+      on expanded ItemCards: REPLACES eyebrow, strike-through
+      old name → arrow → new name, NET row of stat-delta chips
+      (sulfur positive / blood negative). +6 hermetic cases
+      pinning the contract (null on non-equipment / self-row /
+      empty-slot; signed deltas; zero-drop; multiplier-skip).
+      Verify 508/508 (was 502; +6).
 - [ ] Phase 36 — Inventory equip-replace label
       (`design-spec.md` item 2). The EQUIP confirmation button's
       label changes shape when replacing: bare-slot shows

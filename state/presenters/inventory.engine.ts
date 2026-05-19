@@ -60,6 +60,33 @@ export interface InventoryItemRow {
     canUse: boolean;
     /** Whether the item can be discarded (`false` for quest items). */
     canDiscard: boolean;
+    /**
+     * Equip-preview replacement deltas. Surfaced on equipment rows
+     * whose card the screen has expanded, so the player sees the
+     * net stat change before committing the equip. Filled when:
+     *   - the item is equipment, AND
+     *   - the item is NOT currently equipped, AND
+     *   - the player has another equipment item in the same slot
+     *     marked equipped.
+     *
+     * `null` for non-equipment, equipped equipment, or equipment in
+     * an empty slot (where the preview reduces to "no replacement —
+     * the item's own stats win unopposed"). Phase 35 (ported from
+     * `design/handoff-2026-05-16/project/screens/inventory.jsx:215-225`
+     * `computeDelta`).
+     */
+    replacePreview: ReplacePreview | null;
+}
+
+export interface ReplacePreview {
+    /** The currently-equipped sibling in this slot. */
+    replacing: { id: string; name: string };
+    /**
+     * Net stat deltas (this item's stats minus the replaced item's
+     * stats). Zero-delta entries are omitted. Each entry's `delta`
+     * is signed (positive when better, negative when worse).
+     */
+    deltas: ReadonlyArray<{ stat: string; delta: number }>;
 }
 
 export interface InventoryTabRow {
@@ -271,15 +298,60 @@ function canDiscardFor(item: Item): boolean {
 }
 
 /**
+ * Aggregate an equipment item's flat statModifiers into a stat → value
+ * map. Multipliers are skipped for the v1 equip-preview (Phase 35) —
+ * the preview surfaces additive deltas only; the engine itself still
+ * applies the multipliers correctly when the actual equip lands. A
+ * future refinement could surface multiplier deltas separately.
+ */
+function aggregateEquipmentStats(equipment: Equipment): Map<string, number> {
+    const out = new Map<string, number>();
+    for (const mod of equipment.statModifiers ?? []) {
+        if (mod.isMultiplier) continue;
+        out.set(mod.stat, (out.get(mod.stat) ?? 0) + mod.value);
+    }
+    return out;
+}
+
+/**
+ * Compute the net stat-delta from replacing `oldItem` with `newItem`.
+ * Mirrors `design/handoff-2026-05-16/project/screens/inventory.jsx:215-225`
+ * `computeDelta` — start with new item's aggregated stats, subtract
+ * the equipped item's stats, drop zero entries. Phase 35 preview.
+ */
+function computeReplacePreview(
+    newItem: Equipment,
+    oldItem: Equipment,
+): ReplacePreview {
+    const newAgg = aggregateEquipmentStats(newItem);
+    const oldAgg = aggregateEquipmentStats(oldItem);
+    const allKeys = new Set<string>([...newAgg.keys(), ...oldAgg.keys()]);
+    const deltas: Array<{ stat: string; delta: number }> = [];
+    for (const stat of allKeys) {
+        const delta = (newAgg.get(stat) ?? 0) - (oldAgg.get(stat) ?? 0);
+        if (delta !== 0) deltas.push({ stat, delta });
+    }
+    return { replacing: { id: oldItem.id, name: oldItem.name }, deltas };
+}
+
+/**
  * Convert the raw engine inventory into display rows. Per Q3=A, items
  * with the same `id` collapse into a single row whose `quantity`
  * reflects the stack size. The *first* equipment item per slot is
- * marked `equipped` to match `selectCharacterViewModel`.
+ * marked `equipped` to match `selectCharacterViewModel`. Phase 35
+ * additionally computes `replacePreview` for every non-equipped
+ * equipment row whose slot has an equipped sibling.
  */
 function buildRows(inventory: readonly Item[]): InventoryItemRow[] {
     const rowsById = new Map<string, InventoryItemRow>();
     const order: string[] = [];
     const equippedSlots = new Set<string>();
+    // Engine-side handles for replace-preview computation. Keyed by
+    // engine slot so the second pass can look up the equipped sibling.
+    const equippedBySlot = new Map<Equipment['slot'], Equipment>();
+    // First-seen engine item per ID — used to grab the StatModifier
+    // array on non-equipped equipment when we compute the preview.
+    const itemById = new Map<string, Equipment>();
 
     for (const item of inventory) {
         const cat = presentationCategory(item);
@@ -298,7 +370,9 @@ function buildRows(inventory: readonly Item[]): InventoryItemRow[] {
             if (!equippedSlots.has(slot)) {
                 equipped = true;
                 equippedSlots.add(slot);
+                equippedBySlot.set(slot, item);
             }
+            itemById.set(item.id, item);
         }
 
         const row: InventoryItemRow = {
@@ -311,9 +385,27 @@ function buildRows(inventory: readonly Item[]): InventoryItemRow[] {
             description: item.description,
             canUse: canUseFor(item),
             canDiscard: canDiscardFor(item),
+            replacePreview: null,
         };
         rowsById.set(item.id, row);
         order.push(item.id);
+    }
+
+    // Second pass: replacePreview for non-equipped equipment whose
+    // slot has an equipped sibling. Skipped when the slot is empty
+    // (no opposition; the item's own stats win unopposed, which the
+    // expanded card surfaces via its existing "WOULD EQUIP TO" line).
+    for (const id of order) {
+        const row = rowsById.get(id)!;
+        if (row.category !== 'equipment' || row.equipped) continue;
+        const item = itemById.get(id);
+        if (item === undefined) continue;
+        const equippedSibling = equippedBySlot.get(item.slot);
+        if (equippedSibling === undefined || equippedSibling.id === item.id) continue;
+        rowsById.set(id, {
+            ...row,
+            replacePreview: computeReplacePreview(item, equippedSibling),
+        });
     }
 
     return order.map((id) => rowsById.get(id)!);

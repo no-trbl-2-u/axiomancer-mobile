@@ -569,6 +569,46 @@ function ItemCard({ item, expanded, onTap, onUseOrEquip, onDiscard }: ItemCardPr
             {expanded && (
                 <View style={styles.expandedContent}>
                     <Text style={styles.itemDesc}>&ldquo;{item.description}&rdquo;</Text>
+                    {item.replacePreview !== null && (
+                        <View style={styles.replacePreview} testID={`replace-preview-${item.id}`}>
+                            <Text style={styles.replacePreviewEyebrow}>REPLACES</Text>
+                            <View style={styles.replacePreviewNameRow}>
+                                <Text style={styles.replacePreviewOldName} numberOfLines={1}>
+                                    {item.replacePreview.replacing.name}
+                                </Text>
+                                <Text style={styles.replacePreviewArrow}>→</Text>
+                                <Text style={styles.replacePreviewNewName} numberOfLines={1}>
+                                    {item.name}
+                                </Text>
+                            </View>
+                            {item.replacePreview.deltas.length > 0 && (
+                                <View style={styles.replacePreviewDeltas}>
+                                    <Text style={styles.replacePreviewLabel}>NET</Text>
+                                    {item.replacePreview.deltas.map((d) => {
+                                        const positive = d.delta > 0;
+                                        return (
+                                            <View
+                                                key={d.stat}
+                                                style={[
+                                                    styles.replaceDeltaChip,
+                                                    positive ? styles.replaceDeltaChipPos : styles.replaceDeltaChipNeg,
+                                                ]}
+                                            >
+                                                <Text
+                                                    style={[
+                                                        styles.replaceDeltaChipText,
+                                                        positive ? styles.replaceDeltaChipTextPos : styles.replaceDeltaChipTextNeg,
+                                                    ]}
+                                                >
+                                                    {positive ? '+' : ''}{d.delta} {d.stat}
+                                                </Text>
+                                            </View>
+                                        );
+                                    })}
+                                </View>
+                            )}
+                        </View>
+                    )}
                     <View style={styles.actionsRow}>
                         {item.canUse && (
                             <TouchableOpacity
@@ -886,5 +926,87 @@ const styles = StyleSheet.create({
     },
     tabRowDimmed: {
         opacity: 0.4,
+    },
+
+    // ── Equip-preview replace block (Phase 35 port) ─────────────────────
+    // Ported from design/handoff-2026-05-16/.../inventory.jsx:433-455.
+    // Blood-left-rail, faint blood-tinted fill, REPLACES eyebrow, the
+    // strikethrough → arrow → new-name row, and a NET row of stat-delta
+    // chips (sulfur for positive, blood for negative).
+    replacePreview: {
+        marginTop: 6,
+        padding: 6,
+        paddingHorizontal: 8,
+        borderLeftWidth: 2,
+        borderLeftColor: AXM.blood,
+        backgroundColor: 'rgba(192, 21, 42, 0.06)',
+    },
+    replacePreviewEyebrow: {
+        fontFamily: FONTS.mono,
+        fontSize: 8,
+        color: AXM.bone,
+        letterSpacing: 1.4,
+        marginBottom: 4,
+    },
+    replacePreviewNameRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    replacePreviewOldName: {
+        fontFamily: FONTS.gothic,
+        fontSize: 12,
+        color: AXM.bone,
+        textDecorationLine: 'line-through',
+        flexShrink: 1,
+    },
+    replacePreviewArrow: {
+        fontFamily: FONTS.gothic,
+        fontSize: 14,
+        color: AXM.sulfur,
+    },
+    replacePreviewNewName: {
+        fontFamily: FONTS.gothic,
+        fontSize: 12,
+        color: AXM.parchment,
+        flexShrink: 1,
+    },
+    replacePreviewDeltas: {
+        marginTop: 6,
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 4,
+        alignItems: 'center',
+    },
+    replacePreviewLabel: {
+        fontFamily: FONTS.mono,
+        fontSize: 7,
+        color: AXM.bone,
+        letterSpacing: 1.4,
+        marginRight: 2,
+    },
+    replaceDeltaChip: {
+        paddingVertical: 1,
+        paddingHorizontal: 4,
+        borderWidth: 1,
+    },
+    replaceDeltaChipPos: {
+        backgroundColor: 'rgba(212, 192, 38, 0.12)',
+        borderColor: AXM.sulfur,
+    },
+    replaceDeltaChipNeg: {
+        backgroundColor: 'rgba(192, 21, 42, 0.14)',
+        borderColor: AXM.blood,
+    },
+    replaceDeltaChipText: {
+        fontFamily: FONTS.mono,
+        fontSize: 9,
+        letterSpacing: 0.8,
+    },
+    replaceDeltaChipTextPos: {
+        color: AXM.sulfur,
+    },
+    replaceDeltaChipTextNeg: {
+        color: AXM.blood,
     },
 });

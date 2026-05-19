@@ -674,3 +674,135 @@ describe('selectInventoryViewModel: equipmentDock slot-filter', () => {
         expect(vmAll.items[0].category).toBe('consumable');
     });
 });
+
+// ---------------------------------------------------------------------------
+// Equip-preview stat deltas — Phase 35 (port design spec)
+// ---------------------------------------------------------------------------
+
+function swordWithStats(
+    id: string,
+    name: string,
+    stats: ReadonlyArray<{ stat: string; value: number; isMultiplier?: boolean }>,
+): Equipment {
+    return {
+        id,
+        name,
+        description: 'A blade.',
+        category: 'equipment',
+        slot: 'weapon',
+        rarity: 'common',
+        requiredLevel: 1,
+        statModifiers: stats.map((s) => ({ ...s })),
+    };
+}
+
+describe('selectInventoryViewModel: equip-preview replacePreview', () => {
+    it('is null on non-equipment rows', () => {
+        const store = makeStore([potion('phial-1', 6, 2), ash('ash-1', 3)]);
+        const vm = selectInventoryViewModel(store.getState());
+        for (const row of vm.items) {
+            expect(row.replacePreview).toBeNull();
+        }
+    });
+
+    it('is null on the equipped equipment row itself (no self-replacement preview)', () => {
+        const store = makeStore([sword('long-blade-1')]);
+        const vm = selectInventoryViewModel(store.getState());
+        const row = vm.items.find((r) => r.id === 'long-blade-1')!;
+        expect(row.equipped).toBe(true);
+        expect(row.replacePreview).toBeNull();
+    });
+
+    it('is null on non-equipped equipment when the slot is empty (no equipped sibling)', () => {
+        // Single sword — gets auto-marked equipped. Need a second
+        // sword in the same slot to surface the preview on the second.
+        // For the "slot empty" case we use armor (no equipped armor),
+        // so the second sword does have a sibling. Test the empty-slot
+        // case via a single armor item in an otherwise-empty inventory:
+        const armor: Equipment = {
+            id: 'cuirass',
+            name: 'Brass Cuirass',
+            description: 'Heavy.',
+            category: 'equipment',
+            slot: 'armor',
+            rarity: 'common',
+            requiredLevel: 1,
+        };
+        const store = makeStore([armor]);
+        const vm = selectInventoryViewModel(store.getState());
+        const row = vm.items.find((r) => r.id === 'cuirass')!;
+        // Auto-marked equipped (first in slot), so preview is null.
+        expect(row.equipped).toBe(true);
+        expect(row.replacePreview).toBeNull();
+    });
+
+    it('computes signed net deltas vs the equipped sibling in the same slot', () => {
+        // Two weapons: long-blade equipped (+4 attack, -1 stamina);
+        // steel-edge in inventory (+5 attack, +1 stamina, +2 defense).
+        const equipped = swordWithStats('long-blade', 'Long Blade', [
+            { stat: 'attack', value: 4 },
+            { stat: 'stamina', value: -1 },
+        ]);
+        const replacer = swordWithStats('steel-edge', 'Steel Edge', [
+            { stat: 'attack', value: 5 },
+            { stat: 'stamina', value: 1 },
+            { stat: 'defense', value: 2 },
+        ]);
+        const store = makeStore([equipped, replacer]);
+        const vm = selectInventoryViewModel(store.getState());
+
+        const replacerRow = vm.items.find((r) => r.id === 'steel-edge')!;
+        expect(replacerRow.equipped).toBe(false);
+        expect(replacerRow.replacePreview).not.toBeNull();
+        expect(replacerRow.replacePreview!.replacing).toEqual({
+            id: 'long-blade',
+            name: 'Long Blade',
+        });
+
+        // Sort deltas for deterministic comparison.
+        const sorted = [...replacerRow.replacePreview!.deltas].sort((a, b) =>
+            a.stat.localeCompare(b.stat),
+        );
+        expect(sorted).toEqual([
+            { stat: 'attack', delta: 1 },   // 5 - 4
+            { stat: 'defense', delta: 2 },  // 2 - 0
+            { stat: 'stamina', delta: 2 },  // 1 - (-1)
+        ]);
+    });
+
+    it('drops zero-delta entries from the preview', () => {
+        const equipped = swordWithStats('long-blade', 'Long Blade', [
+            { stat: 'attack', value: 4 },
+        ]);
+        const replacer = swordWithStats('iron-edge', 'Iron Edge', [
+            { stat: 'attack', value: 4 }, // identical → delta 0, should be dropped
+            { stat: 'reach', value: 1 },  // new stat → delta +1
+        ]);
+        const store = makeStore([equipped, replacer]);
+        const vm = selectInventoryViewModel(store.getState());
+
+        const row = vm.items.find((r) => r.id === 'iron-edge')!;
+        expect(row.replacePreview).not.toBeNull();
+        expect(row.replacePreview!.deltas).toHaveLength(1);
+        expect(row.replacePreview!.deltas[0]).toEqual({ stat: 'reach', delta: 1 });
+    });
+
+    it('skips isMultiplier modifiers (v1 preview is flat-additive only)', () => {
+        const equipped = swordWithStats('long-blade', 'Long Blade', [
+            { stat: 'attack', value: 4 },
+        ]);
+        const replacer = swordWithStats('mystic-edge', 'Mystic Edge', [
+            { stat: 'attack', value: 4 },
+            { stat: 'attack', value: 1.5, isMultiplier: true }, // ignored by v1
+            { stat: 'mind', value: 2 },
+        ]);
+        const store = makeStore([equipped, replacer]);
+        const vm = selectInventoryViewModel(store.getState());
+
+        const row = vm.items.find((r) => r.id === 'mystic-edge')!;
+        expect(row.replacePreview).not.toBeNull();
+        // attack delta is 0 (4 - 4), dropped. mind delta is +2.
+        // The multiplier on attack is correctly skipped.
+        expect(row.replacePreview!.deltas).toEqual([{ stat: 'mind', delta: 2 }]);
+    });
+});

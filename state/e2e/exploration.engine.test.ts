@@ -247,7 +247,7 @@ describe('changeMap action: map transition', () => {
         expect(ids.every((id) => id.startsWith('nf-'))).toBe(true);
     });
 
-    it('also accepts the WorldMap returned by getCoastalMap as a sanity hint', () => {
+    it('also accepts the MapState returned by getCoastalMap as a sanity hint', () => {
         // The action accepts a MapName string; this assertion proves the
         // engine still ships the expected map under that name. Post-Spec
         // 08 Q5A, `getCoastalMap` returns a runtime `MapState`, so the

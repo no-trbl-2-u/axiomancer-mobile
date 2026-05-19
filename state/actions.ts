@@ -48,9 +48,9 @@ import {
     type GameState,
     type Item,
     type MapName,
+    type MapState,
     type ResolveMapEventResult,
     type Stance,
-    type WorldMap,
     type WorldState,
 } from 'axiomancer-mechanics';
 
@@ -675,7 +675,7 @@ export function readCurrentNodeId(world: WorldState): string {
     return world.currentMap.currentNode;
 }
 
-function writeCurrentNodeId(map: WorldMap, nodeId: string): WorldMap {
+function writeCurrentNodeId(map: MapState, nodeId: string): MapState {
     return { ...map, currentNode: nodeId };
 }
 

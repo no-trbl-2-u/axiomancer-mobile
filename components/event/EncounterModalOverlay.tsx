@@ -37,9 +37,12 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { EventArt } from '@/components/event/EventArt';
+import { EventCodexHeader } from '@/components/event/EventCodexHeader';
 import { Splatter } from '@/components/Splatter';
 import { ActionIcon } from '@/components/ActionIcon';
 import { AXM, FONTS } from '@/theme/axm';
+import { useAesthetic } from '@/state/aesthetic-mode';
+import { selectEventCodexHeader } from '@/state/presenters/event.codex.engine';
 import type { EventViewModel } from '@/state/presenters/event.engine';
 
 interface EncounterModalOverlayProps {
@@ -53,6 +56,8 @@ export function EncounterModalOverlay({
     onFight,
     onFlee,
 }: EncounterModalOverlayProps) {
+    const { mode: aesthetic } = useAesthetic();
+
     // Rise animation (Phase 44 port from prototype.jsx:632-638 — the
     // design's `@keyframes rise`). Backdrop fades in over 280ms;
     // panel translates from translateY(20) → 0 + opacity 0 → 1.
@@ -94,6 +99,10 @@ export function EncounterModalOverlay({
         >
             <Animated.View style={[styles.backdrop, backdropStyle]} />
             <Animated.View style={[styles.panel, panelStyle]}>
+                {aesthetic === 'codex' && (() => {
+                    const { left, right } = selectEventCodexHeader(vm);
+                    return <EventCodexHeader left={left} right={right} />;
+                })()}
                 <ChainBar label={vm.preludeChrome.sealLabel} />
 
                 <View style={styles.preludeHeader}>

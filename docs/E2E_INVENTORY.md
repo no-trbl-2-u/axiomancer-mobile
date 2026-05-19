@@ -70,7 +70,8 @@ assertions.
 | `token-crucible.engine.test.ts` | P1 (pure) | Token-Crucible VM: skill-library partition; `canAfford` matrix; deep-freeze invariant | 4 | 10 |
 | `aesthetic-mode.engine.test.tsx` | P3 | `useAesthetic` context: default 'canonical', AsyncStorage hydration (valid / corrupt), setMode write-through, toggle round-trip, provider guard (Phase 50 tick A) | 3 | 10 |
 | `combat.codex.engine.test.ts` | P1 (pure) | `selectCodexStatusLine` + `selectCodexEnemySlug`: enemy name slug rules, design-source ENC/ROUND/STATE format, roman 1..10 + decimal fallback, all engine phases threaded verbatim (Phase 50 tick B) | 2 | 11 |
-| **Totals (`state/e2e/`)** | | | **122** | **416** |
+| `event.codex.engine.test.ts` | P1 (pure) | `selectEventCodexHeader`: EVENT/<variant> left + KIND/<kind> right tokens, uppercase + hyphen→dot normalization, all variants threaded (Phase 50 tick C) | 1 | 5 |
+| **Totals (`state/e2e/`)** | | | **123** | **421** |
 
 ## 4. Inventory — `state/persistence/e2e/`
 
@@ -85,7 +86,7 @@ assertions.
 
 | File | Pattern | Pins | desc | it |
 |---|---|---|---:|---:|
-| `components/event/__tests__/EncounterModalOverlay.test.tsx` | P4 | Modal-over-map seam: backdrop fade, panel rise, action-button subtitle render, auto-dismiss timing | 3 | 8 |
+| `components/event/__tests__/EncounterModalOverlay.test.tsx` | P4 | Modal-over-map seam: backdrop fade, panel rise, action-button subtitle render, auto-dismiss timing; codex header mount/omit per aesthetic mode (Phase 50 tick C) | 3 | 10 |
 | `components/StanceGlyph.test.tsx` | P4 | StanceGlyph + GlyphHeart asset wiring (per-stance source resolution, fallback) | 4 | 16 |
 
 ## 6. Inventory — script-helper tests (non-e2e but hermetic)

@@ -28,7 +28,12 @@ import { render } from '@testing-library/react-native';
 import React from 'react';
 
 import { EncounterModalOverlay } from '../EncounterModalOverlay';
+import { AestheticModeProvider, type AestheticMode } from '@/state/aesthetic-mode';
 import type { EventViewModel } from '@/state/presenters/event.engine';
+
+function withAesthetic(child: React.ReactNode, mode: AestheticMode = 'canonical') {
+    return <AestheticModeProvider initialMode={mode}>{child}</AestheticModeProvider>;
+}
 
 afterEach(() => {
     jest.restoreAllMocks();
@@ -96,7 +101,7 @@ function makeNarrativeChoiceVm(): EventViewModel {
 describe('EncounterModalOverlay: mount conditions', () => {
     it('returns null when the VM is narrative-choice (paced event, not combat-prelude)', () => {
         const tree = render(
-            <EncounterModalOverlay vm={makeNarrativeChoiceVm()} onFight={() => {}} onFlee={() => {}} />,
+            withAesthetic(<EncounterModalOverlay vm={makeNarrativeChoiceVm()} onFight={() => {}} onFlee={() => {}} />),
         );
         // A null return from a component renders no children; the
         // root tree is `null` when the component renders nothing.
@@ -106,14 +111,14 @@ describe('EncounterModalOverlay: mount conditions', () => {
     it('returns null when preludeChrome is null (defensive — should not happen post-withPreludeChrome)', () => {
         const vm = makeCombatPreludeVm({ preludeChrome: null });
         const tree = render(
-            <EncounterModalOverlay vm={vm} onFight={() => {}} onFlee={() => {}} />,
+            withAesthetic(<EncounterModalOverlay vm={vm} onFight={() => {}} onFlee={() => {}} />),
         );
         expect(tree.toJSON()).toBeNull();
     });
 
     it('mounts the overlay on a combat-prelude VM with populated preludeChrome', () => {
         const tree = render(
-            <EncounterModalOverlay vm={makeCombatPreludeVm()} onFight={() => {}} onFlee={() => {}} />,
+            withAesthetic(<EncounterModalOverlay vm={makeCombatPreludeVm()} onFight={() => {}} onFlee={() => {}} />),
         );
         // Two chain bars (top + bottom) carry the SEALED · NO RETREAT
         // signal — both should be present.
@@ -123,12 +128,36 @@ describe('EncounterModalOverlay: mount conditions', () => {
         expect(tree.queryByTestId('encounter-modal-sash')).not.toBeNull();
         expect(tree.queryByTestId('encounter-modal-overlay')).not.toBeNull();
     });
+
+    it('mounts the codex header when aesthetic mode is codex (Phase 50 tick C)', () => {
+        const tree = render(
+            withAesthetic(
+                <EncounterModalOverlay vm={makeCombatPreludeVm()} onFight={() => {}} onFlee={() => {}} />,
+                'codex',
+            ),
+        );
+        // Tokens come from selectEventCodexHeader — variant=encounter,
+        // kind=combat-prelude → EVENT/ENCOUNTER, KIND/COMBAT.PRELUDE.
+        expect(tree.queryByText('EVENT/ENCOUNTER')).not.toBeNull();
+        expect(tree.queryByText('KIND/COMBAT.PRELUDE')).not.toBeNull();
+    });
+
+    it('omits the codex header in canonical mode', () => {
+        const tree = render(
+            withAesthetic(
+                <EncounterModalOverlay vm={makeCombatPreludeVm()} onFight={() => {}} onFlee={() => {}} />,
+                'canonical',
+            ),
+        );
+        expect(tree.queryByText('EVENT/ENCOUNTER')).toBeNull();
+        expect(tree.queryByText('KIND/COMBAT.PRELUDE')).toBeNull();
+    });
 });
 
 describe('EncounterModalOverlay: FLEE-disabled-for-boss branch', () => {
     it('FIGHT is enabled regardless of variant', () => {
         const tree = render(
-            <EncounterModalOverlay vm={makeCombatPreludeVm()} onFight={() => {}} onFlee={() => {}} />,
+            withAesthetic(<EncounterModalOverlay vm={makeCombatPreludeVm()} onFight={() => {}} onFlee={() => {}} />),
         );
         const fight = tree.getByTestId('encounter-modal-fight');
         expect(fight.props.accessibilityState?.disabled).not.toBe(true);
@@ -136,7 +165,7 @@ describe('EncounterModalOverlay: FLEE-disabled-for-boss branch', () => {
 
     it('FLEE is enabled on a regular encounter (variant === "encounter")', () => {
         const tree = render(
-            <EncounterModalOverlay vm={makeCombatPreludeVm()} onFight={() => {}} onFlee={() => {}} />,
+            withAesthetic(<EncounterModalOverlay vm={makeCombatPreludeVm()} onFight={() => {}} onFlee={() => {}} />),
         );
         const flee = tree.getByTestId('encounter-modal-flee');
         expect(flee.props.accessibilityState?.disabled).not.toBe(true);
@@ -169,7 +198,7 @@ describe('EncounterModalOverlay: FLEE-disabled-for-boss branch', () => {
             ],
         });
         const tree = render(
-            <EncounterModalOverlay vm={vm} onFight={() => {}} onFlee={() => {}} />,
+            withAesthetic(<EncounterModalOverlay vm={vm} onFight={() => {}} onFlee={() => {}} />),
         );
         const flee = tree.getByTestId('encounter-modal-flee');
         expect(flee.props.accessibilityState?.disabled).toBe(true);
@@ -193,7 +222,7 @@ describe('EncounterModalOverlay: FLEE-disabled-for-boss branch', () => {
             ],
         });
         const tree = render(
-            <EncounterModalOverlay vm={vm} onFight={() => {}} onFlee={() => {}} />,
+            withAesthetic(<EncounterModalOverlay vm={vm} onFight={() => {}} onFlee={() => {}} />),
         );
         // The hint text from vm.preludeChrome.fleeDisabledHint
         // renders beneath the FLEE label when disabled.
@@ -204,7 +233,7 @@ describe('EncounterModalOverlay: FLEE-disabled-for-boss branch', () => {
 describe('EncounterModalOverlay: non-dismissible backdrop (chat1 invariant)', () => {
     it('the overlay container has no onPress handler (backdrop swallows taps)', () => {
         const tree = render(
-            <EncounterModalOverlay vm={makeCombatPreludeVm()} onFight={() => {}} onFlee={() => {}} />,
+            withAesthetic(<EncounterModalOverlay vm={makeCombatPreludeVm()} onFight={() => {}} onFlee={() => {}} />),
         );
         const overlay = tree.getByTestId('encounter-modal-overlay');
         // The pin: a future refactor that adds onPress to the overlay

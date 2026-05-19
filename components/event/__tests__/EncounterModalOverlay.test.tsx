@@ -53,6 +53,7 @@ function makeCombatPreludeVm(overrides: Partial<EventViewModel> = {}): EventView
                 iconKey: 'sword',
                 accentKey: 'blood',
                 enabled: true,
+                subtitle: null,
             },
             {
                 id: 'flee',
@@ -62,6 +63,7 @@ function makeCombatPreludeVm(overrides: Partial<EventViewModel> = {}): EventView
                 iconKey: 'flee',
                 accentKey: 'bone',
                 enabled: true,
+                subtitle: null,
             },
         ],
         lore: null,
@@ -152,6 +154,7 @@ describe('EncounterModalOverlay: FLEE-disabled-for-boss branch', () => {
                     iconKey: 'sword',
                     accentKey: 'blood',
                     enabled: true,
+                    subtitle: null,
                 },
                 {
                     id: 'flee',
@@ -161,6 +164,7 @@ describe('EncounterModalOverlay: FLEE-disabled-for-boss branch', () => {
                     iconKey: 'flee',
                     accentKey: 'bone',
                     enabled: false,
+                    subtitle: null,
                 },
             ],
         });
@@ -184,6 +188,7 @@ describe('EncounterModalOverlay: FLEE-disabled-for-boss branch', () => {
                     iconKey: 'flee',
                     accentKey: 'bone',
                     enabled: false,
+                    subtitle: null,
                 },
             ],
         });

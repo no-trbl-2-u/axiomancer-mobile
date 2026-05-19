@@ -499,15 +499,23 @@ phase row.
       `useSharedValue` + `useAnimatedStyle`. Mirrors
       `prototype.jsx:632-638` keyframes. Verify 530/530
       unchanged.
-- [ ] Phase 45 — Event-modal action-button subtitles
-      (`design-spec.md` item 12). Wire the existing
-      `EventChoice.consequences` field to the
-      `EncounterModalOverlay` action-button render path as a
-      second-line italic subtitle. Format mirrors the
-      design's `'ix · vi vitae · adv. unknown'`-style
-      lowercase-roman cost line. Touches the overlay's
-      button JSX + styles; presenter already carries the data.
-      Subject: `feat(spec45): event-modal action-button subtitles`.
+- [x] Phase 45 — Event-modal action-button subtitles. Shipped:
+      new `subtitle: string | null` field on `EventChoice`
+      (distinct from existing `description` / `consequences`
+      — pure chrome). Combat-prelude composer populates it:
+      FIGHT = `'<roman level> · <roman hp> vitae · adv.
+      unknown'` (lowercase-roman cost), FLEE = `'forfeit
+      the path · -ii morale'` (non-boss) /
+      `'sealed · no retreat'` (boss). All other VM kinds ship
+      `subtitle: null`. Local `toRomanLowerEvent` helper
+      (duplicates combat.engine.ts's private helper to avoid
+      cross-presenter dependency). EncounterModalOverlay
+      renders the subtitle under each label when non-null;
+      existing fleeDisabledHint render guarded with
+      `&& fleeSubtitle === null` so disabled-FLEE boss path
+      doesn't double up. +3 hermetic cases (non-boss subtitle
+      shape, boss flee subtitle, non-combat-prelude null
+      check). Verify 533/533 (was 530; +3).
 - [ ] Phase 46 — Paced-event kind-meta variants
       (`design-spec.md` item 13). Five distinct kind-meta
       variants (rest / treasure / gather / quest / town

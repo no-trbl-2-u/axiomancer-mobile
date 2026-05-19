@@ -326,6 +326,43 @@ describe('selectEventViewModel: combat-prelude composition', () => {
         // intent that boss combat reads ritually differently.
         expect(vm.choices.find((c) => c.id === 'flee')?.enabled).toBe(false);
     });
+
+    // Phase 45 port — action-button subtitle chrome.
+    it('combat-prelude action-button subtitles ship the lowercase-roman cost line (Phase 45)', () => {
+        const store = makeStore();
+        setPending(store, makeEncounterResult({ isBoss: false }));
+        const vm = selectEventViewModel(store.getState());
+
+        const fight = vm.choices.find((c) => c.id === 'fight')!;
+        const flee = vm.choices.find((c) => c.id === 'flee')!;
+        // Subtitle is non-null on combat-prelude choices.
+        expect(fight.subtitle).not.toBeNull();
+        expect(flee.subtitle).not.toBeNull();
+        // Lowercase-roman cost + ritual register. Decimal fallback
+        // kicks in for stats >= 11 (Roman map only goes to x), which
+        // the regex accommodates.
+        expect(fight.subtitle).toMatch(/^[ivx0-9]+ · [ivx0-9]+ vitae · adv\. unknown$/);
+        expect(flee.subtitle).toBe('forfeit the path · -ii morale');
+    });
+
+    it('boss combat-prelude flee subtitle reads as sealed-no-retreat (Phase 45)', () => {
+        const store = makeStore();
+        setPending(store, makeEncounterResult({ isBoss: true }));
+        const vm = selectEventViewModel(store.getState());
+
+        expect(vm.choices.find((c) => c.id === 'flee')?.subtitle).toBe(
+            'sealed · no retreat',
+        );
+    });
+
+    it('non-combat-prelude choices ship subtitle: null (Phase 45)', () => {
+        const store = makeStore();
+        setPending(store, makeRestResult(5));
+        const vm = selectEventViewModel(store.getState());
+        for (const choice of vm.choices) {
+            expect(choice.subtitle).toBeNull();
+        }
+    });
 });
 
 // ---------------------------------------------------------------------------

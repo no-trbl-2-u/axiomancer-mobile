@@ -70,6 +70,22 @@ export interface EventChoice {
     iconKey: string;
     accentKey: ChoiceAccentKey;
     enabled: boolean;
+    /**
+     * Chrome subtitle rendered below the button label (italic, bone-
+     * color, smaller font). Ports the design's `'ix · vi vitae ·
+     * adv. unknown'`-style cost/consequence preview from
+     * `prototype.jsx:481-489` (combat shell) + `:522-531` (paced
+     * shell). `null` when no subtitle should render (default for
+     * narrative-choice dialogue branches; combat-prelude populates
+     * via the enemy-stats / morale ritual lines below).
+     *
+     * Distinct from `description` (which is the deeper "Combat ·
+     * turns" / "Luck Save" line the modal sometimes ships above
+     * the button) and from `consequences` (the structured kind /
+     * amount data the engine reads for actual effects). Subtitle is
+     * pure chrome.
+     */
+    subtitle: string | null;
 }
 
 /**
@@ -315,6 +331,24 @@ const BOSS_OMEN_BY_LEVEL: readonly string[] = [
     'fifth seal · the long count',
 ];
 
+/**
+ * Local lowercase-roman helper for the Phase 45 subtitle chrome.
+ * Duplicates `combat.engine.ts::toRoman` rather than depending on
+ * it cross-file; the function is 5 lines and the alternative is a
+ * cross-presenter import that drags the combat module into the
+ * event presenter's load path. Out-of-range numbers fall back to
+ * decimal — enemy levels above x are vanishingly rare in practice.
+ */
+const ROMAN_LOWER_EVENT: readonly string[] = [
+    '', 'i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix', 'x',
+];
+
+function toRomanLowerEvent(n: number): string {
+    if (!isFinite(n) || n <= 0) return 'i';
+    if (n < ROMAN_LOWER_EVENT.length) return ROMAN_LOWER_EVENT[n];
+    return String(n);
+}
+
 function composeCombatPrelude(encounter: Encounter, isBoss: boolean): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
     const enemy = encounter.enemy;
     const badge = isBoss ? 'OMEN OF DOOM' : ENCOUNTER_LABEL;
@@ -327,6 +361,18 @@ function composeCombatPrelude(encounter: Encounter, isBoss: boolean): Omit<Event
     // exists yet), but the label honors the design's intent that the
     // ritual register differs from a regular encounter's
     // fight-or-flee binary.
+    // Phase 45 port: chrome subtitles under each action button (the
+    // italic cost/consequence preview from prototype.jsx:481-489 +
+    // :486-489 — 'ix · vi vitae · adv. unknown' on FIGHT, 'forfeit
+    // the path · -ii morale' on FLEE). Lowercase-roman cost line +
+    // ritual-register kicker. Boss variant tightens the kicker
+    // since the engine's boss-blocks-flee rule is part of the
+    // design intent (KNEEL is sealed, not a real choice).
+    const fightSubtitle = `${toRomanLowerEvent(enemy.level)} · ${toRomanLowerEvent(enemy.health)} vitae · adv. unknown`;
+    const fleeSubtitle = isBoss
+        ? 'sealed · no retreat'
+        : 'forfeit the path · -ii morale';
+
     const choices: EventChoice[] = [
         {
             id: 'fight',
@@ -336,6 +382,7 @@ function composeCombatPrelude(encounter: Encounter, isBoss: boolean): Omit<Event
             iconKey: 'sword',
             accentKey: 'blood',
             enabled: true,
+            subtitle: fightSubtitle,
         },
         {
             id: 'flee',
@@ -345,6 +392,7 @@ function composeCombatPrelude(encounter: Encounter, isBoss: boolean): Omit<Event
             iconKey: 'flee',
             accentKey: 'bone',
             enabled: !isBoss,
+            subtitle: fleeSubtitle,
         },
     ];
     let subtitle: string;
@@ -395,6 +443,7 @@ function composeNpcDialogue(
         iconKey: 'scroll',
         accentKey: 'parchment',
         enabled: true,
+        subtitle: null,
     }));
     const text = (node.text ?? '') as string;
     return {
@@ -447,6 +496,7 @@ function composeNarrative(resolved: ResolvedEvent): Omit<EventViewModel, 'prelud
                         iconKey: 'eye',
                         accentKey: 'parchment',
                         enabled: true,
+                        subtitle: null,
                     },
                 ],
                 lore: null,
@@ -512,6 +562,7 @@ function composeItemBag(
                 iconKey: 'scroll',
                 accentKey: 'sulfur',
                 enabled: true,
+                subtitle: null,
             },
         ],
         lore: null,
@@ -538,6 +589,7 @@ function composeInteraction(npcName: string, body: string, artSlug: EventArtSlug
                 iconKey: 'scroll',
                 accentKey: 'parchment',
                 enabled: true,
+                subtitle: null,
             },
         ],
         lore: null,
@@ -577,6 +629,7 @@ function composeVillage(
                 iconKey: 'flee',
                 accentKey: 'bone',
                 enabled: true,
+                subtitle: null,
             },
         ],
         lore: null,
@@ -603,6 +656,7 @@ function composeCutscene(body: string, artSlug: EventArtSlug): Omit<EventViewMod
                 iconKey: 'eye',
                 accentKey: 'sulfur',
                 enabled: true,
+                subtitle: null,
             },
         ],
         lore: null,
@@ -645,6 +699,7 @@ function composeHazard(
                 iconKey: 'eye',
                 accentKey: 'blood',
                 enabled: true,
+                subtitle: null,
             },
         ],
         lore: null,

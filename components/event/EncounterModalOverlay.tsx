@@ -76,8 +76,13 @@ export function EncounterModalOverlay({
 
     if (vm.kind !== 'combat-prelude' || vm.preludeChrome === null) return null;
     const isBoss = vm.variant === 'boss';
+    const fightChoice = vm.choices.find((c) => c.id === 'fight');
     const fleeChoice = vm.choices.find((c) => c.id === 'flee');
     const fleeEnabled = fleeChoice?.enabled ?? !isBoss;
+    // Phase 45 subtitles — italic cost/consequence chrome under each
+    // button label (the design's prototype.jsx:481-489 pattern).
+    const fightSubtitle = fightChoice?.subtitle ?? null;
+    const fleeSubtitle = fleeChoice?.subtitle ?? null;
     return (
         <View
             style={styles.overlay}
@@ -142,6 +147,11 @@ export function EncounterModalOverlay({
                         <ActionIcon kind="sword" size={20} color={AXM.blood} />
                         <View style={{ flex: 1 }}>
                             <Text style={[styles.choiceLabel, { color: AXM.blood }]}>FIGHT</Text>
+                            {fightSubtitle !== null && (
+                                <Text style={styles.choiceSubtitle} testID="encounter-modal-fight-subtitle">
+                                    {fightSubtitle}
+                                </Text>
+                            )}
                         </View>
                     </TouchableOpacity>
 
@@ -160,7 +170,12 @@ export function EncounterModalOverlay({
                         <ActionIcon kind="flee" size={20} color={AXM.bone} />
                         <View style={{ flex: 1 }}>
                             <Text style={[styles.choiceLabel, { color: AXM.bone }]}>FLEE</Text>
-                            {!fleeEnabled && (
+                            {fleeSubtitle !== null && (
+                                <Text style={styles.choiceSubtitle} testID="encounter-modal-flee-subtitle">
+                                    {fleeSubtitle}
+                                </Text>
+                            )}
+                            {!fleeEnabled && fleeSubtitle === null && (
                                 <Text style={styles.choiceSub}>
                                     {vm.preludeChrome.fleeDisabledHint}
                                 </Text>
@@ -335,6 +350,17 @@ const styles = StyleSheet.create({
     choiceSub: {
         fontFamily: FONTS.serifItalic,
         fontSize: 10,
+        color: AXM.bone,
+        marginTop: 2,
+    },
+    // Phase 45 — italic subtitle under each action-button label
+    // (ports prototype.jsx:481-489 'ix · vi vitae · adv. unknown'
+    // pattern). Distinct from `choiceSub` which is the disabled-FLEE
+    // hint (chain-bar-shaped chrome); the subtitle is per-choice
+    // cost/consequence preview.
+    choiceSubtitle: {
+        fontFamily: FONTS.serifItalic,
+        fontSize: 11,
         color: AXM.bone,
         marginTop: 2,
     },

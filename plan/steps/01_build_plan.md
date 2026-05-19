@@ -551,13 +551,21 @@ phase row.
       identically to the design specimen. Inline JSDoc cites
       `prototype.jsx:456` and the chat-2 §IV diegetic-stack
       decision. Verify 535/535 unchanged.
-- [ ] Phase 49 — Token Crucible inline strip placement audit.
-      Design ships the Crucible as an inline strip *above*
-      the action picker, with five pool tokens + an "OPEN ▸"
-      button that opens the reference modal. Confirm current
-      combat surface (Phase 17's Token Crucible port) places
-      the strip there + uses the same "OPEN ▸" affordance.
-      Design source: `prototype.jsx:303-322`.
+- [x] Phase 49 — Token Crucible inline strip placement audit.
+      Audit found the strip wasn't placed in combat at all
+      (Phase 17 shipped the full `<TokenCrucible>` at the
+      `/crucible` route + as a character-sheet integration,
+      but the design's compact "above-the-action-picker
+      strip with OPEN ▸ button" was missing). Shipped the
+      port: new `<CrucibleStrip>` component in
+      `app/(tabs)/combat.tsx` rendered at the top of
+      `ActionPhase`. Compact horizontal row: CRUCIBLE
+      eyebrow + 5 token chips (glyph + count, dim when zero)
+      + OPEN ▸ button routing to `/crucible`. Token pool
+      mirrors `TokenCrucible.tsx` DEFAULT_POOL until the
+      engine exposes real `player.tokens` (gated alongside
+      Phase 20/21 engine-release work). Verify 535/535
+      unchanged.
 
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh

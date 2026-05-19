@@ -573,6 +573,7 @@ function ActionPhase({
 }) {
     return (
         <View>
+            <CrucibleStrip />
             <View style={action_styles.grid}>
                 {options.map((opt) => {
                     const accent = ACCENT_BY_KIND[opt.accentKind];
@@ -610,6 +611,106 @@ function ActionPhase({
         </View>
     );
 }
+
+/**
+ * Token Crucible inline strip — Phase 49 port from
+ * `design/handoff-2026-05-16/project/prototype.jsx:303-322`. Compact
+ * horizontal row showing the player's current 5-token pool above
+ * the action picker so the player can see their resources before
+ * committing an action. Tap OPEN ▸ to route to the full crucible
+ * surface at `/crucible`.
+ *
+ * Token counts currently sourced from the mock pool that the full
+ * `<TokenCrucible>` already uses — engine doesn't yet expose
+ * `player.tokens`. Wiring real engine state is a follow-up once
+ * the engine ships the surface (gated alongside the Phase 20/21
+ * skill-resolution work).
+ */
+function CrucibleStrip() {
+    const router = useRouter();
+    // Mirrors `TokenCrucible.tsx:36` DEFAULT_POOL — same mock the
+    // full surface ships when no engine token state exists.
+    const pool: ReadonlyArray<{ key: string; glyph: string; count: number; color: string }> = [
+        { key: 'body', glyph: '◐', count: 2, color: AXM.blood },
+        { key: 'mind', glyph: '◒', count: 1, color: AXM.rust },
+        { key: 'heart', glyph: '◑', count: 2, color: AXM.bone },
+        { key: 'fallacy', glyph: '◓', count: 1, color: AXM.parchment },
+        { key: 'paradox', glyph: '◉', count: 1, color: AXM.sulfur },
+    ];
+    return (
+        <View style={crucible_strip_styles.row} testID="combat-crucible-strip">
+            <Text style={crucible_strip_styles.eyebrow}>CRUCIBLE</Text>
+            <View style={crucible_strip_styles.tokens}>
+                {pool.map((t) => (
+                    <View key={t.key} style={crucible_strip_styles.tokenCol}>
+                        <Text style={[crucible_strip_styles.tokenGlyph, { color: t.count > 0 ? t.color : AXM.ash }]}>
+                            {t.glyph}
+                        </Text>
+                        <Text style={[crucible_strip_styles.tokenCount, { color: t.count > 0 ? AXM.parchment : AXM.bone }]}>
+                            {t.count}
+                        </Text>
+                    </View>
+                ))}
+            </View>
+            <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Open Token Crucible"
+                onPress={() => router.push('/crucible' as never)}
+                style={crucible_strip_styles.openBtn}
+                testID="combat-crucible-open"
+            >
+                <Text style={crucible_strip_styles.openBtnText}>OPEN ▸</Text>
+            </TouchableOpacity>
+        </View>
+    );
+}
+
+const crucible_strip_styles = StyleSheet.create({
+    row: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        padding: 6,
+        paddingHorizontal: 8,
+        borderWidth: 1,
+        borderColor: AXM.ash,
+        backgroundColor: AXM.deepBg,
+        marginBottom: 8,
+    },
+    eyebrow: {
+        fontFamily: FONTS.sans,
+        fontSize: 9,
+        color: AXM.bone,
+        letterSpacing: 2,
+    },
+    tokens: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 4,
+    },
+    tokenCol: {
+        flexDirection: 'column',
+        alignItems: 'center',
+    },
+    tokenGlyph: {
+        fontFamily: FONTS.gothic,
+        fontSize: 14,
+    },
+    tokenCount: {
+        fontFamily: FONTS.mono,
+        fontSize: 9,
+    },
+    openBtn: {
+        paddingHorizontal: 4,
+    },
+    openBtnText: {
+        fontFamily: FONTS.sans,
+        fontSize: 10,
+        color: AXM.bone,
+        letterSpacing: 1.2,
+    },
+});
 
 // ---------------------------------------------------------------------------
 // Skill phase

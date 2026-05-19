@@ -91,6 +91,10 @@ port commit → loop follow-up commit.
 | B | `70c9f7a` — exploration step-cards + LEAGUES | `8c5f985` — exploration step-cards presenter + hermetic tests | Exploration drawer step-cards |
 | C | `9222bf9` — combat phase-stack | `843f304` — combat phase-stack presenter + hermetic tests | Combat phase-stack readout |
 | D | `7dab20c` — encounter modal seam | `bf13539` — encounter modal seam presenter + hermetic tests | Encounter modal over map seam |
+| E | `02beaeb` — inventory equipment dock + design handoff bundle | `2a23047` — inventory equipment dock presenter + hermetic tests | Inventory Equipment Dock (paper-doll + 7 slots) |
+| F | `9c6024d` — inventory slot filter | `cc38107` — inventory slot filter presenter + hermetic tests | Inventory slot filter (tap-to-filter UX + banner chrome) |
+| G | `05127df` — inventory item glyphs (port design spec) | _self-contained, no separate follow-up_ | Per-slot ItemGlyph variants (helmet / gauntlet / boot / breastplate / ring) |
+| H | `d7489a2` — exploration node toast (port design spec) | _self-contained, no separate follow-up_ | Locked / consumed node feedback toast (`'this way is sealed'` / `'walked already'`) |
 
 **Tick-D catch-ups** (post-tick repairs from `/critique` + audit
 passes drained against the new surfaces, not separate ticks):
@@ -106,7 +110,10 @@ passes drained against the new surfaces, not separate ticks):
 - `2822455` — inventory EMPTY_MESSAGE `'sack'` → `'satchel'`
   (Phase 32 SACK → SATCHEL chrome-sweep narrative catch-up).
 
-Next: tick E (awaiting user port commit per dispatch rule).
+Next: tick I (awaiting next user `feat: <surface> — port design spec`
+or `port from design handoff` commit per dispatch rule). See
+[`/design-spec.md`](../../design-spec.md) at the repo root for the
+inventory of un-ported surfaces from the design bundle.
 
 ## Sub-tick decomposition
 

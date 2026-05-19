@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-05-18 at commit 2a23047
-> Pass count: 14
+> Last pass: 2026-05-19 at commit f1a8a94
+> Pass count: 15
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -41,6 +41,37 @@
 ## Pending
 
 ## Done
+
+### [MED] /plan/phases/phase_32_design_refresh.md:88-109 — Sub-tick log stale (only A-D listed; E-H shipped) ✅
+- pass: 15 (commit f1a8a94); addressed at commit <pending>
+- viewport: repository
+- category: docs
+- observation: Phase 32 brief's Sub-tick log table stopped at
+  tick D (encounter modal seam, 2026-05-17) with closing
+  "Next: tick E (awaiting user port commit)". Ticks E (dock),
+  F (slot filter), G (per-slot glyphs), H (node toast) have
+  all shipped since but weren't enumerated in the canonical
+  log location. A fresh maintainer reading the brief would
+  miss four shipped ticks.
+- fix: appended rows E (02beaeb / 2a23047), F (9c6024d /
+  cc38107), G (05127df — self-contained), H (d7489a2 —
+  self-contained); updated trailing "Next:" line to "tick I
+  (awaiting next port commit per dispatch rule)" with a
+  cross-link to design-spec.md for the inventory of
+  un-ported surfaces.
+
+### [LOW] /design-spec.md:266-270 — internal contradiction on cold-codex sizing ✅
+- pass: 15 (commit f1a8a94); addressed at commit <pending>
+- viewport: repository
+- category: docs
+- observation: closing summary claimed "items 1-10 above are
+  all single-port-sized" but item 4 (cold-codex aesthetic
+  variant) explicitly described as "three screens" and "much
+  larger surface than the per-port sub-ticks" — recommended
+  as a fresh `Phase 25` candidate. Self-contradiction.
+- fix: rephrased the summary to "Items 1-3 and 5-10 are each
+  single-port-sized; item 4 is the exception" with one-line
+  explanation pointing back to item 4's body.
 
 ### [LOW] /app/(tabs)/inventory/index.tsx:30-66 — per-slot `ItemGlyph` variants ported (helmet / gauntlet / boot / breastplate / ring) ✅
 - pass: 14 (commit 2a23047); addressed at commit 05127df

@@ -266,5 +266,10 @@ For each Pending row above, the loop pattern is:
 Phase 32 stays open across many ticks; that's the rolling-phase
 contract working as designed. Sub-ticks A–H drained the highest-
 density slice of the design bundle (chat 1 + inventory full
-surface + prototype-flow micro-interactions); items 1-10 above are
-all single-port-sized.
+surface + prototype-flow micro-interactions). Items 1-3 and 5-10
+above are each single-port-sized (one user commit + an optional
+loop follow-up). **Item 4 (cold-codex aesthetic variant) is the
+exception** — three screens with a togglable aesthetic mode is a
+much larger surface; the section body explicitly recommends
+filing it as a fresh `Phase 25 — Aesthetic toggle` candidate via
+`/oversight` rather than treating it as a Phase 32 sub-tick.

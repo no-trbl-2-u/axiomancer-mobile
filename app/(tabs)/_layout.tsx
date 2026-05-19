@@ -7,6 +7,7 @@ import { useCombatMode } from '@/state/combat-mode';
 import { isTabHidden, TAB_TITLES } from '@/state/presenters/tabs.engine';
 import { useGameState } from '@/state/GameStoreProvider';
 import { selectTabBadges } from '@/state/presenters/navigation.engine';
+import { selectHasActiveCombatPrelude } from '@/state/presenters/event.engine';
 
 function TabBadge({ text, kind }: { text: string; kind: 'event' | 'levelup' }) {
   const badgeColor = kind === 'levelup' ? AXM.sulfur : AXM.blood;
@@ -80,6 +81,15 @@ function TabIcon({ kind, color, size }: { kind: string; color: string; size: num
 
 export default function TabLayout() {
   const { inCombat } = useCombatMode();
+  // Phase 42 port: extend the WILDS/STRIFE mutex to fire as soon as
+  // the combat-prelude event mounts (the `<EncounterModalOverlay>`),
+  // not just when combat actually starts. Mirrors prototype.jsx:42
+  // `combatTabShown = route === 'strife' || modal?.kind ===
+  // 'event-combat'`. Without this, the player taps an encounter
+  // node and sees the modal but the tab bar still reads WILDS until
+  // they pick FIGHT — visual continuity gap.
+  const hasCombatPrelude = useGameState(selectHasActiveCombatPrelude);
+  const combatContext = inCombat || hasCombatPrelude;
   // Subscribe to the slim slices `selectTabBadges` reads, then memo
   // the badges object. The presenter returns a stable `EMPTY_BADGES`
   // reference in the no-event / no-levelup steady state but a fresh
@@ -126,7 +136,7 @@ export default function TabLayout() {
               badge={badges.exploration}
             />
           ),
-          href: isTabHidden(inCombat, 'exploration') ? null : undefined,
+          href: isTabHidden(combatContext, 'exploration') ? null : undefined,
         }}
       />
       <Tabs.Screen
@@ -142,7 +152,7 @@ export default function TabLayout() {
               badge={badges.combat} 
             />
           ),
-          href: isTabHidden(inCombat, 'combat') ? null : undefined,
+          href: isTabHidden(combatContext, 'combat') ? null : undefined,
         }}
       />
       <Tabs.Screen

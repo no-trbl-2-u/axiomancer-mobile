@@ -20,6 +20,7 @@ import {
     selectEventViewModel,
     selectHasActiveEvent,
     selectHasActivePacedEvent,
+    selectHasActiveCombatPrelude,
     type EventViewModel,
 } from '@/state/presenters/event.engine';
 
@@ -196,6 +197,38 @@ describe('selectHasActiveEvent', () => {
         const store = makeStore();
         setPending(store, makeRestResult(5));
         expect(selectHasActivePacedEvent(store.getState())).toBe(true);
+    });
+
+    // Phase 42 — combat-tab mutex extension. The tab layout flips
+    // to STRIFE early (while encounter modal is up) so visual
+    // continuity holds across the encounter-modal seam.
+    it('selectHasActiveCombatPrelude: false on a fresh store', () => {
+        const store = makeStore();
+        expect(selectHasActiveCombatPrelude(store.getState())).toBe(false);
+    });
+
+    it('selectHasActiveCombatPrelude: true for an encounter (combat-prelude) event', () => {
+        const store = makeStore();
+        setPending(store, makeEncounterResult());
+        expect(selectHasActiveCombatPrelude(store.getState())).toBe(true);
+    });
+
+    it('selectHasActiveCombatPrelude: false for a paced (rest) event', () => {
+        const store = makeStore();
+        setPending(store, makeRestResult(5));
+        // The paced + prelude selectors are mutually exclusive —
+        // exactly one (or neither) returns true for any given pending.
+        expect(selectHasActiveCombatPrelude(store.getState())).toBe(false);
+    });
+
+    it('selectHasActiveCombatPrelude: false when combat is already active (engine guard)', () => {
+        const store = makeStore();
+        setPending(store, makeEncounterResult());
+        // Once combat actually starts, hasActiveEvent short-circuits
+        // to false (Q4 = mid-combat events out of scope), so the
+        // prelude selector follows.
+        store.setState({ combat: { phase: 'choose' } as never });
+        expect(selectHasActiveCombatPrelude(store.getState())).toBe(false);
     });
 });
 

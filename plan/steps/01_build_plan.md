@@ -454,12 +454,18 @@ regression check for the routing/gesture bug surfaced
       yielded."). +6 hermetic combat-mode tests pinning the
       signal + auto-clear semantics. Verify 520/520 (was 514;
       +6).
-- [ ] Phase 42 — Combat-tab mutex extension to encounter modal
-      (`design-spec.md` item 9). Flip the combat-tab slot
-      earlier — while the encounter modal is mounted but
-      before combat has actually started. Touches
-      `state/combat-mode.ts` or a sibling
-      `useCombatTabMode` selector. Visual-continuity gain.
+- [x] Phase 42 — Combat-tab mutex extension. Shipped: new
+      `selectHasActiveCombatPrelude` selector (true when
+      there's a pending event AND vm.kind === 'combat-prelude').
+      `(tabs)/_layout.tsx` now reads `inCombat ||
+      hasCombatPrelude` and passes the OR'd value to
+      `isTabHidden`, so the WILDS slot flips to STRIFE as
+      soon as the encounter modal mounts — before the player
+      commits FIGHT. Mirrors prototype.jsx:42
+      `combatTabShown = route === 'strife' || modal?.kind
+      === 'event-combat'`. +4 hermetic cases (paced/prelude
+      mutual exclusion, mid-combat short-circuit). Verify
+      524/524 (was 520; +4).
 - [ ] Phase 43 — Encounter modal boss kneel/strike variant
       (`design-spec.md` item 10). Boss encounters expose
       `KNEEL` / `STRIKE` instead of `FIGHT/SNEAK/PARLEY/FLEE`.

@@ -215,6 +215,22 @@ export function selectHasActivePacedEvent(state: AppStoreState): boolean {
 }
 
 /**
+ * Returns `true` when the engine has an active **combat-adjacent**
+ * event (kind `'combat-prelude'`) — the kind that mounts
+ * `<EncounterModalOverlay>` over the map. The tab layout consumes
+ * this OR `useCombatMode().inCombat` to flip the WILDS/STRIFE
+ * positional slot to STRIFE early — while the encounter modal is
+ * up, before the player commits FIGHT. Mirrors the design's
+ * prototype.jsx:42 `combatTabShown = route === 'strife' ||
+ * modal?.kind === 'event-combat'`. Phase 42 port (2026-05-19).
+ */
+export function selectHasActiveCombatPrelude(state: AppStoreState): boolean {
+    if (!selectHasActiveEvent(state)) return false;
+    const vm = selectEventViewModel(state);
+    return vm.kind === 'combat-prelude';
+}
+
+/**
  * Phase 32 design-handoff port (2026-05-16): backfill `preludeChrome`
  * on a freshly-composed VM so each `composeX` function can stay
  * focused on its own concerns. Combat-prelude variants get the

@@ -488,15 +488,17 @@ phases ship 0-LOC fix-or-confirm reports unless something is
 actually wrong, then a single follow-up port to the same
 phase row.
 
-- [ ] Phase 44 — Modal enter animations (`design-spec.md`
-      item 11). Add `react-native-reanimated` `withTiming`
-      enter transitions on the existing modal/toast roots
-      so they "rise" instead of mounting instantly. 280ms
-      ease-out for modals/banners; 200ms for toasts.
-      Touches `EncounterModalOverlay.tsx`,
-      `components/AftermathBanner.tsx`, and the exploration
-      `nodeToast` view. Design source: `prototype.jsx:632-638`.
-      Subject: `feat(spec44): modal rise + toast fade animations`.
+- [x] Phase 44 — Modal enter animations. Shipped: rise (280ms
+      ease-out, translateY 20→0 + opacity 0→1) on
+      `EncounterModalOverlay` (separate animation on
+      backdrop opacity vs panel transform) and
+      `AftermathBanner`; fade (200ms ease-out, opacity 0→1)
+      on the exploration `<NodeToast>` (extracted into its
+      own component for clean mount-time animation). All
+      three use `react-native-reanimated` `withTiming` +
+      `useSharedValue` + `useAnimatedStyle`. Mirrors
+      `prototype.jsx:632-638` keyframes. Verify 530/530
+      unchanged.
 - [ ] Phase 45 — Event-modal action-button subtitles
       (`design-spec.md` item 12). Wire the existing
       `EventChoice.consequences` field to the

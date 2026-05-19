@@ -26,9 +26,15 @@
  * prelude'` VMs via `withPreludeChrome`). Component-level pins live
  * in `components/event/__tests__/EncounterModalOverlay.test.tsx`.
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path as SvgPath } from 'react-native-svg';
+import Animated, {
+    useAnimatedStyle,
+    useSharedValue,
+    withTiming,
+    Easing,
+} from 'react-native-reanimated';
 
 import { EventArt } from '@/components/event/EventArt';
 import { Splatter } from '@/components/Splatter';
@@ -47,6 +53,27 @@ export function EncounterModalOverlay({
     onFight,
     onFlee,
 }: EncounterModalOverlayProps) {
+    // Rise animation (Phase 44 port from prototype.jsx:632-638 — the
+    // design's `@keyframes rise`). Backdrop fades in over 280ms;
+    // panel translates from translateY(20) → 0 + opacity 0 → 1.
+    // Shared values default to the start state so the first frame
+    // renders mid-transition rather than at the final state.
+    const backdropOpacity = useSharedValue(0);
+    const panelOffset = useSharedValue(20);
+    const panelOpacity = useSharedValue(0);
+    useEffect(() => {
+        const timing = { duration: 280, easing: Easing.out(Easing.ease) };
+        backdropOpacity.value = withTiming(1, timing);
+        panelOffset.value = withTiming(0, timing);
+        panelOpacity.value = withTiming(1, timing);
+    }, [backdropOpacity, panelOffset, panelOpacity]);
+
+    const backdropStyle = useAnimatedStyle(() => ({ opacity: backdropOpacity.value }));
+    const panelStyle = useAnimatedStyle(() => ({
+        opacity: panelOpacity.value,
+        transform: [{ translateY: panelOffset.value }],
+    }));
+
     if (vm.kind !== 'combat-prelude' || vm.preludeChrome === null) return null;
     const isBoss = vm.variant === 'boss';
     const fleeChoice = vm.choices.find((c) => c.id === 'flee');
@@ -60,8 +87,8 @@ export function EncounterModalOverlay({
             // opposite — swallow all backdrop taps.
             testID="encounter-modal-overlay"
         >
-            <View style={styles.backdrop} />
-            <View style={styles.panel}>
+            <Animated.View style={[styles.backdrop, backdropStyle]} />
+            <Animated.View style={[styles.panel, panelStyle]}>
                 <ChainBar label={vm.preludeChrome.sealLabel} />
 
                 <View style={styles.preludeHeader}>
@@ -143,7 +170,7 @@ export function EncounterModalOverlay({
                 </View>
 
                 <ChainBar label={vm.preludeChrome.sealLabel} />
-            </View>
+            </Animated.View>
         </View>
     );
 }

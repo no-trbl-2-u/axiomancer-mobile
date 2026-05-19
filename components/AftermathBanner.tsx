@@ -1,5 +1,11 @@
 import React, { useEffect } from 'react';
 import { AccessibilityInfo, StyleSheet, Text, View } from 'react-native';
+import Animated, {
+    useAnimatedStyle,
+    useSharedValue,
+    withTiming,
+    Easing,
+} from 'react-native-reanimated';
 import { AXM, FONTS } from '@/theme/axm';
 
 /**
@@ -46,6 +52,20 @@ export function AftermathBanner({
     displayMs = 2500,
     onDismiss,
 }: AftermathBannerProps) {
+    // Rise animation — Phase 44 port from prototype.jsx:632-638.
+    // translateY 20 → 0 + opacity 0 → 1 over 280ms ease-out.
+    const offset = useSharedValue(20);
+    const opacity = useSharedValue(0);
+    useEffect(() => {
+        const timing = { duration: 280, easing: Easing.out(Easing.ease) };
+        offset.value = withTiming(0, timing);
+        opacity.value = withTiming(1, timing);
+    }, [offset, opacity]);
+    const animStyle = useAnimatedStyle(() => ({
+        opacity: opacity.value,
+        transform: [{ translateY: offset.value }],
+    }));
+
     useEffect(() => {
         // Screen-reader announcement (Phase 41 a11y close-out, critique
         // pass 16 LOW). pointerEvents='none' on the wrap can block
@@ -58,9 +78,9 @@ export function AftermathBanner({
     }, [displayMs, eyebrow, title, onDismiss]);
 
     return (
-        <View
+        <Animated.View
             pointerEvents="none"
-            style={styles.wrap}
+            style={[styles.wrap, animStyle]}
             testID="aftermath-banner"
             accessibilityLiveRegion="polite"
             accessibilityLabel={`${eyebrow}. ${title}`}
@@ -71,7 +91,7 @@ export function AftermathBanner({
                 <Text style={styles.rewards}>{rewards}</Text>
             )}
             <Text style={styles.subtitle}>{subtitle}</Text>
-        </View>
+        </Animated.View>
     );
 }
 

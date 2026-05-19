@@ -4,6 +4,8 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
     useAnimatedStyle,
     useSharedValue,
+    withTiming,
+    Easing,
 } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import Svg, { Path, Circle, G } from 'react-native-svg';
@@ -356,11 +358,7 @@ export default function ExplorationScreen() {
                     onFlee={onEncounterFlee}
                 />
             )}
-            {nodeTip !== null && (
-                <View pointerEvents="none" style={styles.nodeToast} testID="exploration-node-toast">
-                    <Text style={styles.nodeToastText}>{nodeTip}</Text>
-                </View>
-            )}
+            {nodeTip !== null && <NodeToast tip={nodeTip} />}
             {/*
               * Phase 41 port — aftermath banner on victory / parley
               * combat exits. Copy comes from `selectAftermathCopy`
@@ -382,6 +380,31 @@ export default function ExplorationScreen() {
                 );
             })()}
         </ScreenBg>
+    );
+}
+
+/**
+ * Locked / consumed node feedback toast with a fade-in entrance.
+ * Phase 44 port from prototype.jsx:633-637 `@keyframes fade`
+ * (opacity 0 → 1, 200ms). The parent unmounts the toast on
+ * timeout (the existing useEffect at line 60-65); this component
+ * handles the mount-time fade-in only.
+ */
+function NodeToast({ tip }: { tip: string }) {
+    const opacity = useSharedValue(0);
+    useEffect(() => {
+        opacity.value = withTiming(1, { duration: 200, easing: Easing.out(Easing.ease) });
+    }, [opacity]);
+    const animStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+
+    return (
+        <Animated.View
+            pointerEvents="none"
+            style={[styles.nodeToast, animStyle]}
+            testID="exploration-node-toast"
+        >
+            <Text style={styles.nodeToastText}>{tip}</Text>
+        </Animated.View>
     );
 }
 

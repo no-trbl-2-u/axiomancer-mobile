@@ -482,9 +482,14 @@ function composeNarrative(resolved: ResolvedEvent): Omit<EventViewModel, 'prelud
                 kind: 'narrative-choice',
                 variant: 'rest',
                 artSlug,
-                badge: 'A QUIET PLACE',
+                // Phase 46 port: eyebrow matches the design's
+                // prototype.jsx:498 'A FIRE LOWERS'; title swaps from
+                // the old action-shaped 'THE FIRE LOWERS' (verb) to
+                // 'THE STONE HEARTH' (the place), per the design's
+                // 'The Stone Hearth' specimen.
+                badge: 'A FIRE LOWERS',
                 badgeAccentKey: 'parchment',
-                title: 'THE FIRE LOWERS',
+                title: 'THE STONE HEARTH',
                 subtitle: '',
                 body,
                 choices: [
@@ -503,11 +508,17 @@ function composeNarrative(resolved: ResolvedEvent): Omit<EventViewModel, 'prelud
                 canSkip: body.length > 240,
             };
         case 'gathering':
-            return composeItemBag('A GATHERING', 'THE BRUSH YIELDS', body, resolved.items, artSlug, 'gather');
+            // Phase 46 port: design eyebrow 'A SMALL HARVEST' /
+            // title 'A STAND OF MIRE-MINT' (the specimen). Engine
+            // doesn't carry a plant name so the title stays generic;
+            // the design specimen reads as one possible flavor.
+            return composeItemBag('A SMALL HARVEST', 'A STAND OF MIRE-MINT', body, resolved.items, artSlug, 'gather');
         case 'loot-cache':
+            // Phase 46 port: design eyebrow 'A FOUND THING' / title
+            // 'A BURIED CHEST'.
             return composeItemBag(
-                'A FIND',
-                'THE CACHE OPENS',
+                'A FOUND THING',
+                'A BURIED CHEST',
                 body,
                 resolved.items,
                 artSlug,
@@ -575,7 +586,11 @@ function composeInteraction(npcName: string, body: string, artSlug: EventArtSlug
         kind: 'narrative-choice',
         variant: 'npc',
         artSlug,
-        badge: 'A VOICE',
+        // Phase 46 port: design eyebrow 'INTERACTION' (literal,
+        // chrome-shaped). Title stays as the NPC name from engine —
+        // the design's 'The Wagoner' is one specimen of a generic
+        // npc-name title.
+        badge: 'INTERACTION',
         badgeAccentKey: 'parchment',
         title: npcName.toUpperCase(),
         subtitle: '',
@@ -615,7 +630,9 @@ function composeVillage(
         kind: 'narrative-choice',
         variant: 'quest',
         artSlug,
-        badge: 'A VILLAGE',
+        // Phase 46 port: design eyebrow 'A SETTLEMENT' (kindToMeta
+        // 'town' fallback from prototype.jsx:503).
+        badge: 'A SETTLEMENT',
         badgeAccentKey: 'parchment',
         title: villageName.toUpperCase(),
         subtitle,

@@ -516,17 +516,24 @@ phase row.
       doesn't double up. +3 hermetic cases (non-boss subtitle
       shape, boss flee subtitle, non-combat-prelude null
       check). Verify 533/533 (was 530; +3).
-- [ ] Phase 46 — Paced-event kind-meta variants
-      (`design-spec.md` item 13). Five distinct kind-meta
-      variants (rest / treasure / gather / quest / town
-      fallback), each with its own eyebrow + title + body +
-      illustration. Lift the `kindToMeta` table onto a
-      presenter; pair with kind-specific illustrations. May
-      need engine support for `gather` / `town` node kinds
-      if they aren't already in the engine vocabulary —
-      audit first; if missing, file a `[needs-engine-release]`
-      row and pause. Subject: `feat(spec46): paced-event
-      kind-meta variants`.
+- [x] Phase 46 — Paced-event kind-meta variants. Shipped:
+      refreshed eyebrow + title copy on all 5 paced-event
+      composers to match the design's `kindToMeta` table
+      (prototype.jsx:497-503). Specifically:
+      `composeRest` 'A QUIET PLACE'/'THE FIRE LOWERS' →
+      'A FIRE LOWERS'/'THE STONE HEARTH'.
+      `composeItemBag(gathering)` 'A GATHERING'/'THE BRUSH
+      YIELDS' → 'A SMALL HARVEST'/'A STAND OF MIRE-MINT'.
+      `composeItemBag(loot-cache)` 'A FIND'/'THE CACHE OPENS'
+      → 'A FOUND THING'/'A BURIED CHEST'.
+      `composeInteraction` 'A VOICE' → 'INTERACTION' (title
+      stays the engine NPC name).
+      `composeVillage` 'A VILLAGE' → 'A SETTLEMENT'.
+      Engine kind vocabulary checked — `gathering`,
+      `loot-cache`, `interaction`, `village`, `rest` all
+      present; no [needs-engine-release] gate. +1 hermetic
+      case pinning the rest variant's new eyebrow + title.
+      Verify 534/534 (was 533; +1).
 - [ ] Phase 47 — Stance-picker gloss copy audit. The design
       ships `gloss: 'parley, mercy'` (heart), `'iron, force'`
       (body), `'cipher, ruse'` (mind) under each stance card.

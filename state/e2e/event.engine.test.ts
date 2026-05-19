@@ -363,6 +363,16 @@ describe('selectEventViewModel: combat-prelude composition', () => {
             expect(choice.subtitle).toBeNull();
         }
     });
+
+    // Phase 46 port — kind-meta eyebrows match the design's
+    // prototype.jsx:497-503 kindToMeta table.
+    it('paced rest event ships "A FIRE LOWERS" eyebrow + "THE STONE HEARTH" title (Phase 46)', () => {
+        const store = makeStore();
+        setPending(store, makeRestResult(5));
+        const vm = selectEventViewModel(store.getState());
+        expect(vm.badge).toBe('A FIRE LOWERS');
+        expect(vm.title).toBe('THE STONE HEARTH');
+    });
 });
 
 // ---------------------------------------------------------------------------

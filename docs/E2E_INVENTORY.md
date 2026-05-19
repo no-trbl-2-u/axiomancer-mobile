@@ -69,7 +69,8 @@ assertions.
 | `tabs.engine.test.ts` | P1 | Tab visibility mutex: MAP ⊕ COMBAT (never both); combat-prelude detection feeds the mutex | 6 | 11 |
 | `token-crucible.engine.test.ts` | P1 (pure) | Token-Crucible VM: skill-library partition; `canAfford` matrix; deep-freeze invariant | 4 | 10 |
 | `aesthetic-mode.engine.test.tsx` | P3 | `useAesthetic` context: default 'canonical', AsyncStorage hydration (valid / corrupt), setMode write-through, toggle round-trip, provider guard (Phase 50 tick A) | 3 | 10 |
-| **Totals (`state/e2e/`)** | | | **120** | **405** |
+| `combat.codex.engine.test.ts` | P1 (pure) | `selectCodexStatusLine` + `selectCodexEnemySlug`: enemy name slug rules, design-source ENC/ROUND/STATE format, roman 1..10 + decimal fallback, all engine phases threaded verbatim (Phase 50 tick B) | 2 | 11 |
+| **Totals (`state/e2e/`)** | | | **122** | **416** |
 
 ## 4. Inventory — `state/persistence/e2e/`
 

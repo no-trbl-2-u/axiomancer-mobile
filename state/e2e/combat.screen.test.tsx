@@ -24,6 +24,7 @@ jest.mock('expo-router', () => ({
 }));
 
 import { mockFixedRng } from '@/test-utils/rng';
+import { AestheticModeProvider } from '@/state/aesthetic-mode';
 import { CombatModeProvider } from '@/state/combat-mode';
 import {
     GameStoreProvider,
@@ -45,13 +46,19 @@ function makeStore(): AppStore {
     return createAppStore({ adapter: createMemoryAdapter() });
 }
 
-function withProviders(store: AppStore, child: React.ReactNode) {
+function withProviders(
+    store: AppStore,
+    child: React.ReactNode,
+    aesthetic?: 'canonical' | 'codex',
+) {
     return (
-        <CombatModeProvider>
-            <GameStoreProvider store={store}>
-                {child}
-            </GameStoreProvider>
-        </CombatModeProvider>
+        <AestheticModeProvider initialMode={aesthetic ?? 'canonical'}>
+            <CombatModeProvider>
+                <GameStoreProvider store={store}>
+                    {child}
+                </GameStoreProvider>
+            </CombatModeProvider>
+        </AestheticModeProvider>
     );
 }
 
@@ -140,6 +147,26 @@ describe('CombatScreen: integration smoke', () => {
         const text = JSON.stringify(tree.toJSON());
         // Engine fixture uppercases the enemy name in the VM.
         expect(text).toContain('CARRION HIEROPHANT');
+    });
+
+    it('renders the codex status strip when aesthetic mode is codex (Phase 50 tick B)', () => {
+        const store = makeStore();
+        seedPhase(store, 'choosing_stance');
+        const tree = render(withProviders(store, <CombatScreen />, 'codex'));
+        const text = JSON.stringify(tree.toJSON());
+        // Format: ENC=<slug> · ROUND=<roman> · STATE=<phase> — see
+        // state/presenters/combat.codex.engine.ts.
+        expect(text).toContain('ENC=');
+        expect(text).toContain('STATE=choosing_stance');
+    });
+
+    it('omits the codex status strip when aesthetic mode is canonical', () => {
+        const store = makeStore();
+        seedPhase(store, 'choosing_stance');
+        const tree = render(withProviders(store, <CombatScreen />, 'canonical'));
+        const text = JSON.stringify(tree.toJSON());
+        expect(text).not.toContain('ENC=');
+        expect(text).not.toContain('STATE=choosing_stance');
     });
 
     it('exposes the action layer to children without throwing', () => {

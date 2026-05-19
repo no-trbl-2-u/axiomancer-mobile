@@ -36,6 +36,7 @@ import * as Haptics from 'expo-haptics';
 import Svg, { Path, Circle, Ellipse, Defs, RadialGradient, Stop } from 'react-native-svg';
 
 import { AXM, FONTS } from '@/theme/axm';
+import { useAesthetic } from '@/state/aesthetic-mode';
 import { useCombatMode } from '@/state/combat-mode';
 import { useGameActions, useGameState } from '@/state/GameStoreProvider';
 import { createMockEncounterEnemy } from '@/state/mocks/combat.mock';
@@ -49,6 +50,8 @@ import {
     type StanceKey,
     type StanceOption,
 } from '@/state/presenters/combat.engine';
+import { selectCodexStatusLine } from '@/state/presenters/combat.codex.engine';
+import { CodexStatusStrip } from '@/components/CodexStatusStrip';
 import { ScreenBg } from '@/components/ScreenBg';
 import { SectionLabel } from '@/components/SectionLabel';
 import { StatBar } from '@/components/StatBar';
@@ -88,6 +91,7 @@ const LOG_SEVERITY_COLOR: Record<CombatLogEntryDisplay['severity'], string> = {
 export default function CombatScreen() {
     const router = useRouter();
     const { exitCombat, exitCombatWith } = useCombatMode();
+    const { mode: aesthetic } = useAesthetic();
     const combat = useGameState((s) => s.combat);
     const [selectedStance, setSelectedStance] = useState<StanceKey>('heart');
     const vm = useCombatViewModel({ selectedStance });
@@ -185,6 +189,9 @@ export default function CombatScreen() {
 
     return (
         <ScreenBg>
+            {aesthetic === 'codex' && (
+                <CodexStatusStrip line={selectCodexStatusLine(vm)} />
+            )}
             <EnemyPanel vm={vm} />
             <BattleLog log={vm.log} round={vm.round} emptyMessage={vm.logEmptyMessage} />
             <PlayerHud vm={vm} />

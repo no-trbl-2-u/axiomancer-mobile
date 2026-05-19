@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-05-19 at commit f1a8a94
-> Pass count: 15
+> Last pass: 2026-05-19 at commit 56725ae
+> Pass count: 16
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -41,6 +41,38 @@
 ## Pending
 
 ## Done
+
+### [MED] /app/(tabs)/exploration/index.tsx:373-379 — aftermath banner display literals lifted onto presenter ✅
+- pass: 16 (commit 56725ae); addressed at commit <pending>
+- viewport: repository
+- category: voice
+- observation: Phase 41 shipped the aftermath banner with
+  four display literals inline at the view layer ('IT IS WON' /
+  'IT IS DONE' / 'The foe yielded.' / 'The foe fell.') chosen
+  by branching on `lastOutcome`. Hard Rule #8 violation —
+  per-outcome copy + the outcome→copy mapping both belong on
+  a presenter.
+- fix: new `selectAftermathCopy(outcome): AftermathCopy | null`
+  helper in `state/combat-mode.tsx` returning `{eyebrow,
+  title, subtitle}` for victory + parley, null for defeat +
+  flee. Banner becomes prop-driven (no string defaults).
+  Exploration screen reads the helper; banner mounts only
+  when copy is non-null (filters silent outcomes
+  automatically). +4 hermetic cases pinning the per-outcome
+  contract.
+
+### [LOW] /components/AftermathBanner.tsx:53 — accessibilityLiveRegion + announceForAccessibility added ✅
+- pass: 16 (commit 56725ae); addressed at commit <pending>
+- viewport: repository
+- category: a11y
+- observation: Banner had `pointerEvents="none"` on its root
+  with no accessibility props. The 2500ms auto-dismiss meant
+  a screen-reader user got no notification of the victory.
+- fix: added `accessibilityLiveRegion="polite"` +
+  `accessibilityLabel` on the root View; the useEffect that
+  starts the dismiss timer also fires
+  `AccessibilityInfo.announceForAccessibility(`${eyebrow}.
+  ${title}`)` as a one-shot.
 
 ### [MED] /plan/phases/phase_32_design_refresh.md:88-109 — Sub-tick log stale (only A-D listed; E-H shipped) ✅
 - pass: 15 (commit f1a8a94); addressed at commit e78dbb6

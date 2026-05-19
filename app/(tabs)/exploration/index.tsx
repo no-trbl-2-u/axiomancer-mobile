@@ -15,7 +15,7 @@ import { NodeMark } from '@/components/NodeMark';
 import { ActionIcon } from '@/components/ActionIcon';
 import { Splatter } from '@/components/Splatter';
 import { AftermathBanner } from '@/components/AftermathBanner';
-import { useCombatMode } from '@/state/combat-mode';
+import { selectAftermathCopy, useCombatMode } from '@/state/combat-mode';
 import { useGameActions, useGameState, useGameStore } from '@/state/GameStoreProvider';
 import {
     selectExplorationViewModel,
@@ -363,20 +363,24 @@ export default function ExplorationScreen() {
             )}
             {/*
               * Phase 41 port — aftermath banner on victory / parley
-              * combat exits. The banner appears top-of-map for
-              * 2500ms then auto-dismisses via clearLastOutcome.
-              * Combat-mode tracks the one-shot signal; we only
-              * render for outcomes the design's IT IS DONE eyebrow
-              * fits ('victory' + 'parley'). 'defeat' / 'flee' stay
-              * silent.
+              * combat exits. Copy comes from `selectAftermathCopy`
+              * (Hard Rule #8 lift from critique pass 16); banner
+              * mounts only when the helper returns a non-null
+              * shape, which filters 'defeat' / 'flee' out
+              * automatically.
               */}
-            {(lastOutcome === 'victory' || lastOutcome === 'parley') && (
-                <AftermathBanner
-                    eyebrow={lastOutcome === 'parley' ? 'IT IS WON' : 'IT IS DONE'}
-                    title={lastOutcome === 'parley' ? 'The foe yielded.' : 'The foe fell.'}
-                    onDismiss={clearLastOutcome}
-                />
-            )}
+            {lastOutcome !== null && (() => {
+                const copy = selectAftermathCopy(lastOutcome);
+                if (copy === null) return null;
+                return (
+                    <AftermathBanner
+                        eyebrow={copy.eyebrow}
+                        title={copy.title}
+                        subtitle={copy.subtitle}
+                        onDismiss={clearLastOutcome}
+                    />
+                );
+            })()}
         </ScreenBg>
     );
 }

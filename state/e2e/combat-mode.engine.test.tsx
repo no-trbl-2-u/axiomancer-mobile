@@ -16,7 +16,7 @@ import { afterEach, describe, it, expect } from '@jest/globals';
 import { renderHook, act } from '@testing-library/react-native';
 import React from 'react';
 
-import { CombatModeProvider, useCombatMode } from '@/state/combat-mode';
+import { CombatModeProvider, selectAftermathCopy, useCombatMode } from '@/state/combat-mode';
 
 afterEach(() => {
     // Each test isolates via its own renderHook; nothing global to reset.
@@ -85,5 +85,30 @@ describe('combat-mode: lastOutcome signal', () => {
         act(() => result.current.exitCombat());
         expect(result.current.inCombat).toBe(false);
         expect(result.current.lastOutcome).toBeNull();
+    });
+});
+
+describe('selectAftermathCopy: per-outcome banner chrome (critique pass 16 lift)', () => {
+    it('returns IT IS DONE copy on victory', () => {
+        const copy = selectAftermathCopy('victory');
+        expect(copy).not.toBeNull();
+        expect(copy!.eyebrow).toBe('IT IS DONE');
+        expect(copy!.title).toBe('The foe fell.');
+        expect(copy!.subtitle).toBe('The map returns. Walk on.');
+    });
+
+    it('returns IT IS WON copy on parley', () => {
+        const copy = selectAftermathCopy('parley');
+        expect(copy).not.toBeNull();
+        expect(copy!.eyebrow).toBe('IT IS WON');
+        expect(copy!.title).toBe('The foe yielded.');
+    });
+
+    it('returns null on defeat (banner stays silent)', () => {
+        expect(selectAftermathCopy('defeat')).toBeNull();
+    });
+
+    it('returns null on flee (banner stays silent)', () => {
+        expect(selectAftermathCopy('flee')).toBeNull();
     });
 });

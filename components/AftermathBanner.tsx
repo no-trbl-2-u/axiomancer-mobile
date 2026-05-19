@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, StyleSheet, Text, View } from 'react-native';
 import { AXM, FONTS } from '@/theme/axm';
 
 /**
@@ -22,14 +22,16 @@ import { AXM, FONTS } from '@/theme/axm';
  */
 
 export interface AftermathBannerProps {
-    /** Top-line eyebrow caption (chrome). Defaults to 'IT IS DONE'. */
-    eyebrow?: string;
-    /** Display title (gothic font). Defaults to a generic "The foe fell." */
-    title?: string;
+    /** Top-line eyebrow caption (chrome). Required — sourced from
+     * `selectAftermathCopy(outcome)` per Hard Rule #8 (no display
+     * literals at the view layer). */
+    eyebrow: string;
+    /** Display title (gothic font). Required — see eyebrow note. */
+    title: string;
     /** Reward summary line (mono). Optional; omit when not surfaced. */
     rewards?: string | null;
-    /** Italic subtitle below the rewards. Defaults to 'The map returns. Walk on.' */
-    subtitle?: string;
+    /** Italic subtitle. Required so the caller controls voice. */
+    subtitle: string;
     /** Auto-dismiss delay in ms. Default 2500 matches prototype.jsx. */
     displayMs?: number;
     /** Called when the auto-dismiss timer fires. */
@@ -37,20 +39,32 @@ export interface AftermathBannerProps {
 }
 
 export function AftermathBanner({
-    eyebrow = 'IT IS DONE',
-    title = 'The foe fell.',
+    eyebrow,
+    title,
     rewards = null,
-    subtitle = 'The map returns. Walk on.',
+    subtitle,
     displayMs = 2500,
     onDismiss,
 }: AftermathBannerProps) {
     useEffect(() => {
+        // Screen-reader announcement (Phase 41 a11y close-out, critique
+        // pass 16 LOW). pointerEvents='none' on the wrap can block
+        // VoiceOver focus on iOS, and the 2500ms auto-dismiss means a
+        // blind user otherwise gets no notification at all — fire a
+        // one-shot announce alongside the dismiss timer.
+        AccessibilityInfo.announceForAccessibility(`${eyebrow}. ${title}`);
         const handle = setTimeout(onDismiss, displayMs);
         return () => clearTimeout(handle);
-    }, [displayMs, onDismiss]);
+    }, [displayMs, eyebrow, title, onDismiss]);
 
     return (
-        <View pointerEvents="none" style={styles.wrap} testID="aftermath-banner">
+        <View
+            pointerEvents="none"
+            style={styles.wrap}
+            testID="aftermath-banner"
+            accessibilityLiveRegion="polite"
+            accessibilityLabel={`${eyebrow}. ${title}`}
+        >
             <Text style={styles.eyebrow}>{eyebrow}</Text>
             <Text style={styles.title}>{title}</Text>
             {rewards !== null && rewards.length > 0 && (

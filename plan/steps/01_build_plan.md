@@ -374,11 +374,15 @@ regression check for the routing/gesture bug surfaced
       pinning the contract (null on non-equipment / self-row /
       empty-slot; signed deltas; zero-drop; multiplier-skip).
       Verify 508/508 (was 502; +6).
-- [ ] Phase 36 — Inventory equip-replace label
-      (`design-spec.md` item 2). The EQUIP confirmation button's
-      label changes shape when replacing: bare-slot shows
-      `✦ EQUIP`, replace shows `✦ EQUIP · REPLACE <current>`.
-      Touches `state/presenters/inventory.modal.engine.ts`.
+- [x] Phase 36 — Inventory equip-replace label. Shipped: extended
+      `ItemModalViewModel` with `replacingName: string | null`
+      (structured data so the screen doesn't parse the label).
+      New `findEquippedInSlot` helper returns the equipped
+      sibling. `buildEquipmentModal` now ships
+      `confirmLabel = 'EQUIP · REPLACE <NAME>'` when replacing,
+      `'EQUIP'` when bare-slot, `'WORN'` when target is itself
+      worn. Existing test reshaped to assert the new label;
+      +1 new test for the bare-slot+WORN path. Verify 509/509.
 - [ ] Phase 37 — Inventory item slot tag (`design-spec.md`
       item 3). Small mono eyebrow rendering
       `vm.row.sub.toUpperCase()` on every equipment item card

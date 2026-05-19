@@ -47,6 +47,16 @@ export interface ItemModalViewModel {
     previewLines: readonly string[];
     /** Stat deltas for an equip preview (Q5). */
     statDeltas: readonly StatDelta[];
+    /**
+     * Name of the currently-equipped item that this equip would
+     * replace, or `null` when the slot is empty / this item is
+     * already equipped / the item isn't equipment. Surfaced on the
+     * equip modal's confirmLabel as `"EQUIP · REPLACE <NAME>"` per
+     * the design's chat-1 iteration 2 EQUIP-button rule (Phase 36
+     * port). The view layer reads `replacingName` directly to avoid
+     * parsing the label string back out.
+     */
+    replacingName: string | null;
 }
 
 /**
@@ -74,6 +84,7 @@ export function selectItemModalViewModel(
         confirmLabel: 'CLOSE',
         previewLines: [item.description] as readonly string[],
         statDeltas: [] as readonly StatDelta[],
+        replacingName: null,
     });
 }
 
@@ -111,12 +122,33 @@ function buildConsumableModal(player: Character, item: Item): ItemModalViewModel
         confirmLabel: 'DRINK',
         previewLines: previewLines as readonly string[],
         statDeltas: [] as readonly StatDelta[],
+        replacingName: null,
     });
+}
+
+/**
+ * Find the currently-equipped item in the same slot as `target`, or
+ * `null` when the slot is empty / `target` is itself the equipped one.
+ * Mirrors `isEquippedFirstOfSlot` (first-equipment-per-slot is the
+ * worn item, per `selectCharacterViewModel` convention) but returns
+ * the equipped item rather than a boolean.
+ */
+function findEquippedInSlot(player: Character, target: Equipment): Equipment | null {
+    const inventory: readonly Item[] = player.inventory;
+    for (const item of inventory) {
+        if (!isEquipment(item)) continue;
+        const eq = item as Equipment;
+        if (eq.slot !== target.slot) continue;
+        if (eq.id === target.id) return null; // target is the worn one
+        return eq;
+    }
+    return null;
 }
 
 function buildEquipmentModal(player: Character, item: Item): ItemModalViewModel {
     const eq = item as Equipment;
     const isAlreadyEquipped = isEquippedFirstOfSlot(player, eq);
+    const replacing = isAlreadyEquipped ? null : findEquippedInSlot(player, eq);
 
     // Equipment in this engine snapshot carries no stat modifiers, so
     // the deltas are all 0 today. The contract stabilises the UI ahead
@@ -138,15 +170,29 @@ function buildEquipmentModal(player: Character, item: Item): ItemModalViewModel 
             : 'No stat change — engine modifiers pending.',
     ];
 
+    // Phase 36 port: when the equip would replace a worn sibling, the
+    // confirm button surfaces the swap so the player can't miss what
+    // they're discarding. Bare-slot equip keeps the plain `EQUIP`
+    // label.
+    let confirmLabel: string;
+    if (isAlreadyEquipped) {
+        confirmLabel = 'WORN';
+    } else if (replacing !== null) {
+        confirmLabel = `EQUIP · REPLACE ${replacing.name.toUpperCase()}`;
+    } else {
+        confirmLabel = 'EQUIP';
+    }
+
     return freezeViewModel({
         itemId: item.id,
         name: item.name,
         description: item.description,
         mode: 'equip' as ItemModalMode,
         confirmPrompt: `Wear the ${item.name.toLowerCase()}?`,
-        confirmLabel: isAlreadyEquipped ? 'WORN' : 'EQUIP',
+        confirmLabel,
         previewLines: previewLines as readonly string[],
         statDeltas: statDeltas as readonly StatDelta[],
+        replacingName: replacing === null ? null : replacing.name,
     });
 }
 

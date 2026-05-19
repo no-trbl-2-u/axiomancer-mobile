@@ -291,28 +291,21 @@ commit that ships the phase.
       `[needs-user-call]` critique row from pass 2 (commit
       `d967f27`). Verify: 410/410 unchanged. Brief at
       `plan/phases/phase_31_tabs_design_pass.md`.
-- [ ] Phase 32 — UI refresh from Claude Design handoff (rolling
-      port). Filed via `/plan-a-phase` 2026-05-16 with topic
-      "Update the UI with the new designs from Claude design."
-      Multi-tick **rolling phase** mirroring the Phase 17 →
-      Phase 28 pattern: each new design surface lands as a
-      user-driven `feat: <surface> — port from design handoff`
-      commit; the next `/march` tick extracts the presenter,
-      adds hermetic tests, and integrates the screen with the
-      smoke-render harness (Phase 30 Tick A). One sub-tick per
-      ported surface; phase closes when the user has finished
-      porting and the loop has tested every sub-tick. Design
-      source: Claude Design at
-      <https://claude.ai/design/p/019e0f5a-a0f0-753b-be1e-8939e6011384>
-      (authenticated; loop cannot fetch — user drives the port,
-      loop drives the tests + cleanup). **Dispatch rule (set via
-      `/oversight` 2026-05-16): detect-and-defer.** `/march`
-      reads recent commits for `feat: <surface> — port from
-      design handoff` since the last `spec32 tick` commit; if
-      none, it skips Phase 32 and falls through to its normal
-      cascade. The loop never invents a port. See brief
-      §"Dispatch rule (for `/march`)" for the full rule. Brief
-      at `plan/phases/phase_32_design_refresh.md`.
+- [x] Phase 32 — UI refresh from Claude Design handoff (rolling
+      port). Filed via `/plan-a-phase` 2026-05-16. Eight sub-ticks
+      shipped A–H covering the highest-density slice of the
+      design bundle (vendored at `design/handoff-2026-05-16/`):
+      A `08bcf5e` event combat-prelude chrome, B `8c5f985`
+      exploration step-cards, C `843f304` combat phase-stack,
+      D `bf13539` encounter modal seam, E `2a23047` inventory
+      Equipment Dock, F `cc38107` inventory slot filter, G
+      `05127df` per-slot ItemGlyphs, H `d7489a2` exploration
+      node toast. Closed via `/oversight` 2026-05-19 — further
+      design-bundle work has been factored into discrete phases
+      34–43 (one per remaining `design-spec.md` row) so /march
+      can dispatch /ship-a-phase against each one without
+      waiting for user port commits. Brief at
+      `plan/phases/phase_32_design_refresh.md`.
 - [x] Phase 33 — MEMOIR tab (journal: story / quests / alignment
       / philosopher-quote slot). Filed via `/plan-a-phase`
       2026-05-16. Adds a new fifth route at
@@ -343,6 +336,89 @@ commit that ships the phase.
       cleared (`994fb02`). Verify green at 459/459. The
       philosopher-quote slot stays `null` until exact alignments
       + a quote inventory are defined (follow-up phase).
+
+**Design-spec drain queue (filed via `/oversight` 2026-05-19).**
+Phases 34–43 are the ten un-ported surfaces enumerated in
+`design-spec.md`, factored out of Phase 32's rolling-port
+contract so `/march` can dispatch `/ship-a-phase` against each
+one autonomously (no user-port-commit gate). Each phase brief
+lives inline below; detailed scope + design-source pointers
+remain in `design-spec.md`. Phase 44 is the loop-caught
+regression check for the routing/gesture bug surfaced
+2026-05-19 (commit `3a14f5f`).
+
+- [ ] Phase 34 — Routing + gesture regression check (filed via
+      `/oversight` 2026-05-19). Add a hermetic test that mounts
+      `app/_layout.tsx` + `app/(tabs)/_layout.tsx` and asserts:
+      (a) `<GestureHandlerRootView>` wraps the tree; (b) every
+      `<Tabs.Screen name="...">` matches a real expo-router
+      route ID. Catches the name-drift / missing-wrapper class
+      that bit on 2026-05-19 (`3a14f5f`).
+      **Scope:** 1 tick, 1 new hermetic test file. Cheap.
+- [ ] Phase 35 — Inventory equip-preview stat deltas
+      (`design-spec.md` item 1). Extend `InventoryItemRow` (or
+      a sibling presenter) with a `replacePreview` field
+      surfacing stat-delta vs the currently-worn item in the
+      same slot. Screen renders the deltas on expanded
+      equipment cards. Design source:
+      `design/handoff-2026-05-16/project/screens/inventory.jsx`
+      lines 357-380 (`computeDelta`) + 388-432
+      (`StatDeltaBlock`). Subject: `feat: inventory
+      equip-preview deltas — port design spec`.
+- [ ] Phase 36 — Inventory equip-replace label
+      (`design-spec.md` item 2). The EQUIP confirmation button's
+      label changes shape when replacing: bare-slot shows
+      `✦ EQUIP`, replace shows `✦ EQUIP · REPLACE <current>`.
+      Touches `state/presenters/inventory.modal.engine.ts`.
+- [ ] Phase 37 — Inventory item slot tag (`design-spec.md`
+      item 3). Small mono eyebrow rendering
+      `vm.row.sub.toUpperCase()` on every equipment item card
+      so the slot affordance is visible without expanding.
+- [ ] Phase 38 — Combat phase-stack collapse (`design-spec.md`
+      item 5). Past combat phases collapse to one-line
+      summaries; current expands; future stay future. Extends
+      `state/presenters/combat.engine.ts` phase-stack VM with
+      `kind: 'past' | 'current' | 'future'` + `summary: string
+      | null`. Design source: `screens-canonical.jsx`
+      `PhaseStack` / `PhaseRow` / `phasePastSummary` (lines
+      275-332).
+- [ ] Phase 39 — Diegetic-stack backdrop opacity
+      (`design-spec.md` item 6). Tune the encounter-modal +
+      paced-event modal backdrop to the design's 35% opacity
+      target so the map persists visibly behind. Audit + a
+      one-line opacity tweak.
+- [ ] Phase 40 — Event-shell distinction audit
+      (`design-spec.md` item 7). Confirm combat-adjacent
+      (encounter / hazard) events render as the
+      `EncounterModalOverlay` seam-modal while paced events
+      use the full-screen `app/event/index.tsx`. Likely 0-LOC
+      fix if already correct — audit + close-out.
+- [ ] Phase 41 — Combat aftermath banner (`design-spec.md`
+      item 8). Brief overlay banner after combat victory
+      (~2500ms auto-dismiss) before returning the player to
+      the map. Design source: `prototype.jsx:550-560`
+      (`PtAftermathBanner`) + flow at lines 65-77.
+- [ ] Phase 42 — Combat-tab mutex extension to encounter modal
+      (`design-spec.md` item 9). Flip the combat-tab slot
+      earlier — while the encounter modal is mounted but
+      before combat has actually started. Touches
+      `state/combat-mode.ts` or a sibling
+      `useCombatTabMode` selector. Visual-continuity gain.
+- [ ] Phase 43 — Encounter modal boss kneel/strike variant
+      (`design-spec.md` item 10). Boss encounters expose
+      `KNEEL` / `STRIKE` instead of `FIGHT/SNEAK/PARLEY/FLEE`.
+      Engine surface check first — if `Enemy.isBoss` (or
+      equivalent) isn't exposed, file a `[needs-engine-release]`
+      row and pause this phase. Design source:
+      `screens-modal.jsx::BossModal`.
+
+> **`design-spec.md` cold-codex item (4)** is **not** in
+> phases 34–43. Per its own brief body it needs a fresh
+> `Phase 25 — Aesthetic toggle` candidate filed via
+> `/oversight`, since it's three screens + a togglable
+> aesthetic mode (much larger surface). Stays in
+> `PHASE_CANDIDATES.md` rather than the build plan.
+
 > bug findings, presenter refactors, asset backlog, ongoing
 > audits. `/march` makes that transition automatic. (Block II
 > phases 20/21 and Block III phases 22/24 in

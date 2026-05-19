@@ -347,14 +347,20 @@ remain in `design-spec.md`. Phase 44 is the loop-caught
 regression check for the routing/gesture bug surfaced
 2026-05-19 (commit `3a14f5f`).
 
-- [ ] Phase 34 — Routing + gesture regression check (filed via
-      `/oversight` 2026-05-19). Add a hermetic test that mounts
-      `app/_layout.tsx` + `app/(tabs)/_layout.tsx` and asserts:
-      (a) `<GestureHandlerRootView>` wraps the tree; (b) every
-      `<Tabs.Screen name="...">` matches a real expo-router
-      route ID. Catches the name-drift / missing-wrapper class
-      that bit on 2026-05-19 (`3a14f5f`).
-      **Scope:** 1 tick, 1 new hermetic test file. Cheap.
+- [x] Phase 34 — Routing + gesture regression check. Shipped via
+      `state/e2e/route-registration.engine.test.ts` (new file, +5
+      hermetic cases). Source-grep approach rather than
+      router-mount: reads `app/_layout.tsx` + `app/(tabs)/_layout.tsx`
+      as text, asserts (a) `GestureHandlerRootView` is imported
+      from `react-native-gesture-handler` AND used as the
+      outermost JSX wrapper in the returned tree; (b) every
+      `<Tabs.Screen name="X">` value matches a real expo-router
+      route ID computed from the actual file shape (`foo.tsx`
+      → `foo`; `foo/index.tsx` → `foo/index`); (c) no
+      `<Tabs.Screen name="X">` uses the short form when a
+      folder route at `X/index.tsx` exists. Catches both
+      classes that bit on 2026-05-19 (`3a14f5f`). Verify
+      502/502 (was 497; +5).
 - [ ] Phase 35 — Inventory equip-preview stat deltas
       (`design-spec.md` item 1). Extend `InventoryItemRow` (or
       a sibling presenter) with a `replacePreview` field

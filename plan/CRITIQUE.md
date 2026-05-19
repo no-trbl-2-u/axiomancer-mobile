@@ -43,7 +43,7 @@
 ## Done
 
 ### [LOW] /app/(tabs)/inventory/index.tsx:30-66 — per-slot `ItemGlyph` variants ported (helmet / gauntlet / boot / breastplate / ring) ✅
-- pass: 14 (commit 2a23047); addressed at commit <pending>
+- pass: 14 (commit 2a23047); addressed at commit 05127df
 - viewport: repository
 - category: design-fidelity
 - observation: ItemGlyph fell through to one quad-path glyph

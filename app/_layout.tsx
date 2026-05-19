@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
 import { PirataOne_400Regular } from '@expo-google-fonts/pirata-one';
 import {
@@ -82,25 +83,27 @@ export default function RootLayout() {
   if (!loaded || !preloaded) return null;
 
   return (
-    <GameStoreProvider adapter={persistenceAdapter}>
-      <CombatModeProvider>
-        <StatusBar style="light" />
-        <HardwareBackHandler />
-        <EventGate />
-        <ToastHost />
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="event"
-            options={{ headerShown: false, presentation: 'fullScreenModal' }}
-          />
-          <Stack.Screen
-            name="crucible"
-            options={{ headerShown: false, presentation: 'fullScreenModal' }}
-          />
-        </Stack>
-      </CombatModeProvider>
-    </GameStoreProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <GameStoreProvider adapter={persistenceAdapter}>
+        <CombatModeProvider>
+          <StatusBar style="light" />
+          <HardwareBackHandler />
+          <EventGate />
+          <ToastHost />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="event/index"
+              options={{ headerShown: false, presentation: 'fullScreenModal' }}
+            />
+            <Stack.Screen
+              name="crucible"
+              options={{ headerShown: false, presentation: 'fullScreenModal' }}
+            />
+          </Stack>
+        </CombatModeProvider>
+      </GameStoreProvider>
+    </GestureHandlerRootView>
   );
 }

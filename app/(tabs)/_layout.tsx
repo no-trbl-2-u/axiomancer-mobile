@@ -114,16 +114,16 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="exploration"
+        name="exploration/index"
         options={{
           title: TAB_TITLES.exploration,
           tabBarLabel: TAB_TITLES.exploration,
           tabBarIcon: ({ color, size }) => (
-            <TabIconWithBadge 
-              kind="eye" 
-              color={color} 
-              size={size} 
-              badge={badges.exploration} 
+            <TabIconWithBadge
+              kind="eye"
+              color={color}
+              size={size}
+              badge={badges.exploration}
             />
           ),
           href: isTabHidden(inCombat, 'exploration') ? null : undefined,
@@ -146,22 +146,22 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="character"
+        name="character/index"
         options={{
           title: TAB_TITLES.character,
           tabBarLabel: TAB_TITLES.character,
           tabBarIcon: ({ color, size }) => (
-            <TabIconWithBadge 
-              kind="crown" 
-              color={color} 
-              size={size} 
-              badge={badges.character} 
+            <TabIconWithBadge
+              kind="crown"
+              color={color}
+              size={size}
+              badge={badges.character}
             />
           ),
         }}
       />
       <Tabs.Screen
-        name="memoir"
+        name="memoir/index"
         options={{
           title: TAB_TITLES.memoir,
           tabBarLabel: TAB_TITLES.memoir,
@@ -176,7 +176,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="inventory"
+        name="inventory/index"
         options={{
           title: TAB_TITLES.inventory,
           tabBarLabel: TAB_TITLES.inventory,

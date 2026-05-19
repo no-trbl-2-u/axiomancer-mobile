@@ -410,11 +410,19 @@ regression check for the routing/gesture bug surfaced
       511/511 (was 509; +2). The skill-row summary still
       stays empty pending a library-label helper (follow-up
       to Phase 21 when engine skills land properly).
-- [ ] Phase 39 — Diegetic-stack backdrop opacity
-      (`design-spec.md` item 6). Tune the encounter-modal +
-      paced-event modal backdrop to the design's 35% opacity
-      target so the map persists visibly behind. Audit + a
-      one-line opacity tweak.
+- [x] Phase 39 — Diegetic-stack backdrop opacity. Shipped: tuned
+      `EncounterModalOverlay`'s backdrop fill from
+      `rgba(10,10,10,0.85)` to `rgba(10,10,10,0.65)` so the
+      exploration map shows through at ~35% visibility per
+      chat 2 §IV ("map persists at 35% opacity behind every
+      modal"). Mirrors the design's prototype.jsx:454 combat
+      shell backdrop (0.6); ours is marginally darker so the
+      panel border reads sharp on lighter map regions.
+      Inline JSDoc cites the design source. Paced events
+      were considered but currently render full-screen
+      (`presentation: 'fullScreenModal'`); the diegetic-stack
+      rework for paced is bigger and lives with Phase 40
+      (event-shell audit). Verify 511/511 unchanged.
 - [ ] Phase 40 — Event-shell distinction audit
       (`design-spec.md` item 7). Confirm combat-adjacent
       (encounter / hazard) events render as the

@@ -175,7 +175,15 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(10, 10, 10, 0.85)',
+        // Backdrop opacity tuned to the design's diegetic-stack target
+        // (chat 2 §IV — "map persists at 35% opacity behind every
+        // modal"). 0.65 backdrop fill = ~35% map visibility. Mirrors
+        // `design/handoff-2026-05-16/project/prototype.jsx:454`
+        // `'rgba(10,10,10,0.6)'` for the combat-event shell; ours is
+        // marginally darker (0.65 vs 0.6) so the panel border reads
+        // sharp on the lighter regions of the exploration map. Phase
+        // 39 port from the handoff bundle.
+        backgroundColor: 'rgba(10, 10, 10, 0.65)',
     },
     panel: {
         position: 'absolute',

@@ -17,7 +17,10 @@ import { NodeMark } from '@/components/NodeMark';
 import { ActionIcon } from '@/components/ActionIcon';
 import { Splatter } from '@/components/Splatter';
 import { AftermathBanner } from '@/components/AftermathBanner';
+import { ExplorationCodexHeader } from '@/components/ExplorationCodexHeader';
+import { useAesthetic } from '@/state/aesthetic-mode';
 import { selectAftermathCopy, useCombatMode } from '@/state/combat-mode';
+import { selectExplorationCodexHeader } from '@/state/presenters/exploration.codex.engine';
 import { useGameActions, useGameState, useGameStore } from '@/state/GameStoreProvider';
 import {
     selectExplorationViewModel,
@@ -54,6 +57,7 @@ const OPTION_ICON: Record<NodeType, string> = {
 export default function ExplorationScreen() {
     const router = useRouter();
     const { enterCombat, lastOutcome, clearLastOutcome } = useCombatMode();
+    const { mode: aesthetic } = useAesthetic();
     const store = useGameStore();
     const actions = useGameActions();
     // Per the design's prototype.jsx flow, tapping a non-available node
@@ -185,6 +189,11 @@ export default function ExplorationScreen() {
     return (
         <ScreenBg>
             <StatusCard />
+
+            {aesthetic === 'codex' && (() => {
+                const { left, right } = selectExplorationCodexHeader(vm);
+                return <ExplorationCodexHeader left={left} right={right} />;
+            })()}
 
             {/* Region Header */}
             <View style={styles.regionHeader}>

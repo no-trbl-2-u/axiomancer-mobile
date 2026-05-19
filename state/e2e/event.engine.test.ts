@@ -19,6 +19,7 @@ import {
     ENCOUNTER_LABEL,
     selectEventViewModel,
     selectHasActiveEvent,
+    selectHasActivePacedEvent,
     type EventViewModel,
 } from '@/state/presenters/event.engine';
 
@@ -170,6 +171,31 @@ describe('selectHasActiveEvent', () => {
         setPending(store, makeEncounterResult());
         store.setState({ combat: { phase: 'choose' } as never });
         expect(selectHasActiveEvent(store.getState())).toBe(false);
+    });
+
+    // Phase 40 — event-shell distinction audit. EventGate must NOT
+    // push the player into the full-screen /event route when the
+    // pending event is a combat-prelude (which renders in-place over
+    // the map via <EncounterModalOverlay>).
+    it('selectHasActivePacedEvent: false on a fresh store', () => {
+        const store = makeStore();
+        expect(selectHasActivePacedEvent(store.getState())).toBe(false);
+    });
+
+    it('selectHasActivePacedEvent: false for a combat-prelude (encounter) event', () => {
+        const store = makeStore();
+        setPending(store, makeEncounterResult());
+        // selectHasActiveEvent is true here…
+        expect(selectHasActiveEvent(store.getState())).toBe(true);
+        // …but the paced selector excludes combat-prelude so the
+        // EventGate doesn't double-mount with EncounterModalOverlay.
+        expect(selectHasActivePacedEvent(store.getState())).toBe(false);
+    });
+
+    it('selectHasActivePacedEvent: true for a paced (rest) event', () => {
+        const store = makeStore();
+        setPending(store, makeRestResult(5));
+        expect(selectHasActivePacedEvent(store.getState())).toBe(true);
     });
 });
 

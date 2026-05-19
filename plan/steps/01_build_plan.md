@@ -423,12 +423,20 @@ regression check for the routing/gesture bug surfaced
       (`presentation: 'fullScreenModal'`); the diegetic-stack
       rework for paced is bigger and lives with Phase 40
       (event-shell audit). Verify 511/511 unchanged.
-- [ ] Phase 40 — Event-shell distinction audit
-      (`design-spec.md` item 7). Confirm combat-adjacent
-      (encounter / hazard) events render as the
-      `EncounterModalOverlay` seam-modal while paced events
-      use the full-screen `app/event/index.tsx`. Likely 0-LOC
-      fix if already correct — audit + close-out.
+- [x] Phase 40 — Event-shell distinction audit. Audited not
+      0-LOC after all: found a real shell-double-mount
+      regression. `EventGate.tsx` was routing `router.push('/event')`
+      on every active event regardless of kind, while the
+      exploration screen separately mounted
+      `<EncounterModalOverlay>` for `combat-prelude` events.
+      The two shells would mount simultaneously when a
+      combat-prelude fired. Fix: new presenter selector
+      `selectHasActivePacedEvent` (false for combat-prelude;
+      true only for narrative-choice). EventGate now reads
+      the paced-only selector, leaving combat-prelude events
+      entirely in the diegetic-stack path. +3 hermetic
+      tests pinning the new selector contract. Verify
+      514/514 (was 511; +3).
 - [ ] Phase 41 — Combat aftermath banner (`design-spec.md`
       item 8). Brief overlay banner after combat victory
       (~2500ms auto-dismiss) before returning the player to

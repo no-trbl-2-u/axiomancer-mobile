@@ -193,6 +193,28 @@ export function selectHasActiveEvent(state: AppStoreState): boolean {
 }
 
 /**
+ * Returns `true` when the engine has an active event AND that event
+ * is a **paced** (narrative-choice) one — the kind that renders as a
+ * full-screen `/event` route. Combat-adjacent events
+ * (`'combat-prelude'`) render in-place via `<EncounterModalOverlay>`
+ * over the exploration map and must NOT route to the full-screen
+ * shell; the `EventGate` reads this selector instead of the broader
+ * `selectHasActiveEvent` to keep the two shells from mounting
+ * simultaneously.
+ *
+ * Filed via Phase 40 (event-shell distinction audit, 2026-05-19).
+ * Before this split, `EventGate` pushed `/event` on every active
+ * event, which produced a "double-mount" race when a combat-prelude
+ * fired: both the in-place modal and the full-screen route would
+ * appear at once.
+ */
+export function selectHasActivePacedEvent(state: AppStoreState): boolean {
+    if (!selectHasActiveEvent(state)) return false;
+    const vm = selectEventViewModel(state);
+    return vm.kind === 'narrative-choice';
+}
+
+/**
  * Phase 32 design-handoff port (2026-05-16): backfill `preludeChrome`
  * on a freshly-composed VM so each `composeX` function can stay
  * focused on its own concerns. Combat-prelude variants get the

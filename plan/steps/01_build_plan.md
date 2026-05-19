@@ -392,14 +392,24 @@ regression check for the routing/gesture bug surfaced
       handoff-2026-05-16/project/screens/inventory.jsx:382-388`.
       Verify 509/509 unchanged (presenter contract untouched —
       slot tag reads existing `vm.row.sub`).
-- [ ] Phase 38 — Combat phase-stack collapse (`design-spec.md`
-      item 5). Past combat phases collapse to one-line
-      summaries; current expands; future stay future. Extends
-      `state/presenters/combat.engine.ts` phase-stack VM with
-      `kind: 'past' | 'current' | 'future'` + `summary: string
-      | null`. Design source: `screens-canonical.jsx`
-      `PhaseStack` / `PhaseRow` / `phasePastSummary` (lines
-      275-332).
+- [x] Phase 38 — Combat phase-stack collapse. Largely shipped
+      via Phase 32 tick C — the `PhaseStackEntry.state`
+      (`'past' | 'current' | 'future'`) + `summary: string`
+      contract already drove the design's vertical-collapse
+      behavior; the screen (`app/(tabs)/combat.tsx`) branches
+      on `entry.state === 'current'` to render the body and
+      keeps past rows as one-line header + summary. Discovery
+      while closing this phase: the JSDoc claim that "action
+      and skill are not buffered across phase changes" was
+      stale — the engine preserves `playerChoice.action`
+      across phase changes too, so past-action rows DO surface
+      their committed value when the screen passes through
+      `choosing_skill` / `resolving`. Close-out: +2 hermetic
+      cases pinning past-action summary + future-row empty
+      summary; JSDoc refreshed to match reality. Verify
+      511/511 (was 509; +2). The skill-row summary still
+      stays empty pending a library-label helper (follow-up
+      to Phase 21 when engine skills land properly).
 - [ ] Phase 39 — Diegetic-stack backdrop opacity
       (`design-spec.md` item 6). Tune the encounter-modal +
       paced-event modal backdrop to the design's 35% opacity

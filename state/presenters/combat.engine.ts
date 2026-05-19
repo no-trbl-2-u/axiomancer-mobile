@@ -262,10 +262,15 @@ export interface PhaseStackEntry {
     state: PhaseStackEntryState;
     /**
      * Past-state summary value (e.g. `'BODY'` for a committed stance,
-     * `'STRIKE'` for a committed attack). Empty string when no summary
-     * is available (engine doesn't preserve the action/skill choice
-     * across phase changes today; stance is the only field surfaced
-     * here for this port).
+     * `'SKILL'` for a committed action). Sourced from
+     * `combat.playerChoice.stance` (past stance row) +
+     * `combat.playerChoice.action` (past action row); the engine
+     * preserves both across phase changes. Empty string on future
+     * rows (no spoiler on un-committed phases) and on the skill row
+     * (the engine doesn't yet expose the picked skill id; future
+     * refinement once the skill VM ships its selection surface). The
+     * Phase 38 close-out pinned the stance + action contracts
+     * hermetically (see `state/e2e/combat.engine.test.ts`).
      */
     summary: string;
     /**
@@ -395,11 +400,14 @@ const PHASE_STACK_ORDER: readonly CombatPhaseKey[] = [
 
 /**
  * Build the vertical phase-stack rows from the current engine phase +
- * picker state. Past-state summary is the chosen value where available
- * (stance is preserved on the engine via `state.combat.playerStance`;
- * action and skill are not buffered across phase changes today, so
- * those rows return empty-string summary and the screen renders just
- * the label on past rows).
+ * picker state. Past-state summary is the chosen value where the
+ * engine preserves it: stance is read from `playerChoice.stance` and
+ * action from `playerChoice.action` (both survive phase transitions).
+ * The skill row's summary stays empty for now — the engine exposes
+ * the picked skill id but the presenter has no library-friendly
+ * label resolution yet; a future Phase 21 follow-up can populate it.
+ * Phase 38 hermetically pinned the stance + action past-summary
+ * contracts (combat.engine.test.ts).
  */
 function buildPhaseStack(
     currentPhase: CombatPhaseKey,

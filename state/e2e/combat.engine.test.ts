@@ -763,6 +763,42 @@ describe('selectCombatViewModel: phaseStack contract (Tick C)', () => {
         expect(vm.phaseStack[0]?.summary).toBe('HEART');
     });
 
+    it('past-row summary for the action phase is the chosen action in ALL CAPS (Phase 38)', () => {
+        // After the player commits stance + action and the engine has
+        // moved on (to choosing_skill in this test), the prior two
+        // rows collapse to one-line summaries showing the picks. The
+        // design's vertical-collapse contract (chat 2 §V) requires
+        // both stance and action to surface here so the player can
+        // review what they already committed without re-expanding.
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
+        actions.setPlayerStance('body');
+        actions.setPlayerAction('skill');
+        actions.setCombatPhase('choosing_skill');
+        const vm = selectCombatViewModel(store.getState());
+
+        expect(vm.phaseStack[0]?.state).toBe('past');
+        expect(vm.phaseStack[0]?.summary).toBe('BODY');
+        expect(vm.phaseStack[1]?.state).toBe('past');
+        expect(vm.phaseStack[1]?.summary).toBe('SKILL');
+        expect(vm.phaseStack[2]?.state).toBe('current');
+        expect(vm.phaseStack[2]?.visible).toBe(true);
+    });
+
+    it('future-row summary is the empty string (no spoiler on un-committed phases)', () => {
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
+        const vm = selectCombatViewModel(store.getState());
+
+        // Phase 0 (choosing_stance) is current; phases 1-3 are future.
+        for (let i = 1; i < vm.phaseStack.length; i++) {
+            expect(vm.phaseStack[i]?.state).toBe('future');
+            expect(vm.phaseStack[i]?.summary).toBe('');
+        }
+    });
+
     it('every entry object is frozen so React.memo on the row sees stable references', () => {
         const store = createGameStore(createMemoryAdapter());
         const vm = selectCombatViewModel(store.getState());

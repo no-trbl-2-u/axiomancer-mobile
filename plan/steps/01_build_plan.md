@@ -479,6 +479,66 @@ regression check for the routing/gesture bug surfaced
       surface gate needed — `isBoss` was already on
       `ResolveMapEventResult`.
 
+**Second design-spec drain queue (filed via `/oversight`
+2026-05-19, 5th call).** Three prototype micro-interactions
+(`design-spec.md` items 11-13) plus three spot-check audit
+phases for subtle deviations surfaced when the user asked
+"any deviations from the claude design prototype?". The audit
+phases ship 0-LOC fix-or-confirm reports unless something is
+actually wrong, then a single follow-up port to the same
+phase row.
+
+- [ ] Phase 44 — Modal enter animations (`design-spec.md`
+      item 11). Add `react-native-reanimated` `withTiming`
+      enter transitions on the existing modal/toast roots
+      so they "rise" instead of mounting instantly. 280ms
+      ease-out for modals/banners; 200ms for toasts.
+      Touches `EncounterModalOverlay.tsx`,
+      `components/AftermathBanner.tsx`, and the exploration
+      `nodeToast` view. Design source: `prototype.jsx:632-638`.
+      Subject: `feat(spec44): modal rise + toast fade animations`.
+- [ ] Phase 45 — Event-modal action-button subtitles
+      (`design-spec.md` item 12). Wire the existing
+      `EventChoice.consequences` field to the
+      `EncounterModalOverlay` action-button render path as a
+      second-line italic subtitle. Format mirrors the
+      design's `'ix · vi vitae · adv. unknown'`-style
+      lowercase-roman cost line. Touches the overlay's
+      button JSX + styles; presenter already carries the data.
+      Subject: `feat(spec45): event-modal action-button subtitles`.
+- [ ] Phase 46 — Paced-event kind-meta variants
+      (`design-spec.md` item 13). Five distinct kind-meta
+      variants (rest / treasure / gather / quest / town
+      fallback), each with its own eyebrow + title + body +
+      illustration. Lift the `kindToMeta` table onto a
+      presenter; pair with kind-specific illustrations. May
+      need engine support for `gather` / `town` node kinds
+      if they aren't already in the engine vocabulary —
+      audit first; if missing, file a `[needs-engine-release]`
+      row and pause. Subject: `feat(spec46): paced-event
+      kind-meta variants`.
+- [ ] Phase 47 — Stance-picker gloss copy audit. The design
+      ships `gloss: 'parley, mercy'` (heart), `'iron, force'`
+      (body), `'cipher, ruse'` (mind) under each stance card.
+      Confirm the current `state/presenters/combat.engine.ts`
+      stance picker exposes these exact phrases; lift onto
+      VM if inline. 0-LOC if already correct; one-commit
+      lift otherwise. Design source: `prototype.jsx:283-301`.
+- [ ] Phase 48 — EncounterModalOverlay panel position audit.
+      Design ships the encounter modal panel with `top: 56,
+      bottom: 84` insets so the WILDS/STRIFE tab bar shows
+      through at the bottom and a strip of map shows at the
+      top (diegetic stack continuity). Confirm current
+      `EncounterModalOverlay.tsx` uses the same insets; tweak
+      otherwise. Design source: `prototype.jsx:455-459`.
+- [ ] Phase 49 — Token Crucible inline strip placement audit.
+      Design ships the Crucible as an inline strip *above*
+      the action picker, with five pool tokens + an "OPEN ▸"
+      button that opens the reference modal. Confirm current
+      combat surface (Phase 17's Token Crucible port) places
+      the strip there + uses the same "OPEN ▸" affordance.
+      Design source: `prototype.jsx:303-322`.
+
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh
 > `Phase 25 — Aesthetic toggle` candidate filed via

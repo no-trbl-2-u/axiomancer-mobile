@@ -43,7 +43,7 @@
 ## Done
 
 ### [MED] /app/(tabs)/exploration/index.tsx:373-379 — aftermath banner display literals lifted onto presenter ✅
-- pass: 16 (commit 56725ae); addressed at commit <pending>
+- pass: 16 (commit 56725ae); addressed at commit fd410cc
 - viewport: repository
 - category: voice
 - observation: Phase 41 shipped the aftermath banner with
@@ -62,7 +62,7 @@
   contract.
 
 ### [LOW] /components/AftermathBanner.tsx:53 — accessibilityLiveRegion + announceForAccessibility added ✅
-- pass: 16 (commit 56725ae); addressed at commit <pending>
+- pass: 16 (commit 56725ae); addressed at commit fd410cc
 - viewport: repository
 - category: a11y
 - observation: Banner had `pointerEvents="none"` on its root

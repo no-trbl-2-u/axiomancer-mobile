@@ -49,8 +49,13 @@ default with a detection step the loop runs first:
 1. Read the last `Phase 32 Tick <X>` sub-tick commit (search
    `git log --grep='spec32 tick'`). If none exists, the
    relevant "last point" is the Phase 32 brief commit itself.
-2. Look for any `feat: <surface> — port from design handoff`
-   commit that landed **after** that last point.
+2. Look for any commit subject matching either
+   `feat: <surface> — port from design handoff` or
+   `feat: <surface> — port design spec` that landed **after**
+   that last point. (The second phrase was introduced 2026-05-19
+   when a fresh design bundle landed; the dispatch rule
+   matches either historic phrase so Tick A–F commits keep
+   parsing.)
    - **Found** → `/ship-a-phase` proceeds: extract presenter,
      add hermetic tests, integrate with smoke-render harness.
      The sub-tick body follows §"Sub-tick decomposition" item 2

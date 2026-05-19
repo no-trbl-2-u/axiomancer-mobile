@@ -172,30 +172,34 @@ git pull --ff-only
 Read `bearings.md` for posture. If **strict** → exit 0
 immediately with a one-line log. No commit.
 
-### Step 0.5 — Cascade-cadence gate (set via `/oversight` 2026-05-18)
+### Step 0.5 — Cascade-cadence gate (set via `/oversight` 2026-05-18; tightened 2026-05-19)
 
 If this `/expand` invocation was a **cascade from `/iterate`** (the
 "no actionable iterate work" → `/expand` path in `iterate.md` §6
 failure mode 6), check the rate-limit window before proceeding:
 
-- Last expand pass was **< 12 commits ago** AND **< 6 hours ago**
+- Last expand pass was **< 12 commits ago**
   → **exit 0 immediately with no commit**. Log to stdout:
-  `expand: cascade-cadence gate (last pass <K> commits ago,
-  <H> hours ago) — skip, no commit.`
+  `expand: cascade-cadence gate (last pass <K> commits ago)
+  — skip, no commit.`
 
-The march-level expand gate (≥20 commits / ≥48h) only applies
-when `/march` itself dispatches `/expand` directly. Iterate's
-cascade bypasses that gate and was historically firing every
-tick when the loop hit idle — generating consecutive
-`expand: pass N — no candidates` metadata-bump commits with no
-new signal. The cadence rule above suppresses those no-op
-commits at idle while still letting the march-level direct
-dispatch run at its normal cadence.
+**Time threshold removed 2026-05-19 via `/oversight`.** The earlier
+version of this rule also released the gate at ≥6h elapsed
+since the last pass. In practice that produced one no-op
+`expand: pass N — no candidates` heartbeat commit every ~6h
+during long true-idle windows (no commits accumulating, nothing
+to expand on). The user opted to suppress the heartbeat
+entirely: the gate now releases **only** when ≥12 substantive
+commits have actually accumulated. If the loop is at true idle,
+the cascade stays silent indefinitely — until either substantive
+product ships (commits accumulate, gate releases), the user
+files a `/jot`, or `/oversight` runs.
 
-When the gate fires, the parent `/march` tick still returns
-cleanly; the loop is just silent for that tick. The next tick
-re-evaluates; if substantive product has shipped or the
-post-cascade cooldown has elapsed, expand proceeds normally.
+The march-level expand gate (≥20 commits / ≥48h) still applies
+when `/march` itself dispatches `/expand` directly. That gate
+is the user-facing heartbeat now; the cascade is purely a
+"refill signal when the loop is productive but the audit is
+quiet" mechanism.
 
 If this `/expand` invocation was **not** a cascade (it was
 called directly via `/expand` or by `/march`'s own rate-limited

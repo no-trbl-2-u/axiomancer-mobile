@@ -43,7 +43,7 @@
 ## Done
 
 ### [MED] /plan/phases/phase_32_design_refresh.md:88-109 — Sub-tick log stale (only A-D listed; E-H shipped) ✅
-- pass: 15 (commit f1a8a94); addressed at commit <pending>
+- pass: 15 (commit f1a8a94); addressed at commit e78dbb6
 - viewport: repository
 - category: docs
 - observation: Phase 32 brief's Sub-tick log table stopped at
@@ -61,7 +61,7 @@
   un-ported surfaces.
 
 ### [LOW] /design-spec.md:266-270 — internal contradiction on cold-codex sizing ✅
-- pass: 15 (commit f1a8a94); addressed at commit <pending>
+- pass: 15 (commit f1a8a94); addressed at commit e78dbb6
 - viewport: repository
 - category: docs
 - observation: closing summary claimed "items 1-10 above are

@@ -531,6 +531,7 @@ function StancePhase({
                                 <StanceGlyph kind={opt.key} size={48} color={accent} />
                             </View>
                             <Text style={[stance_styles.stanceName, { color: accent }]}>{opt.label}</Text>
+                            <Text style={stance_styles.stanceGloss}>{opt.gloss}</Text>
                             <Text style={stance_styles.stanceMeta}>BEATS {opt.counters} · WEAK {opt.weakTo}</Text>
                             <View style={stance_styles.divider} />
                             <View style={stance_styles.statRow}>
@@ -877,6 +878,11 @@ const stance_styles = StyleSheet.create({
     advText: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1 },
     glyphWrap: { alignItems: 'center', marginTop: 4, marginBottom: 2 },
     stanceName: { textAlign: 'center', fontFamily: FONTS.gothic, fontSize: 17, letterSpacing: 1 },
+    // Phase 47 port — two-word lowercase gloss under each stance
+    // label (prototype.jsx:285-287). Italic serif, bone-color, tight
+    // spacing to read as a fly-by lore line above the BEATS / WEAK
+    // metadata row.
+    stanceGloss: { textAlign: 'center', fontFamily: FONTS.serifItalic, fontSize: 9, color: AXM.bone, marginTop: 1, marginBottom: 2 },
     stanceMeta: { textAlign: 'center', fontFamily: FONTS.mono, fontSize: 7, color: AXM.bone, letterSpacing: 0.5, marginBottom: 4 },
     divider: { borderTopWidth: 1, borderTopColor: AXM.ash, marginBottom: 3 },
     statRow: { flexDirection: 'row', justifyContent: 'space-between', lineHeight: 14 },

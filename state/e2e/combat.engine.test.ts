@@ -238,6 +238,20 @@ describe('selectCombatViewModel: stance picker', () => {
         }
     });
 
+    // Phase 47 port — stance gloss copy (prototype.jsx:285-287).
+    it('each stance option ships its lowercase two-word gloss (Phase 47)', () => {
+        const store = createGameStore(createMemoryAdapter());
+        store.getState().startCombat(makeEnemy());
+
+        const vm = selectCombatViewModel(store.getState());
+        const byKey = Object.fromEntries(
+            vm.stancePicker.options.map((o) => [o.key, o.gloss] as const),
+        );
+        expect(byKey.heart).toBe('parley, mercy');
+        expect(byKey.body).toBe('iron, force');
+        expect(byKey.mind).toBe('cipher, ruse');
+    });
+
     it('derives stance attack/skill/defense from player.derivedStats (engine deriveStats), not a constant', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const player = store.getState().player;

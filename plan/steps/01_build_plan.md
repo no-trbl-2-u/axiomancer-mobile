@@ -534,13 +534,16 @@ phase row.
       present; no [needs-engine-release] gate. +1 hermetic
       case pinning the rest variant's new eyebrow + title.
       Verify 534/534 (was 533; +1).
-- [ ] Phase 47 — Stance-picker gloss copy audit. The design
-      ships `gloss: 'parley, mercy'` (heart), `'iron, force'`
-      (body), `'cipher, ruse'` (mind) under each stance card.
-      Confirm the current `state/presenters/combat.engine.ts`
-      stance picker exposes these exact phrases; lift onto
-      VM if inline. 0-LOC if already correct; one-commit
-      lift otherwise. Design source: `prototype.jsx:283-301`.
+- [x] Phase 47 — Stance-picker gloss copy audit. Audited not
+      0-LOC: gloss copy wasn't present at all (StanceOption
+      had no `gloss` field). Shipped: added `gloss: string`
+      to `StanceOption`; new `STANCE_GLOSS` map
+      (heart='parley, mercy', body='iron, force',
+      mind='cipher, ruse'); `buildStanceOptions` populates
+      it. Screen renders an italic-serif bone-color gloss
+      line between the stance label and the BEATS/WEAK row.
+      +1 hermetic case pinning the exact phrases. Verify
+      535/535 (was 534; +1).
 - [ ] Phase 48 — EncounterModalOverlay panel position audit.
       Design ships the encounter modal panel with `top: 56,
       bottom: 84` insets so the WILDS/STRIFE tab bar shows

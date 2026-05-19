@@ -128,6 +128,14 @@ export interface StanceOption {
     derived: { attack: number; skill: number; defense: number };
     /** Relative to the enemy's last stance (or `'neutral'` when unknown). */
     advantage: AdvantageKind;
+    /**
+     * Two-word lowercase gloss under the stance label on the picker
+     * card — ports the design's `prototype.jsx:285-287` table:
+     * heart='parley, mercy'; body='iron, force'; mind='cipher, ruse'.
+     * Reads as a fly-by lore line, distinct from the longer `hint`
+     * the action picker carries. Phase 47 port.
+     */
+    gloss: string;
 }
 
 export interface StancePickerSlice {
@@ -693,6 +701,12 @@ function advantageLabelFor(kind: AdvantageKind): 'ADVANTAGE' | 'DISADVANTAGE' | 
     return 'NEUTRAL';
 }
 
+const STANCE_GLOSS: Record<StanceKey, string> = {
+    heart: 'parley, mercy',
+    body: 'iron, force',
+    mind: 'cipher, ruse',
+};
+
 function buildStanceOptions(
     derivedStats: DerivedStats | undefined,
     enemyLastStance: StanceKey | null,
@@ -710,6 +724,7 @@ function buildStanceOptions(
             weakTo: STANCE_LABEL[weakTo],
             derived: perStance[key],
             advantage: stanceAdvantage(key, enemyLastStance),
+            gloss: STANCE_GLOSS[key],
         };
     });
 }

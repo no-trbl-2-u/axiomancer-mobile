@@ -234,6 +234,123 @@ doesn't yet differentiate, file a `[needs-engine-release]` row.
 **Sub-tick body draft:**
 > `feat: encounter modal boss kneel/strike variant — port design spec`
 
+## Pending — prototype micro-interactions (discovered 2026-05-19)
+
+A re-read of `design/handoff-2026-05-16/project/prototype.jsx`
+against the current implementation surfaced four prototype-flow
+details that weren't enumerated in the original chat-2 / chat-1
+walk. The 2026-05-19 design URL emphasised `prototype.html` as
+the entry; items 11-14 below come from comparing the clickable
+flow line-by-line to what mobile actually renders.
+
+### 11. Modal enter animations (rise + fade)
+
+**Source:** `prototype.jsx:632-638`. Two CSS keyframes drive
+every modal/toast entry:
+
+```css
+@keyframes rise { from { transform: translateY(20px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+@keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+```
+
+`rise` (280ms ease-out) is applied to `PtEventModal` (both
+combat + paced shells) and `PtAftermathBanner`. `fade` (200ms
+ease-out) is applied to `PtToast`. Current implementation
+(`EncounterModalOverlay.tsx` + the exploration node-toast
+shipped in Phase 32 tick H) mount instantly with no animation
+— the modal feels harder than the design's "rises over the
+map" intent (chat 1: "non-dismissible modals rise"; the JSDoc
+even uses the word "rises" but no animation is wired).
+
+**Scope:** add `react-native-reanimated` `withTiming` enter
+transitions on the existing modal/toast roots. Touches
+`EncounterModalOverlay.tsx` + `app/(tabs)/exploration/index.tsx`
+node toast + (once Phase 41 ships) the aftermath banner.
+
+**Sub-tick body draft:**
+> `feat: modal rise + toast fade animations — port design spec`
+
+### 12. Event-modal action-button metadata subtitles
+
+**Source:** `prototype.jsx:481-489` (combat shell) + `:522-531`
+(paced shell). Every action button in the design's event modal
+ships a two-line layout: primary `axm-caption` label + a
+small italic subtitle in `axm-bodyit` showing the cost or
+consequence.
+
+```jsx
+<button>
+  <span>FIGHT</span>
+  <span style={{ italic, bone }}>ix · vi vitae · adv. unknown</span>
+</button>
+<button>
+  <span>FLEE</span>
+  <span style={{ italic, bone }}>forfeit the path · -ii morale</span>
+</button>
+```
+
+Paced shell: `commit` / `no cost` subtitles. The current
+`EncounterModalOverlay` action buttons render the label only —
+no cost/consequence subtitle. The data already lives on the
+VM (`vm.choices[i].consequences` per the existing
+`event.engine.ts` presenter); the screen needs to render it as
+a subtitle on each choice button.
+
+**Scope:** wire the existing `consequences` field to the
+button render path; format as `ix · vi vitae · adv. unknown`
+style (lowercase-roman cost + italic). Could be a refinement
+of Phase 40 (event-shell audit) or its own follow-up.
+
+**Sub-tick body draft:**
+> `feat: event-modal action-button subtitles — port design spec`
+
+### 13. Paced-event kind-specific copy variants
+
+**Source:** `prototype.jsx:497-503`. The paced event modal
+ships **five** distinct kind-meta variants:
+
+| Node kind | Eyebrow | Title | Body |
+|---|---|---|---|
+| `rest` | A FIRE LOWERS | The Stone Hearth | Stones laid in a tight ring. Coals still red. No one tends them. |
+| `treasure` | A FOUND THING | A Buried Chest | Iron-bound. The lock is rusted through. The wood, somehow, is not. |
+| `gather` | A SMALL HARVEST | A Stand of Mire-Mint | Bitter green. The leaves bruise easily. Worth the stoop. |
+| `quest` | INTERACTION | The Wagoner | A man at a broken cart. One wheel split. He has not looked up. |
+| `town` (fallback) | A SETTLEMENT | (node.title) | (node.hint) |
+
+Each variant pairs with a kind-specific illustration
+(`fire` / `chest` / `plant` / `figure` / `town`). The current
+`app/event/index.tsx` likely ships a single generic paced
+layout. Could fold into Phase 40 (event-shell distinction
+audit) if the audit also touches paced surfaces.
+
+**Scope:** lift the `kindToMeta` table onto a presenter; pair
+with the existing illustration components (or add new ones).
+Will likely require engine support for `gather` / `town`
+node types if they aren't already in the engine vocabulary.
+
+**Sub-tick body draft:**
+> `feat: paced-event kind-meta variants — port design spec`
+
+### 14. Day counter in exploration eyebrow
+
+**Source:** `prototype.jsx:135`. The exploration screen's
+chrome eyebrow reads `'✠ ASH MARCHES · DAY xii'` — continent
+name + in-game day number in lowercase Roman. The current
+exploration screen shipped only `continent` after Phase 32
+sub-tick E's predecessor work; the `dayDisplay` field was
+deleted as YAGNI in commit `4913ab9` because the engine has
+no day-counter state.
+
+**Status: blocked.** This is engine-gated — restoring the
+field requires the engine to expose `world.day` or
+equivalent state. Track this on `plan/AUDIT.md` as a
+`[needs-engine-release]` row once the user wants to commit
+to the day-mechanic surface; file in `docs/engine-team-
+handoff-*.md` as a fresh ask. Not a single-port phase.
+
+**Sub-tick body draft (once unblocked):**
+> `feat: exploration day counter — port design spec`
+
 ## Pending — bigger scope candidates (open for /oversight to promote)
 
 These were noted in `plan/PHASE_CANDIDATES.md` pass 5 already, kept
@@ -263,13 +380,29 @@ For each Pending row above, the loop pattern is:
    `/oversight` and the Phase 32 row in
    `plan/steps/01_build_plan.md` flips to `[x]`.
 
-Phase 32 stays open across many ticks; that's the rolling-phase
-contract working as designed. Sub-ticks A–H drained the highest-
-density slice of the design bundle (chat 1 + inventory full
-surface + prototype-flow micro-interactions). Items 1-3 and 5-10
-above are each single-port-sized (one user commit + an optional
-loop follow-up). **Item 4 (cold-codex aesthetic variant) is the
-exception** — three screens with a togglable aesthetic mode is a
-much larger surface; the section body explicitly recommends
-filing it as a fresh `Phase 25 — Aesthetic toggle` candidate via
-`/oversight` rather than treating it as a Phase 32 sub-tick.
+Phase 32 closed `[x]` 2026-05-19 with sub-ticks A–H. The
+remaining design-bundle work has been factored into discrete
+phases in `plan/steps/01_build_plan.md`:
+
+- **Items 1, 2, 3, 5** (inventory equip-flow + phase-stack
+  collapse): shipped as **Phases 35, 36, 37, 38**.
+- **Items 6, 7, 8, 9, 10** (chat-2 + prototype-flow):
+  queued as **Phases 39–43**, awaiting `/march` dispatch.
+- **Item 4** (cold-codex variant): pending in
+  `PHASE_CANDIDATES.md` as `Phase 25` candidate; needs
+  `/oversight` promotion when the user commits to that
+  direction.
+- **Items 11, 12, 13** (prototype micro-interactions — modal
+  animations, action-button subtitles, paced-event kind-meta
+  variants): newly filed 2026-05-19, awaiting promotion to
+  Phases 45+ via `/oversight` or auto-promotion if `/expand`
+  surfaces them as a cluster.
+- **Item 14** (day counter in exploration eyebrow):
+  engine-gated; lives as a `[needs-engine-release]` row in
+  `plan/AUDIT.md` once the user commits to surfacing day
+  mechanics. Not a mobile-side phase.
+
+Each pending row has a draft commit subject + design-source
+pointer in this doc. The user can drive a specific port
+directly, or let `/loop /march` drain the build-plan queue
+autonomously.

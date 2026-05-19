@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -53,6 +53,15 @@ export default function ExplorationScreen() {
     const { enterCombat } = useCombatMode();
     const store = useGameStore();
     const actions = useGameActions();
+    // Per the design's prototype.jsx flow, tapping a non-available node
+    // surfaces a brief lowercase-ritual toast then auto-clears. Local
+    // UI state; not on the presenter contract — pure feedback.
+    const [nodeTip, setNodeTip] = useState<string | null>(null);
+    useEffect(() => {
+        if (nodeTip === null) return;
+        const handle = setTimeout(() => setNodeTip(null), 1600);
+        return () => clearTimeout(handle);
+    }, [nodeTip]);
     // Subscribe to the world slice so the screen re-renders on moves
     // and map transitions. The selector pattern is the same as inventory.
     const world = useGameState((s) => (s as unknown as { world: unknown }).world);
@@ -125,8 +134,20 @@ export default function ExplorationScreen() {
     }));
 
     const onNodePress = (node: ExplorationNode) => {
-        // Q5=B — locked nodes are a no-op. Completed nodes are also a
-        // no-op (you've already been there). Current is informational.
+        // Per the prototype.jsx flow (design handoff 2026-05-19 entry
+        // file): tapping a locked or completed node surfaces a brief
+        // toast acknowledging the no-op, then auto-dismisses. Previous
+        // behavior returned silently — players couldn't tell whether
+        // the tap registered. Toast copy in lowercase ritual register
+        // per bearings line 184.
+        if (node.kind === 'locked') {
+            setNodeTip('this way is sealed');
+            return;
+        }
+        if (node.kind === 'completed') {
+            setNodeTip('walked already');
+            return;
+        }
         if (node.kind !== 'available') return;
         const result = actions.moveTo(node.id);
         // Phase 32 design-handoff port (2026-05-16): encounter / boss
@@ -334,6 +355,11 @@ export default function ExplorationScreen() {
                     onFlee={onEncounterFlee}
                 />
             )}
+            {nodeTip !== null && (
+                <View pointerEvents="none" style={styles.nodeToast} testID="exploration-node-toast">
+                    <Text style={styles.nodeToastText}>{nodeTip}</Text>
+                </View>
+            )}
         </ScreenBg>
     );
 }
@@ -535,6 +561,25 @@ const styles = StyleSheet.create({
     stepCardLeaguesNum: {
         fontFamily: FONTS.mono,
         fontSize: 18,
+        color: AXM.parchment,
+    },
+    // Locked / consumed node feedback toast (port design spec — design's
+    // prototype.jsx flow). Bottom-center, brief auto-dismiss, parchment
+    // text over an ash-bordered panel.
+    nodeToast: {
+        position: 'absolute',
+        bottom: 32,
+        left: 24,
+        right: 24,
+        backgroundColor: AXM.panelBg,
+        borderWidth: 1,
+        borderColor: AXM.bone,
+        padding: 10,
+        alignItems: 'center',
+    },
+    nodeToastText: {
+        fontFamily: FONTS.serifItalic,
+        fontSize: 12,
         color: AXM.parchment,
     },
 });

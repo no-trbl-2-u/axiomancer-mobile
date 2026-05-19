@@ -229,10 +229,17 @@ const styles = StyleSheet.create({
     },
     panel: {
         position: 'absolute',
+        // Insets match `prototype.jsx:456` (`left: 12, right: 12,
+        // top: 56, bottom: 84`) so a strip of map shows above the
+        // panel and the WILDS/STRIFE tab bar peeks through below —
+        // the diegetic-stack continuity the chat-2 §IV "map persists
+        // behind every modal" decision targets. Was `bottom: 80`
+        // pre-Phase 48; tightened to 84 so the bottom inset reads
+        // identically to the design specimen.
         left: 12,
         right: 12,
         top: 56,
-        bottom: 80,
+        bottom: 84,
         backgroundColor: AXM.bg,
         borderWidth: 1,
         borderColor: AXM.rust,

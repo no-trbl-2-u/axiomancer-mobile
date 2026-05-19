@@ -544,13 +544,13 @@ phase row.
       line between the stance label and the BEATS/WEAK row.
       +1 hermetic case pinning the exact phrases. Verify
       535/535 (was 534; +1).
-- [ ] Phase 48 — EncounterModalOverlay panel position audit.
-      Design ships the encounter modal panel with `top: 56,
-      bottom: 84` insets so the WILDS/STRIFE tab bar shows
-      through at the bottom and a strip of map shows at the
-      top (diegetic stack continuity). Confirm current
-      `EncounterModalOverlay.tsx` uses the same insets; tweak
-      otherwise. Design source: `prototype.jsx:455-459`.
+- [x] Phase 48 — EncounterModalOverlay panel position audit.
+      Audit found a 4px drift: current panel was `top: 56,
+      bottom: 80`; design ships `top: 56, bottom: 84`.
+      Tightened `bottom` to 84 so the tab-bar inset reads
+      identically to the design specimen. Inline JSDoc cites
+      `prototype.jsx:456` and the chat-2 §IV diegetic-stack
+      decision. Verify 535/535 unchanged.
 - [ ] Phase 49 — Token Crucible inline strip placement audit.
       Design ships the Crucible as an inline strip *above*
       the action picker, with five pool tokens + an "OPEN ▸"

@@ -6,6 +6,7 @@ import { AestheticDevToggle } from '@/components/AestheticDevToggle';
 import { DebugChaosToggle } from '@/components/DebugChaosToggle';
 import { DebugCombatButton } from '@/components/DebugCombatButton';
 import { DebugMapResetButton } from '@/components/DebugMapResetButton';
+import { DebugPresetPicker } from '@/components/DebugPresetPicker';
 import { DebugSeedButton } from '@/components/DebugSeedButton';
 import { ScreenBg } from '@/components/ScreenBg';
 import { SectionLabel } from '@/components/SectionLabel';
@@ -232,6 +233,7 @@ export default function CharacterScreen() {
       <DebugCombatButton />
       <DebugMapResetButton />
       <DebugChaosToggle />
+      <DebugPresetPicker />
     </ScreenBg>
   );
 }

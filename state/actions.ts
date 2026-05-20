@@ -18,6 +18,7 @@
 import {
     appendLog as combatAppendLog,
     applyDialogueChoice,
+    buildCharacterFromPreset,
     setPhase as combatSetPhase,
     setPlayerAction as combatSetPlayerAction,
     setPlayerStance as combatSetPlayerStance,
@@ -30,6 +31,7 @@ import {
     equipmentTemplates,
     getCoastalMap,
     getDialogueNode,
+    getPresetById,
     healCharacter,
     incrementFriendship as combatIncrementFriendship,
     isConsumable,
@@ -100,6 +102,16 @@ export interface DebugSeedResult {
     mapReset: boolean;
 }
 
+/** Phase 59 — character-preset adoption result. */
+export interface ApplyCharacterPresetResult {
+    /** True when the preset id matched an engine preset and `player` was replaced. */
+    applied: boolean;
+    /** Resolved preset id ('apprentice' / 'wanderer' / 'sage'), or null when unknown. */
+    presetId: string | null;
+    /** Display name from the preset, or null when unknown. */
+    presetName: string | null;
+}
+
 export interface ResolveRoundResult {
     /** True when the engine's `determineCombatEnd` is no longer `'ongoing'`. */
     combatEnded: boolean;
@@ -164,6 +176,15 @@ export interface AppActions {
      * mount is `__DEV__`-guarded; production never reaches this.
      */
     debugSeed: () => DebugSeedResult;
+    /**
+     * Dev-only character preset adoption (Phase 59). Looks up the
+     * engine `characterPresets` row by id and replaces the player
+     * slice with a fresh `buildCharacterFromPreset(preset)` result.
+     * No-op (returns `applied: false`) when the id is unknown.
+     * Component mount is `__DEV__`-guarded; production never reaches
+     * this.
+     */
+    applyCharacterPreset: (presetId: string) => ApplyCharacterPresetResult;
     save: () => void;
     /**
      * Run `resolveMapEvent(state)` on the current node, cache the
@@ -562,6 +583,7 @@ export function createAppActions(store: AppStore): AppActions {
         moveTo: (nodeId) => moveToAction(store, nodeId),
         changeMap: (mapName) => changeMapAction(store, mapName),
         debugSeed: () => debugSeedAction(store),
+        applyCharacterPreset: (presetId) => applyCharacterPresetAction(store, presetId),
         save: () => store.getState().save(),
         resolveCurrentMapEvent: () => resolveCurrentMapEventAction(store),
         pickEventChoice: (choiceId) => pickEventChoiceAction(store, choiceId),
@@ -889,6 +911,20 @@ function debugSeedAction(store: AppStore): DebugSeedResult {
     }
 
     return { itemsAdded, skillsLearned, mapReset };
+}
+
+function applyCharacterPresetAction(
+    store: AppStore,
+    presetId: string,
+): ApplyCharacterPresetResult {
+    const preset = getPresetById(presetId);
+    if (!preset) {
+        return { applied: false, presetId: null, presetName: null };
+    }
+    const nextPlayer = buildCharacterFromPreset(preset) as Character;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    store.setState({ player: nextPlayer } as any);
+    return { applied: true, presetId: preset.id, presetName: preset.name };
 }
 
 // ---------------------------------------------------------------------------

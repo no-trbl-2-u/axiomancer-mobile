@@ -50,6 +50,16 @@
 - suggested_fix: [user has not specified — iterate to determine]
 - source: user
 
+### [MED] general — no combat encounters in the first map
+- pass: user-jot (commit 39695a5)
+- viewport: unspecified
+- auth_state: anonymous
+- category: content
+- observation: There are no combat encounters in the first map we're in
+- evidence: user-spotted at 2026-05-20T04:11:21Z
+- suggested_fix: [user has not specified — iterate to determine]
+- source: user
+
 ## Done
 
 ### [MED] /app/(tabs)/exploration/index.tsx:373-379 — aftermath banner display literals lifted onto presenter ✅

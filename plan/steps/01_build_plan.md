@@ -887,6 +887,36 @@ phase row.
       `<DebugPresetPicker>` (DEV-only); covers apprentice /
       wanderer / sage from the engine's `characterPresets`
       array. Closes mirror issue #94.
+- [ ] Phase 60 — Engine bump axiomancer-mechanics 0.10.0 → 0.10.2.
+      Queued via `/triage` 2026-05-20 from user-filed issue #93.
+
+      Scope (single phase):
+
+      - `npm install axiomancer-mechanics@0.10.2`. No schema
+        migration (engine 0.10.1 / 0.10.2 kept `GAME_STATE_VERSION`
+        at 5; the 4 → 5 bump shipped in 0.10.0 / mobile Phase 51).
+      - Run `npm run verify`; iterate on any surface drift. Most
+        likely touch points: `state/mocks/combat.skills.fixture.ts`
+        becomes droppable once `skillLibrary` is consumed directly;
+        any local `defaultSellPrice` helper goes away.
+      - Author `docs/engine-upgrade-0.10.0-to-0.10.2.md` mirroring
+        the existing `engine-upgrade-0.7.0-to-0.10.0.md` template.
+      - Drain the `[needs-engine-republish]` row in `plan/AUDIT.md`
+        to Done once the lockfile is on 0.10.2.
+
+      Out of scope (separate follow-up phases — gated on this
+      bump landing):
+
+      - Promote PHASE_CANDIDATES Phase 20 (drain skills fixture)
+        and 21 (engine-driven `executeSkill` wiring) into the build
+        plan once 0.10.2 is in the lockfile.
+      - Flip Status block Phase 16 from `[skipped]` to actionable.
+      - Optional surfaces from 0.10.1 (Set items engine —
+        `itemSetLibrary`, `getActiveSetBonusesForCharacter`, etc.)
+        belong in their own enhancement phase if the equipment
+        dock surfaces them.
+
+      Closes issue #93 in the shipping commit body.
 
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh

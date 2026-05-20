@@ -56,7 +56,12 @@ function encounter(isBoss = false): ResolveMapEventResult {
     } as never;
     return {
         state: undefined as never,
-        event: { kind: 'encounter', encounter: { enemy }, isBoss },
+        // Phase 60b — canonical {enemies, origin} shape.
+        event: {
+            kind: 'encounter',
+            encounter: { enemies: [enemy], origin: 'fishing-village:fv-3' } as never,
+            isBoss,
+        },
     };
 }
 

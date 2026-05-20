@@ -63,11 +63,14 @@ function makeEncounterResult(opts: { isBoss?: boolean } = {}): ResolveMapEventRe
         level: 3,
         health: 24,
     } as never;
+    // Phase 60b — engine's canonical Encounter shape is
+    // `{ enemies, origin }`. Pre-60b fixtures used `{enemy}`;
+    // mobile consumers now read `enemies[0]`.
     return {
         state: undefined as never,
         event: {
             kind: 'encounter',
-            encounter: { enemy },
+            encounter: { enemies: [enemy], origin: 'fishing-village:fv-3' } as never,
             isBoss: opts.isBoss ?? false,
         },
     };

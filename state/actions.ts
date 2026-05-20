@@ -202,7 +202,7 @@ export interface AppActions {
     resolveCurrentMapEvent: () => boolean;
     /**
      * Resolve the currently-pending event by id. Branches on VM kind:
-     *  - combat-prelude + 'fight'  -> startCombat(encounter.enemy); clear
+     *  - combat-prelude + 'fight'  -> startCombat(encounter.enemies[0]); clear
      *  - combat-prelude + 'flee'   -> clear (no combat)
      *  - narrative-choice + NPC dialogue with cursor -> applyDialogue;
      *    advance cursor if `nextNode !== null`, else clear
@@ -1022,7 +1022,11 @@ function pickEventChoiceAction(store: AppStore, choiceId: string): void {
     // combat-prelude path
     if (processed.kind === 'encounter') {
         if (choiceId === 'fight') {
-            const enemy = processed.encounter.enemy as Enemy;
+            // Phase 60b — engine's canonical `Encounter` shape is
+            // `{ enemies: Enemy[], origin: string }`; the prelude
+            // consumes the first enemy.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const enemy = (processed.encounter as any).enemies[0] as Enemy;
             store.getState().startCombat(enemy);
             // Phase 60d — seed mobile-only mana slice after the
             // encounter-prelude path starts combat. Matches the

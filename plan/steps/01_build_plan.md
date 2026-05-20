@@ -566,7 +566,7 @@ phase row.
       engine exposes real `player.tokens` (gated alongside
       Phase 20/21 engine-release work). Verify 535/535
       unchanged.
-- [ ] Phase 50 — Cold-codex aesthetic toggle (filed via
+- [x] Phase 50 — Cold-codex aesthetic toggle (filed via
       `/oversight` 2026-05-19, 7th call). Promotes the
       design-spec.md item 4 candidate that was reserved for
       `Phase 25` originally (Phase 25 already taken by typed-
@@ -597,6 +597,16 @@ phase row.
       its own `feat(spec50 tick X): <surface> codex variant`
       commit; phase closes when the user signals
       "codex toggle complete" via `/oversight`.
+
+      **Closed 2026-05-19 via `/oversight` (9th call)** after
+      ticks A (`93841f1`) / B (`3d9a553`) / C (`f1c6c08`) /
+      D (`3ed9bc8`) shipped. Tick E (SELF + SATCHEL codex
+      extension) **deferred indefinitely** per the original
+      brief's "follow-up if user commits to the direction"
+      clause — the engine-side alignment surface (Phase 52,
+      now promoted) supersedes for the SELF tab; SATCHEL
+      extension can be re-filed as a candidate later if the
+      direction firms up.
 - [x] Phase 51 — `axiomancer-mechanics` bump 0.7.0 → 0.10.0
       (filed via `/oversight` 2026-05-19, 8th call). The cron
       generated `docs/engine-upgrade-0.7.0-to-0.10.0.md` at
@@ -627,12 +637,47 @@ phase row.
       and the local `PersistenceAdapter` shim until engine
       0.10.1 lands those fixes.
 
-      **Ordering:** ships AFTER Phase 50 per `/oversight`
-      2026-05-19. Phase 50 (cold-codex) is purely UI and
+      **Ordering note (historic):** ships AFTER Phase 50 per
+      `/oversight` 2026-05-19. Phase 50 (cold-codex) is purely UI and
       doesn't touch the engine boundary, so no conflict.
       Single commit, no rolling sub-ticks. Commit message:
       `feat(spec51): bump axiomancer-mechanics 0.7.0 → 0.10.0
       + v2→v3 alignment migration`.
+- [ ] Phase 52 — Surface engine `PhilosophicalAlignment` on
+      SELF tab (promoted via `/oversight` 2026-05-19, 9th call;
+      filed by `/expand` pass 29 in `a2ee151` at [score 7.2]).
+      Engine 0.10.0 (shipped via Phase 51) introduces the
+      three-axis alignment cube and updates `state.alignment`
+      as the player plays via dialogue / map-event
+      `alignmentDelta` payloads. Mobile carries the value
+      through the v2→v3 migration but renders nothing yet.
+      Light-touch adoption to make the upgrade observable.
+
+      Scope (single phase):
+
+      - Read `state.alignment` in
+        `state/presenters/character.engine.ts`; expose
+        `{ cellName, axisBuckets }` on the
+        `CharacterViewModel`.
+      - Resolve the active `PhilosophicalAlignmentCell` via
+        engine's `getAlignmentCell(alignment)`. The cell
+        object carries name, description, fallacies, virtues
+        — for tick A render only `cellName` + the three axis
+        buckets; richer surfaces (fallacy chips, virtue
+        callouts) are follow-ups.
+      - Render a small alignment row on the SELF tab beneath
+        the existing stats/saves block. Cell name in
+        `FONTS.gothic`; three-axis bucket chips
+        (`epistemology=mid · outlook=mid · scope=mid`) in
+        `FONTS.mono`. Matches the chrome register of the
+        existing rows.
+      - Hermetic test: VM exposes a totally-shaped alignment
+        slice for a fresh game (defaults to mid/mid/mid via
+        `defaultAlignment()`); the cell name resolves; bucket
+        chips render for each axis value.
+      - Verify gate: `pnpm exec tsc --noEmit`, full
+        `pnpm test`. Commit:
+        `feat(spec52): alignment cell on SELF tab — port engine 0.10.0 Philosophy module`.
 
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh

@@ -9,45 +9,6 @@
 
 ## Pending
 
-### [score 7.2] Phase 52 — Surface engine `PhilosophicalAlignment` on SELF tab
-
-- proposed: 2026-05-19, expand pass 29 (cascaded from `/iterate`
-  after Phase 51 c273071 shipped the 0.10.0 engine bump)
-- signal sources:
-  - **§G commit pattern** — Phase 51 just adopted engine 0.10.0,
-    which introduces a three-axis alignment cube
-    (`state.alignment: PhilosophicalAlignment`). The engine
-    updates it as the player plays (dialogue / map-event
-    `alignmentDelta` payloads); mobile carries the value
-    through the v2→v3 migration but renders nothing.
-  - **§H plan gap / upgrade-guide §3b** —
-    `docs/engine-upgrade-0.7.0-to-0.10.0.md` flagged this as the
-    "light-touch Philosophy adoption" follow-up: render the
-    alignment cell somewhere visible so the upgrade is
-    observable to the player.
-- scope (single phase):
-  - Read `state.alignment` on the character screen presenter
-    (`state/presenters/character.engine.ts`).
-  - Resolve the active `PhilosophicalAlignmentCell` via the
-    engine's `getAlignmentCell(alignment)`; expose
-    `{ cellName, axisBuckets }` on the VM.
-  - Render a small alignment row on the SELF tab — cell name
-    in gothic, three-axis bucket chips
-    (`epistemology=mid · outlook=mid · scope=mid`) in mono.
-    Place beneath the existing stats/saves block; matches the
-    chrome register of the existing rows.
-  - Hermetic test: VM exposes a totally-shaped alignment slice
-    for a fresh game (defaults to mid/mid/mid); deltas threaded
-    by the engine update the bucket chips.
-- factors:
-  - +2 multi-source signal (§G + §H point the same direction)
-  - +2 urgency (engine bumped within last 6h)
-  - +2 cheap-and-impactful (one phase, observable upgrade win,
-    consumes new engine surface)
-  - = **7.2**
-- non-conflicts: no `spec.md` non-goal violation; alignment is
-  in-scope per the philosophical-themes framing.
-
 ### [score 5.4] Phase 53 — Save-corrupted UX modal (Spec 09 Q7=A follow-up)
 
 - proposed: 2026-05-19, expand pass 29
@@ -217,6 +178,41 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted 2026-05-19 → status Phase 52] [score 7.2] Surface engine `PhilosophicalAlignment` on SELF tab
+
+- promoted via `/oversight` 2026-05-19 (9th call) after Phase 51
+  shipped the 0.10.0 engine bump and `/expand` pass 29 filed the
+  candidate.
+- Assigned **Phase 52** in `plan/steps/01_build_plan.md` Status block.
+- signal sources:
+  - **§G commit pattern** — Phase 51 just adopted engine 0.10.0,
+    which introduces a three-axis alignment cube
+    (`state.alignment: PhilosophicalAlignment`). The engine
+    updates it as the player plays (dialogue / map-event
+    `alignmentDelta` payloads); mobile carries the value
+    through the v2→v3 migration but renders nothing.
+  - **§H plan gap / upgrade-guide §3b** —
+    `docs/engine-upgrade-0.7.0-to-0.10.0.md` flagged this as the
+    "light-touch Philosophy adoption" follow-up: render the
+    alignment cell somewhere visible so the upgrade is
+    observable to the player.
+- scope (single phase):
+  - Read `state.alignment` on the character screen presenter
+    (`state/presenters/character.engine.ts`).
+  - Resolve the active `PhilosophicalAlignmentCell` via the
+    engine's `getAlignmentCell(alignment)`; expose
+    `{ cellName, axisBuckets }` on the VM.
+  - Render a small alignment row on the SELF tab — cell name
+    in gothic, three-axis bucket chips
+    (`epistemology=mid · outlook=mid · scope=mid`) in mono.
+    Place beneath the existing stats/saves block; matches the
+    chrome register of the existing rows.
+  - Hermetic test: VM exposes a totally-shaped alignment slice
+    for a fresh game (defaults to mid/mid/mid); deltas threaded
+    by the engine update the bucket chips.
+- Brief: drafted inline in the build-plan row; expand on first
+  `/ship-a-phase phase 52` tick if scope grows.
 
 ### [promoted 2026-05-15 → status Phase 27] [score 6.6] Exploration moveToAction migration
 

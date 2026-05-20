@@ -40,6 +40,16 @@
 
 ## Pending
 
+### [MED] general — manual combat trigger + starting-character seed for testing
+- pass: user-jot (commit 686d598)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: we need a way to manually trigger combat so I can test the combat in the UI. Furthermore, we need a the starting character to have a bunch of items to test the equipment and consumable mechanics
+- evidence: user-spotted at 2026-05-20T04:09:56Z
+- suggested_fix: [user has not specified — iterate to determine]
+- source: user
+
 ## Done
 
 ### [MED] /app/(tabs)/exploration/index.tsx:373-379 — aftermath banner display literals lifted onto presenter ✅

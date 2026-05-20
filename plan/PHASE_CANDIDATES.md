@@ -150,6 +150,52 @@ warranted a full phase promotion:
 
 ## Promoted
 
+### [promoted 2026-05-19 → status Phase 54] [user-request] Debug seed button (manual-testing affordance)
+
+- promoted via `/oversight` 2026-05-19 (11th call) — user free-form
+  request: "Could I add a 'debug' button that makes my character
+  have a few items from each category and a few skills that also
+  resets the current map? I want to make sure I'm able to test
+  items and combat."
+- Assigned **Phase 54** in `plan/steps/01_build_plan.md` Status block.
+- source: user (highest-trust signal class per
+  `skills/iterate.md` §4)
+- scope (single phase):
+  - New `<DebugSeedButton>` component mounted alongside
+    `<AestheticDevToggle>` on the SELF tab footer; `__DEV__`-only
+    (production builds render null).
+  - On press: dispatch a single composite action that
+    1. Adds 2-3 representative items from each engine category
+       — at minimum: one Consumable (from `consumableLibrary`),
+       one Equipment per common slot (head/body/weapon — from
+       `equipmentTemplates`), one Material, one QuestItem if a
+       library exists for that category.
+    2. Teaches 2-3 skills covering both `paradox` and
+       `fallacy` categories (using the local
+       `combat.skills.fixture.ts` stop-gap until the engine's
+       `skillLibrary` top-level re-export ships).
+    3. Resets the current map back to its starting state by
+       calling `getCoastalMap(currentMap.name)` + the engine's
+       `changeMap` reducer — re-seeds nodes, clears
+       `discoveredNodes` / `consumedNodes`.
+  - Hermetic test: pressing the button mutates the engine state
+    so that
+    - `inventory` length ≥ 5 with at least one entry per
+      represented category
+    - `knownSkills` length ≥ 2 covering both categories
+    - `world.currentMap.currentNode` matches the map
+      definition's `startingNode.id`
+    - `world.currentMap.discoveredNodes` is empty (or just the
+      starting node)
+- factors:
+  - +5 user-direct signal (highest trust)
+  - +2 cheap-and-impactful (one phase, immediate manual-test
+    leverage)
+  - = **dev-only, no shippable score** — promoted on user-request
+    basis, not score. The row exists to track work.
+- non-conflicts: `__DEV__`-guarded so doesn't ship to prod
+  builds; no Hard Rule violation.
+
 ### [promoted 2026-05-19 → status Phase 53] [score 5.4] Save-corrupted UX modal (Spec 09 Q7=A follow-up)
 
 - promoted via `/oversight` 2026-05-19 (10th call) — last

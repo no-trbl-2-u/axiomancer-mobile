@@ -722,6 +722,60 @@ phase row.
       `pnpm exec eslint . --max-warnings=0`. Single commit:
       `feat(spec53): save-corrupted UX modal — Spec 09 Q7=A
       follow-up`.
+- [ ] Phase 54 — Debug seed button (manual-testing affordance).
+      Promoted via `/oversight` 2026-05-19 (11th call) — user
+      free-form request: "Could I add a 'debug' button that makes
+      my character have a few items from each category and a few
+      skills that also resets the current map? I want to make
+      sure I'm able to test items and combat." Highest-trust
+      signal class per /iterate §4. Dev-only affordance; no score
+      gate.
+
+      Scope (single phase):
+
+      - New `<DebugSeedButton>` component at
+        `components/DebugSeedButton.tsx`. Mirrors the
+        `AestheticDevToggle` pattern: `__DEV__`-guarded
+        (production renders null), dashed border + sulfur accent,
+        mounted at the bottom of the SELF tab beside the existing
+        aesthetic toggle.
+      - On press, dispatch a single composite action through
+        `useGameActions()` that:
+        1. Adds 2-3 representative items per engine category via
+           `consumableLibrary` + `equipmentTemplates` (Items
+           category: one Consumable, three Equipment covering
+           head/body/weapon, one Material if a Material library
+           exists; QuestItem if exposed). Use the existing
+           `addItem` reducer.
+        2. Teaches 2-3 skills via `learnSkill` covering both
+           `paradox` and `fallacy` categories. Source from the
+           local `state/mocks/combat.skills.fixture.ts` stop-gap
+           until engine `skillLibrary` re-export lands.
+        3. Resets the current map by calling
+           `getCoastalMap(currentMap.name)` and threading
+           through the engine's `changeMap` reducer. Re-seeds
+           nodes; clears `discoveredNodes` / `consumedNodes`.
+      - Toast or accessibility-announce on success ("debug seed
+        applied · N items · M skills · map reset") so the
+        developer knows the action fired.
+      - Hermetic test at `state/e2e/debug-seed.engine.test.tsx`:
+        - Initial state has empty inventory / no learned skills.
+        - After firing the seed action: inventory has at least
+          one entry per represented category; knownSkills has
+          ≥2 entries covering both categories; world.currentMap
+          is back at startingNode.
+        - Component-level test: `__DEV__=false` renders null.
+        - Component-level test: tapping the button calls the
+          seed action exactly once.
+
+      Voice register: dev-only affordance, mono register on
+      labels matches `AestheticDevToggle`. Toast can be
+      lowercase ritual.
+
+      Verify gate: `pnpm exec tsc --noEmit`, full `pnpm test`,
+      `pnpm exec eslint . --max-warnings=0`. Single commit:
+      `feat(spec54): debug seed button — items + skills + map reset
+      (dev-only)`.
 
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh

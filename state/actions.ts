@@ -25,12 +25,13 @@ import {
     changeMap as worldChangeMap,
     completeNode as worldCompleteNode,
     consumableLibrary,
+    createMapState,
     determineAdvantage,
     determineCombatEnd,
     determineEnemyAction,
     equipmentTemplates,
-    getCoastalMap,
     getDialogueNode,
+    getMapDefinition,
     getPresetById,
     healCharacter,
     incrementFriendship as combatIncrementFriendship,
@@ -800,10 +801,17 @@ function changeMapAction(store: AppStore, mapName: MapName): void {
     const world = (store.getState() as any).world as WorldState | undefined;
     if (!world) return;
 
-    const nextMap = getCoastalMap(mapName);
-    // `getCoastalMap` returns a freshly-built `MapState`, with `currentNode`
-    // already seeded to the definition's `startingNode.id`. The engine's
-    // `changeMap` reducer carries that through — no extra fix-up needed.
+    // Phase 60a — adopted `createMapState(getMapDefinition(...))`
+    // pattern. The engine's `getCoastalMap` was the single-arg
+    // convenience on 0.10.0 (`getCoastalMap(name)`); 0.10.1+
+    // removed it in favour of the two-step
+    // `createMapState(getMapDefinition(continent, name))` form.
+    // Both paths exist on 0.10.0, so this migration is safe under
+    // the current lockfile. Continent is sourced from the current
+    // map (Coastal Cradle today; world-state-tracked when the
+    // northern continent ships).
+    const continent = world.currentMap.continent;
+    const nextMap = createMapState(getMapDefinition(continent, mapName));
     const nextWorld = worldChangeMap(world, nextMap);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     store.setState({ world: nextWorld } as any);
@@ -889,16 +897,22 @@ function debugSeedAction(store: AppStore): DebugSeedResult {
         store.setState({ player: nextPlayer } as any);
     }
 
-    // 4. Reset the current map: re-seed via `getCoastalMap(name)` +
+    // 4. Reset the current map: re-seed via the engine's two-step
+    //    `createMapState(getMapDefinition(continent, name))` +
     //    `changeMap`. Engine guarantees the returned `MapState` is at
     //    `currentNode = startingNode.id` with cleared
     //    discoveredNodes / consumedNodes.
+    //    (Phase 60a — migrated from the deprecated single-arg
+    //    `getCoastalMap`; both paths exist on 0.10.0 but 0.10.1+
+    //    drops the old form.)
     let mapReset = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const world = (store.getState() as any).world as WorldState | undefined;
     if (world && world.currentMap) {
         try {
-            const fresh = getCoastalMap(world.currentMap.name);
+            const fresh = createMapState(
+                getMapDefinition(world.currentMap.continent, world.currentMap.name),
+            );
             const nextWorld = worldChangeMap(world, fresh);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             store.setState({ world: nextWorld } as any);

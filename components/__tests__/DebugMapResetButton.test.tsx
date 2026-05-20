@@ -3,7 +3,9 @@
  *
  * Pins the DEV gate + the action-routing contract: tapping
  * fires `actions.changeMap(currentMapName)` which re-seeds the
- * current map via the engine's `getCoastalMap`.
+ * current map via the engine's
+ * `createMapState(getMapDefinition(continent, name))` (Phase
+ * 60a migration from the deprecated `getCoastalMap`).
  */
 
 import { afterEach, describe, expect, it, jest } from '@jest/globals';

@@ -3,7 +3,9 @@
  * /oversight 2026-05-20 13th call).
  *
  * Calls `actions.changeMap(currentMapName)` to re-seed the
- * current map via the engine's `getCoastalMap` — fresh
+ * current map via the engine's
+ * `createMapState(getMapDefinition(continent, name))` (Phase
+ * 60a migration from the deprecated `getCoastalMap`) — fresh
  * `currentNode`, cleared `discoveredNodes` / `consumedNodes` /
  * `completedNodes`. Map-only escape hatch (vs.
  * `DebugSeedButton` which also touches inventory + skills).

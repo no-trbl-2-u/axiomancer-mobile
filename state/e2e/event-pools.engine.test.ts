@@ -13,8 +13,9 @@
 
 import { afterEach, describe, expect, it } from '@jest/globals';
 import {
+    createMapState,
     createNewGameState,
-    getCoastalMap,
+    getMapDefinition,
     resolveMapEvent,
     type GameState,
 } from 'axiomancer-mechanics';
@@ -40,7 +41,10 @@ registerExplorationEventPools();
 
 function stateAt(mapName: 'fishing-village' | 'northern-forest', nodeId: string): GameState {
     const base = createNewGameState();
-    const map = getCoastalMap(mapName);
+    // Phase 60a — adopted `createMapState(getMapDefinition(...))`
+    // pattern. Both fishing-village and northern-forest are in the
+    // `coastal-continent` registry.
+    const map = createMapState(getMapDefinition('coastal-continent', mapName));
     return {
         ...base,
         world: {

@@ -8,7 +8,7 @@
  */
 
 import { afterEach, describe, it, expect, jest } from '@jest/globals';
-import { createGameStore, getCoastalMap } from 'axiomancer-mechanics';
+import { createGameStore, createMapState, getMapDefinition } from 'axiomancer-mechanics';
 
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
 import { createAppActions } from '@/state/actions';
@@ -247,12 +247,14 @@ describe('changeMap action: map transition', () => {
         expect(ids.every((id) => id.startsWith('nf-'))).toBe(true);
     });
 
-    it('also accepts the MapState returned by getCoastalMap as a sanity hint', () => {
+    it('also accepts the MapState built from getMapDefinition+createMapState as a sanity hint', () => {
         // The action accepts a MapName string; this assertion proves the
         // engine still ships the expected map under that name. Post-Spec
-        // 08 Q5A, `getCoastalMap` returns a runtime `MapState`, so the
-        // starting node id surfaces as `currentNode` on a fresh map.
-        const map = getCoastalMap('northern-forest');
+        // 08 Q5A + Phase 60a, the canonical build path is
+        // `createMapState(getMapDefinition(continent, name))`; the returned
+        // `MapState` carries the definition's `startingNode.id` as
+        // `currentNode` on a fresh map.
+        const map = createMapState(getMapDefinition('coastal-continent', 'northern-forest'));
         expect(map.name).toBe('northern-forest');
         expect(map.currentNode).toBe('nf-1');
     });

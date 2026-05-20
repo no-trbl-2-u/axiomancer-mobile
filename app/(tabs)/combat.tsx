@@ -637,7 +637,7 @@ function CrucibleStrip() {
     const router = useRouter();
     // Mirrors `TokenCrucible.tsx:36` DEFAULT_POOL — same mock the
     // full surface ships when no engine token state exists.
-    const pool: ReadonlyArray<{ key: string; glyph: string; count: number; color: string }> = [
+    const pool: readonly { key: string; glyph: string; count: number; color: string }[] = [
         { key: 'body', glyph: '◐', count: 2, color: AXM.blood },
         { key: 'mind', glyph: '◒', count: 1, color: AXM.rust },
         { key: 'heart', glyph: '◑', count: 2, color: AXM.bone },

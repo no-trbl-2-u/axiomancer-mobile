@@ -11,6 +11,12 @@ import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
 
+import { DebugCombatButton } from '@/components/DebugCombatButton';
+import { CombatModeProvider } from '@/state/combat-mode';
+import { GameStoreProvider } from '@/state/GameStoreProvider';
+import { createAppStore, type AppStore } from '@/state/store';
+import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
+
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
     useRouter: () => ({
@@ -20,12 +26,6 @@ jest.mock('expo-router', () => ({
         canGoBack: () => false,
     }),
 }));
-
-import { DebugCombatButton } from '@/components/DebugCombatButton';
-import { CombatModeProvider } from '@/state/combat-mode';
-import { GameStoreProvider } from '@/state/GameStoreProvider';
-import { createAppStore, type AppStore } from '@/state/store';
-import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
 
 afterEach(() => {
     mockPush.mockClear();
@@ -52,7 +52,7 @@ describe('DebugCombatButton: DEV gate', () => {
     });
 
     it('renders null when __DEV__ is false (production build simulation)', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const g = global as any;
         const original = g.__DEV__;
         g.__DEV__ = false;

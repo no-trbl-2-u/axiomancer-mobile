@@ -52,7 +52,7 @@ describe('DevAutoSeed: DEV behaviour', () => {
         const store = makeStore();
         // Pre-populate the inventory with a single fixture item.
         const player = store.getState().player;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         store.setState({
             player: {
                 ...player,
@@ -69,11 +69,11 @@ describe('DevAutoSeed: DEV behaviour', () => {
                         modifiers: [],
                         baseStatModifiers: [],
                         requiredLevel: 1,
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                         
                     } as any,
                 ],
             },
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
         } as any);
 
         const inventoryLengthBefore = (store.getState().player.inventory ?? []).length;
@@ -87,7 +87,7 @@ describe('DevAutoSeed: DEV behaviour', () => {
 
 describe('DevAutoSeed: production gate', () => {
     it('does NOT seed when __DEV__ is false', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const g = global as any;
         const original = g.__DEV__;
         g.__DEV__ = false;

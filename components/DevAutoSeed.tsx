@@ -18,7 +18,7 @@
  * Renders null — it's a side-effect-only component.
  */
 
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { useGameActions, useGameState } from '@/state/GameStoreProvider';
 

@@ -8,7 +8,7 @@
  * routes presses through `useGameActions().debugSeed()`.
  */
 
-import { describe, expect, it, jest } from '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
 
@@ -33,7 +33,7 @@ describe('DebugSeedButton: DEV gate', () => {
     });
 
     it('renders null when __DEV__ is false (production build simulation)', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const g = global as any;
         const original = g.__DEV__;
         g.__DEV__ = false;

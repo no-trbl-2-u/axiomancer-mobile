@@ -39,7 +39,7 @@ describe('DebugMapResetButton: DEV gate', () => {
     });
 
     it('renders null when __DEV__ is false (production build simulation)', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const g = global as any;
         const original = g.__DEV__;
         g.__DEV__ = false;
@@ -56,14 +56,14 @@ describe('DebugMapResetButton: DEV gate', () => {
 describe('DebugMapResetButton: press routing', () => {
     it('a tap resets currentMap.currentNode to the engine\'s startingNode for the same map', () => {
         const store = makeStore();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const beforeWorld = (store.getState() as any).world;
         const mapName = beforeWorld.currentMap.name;
         const startingNodeId = beforeWorld.currentMap.currentNode;
 
         // Move the player off the starting node + dirty up discovered /
         // consumed so the reset is observable.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         store.setState({
             world: {
                 ...beforeWorld,
@@ -74,13 +74,13 @@ describe('DebugMapResetButton: press routing', () => {
                     consumedNodes: ['fv-2'],
                 },
             },
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
         } as any);
 
         const tree = render(withProvider(store));
         fireEvent.press(tree.getByTestId('debug-map-reset-button'));
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const afterWorld = (store.getState() as any).world;
         expect(afterWorld.currentMap.name).toBe(mapName);
         expect(afterWorld.currentMap.currentNode).toBe(startingNodeId);

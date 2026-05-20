@@ -19,7 +19,7 @@ import { AXM, FONTS } from '@/theme/axm';
 
 export function DebugMapResetButton() {
     const actions = useGameActions();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const currentMapName = useGameState((s) => (s as any).world?.currentMap?.name ?? null);
 
     if (!__DEV__) return null;

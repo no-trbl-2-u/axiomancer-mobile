@@ -157,7 +157,7 @@ function PaperDoll() {
 /** Pair the flat slot list into 4 rows of {left, right} per the design grid. */
 function pairDockRows(
     slots: readonly EquipmentDockSlot[],
-): ReadonlyArray<readonly [EquipmentDockSlot, EquipmentDockSlot | null]> {
+): readonly (readonly [EquipmentDockSlot, EquipmentDockSlot | null])[] {
     // Design order: head, body / weapon, armor / hands, accessory / feet, —.
     // Presenter ships the 7 slots in that order (state/presenters/inventory.engine.ts
     // `DOCK_SLOT_ORDER`). Pair index 0..1, 2..3, 4..5, and trailing 6 alone.

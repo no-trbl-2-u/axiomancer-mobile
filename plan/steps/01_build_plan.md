@@ -987,6 +987,32 @@ phase row.
       migration is to that shape (not `enemyId` as the candidate
       brief had hypothesized). 5 fixtures + 2 consumers migrated;
       760/760 tests green. Closes mirror issue #97.
+- [ ] Phase 60c — `DialogueChoice` / `DialogueNode` flattening.
+      Promoted via `/oversight` 2026-05-20 (17th call) from
+      PHASE_CANDIDATES `## Considered` [score 5.0]. Single-pick
+      promotion after 60a/60d/60b shipped clean — the gate the
+      Considered block cited.
+
+      Scope (single phase, 2-3 ticks):
+
+      - Engine 0.10.1+ flattened `DialogueChoice` (removed
+        `.id` and `.label` from the public type — likely
+        replaced by direct string fields or moved into a
+        sibling structure; first tick is engine-type
+        investigation against installed 0.10.0 to see what
+        currently flows through and what 0.10.2 will require).
+      - Engine 0.10.1+ also removed `DialogueNode.speaker`.
+        Same investigation tick reads the new node shape.
+      - Migrate consumers: `state/presenters/event.engine.ts`
+        (dialogue choice rendering — currently reads
+        `choice.id` and `choice.label`) and `state/actions.ts`
+        `pickEventChoiceAction` (matches on `choice.id`).
+      - Narrower than 60b — fewer fixtures (likely 1-2),
+        shape change is local to dialogue rendering. Same
+        test-driven migration approach as 60a/60b.
+
+      Independent of 60e/60f — but the lockfile bump (60f)
+      still gates on 60c + 60e both landing.
 
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh

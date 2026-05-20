@@ -16,11 +16,6 @@
 > this pass. /oversight can promote them in a follow-up if the
 > 60a/60d/60b trio ships clean.
 
-- **Phase 60c — `DialogueChoice` / `DialogueNode` flattening**
-  (score ~5.0). Engine 0.10.1+ flattened both. Affects
-  `state/presenters/event.engine.ts` (dialogue rendering) +
-  `state/actions.ts` (pickEventChoice). Narrower than 60b but
-  similar shape. 1 phase, 2-3 ticks.
 - **Phase 60e — `ActiveEffect` + `GameStore` slice
   reconciliation** (score ~3.5). Two intertwined drifts: the
   engine's `ActiveEffect` no longer carries `id`/`name`; and
@@ -165,6 +160,21 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted 2026-05-20 → status Phase 60c] [score 5.0] Phase 60c — `DialogueChoice` / `DialogueNode` flattening
+
+- promoted via `/oversight` 2026-05-20 (17th call) — user
+  selected "Promote 60c only" after the 60a/60d/60b trio
+  shipped clean (the criterion the original Considered block
+  cited). 60e and 60f stay in Considered for now; next
+  oversight call re-evaluates after 60c lands.
+- Cheapest of the three remaining sub-phases. Engine 0.10.1+
+  flattened `DialogueChoice` (dropped `id` / `label`) and
+  `DialogueNode` (dropped `speaker`). Affects
+  `state/presenters/event.engine.ts` (dialogue rendering) +
+  `state/actions.ts` (pickEventChoice). Narrower than 60b
+  (Encounter.enemy) — fewer fixtures and a more contained
+  shape change.
 
 ### [promoted 2026-05-20 → status Phase 60a] [score 7.0] Phase 60a — `getCoastalMap` → `getMapDefinition` rename
 

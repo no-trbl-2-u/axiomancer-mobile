@@ -253,6 +253,77 @@ describe('per-quest-node NPC wiring (Phase 56)', () => {
     });
 });
 
+describe('per-map treasure + gathering payloads (Phase 57)', () => {
+    it('fv-4 (Drowned Shrine, treasure) fires a loot-cache with non-empty items', () => {
+        const state = stateAt('fishing-village', 'fv-4');
+        const result = resolveMapEvent(state);
+        expect(result.event.kind).toBe('loot-cache');
+        if (result.event.kind === 'loot-cache') {
+            expect(result.event.items.length).toBeGreaterThanOrEqual(1);
+        }
+    });
+
+    it('northern-forest treasure fires distinct items from fishing-village treasure', () => {
+        const fvState = stateAt('fishing-village', 'fv-4');
+        const nfState = stateAt('northern-forest', 'nf-4');
+        const fv = resolveMapEvent(fvState);
+        const nf = resolveMapEvent(nfState);
+
+        expect(fv.event.kind).toBe('loot-cache');
+        expect(nf.event.kind).toBe('loot-cache');
+
+        if (fv.event.kind === 'loot-cache' && nf.event.kind === 'loot-cache') {
+            const fvIds = new Set(fv.event.items.map((i) => i.id));
+            const nfIds = new Set(nf.event.items.map((i) => i.id));
+            // The per-map rosters are disjoint by design (fv leans
+            // early-game; nf leans mid-tier).
+            for (const id of fvIds) {
+                expect(nfIds.has(id)).toBe(false);
+            }
+        }
+    });
+
+    it('fv-2 (Crossing, gather) fires a gathering event with non-empty materials', () => {
+        const state = stateAt('fishing-village', 'fv-2');
+        const result = resolveMapEvent(state);
+        expect(result.event.kind).toBe('gathering');
+        if (result.event.kind === 'gathering') {
+            expect(result.event.items.length).toBeGreaterThanOrEqual(1);
+            // All items in a gather pool should be Material-category.
+            for (const item of result.event.items) {
+                expect(item.category).toBe('material');
+            }
+        }
+    });
+
+    it('northern-forest gather drops moth-dust / larch-ash (locale-themed materials)', () => {
+        const state = stateAt('northern-forest', 'nf-2');
+        const result = resolveMapEvent(state);
+        expect(result.event.kind).toBe('gathering');
+        if (result.event.kind === 'gathering') {
+            const ids = new Set(result.event.items.map((i) => i.id));
+            const NF_GATHER = new Set(['moth-dust', 'larch-ash']);
+            // Every dropped material belongs to the nf roster.
+            for (const id of ids) {
+                expect(NF_GATHER.has(id)).toBe(true);
+            }
+        }
+    });
+
+    it('treasure event carries currency (per-map: fv=5, nf=10)', () => {
+        const fvState = stateAt('fishing-village', 'fv-4');
+        const nfState = stateAt('northern-forest', 'nf-4');
+        const fv = resolveMapEvent(fvState);
+        const nf = resolveMapEvent(nfState);
+        if (fv.event.kind === 'loot-cache') {
+            expect(fv.event.currency).toBe(5);
+        }
+        if (nf.event.kind === 'loot-cache') {
+            expect(nf.event.currency).toBe(10);
+        }
+    });
+});
+
 describe('chaos-mode toggle (Phase 58)', () => {
     afterEach(() => {
         // Restore canonical pools so subsequent tests are not

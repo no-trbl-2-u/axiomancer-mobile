@@ -73,8 +73,8 @@ assertions.
 | `event.codex.engine.test.ts` | P1 (pure) | `selectEventCodexHeader`: EVENT/<variant> left + KIND/<kind> right tokens, uppercase + hyphen→dot normalization, all variants threaded (Phase 50 tick C) | 1 | 5 |
 | `exploration.codex.engine.test.ts` | P1 (pure) | `selectExplorationCodexHeader`: REGION/<region-slug> + NODE/<currentNodeId-slug>, uppercase/hyphen/underscore/whitespace normalization, UNKNOWN/NONE fallbacks (Phase 50 tick D) | 1 | 5 |
 | `debug-seed.engine.test.ts` | P2 | `actions.debugSeed()` end-to-end: inventory gains items across categories (consumable + 3 equipment slots), knownSkills gains both paradox + fallacy fixture categories, current map resets to startingNode with fresh discovered/consumed sets, skills are set-idempotent on re-seed (Phase 54) | 1 | 5 |
-| `event-pools.engine.test.ts` | P2 | Per-node-type pool overrides + isBoss threading + unregistered-node fallback + idempotent re-registration. **Phase 55:** multi-entry encounter pools sample ≥2 distinct enemy ids per map, roster boundary, boss single-pin. **Phase 56:** per-quest-node NPC pools — fv-6 → boy-priest, nf-6 → forgotten-pilgrim, distinct per node. **Phase 58:** chaos-mode toggle samples multiple kinds | 4 | 23 |
-| **Totals (`state/e2e/`)** | | | **129** | **454** |
+| `event-pools.engine.test.ts` | P2 | Per-node-type pool overrides + isBoss + unregistered-node fallback + idempotent re-registration. **Phase 55:** multi-entry encounter pools. **Phase 56:** per-quest-node NPC pools. **Phase 57:** per-map treasure + gather payloads with locale-themed items, distinct fv vs nf rosters, currency thread, material-category check. **Phase 58:** chaos-mode toggle | 5 | 28 |
+| **Totals (`state/e2e/`)** | | | **130** | **459** |
 
 ## 4. Inventory — `state/persistence/e2e/`
 

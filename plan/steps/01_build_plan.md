@@ -855,7 +855,7 @@ phase row.
         npcName.
 
       Commit: `feat(spec56): per-quest-node NPC wiring`.
-- [ ] Phase 57 — Treasure + gathering payload contents.
+- [x] Phase 57 — Treasure + gathering payload contents.
       Promoted via `/oversight` 2026-05-20 (13th call) from
       `/expand` pass 30 ([3.0]).
 

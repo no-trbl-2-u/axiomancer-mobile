@@ -27,10 +27,16 @@
  */
 
 import {
+    consumableLibrary,
+    equipmentTemplates,
     registerMapEventPool,
     setNodeEventPoolOverride,
     type EnemySlug,
+    type Equipment,
+    type EquipmentTemplate,
+    type Item,
     type MapEventPool,
+    type Material,
 } from 'axiomancer-mechanics';
 
 import { fishingVillageLayout } from './fishing-village.layout';
@@ -43,8 +49,17 @@ const CONTINENT = 'coastal-continent';
  * node-type-to-pool mapping is easy to scan. */
 const POOL_IDS = {
     restCommon: 'rest-common',
+    /** Fallback gather pool — used if a node doesn't have a
+     * per-map gather override (defensive default). */
     gatherCommon: 'gather-common',
+    /** Per-map gather pools — Phase 57 (1-2 materials per locale). */
+    gatherFishingVillage: 'gather-fishing-village',
+    gatherNorthernForest: 'gather-northern-forest',
+    /** Fallback treasure pool — defensive default. */
     treasureCommon: 'treasure-common',
+    /** Per-map treasure pools — Phase 57 (1-3 items per locale). */
+    treasureFishingVillage: 'treasure-fishing-village',
+    treasureNorthernForest: 'treasure-northern-forest',
     /** Fallback quest pool — used only if a quest node lacks a
      * per-node override. Production should always have an override
      * registered (see QUEST_NPCS), so this is a defensive default. */
@@ -132,30 +147,85 @@ function restPool(id: string): MapEventPool {
     };
 }
 
-function gatherPool(id: string): MapEventPool {
+function gatherPool(id: string, items: ReadonlyArray<Item> = []): MapEventPool {
     return {
         id,
         entries: [
             {
                 kind: 'gathering',
                 weight: 1,
-                payload: { kind: 'gathering', items: [] },
+                payload: { kind: 'gathering', items },
             },
         ],
     };
 }
 
-function treasurePool(id: string): MapEventPool {
+function treasurePool(
+    id: string,
+    items: ReadonlyArray<Item> = [],
+    currency: number = 0,
+): MapEventPool {
     return {
         id,
         entries: [
             {
                 kind: 'loot-cache',
                 weight: 1,
-                payload: { kind: 'loot-cache' },
+                payload: { kind: 'loot-cache', items, currency },
             },
         ],
     };
+}
+
+/** Phase 57 — synthesize a Material item. Engine 0.10.0 doesn't
+ * ship a Material library; mobile constructs them inline from
+ * the BaseItem + Material shape (id / name / description /
+ * category='material' / quantity). */
+function material(id: string, name: string, description: string, quantity = 1): Material {
+    return {
+        id,
+        name,
+        description,
+        category: 'material',
+        quantity,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any as Material;
+}
+
+/** Phase 57 — convert an EquipmentTemplate to a full Equipment
+ * item by stamping the BaseItem fields the template lacks.
+ * Mirrors the helper in `state/actions.ts:templateToEquipment`
+ * (Phase 54 origin); duplicated here to avoid cross-importing
+ * the action layer from the data layer. */
+function templateToEquipment(template: EquipmentTemplate): Equipment {
+    return {
+        ...template,
+        category: 'equipment',
+        stackable: false,
+        quantity: 1,
+        rarity: 'common',
+        modifiers: [],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any as Equipment;
+}
+
+/** Lookup helper — pull a consumable from the engine library or
+ * return null. */
+function consumable(id: string): Item | null {
+    const found = consumableLibrary.find((c) => c.id === id);
+    return (found ?? null) as Item | null;
+}
+
+/** Lookup helper — pull an equipment template + convert. */
+function equipment(id: string): Item | null {
+    const tpl = equipmentTemplates.find((t) => t.id === id);
+    return tpl ? templateToEquipment(tpl) : null;
+}
+
+/** Compact item-list factory: filters out lookup misses so callers
+ * can list a few candidate ids without crashing on a typo. */
+function items(...candidates: ReadonlyArray<Item | null>): ReadonlyArray<Item> {
+    return candidates.filter((c): c is Item => c !== null);
 }
 
 function questPool(id: string, npcName: string = 'pilgrim'): MapEventPool {
@@ -214,6 +284,56 @@ function chaosPool(id: string): MapEventPool {
 }
 
 /**
+ * Phase 57 — per-map treasure rosters. fishing-village treasure
+ * leans coastal/early-game (low-tier consumables + cloth/leather
+ * gear); northern-forest treasure leans mid-tier and forest-
+ * themed (still pulls from the same engine libraries since 0.10.0
+ * doesn't ship locale-segmented item registries).
+ */
+const FISHING_VILLAGE_TREASURE: ReadonlyArray<Item> = items(
+    consumable('minor-healing-potion'),
+    equipment('leather-cap'),
+    equipment('cloth-wrap'),
+);
+
+const NORTHERN_FOREST_TREASURE: ReadonlyArray<Item> = items(
+    consumable('healing-potion'),
+    consumable('clarity-serum'),
+    equipment('iron-blade'),
+);
+
+/**
+ * Phase 57 — per-map gathering rosters. Synthesized Materials
+ * since 0.10.0 doesn't expose a Material library; each material
+ * is locale-themed.
+ */
+const FISHING_VILLAGE_GATHER: ReadonlyArray<Item> = [
+    material(
+        'barnacle-cluster',
+        'Barnacle Cluster',
+        'A handful of barnacles scraped from a piling. Stinks of low tide.',
+    ),
+    material(
+        'salt-rope',
+        'Salt-Rope',
+        'A coil of frayed rope, white with sea salt. Sturdy enough.',
+    ),
+];
+
+const NORTHERN_FOREST_GATHER: ReadonlyArray<Item> = [
+    material(
+        'moth-dust',
+        'Moth-Dust',
+        'A pinch of pale dust shaken from a lullaby-moth wing.',
+    ),
+    material(
+        'larch-ash',
+        'Pinch of Larch Ash',
+        'Ash from a cold hearth. Smells faintly of resin.',
+    ),
+];
+
+/**
  * Per-map encounter rosters — sourced from
  * `EnemiesByMap[mapName]` in the engine 0.10.0 library. Simple-
  * difficulty foes weighted 3×; normal-difficulty foes weighted 1×
@@ -250,8 +370,13 @@ const QUEST_POOLS: ReadonlyArray<MapEventPool> = (() => {
 /** All pools the mobile loop registers with the engine. */
 const POOLS: ReadonlyArray<MapEventPool> = [
     restPool(POOL_IDS.restCommon),
+    // Phase 57 — per-map gather + treasure pools with content.
     gatherPool(POOL_IDS.gatherCommon),
+    gatherPool(POOL_IDS.gatherFishingVillage, FISHING_VILLAGE_GATHER),
+    gatherPool(POOL_IDS.gatherNorthernForest, NORTHERN_FOREST_GATHER),
     treasurePool(POOL_IDS.treasureCommon),
+    treasurePool(POOL_IDS.treasureFishingVillage, FISHING_VILLAGE_TREASURE, 5),
+    treasurePool(POOL_IDS.treasureNorthernForest, NORTHERN_FOREST_TREASURE, 10),
     questPool(POOL_IDS.questCommon),
     ...QUEST_POOLS,
     // Fishing-village + northern-forest encounter pools (Phase 55) —
@@ -275,8 +400,12 @@ function poolIdForNode(mapId: string, nodeId: string, nodeType: NodeType): strin
         case 'rest':
             return POOL_IDS.restCommon;
         case 'gather':
+            if (mapId === 'fishing-village') return POOL_IDS.gatherFishingVillage;
+            if (mapId === 'northern-forest') return POOL_IDS.gatherNorthernForest;
             return POOL_IDS.gatherCommon;
         case 'treasure':
+            if (mapId === 'fishing-village') return POOL_IDS.treasureFishingVillage;
+            if (mapId === 'northern-forest') return POOL_IDS.treasureNorthernForest;
             return POOL_IDS.treasureCommon;
         case 'quest': {
             const npcKey = `${CONTINENT}:${mapId}:${nodeId}`;

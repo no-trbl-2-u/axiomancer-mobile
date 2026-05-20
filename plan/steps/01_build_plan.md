@@ -963,30 +963,13 @@ phase row.
       threshold)` for follow-up promotion once the trio ships
       clean. The lockfile bump (60f) is gated on 60a–60e
       landing.
-- [ ] Phase 60a — `getCoastalMap` → `getMapDefinition` rename.
-      Promoted via `/oversight` 2026-05-20 (16th call) from
-      PHASE_CANDIDATES pass 31 [score 7.0]. **First in
-      dispatch order.**
-
-      Scope (single phase, 1-2 ticks):
-
-      - `getCoastalMap` removed from engine 0.10.1+ public
-        surface; replaced by `getMapDefinition` (different
-        signature — returns the map definition rather than the
-        seeded state).
-      - Migrate three consumers: `state/actions.ts` (debugSeed,
-        changeMap, etc.), `state/e2e/exploration.engine.test.ts`,
-        `state/e2e/event-pools.engine.test.ts`. Either drop in
-        an adapter (`getCoastalMap(name) =
-        createMapState(getMapDefinition(name))` if signatures
-        align) or migrate callers directly.
-      - Hermetic seal: the existing exploration / event-pools
-        tests are the regression guard.
-
-      Cannot land in lockfile until 60f, but the rename can
-      ship now against an interim shim (or behind a guard) so
-      ticks can land independently. Decide at first tick which
-      path to take.
+- [x] Phase 60a — `getCoastalMap` → `getMapDefinition` rename.
+      Promoted via `/oversight` 2026-05-20 (16th call). Shipped
+      `baf66fa` — `feat(spec60a): migrate getCoastalMap →
+      createMapState(getMapDefinition)`. Migrated 4 call sites
+      (2 in `state/actions.ts`, 2 in e2e tests) directly to the
+      two-step pattern; both surfaces exist on 0.10.0 so no shim
+      was needed. 760/760 tests green. Closes mirror issue #95.
 - [ ] Phase 60d — Lift `Character.mana`/`maxMana` to a
       mobile-side `ManaState` type. Promoted via `/oversight`
       2026-05-20 (16th call) from PHASE_CANDIDATES pass 31

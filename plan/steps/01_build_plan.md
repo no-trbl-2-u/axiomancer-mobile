@@ -597,7 +597,7 @@ phase row.
       its own `feat(spec50 tick X): <surface> codex variant`
       commit; phase closes when the user signals
       "codex toggle complete" via `/oversight`.
-- [ ] Phase 51 — `axiomancer-mechanics` bump 0.7.0 → 0.10.0
+- [x] Phase 51 — `axiomancer-mechanics` bump 0.7.0 → 0.10.0
       (filed via `/oversight` 2026-05-19, 8th call). The cron
       generated `docs/engine-upgrade-0.7.0-to-0.10.0.md` at
       commit `30c03ca` covering the surface diff; this row is

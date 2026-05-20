@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { GameState, PersistenceAdapter } from 'axiomancer-mechanics';
 
 import {
+    DEFAULT_MIGRATIONS,
     type MigrationMap,
     type StoredEnvelope,
     unwrap,
@@ -60,7 +61,7 @@ export function createAsyncStorageAdapter(
     const {
         debounceMs = DEFAULT_DEBOUNCE_MS,
         storage = AsyncStorage,
-        migrations = {},
+        migrations = DEFAULT_MIGRATIONS,
         onError = defaultOnError,
     } = options;
 

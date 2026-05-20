@@ -1,11 +1,13 @@
 /**
  * Hermetic e2e tests for persistence schema migrations.
- * 
+ *
  * Covers the v1 → v2 migration that backfills missing derivedStats
- * and nonCombatStats fields using engine derivation helpers.
+ * and nonCombatStats fields using engine derivation helpers, and
+ * the v2 → v3 migration that backfills `state.alignment` (engine
+ * Phase 42, mobile Phase 51 bump from 0.7.0 → 0.10.0).
  */
 
-import { deriveStats, deriveNonCombatStats } from 'axiomancer-mechanics';
+import { defaultAlignment, deriveStats, deriveNonCombatStats } from 'axiomancer-mechanics';
 import { unwrap, wrap, CURRENT_SCHEMA_VERSION, DEFAULT_MIGRATIONS, type StoredEnvelope } from '../migrations';
 
 describe('migrations.engine', () => {
@@ -170,7 +172,7 @@ describe('migrations.engine', () => {
             expect(() => unwrap(malformedEnvelope)).toThrow('Migration v1→v2: invalid baseStats structure');
         });
 
-        test('v2 saves bypass migration', () => {
+        test('v2 envelope migrates to v3 by backfilling alignment', () => {
             const v2State = {
                 ...mockV1GameState,
                 player: {
@@ -185,20 +187,49 @@ describe('migrations.engine', () => {
                 state: v2State,
             };
 
-            const result = unwrap(v2Envelope);
-            
-            expect(result).toEqual(v2State);
+            const result = unwrap(v2Envelope) as Record<string, unknown>;
+
+            expect(result.alignment).toEqual(defaultAlignment());
+            // Other fields pass through untouched.
+            expect((result as { player: unknown }).player).toEqual(v2State.player);
+        });
+    });
+
+    describe('v2 → v3 migration (alignment backfill, engine 0.10.0)', () => {
+        test('adds alignment when missing, using defaultAlignment()', () => {
+            const v2State = { player: { name: 'Pilgrim' } };
+            const result = unwrap({ schemaVersion: 2, state: v2State }) as Record<string, unknown>;
+
+            expect(result.alignment).toEqual(defaultAlignment());
+        });
+
+        test('preserves alignment if already present (no overwrite)', () => {
+            const existing = { ...defaultAlignment(), epistemology: 42 };
+            const v2State = { player: { name: 'Pilgrim' }, alignment: existing };
+            const result = unwrap({ schemaVersion: 2, state: v2State }) as Record<string, unknown>;
+
+            expect(result.alignment).toEqual(existing);
+        });
+
+        test('rejects non-object state', () => {
+            const envelope: StoredEnvelope = { schemaVersion: 2, state: null };
+            expect(() => unwrap(envelope)).toThrow('Migration v2→v3: invalid state object');
         });
     });
 
     describe('migration infrastructure', () => {
-        test('current schema version is 2', () => {
-            expect(CURRENT_SCHEMA_VERSION).toBe(2);
+        test('current schema version is 3', () => {
+            expect(CURRENT_SCHEMA_VERSION).toBe(3);
         });
 
         test('DEFAULT_MIGRATIONS contains v1→v2 migration', () => {
             expect(DEFAULT_MIGRATIONS[1]).toBeDefined();
             expect(typeof DEFAULT_MIGRATIONS[1]).toBe('function');
+        });
+
+        test('DEFAULT_MIGRATIONS contains v2→v3 migration', () => {
+            expect(DEFAULT_MIGRATIONS[2]).toBeDefined();
+            expect(typeof DEFAULT_MIGRATIONS[2]).toBe('function');
         });
 
         test('wrap creates envelope with current schema version', () => {

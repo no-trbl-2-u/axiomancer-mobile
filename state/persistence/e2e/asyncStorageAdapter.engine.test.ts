@@ -244,4 +244,32 @@ describe('migrations — unwrap', () => {
             expect(() => unwrap(envelope, {})).toThrow(/no migration from v0/);
         }
     });
+
+    it('preload + load on a v2 envelope yields state with alignment backfilled (Phase 51)', async () => {
+        // Per the brief: load a `schemaVersion: 2` envelope through the
+        // adapter and confirm the resulting state has the engine's
+        // defaultAlignment() applied. Pins the migration runs end-to-end
+        // through createAsyncStorageAdapter, not just through unwrap().
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { defaultAlignment } = require('axiomancer-mechanics');
+        const v2State = {
+            player: {
+                name: 'V2 Pilgrim',
+                baseStats: { heart: 10, body: 10, mind: 10 },
+                derivedStats: {},
+                nonCombatStats: {},
+            },
+        };
+        await AsyncStorage.setItem(
+            SAVE_KEY,
+            JSON.stringify({ schemaVersion: 2, state: v2State }),
+        );
+
+        const adapter = createAsyncStorageAdapter();
+        await adapter.preload();
+        const loaded = adapter.load() as unknown as Record<string, unknown>;
+
+        expect(loaded).not.toBeNull();
+        expect(loaded.alignment).toEqual(defaultAlignment());
+    });
 });

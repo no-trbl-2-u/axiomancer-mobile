@@ -1,11 +1,11 @@
 import type { GameState } from 'axiomancer-mechanics';
-import { deriveStats, deriveNonCombatStats } from 'axiomancer-mechanics';
+import { defaultAlignment, deriveStats, deriveNonCombatStats } from 'axiomancer-mechanics';
 
 /**
  * Bump when the on-disk save shape changes. Add a migration entry
  * keyed by the *source* version below.
  */
-export const CURRENT_SCHEMA_VERSION = 2;
+export const CURRENT_SCHEMA_VERSION = 3;
 
 export interface StoredEnvelope {
     schemaVersion: number;
@@ -61,10 +61,33 @@ function migrateV1ToV2(state: unknown): unknown {
 }
 
 /**
- * Default migration map with v1→v2 migration.
+ * Migration from schema v2 to v3 (Phase 51, engine 0.10.0): backfill
+ * the top-level `state.alignment` field added by engine Phase 42
+ * (`PhilosophicalAlignment` — three-axis cube). The engine's
+ * `defaultAlignment()` is the canonical seed for a neutral start, so
+ * we call it rather than hardcoding the field shape; future engine
+ * tweaks to the axis names ride through automatically.
+ */
+function migrateV2ToV3(state: unknown): unknown {
+    if (!state || typeof state !== 'object') {
+        throw new Error('Migration v2→v3: invalid state object');
+    }
+
+    const gameState = state as Record<string, unknown>;
+
+    if (gameState.alignment === undefined || gameState.alignment === null) {
+        gameState.alignment = defaultAlignment();
+    }
+
+    return gameState;
+}
+
+/**
+ * Default migration map with v1→v2 and v2→v3 migrations.
  */
 export const DEFAULT_MIGRATIONS: MigrationMap = {
     1: migrateV1ToV2,
+    2: migrateV2ToV3,
 };
 
 export function wrap(state: GameState): StoredEnvelope {

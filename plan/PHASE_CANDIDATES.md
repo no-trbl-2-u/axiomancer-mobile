@@ -9,35 +9,6 @@
 
 ## Pending
 
-### [score 5.4] Phase 53 — Save-corrupted UX modal (Spec 09 Q7=A follow-up)
-
-- proposed: 2026-05-19, expand pass 29
-- signal sources:
-  - **§G commit pattern** — `app/_layout.tsx:46-50` carries an
-    explicit `// Replace with a UX modal in a follow-up`
-    comment. The Phase 51 migration-default fix in
-    `c273071` made the persistence layer actually run migrations
-    in production, which raises the chance that a corrupt save
-    surfaces; until now the failure path was rarer because no
-    migration ran.
-  - **§H plan gap** — Spec 09 Q7=A specifies the surface;
-    currently a `console.warn` swallows the failure and the app
-    boots fresh silently.
-- scope (single phase):
-  - Lift the `preload()` failure path into provider state
-    (`GameStoreProvider` exposes `corruptSave: boolean`).
-  - Modal component prompts: "Save corrupted — start a new
-    game?" with `Confirm` / `Cancel` (Cancel keeps the app at
-    the splash so the user can troubleshoot).
-  - Hermetic test: poisoned envelope triggers the modal mount;
-    confirm action clears the slot and boots fresh.
-- factors:
-  - +1 single-source signal
-  - +2 cheap-and-impactful (one phase, defensive UX)
-  - = **5.4**
-- non-conflicts: explicit Spec 09 follow-up, in-scope.
-
-
 
 
 
@@ -178,6 +149,31 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted 2026-05-19 → status Phase 53] [score 5.4] Save-corrupted UX modal (Spec 09 Q7=A follow-up)
+
+- promoted via `/oversight` 2026-05-19 (10th call) — last
+  non-engine-gated candidate in the queue. Phase 51's
+  migration-default fix raised the surface area of the
+  corrupt-save failure mode (migrations now actually run in
+  production), making the follow-up more urgent than its score
+  alone suggests.
+- Assigned **Phase 53** in `plan/steps/01_build_plan.md` Status block.
+- signal sources:
+  - **§G commit pattern** — `app/_layout.tsx:46-50` carries an
+    explicit `// Replace with a UX modal in a follow-up` comment.
+  - **§H plan gap** — Spec 09 Q7=A specifies the surface;
+    currently a `console.warn` swallows the failure and the app
+    boots fresh silently.
+- scope (single phase):
+  - Lift the `preload()` failure path into provider state
+    (`GameStoreProvider` exposes `corruptSave: boolean`).
+  - Modal component prompts: "Save corrupted — start a new
+    game?" with `Confirm` / `Cancel` (Cancel keeps the app at
+    the splash so the user can troubleshoot).
+  - Hermetic test: poisoned envelope triggers the modal mount;
+    confirm action clears the slot and boots fresh.
+- Brief: drafted inline in the build-plan row.
 
 ### [promoted 2026-05-19 → status Phase 52] [score 7.2] Surface engine `PhilosophicalAlignment` on SELF tab
 

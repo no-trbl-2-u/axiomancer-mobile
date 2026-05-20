@@ -678,6 +678,50 @@ phase row.
       - Verify gate: `pnpm exec tsc --noEmit`, full
         `pnpm test`. Commit:
         `feat(spec52): alignment cell on SELF tab — port engine 0.10.0 Philosophy module`.
+- [ ] Phase 53 — Save-corrupted UX modal (Spec 09 Q7=A
+      follow-up). Promoted via `/oversight` 2026-05-19 (10th
+      call) — last non-engine-gated candidate in the queue.
+      Phase 51's migration-default fix
+      (`state/persistence/asyncStorageAdapter.ts` defaulting
+      `migrations = DEFAULT_MIGRATIONS` instead of `{}`) made the
+      persistence layer actually run migrations in production,
+      raising the surface area of corrupt-save failures from
+      "never fires" to "real possibility on schema bumps". The
+      current `preload()` failure path is a `console.warn` that
+      silently boots a fresh game — Spec 09 Q7=A calls for a
+      user-facing prompt.
+
+      Scope (single phase):
+
+      - Lift the `preload()` failure into provider state.
+        `GameStoreProvider` gains a `corruptSave: boolean`
+        signal (true when `persistenceAdapter.preload()`
+        rejects); the layout passes it through.
+      - New `<CorruptSaveModal>` component prompts "Save
+        corrupted — start a new game?" with two actions:
+        `Confirm` (calls `adapter.clear()` + boots fresh) and
+        `Cancel` (keeps the app at the splash so the user can
+        troubleshoot / reach support).
+      - Wire into `app/_layout.tsx`: when `corruptSave === true`
+        and `loaded && preloaded`, render the modal instead of
+        the splash; the existing `console.warn` stays as a dev
+        breadcrumb.
+      - Hermetic test:
+        - Poisoned envelope (`JSON.parse` throws inside
+          `preload`) flips `corruptSave` true; modal mounts.
+        - `Confirm` clears the slot + flips `corruptSave` false;
+          provider boots a fresh `createNewGameState`.
+        - `Cancel` leaves `corruptSave` true; modal stays
+          mounted; no clear.
+      - Voice register check: modal copy uses lowercase ritual
+        (per Phase 33's voice register), no second-person
+        archaic pronouns. Body suggestion:
+        `"the page was torn. begin anew?"` — adjust on review.
+
+      Verify gate: `pnpm exec tsc --noEmit`, full `pnpm test`,
+      `pnpm exec eslint . --max-warnings=0`. Single commit:
+      `feat(spec53): save-corrupted UX modal — Spec 09 Q7=A
+      follow-up`.
 
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh

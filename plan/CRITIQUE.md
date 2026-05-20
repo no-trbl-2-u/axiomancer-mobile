@@ -40,16 +40,6 @@
 
 ## Pending
 
-### [MED] general — manual combat trigger + starting-character seed for testing
-- pass: user-jot (commit 686d598)
-- viewport: unspecified
-- auth_state: anonymous
-- category: observation
-- observation: we need a way to manually trigger combat so I can test the combat in the UI. Furthermore, we need a the starting character to have a bunch of items to test the equipment and consumable mechanics
-- evidence: user-spotted at 2026-05-20T04:09:56Z
-- suggested_fix: [user has not specified — iterate to determine]
-- source: user
-
 ### [MED] general — no combat encounters in the first map
 - pass: user-jot (commit 39695a5)
 - viewport: unspecified
@@ -61,6 +51,11 @@
 - source: user
 
 ## Done
+
+### [MED] general — manual combat trigger + starting-character seed for testing ✅
+- pass: user-jot (commit 686d598); addressed at commit `<this-tick>` via DebugCombatButton + DevAutoSeed
+- Manual trigger: SELF tab DEBUG · COMBAT row's STRIKE button calls `actions.startCombat(createMockEncounterEnemy())` + `enterCombat()` + routes to /(tabs)/combat. Bypasses the tab-mutex catch-22 (STRIFE tab hidden until combat active; combat-active requires encounter node; first map has none — second jot row).
+- Auto-seed: `<DevAutoSeed />` mounts inside the providers tree at the root layout; on first DEV boot with empty inventory, fires `actions.debugSeed()` once. Persisted state means subsequent launches skip. `__DEV__` false → no-op.
 
 ### [MED] /app/(tabs)/exploration/index.tsx:373-379 — aftermath banner display literals lifted onto presenter ✅
 - pass: 16 (commit 56725ae); addressed at commit fd410cc

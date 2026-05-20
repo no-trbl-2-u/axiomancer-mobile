@@ -91,6 +91,8 @@ assertions.
 | `components/event/__tests__/EncounterModalOverlay.test.tsx` | P4 | Modal-over-map seam: backdrop fade, panel rise, action-button subtitle render, auto-dismiss timing; codex header mount/omit per aesthetic mode (Phase 50 tick C) | 3 | 10 |
 | `components/__tests__/CorruptSaveModal.test.tsx` | P4 | Boot-time corrupt-save prompt (Phase 53): mount on visible prop, confirm/cancel callback routing, lowercase ritual voice register, accessibilityLabel pin per button | 4 | 8 |
 | `components/__tests__/DebugSeedButton.test.tsx` | P4 | Dev-only debug seed button (Phase 54): DEV-gate (renders/null), tap routes through `actions.debugSeed()` (mutates inventory + skills + map), result line updates with summary, idempotent re-seed, accessibility | 3 | 6 |
+| `components/__tests__/DebugCombatButton.test.tsx` | P4 | Dev-only manual combat trigger (CRITIQUE jot 39695a5): DEV-gate, tap calls startCombat + router push to /(tabs)/combat, accessibility | 3 | 5 |
+| `components/__tests__/DevAutoSeed.test.tsx` | P4 | Boot-time auto-seed for DEV (CRITIQUE jot 39695a5): empty inventory triggers single `actions.debugSeed()` call, renders nothing visible, idempotent for populated inventory, production-gated | 2 | 4 |
 | `components/StanceGlyph.test.tsx` | P4 | StanceGlyph + GlyphHeart asset wiring (per-stance source resolution, fallback) | 4 | 16 |
 
 ## 6. Inventory — script-helper tests (non-e2e but hermetic)

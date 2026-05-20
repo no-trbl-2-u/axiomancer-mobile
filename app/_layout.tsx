@@ -18,6 +18,7 @@ import { CombatModeProvider } from '@/state/combat-mode';
 import { GameStoreProvider } from '@/state/GameStoreProvider';
 import { createAsyncStorageAdapter } from '@/state/persistence/asyncStorageAdapter';
 import { CorruptSaveModal } from '@/components/CorruptSaveModal';
+import { DevAutoSeed } from '@/components/DevAutoSeed';
 import { HardwareBackHandler } from '@/components/HardwareBackHandler';
 import { EventGate } from '@/components/EventGate';
 import { ToastHost } from '@/components/ToastHost';
@@ -115,6 +116,7 @@ export default function RootLayout() {
           <HardwareBackHandler />
           <EventGate />
           <ToastHost />
+          <DevAutoSeed />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="index" options={{ headerShown: false }} />

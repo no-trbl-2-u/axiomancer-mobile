@@ -52,7 +52,7 @@ function withProviders(
     aesthetic?: 'canonical' | 'codex',
 ) {
     return (
-        <AestheticModeProvider initialMode={aesthetic ?? 'canonical'}>
+        <AestheticModeProvider initialMode={aesthetic ?? 'canonical'} skipHydration>
             <CombatModeProvider>
                 <GameStoreProvider store={store}>
                     {child}

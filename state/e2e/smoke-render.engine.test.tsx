@@ -70,7 +70,7 @@ function makeStore(): AppStore {
 
 function withProviders(store: AppStore, screen: React.ReactNode) {
     return (
-        <AestheticModeProvider>
+        <AestheticModeProvider skipHydration>
             <CombatModeProvider>
                 <GameStoreProvider store={store}>{screen}</GameStoreProvider>
             </CombatModeProvider>

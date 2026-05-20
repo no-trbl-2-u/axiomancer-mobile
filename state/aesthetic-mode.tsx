@@ -61,6 +61,14 @@ export interface AestheticModeProviderProps {
      * `DEFAULT_AESTHETIC_MODE`. Persisted value overrides this on
      * hydrate. */
     initialMode?: AestheticMode;
+    /** Test escape-hatch: when true, skip the async AsyncStorage
+     * hydration entirely. `hydrated` is true from first render,
+     * `mode` stays at `initialMode`. Tests that don't care about
+     * hydration (smoke-render, modal overlays, combat screen)
+     * pass this to avoid the `setHydrated` setState firing outside
+     * `act(...)` and producing a noisy warning. Production callers
+     * leave this undefined. */
+    skipHydration?: boolean;
 }
 
 function isAestheticMode(value: unknown): value is AestheticMode {
@@ -71,11 +79,13 @@ export function AestheticModeProvider({
     children,
     storage = AsyncStorage,
     initialMode = DEFAULT_AESTHETIC_MODE,
+    skipHydration = false,
 }: AestheticModeProviderProps) {
     const [mode, setModeState] = useState<AestheticMode>(initialMode);
-    const [hydrated, setHydrated] = useState(false);
+    const [hydrated, setHydrated] = useState<boolean>(skipHydration);
 
     useEffect(() => {
+        if (skipHydration) return;
         let cancelled = false;
         storage
             .getItem(AESTHETIC_STORAGE_KEY)
@@ -90,7 +100,7 @@ export function AestheticModeProvider({
         return () => {
             cancelled = true;
         };
-    }, [storage]);
+    }, [storage, skipHydration]);
 
     const setMode = useCallback(
         (next: AestheticMode) => {

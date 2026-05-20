@@ -32,7 +32,11 @@ import { AestheticModeProvider, type AestheticMode } from '@/state/aesthetic-mod
 import type { EventViewModel } from '@/state/presenters/event.engine';
 
 function withAesthetic(child: React.ReactNode, mode: AestheticMode = 'canonical') {
-    return <AestheticModeProvider initialMode={mode}>{child}</AestheticModeProvider>;
+    return (
+        <AestheticModeProvider initialMode={mode} skipHydration>
+            {child}
+        </AestheticModeProvider>
+    );
 }
 
 afterEach(() => {

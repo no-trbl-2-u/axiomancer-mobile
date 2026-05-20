@@ -68,7 +68,7 @@ assertions.
 | `store.engine.test.ts` | P2 | `createAppStore` lifecycle: load / save gating (explicit-only); `_recentEvents` initialized; engine-store passthrough | 4 | 11 |
 | `tabs.engine.test.ts` | P1 | Tab visibility mutex: MAP ⊕ COMBAT (never both); combat-prelude detection feeds the mutex | 6 | 11 |
 | `token-crucible.engine.test.ts` | P1 (pure) | Token-Crucible VM: skill-library partition; `canAfford` matrix; deep-freeze invariant | 4 | 10 |
-| `aesthetic-mode.engine.test.tsx` | P3 | `useAesthetic` context: default 'canonical', AsyncStorage hydration (valid / corrupt), setMode write-through, toggle round-trip, provider guard (Phase 50 tick A) | 3 | 10 |
+| `aesthetic-mode.engine.test.tsx` | P3 | `useAesthetic` context: default 'canonical', AsyncStorage hydration (valid / corrupt), setMode write-through, toggle round-trip, provider guard, `skipHydration` opt-out (Phase 50 tick A + verify-noise fix) | 4 | 12 |
 | `combat.codex.engine.test.ts` | P1 (pure) | `selectCodexStatusLine` + `selectCodexEnemySlug`: enemy name slug rules, design-source ENC/ROUND/STATE format, roman 1..10 + decimal fallback, all engine phases threaded verbatim (Phase 50 tick B) | 2 | 11 |
 | `event.codex.engine.test.ts` | P1 (pure) | `selectEventCodexHeader`: EVENT/<variant> left + KIND/<kind> right tokens, uppercase + hyphen→dot normalization, all variants threaded (Phase 50 tick C) | 1 | 5 |
 | `exploration.codex.engine.test.ts` | P1 (pure) | `selectExplorationCodexHeader`: REGION/<region-slug> + NODE/<currentNodeId-slug>, uppercase/hyphen/underscore/whitespace normalization, UNKNOWN/NONE fallbacks (Phase 50 tick D) | 1 | 5 |

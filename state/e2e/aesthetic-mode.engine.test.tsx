@@ -39,10 +39,13 @@ function wrapper({ children }: { children: React.ReactNode }) {
 }
 
 describe('aesthetic-mode: default + hydration', () => {
-    it('defaults to canonical before hydration resolves', () => {
+    it('defaults to canonical before hydration resolves', async () => {
         const { result } = renderHook(() => useAesthetic(), { wrapper });
         expect(result.current.mode).toBe('canonical');
         expect(DEFAULT_AESTHETIC_MODE).toBe('canonical');
+        // Drain the pending hydration microtask so the trailing
+        // setHydrated(true) doesn't fire outside an act() boundary.
+        await waitFor(() => expect(result.current.hydrated).toBe(true));
     });
 
     it('flips hydrated to true after the AsyncStorage read resolves', async () => {
@@ -119,5 +122,41 @@ describe('aesthetic-mode: provider guard', () => {
             'useAesthetic must be used inside <AestheticModeProvider>',
         );
         errorSpy.mockRestore();
+    });
+});
+
+describe('aesthetic-mode: skipHydration opt-out (test convenience)', () => {
+    function skipHydrationWrapper({ children }: { children: React.ReactNode }) {
+        return (
+            <AestheticModeProvider skipHydration>{children}</AestheticModeProvider>
+        );
+    }
+
+    it('reports hydrated=true on first render when skipHydration is set', () => {
+        const { result } = renderHook(() => useAesthetic(), {
+            wrapper: skipHydrationWrapper,
+        });
+        // No await — the synchronous hydrated=true is the whole
+        // point of the opt-out. Tests that mount the provider but
+        // don't care about hydration (smoke-render, modal overlays,
+        // combat screen) use this to avoid the async setHydrated
+        // firing outside act() and producing a noisy warning.
+        expect(result.current.hydrated).toBe(true);
+        expect(result.current.mode).toBe('canonical');
+    });
+
+    it('respects the initialMode override even with skipHydration', async () => {
+        function codexSkipWrapper({ children }: { children: React.ReactNode }) {
+            return (
+                <AestheticModeProvider initialMode="codex" skipHydration>
+                    {children}
+                </AestheticModeProvider>
+            );
+        }
+        const { result } = renderHook(() => useAesthetic(), {
+            wrapper: codexSkipWrapper,
+        });
+        expect(result.current.hydrated).toBe(true);
+        expect(result.current.mode).toBe('codex');
     });
 });

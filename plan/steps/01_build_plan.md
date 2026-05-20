@@ -979,27 +979,14 @@ phase row.
       (combat-hud + combat) widened to AppStoreState and read
       from `state.combatMana`. 760/760 tests green. Closes
       mirror issue #96.
-- [ ] Phase 60b — `Encounter.enemy` shape migration. Promoted
-      via `/oversight` 2026-05-20 (16th call) from
-      PHASE_CANDIDATES pass 31 [score 5.5].
-
-      Scope (single phase, 2-3 ticks):
-
-      - Engine 0.10.1+ removed `enemy` from the public
-        `Encounter` type (likely flattened to `enemyId` resolved
-        via `getEnemyById`, but first tick is engine-type
-        investigation against installed 0.10.2).
-      - Update fixture helpers
-        (`makeEncounterResult` in
-        `state/e2e/event.engine.test.ts`), then migrate
-        consumers: `state/presenters/event.engine.ts`,
-        `state/e2e/event.screen.test.tsx`,
-        `state/e2e/event-assets.test.ts`.
-      - Third tick: e2e regression sweep against the new
-        shape.
-
-      Independent of 60a/60d — but ships third by dispatch
-      order to spread the higher-uncertainty work.
+- [x] Phase 60b — `Encounter.enemy` → `enemies[0]` migration.
+      Promoted via `/oversight` 2026-05-20 (16th call). Shipped
+      `0ee7f63` — `feat(spec60b): migrate Encounter.enemy →
+      enemies[0]`. Investigation revealed the engine's canonical
+      shape (`{enemies, origin}`) already shipped on 0.10.0; the
+      migration is to that shape (not `enemyId` as the candidate
+      brief had hypothesized). 5 fixtures + 2 consumers migrated;
+      760/760 tests green. Closes mirror issue #97.
 
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh

@@ -63,12 +63,14 @@ describe('Store Submission Requirements', () => {
       // Web favicon
       expect(expo.web?.favicon).toBe('./assets/images/favicon.png');
       
-      // Android adaptive icon
+      // Android adaptive icon (sources from the user-supplied
+      // resource tree under assets/images/android/res/; EAS
+      // regenerates per-density mipmaps from these xxxhdpi layers).
       const { adaptiveIcon } = expo.android;
       expect(adaptiveIcon.backgroundColor).toBe('#0a0a0a');
-      expect(adaptiveIcon.foregroundImage).toBe('./assets/images/android-icon-foreground.png');
-      expect(adaptiveIcon.backgroundImage).toBe('./assets/images/android-icon-background.png');
-      expect(adaptiveIcon.monochromeImage).toBe('./assets/images/android-icon-monochrome.png');
+      expect(adaptiveIcon.foregroundImage).toBe('./assets/images/android/res/mipmap-xxxhdpi/ic_launcher_foreground.png');
+      expect(adaptiveIcon.backgroundImage).toBe('./assets/images/android/res/mipmap-xxxhdpi/ic_launcher_background.png');
+      expect(adaptiveIcon.monochromeImage).toBe('./assets/images/android/res/mipmap-xxxhdpi/ic_launcher_monochrome.png');
     });
 
     test('splash screen is configured correctly', () => {
@@ -93,12 +95,12 @@ describe('Store Submission Requirements', () => {
     
     test('app icons exist with correct naming', () => {
       const requiredIcons = [
-        'icon.png',                      // iOS 1024x1024
-        'android-icon-foreground.png',   // Android adaptive foreground
-        'android-icon-background.png',   // Android adaptive background
-        'android-icon-monochrome.png',   // Android monochrome
-        'favicon.png',                   // Web 192x192
-        'splash-icon.png'                // Splash screen logo
+        'icon.png',                                                       // iOS 1024x1024
+        'android/res/mipmap-xxxhdpi/ic_launcher_foreground.png',          // Android adaptive foreground (xxxhdpi source)
+        'android/res/mipmap-xxxhdpi/ic_launcher_background.png',          // Android adaptive background (xxxhdpi source)
+        'android/res/mipmap-xxxhdpi/ic_launcher_monochrome.png',          // Android monochrome (xxxhdpi source)
+        'favicon.png',                                                    // Web 192x192
+        'splash-icon.png'                                                 // Splash screen logo
       ];
 
       requiredIcons.forEach(iconFile => {

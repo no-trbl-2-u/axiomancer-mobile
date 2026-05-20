@@ -3,12 +3,17 @@ const path = require('path');
 
 describe('App Icon Assets', () => {
   const assetsPath = path.join(__dirname, '../images');
-  
+
+  // Android adaptive-icon sources now live under
+  // `assets/images/android/res/mipmap-xxxhdpi/` — the highest-density
+  // layer from the user-supplied resource tree. `app.json`'s
+  // `android.adaptiveIcon` points at these directly; EAS regenerates
+  // per-density mipmaps from them at build time.
   const requiredIcons = [
     { file: 'icon.png', description: 'iOS app icon', expectedSize: 1024 },
-    { file: 'android-icon-foreground.png', description: 'Android adaptive foreground', expectedSize: 1024 },
-    { file: 'android-icon-background.png', description: 'Android adaptive background', expectedSize: 1024 },
-    { file: 'android-icon-monochrome.png', description: 'Android monochrome', expectedSize: 1024 },
+    { file: 'android/res/mipmap-xxxhdpi/ic_launcher_foreground.png', description: 'Android adaptive foreground', expectedSize: 432 },
+    { file: 'android/res/mipmap-xxxhdpi/ic_launcher_background.png', description: 'Android adaptive background', expectedSize: 432 },
+    { file: 'android/res/mipmap-xxxhdpi/ic_launcher_monochrome.png', description: 'Android monochrome', expectedSize: 432 },
     { file: 'favicon.png', description: 'Web favicon', expectedSize: 192 },
     { file: 'splash-icon.png', description: 'Splash screen icon', expectedSize: 200 }
   ];

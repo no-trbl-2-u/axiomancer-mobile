@@ -16,6 +16,10 @@ import { StatusBar } from 'expo-status-bar';
 import { AestheticModeProvider } from '@/state/aesthetic-mode';
 import { CombatModeProvider } from '@/state/combat-mode';
 import { GameStoreProvider } from '@/state/GameStoreProvider';
+// Side-effect import: registers exploration map event pools with
+// the engine so walking onto encounter / rest / treasure / quest
+// nodes fires the appropriate event. See state/exploration-maps/event-pools.ts.
+import '@/state/exploration-maps/event-pools';
 import { createAsyncStorageAdapter } from '@/state/persistence/asyncStorageAdapter';
 import { CorruptSaveModal } from '@/components/CorruptSaveModal';
 import { DevAutoSeed } from '@/components/DevAutoSeed';

@@ -73,7 +73,8 @@ assertions.
 | `event.codex.engine.test.ts` | P1 (pure) | `selectEventCodexHeader`: EVENT/<variant> left + KIND/<kind> right tokens, uppercase + hyphen→dot normalization, all variants threaded (Phase 50 tick C) | 1 | 5 |
 | `exploration.codex.engine.test.ts` | P1 (pure) | `selectExplorationCodexHeader`: REGION/<region-slug> + NODE/<currentNodeId-slug>, uppercase/hyphen/underscore/whitespace normalization, UNKNOWN/NONE fallbacks (Phase 50 tick D) | 1 | 5 |
 | `debug-seed.engine.test.ts` | P2 | `actions.debugSeed()` end-to-end: inventory gains items across categories (consumable + 3 equipment slots), knownSkills gains both paradox + fallacy fixture categories, current map resets to startingNode with fresh discovered/consumed sets, skills are set-idempotent on re-seed (Phase 54) | 1 | 5 |
-| **Totals (`state/e2e/`)** | | | **125** | **431** |
+| `event-pools.engine.test.ts` | P2 | `registerExplorationEventPools()` registers per-node overrides so `resolveMapEvent` fires the right event-kind per node type (encounter / boss / rest / gather / treasure / quest) across both fishing-village + northern-forest layouts; isBoss flag threaded; unregistered node id returns kind=none; idempotent re-registration; layout-coverage assertions | 1 | 11 |
+| **Totals (`state/e2e/`)** | | | **126** | **442** |
 
 ## 4. Inventory — `state/persistence/e2e/`
 

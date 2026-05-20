@@ -40,17 +40,13 @@
 
 ## Pending
 
-### [MED] general — no combat encounters in the first map
-- pass: user-jot (commit 39695a5)
-- viewport: unspecified
-- auth_state: anonymous
-- category: content
-- observation: There are no combat encounters in the first map we're in
-- evidence: user-spotted at 2026-05-20T04:11:21Z
-- suggested_fix: [user has not specified — iterate to determine]
-- source: user
-
 ## Done
+
+### [MED] general — no combat encounters in the first map ✅
+- pass: user-jot (commit c3c4e4e); addressed at commit `<this-tick>` via `state/exploration-maps/event-pools.ts`
+- Root cause: mobile's layout files annotated nodes with type (encounter / boss / rest / gather / treasure / quest), but the engine's map-event pool registry was empty — `resolveMapEvent` returned `{ kind: 'none' }` on every node. Walking onto an encounter node did nothing because no pool was registered for the engine's `lookupPool(continent, mapName, nodeId)` to find.
+- Fix: a new module that registers one pool per node type (encounter / boss per map; rest / gather / treasure / quest shared across maps) and then a per-node `setNodeEventPoolOverride` call for every node in both fishing-village and northern-forest layouts. Auto-registers on module import; `app/_layout.tsx` imports it as a side-effect so production picks up the registration at boot. Enemy slugs picked from the engine's `EnemiesByMap` library (fishing-village → tidepool-crab / coastal-tyrant; northern-forest → disatree / the-disagreement).
+- Result: walking onto `fv-3` now fires an `encounter` event with `tidepool-crab`. The existing flow does the rest: tab-mutex flips, STRIFE tab becomes visible, combat starts.
 
 ### [MED] general — manual combat trigger + starting-character seed for testing ✅
 - pass: user-jot (commit 686d598); addressed at commit `<this-tick>` via DebugCombatButton + DevAutoSeed

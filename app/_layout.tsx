@@ -10,13 +10,14 @@ import { BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
 import { JetBrainsMono_400Regular } from '@expo-google-fonts/jetbrains-mono';
 import * as SplashScreen from 'expo-splash-screen';
 import * as NavigationBar from 'expo-navigation-bar';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { AestheticModeProvider } from '@/state/aesthetic-mode';
 import { CombatModeProvider } from '@/state/combat-mode';
 import { GameStoreProvider } from '@/state/GameStoreProvider';
 import { createAsyncStorageAdapter } from '@/state/persistence/asyncStorageAdapter';
+import { CorruptSaveModal } from '@/components/CorruptSaveModal';
 import { HardwareBackHandler } from '@/components/HardwareBackHandler';
 import { EventGate } from '@/components/EventGate';
 import { ToastHost } from '@/components/ToastHost';
@@ -38,6 +39,7 @@ export default function RootLayout() {
     JetBrainsMono_400Regular,
   });
   const [preloaded, setPreloaded] = useState(false);
+  const [corruptSave, setCorruptSave] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -45,10 +47,11 @@ export default function RootLayout() {
       .preload()
       .catch((err: unknown) => {
         // Q7=A on Spec 09: surface "save corrupted — start new game?" to
-        // the user. Minimum viable for this phase: log and continue with
-        // a fresh game (cache stays null, provider boots `createNewGameState`).
-        // Replace with a UX modal in a follow-up.
-        console.warn('[persistence] preload failed; starting fresh', err);
+        // the user. Phase 53 wires the user-facing CorruptSaveModal; the
+        // console.warn stays as a dev breadcrumb so the failure shows up
+        // in Metro logs alongside the modal mount.
+        console.warn('[persistence] preload failed; surfacing modal', err);
+        if (!cancelled) setCorruptSave(true);
       })
       .finally(() => {
         if (!cancelled) setPreloaded(true);
@@ -56,6 +59,21 @@ export default function RootLayout() {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  const onCorruptConfirm = useCallback(() => {
+    // Clear the corrupt slot + drop the modal. The provider boots a fresh
+    // `createNewGameState` because the persistence cache is now null.
+    persistenceAdapter.clear().catch((err: unknown) => {
+      console.warn('[persistence] clear failed after corrupt-save confirm', err);
+    });
+    setCorruptSave(false);
+  }, []);
+
+  const onCorruptCancel = useCallback(() => {
+    // Keep the modal mounted so the user can troubleshoot / reach support.
+    // No-op intentionally — the modal stays visible until they choose
+    // Confirm or close the app.
   }, []);
 
   useEffect(() => {
@@ -85,6 +103,11 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      <CorruptSaveModal
+        visible={corruptSave}
+        onConfirm={onCorruptConfirm}
+        onCancel={onCorruptCancel}
+      />
       <GameStoreProvider adapter={persistenceAdapter}>
         <AestheticModeProvider>
         <CombatModeProvider>

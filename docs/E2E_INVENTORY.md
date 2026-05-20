@@ -88,6 +88,7 @@ assertions.
 | File | Pattern | Pins | desc | it |
 |---|---|---|---:|---:|
 | `components/event/__tests__/EncounterModalOverlay.test.tsx` | P4 | Modal-over-map seam: backdrop fade, panel rise, action-button subtitle render, auto-dismiss timing; codex header mount/omit per aesthetic mode (Phase 50 tick C) | 3 | 10 |
+| `components/__tests__/CorruptSaveModal.test.tsx` | P4 | Boot-time corrupt-save prompt (Phase 53): mount on visible prop, confirm/cancel callback routing, lowercase ritual voice register, accessibilityLabel pin per button | 4 | 8 |
 | `components/StanceGlyph.test.tsx` | P4 | StanceGlyph + GlyphHeart asset wiring (per-stance source resolution, fallback) | 4 | 16 |
 
 ## 6. Inventory — script-helper tests (non-e2e but hermetic)

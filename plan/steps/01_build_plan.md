@@ -678,7 +678,7 @@ phase row.
       - Verify gate: `pnpm exec tsc --noEmit`, full
         `pnpm test`. Commit:
         `feat(spec52): alignment cell on SELF tab — port engine 0.10.0 Philosophy module`.
-- [ ] Phase 53 — Save-corrupted UX modal (Spec 09 Q7=A
+- [x] Phase 53 — Save-corrupted UX modal (Spec 09 Q7=A
       follow-up). Promoted via `/oversight` 2026-05-19 (10th
       call) — last non-engine-gated candidate in the queue.
       Phase 51's migration-default fix

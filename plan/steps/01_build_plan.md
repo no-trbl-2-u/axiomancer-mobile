@@ -776,6 +776,108 @@ phase row.
       `pnpm exec eslint . --max-warnings=0`. Single commit:
       `feat(spec54): debug seed button — items + skills + map reset
       (dev-only)`.
+- [ ] Phase 58 — Debug map-reset + chaos-pool toggle
+      (manual-testing affordance). Promoted via `/oversight`
+      2026-05-20 (13th call) — user free-form addendum:
+      "Make sure to add a 'debug' button to reset the current
+      map and that the 'encounters' (combat, hazard,
+      gathering, etc) are randomized for now so I can continue
+      testing manually." Ordered FIRST in dispatch despite
+      higher number; user-direct testing unblock outranks the
+      pass-30 candidates.
+
+      Scope (single phase):
+
+      - New `<DebugMapResetButton>` mounted beside the
+        existing dev affordances on the SELF tab. On press:
+        `actions.changeMap(currentMapName)` re-seeds the
+        current map via the engine's `getCoastalMap` —
+        fresh `currentNode`, cleared `discoveredNodes` /
+        `consumedNodes` / `completedNodes`. Map-only escape
+        hatch (vs. `DebugSeedButton`'s composite seed which
+        also touches inventory + skills).
+      - New `chaos-pool` registered in `event-pools.ts` with
+        weighted entries spanning multiple event kinds —
+        encounter, hazard, gathering, loot-cache, rest.
+      - New `<DebugChaosToggle>` (DEV-only) that flips between
+        canonical pools and the chaos pool. When ON, calls
+        `setNodeEventPoolOverride(continent, mapId, nodeId,
+        'chaos-pool')` for every node in both layouts. When
+        OFF (default), re-calls `registerExplorationEventPools()`
+        to restore the per-type overrides.
+      - Hermetic tests:
+        - map-reset button mutates the map to startingNode +
+          cleared sets.
+        - chaos-pool toggle ON: across 20 seeded-RNG resolves,
+          at least 3 distinct event kinds surface.
+        - chaos-pool toggle OFF: walking onto fv-3 (encounter
+          node) returns to firing an encounter, not chaos.
+
+      Verify gate: `pnpm exec tsc --noEmit`, full `pnpm test`,
+      `pnpm exec eslint . --max-warnings=0`. Single commit:
+      `feat(spec58): debug map-reset + chaos-pool toggle (dev-only)`.
+- [ ] Phase 55 — Multi-entry encounter pools per map.
+      Promoted via `/oversight` 2026-05-20 (13th call) from
+      `/expand` pass 30 ([3.5]).
+
+      Scope (single phase):
+
+      - Expand `encounter-fishing-village` pool to entries
+        for tidepool-crab / sea-mist-wisp / wet-hound /
+        mournful-gull, weighted so simple foes appear more
+        often than the wet-hound (normal difficulty).
+      - Expand `encounter-northern-forest` similarly with
+        lullaby-moth / disatree / forest-sprite /
+        argumentative-crow, same weighting principle.
+      - Hermetic test: across 20 seeded-RNG resolves on
+        an encounter node, the resolved enemy ids include
+        at least 2 distinct slugs (proves the pool samples).
+
+      Commit: `feat(spec55): multi-entry encounter pools per map`.
+- [ ] Phase 56 — Per-quest-node NPC wiring. Promoted via
+      `/oversight` 2026-05-20 (13th call) from `/expand`
+      pass 30 ([3.0]).
+
+      Scope (single phase):
+
+      - Replace `questCommon` with per-map quest pools that
+        thread different `npcName` values per quest node
+        (fv-6 Ash Mire → 'boy-priest' per the layout's
+        description; nf-6 Pilgrim's Cairn → 'pilgrim-ghost'
+        or similar; pick locale-thematic names).
+      - Verify against the engine's NPC + dialogue registry
+        in 0.10.0 — if the engine's `getDialogueNode` can't
+        resolve mobile-side npcNames, stub a minimal mobile-
+        side mapping so the interaction event still
+        surfaces meaningfully on the screen.
+      - Hermetic test: resolveMapEvent on each quest node
+        returns an interaction event with the expected
+        npcName.
+
+      Commit: `feat(spec56): per-quest-node NPC wiring`.
+- [ ] Phase 57 — Treasure + gathering payload contents.
+      Promoted via `/oversight` 2026-05-20 (13th call) from
+      `/expand` pass 30 ([3.0]).
+
+      Scope (single phase):
+
+      - Per-map treasure pools that drop 1-3 items
+        appropriate to the locale. fishing-village →
+        consumables + low-tier coastal equipment; northern-
+        forest → consumables + low-tier wilderness gear.
+        Source items from `consumableLibrary` /
+        `equipmentTemplates` (use `templateToEquipment`
+        helper from `state/actions.ts` for the conversion).
+      - Per-map gathering pools that drop 1-2 materials.
+        If the engine ships a `Material` library accessible
+        via 0.10.0 surface, use that; otherwise synthesize
+        minimal Material-shaped objects.
+      - Hermetic test: walking onto fv-4 (Iron Spring,
+        treasure) fires a loot-cache event with non-empty
+        items. Inventory grows after
+        `resolveCurrentMapEvent`.
+
+      Commit: `feat(spec57): treasure + gathering payload contents`.
 
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh

@@ -9,84 +9,6 @@
 
 ## Pending
 
-### [score 3.5] Phase 55 — Multi-entry encounter pools (encounter variety per map)
-
-- proposed: 2026-05-20, expand pass 30 (cascaded from `/iterate`
-  after the event-pool fix shipped at `739510b`)
-- signal source: **§G commit pattern** — `state/exploration-maps/event-pools.ts`
-  registered pools at minimum scope (one enemy slug per pool).
-  Every encounter on fishing-village fires `tidepool-crab`;
-  every northern-forest encounter fires `disatree`. The engine's
-  `MapEventPoolEntry` accepts a `weight` field for weighted
-  random selection — multi-entry pools give variety without
-  changing layouts.
-- scope (single phase):
-  - Expand `encounter-fishing-village` to entries for
-    tidepool-crab / sea-mist-wisp / wet-hound / mournful-gull
-    (the four `simple`-and-`normal` difficulty enemies from
-    `EnemiesByMap['fishing-village']`).
-  - Expand `encounter-northern-forest` similarly with
-    lullaby-moth / disatree / forest-sprite / argumentative-crow.
-  - Optional: weighted distribution so the higher-difficulty
-    foes are rarer.
-  - Hermetic test: across N=20 calls to `resolveMapEvent` on a
-    seeded RNG, the encounter pool returns at least 2 distinct
-    enemy ids (proves the multi-entry sample works).
-- factors:
-  - +1 single-source signal
-  - +2 cheap-and-impactful (data file edit; observable variety
-    on encounter screen)
-  - = **3.5**
-- non-conflicts: no spec violation; pure data-layer follow-up.
-
-### [score 3.0] Phase 56 — Per-quest-node NPC wiring
-
-- proposed: 2026-05-20, expand pass 30
-- signal source: **§G commit pattern** — `event-pools.ts`'s
-  `questPool` uses placeholder `npcName: 'pilgrim'` for every
-  quest node. The engine's interaction handler resolves the
-  npcName against the engine's NPC + dialogue registry; the
-  current placeholder means every quest node surfaces the same
-  generic interaction.
-- scope (single phase):
-  - Replace the single `questCommon` pool with per-map quest
-    pools that route each quest node to a thematic npcName.
-  - Author or stub the dialogue trees the engine expects (or
-    inject minimal mobile-side dialogue stubs into the engine
-    if 0.10.0 supports it).
-  - Hermetic test: resolveMapEvent on each quest node fires
-    an interaction event with the expected `npcName`.
-- factors:
-  - +1 single-source signal
-  - +1 cheap-ish (some engine-NPC research needed)
-  - = **3.0**
-- non-conflicts: in-scope follow-up.
-
-### [score 3.0] Phase 57 — Treasure + gathering payload contents
-
-- proposed: 2026-05-20, expand pass 30
-- signal source: **§G commit pattern** — `treasurePool` /
-  `gatherPool` in event-pools.ts fire the correct event kind
-  but with empty `items: []` arrays. Walking onto a treasure
-  node triggers the loot-cache event but drops nothing into
-  the player's inventory.
-- scope (single phase):
-  - Per-map treasure pools that drop 1-3 items appropriate
-    to the locale (fishing-village → barnacle/rope/etc.;
-    northern-forest → moth-dust/pinch-of-larch-ash/etc.).
-  - Per-map gathering pools that drop 1-2 materials.
-  - Source items from `consumableLibrary` /
-    `equipmentTemplates` / a fresh `Material` library entry
-    (if engine ships one).
-  - Hermetic test: walking onto fv-4 (Iron Spring, type
-    treasure) fires a loot-cache event with non-empty items;
-    the inventory grows after `resolveCurrentMapEvent`.
-- factors:
-  - +1 single-source signal
-  - +1 cheap (data file edits; depends on engine surface)
-  - +1 user-observable (treasure feels real)
-  - = **3.0**
-- non-conflicts: in-scope follow-up.
 
 > Pass 5 backlog (2026-05-15) — filed via `/oversight` from
 > the cross-repo versioning audit integrated 2026-05-15
@@ -225,6 +147,85 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted 2026-05-20 → status Phase 58] [user-request] Debug map-reset button + chaos-pool toggle (manual-testing affordance)
+
+- promoted via `/oversight` 2026-05-20 (13th call) — user
+  free-form addendum: "Make sure to add a 'debug' button to
+  reset the current map and that the 'encounters' (combat,
+  hazard, gathering, etc) are randomized for now so I can
+  continue testing manually."
+- Assigned **Phase 58**. Ordered FIRST in dispatch despite
+  the higher number, since the user-direct manual-testing
+  unblock outranks the in-numerical-order Phases 55-57.
+- scope (single phase):
+  - New `<DebugMapResetButton>` sibling to existing dev
+    affordances (AestheticDevToggle / DebugSeedButton /
+    DebugCombatButton) on the SELF tab. On press, calls
+    `actions.changeMap(currentMapName)` to re-seed the map
+    via `getCoastalMap` — fresh `currentNode`, cleared
+    `discoveredNodes` / `consumedNodes` / `completedNodes`.
+    Unlike `DebugSeedButton`'s composite seed, this is the
+    map-only escape hatch (doesn't touch inventory / skills).
+  - **Chaos-pool toggle** for randomized encounters. A new
+    debug pool `chaos-pool` with entries across multiple
+    event kinds (encounter / hazard / gathering / loot-cache
+    / rest) at equal weights. Toggle wires via `__DEV__`-only
+    `<DebugChaosToggle>`: when ON, calls
+    `setNodeEventPoolOverride(continent, mapId, nodeId,
+    'chaos-pool')` for every node in both layouts. When OFF
+    (default), restores the canonical per-type overrides
+    (re-call `registerExplorationEventPools()`).
+  - Hermetic tests: map-reset reaches starting node + cleared
+    sets; chaos-pool toggle ON returns varied event kinds
+    across 20 seeded-RNG resolves; toggle OFF restores
+    canonical pools.
+
+### [promoted 2026-05-20 → status Phase 55] [score 3.5] Multi-entry encounter pools (encounter variety per map)
+
+- promoted via `/oversight` 2026-05-20 (13th call) — user
+  selected from /expand pass 30 candidates.
+- Assigned **Phase 55**.
+- signal source: **§G commit pattern** — `state/exploration-maps/event-pools.ts`
+  registered pools at minimum scope (one enemy slug per pool).
+- scope (single phase):
+  - Expand `encounter-fishing-village` to entries for
+    tidepool-crab / sea-mist-wisp / wet-hound / mournful-gull.
+  - Expand `encounter-northern-forest` similarly with
+    lullaby-moth / disatree / forest-sprite / argumentative-crow.
+  - Weighted distribution so the higher-difficulty foes are rarer.
+  - Hermetic test: across N=20 calls to `resolveMapEvent` on a
+    seeded RNG, the encounter pool returns at least 2 distinct
+    enemy ids.
+
+### [promoted 2026-05-20 → status Phase 56] [score 3.0] Per-quest-node NPC wiring
+
+- promoted via `/oversight` 2026-05-20 (13th call).
+- Assigned **Phase 56**.
+- signal source: **§G commit pattern** — `questPool` uses
+  placeholder `npcName: 'pilgrim'` for every quest node.
+- scope (single phase):
+  - Replace the single `questCommon` pool with per-map quest
+    pools that route each quest node to a thematic npcName.
+  - Author or stub the dialogue trees the engine expects.
+  - Hermetic test: resolveMapEvent on each quest node fires
+    an interaction event with the expected `npcName`.
+
+### [promoted 2026-05-20 → status Phase 57] [score 3.0] Treasure + gathering payload contents
+
+- promoted via `/oversight` 2026-05-20 (13th call).
+- Assigned **Phase 57**.
+- signal source: **§G commit pattern** — `treasurePool` /
+  `gatherPool` fire the correct event kind but with empty
+  `items: []` arrays.
+- scope (single phase):
+  - Per-map treasure pools that drop 1-3 items appropriate
+    to the locale.
+  - Per-map gathering pools that drop 1-2 materials.
+  - Source items from `consumableLibrary` / `equipmentTemplates`.
+  - Hermetic test: walking onto fv-4 (Iron Spring, type
+    treasure) fires a loot-cache event with non-empty items;
+    the inventory grows after `resolveCurrentMapEvent`.
 
 ### [promoted 2026-05-19 → status Phase 54] [user-request] Debug seed button (manual-testing affordance)
 

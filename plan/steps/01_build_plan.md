@@ -878,6 +878,22 @@ phase row.
         `resolveCurrentMapEvent`.
 
       Commit: `feat(spec57): treasure + gathering payload contents`.
+- [ ] Phase 59 — Character presets adoption (engine 18
+      consumer; from PHASE_CANDIDATES pass 5 [score 4.5]).
+      Promoted via `/oversight` 2026-05-20 (14th call).
+
+      Scope (single phase):
+
+      - Roster picker overlay (`__DEV__` or boot) using engine
+        `characterPresets`; `buildCharacterFromPreset` replaces
+        the existing boot path. Treat as the fourth manual-testing
+        knob alongside `DebugSeedButton` / `DebugChaosToggle` /
+        `DebugMapResetButton`.
+      - Hermetic e2e per preset confirming starting stats /
+        equipment / skills match the engine preset shape.
+
+      Brief: needs full `/plan-a-phase phase 59` pass to draft
+      the implementation steps before `/ship-a-phase` picks it up.
 
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh
@@ -888,9 +904,11 @@ phase row.
 
 > bug findings, presenter refactors, asset backlog, ongoing
 > audits. `/march` makes that transition automatic. (Block II
-> phases 20/21 and Block III phases 22/24 in
+> phases 20/21 and Block III phase 24 in
 > `plan/PHASE_CANDIDATES.md` are gated on engine releases or
-> stay below promotion threshold; `/expand` re-evaluates.)
+> stay below promotion threshold; `/expand` re-evaluates.
+> Block III phase 22 promoted to Phase 59 via `/oversight`
+> 2026-05-20.)
 
 > **Note on the deploy gate before phase 11 ships:** auto-deploy
 > is **not** a thing for this project. `npm run deploy:check` is

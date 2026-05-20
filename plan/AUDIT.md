@@ -107,13 +107,13 @@
   a phase-impact table. **Engine GH#64** is the canonical
   cross-repo tracking issue per
   `docs/engine-upgrade-0.7.0-to-0.10.0.md` §7.
-- **nudge drafted 2026-05-20** via `/oversight` (12th call):
-  comment body at `/tmp/engine-nudge-body.md` (rebuild if rolled
-  away — see the gh command in the corresponding oversight
-  commit body). Status: pending manual send (cross-repo issue
-  comments are classifier-gated from this loop). Body includes
+- **nudge drafted 2026-05-20** via `/oversight` (12th call);
+  comment body was at `/tmp/engine-nudge-body.md`. Body included
   the four blocked mobile phase numbers + a re-checked status
   table for each of the three handoff items against 0.10.0.
+  **Sent to engine GH#64 — confirmed via `/oversight` 2026-05-20
+  (14th call).** No further action on the mobile side; await
+  engine response.
 - status against 0.10.0 (re-checked 2026-05-19 post-Phase-51 bump):
   - Item 1 (`skillLibrary` / `getSkillById` top-level): **still
     missing** in `dist/index.d.ts`. Runtime check

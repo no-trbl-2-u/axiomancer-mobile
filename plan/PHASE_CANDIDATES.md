@@ -56,19 +56,6 @@
 - conflicts: depends on Phase 20 (engine package surface). Don't
   promote until Phase 20 lands.
 
-### [score 4.5] Phase 22 — Character presets adoption (engine 18 consumer)
-
-- block: III (alignment / hygiene)
-- source: cross-repo versioning audit (integrated 2026-05-15), closes audit gap F
-- proposed scope: 1 phase, 1–2 ticks. Roster picker overlay
-  (`__DEV__` or boot) using `characterPresets`;
-  `buildCharacterFromPreset` replaces existing boot path; e2e per
-  preset.
-- rationale: optional but cheap; engine ships 4 calibrated presets
-  going unused.
-- estimated phases: 1
-- conflicts: none.
-
 ### [score 4.0] Phase 24 — `PersistenceAdapter` re-grounding
 
 - block: III (alignment / hygiene)
@@ -147,6 +134,27 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted 2026-05-20 → status Phase 59] [score 4.5] Phase 22 — Character presets adoption (engine 18 consumer)
+
+- promoted via `/oversight` 2026-05-20 (14th call) — loop at
+  idle steady-state (0 pending phases, critique drained, audit
+  drained except for the engine-release blocker). Of the four
+  pending candidates, 20/21 are engine-gated; 22 (4.5) outranks
+  24 (4.0) and is unblocked.
+- Assigned **Phase 59**.
+- block: III (alignment / hygiene)
+- source: cross-repo versioning audit (integrated 2026-05-15), closes audit gap F
+- proposed scope: 1 phase, 1–2 ticks. Roster picker overlay
+  (`__DEV__` or boot) using `characterPresets`;
+  `buildCharacterFromPreset` replaces existing boot path; e2e per
+  preset.
+- rationale: optional but cheap; engine ships 4 calibrated presets
+  going unused. Pairs well with the existing `DebugSeedButton` /
+  `DebugChaosToggle` dev affordances — adds a fourth manual-testing
+  knob (which character archetype to test against).
+- estimated phases: 1
+- conflicts: none.
 
 ### [promoted 2026-05-20 → status Phase 58] [user-request] Debug map-reset button + chaos-pool toggle (manual-testing affordance)
 

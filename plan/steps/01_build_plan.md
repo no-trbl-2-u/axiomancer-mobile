@@ -887,36 +887,72 @@ phase row.
       `<DebugPresetPicker>` (DEV-only); covers apprentice /
       wanderer / sage from the engine's `characterPresets`
       array. Closes mirror issue #94.
-- [ ] Phase 60 — Engine bump axiomancer-mechanics 0.10.0 → 0.10.2.
-      Queued via `/triage` 2026-05-20 from user-filed issue #93.
+- [needs-user-call] Phase 60 — Engine bump axiomancer-mechanics
+      0.10.0 → 0.10.2. Queued via `/triage` 2026-05-20 from
+      user-filed issue #93.
 
-      Scope (single phase):
+      **Surface drift discovered 2026-05-20 by `/ship-a-phase`
+      attempt** — issue #93's brief said the bump was
+      surface-additive ("no breaking changes"), but
+      `npm install axiomancer-mechanics@0.10.2 && npm run verify`
+      surfaced **58 typecheck errors across 5+ files** beyond
+      the documented additions. The bump was reverted in the
+      same tick to keep the loop green.
 
-      - `npm install axiomancer-mechanics@0.10.2`. No schema
-        migration (engine 0.10.1 / 0.10.2 kept `GAME_STATE_VERSION`
-        at 5; the 4 → 5 bump shipped in 0.10.0 / mobile Phase 51).
-      - Run `npm run verify`; iterate on any surface drift. Most
-        likely touch points: `state/mocks/combat.skills.fixture.ts`
-        becomes droppable once `skillLibrary` is consumed directly;
-        any local `defaultSellPrice` helper goes away.
-      - Author `docs/engine-upgrade-0.10.0-to-0.10.2.md` mirroring
-        the existing `engine-upgrade-0.7.0-to-0.10.0.md` template.
-      - Drain the `[needs-engine-republish]` row in `plan/AUDIT.md`
-        to Done once the lockfile is on 0.10.2.
+      **Actual drift surface (0.10.0 → 0.10.2):**
 
-      Out of scope (separate follow-up phases — gated on this
-      bump landing):
+      - `getCoastalMap` **removed** — replaced by
+        `getMapDefinition` (different signature). Consumers:
+        `state/actions.ts`, `state/e2e/exploration.engine.test.ts`,
+        `state/e2e/event-pools.engine.test.ts`.
+      - `Encounter.enemy` **removed** from the public type —
+        likely now `enemyId` or fetched via a resolver. Consumers:
+        `state/e2e/event.engine.test.ts`,
+        `state/e2e/event.screen.test.tsx`,
+        `state/e2e/event-assets.test.ts`,
+        `state/presenters/event.engine.ts`.
+      - `DialogueChoice.id` / `.label` **removed** —
+        flattened or restructured. Consumers:
+        `state/presenters/event.engine.ts`, `state/actions.ts`.
+      - `DialogueNode.speaker` **removed**.
+      - `Character.mana` / `.maxMana` **removed** from the public
+        `Character` type — `combat-hud.engine.test.ts` writes these
+        as a presentation stop-gap; presenter layer needs to lift
+        them onto a mobile-side type.
+      - `ActiveEffect` shape changed — no `id` / `name`.
+      - `EffectStatTarget` tightened to a literal union.
+      - `GameStore` vs `AppStoreState` drift — mobile's slice
+        composition (event / notifications / `_recentEvents`)
+        no longer aligns with the engine's `GameStore` shape;
+        type narrowings in test files break.
+      - `GameState` lost its index signature.
 
-      - Promote PHASE_CANDIDATES Phase 20 (drain skills fixture)
-        and 21 (engine-driven `executeSkill` wiring) into the build
-        plan once 0.10.2 is in the lockfile.
-      - Flip Status block Phase 16 from `[skipped]` to actionable.
-      - Optional surfaces from 0.10.1 (Set items engine —
-        `itemSetLibrary`, `getActiveSetBonusesForCharacter`, etc.)
-        belong in their own enhancement phase if the equipment
-        dock surfaces them.
+      **Brief is now ambiguous (skill §10.8).** Phase 60 needs
+      user re-scoping before the loop should attempt it again.
+      Two viable shapes:
 
-      Closes issue #93 in the shipping commit body.
+      1. **Single bigger phase** — accept the breadth, fix all
+         consumers in one commit. Estimate: 1–2h of focused work.
+      2. **Multi-phase compatibility sequence** —
+         - 60a: rename `getCoastalMap` → `getMapDefinition` and
+           reconcile the map-events module wiring.
+         - 60b: `Encounter.enemy` → new shape; presenter +
+           tests + actions.
+         - 60c: `DialogueChoice` / `DialogueNode` flattening;
+           presenter + actions.
+         - 60d: `Character.mana` lift to mobile type; remove from
+           engine-shape writes.
+         - 60e: `ActiveEffect` shape; `GameStore` slice
+           reconciliation; misc.
+         - 60f: lockfile bump + upgrade doc.
+
+      Either way, the issue-93 brief should be amended on the
+      engine repo so future bumps surface breaking changes
+      transparently in the CHANGELOG.
+
+      **Status:** revert committed; engine remains pinned at
+      0.10.0. Issue #93 stays open; #93 comment posted with the
+      drift surface. Awaiting `/oversight` call to pick a shape.
 
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh

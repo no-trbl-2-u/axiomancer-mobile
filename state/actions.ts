@@ -7,10 +7,13 @@
  *
  * Resource (mana) accounting on the in-combat player is a
  * presentation placeholder until Phase 21 (engine-driven skill
- * resolution) wires the engine's per-resource pools. Today the
- * action layer stamps `mana` / `maxMana` onto the in-combat `player`
- * so the HUD has a number to render. Phase 16 is `[skipped]` pending
- * an `axiomancer-mechanics` release that re-exports `skillLibrary` /
+ * resolution) wires the engine's per-resource pools. **Phase 60d**
+ * lifted mana off `Character` (engine 0.10.1+ removed those fields
+ * from the public type) onto a mobile-only `combatMana` slice on
+ * `AppStoreState`. The slice is `null` outside combat and gets
+ * seeded on `startCombat`, decremented on skill burn, and cleared on
+ * `endCombat`. Phase 16 is `[skipped]` pending an
+ * `axiomancer-mechanics` release that re-exports `skillLibrary` /
  * `getSkillById`; once that lands and Phase 16 ships, the stop-gap
  * pool gets replaced.
  */
@@ -221,28 +224,40 @@ export interface UseItemResult {
 }
 
 // ---------------------------------------------------------------------------
-// Player mana scaffolding (presentation placeholder)
+// Combat mana scaffolding (Phase 60d — lifted to mobile-only slice)
 // ---------------------------------------------------------------------------
 
-const PLAYER_MANA_DEFAULT = 14;
-const PLAYER_MANA_START = 9;
+/**
+ * Default-max + starting current for the mobile-side combat mana
+ * scaffolding. The values match the prior `ensureManaOnCombatPlayer`
+ * scaffolding so existing tests and presenters land on the same
+ * numbers. Both will be replaced when Phase 21 wires the engine's
+ * per-resource pools.
+ */
+export const PLAYER_MANA_DEFAULT_MAX = 14;
+export const PLAYER_MANA_DEFAULT_START = 9;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function ensureManaOnCombatPlayer(combat: CombatState): CombatState {
+function seedCombatMana(store: AppStore): void {
+    const cur = store.getState().combatMana;
+    if (cur !== null) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const player = combat.player as unknown as Record<string, any>;
-    if (typeof player.mana === 'number' && typeof player.maxMana === 'number') {
-        return combat;
-    }
-    return {
-        ...combat,
-        player: {
-            ...combat.player,
-            mana: PLAYER_MANA_START,
-            maxMana: PLAYER_MANA_DEFAULT,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-    };
+    store.setState({
+        combatMana: { current: PLAYER_MANA_DEFAULT_START, max: PLAYER_MANA_DEFAULT_MAX },
+    } as any);
+}
+
+function clearCombatMana(store: AppStore): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    store.setState({ combatMana: null } as any);
+}
+
+function burnCombatMana(store: AppStore, cost: number): void {
+    const cur = store.getState().combatMana;
+    if (cur === null) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    store.setState({
+        combatMana: { current: Math.max(0, cur.current - cost), max: cur.max },
+    } as any);
 }
 
 function findSkill(skillId: string): CombatSkillFixture | null {
@@ -404,12 +419,19 @@ export function createAppActions(store: AppStore): AppActions {
     return {
         startCombat: (enemy) => {
             store.getState().startCombat(enemy);
-            const after = store.getState().combat;
-            if (after !== null) {
-                store.getState().updateCombat(ensureManaOnCombatPlayer(after));
+            // Phase 60d — seed mobile-only mana slice rather than
+            // mutating Character. Idempotent; subsequent re-entries
+            // during the same combat keep the prior current value.
+            if (store.getState().combat !== null) {
+                seedCombatMana(store);
             }
         },
-        endCombat: () => store.getState().endCombat(),
+        endCombat: () => {
+            store.getState().endCombat();
+            // Phase 60d — clear mana slice when combat exits so the
+            // next encounter starts fresh.
+            clearCombatMana(store);
+        },
         setCombatPhase: (phase) => {
             const { combat, updateCombat } = store.getState();
             if (!combat) return;
@@ -518,23 +540,16 @@ export function createAppActions(store: AppStore): AppActions {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 },
             };
-            nextWithEnemy = ensureManaOnCombatPlayer(nextWithEnemy);
 
-            // Mana accounting placeholder — burn mana for skills.
+            // Phase 60d — mana accounting on the mobile-only
+            // `combatMana` slice (lifted from Character). Idempotent
+            // seed (no-op if startCombat already seeded); then burn
+            // the skill's cost.
+            seedCombatMana(store);
             if (skillId) {
                 const skill = findSkill(skillId);
                 if (skill !== null) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const p = nextWithEnemy.player as unknown as Record<string, any>;
-                    const currentMana = Number(p.mana ?? 0);
-                    nextWithEnemy = {
-                        ...nextWithEnemy,
-                        player: {
-                            ...nextWithEnemy.player,
-                            mana: Math.max(0, currentMana - skill.manaCost),
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        } as any,
-                    };
+                    burnCombatMana(store, skill.manaCost);
                 }
             }
 
@@ -1009,9 +1024,11 @@ function pickEventChoiceAction(store: AppStore, choiceId: string): void {
         if (choiceId === 'fight') {
             const enemy = processed.encounter.enemy as Enemy;
             store.getState().startCombat(enemy);
-            const after = store.getState().combat;
-            if (after !== null) {
-                store.getState().updateCombat(ensureManaOnCombatPlayer(after));
+            // Phase 60d — seed mobile-only mana slice after the
+            // encounter-prelude path starts combat. Matches the
+            // direct `actions.startCombat` branch above.
+            if (store.getState().combat !== null) {
+                seedCombatMana(store);
             }
             clearEventSlice(store);
             return;

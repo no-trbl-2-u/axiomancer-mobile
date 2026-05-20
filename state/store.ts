@@ -47,9 +47,26 @@ export interface MobileNotificationsSlice {
     };
 }
 
+/**
+ * Mobile-only combat mana scaffolding (Phase 60d). Engine 0.10.1+
+ * removed `mana` / `maxMana` from public `Character`; mobile lifted
+ * the presentation-stop-gap onto this parallel slice so the Character
+ * shape stays clean. Phase 21 (engine-driven skill resolution) will
+ * replace it with engine per-resource pools once that lands.
+ *
+ * `null` outside combat. Seeded on `startCombat`; decremented on
+ * skill burn in `resolveRound`; cleared on `endCombat`.
+ */
+export interface CombatManaState {
+    current: number;
+    max: number;
+}
+
 export type AppStoreState = GameStore & {
     event: MobileEventSlice;
     notifications: MobileNotificationsSlice;
+    /** Phase 60d — mobile-only combat mana, lifted from Character. `null` outside combat. */
+    combatMana: CombatManaState | null;
     /**
      * Mobile-private ring buffer of recent engine events. Populated by
      * the emitter wired in `createAppStore`. Capacity 20, newest-first.
@@ -141,6 +158,7 @@ export function createAppStore(options: CreateAppStoreOptions = {}): AppStore {
         save: () => withPassthrough(engineSave),
         event: EMPTY_EVENT_SLICE,
         notifications: DEFAULT_NOTIFICATIONS_SLICE,
+        combatMana: null,
         _recentEvents: [],
     });
 

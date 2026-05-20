@@ -23,8 +23,9 @@ import {
     FRIENDSHIP_COUNTER_MAX,
     determineAdvantage,
     type DerivedStats,
-    type GameStore,
 } from 'axiomancer-mechanics';
+
+import type { AppStoreState } from '@/state/store';
 import { useMemo } from 'react';
 
 import {
@@ -673,15 +674,23 @@ function mindMarkCount(effects: readonly unknown[]): number {
     return n;
 }
 
-function readManaPair(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    player: Record<string, any>,
-): { mana: number; manaMax: number } {
-    const mana = Number(player.mana ?? 0);
-    const manaMax = Number(player.maxMana ?? player.manaMax ?? 0);
+/**
+ * Phase 60d — combat mana now lives on the mobile-only
+ * `combatMana` slice (lifted from Character). Null outside
+ * combat → both fields land at 0. The presenter still
+ * defends against negative max with a manaRatio fallback to
+ * "1" downstream.
+ */
+function readManaPair(state: AppStoreState): { mana: number; manaMax: number } {
+    // Null outside combat / fresh store; undefined when raw GameState
+    // is passed (tests bypass createAppStore). Both land at zero.
+    const mana = state.combatMana ?? null;
+    if (mana === null) return { mana: 0, manaMax: 0 };
+    const cur = Number(mana.current);
+    const max = Number(mana.max);
     return {
-        mana: isFinite(mana) ? mana : 0,
-        manaMax: isFinite(manaMax) && manaMax >= 0 ? manaMax : 0,
+        mana: isFinite(cur) && cur >= 0 ? cur : 0,
+        manaMax: isFinite(max) && max >= 0 ? max : 0,
     };
 }
 
@@ -926,7 +935,7 @@ function buildCombatA11y(
 // ---------------------------------------------------------------------------
 
 export function selectCombatViewModel(
-    state: GameStore,
+    state: AppStoreState,
     localUi: CombatLocalUi = {},
 ): CombatViewModel {
     const hud = selectCombatHudViewModel(state);
@@ -1010,7 +1019,7 @@ export function selectCombatViewModel(
 
     const playerHp = Number(playerEntity.health ?? 0);
     const playerHpMax = Number(playerEntity.maxHealth ?? playerHp);
-    const { mana, manaMax } = readManaPair(playerEntity);
+    const { mana, manaMax } = readManaPair(state);
     const player: CombatPlayerSummary = {
         hp: playerHp,
         hpMax: playerHpMax,

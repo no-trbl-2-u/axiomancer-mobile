@@ -315,15 +315,14 @@ describe('selectCombatViewModel: skill picker', () => {
         const actions = createAppActions(store);
         actions.startCombat(makeEnemy());
 
-        // Drain mana to zero by reaching into the combat slice. The
-        // mana-on-combat-player accounting is presentation scaffolding,
-        // so we manipulate it via updateCombat for the test.
+        // Phase 60d — drain mana via the mobile-only `combatMana`
+        // slice. The previous form wrote `mana`/`maxMana` to
+        // `combat.player`; that field is gone post-lift, so the
+        // drain happens via store.setState directly.
         const c = store.getState().combat;
         if (c === null) throw new Error('combat slice not initialised');
-        store.getState().updateCombat({
-            ...c,
-            player: { ...c.player, mana: 0, maxMana: 14 } as unknown as typeof c.player,
-        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        store.setState({ combatMana: { current: 0, max: 14 } } as any);
 
         const vm = selectCombatViewModel(store.getState(), { selectedStance: 'heart' });
         const allDisabled = vm.skillPicker.skills.every((s) => !s.enabled);

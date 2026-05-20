@@ -49,9 +49,20 @@ function makeEnemy() {
     });
 }
 
-function stateWith(playerOverrides: Partial<ReturnType<typeof createCharacter>> = {}) {
+/**
+ * Build a `state`-shaped fixture (engine GameState + the mobile-only
+ * `combatMana` slice). Phase 60d lifted mana off Character; the
+ * presenter now reads from `state.combatMana`. Tests that want a
+ * specific mana ratio pass the second arg explicitly; the default
+ * of `null` reflects the "no active combat" branch which the
+ * presenter treats as a full bar (1.0).
+ */
+function stateWith(
+    playerOverrides: Partial<ReturnType<typeof createCharacter>> = {},
+    combatMana: { current: number; max: number } | null = null,
+) {
     const base = createNewGameState();
-    return { ...base, player: makePlayer(playerOverrides) };
+    return { ...base, player: makePlayer(playerOverrides), combatMana };
 }
 
 // ---------------------------------------------------------------------------
@@ -61,7 +72,14 @@ function stateWith(playerOverrides: Partial<ReturnType<typeof createCharacter>> 
 describe('selectCombatHudViewModel: happy path', () => {
     it('returns 1.0 for both percents when player is at full HP and mana', () => {
         const player = makePlayer();
-        const state = stateWith({ health: player.maxHealth, mana: player.maxMana });
+        // Phase 60d — pass mana as a `combatMana` slice (current=max)
+        // rather than as a Character override. The previous form
+        // (`{ mana: player.maxMana }`) is a no-op now that mana lives
+        // off Character.
+        const state = stateWith(
+            { health: player.maxHealth },
+            { current: 14, max: 14 },
+        );
 
         const vm = selectCombatHudViewModel(state);
 
@@ -91,8 +109,10 @@ describe('selectCombatHudViewModel: boundary conditions', () => {
         expect(vm.hpPercent).toBe(0);
     });
 
-    it('clamps manaPercent to 0 when player mana is 0', () => {
-        const state = stateWith({ mana: 0 });
+    it('clamps manaPercent to 0 when combatMana current is 0', () => {
+        // Phase 60d — mana now reads from the mobile-only slice.
+        // Explicit 0/14 lands at manaPercent=0 (the empty-pool case).
+        const state = stateWith({}, { current: 0, max: 14 });
 
         const vm = selectCombatHudViewModel(state);
 

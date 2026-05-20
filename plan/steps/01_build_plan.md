@@ -970,31 +970,15 @@ phase row.
       (2 in `state/actions.ts`, 2 in e2e tests) directly to the
       two-step pattern; both surfaces exist on 0.10.0 so no shim
       was needed. 760/760 tests green. Closes mirror issue #95.
-- [ ] Phase 60d — Lift `Character.mana`/`maxMana` to a
-      mobile-side `ManaState` type. Promoted via `/oversight`
-      2026-05-20 (16th call) from PHASE_CANDIDATES pass 31
-      [score 7.0].
-
-      Scope (single phase, 2-3 ticks):
-
-      - Engine 0.10.1 removed `mana`/`maxMana` from public
-        `Character`. Mobile has been carrying a presentation
-        stop-gap (`ensureManaOnCombatPlayer` in
-        `state/actions.ts:222` mutates the in-combat Character
-        with `mana`/`maxMana`) — flagged by the pre-existing
-        comment "Player mana scaffolding (presentation
-        placeholder)". The bump forces the issue.
-      - Lift mana to a dedicated `ManaState` type
-        (`state/mana.ts` or alongside actions). Rewrite
-        `ensureManaOnCombatPlayer` to attach `ManaState`
-        externally rather than mutating Character shape.
-      - Update `state/e2e/combat-hud.engine.test.ts` to read
-        mana from the new location.
-      - Frees Phase 21 (engine-driven skill resolution, also
-        engine-gated) to replace the stop-gap cleanly when
-        per-resource pools ship.
-
-      Independent of 60a/60b — ships in any order.
+- [x] Phase 60d — Lift `Character.mana`/`maxMana` to a
+      mobile-side `combatMana` slice. Promoted via `/oversight`
+      2026-05-20 (16th call). Shipped `579a6a7` —
+      `feat(spec60d): lift Character.mana to mobile combatMana
+      slice`. New `CombatManaState` interface on AppStoreState;
+      `ensureManaOnCombatPlayer` deleted; both presenters
+      (combat-hud + combat) widened to AppStoreState and read
+      from `state.combatMana`. 760/760 tests green. Closes
+      mirror issue #96.
 - [ ] Phase 60b — `Encounter.enemy` shape migration. Promoted
       via `/oversight` 2026-05-20 (16th call) from
       PHASE_CANDIDATES pass 31 [score 5.5].

@@ -438,3 +438,84 @@ describe('selectCharacterViewModel: a11y block', () => {
         expect(vm.emptyEffectsMessage).toBe('none at hand.');
     });
 });
+
+// ---------------------------------------------------------------------------
+// Alignment slice (Phase 52, engine 0.10.0 Philosophy module)
+// ---------------------------------------------------------------------------
+
+describe('selectCharacterViewModel: alignment slice', () => {
+    it('returns a totally-shaped alignment block for a fresh game (mid/mid/mid)', () => {
+        const store = createGameStore(createMemoryAdapter());
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        expect(vm.alignment).toBeDefined();
+        expect(typeof vm.alignment.cellName).toBe('string');
+        expect(vm.alignment.cellName.length).toBeGreaterThan(0);
+        expect(vm.alignment.axes).toHaveLength(3);
+    });
+
+    it('exposes the three axis rows in canonical display order: epistemology, outlook, scope', () => {
+        const store = createGameStore(createMemoryAdapter());
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        const keys = vm.alignment.axes.map((a) => a.axisKey);
+        expect(keys).toEqual(['epistemology', 'outlook', 'scope']);
+    });
+
+    it('axis labels are uppercase mono tokens (no second-person archaic register)', () => {
+        const store = createGameStore(createMemoryAdapter());
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        expect(vm.alignment.axes.map((a) => a.label)).toEqual([
+            'EPISTEMOLOGY',
+            'OUTLOOK',
+            'SCOPE',
+        ]);
+    });
+
+    it('defaults every axis bucket to "mid" when the engine state carries defaultAlignment', () => {
+        const store = createGameStore(createMemoryAdapter());
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        for (const axis of vm.alignment.axes) {
+            expect(axis.bucket).toBe('mid');
+        }
+    });
+
+    it('threads explicit alignment values through bucketAxis (low / mid / high boundaries)', () => {
+        const store = createGameStore(createMemoryAdapter());
+
+        // Stamp a synthetic alignment onto the store directly. The
+        // engine's reducers route alignment updates through dialogue /
+        // map-event payloads; this test bypasses that to assert the
+        // presenter's bucketing logic.
+        const stateWithAlignment = {
+            ...store.getState(),
+            philosophicalAlignment: { epistemology: -50, outlook: 0, scope: 50 },
+        };
+
+        const vm = selectCharacterViewModel(stateWithAlignment as never);
+
+        const byKey = Object.fromEntries(vm.alignment.axes.map((a) => [a.axisKey, a.bucket]));
+        expect(byKey.epistemology).toBe('low');
+        expect(byKey.outlook).toBe('mid');
+        expect(byKey.scope).toBe('high');
+    });
+
+    it('a11y.alignment surfaces a screen-reader sentence including cell + axis values', () => {
+        const store = createGameStore(createMemoryAdapter());
+
+        const vm = selectCharacterViewModel(store.getState());
+
+        expect(vm.a11y.alignment).toContain(vm.alignment.cellName);
+        for (const axis of vm.alignment.axes) {
+            // Each axis label appears lowercased in the a11y sentence.
+            expect(vm.a11y.alignment.toLowerCase()).toContain(axis.label.toLowerCase());
+            expect(vm.a11y.alignment).toContain(axis.bucket);
+        }
+    });
+});

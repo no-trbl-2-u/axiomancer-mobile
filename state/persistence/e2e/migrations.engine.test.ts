@@ -3,7 +3,7 @@
  *
  * Covers the v1 → v2 migration that backfills missing derivedStats
  * and nonCombatStats fields using engine derivation helpers, and
- * the v2 → v3 migration that backfills `state.alignment` (engine
+ * the v2 → v3 migration that backfills `state.philosophicalAlignment` (engine
  * Phase 42, mobile Phase 51 bump from 0.7.0 → 0.10.0).
  */
 
@@ -172,7 +172,7 @@ describe('migrations.engine', () => {
             expect(() => unwrap(malformedEnvelope)).toThrow('Migration v1→v2: invalid baseStats structure');
         });
 
-        test('v2 envelope migrates to v3 by backfilling alignment', () => {
+        test('v2 envelope migrates to v3 by backfilling philosophicalAlignment', () => {
             const v2State = {
                 ...mockV1GameState,
                 player: {
@@ -189,26 +189,29 @@ describe('migrations.engine', () => {
 
             const result = unwrap(v2Envelope) as Record<string, unknown>;
 
-            expect(result.alignment).toEqual(defaultAlignment());
+            expect(result.philosophicalAlignment).toEqual(defaultAlignment());
             // Other fields pass through untouched.
             expect((result as { player: unknown }).player).toEqual(v2State.player);
         });
     });
 
     describe('v2 → v3 migration (alignment backfill, engine 0.10.0)', () => {
-        test('adds alignment when missing, using defaultAlignment()', () => {
+        test('adds philosophicalAlignment when missing, using defaultAlignment()', () => {
             const v2State = { player: { name: 'Pilgrim' } };
             const result = unwrap({ schemaVersion: 2, state: v2State }) as Record<string, unknown>;
 
-            expect(result.alignment).toEqual(defaultAlignment());
+            expect(result.philosophicalAlignment).toEqual(defaultAlignment());
         });
 
-        test('preserves alignment if already present (no overwrite)', () => {
+        test('preserves philosophicalAlignment if already present (no overwrite)', () => {
             const existing = { ...defaultAlignment(), epistemology: 42 };
-            const v2State = { player: { name: 'Pilgrim' }, alignment: existing };
+            const v2State = {
+                player: { name: 'Pilgrim' },
+                philosophicalAlignment: existing,
+            };
             const result = unwrap({ schemaVersion: 2, state: v2State }) as Record<string, unknown>;
 
-            expect(result.alignment).toEqual(existing);
+            expect(result.philosophicalAlignment).toEqual(existing);
         });
 
         test('rejects non-object state', () => {

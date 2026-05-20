@@ -113,6 +113,20 @@ export default function CharacterScreen() {
         </View>
       </View>
 
+      {/* Philosophical Alignment (Phase 52, engine 0.10.0 Philosophy module) */}
+      <View style={styles.section} accessible accessibilityLabel={vm.a11y.alignment}>
+        <SectionLabel size={10}>✠ ALIGNMENT</SectionLabel>
+        <Text style={styles.alignmentCellName}>{vm.alignment.cellName}</Text>
+        <View style={styles.alignmentAxesRow}>
+          {vm.alignment.axes.map((axis) => (
+            <View key={axis.axisKey} style={styles.alignmentAxisChip}>
+              <Text style={styles.alignmentAxisLabel}>{axis.label}</Text>
+              <Text style={styles.alignmentAxisBucket}>{axis.bucket}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
       {/* Afflictions & Blessings */}
       <View style={styles.section} accessible accessibilityLabel={vm.a11y.effects}>
         <SectionLabel size={10}>✠ AFFLICTIONS &amp; BLESSINGS</SectionLabel>
@@ -243,6 +257,11 @@ const styles = StyleSheet.create({
   saveCell: { width: '31%', borderWidth: 1, borderColor: AXM.ash, borderStyle: 'dashed', padding: 3, paddingHorizontal: 5, flexDirection: 'row', justifyContent: 'space-between' },
   saveKey: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone },
   saveVal: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.parchment },
+  alignmentCellName: { fontFamily: FONTS.gothic, fontSize: 14, color: AXM.parchment, letterSpacing: 1, marginTop: 4 },
+  alignmentAxesRow: { flexDirection: 'row', gap: 4, marginTop: 4 },
+  alignmentAxisChip: { flex: 1, borderWidth: 1, borderColor: AXM.ash, borderStyle: 'dashed', paddingVertical: 3, paddingHorizontal: 5 },
+  alignmentAxisLabel: { fontFamily: FONTS.mono, fontSize: 8, letterSpacing: 1, color: AXM.bone },
+  alignmentAxisBucket: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.parchment, marginTop: 1 },
   effectsList: { marginTop: 4, gap: 4 },
   emptyLabel: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.ash, letterSpacing: 1, textTransform: 'uppercase' },
   effectRow: { flexDirection: 'row', gap: 8, alignItems: 'center', borderWidth: 1, padding: 5, paddingHorizontal: 7 },

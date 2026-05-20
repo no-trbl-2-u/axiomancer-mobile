@@ -11,6 +11,9 @@
  */
 
 import {
+    bucketAxis,
+    defaultAlignment,
+    getAlignmentCell,
     lookupEffect,
     type ActiveEffect,
     type Character,
@@ -23,6 +26,30 @@ import { freezeViewModel } from './freeze';
 export type StanceKey = 'heart' | 'body' | 'mind';
 export type EffectKind = 'buff' | 'debuff' | 'poison' | 'bleed';
 export type EffectTint = 'buff' | 'debuff';
+
+/**
+ * Three philosophical axes the engine 0.10.0 alignment cube tracks
+ * (`state.philosophicalAlignment`). Each axis is bucketed via
+ * `bucketAxis()` to `low` | `mid` | `high` for display.
+ */
+export type AlignmentAxisKey = 'epistemology' | 'outlook' | 'scope';
+export type AlignmentBucket = 'low' | 'mid' | 'high';
+
+export interface AlignmentAxisRow {
+    axisKey: AlignmentAxisKey;
+    /** Display label, e.g. `'EPISTEMOLOGY'`. */
+    label: string;
+    /** Bucketed value for the axis. */
+    bucket: AlignmentBucket;
+}
+
+export interface AlignmentSlice {
+    /** Human-readable cell name from `philosophicalAlignmentLibrary`, e.g.
+     * `'Agnostic-Neutral-Relational'`. */
+    cellName: string;
+    /** Three axis rows in display order: epistemology, outlook, scope. */
+    axes: readonly AlignmentAxisRow[];
+}
 
 export interface BaseStatRow {
     /** Stable key the component maps to a `StanceGlyph` kind. */
@@ -94,6 +121,13 @@ export interface CharacterViewModel {
     emptyEffectsMessage: string;
     equipment: readonly EquipmentSlotRow[];
     skills: readonly CharacterSkillRow[];
+    /**
+     * Philosophical alignment cube (Phase 52, engine 0.10.0).
+     * Computed from `state.philosophicalAlignment` via the engine's
+     * `getAlignmentCell` + `bucketAxis`. Defaults to mid/mid/mid for
+     * a fresh game (the engine's `defaultAlignment()` seed).
+     */
+    alignment: AlignmentSlice;
     /** Accessibility labels for character screen elements. */
     a11y: {
         characterName: string;
@@ -110,6 +144,8 @@ export interface CharacterViewModel {
          * (Hard Rule #8 — content stays in the proper layer).
          */
         crucibleOpen: string;
+        /** Screen-reader analogue for the alignment row. */
+        alignment: string;
     };
 }
 
@@ -197,10 +233,40 @@ function buildEquipment(player: Character): readonly EquipmentSlotRow[] {
  * All fields are driven by the engine's `state.player`. Skills are
  * empty until engine Spec 04 ships known-skill reads.
  */
+const ALIGNMENT_AXIS_LABELS: Record<AlignmentAxisKey, string> = {
+    epistemology: 'EPISTEMOLOGY',
+    outlook: 'OUTLOOK',
+    scope: 'SCOPE',
+};
+
+function buildAlignmentSlice(state: GameStore): AlignmentSlice {
+    // The engine's `GameState` exposes the alignment cube as
+    // `philosophicalAlignment`. v3 saves backfill it; for any caller
+    // that injects a sparse fixture without the field (e.g. test
+    // shapes built from `{player} as never`), fall back to the
+    // engine's neutral default rather than crashing.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const raw = (state as any).philosophicalAlignment;
+    const alignment = (raw && typeof raw === 'object') ? raw : defaultAlignment();
+
+    const cell = getAlignmentCell(alignment);
+
+    const axes: AlignmentAxisRow[] = (Object.keys(ALIGNMENT_AXIS_LABELS) as AlignmentAxisKey[])
+        .map((axisKey) => ({
+            axisKey,
+            label: ALIGNMENT_AXIS_LABELS[axisKey],
+            bucket: bucketAxis(alignment[axisKey] ?? 0),
+        }));
+
+    return { cellName: cell.label, axes };
+}
+
 export function selectCharacterViewModel(state: GameStore): CharacterViewModel {
     const player = state.player;
     // derivedStats.luck is guaranteed present after v1→v2 persistence migration
     const luck: number = player.derivedStats.luck;
+
+    const alignment = buildAlignmentSlice(state);
 
     return freezeViewModel({
         displayName: player.name,
@@ -216,6 +282,7 @@ export function selectCharacterViewModel(state: GameStore): CharacterViewModel {
         emptyEffectsMessage: 'none at hand.',
         equipment: buildEquipment(player),
         skills: [],
+        alignment,
         a11y: {
             characterName: `Character name: ${player.name}`,
             level: `Level ${player.level}`,
@@ -228,6 +295,7 @@ export function selectCharacterViewModel(state: GameStore): CharacterViewModel {
                 ? `${buildEffects(player).length} active effects`
                 : 'No active effects',
             crucibleOpen: 'Open Token Crucible.',
+            alignment: `Philosophical alignment: ${alignment.cellName}. ${alignment.axes.map((a) => `${a.label.toLowerCase()} ${a.bucket}`).join(', ')}.`,
         },
     });
 }

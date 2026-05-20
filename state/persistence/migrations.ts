@@ -62,11 +62,19 @@ function migrateV1ToV2(state: unknown): unknown {
 
 /**
  * Migration from schema v2 to v3 (Phase 51, engine 0.10.0): backfill
- * the top-level `state.alignment` field added by engine Phase 42
- * (`PhilosophicalAlignment` — three-axis cube). The engine's
- * `defaultAlignment()` is the canonical seed for a neutral start, so
- * we call it rather than hardcoding the field shape; future engine
- * tweaks to the axis names ride through automatically.
+ * the top-level `state.philosophicalAlignment` field added by engine
+ * Phase 42 (`PhilosophicalAlignment` — three-axis cube). The
+ * engine's `defaultAlignment()` is the canonical seed for a neutral
+ * start, so we call it rather than hardcoding the field shape;
+ * future engine tweaks to the axis names ride through automatically.
+ *
+ * Field name correction (Phase 52, 2026-05-19): the first cut of
+ * this migration wrote `state.alignment`, but the engine's
+ * `GameState` exposes the field as `philosophicalAlignment` (see
+ * `engine dist/World/dialogue.runtime.js` — the dialogue + map-event
+ * reducers read `gameState.philosophicalAlignment`). Writing to the
+ * wrong key created a dead field. Corrected here as part of the
+ * Phase 52 SELF-tab adoption work.
  */
 function migrateV2ToV3(state: unknown): unknown {
     if (!state || typeof state !== 'object') {
@@ -75,8 +83,11 @@ function migrateV2ToV3(state: unknown): unknown {
 
     const gameState = state as Record<string, unknown>;
 
-    if (gameState.alignment === undefined || gameState.alignment === null) {
-        gameState.alignment = defaultAlignment();
+    if (
+        gameState.philosophicalAlignment === undefined ||
+        gameState.philosophicalAlignment === null
+    ) {
+        gameState.philosophicalAlignment = defaultAlignment();
     }
 
     return gameState;

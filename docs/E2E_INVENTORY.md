@@ -45,7 +45,7 @@ assertions.
 
 | File | Pattern | Pins | desc | it |
 |---|---|---|---:|---:|
-| `character.engine.test.ts` | P1 | Character VM shape + stat-row composition + saves/tests block + 7 equipment slots in display order | 8 | 28 |
+| `character.engine.test.ts` | P1 | Character VM shape + stat-row composition + saves/tests block + 7 equipment slots in display order; alignment slice (cell name, three-axis bucketing, low/mid/high boundaries, a11y sentence) per Phase 52 | 9 | 34 |
 | `combat.engine.test.ts` | P1+P2 | Combat VM across all four phases (`choosing_stance` → `committed` → `resolving` → `aftermath`); every terminal condition (victory/defeat/flee/parley/friendship); stance preview via `localUi`; accessibility labels | 13 | 44 |
 | `combat-hud.engine.test.ts` | P1 | HUD percent clamping (HP/mana → 0..1); effect-array composition; degenerate-character invariants | 5 | 18 |
 | `combat-mode.engine.test.tsx` | P3 | `useCombatMode` context: `lastOutcome` one-shot signal, `exitCombatWith`, `clearLastOutcome`, `selectAftermathCopy(outcome)` (victory/parley vs defeat/flee) | 2 | 10 |

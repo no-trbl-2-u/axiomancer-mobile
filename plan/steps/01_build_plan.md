@@ -643,7 +643,7 @@ phase row.
       Single commit, no rolling sub-ticks. Commit message:
       `feat(spec51): bump axiomancer-mechanics 0.7.0 → 0.10.0
       + v2→v3 alignment migration`.
-- [ ] Phase 52 — Surface engine `PhilosophicalAlignment` on
+- [x] Phase 52 — Surface engine `PhilosophicalAlignment` on
       SELF tab (promoted via `/oversight` 2026-05-19, 9th call;
       filed by `/expand` pass 29 in `a2ee151` at [score 7.2]).
       Engine 0.10.0 (shipped via Phase 51) introduces the

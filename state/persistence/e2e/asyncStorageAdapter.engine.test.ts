@@ -245,7 +245,7 @@ describe('migrations — unwrap', () => {
         }
     });
 
-    it('preload + load on a v2 envelope yields state with alignment backfilled (Phase 51)', async () => {
+    it('preload + load on a v2 envelope yields state with philosophicalAlignment backfilled (Phase 51 + 52)', async () => {
         // Per the brief: load a `schemaVersion: 2` envelope through the
         // adapter and confirm the resulting state has the engine's
         // defaultAlignment() applied. Pins the migration runs end-to-end
@@ -270,6 +270,6 @@ describe('migrations — unwrap', () => {
         const loaded = adapter.load() as unknown as Record<string, unknown>;
 
         expect(loaded).not.toBeNull();
-        expect(loaded.alignment).toEqual(defaultAlignment());
+        expect(loaded.philosophicalAlignment).toEqual(defaultAlignment());
     });
 });

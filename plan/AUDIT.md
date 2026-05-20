@@ -79,12 +79,20 @@
 ## Pending
 
 
-### [needs-engine-republish] `axiomancer-mechanics@0.10.1` — engine GH#64 merged + closed; awaiting npm republish
+### [in-progress via Phase 60a/60d/60b] `axiomancer-mechanics@0.10.2` published; surface drift now actively migrating
 
 - category: external-dependency (engine package)
 - source: cross-repo versioning audit (integrated 2026-05-15), filed via `/oversight` 2026-05-15
 - impact: 5 (gates mobile Phase 16, PHASE_CANDIDATES Phase 20 / 21)
-- ease: 0 (mobile cannot fix; user-triggered engine republish only)
+- ease: 0 (mobile cannot fix this row directly — it's the
+  reference; the actual work lives in build-plan Phase 60a/60d/60b)
+- **2026-05-20 (16th oversight call):** engine has published
+  0.10.2 (covers handoff items 1 + 2; item 3 deferred engine-side).
+  The bump introduced 9 breaking surface changes documented in
+  `plan/steps/01_build_plan.md` Phase 60 parent row. User
+  selected the multi-phase migration shape; Phase 60a/60d/60b
+  now in dispatch queue. This audit row drains to Done once the
+  lockfile lands at 0.10.2 (Phase 60f, gated on 60a–60e).
 - **status 2026-05-20 (15th oversight call)** — Engine GH#64
   is **CLOSED**:
   - **Issue 1 (`skillLibrary` / `getSkillById` re-export)** —

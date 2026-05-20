@@ -887,9 +887,15 @@ phase row.
       `<DebugPresetPicker>` (DEV-only); covers apprentice /
       wanderer / sage from the engine's `characterPresets`
       array. Closes mirror issue #94.
-- [needs-user-call] Phase 60 — Engine bump axiomancer-mechanics
-      0.10.0 → 0.10.2. Queued via `/triage` 2026-05-20 from
-      user-filed issue #93.
+- [parent] Phase 60 — Engine bump axiomancer-mechanics 0.10.0
+      → 0.10.2. Queued via `/triage` 2026-05-20 from user-filed
+      issue #93. **Re-shaped via `/oversight` 2026-05-20 (16th
+      call) into a multi-phase sequence (60a/60d/60b promoted;
+      60c/60e/60f below threshold in PHASE_CANDIDATES).** This
+      parent row tracks the bump as a whole; the sub-phases are
+      the actual `[ ]` work units. The lockfile bump itself ships
+      as the last sub-phase (60f) once the surface drift is
+      drained across 60a–60e.
 
       **Surface drift discovered 2026-05-20 by `/ship-a-phase`
       attempt** — issue #93's brief said the bump was
@@ -950,9 +956,83 @@ phase row.
       engine repo so future bumps surface breaking changes
       transparently in the CHANGELOG.
 
-      **Status:** revert committed; engine remains pinned at
-      0.10.0. Issue #93 stays open; #93 comment posted with the
-      drift surface. Awaiting `/oversight` call to pick a shape.
+      **Status (post-oversight 16th call, 2026-05-20):** user
+      selected the **multi-phase shape**. 60a/60d/60b promoted
+      as the work rows below; 60c/60e/60f remain in
+      `plan/PHASE_CANDIDATES.md` under `## Considered (below
+      threshold)` for follow-up promotion once the trio ships
+      clean. The lockfile bump (60f) is gated on 60a–60e
+      landing.
+- [ ] Phase 60a — `getCoastalMap` → `getMapDefinition` rename.
+      Promoted via `/oversight` 2026-05-20 (16th call) from
+      PHASE_CANDIDATES pass 31 [score 7.0]. **First in
+      dispatch order.**
+
+      Scope (single phase, 1-2 ticks):
+
+      - `getCoastalMap` removed from engine 0.10.1+ public
+        surface; replaced by `getMapDefinition` (different
+        signature — returns the map definition rather than the
+        seeded state).
+      - Migrate three consumers: `state/actions.ts` (debugSeed,
+        changeMap, etc.), `state/e2e/exploration.engine.test.ts`,
+        `state/e2e/event-pools.engine.test.ts`. Either drop in
+        an adapter (`getCoastalMap(name) =
+        createMapState(getMapDefinition(name))` if signatures
+        align) or migrate callers directly.
+      - Hermetic seal: the existing exploration / event-pools
+        tests are the regression guard.
+
+      Cannot land in lockfile until 60f, but the rename can
+      ship now against an interim shim (or behind a guard) so
+      ticks can land independently. Decide at first tick which
+      path to take.
+- [ ] Phase 60d — Lift `Character.mana`/`maxMana` to a
+      mobile-side `ManaState` type. Promoted via `/oversight`
+      2026-05-20 (16th call) from PHASE_CANDIDATES pass 31
+      [score 7.0].
+
+      Scope (single phase, 2-3 ticks):
+
+      - Engine 0.10.1 removed `mana`/`maxMana` from public
+        `Character`. Mobile has been carrying a presentation
+        stop-gap (`ensureManaOnCombatPlayer` in
+        `state/actions.ts:222` mutates the in-combat Character
+        with `mana`/`maxMana`) — flagged by the pre-existing
+        comment "Player mana scaffolding (presentation
+        placeholder)". The bump forces the issue.
+      - Lift mana to a dedicated `ManaState` type
+        (`state/mana.ts` or alongside actions). Rewrite
+        `ensureManaOnCombatPlayer` to attach `ManaState`
+        externally rather than mutating Character shape.
+      - Update `state/e2e/combat-hud.engine.test.ts` to read
+        mana from the new location.
+      - Frees Phase 21 (engine-driven skill resolution, also
+        engine-gated) to replace the stop-gap cleanly when
+        per-resource pools ship.
+
+      Independent of 60a/60b — ships in any order.
+- [ ] Phase 60b — `Encounter.enemy` shape migration. Promoted
+      via `/oversight` 2026-05-20 (16th call) from
+      PHASE_CANDIDATES pass 31 [score 5.5].
+
+      Scope (single phase, 2-3 ticks):
+
+      - Engine 0.10.1+ removed `enemy` from the public
+        `Encounter` type (likely flattened to `enemyId` resolved
+        via `getEnemyById`, but first tick is engine-type
+        investigation against installed 0.10.2).
+      - Update fixture helpers
+        (`makeEncounterResult` in
+        `state/e2e/event.engine.test.ts`), then migrate
+        consumers: `state/presenters/event.engine.ts`,
+        `state/e2e/event.screen.test.tsx`,
+        `state/e2e/event-assets.test.ts`.
+      - Third tick: e2e regression sweep against the new
+        shape.
+
+      Independent of 60a/60d — but ships third by dispatch
+      order to spread the higher-uncertainty work.
 
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh

@@ -10,94 +10,6 @@
 ## Pending
 
 
-> Pass 31 (2026-05-20) — engine-bump granular sub-phases. The
-> Phase 60 row in `plan/steps/01_build_plan.md` was flipped
-> from `[ ]` to `[needs-user-call]` by `/ship-a-phase` after
-> `npm install axiomancer-mechanics@0.10.2 && npm run verify`
-> surfaced 58 typecheck errors across 9 engine APIs (commit
-> `b1a8126`). The row captured two viable shapes for the bump
-> (single bigger phase, or multi-phase 60a–60f sequence) and
-> deferred to `/oversight`. This expand pass files the
-> highest-leverage sub-phases of the multi-phase shape as
-> candidates so `/oversight` can choose granularly. If
-> `/oversight` instead picks the single-bigger-phase shape,
-> reject 60a/60b/60d below.
-
-### [score 7.0] Phase 60a — `getCoastalMap` → `getMapDefinition` rename
-
-- proposed: 2026-05-20, expand pass 31
-- source signals:
-  - `plan/steps/01_build_plan.md` Phase 60 row (engine bump
-    `[needs-user-call]`) lists this as the first drift line.
-  - `plan/AUDIT.md` `[needs-engine-republish]` row.
-  - User-filed issue #93.
-- rationale: cheapest of the six 60-sub-phases. `getCoastalMap`
-  exported on 0.10.0 but removed by 0.10.1; replaced by
-  `getMapDefinition` (different signature — returns the map
-  definition rather than the seeded state). Three known
-  consumers in mobile: `state/actions.ts`,
-  `state/e2e/exploration.engine.test.ts`,
-  `state/e2e/event-pools.engine.test.ts`. Drop-in rename + a
-  small adapter for the signature delta (define
-  `getCoastalMap(name) = createMapState(getMapDefinition(name))`
-  if that lines up) or migrate callers to the new shape directly.
-- proposed scope: 1 phase. 1-2 ticks. Hermetic seal: the existing
-  exploration / event-pools tests are the regression guard;
-  they already exercise the function, so the rename is
-  test-driven.
-- estimated phases: 1
-- conflicts: none. Depends on the engine 0.10.2 bump landing
-  in the lockfile (Phase 60f), so this phase ships together
-  with the bump or after.
-
-### [score 7.0] Phase 60d — Lift `Character.mana`/`maxMana` to a mobile-side `ManaState` type
-
-- proposed: 2026-05-20, expand pass 31
-- source signals:
-  - `plan/steps/01_build_plan.md` Phase 60 row.
-  - **Pre-existing placeholder marker** at `state/actions.ts:222`
-    "Player mana scaffolding (presentation placeholder)" — the
-    multi-signal hit. This isn't just an engine-bump issue;
-    mobile has been carrying a `mana`/`maxMana` write onto the
-    in-combat `Character` since Phase 1+ as a stop-gap pending
-    Phase 21 (engine-driven skill resolution). Engine 0.10.1
-    removed the `mana`/`maxMana` fields from public `Character`,
-    which forces mobile to either (a) keep the write hidden via
-    `as any` casts (current state), or (b) lift it to a real
-    mobile-side `ManaState` type. (b) is the honest move.
-- rationale: signal multiplicity (engine drift + pre-existing
-  scaffolding comment) is strong. Lifting mana to a mobile
-  type frees Phase 21's engine-driven skill resolution to
-  replace it cleanly when the engine ships per-resource pools.
-- proposed scope: 1 phase. 2-3 ticks. Add `ManaState`
-  to `state/actions.ts` (or a dedicated `state/mana.ts`);
-  rewrite `ensureManaOnCombatPlayer` to attach `ManaState`
-  externally rather than mutating the `Character` shape;
-  update `state/e2e/combat-hud.engine.test.ts` to read mana
-  from the new location.
-- estimated phases: 1
-- conflicts: none. Independent of the other 60-sub-phases —
-  ships standalone or in any order.
-
-### [score 5.5] Phase 60b — `Encounter.enemy` shape migration
-
-- proposed: 2026-05-20, expand pass 31
-- source signals:
-  - `plan/steps/01_build_plan.md` Phase 60 row.
-- rationale: `Encounter.enemy` is no longer a property on the
-  public `Encounter` type in 0.10.1+. Consumers across the
-  event-screen presenter + 4 e2e test fixtures need to adopt
-  the new shape (likely `Encounter.enemyId` resolved via
-  `getEnemyById`, but engine type investigation is the first
-  tick).
-- proposed scope: 1 phase. 2-3 ticks. First tick: read the new
-  0.10.2 `Encounter` shape + update fixture helpers
-  (`makeEncounterResult` in `state/e2e/event.engine.test.ts`).
-  Second tick: migrate `state/presenters/event.engine.ts` +
-  consumer screens. Third tick: e2e regression sweep.
-- estimated phases: 1
-- conflicts: none. Independent of 60a/60d.
-
 ## Considered (below threshold)
 
 > Sub-phases of the Phase 60 engine bump that scored lower
@@ -253,6 +165,35 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted 2026-05-20 → status Phase 60a] [score 7.0] Phase 60a — `getCoastalMap` → `getMapDefinition` rename
+
+- promoted via `/oversight` 2026-05-20 (16th call) — user
+  selected "Promote all three (60a/60d/60b)" from expand pass
+  31 candidates after Phase 60's first attempt revealed wider
+  drift than issue #93 implied.
+- Ships first of the three (cheapest of the engine-bump
+  sub-phases; existing exploration/event-pools tests are the
+  regression guard).
+- scope: see the Pass 31 row (now hoisted into the build plan
+  Phase 60a entry).
+
+### [promoted 2026-05-20 → status Phase 60d] [score 7.0] Phase 60d — Lift `Character.mana`/`maxMana` to mobile `ManaState`
+
+- promoted via `/oversight` 2026-05-20 (16th call).
+- Ships second. Independent of 60a/60b — could ship in any
+  order, but dispatched second per build plan listing.
+- scope: see the Pass 31 row (hoisted into the build plan
+  Phase 60d entry).
+
+### [promoted 2026-05-20 → status Phase 60b] [score 5.5] Phase 60b — `Encounter.enemy` shape migration
+
+- promoted via `/oversight` 2026-05-20 (16th call).
+- Ships third. Investigation tick first (read the new 0.10.2
+  `Encounter` shape) before migrating the 4 e2e fixtures + the
+  event presenter.
+- scope: see the Pass 31 row (hoisted into the build plan
+  Phase 60b entry).
 
 ### [promoted 2026-05-20 → status Phase 59] [score 4.5] Phase 22 — Character presets adoption (engine 18 consumer)
 

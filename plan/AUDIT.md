@@ -79,60 +79,45 @@
 ## Pending
 
 
-### [needs-engine-release] `axiomancer-mechanics@0.10.0+` — top-level `skillLibrary` / `getSkillById` re-export + dist `types.d.ts`
+### [needs-engine-republish] `axiomancer-mechanics@0.10.1` — engine GH#64 merged + closed; awaiting npm republish
 
 - category: external-dependency (engine package)
 - source: cross-repo versioning audit (integrated 2026-05-15), filed via `/oversight` 2026-05-15
-- impact: 5 (gates mobile Phase 16, Phase 20, Phase 21 — three roadmap rows blocked until this lands)
-- ease: 0 (mobile cannot fix; engine team only)
-- recipe (for the engine repo): add to `axiomancer-mechanics/src/index.ts`:
-  ```ts
-  export { skillLibrary, getSkillById } from './Skills';
-  ```
-  Plus ensure `Skills/types.d.ts`, `Effects/types.d.ts`,
-  `Combat/types.d.ts` land in `dist/` (currently missing per
-  the Phase 16 brief).
-- next: **user action — open an issue in `axiomancer-mechanics` when ready.**
-  Mobile loop has no work item here; this row exists so `/iterate`
-  and `/march` see the blocker and skip the dependent rows. Phase 16
-  in the Status block stays `[skipped]`; PHASE_CANDIDATES rows 20/21
-  stay un-promoted.
-- handoff doc: [`docs/engine-team-handoff-2026-05-16.md`](../docs/engine-team-handoff-2026-05-16.md).
-  Single-document brief written via `/oversight` 2026-05-16 to hand
-  off to the engine team. Covers three asks: top-level
-  `skillLibrary` re-export (Issue 1); broken `types.d.ts`
-  emission in 8 of 9 sub-paths (Issue 2 — real build bug found
-  during prep, not just mobile's problem); `PersistenceAdapter`
-  ergonomics (Issue 3). Each ask has a sanity-check command and
-  a phase-impact table. **Engine GH#64** is the canonical
-  cross-repo tracking issue per
-  `docs/engine-upgrade-0.7.0-to-0.10.0.md` §7.
-- **nudge drafted 2026-05-20** via `/oversight` (12th call);
-  comment body was at `/tmp/engine-nudge-body.md`. Body included
-  the four blocked mobile phase numbers + a re-checked status
-  table for each of the three handoff items against 0.10.0.
-  **Sent to engine GH#64 — confirmed via `/oversight` 2026-05-20
-  (14th call).** No further action on the mobile side; await
-  engine response.
-- status against 0.10.0 (re-checked 2026-05-19 post-Phase-51 bump):
-  - Item 1 (`skillLibrary` / `getSkillById` top-level): **still
-    missing** in `dist/index.d.ts`. Runtime check
-    `node -e "const m = require('axiomancer-mechanics'); console.log(typeof m.skillLibrary)"`
-    returns `undefined`.
-  - Item 2 (8 of 9 `dist/<sub>/types.d.ts` files missing):
-    **1 of 9 fixed** in 0.10.0 — `dist/Items/types.d.ts` now
-    emits; `Skills/`, `Effects/`, `Combat/`, `Character/`,
-    `Enemy/`, `World/`, `NPCs/`, `Utils/` still missing.
-  - Item 3 (`PersistenceAdapter` ergonomics): no change; local
-    shim `wrapDeflectingAdapter` in `state/store.ts` remains.
-    Tests pass against 0.10.0 surface.
-- watch: re-check `node_modules/axiomancer-mechanics/dist/index.d.ts`
-  on every `npm install`. When `skillLibrary` is re-exported and the
-  three missing `types.d.ts` files are present, flip Phase 16 to `[ ]`
-  and promote Phase 20/21 from PHASE_CANDIDATES. (Repo lockfile is
-  npm's `package-lock.json` — `pnpm install` rewrites `.pnpm/`
-  symlinks in a layout that breaks `jest-expo` transforms; learned
-  during Phase 51, see commit `c273071` body.)
+- impact: 5 (gates mobile Phase 16, PHASE_CANDIDATES Phase 20 / 21)
+- ease: 0 (mobile cannot fix; user-triggered engine republish only)
+- **status 2026-05-20 (15th oversight call)** — Engine GH#64
+  is **CLOSED**:
+  - **Issue 1 (`skillLibrary` / `getSkillById` re-export)** —
+    shipped at engine Phase 50 (`19f2015`). `src/index.ts`
+    Skills block now forwards both symbols from `./Skills`.
+    Hermetic test at
+    `src/test-utils/e2e/public-barrel.engine.test.ts` pins
+    the surface.
+  - **Issue 2 (`dist/<sub>/types.d.ts` emission)** —
+    shipped at engine Phase 50 (`57c06ab`). Root cause: `tsc`
+    doesn't process pre-existing `.d.ts` files. Engine
+    renamed 10 × `src/<Module>/types.d.ts` → `types.ts` via
+    `git mv`; `dist/<Module>/types.d.ts` now emits for all
+    11 modules. `scripts/deploy-check.mjs` got a count-based
+    guard against regression.
+  - **Issue 3 (`PersistenceAdapter` ergonomics)** — explicitly
+    deferred per engine Phase 50 D2; tracked engine-side in
+    its `plan/PHASE_CANDIDATES.md` as "PersistenceAdapter
+    ergonomics — Phase 50 follow-up". Mobile retains
+    `wrapDeflectingAdapter` shim in `state/store.ts`; no
+    breakage.
+- **only remaining unblock: 0.10.1 npm republish.** Per the
+  engine team's GH#64 closing comment, the republish is
+  user-triggered post-merge. When `npm view axiomancer-mechanics
+  versions` shows `0.10.1`, flip Phase 16 to `[ ]`, promote
+  PHASE_CANDIDATES Phase 20 + 21, and bump
+  `package.json` / `package-lock.json`.
+- watch: `npm view axiomancer-mechanics version` on each
+  `/march` tick. Once `>= 0.10.1` published, this row drains
+  to Done.
+- handoff doc: [`docs/engine-team-handoff-2026-05-16.md`](../docs/engine-team-handoff-2026-05-16.md)
+  (historical — captures the original three asks; superseded
+  by GH#64's closing comment).
 
 ## Done
 

@@ -72,7 +72,8 @@ assertions.
 | `combat.codex.engine.test.ts` | P1 (pure) | `selectCodexStatusLine` + `selectCodexEnemySlug`: enemy name slug rules, design-source ENC/ROUND/STATE format, roman 1..10 + decimal fallback, all engine phases threaded verbatim (Phase 50 tick B) | 2 | 11 |
 | `event.codex.engine.test.ts` | P1 (pure) | `selectEventCodexHeader`: EVENT/<variant> left + KIND/<kind> right tokens, uppercase + hyphen→dot normalization, all variants threaded (Phase 50 tick C) | 1 | 5 |
 | `exploration.codex.engine.test.ts` | P1 (pure) | `selectExplorationCodexHeader`: REGION/<region-slug> + NODE/<currentNodeId-slug>, uppercase/hyphen/underscore/whitespace normalization, UNKNOWN/NONE fallbacks (Phase 50 tick D) | 1 | 5 |
-| **Totals (`state/e2e/`)** | | | **124** | **426** |
+| `debug-seed.engine.test.ts` | P2 | `actions.debugSeed()` end-to-end: inventory gains items across categories (consumable + 3 equipment slots), knownSkills gains both paradox + fallacy fixture categories, current map resets to startingNode with fresh discovered/consumed sets, skills are set-idempotent on re-seed (Phase 54) | 1 | 5 |
+| **Totals (`state/e2e/`)** | | | **125** | **431** |
 
 ## 4. Inventory — `state/persistence/e2e/`
 
@@ -89,6 +90,7 @@ assertions.
 |---|---|---|---:|---:|
 | `components/event/__tests__/EncounterModalOverlay.test.tsx` | P4 | Modal-over-map seam: backdrop fade, panel rise, action-button subtitle render, auto-dismiss timing; codex header mount/omit per aesthetic mode (Phase 50 tick C) | 3 | 10 |
 | `components/__tests__/CorruptSaveModal.test.tsx` | P4 | Boot-time corrupt-save prompt (Phase 53): mount on visible prop, confirm/cancel callback routing, lowercase ritual voice register, accessibilityLabel pin per button | 4 | 8 |
+| `components/__tests__/DebugSeedButton.test.tsx` | P4 | Dev-only debug seed button (Phase 54): DEV-gate (renders/null), tap routes through `actions.debugSeed()` (mutates inventory + skills + map), result line updates with summary, idempotent re-seed, accessibility | 3 | 6 |
 | `components/StanceGlyph.test.tsx` | P4 | StanceGlyph + GlyphHeart asset wiring (per-stance source resolution, fallback) | 4 | 16 |
 
 ## 6. Inventory — script-helper tests (non-e2e but hermetic)

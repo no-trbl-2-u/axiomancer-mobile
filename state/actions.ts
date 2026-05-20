@@ -23,9 +23,11 @@ import {
     setPlayerStance as combatSetPlayerStance,
     changeMap as worldChangeMap,
     completeNode as worldCompleteNode,
+    consumableLibrary,
     determineAdvantage,
     determineCombatEnd,
     determineEnemyAction,
+    equipmentTemplates,
     getCoastalMap,
     getDialogueNode,
     healCharacter,
@@ -45,6 +47,7 @@ import {
     type DialogueTree,
     type Enemy,
     type Equipment,
+    type EquipmentTemplate,
     type GameState,
     type Item,
     type MapName,
@@ -85,6 +88,16 @@ export interface MoveToResult {
     currentNodeId: string;
     /** True when the target was locked or not currently reachable. */
     locked: boolean;
+}
+
+/** Phase 54 — debug seed action summary. */
+export interface DebugSeedResult {
+    /** Count of items pushed to the player's inventory across categories. */
+    itemsAdded: number;
+    /** Count of skills appended to the player's `knownSkills` list. */
+    skillsLearned: number;
+    /** True when the current map was successfully re-seeded. */
+    mapReset: boolean;
 }
 
 export interface ResolveRoundResult {
@@ -143,6 +156,14 @@ export interface AppActions {
     moveTo: (nodeId: string) => MoveToResult;
     /** Swap the active map within the current continent. */
     changeMap: (mapName: MapName) => void;
+    /**
+     * Dev-only seed action (Phase 54). Adds representative items
+     * across categories, teaches a handful of fixture skills, and
+     * resets the current map back to its starting node. Returns a
+     * summary so the calling UI can toast the result. Component
+     * mount is `__DEV__`-guarded; production never reaches this.
+     */
+    debugSeed: () => DebugSeedResult;
     save: () => void;
     /**
      * Run `resolveMapEvent(state)` on the current node, cache the
@@ -540,6 +561,7 @@ export function createAppActions(store: AppStore): AppActions {
         dropItem: (itemId) => dropItemAction(store, itemId),
         moveTo: (nodeId) => moveToAction(store, nodeId),
         changeMap: (mapName) => changeMapAction(store, mapName),
+        debugSeed: () => debugSeedAction(store),
         save: () => store.getState().save(),
         resolveCurrentMapEvent: () => resolveCurrentMapEventAction(store),
         pickEventChoice: (choiceId) => pickEventChoiceAction(store, choiceId),
@@ -763,6 +785,110 @@ function changeMapAction(store: AppStore, mapName: MapName): void {
     const nextWorld = worldChangeMap(world, nextMap);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     store.setState({ world: nextWorld } as any);
+}
+
+// ---------------------------------------------------------------------------
+// Debug seed (Phase 54 — dev-only manual-testing affordance)
+// ---------------------------------------------------------------------------
+
+/** Build a minimal `Equipment` Item from an engine `EquipmentTemplate`.
+ * Templates carry the chrome (id/name/description/slot/baseStatModifiers);
+ * `Equipment` needs the `BaseItem` shape on top (category, stackable,
+ * quantity, rarity, modifiers). For dev-seed purposes we stamp common /
+ * unrolled defaults — the engine's `equipItem` reducer and the inventory
+ * screen are happy with this shape (verified via the Phase 32 dock work). */
+function templateToEquipment(template: EquipmentTemplate): Equipment {
+    return {
+        ...template,
+        category: 'equipment',
+        stackable: false,
+        quantity: 1,
+        rarity: 'common',
+        modifiers: [],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any as Equipment;
+}
+
+function debugSeedAction(store: AppStore): DebugSeedResult {
+    const state = store.getState();
+    const addItem = state.addItem;
+
+    let itemsAdded = 0;
+    let skillsLearned = 0;
+
+    // 1. One consumable from the engine library (Healing Potion as the
+    //    canonical test item). `addItem` is the engine reducer; we
+    //    spread to a fresh object so the engine's stack-merge path can
+    //    do its work without alias issues.
+    const potion = consumableLibrary[0];
+    if (potion) {
+        addItem({ ...potion });
+        itemsAdded++;
+    }
+
+    // 2. One equipment per common slot (head / body / weapon). The
+    //    inventory dock and equip-replace preview both key off slot,
+    //    so covering three slots gives a meaningful smoke test.
+    const slots: ReadonlyArray<'head' | 'body' | 'weapon'> = ['head', 'body', 'weapon'];
+    for (const slot of slots) {
+        const tpl = equipmentTemplates.find((t) => t.slot === slot);
+        if (tpl) {
+            addItem(templateToEquipment(tpl));
+            itemsAdded++;
+        }
+    }
+
+    // 3. Two skills from the local fixture (covers both paradox +
+    //    fallacy categories). Push directly onto `player.knownSkills`
+    //    rather than via `engine.learnSkill` — the engine's
+    //    skill-library top-level re-export is still missing
+    //    ([needs-engine-release] AUDIT row), so the engine reducer
+    //    can't resolve mobile's fixture ids. Direct mutation keeps
+    //    the seed honest: it adds exactly the skills the screen
+    //    already renders from `COMBAT_SKILLS_FIXTURE`.
+    const fixtureSkillIds: ReadonlyArray<string> = COMBAT_SKILLS_FIXTURE
+        .slice(0, 4)
+        .map((s) => s.id);
+    if (fixtureSkillIds.length > 0) {
+        const afterAdd = store.getState();
+        const player = afterAdd.player;
+        const known = new Set<string>(player.knownSkills ?? []);
+        for (const id of fixtureSkillIds) {
+            if (!known.has(id)) {
+                known.add(id);
+                skillsLearned++;
+            }
+        }
+        const nextPlayer: Character = {
+            ...player,
+            knownSkills: Array.from(known),
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        store.setState({ player: nextPlayer } as any);
+    }
+
+    // 4. Reset the current map: re-seed via `getCoastalMap(name)` +
+    //    `changeMap`. Engine guarantees the returned `MapState` is at
+    //    `currentNode = startingNode.id` with cleared
+    //    discoveredNodes / consumedNodes.
+    let mapReset = false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const world = (store.getState() as any).world as WorldState | undefined;
+    if (world && world.currentMap) {
+        try {
+            const fresh = getCoastalMap(world.currentMap.name);
+            const nextWorld = worldChangeMap(world, fresh);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            store.setState({ world: nextWorld } as any);
+            mapReset = true;
+        } catch {
+            // changeMap can throw if the map name is unknown. Swallow
+            // and report — the seed action is best-effort dev affordance.
+            mapReset = false;
+        }
+    }
+
+    return { itemsAdded, skillsLearned, mapReset };
 }
 
 // ---------------------------------------------------------------------------

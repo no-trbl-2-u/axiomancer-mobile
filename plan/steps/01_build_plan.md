@@ -722,7 +722,7 @@ phase row.
       `pnpm exec eslint . --max-warnings=0`. Single commit:
       `feat(spec53): save-corrupted UX modal — Spec 09 Q7=A
       follow-up`.
-- [ ] Phase 54 — Debug seed button (manual-testing affordance).
+- [x] Phase 54 — Debug seed button (manual-testing affordance).
       Promoted via `/oversight` 2026-05-19 (11th call) — user
       free-form request: "Could I add a 'debug' button that makes
       my character have a few items from each category and a few

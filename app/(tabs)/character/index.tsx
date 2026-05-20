@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AXM, FONTS } from '@/theme/axm';
 import { AestheticDevToggle } from '@/components/AestheticDevToggle';
+import { DebugSeedButton } from '@/components/DebugSeedButton';
 import { ScreenBg } from '@/components/ScreenBg';
 import { SectionLabel } from '@/components/SectionLabel';
 import { StanceGlyph } from '@/components/StanceGlyph';
@@ -224,6 +225,7 @@ export default function CharacterScreen() {
         </View>
       )}
       <AestheticDevToggle />
+      <DebugSeedButton />
     </ScreenBg>
   );
 }

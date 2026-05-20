@@ -45,6 +45,9 @@ const POOL_IDS = {
     restCommon: 'rest-common',
     gatherCommon: 'gather-common',
     treasureCommon: 'treasure-common',
+    /** Fallback quest pool — used only if a quest node lacks a
+     * per-node override. Production should always have an override
+     * registered (see QUEST_NPCS), so this is a defensive default. */
     questCommon: 'quest-common',
     encounterFishingVillage: 'encounter-fishing-village',
     encounterNorthernForest: 'encounter-northern-forest',
@@ -57,6 +60,28 @@ const POOL_IDS = {
      * manual testing. */
     chaos: 'chaos-pool',
 } as const;
+
+/**
+ * Phase 56 — per-quest-node NPC mapping. The engine's
+ * interaction handler threads `npcName` straight through to the
+ * event payload; the dialogue lookup happens later when the
+ * player picks a choice. Thematic names sourced from each quest
+ * node's layout description so the surfaced NPC matches the
+ * narrative copy on the node.
+ *
+ * Key format: `<continent>:<mapId>:<nodeId>` → npcName.
+ */
+const QUEST_NPCS: Record<string, string> = {
+    // fv-6 "Ash Mire": "The mire where the boy-priest told you to look."
+    'coastal-continent:fishing-village:fv-6': 'boy-priest',
+    // nf-6 "Pilgrim's Cairn": "A cairn raised by some earlier pilgrim. Names worn flat."
+    'coastal-continent:northern-forest:nf-6': 'forgotten-pilgrim',
+};
+
+/** Pool id for a specific quest-node NPC. */
+function questPoolIdFor(mapId: string, nodeId: string): string {
+    return `quest-${mapId}-${nodeId}`;
+}
 
 function encounterPool(id: string, enemySlug: EnemySlug, isBoss = false): MapEventPool {
     return {
@@ -133,18 +158,19 @@ function treasurePool(id: string): MapEventPool {
     };
 }
 
-function questPool(id: string): MapEventPool {
+function questPool(id: string, npcName: string = 'pilgrim'): MapEventPool {
     // Quest nodes thread to the engine's interaction handler — the
     // engine's `interaction` payload carries an npcName which the
-    // dialogue runtime resolves. Mobile uses a generic placeholder
-    // npc name for now; per-node NPC wiring is a follow-up.
+    // dialogue runtime resolves. Per-quest-node mappings live in
+    // `QUEST_NPCS`; the questCommon pool here is the fallback
+    // used if a quest node lacks an override.
     return {
         id,
         entries: [
             {
                 kind: 'interaction',
                 weight: 1,
-                payload: { kind: 'interaction', npcName: 'pilgrim' },
+                payload: { kind: 'interaction', npcName },
             },
         ],
     };
@@ -210,12 +236,24 @@ const NORTHERN_FOREST_ENCOUNTERS: ReadonlyArray<WeightedEnemy> = [
     { slug: 'argumentative-crow', weight: 1 },  // normal
 ];
 
+/** Phase 56 — per-quest-node pools sourced from QUEST_NPCS. */
+const QUEST_POOLS: ReadonlyArray<MapEventPool> = (() => {
+    const out: MapEventPool[] = [];
+    for (const key of Object.keys(QUEST_NPCS)) {
+        const [_continent, mapId, nodeId] = key.split(':');
+        const npcName = QUEST_NPCS[key];
+        out.push(questPool(questPoolIdFor(mapId, nodeId), npcName));
+    }
+    return out;
+})();
+
 /** All pools the mobile loop registers with the engine. */
 const POOLS: ReadonlyArray<MapEventPool> = [
     restPool(POOL_IDS.restCommon),
     gatherPool(POOL_IDS.gatherCommon),
     treasurePool(POOL_IDS.treasureCommon),
     questPool(POOL_IDS.questCommon),
+    ...QUEST_POOLS,
     // Fishing-village + northern-forest encounter pools (Phase 55) —
     // weighted across multiple enemies per map.
     multiEncounterPool(POOL_IDS.encounterFishingVillage, FISHING_VILLAGE_ENCOUNTERS),
@@ -227,8 +265,12 @@ const POOLS: ReadonlyArray<MapEventPool> = [
     chaosPool(POOL_IDS.chaos),
 ];
 
-/** Maps a node type to the right pool id for a given map. */
-function poolIdForNode(mapId: string, nodeType: NodeType): string | null {
+/** Maps a node type to the right pool id for a given map +
+ * specific node id. Phase 56 layers per-quest-node overrides on
+ * top of the per-type defaults: a quest node with a `QUEST_NPCS`
+ * entry resolves to its per-node pool; quest nodes without an
+ * entry fall back to `questCommon`. */
+function poolIdForNode(mapId: string, nodeId: string, nodeType: NodeType): string | null {
     switch (nodeType) {
         case 'rest':
             return POOL_IDS.restCommon;
@@ -236,8 +278,13 @@ function poolIdForNode(mapId: string, nodeType: NodeType): string | null {
             return POOL_IDS.gatherCommon;
         case 'treasure':
             return POOL_IDS.treasureCommon;
-        case 'quest':
+        case 'quest': {
+            const npcKey = `${CONTINENT}:${mapId}:${nodeId}`;
+            if (QUEST_NPCS[npcKey]) {
+                return questPoolIdFor(mapId, nodeId);
+            }
             return POOL_IDS.questCommon;
+        }
         case 'encounter':
             if (mapId === 'fishing-village') return POOL_IDS.encounterFishingVillage;
             if (mapId === 'northern-forest') return POOL_IDS.encounterNorthernForest;
@@ -264,7 +311,7 @@ export function registerExplorationEventPools(): void {
 
     for (const layout of [fishingVillageLayout, northernForestLayout]) {
         for (const node of layout.nodes) {
-            const poolId = poolIdForNode(layout.mapId, node.type);
+            const poolId = poolIdForNode(layout.mapId, node.id, node.type);
             if (poolId !== null) {
                 setNodeEventPoolOverride(CONTINENT, layout.mapId, node.id, poolId);
             }

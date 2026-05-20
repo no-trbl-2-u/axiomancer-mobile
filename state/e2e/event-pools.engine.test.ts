@@ -216,6 +216,43 @@ describe('multi-entry encounter pools (Phase 55)', () => {
     });
 });
 
+describe('per-quest-node NPC wiring (Phase 56)', () => {
+    it('fv-6 (Ash Mire) resolves to an interaction with the boy-priest', () => {
+        const state = stateAt('fishing-village', 'fv-6');
+        const result = resolveMapEvent(state);
+        expect(result.event.kind).toBe('interaction');
+        if (result.event.kind === 'interaction') {
+            // The engine's resolved interaction event carries the
+            // npcName threaded from the pool payload. Layout
+            // description for fv-6 names the "boy-priest".
+            expect(result.event.npcName).toBe('boy-priest');
+        }
+    });
+
+    it('nf-6 (Pilgrim\'s Cairn) resolves to an interaction with the forgotten-pilgrim', () => {
+        const state = stateAt('northern-forest', 'nf-6');
+        const result = resolveMapEvent(state);
+        expect(result.event.kind).toBe('interaction');
+        if (result.event.kind === 'interaction') {
+            expect(result.event.npcName).toBe('forgotten-pilgrim');
+        }
+    });
+
+    it('per-quest pools are distinct — each quest node fires its own npcName, not a shared placeholder', () => {
+        const fvState = stateAt('fishing-village', 'fv-6');
+        const nfState = stateAt('northern-forest', 'nf-6');
+        const fvResult = resolveMapEvent(fvState);
+        const nfResult = resolveMapEvent(nfState);
+
+        const fvName = fvResult.event.kind === 'interaction' ? fvResult.event.npcName : null;
+        const nfName = nfResult.event.kind === 'interaction' ? nfResult.event.npcName : null;
+
+        expect(fvName).toBeDefined();
+        expect(nfName).toBeDefined();
+        expect(fvName).not.toBe(nfName);
+    });
+});
+
 describe('chaos-mode toggle (Phase 58)', () => {
     afterEach(() => {
         // Restore canonical pools so subsequent tests are not

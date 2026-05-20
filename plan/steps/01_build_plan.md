@@ -834,7 +834,7 @@ phase row.
         at least 2 distinct slugs (proves the pool samples).
 
       Commit: `feat(spec55): multi-entry encounter pools per map`.
-- [ ] Phase 56 — Per-quest-node NPC wiring. Promoted via
+- [x] Phase 56 — Per-quest-node NPC wiring. Promoted via
       `/oversight` 2026-05-20 (13th call) from `/expand`
       pass 30 ([3.0]).
 

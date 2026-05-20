@@ -816,7 +816,7 @@ phase row.
       Verify gate: `pnpm exec tsc --noEmit`, full `pnpm test`,
       `pnpm exec eslint . --max-warnings=0`. Single commit:
       `feat(spec58): debug map-reset + chaos-pool toggle (dev-only)`.
-- [ ] Phase 55 — Multi-entry encounter pools per map.
+- [x] Phase 55 — Multi-entry encounter pools per map.
       Promoted via `/oversight` 2026-05-20 (13th call) from
       `/expand` pass 30 ([3.5]).
 

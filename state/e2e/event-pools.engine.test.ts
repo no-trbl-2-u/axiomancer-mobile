@@ -140,6 +140,82 @@ describe('exploration event-pool registration', () => {
     });
 });
 
+describe('multi-entry encounter pools (Phase 55)', () => {
+    it('fishing-village encounter pool samples ≥2 distinct enemy ids across 20 resolves', () => {
+        const enemyIds = new Set<string>();
+        for (let i = 0; i < 20; i++) {
+            const state = stateAt('fishing-village', 'fv-3');
+            const result = resolveMapEvent(state);
+            expect(result.event.kind).toBe('encounter');
+            if (result.event.kind === 'encounter') {
+                enemyIds.add(result.event.encounter.enemies[0].id);
+            }
+        }
+        expect(enemyIds.size).toBeGreaterThanOrEqual(2);
+    });
+
+    it('northern-forest encounter pool samples ≥2 distinct enemy ids across 20 resolves', () => {
+        const enemyIds = new Set<string>();
+        for (let i = 0; i < 20; i++) {
+            const state = stateAt('northern-forest', 'nf-3');
+            const result = resolveMapEvent(state);
+            expect(result.event.kind).toBe('encounter');
+            if (result.event.kind === 'encounter') {
+                enemyIds.add(result.event.encounter.enemies[0].id);
+            }
+        }
+        expect(enemyIds.size).toBeGreaterThanOrEqual(2);
+    });
+
+    it('all sampled fishing-village enemies belong to the fishing-village roster', () => {
+        const ALLOWED_FV_IDS = new Set([
+            'enemy-tidepool-crab',
+            'enemy-sea-mist-wisp',
+            'enemy-wet-hound',
+            'enemy-mournful-gull',
+        ]);
+        for (let i = 0; i < 20; i++) {
+            const state = stateAt('fishing-village', 'fv-3');
+            const result = resolveMapEvent(state);
+            if (result.event.kind === 'encounter') {
+                expect(ALLOWED_FV_IDS.has(result.event.encounter.enemies[0].id)).toBe(true);
+            }
+        }
+    });
+
+    it('all sampled northern-forest enemies belong to the northern-forest roster', () => {
+        const ALLOWED_NF_IDS = new Set([
+            'enemy-lullaby-moth',
+            'enemy-disatree',
+            'enemy-forest-sprite',
+            'enemy-argumentative-crow',
+        ]);
+        for (let i = 0; i < 20; i++) {
+            const state = stateAt('northern-forest', 'nf-3');
+            const result = resolveMapEvent(state);
+            if (result.event.kind === 'encounter') {
+                expect(ALLOWED_NF_IDS.has(result.event.encounter.enemies[0].id)).toBe(true);
+            }
+        }
+    });
+
+    it('boss nodes still pin to a single signature enemy (not multi-sampled)', () => {
+        // The boss pools stay single-entry per Phase 55's brief —
+        // bosses are signature encounters, not variety draws. Across
+        // 10 resolves on fv-5 (Black Cairn, boss type), every sample
+        // should be the coastal-tyrant.
+        const ids = new Set<string>();
+        for (let i = 0; i < 10; i++) {
+            const state = stateAt('fishing-village', 'fv-5');
+            const result = resolveMapEvent(state);
+            if (result.event.kind === 'encounter') {
+                ids.add(result.event.encounter.enemies[0].id);
+            }
+        }
+        expect(ids).toEqual(new Set(['enemy-coastal-tyrant']));
+    });
+});
+
 describe('chaos-mode toggle (Phase 58)', () => {
     afterEach(() => {
         // Restore canonical pools so subsequent tests are not

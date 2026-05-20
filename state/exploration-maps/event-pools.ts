@@ -71,6 +71,29 @@ function encounterPool(id: string, enemySlug: EnemySlug, isBoss = false): MapEve
     };
 }
 
+/**
+ * Phase 55 — multi-entry encounter pool: weighted entries
+ * across multiple enemy slugs so the same node samples a
+ * variety of foes across visits. Simple-tier foes carry
+ * higher weight than normal-tier so the encounter feel
+ * matches the locale's difficulty curve.
+ */
+interface WeightedEnemy {
+    slug: EnemySlug;
+    weight: number;
+}
+
+function multiEncounterPool(id: string, enemies: ReadonlyArray<WeightedEnemy>): MapEventPool {
+    return {
+        id,
+        entries: enemies.map((e) => ({
+            kind: 'encounter' as const,
+            weight: e.weight,
+            payload: { kind: 'encounter' as const, enemySlug: e.slug },
+        })),
+    };
+}
+
 function restPool(id: string): MapEventPool {
     return {
         id,
@@ -164,20 +187,41 @@ function chaosPool(id: string): MapEventPool {
     };
 }
 
+/**
+ * Per-map encounter rosters — sourced from
+ * `EnemiesByMap[mapName]` in the engine 0.10.0 library. Simple-
+ * difficulty foes weighted 3×; normal-difficulty foes weighted 1×
+ * so the encounter feel matches the locale's level curve while
+ * keeping variety in every visit. Elite / boss enemies stay out
+ * of the standard encounter pool — they ship through the
+ * dedicated boss-pool overrides on boss-typed nodes.
+ */
+const FISHING_VILLAGE_ENCOUNTERS: ReadonlyArray<WeightedEnemy> = [
+    { slug: 'tidepool-crab', weight: 3 },   // simple
+    { slug: 'sea-mist-wisp', weight: 3 },   // simple
+    { slug: 'wet-hound', weight: 1 },       // normal
+    { slug: 'mournful-gull', weight: 1 },   // normal
+];
+
+const NORTHERN_FOREST_ENCOUNTERS: ReadonlyArray<WeightedEnemy> = [
+    { slug: 'lullaby-moth', weight: 3 },        // simple
+    { slug: 'disatree', weight: 1 },            // normal
+    { slug: 'forest-sprite', weight: 1 },       // normal
+    { slug: 'argumentative-crow', weight: 1 },  // normal
+];
+
 /** All pools the mobile loop registers with the engine. */
 const POOLS: ReadonlyArray<MapEventPool> = [
     restPool(POOL_IDS.restCommon),
     gatherPool(POOL_IDS.gatherCommon),
     treasurePool(POOL_IDS.treasureCommon),
     questPool(POOL_IDS.questCommon),
-    // Fishing-village enemies — picked from engine's EnemiesByMap.
-    // First map's simple foe is the tidepool-crab; the boss is
-    // the coastal-tyrant per the engine library.
-    encounterPool(POOL_IDS.encounterFishingVillage, 'tidepool-crab'),
+    // Fishing-village + northern-forest encounter pools (Phase 55) —
+    // weighted across multiple enemies per map.
+    multiEncounterPool(POOL_IDS.encounterFishingVillage, FISHING_VILLAGE_ENCOUNTERS),
+    multiEncounterPool(POOL_IDS.encounterNorthernForest, NORTHERN_FOREST_ENCOUNTERS),
+    // Boss pools stay single-entry — bosses are signature encounters.
     encounterPool(POOL_IDS.bossFishingVillage, 'coastal-tyrant', true),
-    // Northern-forest enemies — disatree as the simple foe;
-    // the-disagreement as the boss.
-    encounterPool(POOL_IDS.encounterNorthernForest, 'disatree'),
     encounterPool(POOL_IDS.bossNorthernForest, 'the-disagreement', true),
     // Phase 58 — DEV chaos pool.
     chaosPool(POOL_IDS.chaos),

@@ -73,8 +73,8 @@ assertions.
 | `event.codex.engine.test.ts` | P1 (pure) | `selectEventCodexHeader`: EVENT/<variant> left + KIND/<kind> right tokens, uppercase + hyphen→dot normalization, all variants threaded (Phase 50 tick C) | 1 | 5 |
 | `exploration.codex.engine.test.ts` | P1 (pure) | `selectExplorationCodexHeader`: REGION/<region-slug> + NODE/<currentNodeId-slug>, uppercase/hyphen/underscore/whitespace normalization, UNKNOWN/NONE fallbacks (Phase 50 tick D) | 1 | 5 |
 | `debug-seed.engine.test.ts` | P2 | `actions.debugSeed()` end-to-end: inventory gains items across categories (consumable + 3 equipment slots), knownSkills gains both paradox + fallacy fixture categories, current map resets to startingNode with fresh discovered/consumed sets, skills are set-idempotent on re-seed (Phase 54) | 1 | 5 |
-| `event-pools.engine.test.ts` | P2 | `registerExplorationEventPools()` registers per-node overrides so `resolveMapEvent` fires the right event-kind per node type; isBoss threaded; unregistered node returns kind=none; idempotent. **Phase 58:** chaos-mode toggle samples multiple kinds when ON, restores canonical when OFF, no-op in production | 2 | 15 |
-| **Totals (`state/e2e/`)** | | | **127** | **446** |
+| `event-pools.engine.test.ts` | P2 | Per-node-type pool overrides + isBoss threading + unregistered-node fallback + idempotent re-registration. **Phase 55:** multi-entry encounter pools sample ≥2 distinct enemy ids per map, roster-boundary checks per locale, boss nodes still single-pin. **Phase 58:** chaos-mode toggle samples multiple kinds when ON, restores canonical when OFF, no-op in production | 3 | 20 |
+| **Totals (`state/e2e/`)** | | | **128** | **451** |
 
 ## 4. Inventory — `state/persistence/e2e/`
 

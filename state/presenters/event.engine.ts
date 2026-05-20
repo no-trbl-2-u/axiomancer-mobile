@@ -62,7 +62,7 @@ export interface EventConsequence {
 }
 
 export interface EventChoice {
-    /** Stable choice id. For combat-prelude: `'fight'` | `'flee'`. For dialogue: `DialogueChoice.id`. */
+    /** Stable choice id. For combat-prelude: `'fight'` | `'flee'`. For dialogue: index into `visibleChoices(node, ctx)` as a string (Phase 60c — engine flattened DialogueChoice). */
     id: string;
     label: string;
     description: string;
@@ -439,10 +439,17 @@ function composeNpcDialogue(
         flags: new Set<string>(state.flags as string[]),
     };
     const visible = visibleChoices(node, ctx);
-    const choices: EventChoice[] = visible.map((choice) => ({
-        id: choice.id,
-        label: (choice.label ?? choice.id).toUpperCase(),
-        description: choice.label ?? '',
+    // Phase 60c — engine's DialogueChoice was flattened: `.id` and
+    // `.label` were removed; the canonical user-facing field is
+    // `.text`. Mobile derives a stable VM `id` from the choice's
+    // index in `visibleChoices(node, ctx)` so the
+    // `pickEventChoiceAction` lookup stays deterministic without
+    // depending on a `.id` that no longer exists. The same indexing
+    // shape is consumed by the action below.
+    const choices: EventChoice[] = visible.map((choice, index) => ({
+        id: String(index),
+        label: choice.text.toUpperCase(),
+        description: choice.text,
         consequences: extractDialogueConsequences(choice),
         iconKey: 'scroll',
         accentKey: 'parchment',
@@ -456,7 +463,10 @@ function composeNpcDialogue(
         artSlug: 'interaction-generic',
         badge: 'A VOICE',
         badgeAccentKey: 'parchment',
-        title: ((node.speaker ?? 'A FIGURE') as string).toUpperCase(),
+        // Phase 60c — engine's DialogueNode dropped `.speaker`;
+        // mobile falls back to the canonical 'A FIGURE' chrome
+        // (already the fallback when speaker was undefined).
+        title: 'A FIGURE',
         subtitle: '',
         body: text,
         choices,

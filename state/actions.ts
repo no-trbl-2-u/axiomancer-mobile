@@ -1049,7 +1049,17 @@ function pickEventChoiceAction(store: AppStore, choiceId: string): void {
     if (slice.dialogueCursor !== null) {
         const { tree, nodeId } = slice.dialogueCursor;
         const node = getDialogueNode(tree, nodeId);
-        const choice = (node.choices ?? []).find((c: DialogueChoice) => c.id === choiceId);
+        // Phase 60c — engine flattened DialogueChoice (dropped `.id`).
+        // The presenter now derives `choiceId` from the choice's
+        // index in `node.choices`; lookup mirrors that index. If the
+        // id isn't a valid index, treat as unknown choice
+        // (defensive no-op preserved).
+        const idx = Number(choiceId);
+        const choices = node.choices ?? [];
+        const choice: DialogueChoice | undefined =
+            Number.isInteger(idx) && idx >= 0 && idx < choices.length
+                ? choices[idx]
+                : undefined;
         if (!choice) {
             // Unknown choice on dialogue node — defensive no-op.
             return;

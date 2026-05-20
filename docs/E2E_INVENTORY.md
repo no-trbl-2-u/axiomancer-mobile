@@ -73,8 +73,8 @@ assertions.
 | `event.codex.engine.test.ts` | P1 (pure) | `selectEventCodexHeader`: EVENT/<variant> left + KIND/<kind> right tokens, uppercase + hyphen→dot normalization, all variants threaded (Phase 50 tick C) | 1 | 5 |
 | `exploration.codex.engine.test.ts` | P1 (pure) | `selectExplorationCodexHeader`: REGION/<region-slug> + NODE/<currentNodeId-slug>, uppercase/hyphen/underscore/whitespace normalization, UNKNOWN/NONE fallbacks (Phase 50 tick D) | 1 | 5 |
 | `debug-seed.engine.test.ts` | P2 | `actions.debugSeed()` end-to-end: inventory gains items across categories (consumable + 3 equipment slots), knownSkills gains both paradox + fallacy fixture categories, current map resets to startingNode with fresh discovered/consumed sets, skills are set-idempotent on re-seed (Phase 54) | 1 | 5 |
-| `event-pools.engine.test.ts` | P2 | `registerExplorationEventPools()` registers per-node overrides so `resolveMapEvent` fires the right event-kind per node type (encounter / boss / rest / gather / treasure / quest) across both fishing-village + northern-forest layouts; isBoss flag threaded; unregistered node id returns kind=none; idempotent re-registration; layout-coverage assertions | 1 | 11 |
-| **Totals (`state/e2e/`)** | | | **126** | **442** |
+| `event-pools.engine.test.ts` | P2 | `registerExplorationEventPools()` registers per-node overrides so `resolveMapEvent` fires the right event-kind per node type; isBoss threaded; unregistered node returns kind=none; idempotent. **Phase 58:** chaos-mode toggle samples multiple kinds when ON, restores canonical when OFF, no-op in production | 2 | 15 |
+| **Totals (`state/e2e/`)** | | | **127** | **446** |
 
 ## 4. Inventory — `state/persistence/e2e/`
 
@@ -94,6 +94,8 @@ assertions.
 | `components/__tests__/DebugSeedButton.test.tsx` | P4 | Dev-only debug seed button (Phase 54): DEV-gate (renders/null), tap routes through `actions.debugSeed()` (mutates inventory + skills + map), result line updates with summary, idempotent re-seed, accessibility | 3 | 6 |
 | `components/__tests__/DebugCombatButton.test.tsx` | P4 | Dev-only manual combat trigger (CRITIQUE jot 39695a5): DEV-gate, tap calls startCombat + router push to /(tabs)/combat, accessibility | 3 | 5 |
 | `components/__tests__/DevAutoSeed.test.tsx` | P4 | Boot-time auto-seed for DEV (CRITIQUE jot 39695a5): empty inventory triggers single `actions.debugSeed()` call, renders nothing visible, idempotent for populated inventory, production-gated | 2 | 4 |
+| `components/__tests__/DebugMapResetButton.test.tsx` | P4 | Dev-only map-reset (Phase 58): DEV gate, tap re-seeds currentMap via `actions.changeMap`, accessibility | 3 | 4 |
+| `components/__tests__/DebugChaosToggle.test.tsx` | P4 | Dev-only chaos-mode toggle (Phase 58): DEV gate, CALM↔CHAOS label flip on tap, subtitle reflects mode, a11y label includes on/off state | 3 | 7 |
 | `components/StanceGlyph.test.tsx` | P4 | StanceGlyph + GlyphHeart asset wiring (per-stance source resolution, fallback) | 4 | 16 |
 
 ## 6. Inventory — script-helper tests (non-e2e but hermetic)

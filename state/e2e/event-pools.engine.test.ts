@@ -11,7 +11,7 @@
  * Hermetic = self-contained + deterministic + isolated.
  */
 
-import { describe, expect, it } from '@jest/globals';
+import { afterEach, describe, expect, it } from '@jest/globals';
 import {
     createNewGameState,
     getCoastalMap,
@@ -27,7 +27,10 @@ import {
 // instead pin "covered by registration" behavior and rely on the
 // engine's per-node-id override key to demonstrate scope (an
 // unregistered node id returns `none`).
-import { registerExplorationEventPools } from '@/state/exploration-maps/event-pools';
+import {
+    registerExplorationEventPools,
+    setChaosMode,
+} from '@/state/exploration-maps/event-pools';
 import { fishingVillageLayout } from '@/state/exploration-maps/fishing-village.layout';
 import { northernForestLayout } from '@/state/exploration-maps/northern-forest.layout';
 
@@ -133,6 +136,83 @@ describe('exploration event-pool registration', () => {
                 id: node.id,
                 kind: 'none',
             });
+        }
+    });
+});
+
+describe('chaos-mode toggle (Phase 58)', () => {
+    afterEach(() => {
+        // Restore canonical pools so subsequent tests are not
+        // contaminated by chaos overrides. The engine's pool
+        // registry is global state.
+        setChaosMode(false);
+        registerExplorationEventPools();
+    });
+
+    it('chaos ON: walking a single node samples multiple event kinds across resolves', () => {
+        setChaosMode(true);
+        const kinds = new Set<string>();
+        for (let i = 0; i < 25; i++) {
+            // Re-resolve repeatedly from a fresh state at the same node
+            // so consumedNodes doesn't short-circuit subsequent calls.
+            const state = stateAt('fishing-village', 'fv-1');
+            const result = resolveMapEvent(state);
+            kinds.add(result.event.kind);
+        }
+        // The chaos pool has 5 distinct kinds (encounter / hazard /
+        // gathering / loot-cache / rest). Across 25 resolves on a
+        // non-seeded RNG we should see at least 3 distinct kinds —
+        // very high probability given equal weights.
+        expect(kinds.size).toBeGreaterThanOrEqual(3);
+    });
+
+    it('chaos OFF: canonical per-node-type pools restore on toggle off', () => {
+        setChaosMode(true);
+        setChaosMode(false);
+
+        // fv-3 is type 'encounter' in the layout; canonical override
+        // routes to the fishing-village encounter pool.
+        const state = stateAt('fishing-village', 'fv-3');
+        const result = resolveMapEvent(state);
+        expect(result.event.kind).toBe('encounter');
+
+        // fv-1 is type 'rest' — canonical override routes to the
+        // rest pool.
+        const restState = stateAt('fishing-village', 'fv-1');
+        const restResult = resolveMapEvent(restState);
+        expect(restResult.event.kind).toBe('rest');
+    });
+
+    it('chaos ON: fv-1 (rest in canonical) no longer pins to rest', () => {
+        setChaosMode(true);
+        const kinds = new Set<string>();
+        for (let i = 0; i < 20; i++) {
+            const state = stateAt('fishing-village', 'fv-1');
+            const result = resolveMapEvent(state);
+            kinds.add(result.event.kind);
+        }
+        // Should see SOMETHING other than 'rest' (proves the override
+        // swapped). High probability across 20 equal-weight resolves.
+        const nonRestKinds = Array.from(kinds).filter((k) => k !== 'rest');
+        expect(nonRestKinds.length).toBeGreaterThan(0);
+    });
+
+    it('setChaosMode is a no-op in production (__DEV__ false)', () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const g = global as any;
+        const original = g.__DEV__;
+        g.__DEV__ = false;
+        try {
+            // Canonical pools already registered. Calling setChaosMode
+            // here must not swap to chaos.
+            setChaosMode(true);
+
+            const state = stateAt('fishing-village', 'fv-3');
+            const result = resolveMapEvent(state);
+            // fv-3 is an encounter node; canonical override stays.
+            expect(result.event.kind).toBe('encounter');
+        } finally {
+            g.__DEV__ = original;
         }
     });
 });

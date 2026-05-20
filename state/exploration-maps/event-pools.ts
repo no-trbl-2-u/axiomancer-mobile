@@ -50,6 +50,12 @@ const POOL_IDS = {
     encounterNorthernForest: 'encounter-northern-forest',
     bossFishingVillage: 'boss-fishing-village',
     bossNorthernForest: 'boss-northern-forest',
+    /** Phase 58: DEV-only pool with weighted entries across
+     * multiple event kinds. When `setChaosMode(true)` is called,
+     * every node in both layouts gets overridden to this pool so
+     * the user can stumble into any event kind from any node for
+     * manual testing. */
+    chaos: 'chaos-pool',
 } as const;
 
 function encounterPool(id: string, enemySlug: EnemySlug, isBoss = false): MapEventPool {
@@ -121,6 +127,43 @@ function questPool(id: string): MapEventPool {
     };
 }
 
+function chaosPool(id: string): MapEventPool {
+    // Weighted entries across multiple event kinds so a single
+    // node can fire encounter / hazard / gathering / loot-cache /
+    // rest with non-trivial spread. Equal weights for a true
+    // sampling distribution.
+    return {
+        id,
+        entries: [
+            {
+                kind: 'encounter',
+                weight: 1,
+                payload: { kind: 'encounter', enemySlug: 'tidepool-crab' },
+            },
+            {
+                kind: 'hazard',
+                weight: 1,
+                payload: { kind: 'hazard', damage: 5 },
+            },
+            {
+                kind: 'gathering',
+                weight: 1,
+                payload: { kind: 'gathering', items: [] },
+            },
+            {
+                kind: 'loot-cache',
+                weight: 1,
+                payload: { kind: 'loot-cache' },
+            },
+            {
+                kind: 'rest',
+                weight: 1,
+                payload: { kind: 'rest', healFraction: 0.5 },
+            },
+        ],
+    };
+}
+
 /** All pools the mobile loop registers with the engine. */
 const POOLS: ReadonlyArray<MapEventPool> = [
     restPool(POOL_IDS.restCommon),
@@ -136,6 +179,8 @@ const POOLS: ReadonlyArray<MapEventPool> = [
     // the-disagreement as the boss.
     encounterPool(POOL_IDS.encounterNorthernForest, 'disatree'),
     encounterPool(POOL_IDS.bossNorthernForest, 'the-disagreement', true),
+    // Phase 58 — DEV chaos pool.
+    chaosPool(POOL_IDS.chaos),
 ];
 
 /** Maps a node type to the right pool id for a given map. */
@@ -180,6 +225,36 @@ export function registerExplorationEventPools(): void {
                 setNodeEventPoolOverride(CONTINENT, layout.mapId, node.id, poolId);
             }
         }
+    }
+}
+
+/**
+ * Phase 58 — DEV-only chaos mode toggle. When `on === true`,
+ * overrides every node in both layouts to the chaos pool so the
+ * user can sample any event kind from any node for manual
+ * testing. When `on === false`, restores the canonical per-node
+ * overrides by re-calling `registerExplorationEventPools()`.
+ *
+ * No-op in production (`__DEV__` false) so the toggle has no
+ * effect on shipped builds; the toggle's component caller is
+ * itself `__DEV__`-guarded but this is belt-and-braces.
+ */
+export function setChaosMode(on: boolean): void {
+    if (!__DEV__) return;
+    if (on) {
+        for (const layout of [fishingVillageLayout, northernForestLayout]) {
+            for (const node of layout.nodes) {
+                if (node.type === 'current') continue;
+                setNodeEventPoolOverride(
+                    CONTINENT,
+                    layout.mapId,
+                    node.id,
+                    POOL_IDS.chaos,
+                );
+            }
+        }
+    } else {
+        registerExplorationEventPools();
     }
 }
 

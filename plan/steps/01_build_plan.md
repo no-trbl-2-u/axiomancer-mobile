@@ -776,7 +776,7 @@ phase row.
       `pnpm exec eslint . --max-warnings=0`. Single commit:
       `feat(spec54): debug seed button — items + skills + map reset
       (dev-only)`.
-- [ ] Phase 58 — Debug map-reset + chaos-pool toggle
+- [x] Phase 58 — Debug map-reset + chaos-pool toggle
       (manual-testing affordance). Promoted via `/oversight`
       2026-05-20 (13th call) — user free-form addendum:
       "Make sure to add a 'debug' button to reset the current

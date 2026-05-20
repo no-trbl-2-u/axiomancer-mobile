@@ -3,7 +3,9 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AXM, FONTS } from '@/theme/axm';
 import { AestheticDevToggle } from '@/components/AestheticDevToggle';
+import { DebugChaosToggle } from '@/components/DebugChaosToggle';
 import { DebugCombatButton } from '@/components/DebugCombatButton';
+import { DebugMapResetButton } from '@/components/DebugMapResetButton';
 import { DebugSeedButton } from '@/components/DebugSeedButton';
 import { ScreenBg } from '@/components/ScreenBg';
 import { SectionLabel } from '@/components/SectionLabel';
@@ -228,6 +230,8 @@ export default function CharacterScreen() {
       <AestheticDevToggle />
       <DebugSeedButton />
       <DebugCombatButton />
+      <DebugMapResetButton />
+      <DebugChaosToggle />
     </ScreenBg>
   );
 }

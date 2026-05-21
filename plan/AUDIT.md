@@ -82,6 +82,38 @@
 > combat-mechanics bugs blocking playability. Filed at HIGH
 > severity; user-source +0.5 bump applied per iterate §4.
 
+### [9.5] Combat regression — "Next Round" exits / completes combat even with no damage done (NEW)
+
+- category: bug (combat blocking, screen-layer)
+- impact: 9 (combat unusable for multi-round fights — every
+  round taps Continue → exits regardless of HP)
+- ease: ? (needs console-log data after Phase 65 Tick A ships
+  to user's preview build; new diagnostics required)
+- user report 2026-05-21 oversight 25th (mid-Phase-65, after
+  Tick A `8f7265c` landed): "combat is starting to move along!
+  I can see that the actions are causing changes. However,
+  'Next Round' always exits combat or completes combat. Even
+  if there is no damage done"
+- prime suspects in `app/(tabs)/combat.tsx:onContinueRound`:
+  - (a) `vm.enemy.hp <= 0` evaluating true even when engine
+    `combat.enemy.health > 0` — vm staleness on a different
+    field than `phase` (similar shape to [9.8] but on hp).
+  - (b) `vm.friendshipCounter >= vm.friendshipCounterMax`
+    misfiring — engine const is 3; maybe vm.friendshipCounter
+    reads from a default `?? 3` somewhere.
+  - (c) `vm.player.hp <= 0` after large damage → defeat branch
+    fires correctly but user reports zero-damage scenario.
+  - (d) Some effect/side-effect end-combat call we're not
+    seeing in the read.
+- next: ship Phase 65 Tick A to the user's preview build;
+  user retests Next Round; user pastes new console output;
+  this row narrows to (a/b/c/d). May fold into Phase 65
+  Tick C if same-root-cause as the existing diagnostic.
+- ship-in: Phase 65 (added to its scope after Tick A; will
+  surface as Tick D if not absorbed elsewhere).
+- source: user 2026-05-21 (preview build, post-Phase-65-Tick-A)
+
+
 ### [9.5] Combat regression — "MP" label still appears in player HP/MP bars
 
 - category: voice (legacy label leak)

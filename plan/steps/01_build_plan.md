@@ -1227,16 +1227,26 @@ that row gets revisited via `/iterate` once Phase 63 lands.
       `onEncounterFight`; useRouter import dropped. +3 hermetic
       cases pin the prelude→combat transition. 901/901 green
       (was 898).
-- [ ] Phase 63c — Wire aftermath dismissal back to exploration
-      from inside the modal. When the round ends (victory /
-      parley / flee), the overlay's mode transitions to
-      `'aftermath'` and shows the existing `<AftermathBanner>`
-      content; on its auto-dismiss the overlay unmounts cleanly
-      back to exploration. The current Phase 41 aftermath flow
-      (which runs on the exploration screen post-`/combat`
-      return) moves into the modal too. Tests: pin the
-      combat-end → aftermath → unmount sequence. Commit:
-      `feat(spec63c): aftermath in modal; route-replace gone`.
+- [x] Phase 63c — Modal-contained encounter session: fix the
+      mid-encounter unmount bug + lock the tab bar during the
+      modal. Shipped `a18ee12` —
+      `feat(spec63c): modal-contained encounter session`. User
+      retest of 63b surfaced that the modal disappeared on
+      FIGHT (selectHasActiveEvent short-circuits when combat
+      starts) and that the tab bar stayed navigable
+      mid-encounter. 63c lifts encounter-session state to
+      combat-mode (`inEncounterModal` flag + open/close API),
+      mounts the modal whenever the flag is true OR a prelude
+      is ready (so it spans the full combat lifecycle), hides
+      the tab bar via `tabBarStyle: { display: 'none' }`
+      while the modal is open, and swaps CombatPanel's
+      `router.replace('/exploration')` calls for a
+      `finalizeCombatExit` helper that closes the modal
+      in-place when inside it (preserves the legacy tab path).
+      +4 hermetic combat-mode cases pin the session lifecycle.
+      905/905 green (was 901). Aftermath-inside-modal is a
+      follow-on; the existing AftermathBanner on exploration
+      surfaces post-victory per the Phase 41 flow.
 - [ ] Phase 63d — Remove or repurpose the standalone
       `/combat` route. The route file may stay as a no-op
       redirect to exploration (so any deep link doesn't 404)

@@ -40,6 +40,16 @@
 
 ## Pending
 
+### [MED] general — Expand DEV mode to cover every ported mechanic
+- pass: user-jot (commit 570ffa7)
+- viewport: unspecified
+- auth_state: anonymous
+- category: enhancement
+- observation: Let's figure out a way to expand the frontend with a "dev" mode where I can test the implementation of every mechanic we've ported so far
+- evidence: user-spotted at 2026-05-20T15:01:00-04:00
+- suggested_fix: [user has not specified — iterate to determine]
+- source: user
+
 ## Done
 
 ### [MED] general — no combat encounters in the first map ✅

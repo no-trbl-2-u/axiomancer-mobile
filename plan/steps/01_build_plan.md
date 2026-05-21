@@ -1162,22 +1162,20 @@ DevMenu (Phase 61a wrapper); none change production surfaces.
       `state.combat.friendshipCounter`. Combat-only; warns +
       no-ops outside combat. +8 hermetic tests; 896/896 green
       (was 888).
-> **Priority note (oversight 2026-05-21, 22nd call):** Phases 62d
-> and 62e are deferred BEHIND the open [9.5] combat-bug AUDIT
-> rows (Heart unselectable; action no-effect). `/march`'s
-> standard order would dispatch Phase 62d next, but the user
-> explicitly directed: combat bugs first, then 62d/e. The
-> next /march tick should fall through to /iterate to attack
-> the bugs.
+> **Priority note (oversight 2026-05-21, 23rd call):** Phases 62d
+> and 62e are now **paused indefinitely**. The user re-prioritized
+> the [9.8] modal-contained-encounter refactor (Phase 63) over
+> any further Phase 62 dev affordances. `/march` will skip 62d/e
+> until they are explicitly un-paused via `/oversight`.
 
-- [ ] Phase 62d — Currency grant. New `<DebugCurrencyGrant>`
+- [paused] Phase 62d — Currency grant. New `<DebugCurrencyGrant>`
       row. Single `+100` button that adds to the player's
       currency slice (engine field — verify shape first; may
       not exist yet, in which case 62d defers as `[skipped]`
       pending engine surface). Tests pin: amount added,
       idempotent across stacked presses. Commit:
       `feat(spec62d): dev-menu currency grant`.
-- [ ] Phase 62e — Combat-HUD spot overrides. New
+- [paused] Phase 62e — Combat-HUD spot overrides. New
       `<DebugCombatOverrides>` panel with three slider/button
       groups: player HP (set to 1 / max), enemy HP (set to 1 /
       max), mind-marks (clear / +3). Only active during
@@ -1188,7 +1186,78 @@ DevMenu (Phase 61a wrapper); none change production surfaces.
       **Out-of-scope for Phase 62** (re-file if needed):
       enemy effect-apply (covered by Phase 61e's BLEED · FOE
       button); event-kind trigger (covered by Phase 61f); RNG
-      seed control (could be a Phase 63 if signals warrant).
+      seed control could be a future phase if signals warrant.
+
+**Modal-contained encounter refactor (Phase 63 parent +
+sub-phases, filed via `/oversight` 2026-05-21, 23rd call).**
+Promoted from `plan/AUDIT.md` [9.8] row after user signaled
+top priority: "KEEP the full encounter inside the modal, the
+user cannot exit the modal until the encounter is resolved.
+Keep it all living inside the same modal opened during the
+encounter trigger." Current flow routes FIGHT to a separate
+`/combat` tab via `router.replace('/combat')`; user wants
+the encounter to live entirely inside `EncounterModalOverlay`
+until resolution + aftermath.
+
+This may resolve the [9.8] "Base combat mechanics not wired
+into UI" bug as a side effect (the router transition may be
+part of why selections don't visibly drive combat). If not,
+that row gets revisited via `/iterate` once Phase 63 lands.
+
+- [parent] Phase 63 — Modal-contained encounter. Tracks the
+      whole refactor; sub-phases 63a–63d are the work units.
+      Closes when 63d ships clean (or user signals "modal
+      complete" via `/oversight`).
+- [ ] Phase 63a — Extract combat UI from `(tabs)/combat.tsx`
+      into a reusable `<CombatPanel>` component at
+      `components/combat/CombatPanel.tsx`. The existing screen
+      becomes a thin shell that mounts `<CombatPanel>`. Internal
+      sub-pickers (StancePhase / ActionPhase / SkillPhase /
+      ResolvePanel) stay; only the outermost wrap changes.
+      Tests: existing combat e2e suite passes unchanged
+      (CombatPanel is the same VM consumer just renamed). +1
+      hermetic case that the new module exports the expected
+      surface. Commit: `feat(spec63a): extract CombatPanel from
+      combat tab`.
+- [ ] Phase 63b — Mount `<CombatPanel>` inside
+      `EncounterModalOverlay` after the player commits FIGHT.
+      The overlay grows a `mode` state machine
+      (`'prelude' | 'combat' | 'aftermath'`); FIGHT transitions
+      `prelude → combat`. The `router.replace('/combat')` call
+      in `app/(tabs)/exploration/index.tsx`'s
+      `onEncounterFight` is removed; the modal stays mounted.
+      Tests: pin the overlay's three-mode shape; FIGHT
+      transition into combat mode; tap-outside is still
+      blocked. Commit: `feat(spec63b): combat lives inside
+      EncounterModalOverlay`.
+- [ ] Phase 63c — Wire aftermath dismissal back to exploration
+      from inside the modal. When the round ends (victory /
+      parley / flee), the overlay's mode transitions to
+      `'aftermath'` and shows the existing `<AftermathBanner>`
+      content; on its auto-dismiss the overlay unmounts cleanly
+      back to exploration. The current Phase 41 aftermath flow
+      (which runs on the exploration screen post-`/combat`
+      return) moves into the modal too. Tests: pin the
+      combat-end → aftermath → unmount sequence. Commit:
+      `feat(spec63c): aftermath in modal; route-replace gone`.
+- [ ] Phase 63d — Remove or repurpose the standalone
+      `/combat` route. The route file may stay as a no-op
+      redirect to exploration (so any deep link doesn't 404)
+      OR be deleted entirely. STRIFE tab visibility (Phase 50
+      tick D's tab mutex on `inCombat`) needs re-evaluation —
+      with combat in the modal, the STRIFE tab no longer hosts
+      it, so the tab can be removed from the bar permanently
+      (cf. Phase 42's `selectHasActiveCombatPrelude` mutex).
+      Tests: the route-registration harness adapts; smoke-
+      render covers the new modal-combat surface. Commit:
+      `feat(spec63d): retire /combat route; modal-combat is
+      canonical`.
+
+      **Out-of-scope for Phase 63** (re-file if needed):
+      combat-mechanics bug investigation (AUDIT [9.8] row stays
+      open; revisit via `/iterate` once 63 lands and re-test
+      the preview build); DEV-menu additions (62d/e stay
+      paused).
 
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh

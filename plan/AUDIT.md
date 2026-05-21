@@ -95,49 +95,45 @@
   rename to e.g. "mana" / lowercase
 - source: user 2026-05-21 (preview build)
 
-### [9.8] Combat regression — Base combat mechanics not wired into UI (STILL OPEN, USER ELEVATED)
+### [9.8] Combat regression — Base combat mechanics not wired into UI (DEFERRED behind Phase 63)
 
 - category: bug (combat blocking, architecture)
 - impact: 10 (combat completely non-functional — selections
   visible but no real combat resolution surfaces to player)
 - user re-confirmed 2026-05-21 oversight 22nd + escalated: "For
   body and mind, I can see that the selection is made, but it
-  doesn't effect the combat. So top priority now is to fully
-  wire in the base combat mechanics into the UI."
-- next: needs deeper diagnostic on what specifically "doesn't
-  affect the combat" means — visible phase advance? hidden?
-  damage / log entries appear? Combat-mechanic round
-  resolution? The toast diagnostic shipped at `169d44a` will
-  reveal more on next preview test. Possible roots:
-  (a) the engine `resolveCombatRound` resolves but produces
-      no visible output (log doesn't render, HP doesn't update)
-  (b) the screen advances phase visually but the round doesn't
-      actually fire
-  (c) Phase 21's `executeSkill` wiring broke the basic-action
-      paths somehow
+  doesn't effect the combat."
+- **wiring verified 2026-05-21 oversight 23rd:** structurally,
+  combat IS wired into the UI. The screen calls
+  `actions.startCombat`, `setPlayerStance`, `setPlayerAction`,
+  `resolveRound`; the action layer delegates to engine
+  reducers; 30+ e2e tests in `combat.engine.test.ts` exercise
+  the flow end-to-end and pass. The "doesn't effect combat"
+  is a runtime/UX symptom, not missing wiring.
+- next: deferred behind Phase 63 (modal-contained encounter).
+  The router transition (`router.replace('/combat')`) is
+  suspected to be part of why selections don't propagate
+  visibly; if Phase 63 removes the route transition the bug
+  may resolve as a side effect. If it remains after Phase 63,
+  revisit via `/iterate` with the diagnostic data from the
+  toast/console-log build (`169d44a`).
 - source: user 2026-05-21 (preview build, 2x)
 
-### [9.8] Encounter UX — keep entire encounter inside the modal (NEW)
+### [9.8] Encounter UX — keep entire encounter inside the modal (PROMOTED → Phase 63)
 
 - category: bug (UX architecture)
-- impact: 10 (user-stated top priority: "another top priority
-  is to KEEP the full encounter inside the modal, the user
-  cannot exit the modal until the encounter is resolved. Keep
-  it all living inside the same modal opened during the
-  encounter trigger")
-- ease: 3 (phase-sized refactor — combat UI currently lives
-  on /combat tab; needs to move into the EncounterModalOverlay
-  for the modal-contained flow)
-- next: file as a phase candidate via `/oversight` /expand. The
-  refactor reshapes how combat is presented:
-  - Current: user walks onto encounter node → EncounterModalOverlay
-    appears → user taps FIGHT → router.replace('/combat') →
-    separate tab takes over.
-  - Wanted: user walks onto encounter node → EncounterModalOverlay
-    appears → user taps FIGHT → modal expands / transitions
-    to contain the combat UI → combat resolves inside the
-    modal → modal dismisses to exploration (with aftermath
-    banner per current Phase 41 flow).
+- impact: 10 (user-stated top priority: "KEEP the full
+  encounter inside the modal, the user cannot exit the modal
+  until the encounter is resolved. Keep it all living inside
+  the same modal opened during the encounter trigger")
+- **promoted 2026-05-21 oversight 23rd → Phase 63 parent +
+  4 sub-phases:**
+  - 63a — extract combat UI into reusable `<CombatPanel>`
+  - 63b — mount `<CombatPanel>` inside `EncounterModalOverlay`
+  - 63c — wire aftermath dismissal in the modal
+  - 63d — retire the standalone `/combat` route
+- See `plan/steps/01_build_plan.md` for the full sub-phase
+  briefs.
 - source: user 2026-05-21 (preview build)
 
 ### [9.5] Combat regression — Heart stance cannot be selected (STILL OPEN)

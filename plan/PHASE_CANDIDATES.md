@@ -1,6 +1,6 @@
 # Phase candidates
 
-> Last pass: 2026-05-21 at commit a4cd86c
+> Last pass: 2026-05-21 at commit 3a36a2b
 > Pass count: 32
 > Posture: bold
 
@@ -9,36 +9,8 @@
 
 ## Pending
 
-### [score 5.5] Phase 62 — DEV-mode follow-up affordances
-
-- proposed: 2026-05-21, expand pass 32
-- source signals:
-  - **user-jot 7821f13** — the original DEV-mode expansion
-    request explicitly listed dialogue jump, quest state,
-    friendship counter, currency grant, combat-HUD overrides
-    as gaps. Phase 61's brief named these as "out of scope
-    for Phase 61; re-file as candidates if the user wants
-    them."
-  - **§G commit pattern** — Phase 61 a–f closed the
-    high-priority slice (XP / mana / alignment / effects /
-    event-kind). The named gaps remain.
-- rationale: completing the DEV-mode coverage per the
-  user-jot's stated intent. Each affordance is small (one
-  Debug* row, sibling to Phase 61's components). The
-  question for `/oversight` is whether they ship as a
-  Phase 62 parent + sub-phases (Phase 61 mold) or as
-  individual iterate-shaped rows.
-- proposed scope: 1 parent phase + 5 sub-phases (62a
-  dialogue jump, 62b quest state, 62c friendship counter,
-  62d currency grant, 62e combat-HUD overrides). Each sub-
-  phase ~1 tick. Mirrors Phase 61's shipping cadence.
-- estimated phases: 5–6 (1 parent + 5 sub-phases)
-- conflicts: user-jot's 0.5 bump (+0.5 cap-at-10 per iterate
-  §4 source bump) applies; otherwise no spec / contract
-  conflicts. DEV-only by `__DEV__` gate, no production
-  surface change.
-
-
+_(Empty — Phase 62 promoted via `/oversight` 2026-05-21 (21st
+call). See `## Promoted` section.)_
 
 <details>
 <summary>[promoted 2026-05-20 → status Phase 61 parent + 61a–61f] [score 6.0] DEV-mode coverage expansion (preserved for traceability)</summary>
@@ -258,6 +230,29 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted 2026-05-21 → status Phase 62 parent + 62a–62e] [score 5.5] Phase 62 — DEV-mode follow-up affordances
+
+- promoted via `/oversight` 2026-05-21 (21st call) — user
+  selected the parent-with-sub-ticks shape (Phase 61 mold)
+  over per-affordance iterate rows. Mirrors Phase 61's
+  shipping cadence and keeps the meta-feature trackable as a
+  unit.
+- Assigned **Phase 62** parent in `01_build_plan.md` Status
+  block; five sub-phases 62a–62e as `[ ]` rows. Dispatch in
+  listed order (62a → 62e), each one a `/ship-a-phase` tick.
+- source: user-jot `7821f13` deferred items per Phase 61's
+  out-of-scope list.
+- Sub-phase outline (full bodies in the build plan):
+  - 62a — dialogue tree jump (seeds dialogueCursor)
+  - 62b — quest state mutation (START / ADVANCE / COMPLETE)
+  - 62c — friendship counter override (+1 / RESET)
+  - 62d — currency grant (+100; may [skipped] pending engine
+    surface)
+  - 62e — combat-HUD spot overrides (HP / mind-marks)
+- Out-of-scope for Phase 62 (re-file later if needed): enemy
+  effect-apply (already Phase 61e), event-kind trigger
+  (already Phase 61f), RNG seed control.
 
 ### [promoted 2026-05-21 → status Phase 16] [score 8.5] Phase 16 unblock — wire engine skill selectors
 

@@ -1127,6 +1127,61 @@ listed order; each one is a `/ship-a-phase` dispatch.
       grant, combat-HUD spot overrides. The candidate body in
       `plan/PHASE_CANDIDATES.md` enumerates them.
 
+**DEV-mode follow-up affordances (Phase 62 parent + sub-phases,
+filed via `/oversight` 2026-05-21, 21st call).** Promoted from
+`plan/PHASE_CANDIDATES.md` [score 5.5] — the deferred items from
+user-jot `7821f13` that Phase 61 explicitly named as out of
+scope. User selected the parent-with-sub-ticks shape (Phase 61
+mold). Each sub-phase adds one Debug* row inside the existing
+DevMenu (Phase 61a wrapper); none change production surfaces.
+
+- [parent] Phase 62 — DEV-mode follow-up affordances. Tracks
+      the meta-feature; sub-phases 62a–62e are the actual work
+      units. Closes when 62e ships clean (or when the user
+      signals "62 complete" via `/oversight`).
+- [ ] Phase 62a — Dialogue tree jump. New `<DebugDialogueJump>`
+      row inside the DevMenu. Picker over engine's known
+      dialogue trees (from `getDialogueNode` / wider engine
+      registry); on press, seeds `state.event.dialogueCursor`
+      with the selected tree at its root node so the event
+      modal opens directly on that dialogue without needing
+      an NPC encounter. Tests render the picker, fire a jump,
+      assert the cursor + event slice are populated. Commit:
+      `feat(spec62a): dev-menu dialogue tree jump`.
+- [ ] Phase 62b — Quest state mutation. New `<DebugQuestState>`
+      row. Picker over engine's known quests (or a hardcoded
+      list if engine surface is opaque); buttons to START /
+      ADVANCE / COMPLETE the selected quest. Tests
+      pin: state.quests slice mutates per the action; memoir
+      tab's quests section reflects the change on the next
+      render. Commit: `feat(spec62b): dev-menu quest state`.
+- [ ] Phase 62c — Friendship counter override. New
+      `<DebugFriendship>` row. Two buttons: `+1` and `RESET`
+      (back to 0). Mutates `state.combat?.friendshipCounter`
+      when combat is active; warns + no-ops when no combat
+      (sibling pattern to `DebugEffectApply`'s enemy-debuff
+      branch). Tests pin the increment + reset + no-op branches.
+      Commit: `feat(spec62c): dev-menu friendship counter`.
+- [ ] Phase 62d — Currency grant. New `<DebugCurrencyGrant>`
+      row. Single `+100` button that adds to the player's
+      currency slice (engine field — verify shape first; may
+      not exist yet, in which case 62d defers as `[skipped]`
+      pending engine surface). Tests pin: amount added,
+      idempotent across stacked presses. Commit:
+      `feat(spec62d): dev-menu currency grant`.
+- [ ] Phase 62e — Combat-HUD spot overrides. New
+      `<DebugCombatOverrides>` panel with three slider/button
+      groups: player HP (set to 1 / max), enemy HP (set to 1 /
+      max), mind-marks (clear / +3). Only active during
+      combat; warns + no-ops otherwise. Tests pin: each
+      override mutates the right field of state.combat.
+      Commit: `feat(spec62e): dev-menu combat HUD overrides`.
+
+      **Out-of-scope for Phase 62** (re-file if needed):
+      enemy effect-apply (covered by Phase 61e's BLEED · FOE
+      button); event-kind trigger (covered by Phase 61f); RNG
+      seed control (could be a Phase 63 if signals warrant).
+
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh
 > `Phase 25 — Aesthetic toggle` candidate filed via

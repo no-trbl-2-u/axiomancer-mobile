@@ -3,6 +3,12 @@
 # dependencies
 node_modules/
 
+# Project canon is npm (package-lock.json). If a contributor runs
+# `pnpm install` it produces this stale parallel lockfile; keep it
+# out of the tree so it can't drift from package-lock.json or
+# mislead the loop's verify path.
+pnpm-lock.yaml
+
 # Expo
 .expo/
 dist/

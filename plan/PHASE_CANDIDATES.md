@@ -9,64 +9,6 @@
 
 ## Pending
 
-### [score 8.5] Phase 16 unblock — wire engine skill selectors, drain `combat.skills.fixture.ts` mock
-
-- proposed: 2026-05-21, expand pass 32
-- source signals:
-  - **§H plan gap** — `plan/steps/01_build_plan.md` Phase 16
-    row is `[skipped]` with the explicit unblock recipe:
-    "flip back to `[ ]` … once a new engine release lands
-    with the exports". Phase 60f (commit `a6cd028`) shipped
-    that release.
-  - **§G commit pattern** — engine 0.10.2 barrel
-    (`node_modules/axiomancer-mechanics/dist/index.d.ts:17`)
-    now re-exports `skillLibrary` and `getSkillById` from
-    `./Skills`. Validated end-to-end via Phase 60f's verify
-    pass.
-  - **CRITIQUE/AUDIT side-channel** — historical `[2.0]`
-    AUDIT row "`state/mocks/combat.skills.fixture.ts` still
-    mocks skills" + critique pass repeatedly noting the
-    fixture-vs-engine drift.
-- rationale: Phase 16's blocker was the engine's top-level
-  re-export of the skill API; that blocker is now gone. The
-  combat presenter still consumes the local fixture; engine-
-  driven skill resolution (Phase 21 candidate) is gated on
-  this fixture drain landing first.
-- proposed scope: 1 phase, 2 ticks. Tick A — replace fixture
-  imports in `combat.engine.ts` + actions with
-  `getSkillById(skillId)` from `axiomancer-mechanics`;
-  fixture file stays for test fixtures only (rename to
-  `combat.skills.test-fixture.ts` to make the role explicit).
-  Tick B — e2e coverage for the engine-skill round-trip
-  (skill picker → engine resolution → effect application).
-- estimated phases: 1
-- conflicts: depends on Phase 21 (engine-driven `executeSkill`
-  wiring) following directly — Phase 16 alone removes the
-  mock but doesn't yet route `action: 'skill'` through
-  `executeSkill`. They form a 2-phase chain.
-
-### [score 7.0] Phase 21 promotion — engine-driven `executeSkill` wiring
-
-- proposed: 2026-05-21, expand pass 32
-- source signals:
-  - **§H plan gap** — `plan/PHASE_CANDIDATES.md` Considered
-    section already carries Phase 21 at [score 6.0]; bumped
-    with engine-release unblock.
-  - **§G commit pattern** — engine 0.10.2 exports
-    `executeSkill` from the public barrel (validated against
-    `dist/index.d.ts:17`).
-- rationale: Phase 16 surface this as out-of-scope follow-up.
-  Now that Phase 16 can ship, Phase 21 is the natural next
-  step: stop downgrading `action: 'skill'` → `'attack'` in
-  `resolveRound`; pass real `skillLookup` built from
-  `getSkillById`; drain placeholder mana model in favour of
-  engine per-resource pools; combat log surfaces engine-
-  emitted `SkillPhaseEvent` rows.
-- proposed scope: 1 phase, 2–3 ticks (per the existing
-  Considered row's scope estimate).
-- estimated phases: 1
-- conflicts: depends on Phase 16 landing first.
-
 ### [score 5.5] Phase 62 — DEV-mode follow-up affordances
 
 - proposed: 2026-05-21, expand pass 32
@@ -316,6 +258,34 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted 2026-05-21 → status Phase 16] [score 8.5] Phase 16 unblock — wire engine skill selectors
+
+- promoted via `/oversight` 2026-05-21 (20th call) — user
+  selected "Promote 16 + 21 (the chain together)". Phase 60f
+  shipped engine 0.10.2 which satisfies the [skipped] flip-back
+  trigger documented in the original Phase 16 row body.
+- The Phase 16 row in `01_build_plan.md` flipped from `[skipped]`
+  → `[ ]` in the same oversight commit. Brief at
+  `plan/phases/phase_16_engine_skills.md`.
+- Scope (single phase, 2 ticks): replace fixture imports with
+  engine `getSkillById`; rename `combat.skills.fixture.ts` →
+  `combat.skills.test-fixture.ts`; e2e for the engine-skill
+  round-trip.
+- Forms a chain with Phase 21 (promoted in the same oversight
+  pass — see below).
+
+### [promoted 2026-05-21 → status Phase 21] [score 7.0] Phase 21 — engine-driven `executeSkill` wiring
+
+- promoted via `/oversight` 2026-05-21 (20th call) alongside
+  Phase 16 as the second link of the 2-phase chain.
+- Ships AFTER Phase 16 lands clean. Engine `executeSkill` is
+  exported from the 0.10.2 barrel; Phase 16's fixture drain
+  produces the `skillLookup` shape this phase needs.
+- Scope (single phase, 2–3 ticks): `resolveRound` routes
+  `action: 'skill'` through `executeSkill`; combat log
+  consumes `SkillPhaseEvent`; optional follow-up tick for
+  engine per-resource mana model.
 
 ### [promoted 2026-05-20 → status Phase 61 parent + 61a–61f] [score 6.0] DEV-mode coverage expansion
 

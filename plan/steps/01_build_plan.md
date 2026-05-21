@@ -136,23 +136,46 @@ commit that ships the phase.
       zero-fills otherwise). Drop the `(player as any)` casts
       and `?? 0` fallbacks introduced in Phase 14. See commit
       `c8e29a8`.
-- [skipped] Phase 16 — Drain `combat.skills.fixture.ts` mock: wire
-      engine skill selectors into the combat presenter. Promoted
-      from `plan/PHASE_CANDIDATES.md` via `/oversight` on
-      2026-05-15 (score 5.5). Brief at
-      `plan/phases/phase_16_engine_skills.md`. **Skipped
-      2026-05-15 — same pattern as Phase 6:** the work is fully
-      designed, but it's blocked on an upstream package release.
-      `axiomancer-mechanics@0.6.0` does not re-export
-      `skillLibrary` / `getSkillById` from its top-level index,
-      and its published dist is missing several `types.d.ts`
-      files that would let us deep-import. Engine release must
-      add either the top-level re-export OR a complete `./Skills`
-      subpath export (see the brief's "BLOCKED" header for the
-      recipe). The `[skipped]` marker stops `/march` from
-      re-attempting `/ship-a-phase` every tick; flip back to
-      `[ ]` (or let `/oversight` flip it) once a new engine
-      release lands with the exports.
+- [ ] Phase 16 — Drain `combat.skills.fixture.ts` mock: wire
+      engine skill selectors into the combat presenter.
+      **Unblocked 2026-05-21 via `/oversight` (20th call):** Phase
+      60f shipped engine 0.10.2 (commit `a6cd028`) which exports
+      `skillLibrary` + `getSkillById` from the top-level barrel
+      (`node_modules/axiomancer-mechanics/dist/index.d.ts:17`).
+      The [skipped] flip-back trigger documented in the original
+      row body has fired; row is back to active `[ ]` and ready
+      for `/march` dispatch.
+      Original promotion: 2026-05-15 via `/oversight` (score 5.5).
+      Brief at `plan/phases/phase_16_engine_skills.md`.
+      Re-promoted via `/oversight` 2026-05-21 (20th call) at score
+      **8.5** — engine-release unblock + cascade-unlocking effect
+      for Phase 21.
+      Scope (per the candidate row in PHASE_CANDIDATES.md):
+      Tick A — replace fixture imports in
+      `state/presenters/combat.engine.ts` + `state/actions.ts` with
+      `getSkillById(skillId)`; rename
+      `state/mocks/combat.skills.fixture.ts` →
+      `state/mocks/combat.skills.test-fixture.ts` to make the
+      role explicit. Tick B — e2e coverage for the engine-skill
+      round-trip (skill picker → engine resolution → effect
+      application).
+      Commit: `feat(spec16): wire engine skill selectors — drain
+      combat.skills.fixture.ts mock`.
+- [ ] Phase 21 — Engine-driven `executeSkill` wiring. Promoted
+      via `/oversight` 2026-05-21 (20th call) from
+      `plan/PHASE_CANDIDATES.md` Considered (score 7.0).
+      Forms a 2-phase chain with Phase 16: ships AFTER 16 lands.
+      Stop downgrading `action: 'skill'` → `'attack'` in
+      `resolveRound`; pass real `skillLookup` built from
+      `getSkillById`; drain the placeholder mana model in favour
+      of engine per-resource pools; combat log surfaces
+      engine-emitted `SkillPhaseEvent` rows.
+      Scope: 1 phase, 2–3 ticks. Tick A — `skillLookup` wiring +
+      `resolveRound` routes `action: 'skill'` through
+      `executeSkill`. Tick B — combat log consumes
+      `SkillPhaseEvent`. Tick C (if needed) — engine per-resource
+      mana model wiring (or defer per current scope estimate).
+      Commit: `feat(spec21): engine-driven executeSkill wiring`.
 - [x] Phase 17 — Token Crucible: five-resource pool UI (port
       from design handoff). Shipped in commit `261a238`
       ("feat: Token Crucible — port five-resource pool UI from

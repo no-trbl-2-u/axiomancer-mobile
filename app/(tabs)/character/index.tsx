@@ -6,6 +6,7 @@ import { AestheticDevToggle } from '@/components/AestheticDevToggle';
 import { DebugChaosToggle } from '@/components/DebugChaosToggle';
 import { DebugCombatButton } from '@/components/DebugCombatButton';
 import { DebugAlignmentShift } from '@/components/DebugAlignmentShift';
+import { DebugDialogueJump } from '@/components/DebugDialogueJump';
 import { DebugEffectApply } from '@/components/DebugEffectApply';
 import { DebugEventKindForce } from '@/components/DebugEventKindForce';
 import { DebugManaControl } from '@/components/DebugManaControl';
@@ -246,6 +247,7 @@ export default function CharacterScreen() {
         <DebugAlignmentShift />
         <DebugEffectApply />
         <DebugEventKindForce />
+        <DebugDialogueJump />
       </DevMenu>
     </ScreenBg>
   );

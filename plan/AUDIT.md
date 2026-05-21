@@ -78,19 +78,14 @@
 
 ## Pending
 
-### [3.2] `components/FriendshipMeter.tsx` has no colocated test coverage
-
-- category: tests
-- impact: 4 (combat-HUD heart counter — value-driven fill state
-  + compact-mode SECTION-LABEL toggle; silent drift would
-  desync the displayed N/max from the actual friendshipCounter)
-- ease: 8 (pure presentation, 49 LOC, no async)
-- next: add `components/__tests__/FriendshipMeter.test.tsx` —
-  default render, fill count matches `value`, compact hides
-  SECTION label, counter text reflects value/max
-- source: iterate audit 2026-05-21
+_(Empty.)_
 
 ## Done
+
+### [3.2] `components/FriendshipMeter.tsx` colocated test coverage ✅
+- Resolved 2026-05-21 (commit `ebd1fe1`). Added 9 hermetic cases
+  pinning heart count, fill semantics, counter text, and the
+  compact label-toggle. 820/820 green at land (+9 over 811).
 
 ### [3.5] `components/EffectChip.tsx` colocated test coverage ✅
 

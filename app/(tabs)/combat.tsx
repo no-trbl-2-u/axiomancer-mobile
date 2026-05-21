@@ -120,8 +120,12 @@ export function CombatPanel() {
     } = useCombatMode();
     const { mode: aesthetic } = useAesthetic();
     const combat = useGameState((s) => s.combat);
-    const [selectedStance, setSelectedStance] = useState<StanceKey>('heart');
-    const vm = useCombatViewModel({ selectedStance });
+    // Phase 65 Tick B — no default starting stance. `null` until the
+    // player taps a stance card; the picker shows no card pre-highlighted
+    // on combat entry. Was previously `'heart'`, which surfaced as a
+    // user-confusing "Heart is already selected" UX.
+    const [selectedStance, setSelectedStance] = useState<StanceKey | null>(null);
+    const vm = useCombatViewModel({ selectedStance: selectedStance ?? undefined });
     const actions = useGameActions();
     const [toast, setToast] = useState<string | null>(null);
 
@@ -585,7 +589,8 @@ function StancePhase({
     a11yLabels,
 }: {
     options: readonly StanceOption[];
-    selected: StanceKey;
+    /** `null` = no card highlighted (no default stance). Phase 65 Tick B. */
+    selected: StanceKey | null;
     onPick: (s: StanceKey) => void;
     a11yLabels: { stanceHeart: string; stanceBody: string; stanceMind: string };
 }) {

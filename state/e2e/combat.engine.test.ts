@@ -139,6 +139,32 @@ describe('selectCombatViewModel: active combat', () => {
         expect(vm.enemy.hpRatio).toBeLessThanOrEqual(1);
     });
 
+    it('stancePicker.selected is null on combat entry with no committed stance + no localUi preview (Phase 65 Tick B — no default stance)', () => {
+        mockFixedRng(0.5);
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        actions.startCombat(makeEnemy());
+
+        // Engine combat just started: `combat.phase === 'choosing_stance'`
+        // and `combat.playerChoice.stance` is unset. No localUi
+        // preview is passed. Pre-Phase-65-Tick-B this returned
+        // `'heart'` (fallback default), surfacing as Heart pre-
+        // highlighted in the picker. The Tick B contract: no card
+        // is highlighted until the player commits one.
+        const vm = selectCombatViewModel(store.getState());
+        expect(vm.phase).toBe('choosing_stance');
+        expect(vm.stancePicker.selected).toBeNull();
+    });
+
+    it('stancePicker.selected is null on the no-combat fallback too (no localUi)', () => {
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const vm = selectCombatViewModel(store.getState());
+        // combat is null on the idle store; the fallback path must
+        // also honor no-default-stance.
+        expect(vm.isInCombat).toBe(false);
+        expect(vm.stancePicker.selected).toBeNull();
+    });
+
     it('previews the selected stance via localUi without mutating engine state', () => {
         mockFixedRng(0.5);
         const store = createAppStore({ adapter: createMemoryAdapter() });

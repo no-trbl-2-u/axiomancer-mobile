@@ -144,8 +144,14 @@ export interface StanceOption {
 
 export interface StancePickerSlice {
     options: readonly StanceOption[];
-    /** The stance the player has currently selected/previewed (defaults to first). */
-    selected: StanceKey;
+    /**
+     * The stance the player has currently selected/previewed. `null`
+     * when nothing is selected yet — Phase 65 Tick B dropped the
+     * `'heart'` default so no stance card appears pre-highlighted
+     * on combat entry. The screen treats `null` as "no card
+     * highlighted" (no `isSel` matches).
+     */
+    selected: StanceKey | null;
     /** False when the engine state isn't ready to accept a commit. */
     canConfirm: boolean;
 }
@@ -947,10 +953,10 @@ export function selectCombatViewModel(
     if (combat === null) {
         const stancePicker: StancePickerSlice = {
             options: buildStanceOptions(state.player?.derivedStats, null),
-            selected: localUi.selectedStance ?? 'heart',
+            selected: localUi.selectedStance ?? null,
             canConfirm: false,
         };
-        const skillPicker = buildSkillPicker(stancePicker.selected, 0, 0);
+        const skillPicker = buildSkillPicker(stancePicker.selected ?? 'heart', 0, 0);
         const vm = {
             isInCombat: false,
             phase: 'choosing_stance' as CombatPhaseKey,
@@ -1033,10 +1039,14 @@ export function selectCombatViewModel(
         effects: playerEffectsRaw.slice(0, MAX_EFFECTS_SHOWN).map(classifyEffect),
     };
 
-    const previewStance: StanceKey =
+    // Phase 65 Tick B — no default stance. `previewStance` is `null`
+    // until the player either previews via `localUi.selectedStance`
+    // (React-side selection) or commits via the engine
+    // `playerChoice.stance`. The screen reads `null` as "no card
+    // highlighted" so combat entry shows no pre-selected stance.
+    const previewStance: StanceKey | null =
         localUi.selectedStance
-            ?? toStanceKey(c.playerChoice?.stance ?? null)
-            ?? 'heart';
+            ?? toStanceKey(c.playerChoice?.stance ?? null);
 
     const stancePicker: StancePickerSlice = {
         options: buildStanceOptions(playerEntity.derivedStats, enemy.lastStance),
@@ -1044,7 +1054,11 @@ export function selectCombatViewModel(
         canConfirm: phase === 'choosing_stance',
     };
 
-    const skillPicker = buildSkillPicker(previewStance, player.mana, player.manaMax);
+    // The skill picker still needs a concrete stance for its internal
+    // "wrong-stance" gating; default to `'heart'` for that computation
+    // only — the VM's stance/skill UIs are separate surfaces and the
+    // picker is invisible until the player commits a stance anyway.
+    const skillPicker = buildSkillPicker(previewStance ?? 'heart', player.mana, player.manaMax);
 
     const phaseIndex: number = phase === 'ended' ? -1 : PHASE_ORDER.indexOf(phase);
     const friendshipCounter = Number(c.friendshipCounter ?? 0);

@@ -1284,31 +1284,17 @@ Phase 63 (`ce90615`, `d460b64`, plus this oversight) all
 addressed regressions that would have surfaced earlier with
 multi-screen integration coverage.
 
-- [ ] Phase 64 — Multi-screen integration test harness. Three
-      hermetic Jest cases mounted with the full provider stack
-      (`AestheticModeProvider` + `CombatModeProvider` +
-      `GameStoreProvider`) so multi-component interactions are
-      exercised before reaching the preview build:
-      - Tick A — extract a `withAllProviders(child)` helper
-        into `test-utils/withAllProviders.tsx`; the existing
-        inline copies in `EncounterModalOverlay.test.tsx`
-        consolidate around the new helper.
-      - Tick B — write `state/e2e/encounter-flow.engine.test.tsx`:
-        (1) simulate exploration mount with a player on an
-        encounter node; assert `EncounterModalOverlay`
-        mounts. (2) Simulate FIGHT tap; assert (a)
-        `inEncounterModal` flips true, (b) modal stays
-        mounted across the event-slice clear (would have
-        caught `d460b64`'s regression). (3) Simulate a
-        non-encounter node tap; assert modal does NOT mount.
-      - Tick C — write `state/e2e/combat-in-modal.engine.test.tsx`:
-        simulate combat resolution flow inside the modal —
-        stance tap → action tap → resolveRound → assert
-        `combat.phase === 'resolving'` AND `vm.phase ===
-        'resolving'` (would have caught the open [9.8] row's
-        runtime symptom if it's a render/memo issue).
-      - Commit: `feat(spec64): multi-screen integration test
-        harness — provider helper + 2 flow suites`.
+- [x] Phase 64 — Multi-screen integration test harness. Shipped
+      `a4c0c4b` — `feat(spec64): multi-screen integration test
+      harness — provider helper + encounter-flow suite`. Ticks
+      A-C shipped together: `test-utils/withAllProviders.tsx`
+      bundles the four contexts; `encounter-flow.engine.test.tsx`
+      adds 5 hermetic cases (3 overlay-lifecycle + 2 combat-
+      action engine mutation). The combat-action cases PASSED,
+      confirming engine + action layer mutate state correctly
+      end-to-end — narrowing the [9.8] combat-mechanics row's
+      candidate roots from A/B/C/D to A or C (layout-or-memo,
+      not engine). 911/911 green (was 906).
 
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh

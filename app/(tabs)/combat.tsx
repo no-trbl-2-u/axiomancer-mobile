@@ -139,6 +139,19 @@ export function CombatPanel() {
 
     const store = useGameStore();
 
+    if (__DEV__) {
+        // Phase-64 follow-up diagnostic — log every CombatPanel
+        // render with current vm.phase + engine combat.phase. If
+        // engine phase advances but vm.phase doesn't on the same
+        // render, that's hypothesis C (memo doesn't refire).
+        // eslint-disable-next-line no-console
+        console.log(
+            '[CombatPanel.render] vm.phase=', vm.phase,
+            'engine.combat.phase=', combat?.phase ?? 'null',
+            'isInCombat=', vm.isInCombat,
+        );
+    }
+
     const onPickStance = useCallback((stance: StanceKey) => {
         if (__DEV__) {
             // Phase-62-bug-sweep diagnostic 2026-05-21 (user-direct):

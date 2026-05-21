@@ -10,6 +10,7 @@ import { DebugDialogueJump } from '@/components/DebugDialogueJump';
 import { DebugEffectApply } from '@/components/DebugEffectApply';
 import { DebugQuestState } from '@/components/DebugQuestState';
 import { DebugEventKindForce } from '@/components/DebugEventKindForce';
+import { DebugFriendship } from '@/components/DebugFriendship';
 import { DebugManaControl } from '@/components/DebugManaControl';
 import { DebugMapResetButton } from '@/components/DebugMapResetButton';
 import { DebugPresetPicker } from '@/components/DebugPresetPicker';
@@ -250,6 +251,7 @@ export default function CharacterScreen() {
         <DebugEventKindForce />
         <DebugDialogueJump />
         <DebugQuestState />
+        <DebugFriendship />
       </DevMenu>
     </ScreenBg>
   );

@@ -7,6 +7,7 @@ import { DebugChaosToggle } from '@/components/DebugChaosToggle';
 import { DebugCombatButton } from '@/components/DebugCombatButton';
 import { DebugAlignmentShift } from '@/components/DebugAlignmentShift';
 import { DebugEffectApply } from '@/components/DebugEffectApply';
+import { DebugEventKindForce } from '@/components/DebugEventKindForce';
 import { DebugManaControl } from '@/components/DebugManaControl';
 import { DebugMapResetButton } from '@/components/DebugMapResetButton';
 import { DebugPresetPicker } from '@/components/DebugPresetPicker';
@@ -244,6 +245,7 @@ export default function CharacterScreen() {
         <DebugManaControl />
         <DebugAlignmentShift />
         <DebugEffectApply />
+        <DebugEventKindForce />
       </DevMenu>
     </ScreenBg>
   );

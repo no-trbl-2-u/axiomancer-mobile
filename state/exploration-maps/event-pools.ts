@@ -478,6 +478,29 @@ export function setChaosMode(on: boolean): void {
     }
 }
 
+/**
+ * Phase 61f — DEV-only per-node event-kind override. Targets the
+ * current node with a pool matching the requested kind so the
+ * next `resolveMapEvent` fires that kind regardless of the node's
+ * canonical type. Sibling to `setChaosMode` but per-node + per-kind
+ * rather than chaos-wide.
+ *
+ * No-op in production (`__DEV__` false). Returns `true` if the
+ * override was applied, `false` if the kind has no matching pool
+ * (or `__DEV__` is false).
+ */
+export function forceEventKindOnNode(
+    mapId: string,
+    nodeId: string,
+    kind: NodeType,
+): boolean {
+    if (!__DEV__) return false;
+    const poolId = poolIdForNode(mapId, nodeId, kind);
+    if (poolId === null) return false;
+    setNodeEventPoolOverride(CONTINENT, mapId, nodeId, poolId);
+    return true;
+}
+
 // Auto-register on module load. The pool registry is global engine
 // state; one registration at app boot is sufficient.
 registerExplorationEventPools();

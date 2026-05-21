@@ -1070,16 +1070,15 @@ listed order; each one is a `/ship-a-phase` dispatch.
       DevMenu tests (DEV gate true/false, collapsed default,
       expand on press, toggle round-trip, initiallyExpanded
       shortcut). 766/766 green (was 760).
-- [ ] Phase 61b — XP + level-up affordance. New
-      `<DebugXpGrant>` row inside the DevMenu (post-61a).
-      Two buttons: `+100 XP` and `FORCE LEVEL UP`.
-      Exercises `character:levelup` event,
-      `notifications.levelUpAcknowledged`, and the
-      character-tab level badge. Hermetic test: pressing
-      grant adds XP via engine action; pressing force-up
-      threads to the next level boundary and emits the typed
-      event. Commit: `feat(spec61b): dev-menu XP + level-up
-      grant`.
+- [x] Phase 61b — XP + level-up affordance. Shipped
+      `5fef0fd` — `feat(spec61b): dev-menu XP + level-up grant`.
+      New `<DebugXpGrant>` row with two buttons (+100 XP /
+      LEVELUP). LEVELUP seeds experience to threshold then
+      dispatches engine `levelUp()`; the engine reducer loops
+      through stacked level-ups and emits `character:levelup`,
+      which flips `notifications.levelUpAcknowledged` false and
+      re-arms the character-tab badge. +7 hermetic tests. 773/773
+      green (was 766).
 - [ ] Phase 61c — Mana drain/restore. `<DebugManaSlider>`
       (or two buttons: `DRAIN` / `FULL`). Mutates the mobile
       `combatMana` slice from Phase 60d. Tests skill-picker

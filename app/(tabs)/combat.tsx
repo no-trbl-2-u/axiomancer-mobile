@@ -536,7 +536,12 @@ function StancePhase({
                                     </Text>
                                 </View>
                             )}
-                            <View style={stance_styles.glyphWrap}>
+                            {/* Phase-62 bug-sweep 2026-05-21: pointerEvents='none'
+                                so the SVG can't consume taps that should reach
+                                the surrounding TouchableOpacity. The Heart glyph
+                                renders via SvgXml which can intercept touches
+                                inside the SVG bounding box on some platforms. */}
+                            <View style={stance_styles.glyphWrap} pointerEvents="none">
                                 <StanceGlyph kind={opt.key} size={48} color={accent} />
                             </View>
                             <Text style={[stance_styles.stanceName, { color: accent }]}>{opt.label}</Text>

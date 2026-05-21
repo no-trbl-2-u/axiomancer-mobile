@@ -46,7 +46,7 @@ describe('debugSeed: items + skills + map reset', () => {
         const equipmentSlots = new Set(
             after
                 .filter((i: { category: string }) => i.category === 'equipment')
-                .map((i: { slot?: string }) => i.slot),
+                .map((i) => (i as { slot?: string }).slot),
         );
         expect(equipmentSlots.has('head')).toBe(true);
         expect(equipmentSlots.has('body')).toBe(true);

@@ -7,7 +7,12 @@
 
 import { createGameStore, createEnemy } from 'axiomancer-mechanics';
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
-import { createAppStore, EMPTY_EVENT_SLICE, type AppStore } from '@/state/store';
+import {
+    createAppStore,
+    EMPTY_EVENT_SLICE,
+    DEFAULT_NOTIFICATIONS_SLICE,
+    type AppStore,
+} from '@/state/store';
 import {
     selectActiveTab,
     selectTabBadges,
@@ -112,7 +117,7 @@ describe('navigation.engine', () => {
                     experience: player.experienceToNextLevel ?? 100,
                     experienceToNextLevel: player.experienceToNextLevel ?? 100,
                 } as never,
-                notifications: { levelUpAcknowledged: false },
+                notifications: { ...DEFAULT_NOTIFICATIONS_SLICE, levelUpAcknowledged: false },
             });
 
             const result = selectTabBadges(store.getState());
@@ -129,7 +134,7 @@ describe('navigation.engine', () => {
                     experience: player.experienceToNextLevel ?? 100,
                     experienceToNextLevel: player.experienceToNextLevel ?? 100,
                 } as never,
-                notifications: { levelUpAcknowledged: true },
+                notifications: { ...DEFAULT_NOTIFICATIONS_SLICE, levelUpAcknowledged: true },
             });
 
             const result = selectTabBadges(store.getState());
@@ -147,7 +152,7 @@ describe('navigation.engine', () => {
                     experience: player.experienceToNextLevel ?? 100,
                     experienceToNextLevel: player.experienceToNextLevel ?? 100,
                 } as never,
-                notifications: { levelUpAcknowledged: true },
+                notifications: { ...DEFAULT_NOTIFICATIONS_SLICE, levelUpAcknowledged: true },
             });
             // No badge yet (acknowledged).
             expect(selectTabBadges(store.getState()).character).toBeNull();
@@ -178,7 +183,7 @@ describe('navigation.engine', () => {
                         event: { kind: 'rest', healed: 1 },
                     },
                 },
-                notifications: { levelUpAcknowledged: false },
+                notifications: { ...DEFAULT_NOTIFICATIONS_SLICE, levelUpAcknowledged: false },
             });
 
             const result = selectTabBadges(store.getState());

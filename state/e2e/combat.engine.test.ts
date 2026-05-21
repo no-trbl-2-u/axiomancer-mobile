@@ -53,7 +53,7 @@ function makeEnemy(overrides: Partial<Parameters<typeof createEnemy>[0]> = {}) {
 
 describe('selectCombatViewModel: no combat', () => {
     it('returns a totally-shaped VM with isInCombat=false when no combat is active', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
 
         const vm = selectCombatViewModel(store.getState());
 
@@ -82,7 +82,7 @@ describe('selectCombatViewModel: no combat', () => {
     });
 
     it('exposes the composed HUD slice (hpPercent, manaPercent, effects)', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const vm = selectCombatViewModel(store.getState());
 
         expect(vm.hud).toBeDefined();
@@ -94,7 +94,7 @@ describe('selectCombatViewModel: no combat', () => {
     });
 
     it('exposes accessibility labels for all interactive elements (Phase 10)', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const vm = selectCombatViewModel(store.getState());
 
         expect(vm.a11y).toBeDefined();
@@ -124,7 +124,7 @@ describe('selectCombatViewModel: no combat', () => {
 describe('selectCombatViewModel: active combat', () => {
     it('reads enemy data from the active combat slice after startCombat', () => {
         mockFixedRng(0.5);
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         store.getState().startCombat(makeEnemy());
 
         const vm = selectCombatViewModel(store.getState());
@@ -229,7 +229,7 @@ describe('selectCombatViewModel: stance picker', () => {
     });
 
     it('flags stances neutral when the enemy has not yet revealed', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         store.getState().startCombat(makeEnemy());
 
         const vm = selectCombatViewModel(store.getState());
@@ -240,7 +240,7 @@ describe('selectCombatViewModel: stance picker', () => {
 
     // Phase 47 port — stance gloss copy (prototype.jsx:285-287).
     it('each stance option ships its lowercase two-word gloss (Phase 47)', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         store.getState().startCombat(makeEnemy());
 
         const vm = selectCombatViewModel(store.getState());
@@ -296,7 +296,7 @@ describe('selectCombatViewModel: stance picker', () => {
 describe('selectCombatViewModel: skill picker', () => {
     it('disables every skill that does not match the selected stance', () => {
         mockFixedRng(0.5);
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         store.getState().startCombat(makeEnemy());
         const vm = selectCombatViewModel(store.getState(), { selectedStance: 'body' });
 
@@ -337,7 +337,7 @@ describe('selectCombatViewModel: skill picker', () => {
 
     it('reports an availableCount in [0, totalCount]', () => {
         mockFixedRng(0.5);
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         store.getState().startCombat(makeEnemy());
         const vm = selectCombatViewModel(store.getState(), { selectedStance: 'heart' });
         expect(vm.skillPicker.availableCount).toBeGreaterThanOrEqual(0);
@@ -483,7 +483,7 @@ describe('terminal: max friendship ⇒ friendship win', () => {
 
 describe('selectCombatViewModel: invariants', () => {
     it('every string field is defined (never undefined) when no combat is active', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const vm = selectCombatViewModel(store.getState());
 
         expect(typeof vm.enemy.name).toBe('string');
@@ -516,7 +516,7 @@ describe('selectCombatViewModel: invariants', () => {
     });
 
     it('the returned VM is deep-frozen down to nested objects and arrays', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const vm = selectCombatViewModel(store.getState());
 
         expect(Object.isFrozen(vm)).toBe(true);
@@ -532,7 +532,7 @@ describe('selectCombatViewModel: invariants', () => {
 
     it('friendshipCounterMax always equals the engine constant', () => {
         mockFixedRng(0.5);
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
 
         const before = selectCombatViewModel(store.getState());
         store.getState().startCombat(makeEnemy());
@@ -609,7 +609,7 @@ describe('selectCombatViewModel: store lifecycle', () => {
 
     it('isInCombat flips on startCombat and resets on endCombat', () => {
         mockFixedRng(0.5);
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
 
         expect(selectCombatViewModel(store.getState()).isInCombat).toBe(false);
 
@@ -627,21 +627,21 @@ describe('selectCombatViewModel: store lifecycle', () => {
 
 describe('selectCombatViewModel: presenter-sourced ritual copy', () => {
     it('exposes a battle-log placeholder so the screen renders no literal copy', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const vm = selectCombatViewModel(store.getState());
 
         expect(vm.logEmptyMessage).toBe('The air shivers. Combat begins.');
     });
 
     it('exposes the flee-row sub-label so the action picker renders no literal copy', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const vm = selectCombatViewModel(store.getState());
 
         expect(vm.actionPicker.fleeHint).toBe('or … flee like a craven (luck save)');
     });
 
     it('still surfaces both copy fields once combat is active', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         store.getState().startCombat(makeEnemy());
         const vm = selectCombatViewModel(store.getState());
 
@@ -652,7 +652,7 @@ describe('selectCombatViewModel: presenter-sourced ritual copy', () => {
     });
 
     it('exposes itemMessage so the combat screen renders no literal item-toast copy', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const idle = selectCombatViewModel(store.getState());
 
         expect(idle.actionPicker.itemMessage).toBe('Hands are empty.');
@@ -668,7 +668,7 @@ describe('selectCombatViewModel: presenter-sourced ritual copy', () => {
         // encounter is blank." The VM now surfaces visible copy that
         // the screen renders during the brief mount → bootstrap
         // window so the screen never collapses to a void.
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const idle = selectCombatViewModel(store.getState());
 
         expect(typeof idle.loadingMessage).toBe('string');
@@ -695,7 +695,7 @@ describe('selectCombatViewModel: presenter-sourced ritual copy', () => {
 
 describe('selectCombatViewModel: phaseStack contract (Tick C)', () => {
     it('emits a 4-entry stack on the no-combat fallback with stance current and the rest future', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const vm = selectCombatViewModel(store.getState());
 
         expect(vm.phaseStack).toHaveLength(4);
@@ -712,7 +712,7 @@ describe('selectCombatViewModel: phaseStack contract (Tick C)', () => {
     });
 
     it('emits the labels the screen renders verbatim (I·STAND, II·DO, III·CRAFT, IV·LET)', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const vm = selectCombatViewModel(store.getState());
 
         expect(vm.phaseStack[0]?.label).toBe('I · STAND');
@@ -722,7 +722,7 @@ describe('selectCombatViewModel: phaseStack contract (Tick C)', () => {
     });
 
     it('hides the skill row on the no-combat fallback (action not yet picked as skill)', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const vm = selectCombatViewModel(store.getState());
 
         const byKey = Object.fromEntries(vm.phaseStack.map((e) => [e.key, e.visible]));
@@ -813,7 +813,7 @@ describe('selectCombatViewModel: phaseStack contract (Tick C)', () => {
     });
 
     it('every entry object is frozen so React.memo on the row sees stable references', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const vm = selectCombatViewModel(store.getState());
         for (const entry of vm.phaseStack) {
             expect(Object.isFrozen(entry)).toBe(true);
@@ -860,7 +860,7 @@ describe('selectCombatViewModel: phaseStack contract (Tick C)', () => {
 
 describe('selectCombatViewModel: resolve.nextActionLabel', () => {
     it('returns NEXT ROUND on the no-combat fallback (idle store)', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const vm = selectCombatViewModel(store.getState());
 
         expect(vm.resolve.nextActionLabel).toBe('✠ NEXT ROUND');

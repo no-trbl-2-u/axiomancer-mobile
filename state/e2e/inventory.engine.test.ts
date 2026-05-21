@@ -90,7 +90,7 @@ function tooth(): QuestItem {
 }
 
 function makeStore(items: readonly Item[]) {
-    const store = createGameStore(createMemoryAdapter());
+    const store = createAppStore({ adapter: createMemoryAdapter() });
     const state = store.getState();
     const player = { ...state.player, inventory: [...items] };
     store.setState({ player });
@@ -381,7 +381,7 @@ describe('useItem action: HP delta + stack decrement', () => {
             health: 5,
             inventory: [potion('phial', 6, 3)],
         };
-        const store = createGameStore(createMemoryAdapter(), { player: damagedPlayer });
+        const store = createAppStore({ adapter: createMemoryAdapter(), overrides: { player: damagedPlayer } });
         const actions = createAppActions(store);
 
         const result = actions.useItem('phial');
@@ -404,7 +404,7 @@ describe('useItem action: HP delta + stack decrement', () => {
             inventory: [potion('phial', 100, 1)],
         };
         const fullHealth = player.maxHealth;
-        const store = createGameStore(createMemoryAdapter(), { player });
+        const store = createAppStore({ adapter: createMemoryAdapter(), overrides: { player } });
         const actions = createAppActions(store);
 
         actions.useItem('phial');
@@ -422,7 +422,7 @@ describe('useItem action: HP delta + stack decrement', () => {
             health: 4,
             inventory: [potion('phial', 3, 1)],
         };
-        const store = createGameStore(createMemoryAdapter(), { player });
+        const store = createAppStore({ adapter: createMemoryAdapter(), overrides: { player } });
         const actions = createAppActions(store);
 
         actions.useItem('phial');
@@ -692,7 +692,11 @@ function swordWithStats(
         slot: 'weapon',
         rarity: 'common',
         requiredLevel: 1,
-        statModifiers: stats.map((s) => ({ ...s })),
+        // Test fixtures use synthetic stat names ('attack', 'stamina', etc.)
+        // rather than engine's tight `EffectStatTarget` literal union. The
+        // presenter under test only diffs by stat name, so the broader
+        // type is safe here.
+        statModifiers: stats.map((s) => ({ ...s })) as unknown as Equipment['statModifiers'],
     };
 }
 

@@ -22,7 +22,12 @@ import {
 import { mockAlternatingRng } from '@/test-utils/rng';
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
 import { selectCombatHudViewModel } from '@/state/presenters/combat-hud.engine';
-import { createAppStore } from '@/state/store';
+import {
+    createAppStore,
+    EMPTY_EVENT_SLICE,
+    DEFAULT_NOTIFICATIONS_SLICE,
+    type AppStoreState,
+} from '@/state/store';
 
 afterEach(() => {
     jest.restoreAllMocks();
@@ -60,9 +65,18 @@ function makeEnemy() {
 function stateWith(
     playerOverrides: Partial<ReturnType<typeof createCharacter>> = {},
     combatMana: { current: number; max: number } | null = null,
-) {
+): AppStoreState {
     const base = createNewGameState();
-    return { ...base, player: makePlayer(playerOverrides), combatMana };
+    // GameState + mobile slices is enough to satisfy AppStoreState
+    // for selector-only tests; GameActions are not invoked here.
+    return {
+        ...base,
+        player: makePlayer(playerOverrides),
+        combatMana,
+        event: EMPTY_EVENT_SLICE,
+        notifications: DEFAULT_NOTIFICATIONS_SLICE,
+        _recentEvents: [],
+    } as unknown as AppStoreState;
 }
 
 // ---------------------------------------------------------------------------
@@ -212,12 +226,12 @@ describe('selectCombatHudViewModel: in-combat player snapshot', () => {
     it('reads HP from the combat player when combat is active, not from the out-of-combat player', () => {
         mockAlternatingRng();
 
-        const state = createNewGameState();
+        const state = stateWith();
         const enemy = makeEnemy();
         const combat = initializeCombat(state.player, enemy);
 
         const damagedCombatPlayer = { ...combat.player, health: Math.floor(combat.player.maxHealth / 2) };
-        const inCombatState = { ...state, combat: { ...combat, player: damagedCombatPlayer } };
+        const inCombatState: AppStoreState = { ...state, combat: { ...combat, player: damagedCombatPlayer } };
 
         const vm = selectCombatHudViewModel(inCombatState);
 
@@ -226,7 +240,7 @@ describe('selectCombatHudViewModel: in-combat player snapshot', () => {
     });
 
     it('falls back to out-of-combat player when no combat is active', () => {
-        const state = createNewGameState();
+        const state = stateWith();
 
         const vm = selectCombatHudViewModel(state);
 
@@ -265,7 +279,7 @@ describe('engine store lifecycle', () => {
     it('the presenter reflects in-combat state after startCombat', () => {
         mockAlternatingRng();
         const adapter = createMemoryAdapter();
-        const store = createGameStore(adapter);
+        const store = createAppStore({ adapter });
 
         store.getState().startCombat(makeEnemy());
         const vm = selectCombatHudViewModel(store.getState());

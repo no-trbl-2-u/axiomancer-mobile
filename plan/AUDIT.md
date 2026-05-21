@@ -78,22 +78,16 @@
 
 ## Pending
 
-### [3.5] `components/ScreenBg.tsx` has no colocated test coverage
-
-- category: tests
-- impact: 5 (universal screen wrapper used by every tab — wraps
-  children in SafeAreaView + AXM.bg fill, with a `scrollable`
-  prop that branches between ScrollView vs fixed View. Silent
-  drift could break scrolling on screens that rely on the
-  default-true behavior or push content under the system bar.)
-- ease: 7 (pure presentation, single prop branch)
-- next: add `components/__tests__/ScreenBg.test.tsx` — renders
-  children; scrollable=true (default) renders a ScrollView;
-  scrollable=false renders a fixed View; bottom-pad sentinel
-  only mounts in the scrollable branch
-- source: iterate audit 2026-05-21
+_(Empty.)_
 
 ## Done
+
+### [3.5] `components/ScreenBg.tsx` colocated test coverage ✅
+- Resolved 2026-05-21 (commit `b77378b`). Added 6 hermetic
+  cases pinning children-pass-through and the `scrollable`
+  prop branch (default → ScrollView; false → fixed View;
+  scroll indicator hidden). 859/859 green at land (+6 over
+  853).
 
 ### [4.5] Drain 32 lint warnings introduced by Phase 60f + Phase 61 ✅
 - Resolved 2026-05-21 (commit `ab2c0d7`). `npm run lint --

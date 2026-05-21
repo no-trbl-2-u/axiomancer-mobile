@@ -995,39 +995,18 @@ phase row.
       `node.speaker`). 2 consumers migrated; VM choice id now
       derived from `visibleChoices` index. 760/760 tests green.
       Closes mirror issue #98.
-- [ ] Phase 60e — `ActiveEffect` + `GameStore` slice
+- [x] Phase 60e — `ActiveEffect` + `GameStore` slice
       reconciliation. Promoted via `/oversight` 2026-05-20
-      (18th call) from PHASE_CANDIDATES `## Considered` [score
-      3.5]. Single-pick promotion after 60c shipped clean —
-      cautious one-at-a-time cadence.
-
-      Scope (single phase, 2-3 ticks):
-
-      - **First tick (investigation)** — read the canonical
-        `ActiveEffect` and `GameStore` shapes off the engine
-        source (or the missing `dist/<Module>/types.d.ts`
-        files; same workaround as 60c). Decide whether the
-        reconciliation is a shim, a cast at the boundary, or
-        a wider rewrite.
-      - **`ActiveEffect`** — engine 0.10.1+ removed `id` and
-        `name`. Mobile consumers: `state/presenters/combat-
-        hud.engine.ts` `toDisplay()` reads `effectId` (mobile
-        field, not engine `id` — verify) and
-        `state/presenters/event.engine.ts:535` likely reads
-        `id` / `name` on the engine type via cast.
-      - **`AppStoreState` vs `GameStore`** — mobile's slice
-        composition (`event` / `notifications` /
-        `_recentEvents` / `combatMana`) extends the engine's
-        `GameStore` type. 0.10.2 enforces a stricter base; the
-        intersection may need an explicit cast in
-        `state/store.ts`'s `createAppStore` line ~135
-        (`engineStore as unknown as AppStore` already exists).
-      - Hermetic seal: existing combat-hud + event-presenter
-        e2e tests. Migration is test-driven.
-
-      Independent of 60f — but 60f (lockfile bump) is gated on
-      60e landing. After 60e, only 60f remains in the engine
-      bump sequence.
+      (18th call). Shipped `8596409` — `feat(spec60e):
+      reconcile ActiveEffect + AppStoreState/GameStore
+      alignment`. Investigation confirmed `ActiveEffect`
+      carries `effectId` (not `id`/`name`); fixed a real
+      latent bug in `composeHazard` where every hazard
+      consequence rendered the literal `'effect'`. Also
+      pre-emptively migrated 18 test fixture sites
+      (navigation × 4, exploration × 13, migrations × 3 casts)
+      to honor the strict AppStoreState shape under 0.10.2.
+      760/760 tests green. Closes mirror issue #99.
 
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh

@@ -78,20 +78,17 @@
 
 ## Pending
 
-### [3.5] `components/EffectChip.tsx` has no colocated test coverage
-
-- category: tests
-- impact: 5 (combat HUD chrome shipped in Phase 41 — color-map
-  + tint-map + dim branch all rely on prop-driven rendering;
-  silent drift could flatten the visual semantics)
-- ease: 7 (pure presentation component, ~40-line test pinning
-  the render contract)
-- next: add `components/__tests__/EffectChip.test.tsx` —
-  default render, color-map fallback to `AXM.parchment` on
-  unknown kind, dim branch reduces opacity, label rendering
-- source: iterate audit 2026-05-21
+_(Empty.)_
 
 ## Done
+
+### [3.5] `components/EffectChip.tsx` colocated test coverage ✅
+
+- Resolved 2026-05-21 (commit `ec927b7`). Added
+  `components/__tests__/EffectChip.test.tsx` with 11 hermetic
+  cases pinning color-map, tint-map, duration / intensity
+  conditional rendering, and the dim opacity branch. 811/811
+  green at land (+11 over 800).
 
 ### [Done 2026-05-20] `axiomancer-mechanics@0.10.2` adopted; surface drift drained ✅
 

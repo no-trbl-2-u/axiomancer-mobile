@@ -1139,15 +1139,15 @@ DevMenu (Phase 61a wrapper); none change production surfaces.
       the meta-feature; sub-phases 62a–62e are the actual work
       units. Closes when 62e ships clean (or when the user
       signals "62 complete" via `/oversight`).
-- [ ] Phase 62a — Dialogue tree jump. New `<DebugDialogueJump>`
-      row inside the DevMenu. Picker over engine's known
-      dialogue trees (from `getDialogueNode` / wider engine
-      registry); on press, seeds `state.event.dialogueCursor`
-      with the selected tree at its root node so the event
-      modal opens directly on that dialogue without needing
-      an NPC encounter. Tests render the picker, fire a jump,
-      assert the cursor + event slice are populated. Commit:
-      `feat(spec62a): dev-menu dialogue tree jump`.
+- [x] Phase 62a — Dialogue tree jump. Shipped `b5f681e` —
+      `feat(spec62a): dev-menu dialogue tree jump`. New
+      `<DebugDialogueJump>` row with two static trees (OMEN /
+      FRIEND) that seed `state.event.pending` with a synthetic
+      interaction event + dialogueCursor at the tree root.
+      `selectHasActiveEvent` flips true on tap → `EventGate`
+      routes to /event. No engine registry exists for picker
+      driven mode; synthetic trees stay inline. +6 hermetic
+      tests; 881/881 green (was 875).
 - [ ] Phase 62b — Quest state mutation. New `<DebugQuestState>`
       row. Picker over engine's known quests (or a hardcoded
       list if engine surface is opaque); buttons to START /

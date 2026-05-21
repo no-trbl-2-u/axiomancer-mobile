@@ -49,21 +49,44 @@ returns the fresh `combat` (phase=resolving), but
 
 ## What we need next
 
-User retests with the latest diagnostic build (`48ab19d`) and
-pastes the new `[useCombatViewModel.*]` log lines. Those pick
-between four sub-hypotheses:
+**Resolved 2026-05-21 oversight 25th call** — user pasted the
+new `[useCombatViewModel.*]` lines from build `48ab19d`. The
+output picks **sub-hypothesis 2**:
 
-- `RECOMPUTING` never fires → useMemo deps aren't triggering
-  (reference comparison broken somehow).
-- `RECOMPUTING` fires with `combat.phase=resolving` →
-  `selectCombatViewModel` produces fresh, but something
-  downstream caches the old vm.
-- `RECOMPUTING` fires with `combat.phase=choosing_action` →
-  `useGameState` inside the hook returns stale (separate from
-  outer).
-- Inner `combat.phase` differs from outer
-  `engine.combat.phase` → provider-scope mismatch (two
-  providers?).
+```
+[actions.resolveRound] post-updateCombat store combat=
+  {phase=resolving, enemy.hp=60, player.hp=6}
+[useCombatViewModel.hook] inner combat.phase= resolving
+[useCombatViewModel.memo] RECOMPUTING — combat.phase= resolving
+[useCombatViewModel.return] vm.phase= choosing_action   ← STALE
+[CombatPanel.render] vm.phase= choosing_action
+                     engine.combat.phase= resolving
+```
+
+The `useMemo` IS recomputing on the fresh
+`combat.phase='resolving'`. Inner `combat.phase` matches outer
+`engine.combat.phase` (rules out sub-hypothesis 3 + 4). But
+the value `useMemo` emits has `vm.phase='choosing_action'`.
+
+**Bug location:** `state/presenters/combat.engine.ts:selectCombatViewModel`.
+Given `state.combat.phase = 'resolving'` it returns a vm with
+`vm.phase = 'choosing_action'`. Either (a) the selector reads
+phase from `localUi` / a captured snapshot instead of
+`state.combat.phase`, (b) the phase-to-vm mapping doesn't
+enumerate `'resolving'` and defaults to `'choosing_action'`,
+or (c) something further down (e.g. `playerChoice.action`
+gating) overrides the phase output.
+
+**Plus user clarification:** "the heart select is just the
+default choice. That needs to go away. There's no
+default/starting stance." The earlier `[9.5] Heart cannot be
+selected` AUDIT row was a misread — Heart is selectable but
+appears pre-highlighted on combat entry, which made it look
+unresponsive. Drop the default. Tick B of Phase 65.
+
+**Filed as Phase 65** (combat regression cluster diagnostic)
+— see `plan/steps/01_build_plan.md`. /march can pick it up
+on next invocation.
 
 ## Files load-bearing for this bug
 
@@ -113,9 +136,11 @@ To remove once [9.8] closes (one cleanup iterate tick):
 
 - `/march` cron cancelled (no scheduled jobs).
 - Loop is at idle.
-- Phase 62d / 62e `[paused]`.
-- Phase 65 (modal aftermath) in `## Pending` candidates, gated
-  on [9.8].
+- Phase 62d / 62e `[paused]` (confirmed at oversight 25th call;
+  stay paused).
+- Phase 65 (combat regression cluster diagnostic) filed in
+  `01_build_plan.md`. Phase 66 (modal aftermath) in
+  `## Pending` candidates, gated on Phase 65.
 - `plan/NEEDS_HUMAN_ATTENTION.md` has the testing-gap row
   (partially addressed by Phase 64).
 

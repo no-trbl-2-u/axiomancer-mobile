@@ -52,7 +52,14 @@
 See `01_build_plan.md` Phase 64 row for the live brief.
 </details>
 
-### [score 6.0] Phase 65 — Aftermath rendering inside the modal
+### [score 6.0] Phase 66 — Aftermath rendering inside the modal
+
+> **Renumbered 2026-05-21 oversight 25th call** from Phase 65
+> → Phase 66. Phase 65 is now the combat regression cluster
+> diagnostic (filed inline in `01_build_plan.md`). This
+> candidate's existing "needs [9.8] combat-mechanics row
+> resolved first" gate is exactly what Phase 65 unblocks, so
+> the ordering is natural.
 
 - proposed: 2026-05-21, expand pass 33
 - source signals:

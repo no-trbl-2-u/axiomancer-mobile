@@ -93,56 +93,57 @@
   whether to drop the bar entirely on character screen (mana
   is now combat-only via Phase 60d's combatMana slice) or
   rename to e.g. "mana" / lowercase
+- ship-in: **Phase 65 — combat regression cluster diagnostic
+  (filed 2026-05-21 oversight 25th)**. Bundled with the other
+  four combat regressions; trivial mechanical swap that can
+  ship in the same phase's chrome-cleanup tick.
 - source: user 2026-05-21 (preview build)
 
-### [9.8] Combat regression — Base combat mechanics not wired into UI (STILL OPEN, post-Phase-63)
+### [9.8] Combat regression — `selectCombatViewModel` returns stale `vm.phase` despite fresh `combat.phase=resolving` input (NARROWED, ready-to-fix)
 
-- category: bug (combat blocking, architecture)
-- impact: 10 (combat completely non-functional — selections
-  visible but no real combat resolution surfaces to player)
-- user re-confirmed 2026-05-21 oversight 24th: "Modal now
-  displays correctly, however choosing the 'Action' does
-  nothing but logs it to the screen. We must wire in the
-  full combat flow."
-- **wiring verified 2026-05-21 oversight 23rd:** structurally,
-  combat IS wired into the UI. The screen calls
-  `actions.startCombat`, `setPlayerStance`, `setPlayerAction`,
-  `resolveRound`; the action layer delegates to engine
-  reducers; 30+ e2e tests in `combat.engine.test.ts` exercise
-  the flow end-to-end and pass. The "doesn't effect combat"
-  is a runtime/UX symptom, not missing wiring.
-- **post-Phase-63 narrowing (oversight 24th):** the diagnostic
-  toast (`commit 169d44a`) confirms `onPickAction` fires when
-  the user taps an action (toast appears = handler ran). So:
-  (1) tap handler ✓ executes; (2) `actions.setPlayerAction(key)` +
-  `actions.resolveRound()` should fire after the toast; (3)
-  the round should resolve, log entries should appear, the
-  PhaseStack should advance to 'resolving'. The user sees
-  step 1 but NOT steps 2/3. Candidate root causes:
-  - **A) Layout / scroll**: ResolvePanel mounts but below
-    the visible area inside the modal panel; user would
-    need to scroll down to see. Modal panel just got taller
-    (commit 01d0c26) but combat content is still tall.
-  - **B) State propagation**: CombatPanel inside the modal
-    reads from a stale store reference (provider scope
-    issue between the modal and the action layer).
-  - **C) Re-render**: combat slice updates but
-    `useCombatViewModel` memo doesn't re-fire (deps mismatch).
-  - **D) Engine action no-op**: `resolveRound` bails early
-    before mutating state (some defensive guard hits).
-- next: needs concrete user data to root-cause. Asks for the
-  user (see oversight 24th-call response):
-  - (a) **Scroll inside the modal after tapping action** —
-    rules out / confirms hypothesis A (layout).
-  - (b) **Dev console log content** for `[combat]` lines —
-    confirms whether `resolveRound` runs and what
-    `combat.phase` is afterwards. Distinguishes B / C / D.
-  - (c) **Visual confirmation** — does the action picker
-    visibly collapse to a 'past' row + does any new row
-    appear below it?
-  - (d) **Enemy HP bar** — does it tick down at all after
-    tapping ATTACK?
-- source: user 2026-05-21 (preview build, 2x)
+- category: bug (combat blocking, presenter layer)
+- impact: 10 (combat completely non-functional — engine
+  mutates correctly but screen never sees `vm.phase`
+  transition out of `choosing_action`)
+- **Root cause confirmed 2026-05-21 oversight 25th call** from
+  user-pasted diagnostic output (build `48ab19d` after
+  diagnostics in commits `4adb97a` + `48ab19d`):
+  ```
+  [actions.resolveRound] post-updateCombat store combat=
+    {phase=resolving, enemy.hp=60, player.hp=6}
+  [useCombatViewModel.hook] inner combat.phase= resolving
+  [useCombatViewModel.memo] RECOMPUTING — combat.phase= resolving
+  [useCombatViewModel.return] vm.phase= choosing_action   ← STALE
+  [CombatPanel.render] vm.phase= choosing_action
+                       engine.combat.phase= resolving
+  ```
+  Engine mutates fine. `useGameState` returns the fresh
+  `combat` slice. `useMemo` recomputes on the fresh input.
+  But the value returned out of the memo is `vm.phase =
+  choosing_action`. That means the bug is **inside
+  `selectCombatViewModel(state, localUi)`**: given a
+  `combat.phase=resolving` input it still emits
+  `vm.phase=choosing_action`. Either the selector reads phase
+  from the wrong field (`localUi` overrides? a stale snapshot
+  captured at hook init?) or the phase-to-vm-state mapping
+  has a missing case for `'resolving'`.
+- Rules out: A (layout — scroll fix didn't change symptom);
+  B (provider scope — inner `combat.phase` matches outer); D
+  (engine no-op — `resolveRound` post-update store shows
+  `phase=resolving` and damage applied).
+- next: open `state/presenters/combat.engine.ts:selectCombatViewModel`
+  and trace how `vm.phase` is computed. Look specifically for
+  (a) a `localUi`/closure capture pinning phase at hook init
+  time; (b) a switch/map that doesn't handle `'resolving'`
+  and defaults to `'choosing_action'`; (c) any reference to
+  `playerChoice.action` that gates the phase output.
+- ship-in: **Phase 65 — combat regression cluster diagnostic
+  (filed 2026-05-21 oversight 25th)**. Same root cause likely
+  drives the [9.5] action-selection-has-no-effect row;
+  diagnostic phase covers both plus the modal-closes-early
+  row.
+- source: user 2026-05-21 (preview build, 3x; latest with
+  inner-vs-outer diagnostics)
 
 ### [9.8] Encounter UX — keep entire encounter inside the modal (PROMOTED → Phase 63)
 
@@ -161,43 +162,53 @@
   briefs.
 - source: user 2026-05-21 (preview build)
 
-### [9.5] Combat regression — Heart stance cannot be selected (STILL OPEN)
+### [9.5] Combat regression — Heart appears pre-selected; there is no default/starting stance (RE-DIAGNOSED 2026-05-21 oversight 25th)
 
-- category: bug (combat blocking)
-- impact: 9 (one of three stances unselectable; basic combat
-  unusable when player wants to fight heart)
-- ease: ? (Heart pointerEvents='none' fix in `602e680` did NOT
-  resolve — user confirmed 2026-05-21 oversight 22nd call)
-- attempted fixes (didn't work):
+- category: bug (combat UX, default-state leak)
+- impact: 8 (player misreads pre-highlighted Heart as
+  "already selected" or "unselectable"; combat onboarding
+  confusing)
+- **Re-diagnosed 2026-05-21 oversight 25th call** from
+  user clarification: "the heart select is just the default
+  choice. That needs to go away. There's no default/starting
+  stance." Earlier reports of "Heart cannot be selected"
+  were a misread — Heart IS selectable, but it appears
+  pre-selected on entry to a fresh combat, which made it
+  look unresponsive (tapping it didn't visibly change
+  anything, because it was already "the selected one").
+- attempted fixes (now believed unnecessary):
   - `pointerEvents='none'` on StanceGlyph wrapper (commit
-    `602e680`) — theory was SvgXml absorbing taps in Heart's
-    larger live area. User retested; Heart still
-    unselectable.
-- next: prime suspect is not SVG; deeper investigation needed:
-  (a) console.log in `onPickStance` to confirm whether the
-  handler fires at all when Heart is tapped; (b) inspect the
-  TouchableOpacity hit area — maybe the leftmost card has
-  layout-clipping issues; (c) check if any ancestor View has
-  `pointerEvents` settings affecting only the left side.
-- source: user 2026-05-21 (preview build, twice now)
+    `602e680`) — root cause was misread, not a hit-test
+    bug. The fix can stay (defensive) or be reverted.
+- next: open `state/presenters/combat.engine.ts` +
+  `app/(tabs)/combat.tsx`; find where the initial
+  `selectedStance` defaults to `'heart'` or where Heart's
+  card receives the `selected: true` styling on phase
+  `choosing_stance` with no stance committed. Required
+  state: no stance card carries the selected visual until
+  the player picks one.
+- ship-in: **Phase 65 — combat regression cluster diagnostic
+  (filed 2026-05-21 oversight 25th)**.
+- source: user 2026-05-21 (preview build, twice + clarification
+  via oversight 25th)
 
-### [9.5] Combat regression — Action selection has no effect (STILL OPEN)
+### [9.5] Combat regression — Action selection has no effect (LIKELY-DUPLICATE of [9.8])
 
 - category: bug (combat blocking)
 - impact: 10 (combat completely unusable — player can pick
   ATTACK/DEFEND/SKILL/ITEM but nothing happens)
-- ease: ? (no fix attempted yet; awaiting investigation)
-- user re-confirmed 2026-05-21 oversight 22nd: "I can't select
-  actions after I select my stance (or rather selecting options
-  doesn't do anything)." Same symptoms as prior report.
-- next: prime suspect is screen-level re-render: after
-  resolveRound commits 'resolving' phase, the PhaseStack should
-  flip the current row. Verify by: (a) console.log in
-  `onPickAction` to confirm handler fires; (b) console.log
-  combat.phase before/after resolveRound; (c) check
-  useCombatViewModel memo deps cover the resolved-state. The
-  existing e2e test at `state/e2e/combat.engine.test.ts:158`
-  passes the engine flow; the bug is in the screen layer.
+- **Re-diagnosed 2026-05-21 oversight 25th call:** user's
+  diagnostic output confirms `onPickAction` → `resolveRound`
+  fires AND mutates `combat.phase=resolving` + enemy.hp,
+  but `vm.phase` stays `choosing_action`. So actions DO
+  have effect on the engine state — the symptom is that
+  the screen never re-renders to reflect that effect. Same
+  root cause as [9.8] above (`selectCombatViewModel` returns
+  stale `vm.phase`). Likely closes when [9.8] closes.
+- ship-in: **Phase 65 — combat regression cluster diagnostic
+  (filed 2026-05-21 oversight 25th)**. Will be marked
+  `[duplicate of [9.8]]` and closed at Phase 65 land if the
+  hypothesis holds.
 - source: user 2026-05-21 (preview build, twice now)
 
 ### [9.5] Combat regression — Encounter modal closes before resolution
@@ -215,6 +226,8 @@
   the player picks, the modal vanishes. Possibly related to
   Phase 60b's `Encounter.enemy → enemies[0]` migration, or
   Phase 40's `selectHasActivePacedEvent` filtering.
+- ship-in: **Phase 65 — combat regression cluster diagnostic
+  (filed 2026-05-21 oversight 25th)**.
 - source: user 2026-05-21 (preview build)
 
 ## Done

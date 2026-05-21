@@ -1296,6 +1296,94 @@ multi-screen integration coverage.
       candidate roots from A/B/C/D to A or C (layout-or-memo,
       not engine). 911/911 green (was 906).
 
+**Combat regression cluster diagnostic (Phase 65, filed via
+`/oversight` 2026-05-21, 25th call).** Promoted in response
+to user-pasted diagnostic console output that narrowed the
+`[9.8]` AUDIT row from "candidate roots A/C" to a confirmed
+sub-hypothesis 2: `selectCombatViewModel` in
+`state/presenters/combat.engine.ts` returns
+`vm.phase=choosing_action` even when fed a fresh
+`combat.phase=resolving` (engine mutates, `useMemo`
+recomputes, but the selector's phase mapping is wrong). One
+phase bundles all five `[9.x]` combat regressions because the
+root cause is shared (or believed shared) and the chrome
+cleanup is trivial in the same surface.
+
+- [ ] Phase 65 — Combat regression cluster diagnostic. Single
+      phase, 3 ticks. Ships the fix that unblocks playable
+      combat + drains the four open `[9.x]` rows in
+      `plan/AUDIT.md` Pending. Replaces the prior "modal
+      aftermath" candidate at Phase 65 (renumbered to Phase 66;
+      its conflict line "needs [9.8] resolved first" makes it
+      a downstream phase).
+
+      - **Tick A — `[9.8]` root-cause fix.** Open
+        `state/presenters/combat.engine.ts:selectCombatViewModel`.
+        Trace how `vm.phase` is derived from the incoming
+        `state.combat.phase`. Inspect for: (a) a `localUi` or
+        closure capture that pins phase at hook init time;
+        (b) a switch/map that doesn't enumerate `'resolving'`
+        and defaults to `'choosing_action'`; (c) any branch
+        that reads `playerChoice.action` and overrides phase
+        downstream. Land the fix. Add ≥2 hermetic cases to
+        `state/e2e/combat.engine.test.ts` (or a new
+        `state/e2e/combat-vm.engine.test.ts`) that:
+        - call `selectCombatViewModel({...state,
+          combat: {...combat, phase: 'resolving'}})` directly
+          and assert `vm.phase === 'resolving'`;
+        - drive the engine via the integration harness from
+          Phase 64 — `setPlayerStance` → `setPlayerAction` →
+          `resolveRound` → assert next render's `vm.phase` is
+          NOT `'choosing_action'`.
+        Closes `[9.8]` + `[9.5] Action selection has no
+        effect` (duplicate).
+      - **Tick B — Heart pre-selected default fix.** Find
+        where the stance picker's initial selected-state
+        renders Heart pre-highlighted on a fresh combat with
+        no committed stance. Required state: no stance card
+        carries the selected visual until the player taps
+        one. Likely a `selectedStance ?? 'heart'` fallback in
+        `combat.engine.ts` or the `<StanceOption>`
+        component. Drop the fallback; pass `null`/`undefined`
+        through. +1 hermetic case asserting no stance has
+        `selected: true` on `vm.phase === 'choosing_stance'`
+        when `playerChoice.stance == null`. Closes `[9.5]
+        Heart pre-selected`.
+      - **Tick C — Chrome cleanup + diagnostic strip.**
+        - Replace `label="MP"` in `components/StatusCard.tsx`
+          + `app/(tabs)/combat.tsx` with the chosen semantic
+          (drop on character screen since combatMana is
+          combat-only post-Phase-60d; rename to lowercase
+          `'mana'` in-combat). Closes `[9.5] MP label leak`.
+        - Audit `EncounterModalOverlay`'s
+          `vm.preludeChrome === null` guard against the
+          updated Phase 60b enemy shape; tighten the modal
+          mount predicate so the modal stays mounted across
+          the combat-prelude → combat transition without
+          racing the event-slice clear. Closes `[9.5]
+          Encounter modal closes before resolution` (if not
+          already absorbed by Tick A's vm fix).
+        - Strip the diagnostic stream listed in
+          `plan/COMBAT_DEBUG_PICKUP.md` §"Diagnostic streams
+          currently live in code": eight log families across
+          `combat.tsx`, `actions.ts`, `combat.engine.ts`,
+          plus the diagnostic toast.
+        - Delete `plan/COMBAT_DEBUG_PICKUP.md` (its premise
+          closes when [9.8] does).
+
+      Verify gate: `pnpm exec tsc --noEmit`, full `pnpm test`,
+      `pnpm exec eslint . --max-warnings=0`. Tick A and B
+      can ship as separate commits; Tick C is one cleanup
+      commit at the end. Commit prefixes:
+      `feat(spec65a): selectCombatViewModel phase passthrough
+      — fix [9.8]`, `feat(spec65b): no default stance — fix
+      [9.5] heart pre-selected`, `feat(spec65c): combat
+      chrome cleanup + diagnostic strip`.
+
+      Phase 66 (modal aftermath, formerly candidate Phase 65)
+      becomes the natural next-up once 65 lands clean and
+      user retests playable combat.
+
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh
 > `Phase 25 — Aesthetic toggle` candidate filed via

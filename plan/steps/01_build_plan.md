@@ -1148,13 +1148,14 @@ DevMenu (Phase 61a wrapper); none change production surfaces.
       routes to /event. No engine registry exists for picker
       driven mode; synthetic trees stay inline. +6 hermetic
       tests; 881/881 green (was 875).
-- [ ] Phase 62b — Quest state mutation. New `<DebugQuestState>`
-      row. Picker over engine's known quests (or a hardcoded
-      list if engine surface is opaque); buttons to START /
-      ADVANCE / COMPLETE the selected quest. Tests
-      pin: state.quests slice mutates per the action; memoir
-      tab's quests section reflects the change on the next
-      render. Commit: `feat(spec62b): dev-menu quest state`.
+- [x] Phase 62b — Quest state mutation. Shipped `ef8475e` —
+      `feat(spec62b): dev-menu quest state mutation`. New
+      `<DebugQuestState>` with three actions per quest (START
+      / ADV / DONE) across two synthetic Quests (starting-quest
+      + gather-wood). Each button routes through engine
+      `startQuest` / `progressQuest` / `completeQuest`. Memoir
+      tab reflects the state changes. +7 hermetic tests; 888/888
+      green (was 881).
 - [ ] Phase 62c — Friendship counter override. New
       `<DebugFriendship>` row. Two buttons: `+1` and `RESET`
       (back to 0). Mutates `state.combat?.friendshipCounter`

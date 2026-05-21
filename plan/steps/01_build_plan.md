@@ -1162,6 +1162,14 @@ DevMenu (Phase 61a wrapper); none change production surfaces.
       `state.combat.friendshipCounter`. Combat-only; warns +
       no-ops outside combat. +8 hermetic tests; 896/896 green
       (was 888).
+> **Priority note (oversight 2026-05-21, 22nd call):** Phases 62d
+> and 62e are deferred BEHIND the open [9.5] combat-bug AUDIT
+> rows (Heart unselectable; action no-effect). `/march`'s
+> standard order would dispatch Phase 62d next, but the user
+> explicitly directed: combat bugs first, then 62d/e. The
+> next /march tick should fall through to /iterate to attack
+> the bugs.
+
 - [ ] Phase 62d — Currency grant. New `<DebugCurrencyGrant>`
       row. Single `+100` button that adds to the player's
       currency slice (engine field — verify shape first; may

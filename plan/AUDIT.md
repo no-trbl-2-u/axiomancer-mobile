@@ -95,34 +95,44 @@
   rename to e.g. "mana" / lowercase
 - source: user 2026-05-21 (preview build)
 
-### [9.5] Combat regression — Heart stance cannot be selected
+### [9.5] Combat regression — Heart stance cannot be selected (STILL OPEN)
 
 - category: bug (combat blocking)
 - impact: 9 (one of three stances unselectable; basic combat
   unusable when player wants to fight heart)
-- ease: ? (need to investigate why Heart specifically fails;
-  Mind / Body work)
-- next: trace `setPlayerStance('heart')` path through
-  `combatSetPlayerStance` (engine action) and the stance
-  picker's enabled-state logic in `buildStanceOptions`. Likely
-  cause: heart-stance enabled flag is false in some derived-
-  stats branch, OR the stance buttons in `app/(tabs)/combat.tsx`
-  are wired to a guard that fails for heart.
-- source: user 2026-05-21 (preview build)
+- ease: ? (Heart pointerEvents='none' fix in `602e680` did NOT
+  resolve — user confirmed 2026-05-21 oversight 22nd call)
+- attempted fixes (didn't work):
+  - `pointerEvents='none'` on StanceGlyph wrapper (commit
+    `602e680`) — theory was SvgXml absorbing taps in Heart's
+    larger live area. User retested; Heart still
+    unselectable.
+- next: prime suspect is not SVG; deeper investigation needed:
+  (a) console.log in `onPickStance` to confirm whether the
+  handler fires at all when Heart is tapped; (b) inspect the
+  TouchableOpacity hit area — maybe the leftmost card has
+  layout-clipping issues; (c) check if any ancestor View has
+  `pointerEvents` settings affecting only the left side.
+- source: user 2026-05-21 (preview build, twice now)
 
-### [9.5] Combat regression — Action selection has no effect
+### [9.5] Combat regression — Action selection has no effect (STILL OPEN)
 
 - category: bug (combat blocking)
 - impact: 10 (combat completely unusable — player can pick
   ATTACK/DEFEND/SKILL/ITEM but nothing happens)
-- ease: ? (Phase 21 just changed action routing through engine;
-  prime suspect)
-- next: investigate `setPlayerAction` → `resolveRound` flow.
-  Phase 21 (commit `7a69658`) swapped the action-shape sent
-  to the engine resolver. Possible: the engine doesn't accept
-  the new shape, or the UI tap handler isn't wired, or there's
-  a phase-machine block keeping the round from resolving.
-- source: user 2026-05-21 (preview build)
+- ease: ? (no fix attempted yet; awaiting investigation)
+- user re-confirmed 2026-05-21 oversight 22nd: "I can't select
+  actions after I select my stance (or rather selecting options
+  doesn't do anything)." Same symptoms as prior report.
+- next: prime suspect is screen-level re-render: after
+  resolveRound commits 'resolving' phase, the PhaseStack should
+  flip the current row. Verify by: (a) console.log in
+  `onPickAction` to confirm handler fires; (b) console.log
+  combat.phase before/after resolveRound; (c) check
+  useCombatViewModel memo deps cover the resolved-state. The
+  existing e2e test at `state/e2e/combat.engine.test.ts:158`
+  passes the engine flow; the bug is in the screen layer.
+- source: user 2026-05-21 (preview build, twice now)
 
 ### [9.5] Combat regression — Encounter modal closes before resolution
 

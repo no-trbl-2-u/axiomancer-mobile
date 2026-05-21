@@ -78,6 +78,24 @@
 
 ## Pending
 
+### [3.5] Phase 65 diagnostic strip + COMBAT_DEBUG_PICKUP.md delete (deferred housekeeping)
+
+- category: refactor / housekeeping
+- impact: 4 (8 diagnostic streams + 1 toast + 1 brief file linger
+  in main; modest noise, no behavior impact)
+- ease: 8 (mechanical delete pass across 3 files)
+- next: gated on `[9.5]` "Next Round exits combat" closing —
+  the `onContinueRound` diagnostics added in `b76303e` are
+  load-bearing for the next user retest; the older streams in
+  `combat.tsx` (`onPickStance`, `onPickAction`, render trace,
+  diagnostic toast) + `actions.ts` (`resolveRound` entry /
+  updateCombat / post-updateCombat) carry context for the same
+  investigation. Strip ALL of them in one iterate tick when
+  `[9.5]` Next Round closes; delete `plan/COMBAT_DEBUG_PICKUP.md`
+  in the same commit.
+- source: Phase 65 close-out (filed 2026-05-21)
+
+
 > **User-direct report 2026-05-21 (latest preview build):** four
 > combat-mechanics bugs blocking playability. Filed at HIGH
 > severity; user-source +0.5 bump applied per iterate §4.

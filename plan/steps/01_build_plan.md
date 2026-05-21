@@ -1309,13 +1309,32 @@ phase bundles all five `[9.x]` combat regressions because the
 root cause is shared (or believed shared) and the chrome
 cleanup is trivial in the same surface.
 
-- [ ] Phase 65 — Combat regression cluster diagnostic. Single
-      phase, 3 ticks. Ships the fix that unblocks playable
-      combat + drains the four open `[9.x]` rows in
-      `plan/AUDIT.md` Pending. Replaces the prior "modal
-      aftermath" candidate at Phase 65 (renumbered to Phase 66;
-      its conflict line "needs [9.8] resolved first" makes it
-      a downstream phase).
+- [x] Phase 65 — Combat regression cluster diagnostic. Three
+      named ticks all shipped:
+      - Tick A `8f7265c` — `useCombatViewModel` React Compiler
+        opt-out + synthetic-state refactor; closes `[9.8]`
+        vm.phase staleness (user confirmed combat actions now
+        visibly mutate engine state).
+      - Tick B `33f8fdc` — drop default `'heart'` stance; closes
+        `[9.5]` Heart pre-selected.
+      - Tick C-partial `19f6264` — rename remaining `MP` literal
+        to lowercase `mana`; modal-mount audit confirmed already
+        correct via `d460b64` (combat-mode gate keeps overlay
+        mounted across event-slice clear); closes `[9.5]` MP
+        label leak.
+      - Plus follow-on `b76303e` — added `onContinueRound`
+        branch diagnostics to narrow the new `[9.5]` "Next
+        Round exits combat" row that surfaced mid-Phase-65.
+
+      **Deferred housekeeping** (filed as an iterate row in
+      `plan/AUDIT.md` for follow-on once `[9.5]` Next Round
+      closes): strip the diagnostic console.log streams in
+      `combat.tsx` + `actions.ts` + the `onContinueRound` adds;
+      delete `plan/COMBAT_DEBUG_PICKUP.md`. Keeping the streams
+      live while `[9.5]` Next Round is open avoids re-instrumenting
+      mid-investigation. The phase parent closes here because
+      Phase 65's substantive scope shipped; the housekeeping
+      is mechanical and benefits from the wait. Closes #100.
 
       - **Tick A — `[9.8]` root-cause fix.** Open
         `state/presenters/combat.engine.ts:selectCombatViewModel`.

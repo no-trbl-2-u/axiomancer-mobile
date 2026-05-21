@@ -1127,8 +1127,29 @@ export function useCombatViewModel(localUi: CombatLocalUi = {}): CombatViewModel
     const player = useGameState((s) => s.player);
     const selectedStance = localUi.selectedStance;
     const selectedSkillId = localUi.selectedSkillId;
-    return useMemo(
-        () => selectCombatViewModel(store.getState(), { selectedStance, selectedSkillId }),
+    if (__DEV__) {
+        // Phase-64 follow-up diagnostic — confirm what the inner
+        // useGameState sees vs the outer CombatPanel one. If these
+        // disagree we have a provider-scope issue.
+        // eslint-disable-next-line no-console
+        console.log(
+            '[useCombatViewModel.hook] inner combat.phase=', combat?.phase ?? 'null',
+            'selectedStance=', selectedStance ?? 'undef',
+        );
+    }
+    const vm = useMemo(
+        () => {
+            if (__DEV__) {
+                // eslint-disable-next-line no-console
+                console.log('[useCombatViewModel.memo] RECOMPUTING — combat.phase=', store.getState().combat?.phase ?? 'null');
+            }
+            return selectCombatViewModel(store.getState(), { selectedStance, selectedSkillId });
+        },
         [store, combat, player, selectedStance, selectedSkillId],
     );
+    if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.log('[useCombatViewModel.return] vm.phase=', vm.phase);
+    }
+    return vm;
 }

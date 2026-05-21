@@ -1208,17 +1208,15 @@ that row gets revisited via `/iterate` once Phase 63 lands.
       whole refactor; sub-phases 63a–63d are the work units.
       Closes when 63d ships clean (or user signals "modal
       complete" via `/oversight`).
-- [ ] Phase 63a — Extract combat UI from `(tabs)/combat.tsx`
-      into a reusable `<CombatPanel>` component at
-      `components/combat/CombatPanel.tsx`. The existing screen
-      becomes a thin shell that mounts `<CombatPanel>`. Internal
-      sub-pickers (StancePhase / ActionPhase / SkillPhase /
-      ResolvePanel) stay; only the outermost wrap changes.
-      Tests: existing combat e2e suite passes unchanged
-      (CombatPanel is the same VM consumer just renamed). +1
-      hermetic case that the new module exports the expected
-      surface. Commit: `feat(spec63a): extract CombatPanel from
-      combat tab`.
+- [x] Phase 63a — Extract combat UI from `(tabs)/combat.tsx`.
+      Shipped `4c4993c` — `feat(spec63a): extract CombatPanel
+      from combat tab`. Split `CombatScreen` into a thin shell
+      (default export, wraps `<ScreenBg>`) + a `CombatPanel`
+      named export with the actual content (no ScreenBg).
+      Canonical import path at
+      `components/combat/CombatPanel.tsx` re-exports for
+      callers outside the (tabs) folder. +2 hermetic surface
+      tests. 898/898 green (was 896).
 - [ ] Phase 63b — Mount `<CombatPanel>` inside
       `EncounterModalOverlay` after the player commits FIGHT.
       The overlay grows a `mode` state machine

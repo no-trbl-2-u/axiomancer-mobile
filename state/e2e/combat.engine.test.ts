@@ -887,3 +887,70 @@ describe('selectCombatViewModel: resolve.nextActionLabel', () => {
         expect(vm.resolve.nextActionLabel).toBe('✠ DEPART');
     });
 });
+
+// ---------------------------------------------------------------------------
+// Phase 21 — engine-driven executeSkill wiring
+// ---------------------------------------------------------------------------
+
+describe('resolveRound: engine-driven skill resolution', () => {
+    it('routes `action: skill` through the engine and burns mana from the mobile slice', () => {
+        // Pin the Phase 21 contract: a skill pick reaches the engine
+        // resolver as `action: 'skill'` (not downgraded to 'attack')
+        // and `getSkillById` is the lookup, so the engine can apply
+        // real skill effects. Observable side effect: the mobile
+        // combatMana slice's `current` drops by the skill's manaCost
+        // — the burnCombatMana branch only runs when findSkill /
+        // getCombatSkillById returns non-null, which proves the
+        // engine-library lookup wired up.
+        mockFixedRng(0.5);
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
+
+        // Pick the cheapest heart-stance skill so the deduction is
+        // unambiguously the engine library's manaCost.
+        const heartSkill = COMBAT_SKILLS
+            .filter((s) => s.stance === 'heart')
+            .sort((a, b) => a.manaCost - b.manaCost)[0];
+        expect(heartSkill).toBeDefined();
+        expect(heartSkill!.manaCost).toBeGreaterThan(0);
+
+        actions.setPlayerStance('heart');
+        actions.setPlayerAction('skill', heartSkill!.id);
+        // playerChoice carries the skill action shape that resolveRound
+        // forwards to the engine.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const choiceBefore = store.getState().combat?.playerChoice as any;
+        expect(choiceBefore.action).toBe('skill');
+        expect(choiceBefore.skillId).toBe(heartSkill!.id);
+
+        const manaBefore = store.getState().combatMana;
+        const result = actions.resolveRound();
+
+        // Round resolves cleanly (no engine throws on the skill path).
+        expect(result.combatEnded).toBe(false);
+
+        // Mana drained by exactly the skill's manaCost — proves the
+        // skillId branch of resolveRound ran end-to-end through the
+        // engine library.
+        const manaAfter = store.getState().combatMana;
+        expect(manaAfter).not.toBeNull();
+        const startCurrent = manaBefore?.current ?? manaAfter!.max;
+        expect(manaAfter!.current).toBe(Math.max(0, startCurrent - heartSkill!.manaCost));
+    });
+
+    it('handles unknown skillIds without throwing (engine lookup returns undefined)', () => {
+        // Negative test: a legacy mock id with no engine entry returns
+        // `undefined` from `getSkillById`. The engine's resolver
+        // tolerates a missing lookup result; the round still resolves.
+        mockFixedRng(0.5);
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
+
+        actions.setPlayerStance('heart');
+        // Legacy mock id that the engine library doesn't carry.
+        actions.setPlayerAction('skill', 'ad-hominem');
+        expect(() => actions.resolveRound()).not.toThrow();
+    });
+});

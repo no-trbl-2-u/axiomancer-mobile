@@ -36,6 +36,7 @@ import {
     getDialogueNode,
     getMapDefinition,
     getPresetById,
+    getSkillById,
     healCharacter,
     incrementFriendship as combatIncrementFriendship,
     isConsumable,
@@ -486,20 +487,21 @@ export function createAppActions(store: AppStore): AppActions {
 
             const enemyAction = determineEnemyAction(combat.enemy);
 
-            // Hand-rolled skill lookup: the engine resolver needs one
-            // when the player picks a skill. Today it returns null for
-            // every entry — Phase 16 (`[skipped]`, engine-release-gated)
-            // owns the wiring to the real engine skill library; the
-            // presenter still surfaces the skill picker so the round
-            // just resolves as a basic action until that lands.
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const skillLookup = (_id: string) => null as any;
+            // Phase 21 — real engine skill lookup. Pass `getSkillById`
+            // so the resolver can apply skill damage / effects rather
+            // than treating skill picks as basic attacks.
+            const skillLookup = getSkillById;
 
-            const playerCombatAction = skillId
-                ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                ({ stance: playerStance, action: 'attack' } as any)
-                : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                ({ stance: playerStance, action: playerAction } as any);
+            // Phase 21 — route `action: 'skill'` through the engine
+            // (was previously downgraded to 'attack' when a skillId was
+            // set; the engine now resolves the skill itself, using
+            // skillLookup above).
+            const playerCombatAction =
+                skillId !== undefined
+                    ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    ({ stance: playerStance, action: 'skill', skillId } as any)
+                    : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    ({ stance: playerStance, action: playerAction } as any);
 
             const enemyStance: Stance =
                 (enemyAction.stance as Stance) ??

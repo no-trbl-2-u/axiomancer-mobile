@@ -78,7 +78,18 @@
 
 ## Pending
 
-_(Empty — the engine-bump row drained to Done with Phase 60f.)_
+### [3.5] `components/EffectChip.tsx` has no colocated test coverage
+
+- category: tests
+- impact: 5 (combat HUD chrome shipped in Phase 41 — color-map
+  + tint-map + dim branch all rely on prop-driven rendering;
+  silent drift could flatten the visual semantics)
+- ease: 7 (pure presentation component, ~40-line test pinning
+  the render contract)
+- next: add `components/__tests__/EffectChip.test.tsx` —
+  default render, color-map fallback to `AXM.parchment` on
+  unknown kind, dim branch reduces opacity, label rendering
+- source: iterate audit 2026-05-21
 
 ## Done
 

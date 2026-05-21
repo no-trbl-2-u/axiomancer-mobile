@@ -35,7 +35,7 @@ import {
     COMBAT_SKILLS,
     type SkillCategoryKey,
 } from '@/state/selectors/combat-skills';
-import { useGameState, useGameStore } from '../GameStoreProvider';
+import { useGameState } from '../GameStoreProvider';
 
 import {
     selectCombatHudViewModel,
@@ -1119,37 +1119,45 @@ export function selectCombatViewModel(
  * Zustand's `useStore` would loop forever — `useSyncExternalStore`
  * requires `getSnapshot` to return a stable reference for the same
  * snapshot. This hook subscribes to the engine slices the VM actually
- * depends on (`combat`, `player`) and memoises the VM against them.
+ * depends on (`combat`, `player`, `combatMana`) and memoises the VM
+ * against them.
+ *
+ * The `'use no memo'` directive opts this hook out of the React Compiler
+ * (enabled in `app.json`). The compiler's static analysis cannot see
+ * through `store.getState()` reads, so when the factory body's only
+ * tracked deps are `selectedStance` / `selectedSkillId` it ends up
+ * caching the vm across renders and never re-running on store-state
+ * changes — Phase 65 Tick A root-caused this as the cause of [9.8]
+ * "vm.phase stuck at choosing_action despite engine combat.phase
+ * advancing to resolving". The manual `useMemo` below + the subscribed
+ * slice values + the explicit deps array is the correct intent; the
+ * compiler must not second-guess it.
  */
 export function useCombatViewModel(localUi: CombatLocalUi = {}): CombatViewModel {
-    const store = useGameStore();
+    'use no memo';
     const combat = useGameState((s) => s.combat);
     const player = useGameState((s) => s.player);
+    const combatMana = useGameState((s) => s.combatMana);
     const selectedStance = localUi.selectedStance;
     const selectedSkillId = localUi.selectedSkillId;
-    if (__DEV__) {
-        // Phase-64 follow-up diagnostic — confirm what the inner
-        // useGameState sees vs the outer CombatPanel one. If these
-        // disagree we have a provider-scope issue.
-        // eslint-disable-next-line no-console
-        console.log(
-            '[useCombatViewModel.hook] inner combat.phase=', combat?.phase ?? 'null',
-            'selectedStance=', selectedStance ?? 'undef',
-        );
-    }
-    const vm = useMemo(
+    return useMemo(
         () => {
-            if (__DEV__) {
-                // eslint-disable-next-line no-console
-                console.log('[useCombatViewModel.memo] RECOMPUTING — combat.phase=', store.getState().combat?.phase ?? 'null');
-            }
-            return selectCombatViewModel(store.getState(), { selectedStance, selectedSkillId });
+            // Build a synthetic state object from the subscribed
+            // slices instead of reading `store.getState()`. The
+            // selector + `selectCombatHudViewModel` only read these
+            // three fields off `state`, so the cast is sound. The
+            // important consequence is that `combat`, `player`, and
+            // `combatMana` are now *real* data dependencies of the
+            // factory body — both the `react-hooks/exhaustive-deps`
+            // lint and the React Compiler can see them being read
+            // here, which they could not see through the previous
+            // opaque `store.getState()` call. Combined with the
+            // `'use no memo'` directive above, this guarantees the
+            // memo recomputes whenever any subscribed slice changes
+            // reference. Phase 65 Tick A.
+            const state = { combat, player, combatMana } as unknown as AppStoreState;
+            return selectCombatViewModel(state, { selectedStance, selectedSkillId });
         },
-        [store, combat, player, selectedStance, selectedSkillId],
+        [combat, player, combatMana, selectedStance, selectedSkillId],
     );
-    if (__DEV__) {
-        // eslint-disable-next-line no-console
-        console.log('[useCombatViewModel.return] vm.phase=', vm.phase);
-    }
-    return vm;
 }

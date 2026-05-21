@@ -40,17 +40,12 @@
 
 ## Pending
 
-### [MED] general — Expand DEV mode to cover every ported mechanic
-- pass: user-jot (commit 570ffa7)
-- viewport: unspecified
-- auth_state: anonymous
-- category: enhancement
-- observation: Let's figure out a way to expand the frontend with a "dev" mode where I can test the implementation of every mechanic we've ported so far
-- evidence: user-spotted at 2026-05-20T15:01:00-04:00
-- suggested_fix: [user has not specified — iterate to determine]
-- source: user
-
 ## Done
+
+### [MED] general — Expand DEV mode to cover every ported mechanic ✅
+- pass: user-jot (commit 7821f13); addressed at commit `<this-tick>` by filing as a phase candidate (not a one-tick fix — meta-feature ask requires planning).
+- Filed as `[score 6.0] DEV-mode coverage expansion — one debug affordance per ported mechanic` in `plan/PHASE_CANDIDATES.md` `## Pending`. Includes initial gap inventory (XP / mana / alignment / effects / event-kind triggers / dialogue jump / quest state / friendship / currency / HUD overrides) + suggested phased breakdown (Phases 61-66 as small per-mechanic phases, or one bigger parent phase with sub-rows).
+- Next: `/oversight` decides on the slicing (parent-with-sub-rows vs. per-mechanic small phases) and promotes the first piece.
 
 ### [MED] general — no combat encounters in the first map ✅
 - pass: user-jot (commit c3c4e4e); addressed at commit `<this-tick>` via `state/exploration-maps/event-pools.ts`

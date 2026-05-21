@@ -10,6 +10,79 @@
 ## Pending
 
 
+### [score 6.0] DEV-mode coverage expansion — one debug affordance per ported mechanic
+
+- proposed: 2026-05-20, filed inline from `/iterate` after user-jot `7821f13`
+- source signals:
+  - **User-jot 2026-05-20 (`7821f13`)** — "Let's figure out a
+    way to expand the frontend with a 'dev' mode where I can
+    test the implementation of every mechanic we've ported so
+    far." Multi-signal: user-source +0.5 bump, meta-feature
+    scope.
+  - Existing Debug* family (AestheticDevToggle,
+    DebugSeedButton, DebugCombatButton, DebugMapResetButton,
+    DebugChaosToggle, DebugPresetPicker) on the SELF tab —
+    the dev-mode scaffolding is in place; this phase fills
+    the gaps.
+- rationale: mobile has shipped 5 of 6 engine-bump
+  sub-phases + 60+ feature phases, but many ported mechanics
+  have no manual-test affordance. The user reaches them only
+  via grinding (level-up requires winning combats; alignment
+  shifts require dialogue choices; event types require
+  navigating to specific nodes). A dev-mode expansion
+  drastically improves test-cycle iteration speed.
+- gaps to cover (initial inventory; /oversight to triage +
+  prioritize):
+  - **XP / level-up** — grant N XP; force LEVEL_UP. Exercises
+    `character:levelup` event, `notifications.levelUpAcknowledged`,
+    the character-tab level badge.
+  - **Mana / combatMana** — drain/restore the mobile-only
+    `combatMana` slice (Phase 60d). Tests skill-picker
+    disabling at zero mana.
+  - **Philosophical alignment** — shift ±N on a chosen axis
+    (epistemology / outlook / scope). Tests the alignment
+    cube on the SELF tab.
+  - **Active effects (buffs/debuffs)** — apply named effect
+    to player or current enemy. Tests effect chips, DoT
+    accounting, effect-driven advantage.
+  - **Event kind triggers** — force the current node's next
+    event to be a specific kind (rest / gather / loot-cache /
+    npc-interaction / hazard). Bypasses pool-RNG.
+  - **Dialogue tree jump** — seed `state.event.dialogueCursor`
+    with a chosen tree at a chosen node. Tests dialogue
+    rendering + choice routing without an NPC encounter.
+  - **Quest state** — start / advance / complete a quest by
+    id. Tests memoir tab quest section + quest-gated dialogue
+    choices.
+  - **Friendship counter** — increment by N. Tests parley
+    paths, friendship-based combat-end.
+  - **Currency grant** — add N currency. Tests shop UI when
+    that lands.
+  - **Combat HUD spot-overrides** — set HP / mind-marks /
+    enemy stance / enemy effects directly. Tests HUD rendering
+    in arbitrary mid-combat states.
+- proposed scope: split into **multiple phases**, not one.
+  Suggested initial cut as `/oversight` may shape it:
+  - Phase 61 — DEV menu structure refresh: regroup the
+    existing Debug* affordances into a collapsible menu
+    (currently a flat list on SELF) so the additions don't
+    blow out the layout. ~1 phase, 2-3 ticks.
+  - Phase 62 — XP + level-up affordance. ~1 phase, 1-2 ticks.
+  - Phase 63 — Mana drain/restore. ~1 phase, 1 tick.
+  - Phase 64 — Alignment shift. ~1 phase, 1-2 ticks.
+  - Phase 65 — Effect apply (player + enemy). ~1 phase, 2 ticks.
+  - Phase 66 — Event kind trigger. ~1 phase, 2-3 ticks.
+  - Future: dialogue / quest / friendship / currency / HUD
+    overrides as separate phases or one bundled "DEV
+    miscellany" pass.
+- conflicts: none with `spec.md` (DEV-only by `__DEV__` gate;
+  no production exposure). The phased breakdown above will
+  likely shift after `/oversight` re-scopes.
+- estimated phases: 5-7 small phases, or one bigger
+  "DEV-mode expansion" parent phase with sub-rows in the
+  Phase 60 / 58 mold.
+
+
 ## Considered (below threshold)
 
 > Sub-phases of the Phase 60 engine bump that scored lower

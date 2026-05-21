@@ -1061,16 +1061,15 @@ listed order; each one is a `/ship-a-phase` dispatch.
       actual work units. Closes when 61f ships clean (or when
       the user signals "dev expansion complete" via
       `/oversight`).
-- [ ] Phase 61a — DEV menu structure refresh. Regroup the
-      existing six Debug* affordances (AestheticDevToggle,
-      DebugSeedButton, DebugCombatButton, DebugMapResetButton,
-      DebugChaosToggle, DebugPresetPicker) on the SELF tab
-      into a collapsible `<DevMenu>` section so additions
-      don't blow out the layout. Prerequisite for 61b–61f.
-      Hermetic test: collapsed state hides all six controls;
-      expanded state shows them. Verify gate green.
-      Commit: `feat(spec61a): dev-menu structure refresh —
-      collapsible group on SELF tab`.
+- [x] Phase 61a — DEV menu structure refresh. Shipped
+      `e846942` — `feat(spec61a): dev-menu structure refresh —
+      collapsible group on SELF tab`. New `<DevMenu>` wrapper
+      around the six existing Debug* affordances; dashed-border
+      panel matching the AestheticDevToggle chrome register;
+      `__DEV__`-gated; default state collapsed. +6 hermetic
+      DevMenu tests (DEV gate true/false, collapsed default,
+      expand on press, toggle round-trip, initiallyExpanded
+      shortcut). 766/766 green (was 760).
 - [ ] Phase 61b — XP + level-up affordance. New
       `<DebugXpGrant>` row inside the DevMenu (post-61a).
       Two buttons: `+100 XP` and `FORCE LEVEL UP`.

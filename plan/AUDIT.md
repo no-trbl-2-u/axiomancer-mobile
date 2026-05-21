@@ -78,7 +78,19 @@
 
 ## Pending
 
-_(Empty.)_
+### [3.2] `components/EffectGlyph.tsx` has no colocated test coverage
+
+- category: tests
+- impact: 4 (sibling glyph to EffectChip — switch on kind →
+  one of 8 distinct SVG paths + default-case fallback; silent
+  drift could flatten kind → glyph differentiation that the
+  HUD relies on for at-a-glance effect identification)
+- ease: 8 (pure switch + render, no async, no store)
+- next: add `components/__tests__/EffectGlyph.test.tsx` —
+  one case per known kind asserts the SVG branch picked
+  (path-count or distinctive prop), plus default-case
+  fallback to a colored View
+- source: iterate audit 2026-05-21
 
 ## Done
 

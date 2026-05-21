@@ -86,9 +86,31 @@ const LOG_SEVERITY_COLOR: Record<CombatLogEntryDisplay['severity'], string> = {
 
 // ---------------------------------------------------------------------------
 // Screen
+//
+// Phase 63a (2026-05-21): the inner content was extracted into a
+// named-export `<CombatPanel>` so the same combat surface can
+// mount inside `EncounterModalOverlay` (Phase 63b) without
+// double-wrapping `<ScreenBg>`. Default-export `CombatScreen`
+// stays as the tab shell that wraps `<CombatPanel>` in
+// `<ScreenBg>`.
 // ---------------------------------------------------------------------------
 
 export default function CombatScreen() {
+    return (
+        <ScreenBg>
+            <CombatPanel />
+        </ScreenBg>
+    );
+}
+
+/**
+ * The combat surface without its outer ScreenBg wrap. Returns
+ * the loading state OR the active combat render — neither
+ * branch wraps in ScreenBg, so callers can mount this inside
+ * any container (tab shell, modal overlay, etc.) and own the
+ * outer scrolling / safe-area behaviour.
+ */
+export function CombatPanel() {
     const router = useRouter();
     const { exitCombat, exitCombatWith } = useCombatMode();
     const { mode: aesthetic } = useAesthetic();
@@ -207,16 +229,14 @@ export default function CombatScreen() {
         // observed as "combat encounter is blank" — the visible
         // `loadingMessage` keeps the screen from collapsing to a void.
         return (
-            <ScreenBg>
-                <View style={styles.loadingWrap} testID="combat-screen-loading">
-                    <Text style={styles.loadingText}>{vm.loadingMessage}</Text>
-                </View>
-            </ScreenBg>
+            <View style={styles.loadingWrap} testID="combat-screen-loading">
+                <Text style={styles.loadingText}>{vm.loadingMessage}</Text>
+            </View>
         );
     }
 
     return (
-        <ScreenBg>
+        <>
             {aesthetic === 'codex' && (
                 <CodexStatusStrip line={selectCodexStatusLine(vm)} />
             )}
@@ -237,7 +257,7 @@ export default function CombatScreen() {
                     <Text style={styles.toastText}>{toast}</Text>
                 </View>
             )}
-        </ScreenBg>
+        </>
     );
 }
 

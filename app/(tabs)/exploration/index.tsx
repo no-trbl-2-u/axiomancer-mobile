@@ -7,7 +7,6 @@ import Animated, {
     withTiming,
     Easing,
 } from 'react-native-reanimated';
-import { useRouter } from 'expo-router';
 import Svg, { Path, Circle, G } from 'react-native-svg';
 import { AXM, FONTS } from '@/theme/axm';
 import { ScreenBg } from '@/components/ScreenBg';
@@ -55,7 +54,6 @@ const OPTION_ICON: Record<NodeType, string> = {
 };
 
 export default function ExplorationScreen() {
-    const router = useRouter();
     const { enterCombat, lastOutcome, clearLastOutcome } = useCombatMode();
     const { mode: aesthetic } = useAesthetic();
     const store = useGameStore();
@@ -162,18 +160,24 @@ export default function ExplorationScreen() {
         // arrival resolves the map event, populating the pending event
         // slice; the screen's render path then mounts
         // <EncounterModalOverlay> over the map so the player must pick
-        // FIGHT or FLEE (chat1: "user cannot exit these modals"). The
-        // overlay's FIGHT handler does the enterCombat + router.replace
-        // when the player commits.
+        // FIGHT or FLEE (chat1: "user cannot exit these modals"). Phase
+        // 63b (2026-05-21) extended this so combat itself plays inside
+        // the same modal — FIGHT transitions the overlay's internal mode
+        // 'prelude' → 'combat' and renders <CombatPanel> in-place
+        // instead of routing to the /combat tab.
         if (result.moved && node.triggersCombat) {
             actions.resolveCurrentMapEvent();
         }
     };
 
     const onEncounterFight = () => {
+        // Phase 63b — modal-contained encounter. Drop the
+        // `router.replace('/combat')` call; the EncounterModalOverlay
+        // now transitions its internal mode 'prelude' → 'combat' on
+        // FIGHT and renders <CombatPanel> in-place. Aftermath +
+        // dismissal back to exploration land in Phase 63c.
         actions.pickEventChoice('fight');
         enterCombat();
-        router.replace('/combat' as never);
     };
 
     const onEncounterFlee = () => {

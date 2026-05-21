@@ -26,8 +26,8 @@
  * prelude'` VMs via `withPreludeChrome`). Component-level pins live
  * in `components/event/__tests__/EncounterModalOverlay.test.tsx`.
  */
-import React, { useEffect } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path as SvgPath } from 'react-native-svg';
 import Animated, {
     useAnimatedStyle,
@@ -36,6 +36,7 @@ import Animated, {
     Easing,
 } from 'react-native-reanimated';
 
+import { CombatPanel } from '@/components/combat/CombatPanel';
 import { EventArt } from '@/components/event/EventArt';
 import { EventCodexHeader } from '@/components/event/EventCodexHeader';
 import { Splatter } from '@/components/Splatter';
@@ -44,6 +45,20 @@ import { AXM, FONTS } from '@/theme/axm';
 import { useAesthetic } from '@/state/aesthetic-mode';
 import { selectEventCodexHeader } from '@/state/presenters/event.codex.engine';
 import type { EventViewModel } from '@/state/presenters/event.engine';
+
+/**
+ * Modal mode state machine (Phase 63b).
+ *
+ * - `prelude`  — initial render: sealed bars + FIGHT/FLEE buttons
+ *                (the original Phase 32 design-handoff port).
+ * - `combat`   — after the player taps FIGHT, the panel content
+ *                swaps to `<CombatPanel>` so the entire encounter
+ *                lives inside the same modal that opened on the
+ *                encounter trigger. No more `router.replace('/combat')`.
+ * - `aftermath`— reserved for Phase 63c (post-round victory / parley
+ *                / flee summary inside the modal). Not yet wired.
+ */
+export type EncounterModalMode = 'prelude' | 'combat' | 'aftermath';
 
 interface EncounterModalOverlayProps {
     vm: EventViewModel;
@@ -56,6 +71,14 @@ export function EncounterModalOverlay({
     onFight,
     onFlee,
 }: EncounterModalOverlayProps) {
+    // Phase 63b — internal mode. FIGHT advances prelude → combat
+    // and bubbles the existing onFight callback up (which still
+    // starts combat in the engine but no longer routes away).
+    const [mode, setMode] = useState<EncounterModalMode>('prelude');
+    const handleFight = useCallback(() => {
+        onFight();
+        setMode('combat');
+    }, [onFight]);
     const { mode: aesthetic } = useAesthetic();
 
     // Rise animation (Phase 44 port from prototype.jsx:632-638 — the
@@ -99,101 +122,114 @@ export function EncounterModalOverlay({
         >
             <Animated.View style={[styles.backdrop, backdropStyle]} />
             <Animated.View style={[styles.panel, panelStyle]}>
-                {aesthetic === 'codex' && (() => {
-                    const { left, right } = selectEventCodexHeader(vm);
-                    return <EventCodexHeader left={left} right={right} />;
-                })()}
-                <ChainBar label={vm.preludeChrome.sealLabel} />
-
-                <View style={styles.preludeHeader}>
-                    <Svg width={10} height={10} viewBox="0 0 10 10">
-                        <SvgPath d="M5 1 L 7 7 L 3 7 Z" fill={AXM.blood} />
-                    </Svg>
-                    <Text style={styles.preludeHeaderText}>
-                        {vm.preludeChrome.eyebrow}
-                    </Text>
-                </View>
-
-                <View style={styles.illustration}>
-                    <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#06050a' }]} />
-                    <EventArt slug={vm.artSlug} />
-                    <View style={styles.strifeSash} testID="encounter-modal-sash">
-                        <Text style={styles.strifeSashText}>
-                            {vm.preludeChrome.sashLabel}
-                        </Text>
-                    </View>
-                    <Splatter
-                        color={AXM.blood}
-                        size={140}
-                        seed={45}
-                        style={{ position: 'absolute', top: -20, right: -30, opacity: isBoss ? 0.7 : 0.5 }}
-                    />
-                </View>
-
-                <View style={styles.titleArea}>
-                    <Text style={[styles.title, isBoss && styles.titleBoss]} numberOfLines={2}>
-                        {vm.title}
-                    </Text>
-                    {vm.subtitle.length > 0 && (
-                        <Text style={styles.subtitle} numberOfLines={1}>— {vm.subtitle}</Text>
-                    )}
-                </View>
-
-                <View style={styles.body}>
-                    <Text style={styles.bodyText} numberOfLines={3}>
-                        {vm.body}
-                    </Text>
-                </View>
-
-                <View style={styles.choices}>
-                    <TouchableOpacity
-                        accessibilityRole="button"
-                        accessibilityLabel="Fight"
-                        onPress={onFight}
-                        style={[styles.choiceRow, { borderColor: AXM.blood, borderLeftColor: AXM.blood }]}
-                        testID="encounter-modal-fight"
+                {mode === 'combat' ? (
+                    <ScrollView
+                        style={styles.combatScroll}
+                        contentContainerStyle={styles.combatScrollContent}
+                        showsVerticalScrollIndicator={false}
+                        testID="encounter-modal-combat-mode"
                     >
-                        <ActionIcon kind="sword" size={20} color={AXM.blood} />
-                        <View style={{ flex: 1 }}>
-                            <Text style={[styles.choiceLabel, { color: AXM.blood }]}>FIGHT</Text>
-                            {fightSubtitle !== null && (
-                                <Text style={styles.choiceSubtitle} testID="encounter-modal-fight-subtitle">
-                                    {fightSubtitle}
+                        <CombatPanel />
+                    </ScrollView>
+                ) : (
+                    <>
+                        {aesthetic === 'codex' && (() => {
+                            const { left, right } = selectEventCodexHeader(vm);
+                            return <EventCodexHeader left={left} right={right} />;
+                        })()}
+                        <ChainBar label={vm.preludeChrome.sealLabel} />
+
+                        <View style={styles.preludeHeader}>
+                            <Svg width={10} height={10} viewBox="0 0 10 10">
+                                <SvgPath d="M5 1 L 7 7 L 3 7 Z" fill={AXM.blood} />
+                            </Svg>
+                            <Text style={styles.preludeHeaderText}>
+                                {vm.preludeChrome.eyebrow}
+                            </Text>
+                        </View>
+
+                        <View style={styles.illustration}>
+                            <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#06050a' }]} />
+                            <EventArt slug={vm.artSlug} />
+                            <View style={styles.strifeSash} testID="encounter-modal-sash">
+                                <Text style={styles.strifeSashText}>
+                                    {vm.preludeChrome.sashLabel}
                                 </Text>
+                            </View>
+                            <Splatter
+                                color={AXM.blood}
+                                size={140}
+                                seed={45}
+                                style={{ position: 'absolute', top: -20, right: -30, opacity: isBoss ? 0.7 : 0.5 }}
+                            />
+                        </View>
+
+                        <View style={styles.titleArea}>
+                            <Text style={[styles.title, isBoss && styles.titleBoss]} numberOfLines={2}>
+                                {vm.title}
+                            </Text>
+                            {vm.subtitle.length > 0 && (
+                                <Text style={styles.subtitle} numberOfLines={1}>— {vm.subtitle}</Text>
                             )}
                         </View>
-                    </TouchableOpacity>
 
-                    <TouchableOpacity
-                        accessibilityRole="button"
-                        accessibilityLabel="Flee"
-                        accessibilityState={{ disabled: !fleeEnabled }}
-                        disabled={!fleeEnabled}
-                        onPress={onFlee}
-                        style={[
-                            styles.choiceRow,
-                            { borderColor: AXM.bone, borderLeftColor: AXM.bone, opacity: fleeEnabled ? 1 : 0.4 },
-                        ]}
-                        testID="encounter-modal-flee"
-                    >
-                        <ActionIcon kind="flee" size={20} color={AXM.bone} />
-                        <View style={{ flex: 1 }}>
-                            <Text style={[styles.choiceLabel, { color: AXM.bone }]}>FLEE</Text>
-                            {fleeSubtitle !== null && (
-                                <Text style={styles.choiceSubtitle} testID="encounter-modal-flee-subtitle">
-                                    {fleeSubtitle}
-                                </Text>
-                            )}
-                            {!fleeEnabled && fleeSubtitle === null && (
-                                <Text style={styles.choiceSub}>
-                                    {vm.preludeChrome.fleeDisabledHint}
-                                </Text>
-                            )}
+                        <View style={styles.body}>
+                            <Text style={styles.bodyText} numberOfLines={3}>
+                                {vm.body}
+                            </Text>
                         </View>
-                    </TouchableOpacity>
-                </View>
 
-                <ChainBar label={vm.preludeChrome.sealLabel} />
+                        <View style={styles.choices}>
+                            <TouchableOpacity
+                                accessibilityRole="button"
+                                accessibilityLabel="Fight"
+                                onPress={handleFight}
+                                style={[styles.choiceRow, { borderColor: AXM.blood, borderLeftColor: AXM.blood }]}
+                                testID="encounter-modal-fight"
+                            >
+                                <ActionIcon kind="sword" size={20} color={AXM.blood} />
+                                <View style={{ flex: 1 }}>
+                                    <Text style={[styles.choiceLabel, { color: AXM.blood }]}>FIGHT</Text>
+                                    {fightSubtitle !== null && (
+                                        <Text style={styles.choiceSubtitle} testID="encounter-modal-fight-subtitle">
+                                            {fightSubtitle}
+                                        </Text>
+                                    )}
+                                </View>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                accessibilityRole="button"
+                                accessibilityLabel="Flee"
+                                accessibilityState={{ disabled: !fleeEnabled }}
+                                disabled={!fleeEnabled}
+                                onPress={onFlee}
+                                style={[
+                                    styles.choiceRow,
+                                    { borderColor: AXM.bone, borderLeftColor: AXM.bone, opacity: fleeEnabled ? 1 : 0.4 },
+                                ]}
+                                testID="encounter-modal-flee"
+                            >
+                                <ActionIcon kind="flee" size={20} color={AXM.bone} />
+                                <View style={{ flex: 1 }}>
+                                    <Text style={[styles.choiceLabel, { color: AXM.bone }]}>FLEE</Text>
+                                    {fleeSubtitle !== null && (
+                                        <Text style={styles.choiceSubtitle} testID="encounter-modal-flee-subtitle">
+                                            {fleeSubtitle}
+                                        </Text>
+                                    )}
+                                    {!fleeEnabled && fleeSubtitle === null && (
+                                        <Text style={styles.choiceSub}>
+                                            {vm.preludeChrome.fleeDisabledHint}
+                                        </Text>
+                                    )}
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+
+                        <ChainBar label={vm.preludeChrome.sealLabel} />
+                    </>
+                )}
             </Animated.View>
         </View>
     );
@@ -380,4 +416,11 @@ const styles = StyleSheet.create({
         color: AXM.bone,
         marginTop: 2,
     },
+    // Phase 63b — combat-mode ScrollView wrap. The panel has a
+    // bounded height (top: 56, bottom: 84); CombatPanel renders
+    // EnemyPanel + log + HUD + PhaseStack, often taller than the
+    // panel viewport, so the scroll lets the player see all of
+    // it without breaking the modal containment.
+    combatScroll: { flex: 1 },
+    combatScrollContent: { paddingBottom: 12 },
 });

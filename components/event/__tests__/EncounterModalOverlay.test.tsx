@@ -245,3 +245,68 @@ describe('EncounterModalOverlay: non-dismissible backdrop (chat1 invariant)', ()
         expect(overlay.props.onPress).toBeUndefined();
     });
 });
+
+// ---------------------------------------------------------------------------
+// Phase 63b — mode state machine (prelude → combat in-place)
+// ---------------------------------------------------------------------------
+
+describe('EncounterModalOverlay: prelude → combat mode transition', () => {
+    function withAllProviders(child: React.ReactNode) {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { GameStoreProvider } = require('@/state/GameStoreProvider');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { createAppStore } = require('@/state/store');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { createMemoryAdapter } = require('@/test-utils/memoryAdapter');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { CombatModeProvider } = require('@/state/combat-mode');
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        return (
+            <AestheticModeProvider initialMode="canonical" skipHydration>
+                <CombatModeProvider>
+                    <GameStoreProvider store={store}>
+                        {child}
+                    </GameStoreProvider>
+                </CombatModeProvider>
+            </AestheticModeProvider>
+        );
+    }
+
+    it('mounts the prelude content by default (FIGHT button visible)', () => {
+        const tree = render(
+            withAllProviders(
+                <EncounterModalOverlay vm={makeCombatPreludeVm()} onFight={() => {}} onFlee={() => {}} />,
+            ),
+        );
+        expect(tree.queryByTestId('encounter-modal-fight')).not.toBeNull();
+        expect(tree.queryByTestId('encounter-modal-combat-mode')).toBeNull();
+    });
+
+    it('transitions to combat mode after FIGHT is pressed', () => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { fireEvent } = require('@testing-library/react-native');
+        const tree = render(
+            withAllProviders(
+                <EncounterModalOverlay vm={makeCombatPreludeVm()} onFight={() => {}} onFlee={() => {}} />,
+            ),
+        );
+        fireEvent.press(tree.getByTestId('encounter-modal-fight'));
+
+        // Prelude content is gone; combat mode scroll wrap is mounted.
+        expect(tree.queryByTestId('encounter-modal-fight')).toBeNull();
+        expect(tree.queryByTestId('encounter-modal-combat-mode')).not.toBeNull();
+    });
+
+    it('still calls the onFight callback when FIGHT is pressed', () => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { fireEvent } = require('@testing-library/react-native');
+        const onFight = jest.fn();
+        const tree = render(
+            withAllProviders(
+                <EncounterModalOverlay vm={makeCombatPreludeVm()} onFight={onFight} onFlee={() => {}} />,
+            ),
+        );
+        fireEvent.press(tree.getByTestId('encounter-modal-fight'));
+        expect(onFight).toHaveBeenCalledTimes(1);
+    });
+});

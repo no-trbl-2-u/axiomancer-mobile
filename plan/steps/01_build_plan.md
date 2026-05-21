@@ -1204,10 +1204,18 @@ into UI" bug as a side effect (the router transition may be
 part of why selections don't visibly drive combat). If not,
 that row gets revisited via `/iterate` once Phase 63 lands.
 
-- [parent] Phase 63 — Modal-contained encounter. Tracks the
-      whole refactor; sub-phases 63a–63d are the work units.
-      Closes when 63d ships clean (or user signals "modal
-      complete" via `/oversight`).
+- [x] Phase 63 — Modal-contained encounter. All four
+      sub-phases shipped: 63a `4c4993c` (extract CombatPanel),
+      63b `8deeb27` (mount CombatPanel inside modal),
+      63c `a18ee12` + `ce90615` (session lifecycle + tab-bar
+      regression fix), 63d `d6d23c1` (retire STRIFE tab).
+      Combat now lives entirely inside the
+      EncounterModalOverlay; bottom tab bar shows 4 tabs
+      (WILDS / SELF / MEMOIR / SATCHEL). Encounter session
+      tracked via `combat-mode.inEncounterModal`. The
+      combat-mechanics bug investigation ([9.8] AUDIT row)
+      stays open pending user retest on the next preview
+      build.
 - [x] Phase 63a — Extract combat UI from `(tabs)/combat.tsx`.
       Shipped `4c4993c` — `feat(spec63a): extract CombatPanel
       from combat tab`. Split `CombatScreen` into a thin shell
@@ -1247,24 +1255,24 @@ that row gets revisited via `/iterate` once Phase 63 lands.
       905/905 green (was 901). Aftermath-inside-modal is a
       follow-on; the existing AftermathBanner on exploration
       surfaces post-victory per the Phase 41 flow.
-- [ ] Phase 63d — Remove or repurpose the standalone
-      `/combat` route. The route file may stay as a no-op
-      redirect to exploration (so any deep link doesn't 404)
-      OR be deleted entirely. STRIFE tab visibility (Phase 50
-      tick D's tab mutex on `inCombat`) needs re-evaluation —
-      with combat in the modal, the STRIFE tab no longer hosts
-      it, so the tab can be removed from the bar permanently
-      (cf. Phase 42's `selectHasActiveCombatPrelude` mutex).
-      Tests: the route-registration harness adapts; smoke-
-      render covers the new modal-combat surface. Commit:
-      `feat(spec63d): retire /combat route; modal-combat is
-      canonical`.
+- [x] Phase 63d — Retire STRIFE tab from the bottom bar.
+      Shipped `d6d23c1` —
+      `feat(spec63d): retire STRIFE tab from bottom bar; combat
+      is modal-only`. STRIFE tab `href: null` unconditionally
+      (route file stays for DebugCombatButton dev path + deep
+      links; just not surfaced in the user-facing bar).
+      WILDS↔STRIFE mutex retired entirely from the layout;
+      exploration is the leftmost positional tab. Stale
+      imports / combatContext plumbing dropped. 905/905 green.
 
       **Out-of-scope for Phase 63** (re-file if needed):
       combat-mechanics bug investigation (AUDIT [9.8] row stays
-      open; revisit via `/iterate` once 63 lands and re-test
-      the preview build); DEV-menu additions (62d/e stay
-      paused).
+      open; revisit via `/iterate` once user confirms 63 works
+      end-to-end on a fresh preview); DEV-menu additions
+      (62d/e stay paused). The legacy `selectVisibleTabs` /
+      `isTabHidden` functions stay in `tabs.engine.ts` with
+      their existing tests — dead code now; a future iterate
+      can prune.
 
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh

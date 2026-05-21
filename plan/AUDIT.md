@@ -114,22 +114,17 @@
 - source: user 2026-05-21 (preview build, post-Phase-65-Tick-A)
 
 
-### [9.5] Combat regression — "MP" label still appears in player HP/MP bars
+### [9.5] Combat regression — "MP" label still appears in player HP/MP bars ✅
 
-- category: voice (legacy label leak)
-- impact: 7 (player-facing chrome on every combat screen +
-  every character status card)
-- ease: 9 (two literal swaps — `components/StatusCard.tsx:42`
-  and `app/(tabs)/combat.tsx:333`)
-- next: replace `label="MP"` with appropriate semantic. Decide
-  whether to drop the bar entirely on character screen (mana
-  is now combat-only via Phase 60d's combatMana slice) or
-  rename to e.g. "mana" / lowercase
-- ship-in: **Phase 65 — combat regression cluster diagnostic
-  (filed 2026-05-21 oversight 25th)**. Bundled with the other
-  four combat regressions; trivial mechanical swap that can
-  ship in the same phase's chrome-cleanup tick.
-- source: user 2026-05-21 (preview build)
+- Resolved 2026-05-21 in Phase 65 Tick C-partial. Audit found the
+  user-reported "MP" bars had already been dropped pre-Phase-65:
+  `components/StatusCard.tsx` dropped its mana bar (Phase-62
+  bug-sweep, header comment 20-24); `app/(tabs)/combat.tsx`
+  `PlayerHud` dropped its mana bar (line 411-415, same sweep).
+  The only remaining `MP` literal lived in the skill picker's
+  cost row (`{s.manaCost} MP` at combat.tsx:878); this commit
+  renames it to lowercase `mana` to match the surrounding
+  voice register (`cost` label is lowercase).
 
 ### [9.8] Combat regression — `selectCombatViewModel` returns stale `vm.phase` despite fresh `combat.phase=resolving` input (NARROWED, ready-to-fix)
 

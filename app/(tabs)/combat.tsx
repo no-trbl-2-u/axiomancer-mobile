@@ -875,7 +875,7 @@ function SkillPhase({
                                         skill_styles.costValue,
                                         { color: s.disabledReason === 'insufficient-mana' ? AXM.blood : AXM.sulfur },
                                     ]}>
-                                        {s.manaCost} MP
+                                        {s.manaCost} mana
                                     </Text>
                                 </View>
                             </View>

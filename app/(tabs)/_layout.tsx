@@ -4,10 +4,9 @@ import { StyleSheet, View, Text } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { AXM, FONTS } from '@/theme/axm';
 import { useCombatMode } from '@/state/combat-mode';
-import { isTabHidden, TAB_TITLES } from '@/state/presenters/tabs.engine';
+import { TAB_TITLES } from '@/state/presenters/tabs.engine';
 import { useGameState } from '@/state/GameStoreProvider';
 import { selectTabBadges } from '@/state/presenters/navigation.engine';
-import { selectHasActiveCombatPrelude } from '@/state/presenters/event.engine';
 
 function TabBadge({ text, kind }: { text: string; kind: 'event' | 'levelup' }) {
   const badgeColor = kind === 'levelup' ? AXM.sulfur : AXM.blood;
@@ -80,27 +79,16 @@ function TabIcon({ kind, color, size }: { kind: string; color: string; size: num
 }
 
 export default function TabLayout() {
-  const { inCombat, inEncounterModal } = useCombatMode();
-  // Phase 42 port: extend the WILDS/STRIFE mutex to fire as soon as
-  // the combat-prelude event mounts (the `<EncounterModalOverlay>`),
-  // not just when combat actually starts. Mirrors prototype.jsx:42
-  // `combatTabShown = route === 'strife' || modal?.kind ===
-  // 'event-combat'`. Without this, the player taps an encounter
-  // node and sees the modal but the tab bar still reads WILDS until
-  // they pick FIGHT — visual continuity gap.
-  const hasCombatPrelude = useGameState(selectHasActiveCombatPrelude);
-  // Phase 63c regression fix (2026-05-21): pickEventChoice('fight')
-  // clears the event slice AND starts combat, which flipped
-  // `combatContext` true via `inCombat`. The exploration tab's
-  // href became null → expo-router navigated AWAY from
-  // exploration → the modal (which lives inside
-  // <ExplorationScreen>) unmounted → user saw the combat tab
-  // (or nothing). When the encounter modal is active, the tab
-  // mutex must NOT swap WILDS↔STRIFE — the user has to stay on
-  // exploration so the modal stays mounted. The modal's internal
-  // mode flips prelude → combat; the combat tab is irrelevant
-  // while the modal session is alive.
-  const combatContext = (inCombat || hasCombatPrelude) && !inEncounterModal;
+  const { inEncounterModal } = useCombatMode();
+  // Phase 63d (2026-05-21): retired the WILDS↔STRIFE tab mutex.
+  // Combat now lives inside the encounter modal (Phase 63a-c);
+  // the STRIFE tab is permanently hidden from the tab bar.
+  // Exploration stays as the leftmost positional tab unconditionally.
+  // The /combat route file remains so deep-link navigation +
+  // DebugCombatButton's dev path keep working; the bar just doesn't
+  // surface it. Pre-63d the mutex swapped WILDS↔STRIFE based on
+  // `inCombat || hasCombatPrelude`; both signals are no longer
+  // read here.
   // Subscribe to the slim slices `selectTabBadges` reads, then memo
   // the badges object. The presenter returns a stable `EMPTY_BADGES`
   // reference in the no-event / no-levelup steady state but a fresh
@@ -156,7 +144,15 @@ export default function TabLayout() {
               badge={badges.exploration}
             />
           ),
-          href: isTabHidden(combatContext, 'exploration') ? null : undefined,
+          // Phase 63d — exploration is the unconditional leftmost tab.
+          // Its href stays `undefined` even during the encounter modal
+          // so the route remains current and the modal stays mounted.
+          // Other tabs lock via `href: null` (see character / memoir /
+          // satchel below); exploration itself shouldn't lock or
+          // expo-router force-navigates away from the modal-bearing
+          // screen (the failure mode that surfaced after commit
+          // a18ee12).
+          href: undefined,
         }}
       />
       <Tabs.Screen
@@ -165,14 +161,17 @@ export default function TabLayout() {
           title: TAB_TITLES.combat,
           tabBarLabel: TAB_TITLES.combat,
           tabBarIcon: ({ color, size }) => (
-            <TabIconWithBadge 
-              kind="sword" 
-              color={color} 
-              size={size} 
-              badge={badges.combat} 
+            <TabIconWithBadge
+              kind="sword"
+              color={color}
+              size={size}
+              badge={badges.combat}
             />
           ),
-          href: isTabHidden(combatContext, 'combat') ? null : undefined,
+          // Phase 63d — STRIFE tab permanently hidden from the bar.
+          // Combat lives in the encounter modal now. Route file
+          // remains for deep-link compatibility + DebugCombatButton.
+          href: null,
         }}
       />
       <Tabs.Screen

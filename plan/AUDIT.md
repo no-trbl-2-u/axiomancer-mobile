@@ -78,7 +78,22 @@
 
 ## Pending
 
-_(Empty.)_
+### [3.2] `components/Splatter.tsx` has no colocated test coverage
+
+- category: tests
+- impact: 4 (decorative SVG used as combat-prelude chrome —
+  has real logic via `rnd(i, seed)` deterministic RNG that
+  generates 28 droplet positions + 1 main blot. Silent drift
+  in the rnd helper or the main-vs-drops loop would either
+  collapse the splatter to a fixed pattern or scatter it
+  randomly.)
+- ease: 8 (pure render, no async, no store; assertions on
+  circle count + same-seed → same-position determinism)
+- next: add `components/__tests__/Splatter.test.tsx` — total
+  circle count (1 main + 28 drops = 29); same seed yields
+  identical positions; different seeds yield distinct
+  positions; color + size props honored
+- source: iterate audit 2026-05-21
 
 ## Done
 

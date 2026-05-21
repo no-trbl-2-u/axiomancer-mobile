@@ -13,8 +13,11 @@
  * - Args: `(state, localUi?)` — `localUi` holds preview-only state
  *   (stance the player is composing before commit, skill preview).
  * - Phase: read from `state.combat.phase`. The screen never owns phase.
- * - Skills: read from `state/mocks/combat.skills.fixture.ts` until
- *   engine Spec 04 ships real skills.
+ * - Skills: read from `state/selectors/combat-skills.ts` — the
+ *   engine `skillLibrary` adapter (Phase 16, engine 0.10.2's
+ *   top-level `skillLibrary` + `getSkillById`). Previously the
+ *   data came from a hand-rolled 6-entry mock at
+ *   `state/mocks/combat.skills.fixture.ts`; Phase 16 deleted it.
  * - VM is data only — no event handlers, no colour tokens, no icon
  *   instances. The screen resolves icons from stable `iconKind` keys.
  */
@@ -29,9 +32,9 @@ import type { AppStoreState } from '@/state/store';
 import { useMemo } from 'react';
 
 import {
-    COMBAT_SKILLS_FIXTURE,
+    COMBAT_SKILLS,
     type SkillCategoryKey,
-} from '../mocks/combat.skills.fixture';
+} from '@/state/selectors/combat-skills';
 import { useGameState, useGameStore } from '../GameStoreProvider';
 
 import {
@@ -743,7 +746,7 @@ function buildSkillPicker(
     mana: number,
     manaMax: number,
 ): SkillPickerSlice {
-    const skills: SkillOption[] = COMBAT_SKILLS_FIXTURE.map((s) => {
+    const skills: SkillOption[] = COMBAT_SKILLS.map((s) => {
         const wrongStance = s.stance !== stance;
         const tooExpensive = s.manaCost > mana;
         let disabledReason: SkillOption['disabledReason'] = null;

@@ -66,9 +66,10 @@ import {
 import { getMapLayout } from '@/state/exploration-maps';
 
 import {
-    COMBAT_SKILLS_FIXTURE,
-    type CombatSkillFixture,
-} from './mocks/combat.skills.fixture';
+    COMBAT_SKILLS,
+    getCombatSkillById,
+    type CombatSkill,
+} from '@/state/selectors/combat-skills';
 import { EMPTY_EVENT_SLICE, type AppStore } from './store';
 
 // ---------------------------------------------------------------------------
@@ -260,8 +261,8 @@ function burnCombatMana(store: AppStore, cost: number): void {
     } as any);
 }
 
-function findSkill(skillId: string): CombatSkillFixture | null {
-    return COMBAT_SKILLS_FIXTURE.find((s) => s.id === skillId) ?? null;
+function findSkill(skillId: string): CombatSkill | null {
+    return getCombatSkillById(skillId);
 }
 
 // ---------------------------------------------------------------------------
@@ -883,15 +884,15 @@ function debugSeedAction(store: AppStore): DebugSeedResult {
         }
     }
 
-    // 3. Two skills from the local fixture (covers both paradox +
-    //    fallacy categories). Push directly onto `player.knownSkills`
-    //    rather than via `engine.learnSkill` — the engine's
-    //    skill-library top-level re-export is still missing
-    //    ([needs-engine-release] AUDIT row), so the engine reducer
-    //    can't resolve mobile's fixture ids. Direct mutation keeps
-    //    the seed honest: it adds exactly the skills the screen
-    //    already renders from `COMBAT_SKILLS_FIXTURE`.
-    const fixtureSkillIds: ReadonlyArray<string> = COMBAT_SKILLS_FIXTURE
+    // 3. Two skills from the engine's library (covers both paradox +
+    //    fallacy categories). Phase 16 swapped the data source from
+    //    the local mock to `state/selectors/combat-skills`; engine
+    //    0.10.2 now re-exports `skillLibrary` at the top level.
+    //    Push directly onto `player.knownSkills` rather than via
+    //    `engine.learnSkill` — `learnSkill` enforces level-/stat-
+    //    gating which the dev seed should bypass. The ids it adds
+    //    are exactly what the picker renders from `COMBAT_SKILLS`.
+    const fixtureSkillIds: ReadonlyArray<string> = COMBAT_SKILLS
         .slice(0, 4)
         .map((s) => s.id);
     if (fixtureSkillIds.length > 0) {

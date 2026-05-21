@@ -15,7 +15,7 @@ import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
 import { createAppActions } from '@/state/actions';
 import { createAppStore } from '@/state/store';
-import { COMBAT_SKILLS_FIXTURE } from '@/state/mocks/combat.skills.fixture';
+import { COMBAT_SKILLS } from '@/state/selectors/combat-skills';
 
 afterEach(() => {
     jest.restoreAllMocks();
@@ -66,12 +66,12 @@ describe('debugSeed: items + skills + map reset', () => {
         const after = store.getState().player.knownSkills ?? [];
         expect(after.length).toBeGreaterThanOrEqual(2);
 
-        // Cover both paradox + fallacy from the fixture so the
-        // skills picker has at least one of each.
-        const learnedFixtures = COMBAT_SKILLS_FIXTURE.filter((s) =>
+        // Cover both paradox + fallacy from the engine library so
+        // the skills picker has at least one of each.
+        const learnedSkills = COMBAT_SKILLS.filter((s) =>
             after.includes(s.id),
         );
-        const categories = new Set(learnedFixtures.map((s) => s.category));
+        const categories = new Set(learnedSkills.map((s) => s.category));
         expect(categories.has('paradox')).toBe(true);
         expect(categories.has('fallacy')).toBe(true);
 

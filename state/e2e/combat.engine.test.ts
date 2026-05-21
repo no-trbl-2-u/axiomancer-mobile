@@ -27,7 +27,7 @@ import {
     type CombatPhaseKey,
     type StanceKey,
 } from '@/state/presenters/combat.engine';
-import { COMBAT_SKILLS_FIXTURE } from '@/state/mocks/combat.skills.fixture';
+import { COMBAT_SKILLS } from '@/state/selectors/combat-skills';
 
 afterEach(() => {
     jest.restoreAllMocks();
@@ -76,7 +76,7 @@ describe('selectCombatViewModel: no combat', () => {
         expect(vm.stancePicker.canConfirm).toBe(false);
         expect(vm.actionPicker.options).toHaveLength(4);
         expect(vm.actionPicker.fleeAvailable).toBe(true);
-        expect(vm.skillPicker.skills).toHaveLength(COMBAT_SKILLS_FIXTURE.length);
+        expect(vm.skillPicker.skills).toHaveLength(COMBAT_SKILLS.length);
         expect(vm.log).toEqual([]);
         expect(vm.phaseHeader).toContain('STANCE');
     });
@@ -342,7 +342,7 @@ describe('selectCombatViewModel: skill picker', () => {
         const vm = selectCombatViewModel(store.getState(), { selectedStance: 'heart' });
         expect(vm.skillPicker.availableCount).toBeGreaterThanOrEqual(0);
         expect(vm.skillPicker.availableCount).toBeLessThanOrEqual(vm.skillPicker.totalCount);
-        expect(vm.skillPicker.totalCount).toBe(COMBAT_SKILLS_FIXTURE.length);
+        expect(vm.skillPicker.totalCount).toBe(COMBAT_SKILLS.length);
     });
 });
 

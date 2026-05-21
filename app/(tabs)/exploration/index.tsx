@@ -54,7 +54,13 @@ const OPTION_ICON: Record<NodeType, string> = {
 };
 
 export default function ExplorationScreen() {
-    const { enterCombat, lastOutcome, clearLastOutcome } = useCombatMode();
+    const {
+        enterCombat,
+        lastOutcome,
+        clearLastOutcome,
+        inEncounterModal,
+        openEncounterModal,
+    } = useCombatMode();
     const { mode: aesthetic } = useAesthetic();
     const store = useGameStore();
     const actions = useGameActions();
@@ -91,7 +97,26 @@ export default function ExplorationScreen() {
         () => selectHasActiveEvent({ event: eventSlice, combat } as never),
         [eventSlice, combat],
     );
-    const showEncounterModal = hasEvent && eventVm.kind === 'combat-prelude';
+    // Phase 63c — the modal mount lifecycle now spans the full
+    // encounter session (prelude → combat → aftermath), not just
+    // the moment `selectHasActiveEvent` returns true. Once combat
+    // starts, `selectHasActiveEvent` flips false (it short-circuits
+    // when `state.combat !== null` — Spec 08 Q4 = Future spec for
+    // mid-combat events), which would otherwise unmount the modal
+    // mid-encounter. The `inEncounterModal` flag (combat-mode)
+    // keeps the modal mounted across that boundary.
+    const preludeReady = hasEvent && eventVm.kind === 'combat-prelude';
+    const showEncounterModal = inEncounterModal || preludeReady;
+
+    // Open the encounter session the first time the prelude appears
+    // for a given event. The flag is the modal's lifecycle anchor;
+    // the modal itself drives the close via aftermath dismissal
+    // (Phase 63c follow-on or 63d).
+    useEffect(() => {
+        if (preludeReady && !inEncounterModal) {
+            openEncounterModal();
+        }
+    }, [preludeReady, inEncounterModal, openEncounterModal]);
 
     const nodeById = useMemo(() => {
         const m = new Map<string, ExplorationNode>();

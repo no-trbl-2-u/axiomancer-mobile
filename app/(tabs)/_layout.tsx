@@ -80,7 +80,7 @@ function TabIcon({ kind, color, size }: { kind: string; color: string; size: num
 }
 
 export default function TabLayout() {
-  const { inCombat } = useCombatMode();
+  const { inCombat, inEncounterModal } = useCombatMode();
   // Phase 42 port: extend the WILDS/STRIFE mutex to fire as soon as
   // the combat-prelude event mounts (the `<EncounterModalOverlay>`),
   // not just when combat actually starts. Mirrors prototype.jsx:42
@@ -113,11 +113,20 @@ export default function TabLayout() {
     [player, eventSlice, combat, notifications],
   );
 
+  // Phase 63c — hard-stop the tab bar while the encounter modal is
+  // open (prelude / in-modal combat / aftermath). The chat1 contract
+  // says "user cannot exit these modals" — locking the tab bar
+  // enforces that at the navigation layer. The modal itself owns the
+  // dismissal back to exploration.
+  const tabBarStyle = inEncounterModal
+    ? { ...styles.tabBar, display: 'none' as const }
+    : styles.tabBar;
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle,
         tabBarActiveTintColor: AXM.sulfur,
         tabBarInactiveTintColor: AXM.bone,
         tabBarLabelStyle: styles.tabLabel,

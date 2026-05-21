@@ -79,6 +79,26 @@ export interface CombatModeApi {
     exitCombatWith: (outcome: CombatOutcome) => void;
     /** Clear the lastOutcome signal — called after a consumer acts on it. */
     clearLastOutcome: () => void;
+    /**
+     * Phase 63c — true while the encounter modal is mounted (prelude,
+     * in-modal combat, or aftermath). Drives two contracts:
+     *
+     *   1. Exploration keeps `<EncounterModalOverlay>` mounted across
+     *      the entire prelude → combat → aftermath lifecycle, even
+     *      after `state.combat` goes non-null (which would otherwise
+     *      flip `selectHasActiveEvent` to false and unmount the modal
+     *      mid-encounter).
+     *   2. The tab bar hides while a modal session is active, enforcing
+     *      the "hard stop" — user can't switch tabs until the encounter
+     *      resolves (chat1: "user cannot exit these modals").
+     *
+     * Set true via `openEncounterModal()` when the encounter prelude
+     * mounts; cleared via `closeEncounterModal()` when the aftermath
+     * dismisses (or the player flees / dies).
+     */
+    inEncounterModal: boolean;
+    openEncounterModal: () => void;
+    closeEncounterModal: () => void;
 }
 
 const CombatModeContext = createContext<CombatModeApi | null>(null);
@@ -86,6 +106,7 @@ const CombatModeContext = createContext<CombatModeApi | null>(null);
 export function CombatModeProvider({ children }: { children: React.ReactNode }) {
     const [inCombat, setInCombat] = useState<boolean>(false);
     const [lastOutcome, setLastOutcome] = useState<CombatOutcome | null>(null);
+    const [inEncounterModal, setInEncounterModal] = useState<boolean>(false);
 
     const enterCombat = useCallback(() => {
         setInCombat(true);
@@ -97,6 +118,8 @@ export function CombatModeProvider({ children }: { children: React.ReactNode }) 
         setLastOutcome(outcome);
     }, []);
     const clearLastOutcome = useCallback(() => setLastOutcome(null), []);
+    const openEncounterModal = useCallback(() => setInEncounterModal(true), []);
+    const closeEncounterModal = useCallback(() => setInEncounterModal(false), []);
 
     const value = useMemo<CombatModeApi>(
         () => ({
@@ -106,8 +129,21 @@ export function CombatModeProvider({ children }: { children: React.ReactNode }) 
             lastOutcome,
             exitCombatWith,
             clearLastOutcome,
+            inEncounterModal,
+            openEncounterModal,
+            closeEncounterModal,
         }),
-        [inCombat, enterCombat, exitCombat, lastOutcome, exitCombatWith, clearLastOutcome],
+        [
+            inCombat,
+            enterCombat,
+            exitCombat,
+            lastOutcome,
+            exitCombatWith,
+            clearLastOutcome,
+            inEncounterModal,
+            openEncounterModal,
+            closeEncounterModal,
+        ],
     );
 
     return <CombatModeContext.Provider value={value}>{children}</CombatModeContext.Provider>;

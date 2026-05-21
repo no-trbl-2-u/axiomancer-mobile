@@ -112,7 +112,12 @@ export default function CombatScreen() {
  */
 export function CombatPanel() {
     const router = useRouter();
-    const { exitCombat, exitCombatWith } = useCombatMode();
+    const {
+        exitCombat,
+        exitCombatWith,
+        inEncounterModal,
+        closeEncounterModal,
+    } = useCombatMode();
     const { mode: aesthetic } = useAesthetic();
     const combat = useGameState((s) => s.combat);
     const [selectedStance, setSelectedStance] = useState<StanceKey>('heart');
@@ -185,6 +190,21 @@ export function CombatPanel() {
         actions.resolveRound();
     }, [actions]);
 
+    // Phase 63c — when CombatPanel runs inside the encounter modal,
+    // combat-end handlers skip the `router.replace('/exploration')`
+    // and instead close the encounter modal in-place; the exploration
+    // screen is already mounted underneath the modal, so dismissing
+    // the modal returns the player to the map naturally. The legacy
+    // tab-context path still routes (kept for the /combat route
+    // until Phase 63d retires it).
+    const finalizeCombatExit = useCallback(() => {
+        if (inEncounterModal) {
+            closeEncounterModal();
+        } else {
+            router.replace('/exploration' as never);
+        }
+    }, [inEncounterModal, closeEncounterModal, router]);
+
     const onContinueRound = useCallback(() => {
         // Combat-end outcome resolution for the aftermath banner (Phase 41
         // port). Order matters: friendship max BEFORE enemy HP because a
@@ -193,23 +213,23 @@ export function CombatPanel() {
         if (vm.friendshipCounter >= vm.friendshipCounterMax) {
             actions.endCombat();
             exitCombatWith('parley');
-            router.replace('/exploration' as never);
+            finalizeCombatExit();
             return;
         }
         if (vm.enemy.hp <= 0) {
             actions.endCombat();
             exitCombatWith('victory');
-            router.replace('/exploration' as never);
+            finalizeCombatExit();
             return;
         }
         if (vm.player.hp <= 0) {
             actions.endCombat();
             exitCombatWith('defeat');
-            router.replace('/exploration' as never);
+            finalizeCombatExit();
             return;
         }
         actions.nextRound();
-    }, [actions, exitCombatWith, router, vm.enemy.hp, vm.player.hp, vm.friendshipCounter, vm.friendshipCounterMax]);
+    }, [actions, exitCombatWith, finalizeCombatExit, vm.enemy.hp, vm.player.hp, vm.friendshipCounter, vm.friendshipCounterMax]);
 
     const onFlee = useCallback(() => {
         setToast(vm.actionPicker.fleeMessage);
@@ -220,8 +240,8 @@ export function CombatPanel() {
         // `onLeaveCombat` is the early-exit DEPART path before the
         // resolve phase; treat as 'flee' (the banner stays silent).
         exitCombat();
-        router.replace('/exploration' as never);
-    }, [actions, exitCombat, router]);
+        finalizeCombatExit();
+    }, [actions, exitCombat, finalizeCombatExit]);
 
     if (!vm.isInCombat) {
         // First render before useEffect runs the bootstrap. The pre-

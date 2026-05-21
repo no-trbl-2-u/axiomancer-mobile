@@ -21,7 +21,7 @@ import { AXM } from '@/theme/axm';
 function chipStyle(tree: { toJSON: () => unknown }): ViewStyle {
     // Render output is a JSON tree; the root node is the chip View.
     // Its style prop carries the merged styles[].
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const root = tree.toJSON() as any;
     const node = Array.isArray(root) ? root[0] : root;
     return StyleSheet.flatten(node.props.style as ViewStyle) as ViewStyle;

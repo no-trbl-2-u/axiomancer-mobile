@@ -27,7 +27,7 @@ import { forceEventKindOnNode } from '@/state/exploration-maps/event-pools';
 import type { NodeType } from '@/state/presenters/exploration.engine';
 import { AXM, FONTS } from '@/theme/axm';
 
-const FORCEABLE_KINDS: ReadonlyArray<{ key: NodeType; label: string }> = [
+const FORCEABLE_KINDS: readonly { key: NodeType; label: string }[] = [
     { key: 'rest', label: 'REST' },
     { key: 'gather', label: 'GATHER' },
     { key: 'treasure', label: 'TREASURE' },

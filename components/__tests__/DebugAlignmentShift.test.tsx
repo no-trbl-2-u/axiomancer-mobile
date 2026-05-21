@@ -44,7 +44,7 @@ describe('DebugAlignmentShift: DEV gate', () => {
     });
 
     it('renders null when __DEV__ is false (production build simulation)', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const g = global as any;
         const original = g.__DEV__;
         g.__DEV__ = false;
@@ -61,37 +61,37 @@ describe('DebugAlignmentShift: DEV gate', () => {
 describe('DebugAlignmentShift: shift routing', () => {
     it('epistemology + button increments epistemology by 10', () => {
         const store = makeStore();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const before = (store.getState() as any).philosophicalAlignment.epistemology;
 
         const tree = render(withProvider(store, <DebugAlignmentShift />));
         fireEvent.press(tree.getByTestId('debug-align-epistemology-plus'));
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         expect((store.getState() as any).philosophicalAlignment.epistemology).toBe(before + 10);
     });
 
     it('outlook − button decrements outlook by 10', () => {
         const store = makeStore();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const before = (store.getState() as any).philosophicalAlignment.outlook;
 
         const tree = render(withProvider(store, <DebugAlignmentShift />));
         fireEvent.press(tree.getByTestId('debug-align-outlook-minus'));
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         expect((store.getState() as any).philosophicalAlignment.outlook).toBe(before - 10);
     });
 
     it('scope shifts do not affect epistemology or outlook', () => {
         const store = makeStore();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const before = (store.getState() as any).philosophicalAlignment;
 
         const tree = render(withProvider(store, <DebugAlignmentShift />));
         fireEvent.press(tree.getByTestId('debug-align-scope-plus'));
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const after = (store.getState() as any).philosophicalAlignment;
         expect(after.epistemology).toBe(before.epistemology);
         expect(after.outlook).toBe(before.outlook);
@@ -100,7 +100,7 @@ describe('DebugAlignmentShift: shift routing', () => {
 
     it('stacked presses are additive (3× +10 = +30 net)', () => {
         const store = makeStore();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const before = (store.getState() as any).philosophicalAlignment.epistemology;
 
         const tree = render(withProvider(store, <DebugAlignmentShift />));
@@ -109,7 +109,7 @@ describe('DebugAlignmentShift: shift routing', () => {
         fireEvent.press(plus);
         fireEvent.press(plus);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         expect((store.getState() as any).philosophicalAlignment.epistemology).toBe(before + 30);
     });
 });

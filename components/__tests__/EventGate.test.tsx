@@ -14,6 +14,15 @@ import { act, render } from '@testing-library/react-native';
 import React from 'react';
 import type { ResolveMapEventResult } from 'axiomancer-mechanics';
 
+import { EventGate } from '@/components/EventGate';
+import { GameStoreProvider } from '@/state/GameStoreProvider';
+import {
+    EMPTY_EVENT_SLICE,
+    createAppStore,
+    type AppStore,
+} from '@/state/store';
+import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
+
 const mockPush = jest.fn();
 const mockRouter = {
     push: mockPush,
@@ -28,15 +37,6 @@ jest.mock('expo-router', () => ({
     // re-render (matches expo-router's production behavior).
     useRouter: () => mockRouter,
 }));
-
-import { EventGate } from '@/components/EventGate';
-import { GameStoreProvider } from '@/state/GameStoreProvider';
-import {
-    EMPTY_EVENT_SLICE,
-    createAppStore,
-    type AppStore,
-} from '@/state/store';
-import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
 
 afterEach(() => {
     mockPush.mockClear();

@@ -47,7 +47,7 @@ export function DebugEffectApply() {
             effect,
             round,
         );
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         store.setState({
             player: { ...player, effects: activeEffects },
         } as any);
@@ -59,7 +59,7 @@ export function DebugEffectApply() {
         const combat = store.getState().combat;
         if (!combat || !combat.enemy) {
             // No active combat — dev-only escape hatch can't reach an enemy.
-            // eslint-disable-next-line no-console
+             
             console.warn('DebugEffectApply: no active combat enemy to debuff.');
             return;
         }
@@ -71,7 +71,7 @@ export function DebugEffectApply() {
             round,
         );
         const nextEnemy = { ...enemy, effects: activeEffects };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         store.setState({
             combat: { ...combat, enemy: nextEnemy },
         } as any);

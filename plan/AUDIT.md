@@ -78,7 +78,20 @@
 
 ## Pending
 
-_(Empty.)_
+### [4.5] Drain 32 lint warnings introduced by Phase 60f + Phase 61
+
+- category: tests (quality / verify-gate noise)
+- impact: 5 (warnings mask real signal; the previously-drained
+  [3.8] 2026-05-13 row warned warning counts drift upward —
+  Phase 60f's e2e fixture sweep + Phase 61's 11 new Debug*
+  files reintroduced 32, including 4 pre-existing rows that
+  resurfaced)
+- ease: 9 (mechanical: every warning was either an unused
+  `// eslint-disable-next-line` directive or a `ReadonlyArray<T>`
+  that should be `readonly T[]` — both auto-fixable)
+- next: `npm run lint -- --fix` across the 16 affected files;
+  verify green; commit. No behavior change.
+- source: iterate audit 2026-05-21
 
 ## Done
 

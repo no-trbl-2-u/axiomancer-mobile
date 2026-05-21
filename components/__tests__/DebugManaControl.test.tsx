@@ -40,7 +40,7 @@ describe('DebugManaControl: DEV gate', () => {
     });
 
     it('renders null when __DEV__ is false (production build simulation)', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const g = global as any;
         const original = g.__DEV__;
         g.__DEV__ = false;
@@ -71,7 +71,7 @@ describe('DebugManaControl: drain', () => {
 
     it('zeroes current and preserves max when slice exists', () => {
         const store = makeStore();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         store.setState({ combatMana: { current: 5, max: 20 } } as any);
 
         const tree = render(withProvider(store, <DebugManaControl />));
@@ -98,7 +98,7 @@ describe('DebugManaControl: full', () => {
 
     it('restores current to existing max without raising max', () => {
         const store = makeStore();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         store.setState({ combatMana: { current: 2, max: 20 } } as any);
 
         const tree = render(withProvider(store, <DebugManaControl />));

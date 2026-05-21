@@ -17,7 +17,7 @@ import React from 'react';
 
 import { ActionIcon } from '@/components/ActionIcon';
 
-const KNOWN_KINDS: ReadonlyArray<string> = [
+const KNOWN_KINDS: readonly string[] = [
     'sword',
     'shield',
     'arcane',

@@ -18,6 +18,8 @@ import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
 
+import { TokenCrucible } from '@/components/TokenCrucible';
+
 const mockBack = jest.fn();
 const mockRouter = {
     push: jest.fn(),
@@ -29,8 +31,6 @@ const mockRouter = {
 jest.mock('expo-router', () => ({
     useRouter: () => mockRouter,
 }));
-
-import { TokenCrucible } from '@/components/TokenCrucible';
 
 afterEach(() => {
     mockBack.mockClear();

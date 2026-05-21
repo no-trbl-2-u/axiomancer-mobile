@@ -21,7 +21,7 @@ import React from 'react';
 import { DifficultyBadge } from '@/components/DifficultyBadge';
 import { AXM } from '@/theme/axm';
 
-const TIER_CASES: ReadonlyArray<{ tier: string; label: string; color: string }> = [
+const TIER_CASES: readonly { tier: string; label: string; color: string }[] = [
     { tier: 'simple', label: 'SIMPLE', color: AXM.bone },
     { tier: 'normal', label: 'NORMAL', color: AXM.parchment },
     { tier: 'elite', label: 'ELITE', color: AXM.sulfur },

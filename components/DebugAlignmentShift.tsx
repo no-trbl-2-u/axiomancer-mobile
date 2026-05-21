@@ -30,7 +30,7 @@ const SHIFT_STEP = 10;
 
 type AxisKey = 'epistemology' | 'outlook' | 'scope';
 
-const AXES: ReadonlyArray<{ key: AxisKey; label: string }> = [
+const AXES: readonly { key: AxisKey; label: string }[] = [
     { key: 'epistemology', label: 'EPIST' },
     { key: 'outlook', label: 'OUTLOOK' },
     { key: 'scope', label: 'SCOPE' },

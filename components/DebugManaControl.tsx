@@ -36,7 +36,7 @@ export function DebugManaControl() {
     const setMana = (current: number) => {
         const cur = store.getState().combatMana;
         const max = cur?.max ?? PLAYER_MANA_DEFAULT_MAX;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         store.setState({
             combatMana: { current: Math.max(0, Math.min(current, max)), max },
         } as any);

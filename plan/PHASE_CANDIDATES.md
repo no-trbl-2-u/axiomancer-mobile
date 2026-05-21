@@ -13,22 +13,16 @@
 ## Considered (below threshold)
 
 > Sub-phases of the Phase 60 engine bump that scored lower
-> this pass. /oversight can promote them in a follow-up if the
-> 60a/60d/60b trio ships clean.
+> this pass. /oversight can promote them in a follow-up.
+> 60a/60d/60b/60c all shipped clean; 60e promoted via 18th
+> oversight call; 60f remains (gated on 60e landing).
 
-- **Phase 60e — `ActiveEffect` + `GameStore` slice
-  reconciliation** (score ~3.5). Two intertwined drifts: the
-  engine's `ActiveEffect` no longer carries `id`/`name`; and
-  the mobile's `AppStoreState` slice composition
-  (event / notifications / `_recentEvents`) no longer aligns
-  with the engine's `GameStore` shape. Probably 1-2 phases,
-  uncertain scope until the new types are read.
 - **Phase 60f — Lockfile bump (0.10.0 → 0.10.2) + upgrade doc**
   (score ~5.0). Mechanical once 60a-60e land. Mirrors
   `docs/engine-upgrade-0.7.0-to-0.10.0.md` template. Closes
-  issue #93. **Cannot ship until 60a-60e all land** — the
-  bump fails verify otherwise (already demonstrated in
-  commit `b1a8126`).
+  issue #93. **Cannot ship until 60e lands** — the bump
+  fails verify otherwise (already demonstrated in commit
+  `b1a8126`).
 
 ---
 
@@ -160,6 +154,26 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted 2026-05-20 → status Phase 60e] [score 3.5] Phase 60e — `ActiveEffect` + `GameStore` slice reconciliation
+
+- promoted via `/oversight` 2026-05-20 (18th call) — user
+  selected "Promote 60e only" after the 60c migration shipped
+  clean, matching the prior cautious one-at-a-time cadence.
+  60f stays in Considered until 60e lands.
+- Hardest of the remaining sub-phases. Two intertwined drifts:
+  - Engine 0.10.1+ removed `id` / `name` from public
+    `ActiveEffect`. Mobile reads `effectId` / `name` on the
+    HUD presenter and in event-presenter's effect-classifier.
+  - Mobile's `AppStoreState` slice composition
+    (`event` / `notifications` / `_recentEvents` / `combatMana`)
+    no longer aligns with the engine's `GameStore` shape under
+    0.10.2. Probably needs an explicit cast at the engine-store
+    boundary in `state/store.ts`'s `createAppStore`.
+- Investigation tick first — read the engine 0.10.0 dist (or
+  source) for the canonical ActiveEffect + GameStore shapes;
+  decide whether the reconciliation is a shim, a cast, or a
+  rewrite. Scope-tighten or scope-widen based on what surfaces.
 
 ### [promoted 2026-05-20 → status Phase 60c] [score 5.0] Phase 60c — `DialogueChoice` / `DialogueNode` flattening
 

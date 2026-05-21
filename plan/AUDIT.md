@@ -79,7 +79,7 @@
 ## Pending
 
 
-### [in-progress via Phase 60a/60d/60b] `axiomancer-mechanics@0.10.2` published; surface drift now actively migrating
+### [in-progress via Phase 60a/60d/60b/60c (60e promoted, 60f gated)] `axiomancer-mechanics@0.10.2` published; surface drift actively migrating
 
 - category: external-dependency (engine package)
 - source: cross-repo versioning audit (integrated 2026-05-15), filed via `/oversight` 2026-05-15
@@ -93,6 +93,10 @@
   selected the multi-phase migration shape; Phase 60a/60d/60b
   now in dispatch queue. This audit row drains to Done once the
   lockfile lands at 0.10.2 (Phase 60f, gated on 60a–60e).
+- **2026-05-20 (18th oversight call):** 60a/60d/60b/60c all
+  shipped. 60e (ActiveEffect + GameStore reconciliation) just
+  promoted; 60f (lockfile bump) stays gated. Row drains to
+  Done when 60f lands.
 - **status 2026-05-20 (15th oversight call)** — Engine GH#64
   is **CLOSED**:
   - **Issue 1 (`skillLibrary` / `getSkillById` re-export)** —

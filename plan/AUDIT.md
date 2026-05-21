@@ -78,22 +78,15 @@
 
 ## Pending
 
-### [3.6] `components/NodeMark.tsx` has no colocated test coverage
-
-- category: tests
-- impact: 6 (exploration-map glyph — 4 distinct kind branches
-  (completed / locked / current / available) drive the player's
-  primary visual signal for what's been explored. Silent kind
-  → glyph drift would flatten the map's status communication.)
-- ease: 6 (pure switch + SVG render; 4 branches; size prop
-  passthrough)
-- next: add `components/__tests__/NodeMark.test.tsx` — one
-  case per kind asserts the distinct SVG branch (path/circle
-  count + distinctive prop), plus size-prop passthrough +
-  default-kind fallback to 'available'
-- source: iterate audit 2026-05-21
+_(Empty.)_
 
 ## Done
+
+### [3.6] `components/NodeMark.tsx` colocated test coverage ✅
+- Resolved 2026-05-21 (commit `806a0c4`). Added 7 hermetic cases
+  pinning kind → SVG branch (skull / X / sulfur ring /
+  parchment ring) and the size-prop passthrough across every
+  kind. 847/847 green at land (+7 over 840).
 
 ### [3.2] `components/EffectGlyph.tsx` colocated test coverage ✅
 - Resolved 2026-05-21 (commit `82f3314`). Added 10 hermetic

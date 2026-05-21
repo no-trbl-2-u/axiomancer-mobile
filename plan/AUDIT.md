@@ -78,7 +78,20 @@
 
 ## Pending
 
-_(Empty.)_
+### [3.5] `components/AftermathBanner.tsx` has no colocated test coverage
+
+- category: tests
+- impact: 7 (Phase 41 post-combat banner has real behavior:
+  2500ms auto-dismiss timer, AccessibilityInfo screen-reader
+  announce, conditional `rewards` row — pure-render
+  snapshots don't catch timer drift or a11y regressions)
+- ease: 5 (needs jest.useFakeTimers + AccessibilityInfo mock)
+- next: add `components/__tests__/AftermathBanner.test.tsx` —
+  render contract (eyebrow/title/subtitle present, rewards
+  conditional), accessibility (live region + label + announce
+  one-shot), auto-dismiss timer fires onDismiss after
+  displayMs, testID exposed
+- source: iterate audit 2026-05-21
 
 ## Done
 

@@ -1007,6 +1007,114 @@ phase row.
       (navigation × 4, exploration × 13, migrations × 3 casts)
       to honor the strict AppStoreState shape under 0.10.2.
       760/760 tests green. Closes mirror issue #99.
+- [ ] Phase 60f — Lockfile bump `axiomancer-mechanics`
+      0.10.0 → 0.10.2 + upgrade doc. Promoted via `/oversight`
+      2026-05-20 (19th call) after 60a–60e all shipped clean.
+      Closes the Phase 60 parent + drains the engine-bump
+      AUDIT row.
+
+      Scope (single phase, single commit):
+
+      - One-line edit in `package.json`: `"axiomancer-mechanics":
+        "0.10.0"` → `"0.10.2"` (still exact pin).
+      - `pnpm install` to refresh `pnpm-lock.yaml`.
+      - Author `docs/engine-upgrade-0.10.0-to-0.10.2.md`
+        mirroring the `0.7.0-to-0.10.0` template — enumerate the
+        9 surface drifts already drained by 60a–60e (so the doc
+        is a "what was already done" reference, not a fresh
+        migration plan), name the latent `composeHazard` bug
+        60e caught, point at the mirror issues #95/96/97/98/99
+        for traceability.
+      - Verify gate: `pnpm exec tsc --noEmit`, full `pnpm test`,
+        `pnpm exec eslint . --max-warnings=0`. Expectation:
+        already green at 760/760 against 0.10.0 surface; the
+        bump should not regress because the surface is already
+        migrated.
+      - Close Phase 60 parent row (flip `[parent]` → `[x]`
+        with this commit's hash).
+      - Drain the AUDIT.md `[in-progress via Phase 60a…]` row
+        to Done.
+
+      Commit: `feat(spec60f): bump axiomancer-mechanics 0.10.0
+      → 0.10.2 + upgrade doc`. Closes mirror issue #93.
+
+**DEV-mode coverage expansion (Phase 61 parent + sub-phases,
+filed via `/oversight` 2026-05-20, 19th call).** Promoted from
+`plan/PHASE_CANDIDATES.md` [score 6.0] after user-jot `7821f13`
+("Let's figure out a way to expand the frontend with a 'dev'
+mode where I can test the implementation of every mechanic
+we've ported so far.") and the matching iterate row at
+`dcda455`. User selected the **parent-with-sub-ticks shape**
+(Phase 60 mold) over per-mechanic small phases — easier to
+track scope creep on the meta-feature. Sub-phases ship in
+listed order; each one is a `/ship-a-phase` dispatch.
+
+- [parent] Phase 61 — DEV-mode coverage expansion. Tracks the
+      meta-feature as a whole; sub-phases 61a–61f are the
+      actual work units. Closes when 61f ships clean (or when
+      the user signals "dev expansion complete" via
+      `/oversight`).
+- [ ] Phase 61a — DEV menu structure refresh. Regroup the
+      existing six Debug* affordances (AestheticDevToggle,
+      DebugSeedButton, DebugCombatButton, DebugMapResetButton,
+      DebugChaosToggle, DebugPresetPicker) on the SELF tab
+      into a collapsible `<DevMenu>` section so additions
+      don't blow out the layout. Prerequisite for 61b–61f.
+      Hermetic test: collapsed state hides all six controls;
+      expanded state shows them. Verify gate green.
+      Commit: `feat(spec61a): dev-menu structure refresh —
+      collapsible group on SELF tab`.
+- [ ] Phase 61b — XP + level-up affordance. New
+      `<DebugXpGrant>` row inside the DevMenu (post-61a).
+      Two buttons: `+100 XP` and `FORCE LEVEL UP`.
+      Exercises `character:levelup` event,
+      `notifications.levelUpAcknowledged`, and the
+      character-tab level badge. Hermetic test: pressing
+      grant adds XP via engine action; pressing force-up
+      threads to the next level boundary and emits the typed
+      event. Commit: `feat(spec61b): dev-menu XP + level-up
+      grant`.
+- [ ] Phase 61c — Mana drain/restore. `<DebugManaSlider>`
+      (or two buttons: `DRAIN` / `FULL`). Mutates the mobile
+      `combatMana` slice from Phase 60d. Tests skill-picker
+      disabling at zero mana. Hermetic test: zero-mana state
+      blocks the skill picker; full state re-enables it.
+      Commit: `feat(spec61c): dev-menu mana drain/restore`.
+- [ ] Phase 61d — Philosophical alignment shift.
+      `<DebugAlignmentShift>` — three rows (epistemic / ethical
+      / metaphysical) with ±N buttons. Mutates
+      `state.alignment` (engine 0.10.0 PhilosophicalAlignment
+      cube). Tests the alignment readout on the SELF tab
+      (Phase 52 surface). Hermetic test: shifts re-resolve
+      the active `PhilosophicalAlignmentCell`; bucket chips
+      reflect new values. Commit: `feat(spec61d): dev-menu
+      alignment shift`.
+- [ ] Phase 61e — Active effect apply (player + enemy).
+      `<DebugEffectApply>` — dropdown of named effects ×
+      target picker (PLAYER / CURRENT ENEMY). Applies the
+      effect via engine action. Tests effect chips, DoT
+      accounting, effect-driven advantage. Hermetic test:
+      apply-to-player puts the effect on `state.player.effects`
+      (or the appropriate engine slice); apply-to-enemy
+      requires combat-active and targets the current encounter.
+      Commit: `feat(spec61e): dev-menu effect apply`.
+- [ ] Phase 61f — Event-kind trigger override.
+      `<DebugEventKindForce>` — kind picker (rest / gather /
+      loot-cache / npc-interaction / hazard / encounter) that
+      sets `setNodeEventPoolOverride` for the current node to
+      a one-shot pool of that kind. Sibling to
+      `DebugChaosToggle` (Phase 58) but per-node + per-kind
+      rather than chaos-wide. Tests every event-kind composer
+      surface without grinding to a matching node. Hermetic
+      test: force-rest then resolveMapEvent returns a rest
+      event regardless of node's canonical kind. Commit:
+      `feat(spec61f): dev-menu event-kind trigger override`.
+
+      **Follow-ups out of scope for Phase 61** (re-file as
+      candidates if the user wants them): dialogue-tree jump,
+      quest state mutation, friendship counter, currency
+      grant, combat-HUD spot overrides. The candidate body in
+      `plan/PHASE_CANDIDATES.md` enumerates them.
 
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh

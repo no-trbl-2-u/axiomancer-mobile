@@ -9,6 +9,13 @@
 
 ## Pending
 
+> _No candidates pending. The DEV-mode coverage expansion
+> candidate moved to `## Promoted` as Phase 61 (parent +
+> 6 sub-phases) via `/oversight` 2026-05-20 (19th call).
+> `/expand` re-fills this section on its next pass._
+
+<details>
+<summary>[promoted 2026-05-20 → status Phase 61 parent + 61a–61f] [score 6.0] DEV-mode coverage expansion (preserved for traceability)</summary>
 
 ### [score 6.0] DEV-mode coverage expansion — one debug affordance per ported mechanic
 
@@ -82,20 +89,18 @@
   "DEV-mode expansion" parent phase with sub-rows in the
   Phase 60 / 58 mold.
 
+**Resolution:** user picked the parent-with-sub-ticks shape;
+promoted as Phase 61 parent + 61a–61f. See `01_build_plan.md`
+"DEV-mode coverage expansion" section.
+</details>
+
 
 ## Considered (below threshold)
 
-> Sub-phases of the Phase 60 engine bump that scored lower
-> this pass. /oversight can promote them in a follow-up.
-> 60a/60d/60b/60c all shipped clean; 60e promoted via 18th
-> oversight call; 60f remains (gated on 60e landing).
-
-- **Phase 60f — Lockfile bump (0.10.0 → 0.10.2) + upgrade doc**
-  (score ~5.0). Mechanical once 60a-60e land. Mirrors
-  `docs/engine-upgrade-0.7.0-to-0.10.0.md` template. Closes
-  issue #93. **Cannot ship until 60e lands** — the bump
-  fails verify otherwise (already demonstrated in commit
-  `b1a8126`).
+> Sub-phases of the Phase 60 engine bump. 60a/60d/60b/60c
+> all shipped clean; 60e promoted via 18th oversight call
+> and shipped; 60f promoted to a `[ ]` build-plan row via
+> the 19th oversight call (see Promoted section below).
 
 ---
 
@@ -227,6 +232,41 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted 2026-05-20 → status Phase 61 parent + 61a–61f] [score 6.0] DEV-mode coverage expansion
+
+- promoted via `/oversight` 2026-05-20 (19th call) — user
+  selected the parent-with-sub-ticks shape (Phase 60 mold)
+  over per-mechanic small phases. Easier to track scope creep
+  on the meta-feature.
+- Assigned **Phase 61** parent in `01_build_plan.md` Status
+  block; six sub-phases 61a–61f as `[ ]` rows. Dispatch in
+  listed order (61a is the prerequisite menu structure refresh;
+  61b–61f add per-mechanic affordances).
+- source: user-jot `7821f13` ("expand the frontend with a 'dev'
+  mode where I can test the implementation of every mechanic
+  we've ported so far") + iterate row at `dcda455`.
+- Sub-phase outline (full bodies in the build plan):
+  - 61a — DEV menu structure refresh (collapsible group on SELF)
+  - 61b — XP + level-up affordance
+  - 61c — Mana drain/restore
+  - 61d — Philosophical alignment shift
+  - 61e — Active effect apply (player + enemy)
+  - 61f — Event-kind trigger override
+- Follow-ups out of scope (re-file as candidates if user wants
+  them): dialogue jump, quest state mutation, friendship,
+  currency grant, combat-HUD overrides.
+
+### [promoted 2026-05-20 → status Phase 60f] [score ~5.0] Phase 60f — Lockfile bump 0.10.0 → 0.10.2 + upgrade doc
+
+- promoted via `/oversight` 2026-05-20 (19th call) after
+  60a/60d/60b/60c/60e all shipped clean. The "60f cannot ship
+  until 60e lands" gate has cleared.
+- Mechanical: one-line `package.json` edit, `pnpm install`,
+  author `docs/engine-upgrade-0.10.0-to-0.10.2.md` mirroring
+  the prior upgrade-doc template, verify gate green.
+- Closes the Phase 60 parent row + drains the engine-bump
+  AUDIT row + closes mirror issue #93.
 
 ### [promoted 2026-05-20 → status Phase 60e] [score 3.5] Phase 60e — `ActiveEffect` + `GameStore` slice reconciliation
 

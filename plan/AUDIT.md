@@ -79,7 +79,7 @@
 ## Pending
 
 
-### [in-progress via Phase 60a/60d/60b/60c (60e promoted, 60f gated)] `axiomancer-mechanics@0.10.2` published; surface drift actively migrating
+### [in-progress via Phase 60f (60a–60e all shipped; lockfile bump dispatched)] `axiomancer-mechanics@0.10.2` published; surface drift drained
 
 - category: external-dependency (engine package)
 - source: cross-repo versioning audit (integrated 2026-05-15), filed via `/oversight` 2026-05-15
@@ -97,6 +97,10 @@
   shipped. 60e (ActiveEffect + GameStore reconciliation) just
   promoted; 60f (lockfile bump) stays gated. Row drains to
   Done when 60f lands.
+- **2026-05-20 (19th oversight call):** 60e shipped clean
+  (`8596409`). 60f (lockfile bump 0.10.0 → 0.10.2 + upgrade
+  doc) promoted from `## Considered (below threshold)` to a
+  `[ ]` build-plan row. Row drains to Done when 60f ships.
 - **status 2026-05-20 (15th oversight call)** — Engine GH#64
   is **CLOSED**:
   - **Issue 1 (`skillLibrary` / `getSkillById` re-export)** —

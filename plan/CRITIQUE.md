@@ -16,14 +16,18 @@
 > Critique gate now waits for its standard rate-limit (≥12
 > commits or ≥24h past pass 13 at `ce4f851`).
 >
-> **Next-pass directive (set via `/oversight` 2026-05-18):** the
-> loop has been idle for ~25h after the iterate→expand cascade
-> drained to Pending=0 and PHASE_CANDIDATES filed `no candidates`
-> on pass 12. The next `/march` tick should fire `/critique`
-> pass 11 unconditionally — the pass-5 drain-first gate is open
-> (Pending=0), and a fresh external-observer pass is the cheapest
-> way to refill the queue with signal the prior passes may have
-> missed.
+> **Next-pass directive (set via `/oversight` 2026-05-20, 19th
+> call):** Pending queue is drained (0 rows) and the loop just
+> shipped the Phase 60a–60e engine-bump cascade plus filed
+> Phase 61 (DEV-mode parent + 6 sub-phases). New surface area
+> just landed — every 60a–60e migration touched a presenter
+> or fixture, and 61's dev-menu refresh will reshape SELF tab
+> chrome. Next `/march` tick should fire `/critique` pass 17
+> unconditionally to catch any drift the migration cascade may
+> have introduced (stale JSDoc, missed voice register, chrome
+> literals lifted off VMs during the rapid 60a–60e sweep).
+> Supersedes the prior pass-18 directive (which fired as pass
+> 16 at commit `56725ae`).
 >
 > **Pass-5 policy (set via `/oversight` 2026-05-15):** pause new
 > critique passes until the Pending count drains to ≤ 3 rows.

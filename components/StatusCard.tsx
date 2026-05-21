@@ -9,8 +9,6 @@ interface StatusCardProps {
   level?: number;
   hp?: number;
   hpMax?: number;
-  mana?: number;
-  manaMax?: number;
 }
 
 export function StatusCard({
@@ -18,9 +16,12 @@ export function StatusCard({
   level = 7,
   hp = 22,
   hpMax = 38,
-  mana = 9,
-  manaMax = 14,
 }: StatusCardProps) {
+  // Phase-62 bug-sweep 2026-05-21 (user-direct): the mana bar
+  // was dropped here. Mana is no longer a player-visible mechanic
+  // outside combat (the engine moved to per-resource pools — see
+  // Token Crucible / CombatResources); the SELF-tab status card
+  // should not surface a number it can't model honestly.
   return (
     <View style={styles.card}>
       <View style={styles.row}>
@@ -37,9 +38,6 @@ export function StatusCard({
       <View style={styles.barsRow}>
         <View style={styles.bar}>
           <StatBar value={hp} max={hpMax} color={AXM.blood} label="HP" height={9} />
-        </View>
-        <View style={styles.bar}>
-          <StatBar value={mana} max={manaMax} color={AXM.sulfur} label="MP" height={9} />
         </View>
       </View>
     </View>

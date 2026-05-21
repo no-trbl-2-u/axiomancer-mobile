@@ -78,7 +78,68 @@
 
 ## Pending
 
-_(Empty.)_
+> **User-direct report 2026-05-21 (latest preview build):** four
+> combat-mechanics bugs blocking playability. Filed at HIGH
+> severity; user-source +0.5 bump applied per iterate §4.
+
+### [9.5] Combat regression — "MP" label still appears in player HP/MP bars
+
+- category: voice (legacy label leak)
+- impact: 7 (player-facing chrome on every combat screen +
+  every character status card)
+- ease: 9 (two literal swaps — `components/StatusCard.tsx:42`
+  and `app/(tabs)/combat.tsx:333`)
+- next: replace `label="MP"` with appropriate semantic. Decide
+  whether to drop the bar entirely on character screen (mana
+  is now combat-only via Phase 60d's combatMana slice) or
+  rename to e.g. "mana" / lowercase
+- source: user 2026-05-21 (preview build)
+
+### [9.5] Combat regression — Heart stance cannot be selected
+
+- category: bug (combat blocking)
+- impact: 9 (one of three stances unselectable; basic combat
+  unusable when player wants to fight heart)
+- ease: ? (need to investigate why Heart specifically fails;
+  Mind / Body work)
+- next: trace `setPlayerStance('heart')` path through
+  `combatSetPlayerStance` (engine action) and the stance
+  picker's enabled-state logic in `buildStanceOptions`. Likely
+  cause: heart-stance enabled flag is false in some derived-
+  stats branch, OR the stance buttons in `app/(tabs)/combat.tsx`
+  are wired to a guard that fails for heart.
+- source: user 2026-05-21 (preview build)
+
+### [9.5] Combat regression — Action selection has no effect
+
+- category: bug (combat blocking)
+- impact: 10 (combat completely unusable — player can pick
+  ATTACK/DEFEND/SKILL/ITEM but nothing happens)
+- ease: ? (Phase 21 just changed action routing through engine;
+  prime suspect)
+- next: investigate `setPlayerAction` → `resolveRound` flow.
+  Phase 21 (commit `7a69658`) swapped the action-shape sent
+  to the engine resolver. Possible: the engine doesn't accept
+  the new shape, or the UI tap handler isn't wired, or there's
+  a phase-machine block keeping the round from resolving.
+- source: user 2026-05-21 (preview build)
+
+### [9.5] Combat regression — Encounter modal closes before resolution
+
+- category: bug (combat blocking)
+- impact: 8 (player must pick FIGHT/FLEE; modal dismissing
+  early leaves the encounter unresolved + the map in an
+  inconsistent state)
+- ease: ? (likely modal mount-condition issue —
+  `EncounterModalOverlay` mounts on `vm.kind === 'combat-prelude'`
+  but unmounts on some race)
+- next: trace EncounterModalOverlay's `vm.preludeChrome === null`
+  guard. The overlay returns early if preludeChrome is null;
+  if anything in the pending-event slice gets cleared before
+  the player picks, the modal vanishes. Possibly related to
+  Phase 60b's `Encounter.enemy → enemies[0]` migration, or
+  Phase 40's `selectHasActivePacedEvent` filtering.
+- source: user 2026-05-21 (preview build)
 
 ## Done
 

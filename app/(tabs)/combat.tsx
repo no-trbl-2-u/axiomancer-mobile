@@ -323,14 +323,16 @@ function BattleLog({
 // ---------------------------------------------------------------------------
 
 function PlayerHud({ vm }: { vm: CombatViewModel }) {
+    // Phase-62 bug-sweep 2026-05-21 (user-direct): the mana bar
+    // was dropped. Mana isn't a player-visible single-number
+    // mechanic anymore — the engine moved to per-resource pools
+    // (heart/body/mind/fallacy/paradox) surfaced via the Token
+    // Crucible. The HUD now shows HP + effect chips only.
     return (
         <View style={styles.playerWrap}>
             <View style={styles.playerBar}>
                 <View style={styles.playerBarItem}>
                     <StatBar value={vm.player.hp} max={vm.player.hpMax} color={AXM.blood} label="HP" height={8} />
-                </View>
-                <View style={styles.playerBarItem}>
-                    <StatBar value={vm.player.mana} max={vm.player.manaMax || 1} color={AXM.sulfur} label="MP" height={8} />
                 </View>
                 <View style={styles.playerEffects}>
                     {vm.player.effects.map((e, i) => (

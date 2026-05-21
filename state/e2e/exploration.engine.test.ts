@@ -8,10 +8,11 @@
  */
 
 import { afterEach, describe, it, expect, jest } from '@jest/globals';
-import { createGameStore, createMapState, getMapDefinition } from 'axiomancer-mechanics';
+import { createMapState, getMapDefinition } from 'axiomancer-mechanics';
 
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
 import { createAppActions } from '@/state/actions';
+import { createAppStore } from '@/state/store';
 import {
     selectExplorationViewModel,
     type ExplorationViewModel,
@@ -27,7 +28,7 @@ afterEach(() => {
 
 describe('selectExplorationViewModel: shape contract', () => {
     it('returns a totally-shaped ExplorationViewModel for a fresh game', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
 
         const vm: ExplorationViewModel = selectExplorationViewModel(store.getState());
 
@@ -45,7 +46,7 @@ describe('selectExplorationViewModel: shape contract', () => {
     });
 
     it('eventCallout is either null or a {title, iconKey} object', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
 
         const vm = selectExplorationViewModel(store.getState());
 
@@ -60,7 +61,7 @@ describe('selectExplorationViewModel: shape contract', () => {
 
 describe('selectExplorationViewModel: invariants', () => {
     it('the returned VM is deep-frozen', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
 
         const vm = selectExplorationViewModel(store.getState());
 
@@ -74,7 +75,7 @@ describe('selectExplorationViewModel: invariants', () => {
 describe('selectExplorationViewModel: store lifecycle', () => {
     it('selecting the VM does not call adapter.save', () => {
         const adapter = createMemoryAdapter();
-        const store = createGameStore(adapter);
+        const store = createAppStore({ adapter });
         const saveSpy = jest.spyOn(adapter, 'save');
 
         selectExplorationViewModel(store.getState());
@@ -89,7 +90,7 @@ describe('selectExplorationViewModel: store lifecycle', () => {
 
 describe('selectExplorationViewModel: engine reads', () => {
     it('classifies the starting node as `current` and seeds available/locked', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
 
         const vm = selectExplorationViewModel(store.getState());
 
@@ -104,7 +105,7 @@ describe('selectExplorationViewModel: engine reads', () => {
     });
 
     it('exposes options for each currently available node with a thematic description', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
 
         const vm = selectExplorationViewModel(store.getState());
 
@@ -113,7 +114,7 @@ describe('selectExplorationViewModel: engine reads', () => {
     });
 
     it('marks encounter/boss available nodes as triggersCombat', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
         // Walk to fv-2 so fv-3 (encounter) and fv-4 (treasure) become available.
@@ -136,7 +137,7 @@ describe('selectExplorationViewModel: engine reads', () => {
 
 describe('moveTo action: happy path', () => {
     it('marks the target completed, advances currentNodeId, and unlocks connected nodes', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
         const result = actions.moveTo('fv-2');
@@ -154,7 +155,7 @@ describe('moveTo action: happy path', () => {
     });
 
     it('refreshes the options drawer with the new available nodes after a move', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
         actions.moveTo('fv-2');
@@ -171,7 +172,7 @@ describe('moveTo action: happy path', () => {
 
 describe('moveTo action: locked / invalid targets', () => {
     it('refuses to move to a locked node and leaves state untouched', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
         const before = store.getState();
 
@@ -186,7 +187,7 @@ describe('moveTo action: locked / invalid targets', () => {
     });
 
     it('refuses to move to a non-existent node', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
         const result = actions.moveTo('not-a-real-node');
@@ -195,7 +196,7 @@ describe('moveTo action: locked / invalid targets', () => {
     });
 
     it('refuses to revisit an already-completed node', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
         actions.moveTo('fv-2');
@@ -205,7 +206,7 @@ describe('moveTo action: locked / invalid targets', () => {
     });
 
     it('exposes locked nodes through the VM so the screen can desaturate them', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
 
         const vm = selectExplorationViewModel(store.getState());
 
@@ -224,7 +225,7 @@ describe('moveTo action: locked / invalid targets', () => {
 
 describe('changeMap action: map transition', () => {
     it('swaps the engine currentMap and resets currentNodeId to the new startingNode', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
         actions.changeMap('northern-forest');
@@ -236,7 +237,7 @@ describe('changeMap action: map transition', () => {
     });
 
     it('loads the new layout fixture so node positions and labels update', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
         actions.changeMap('northern-forest');
@@ -266,7 +267,7 @@ describe('changeMap action: map transition', () => {
 
 describe('exploration lifecycle: multi-step navigation', () => {
     it('navigating two nodes leaves both as completed in the engine state', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
         actions.moveTo('fv-2');
@@ -286,7 +287,7 @@ describe('exploration lifecycle: multi-step navigation', () => {
 
     it('a move does not implicitly call adapter.save (Spec 09 hook)', () => {
         const adapter = createMemoryAdapter();
-        const store = createGameStore(adapter);
+        const store = createAppStore({ adapter });
         const actions = createAppActions(store);
         const saveSpy = jest.spyOn(adapter, 'save');
 
@@ -305,7 +306,7 @@ describe('exploration lifecycle: multi-step navigation', () => {
 
 describe('moveTo action: engine discoveredNodes population (Phase 27)', () => {
     it('populates discoveredNodes with the moved-to node’s neighbours per engine MapDefinition', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
         actions.moveTo('fv-2');
@@ -322,7 +323,7 @@ describe('moveTo action: engine discoveredNodes population (Phase 27)', () => {
     });
 
     it('revealing the same neighbours twice is idempotent', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
         actions.moveTo('fv-2');
@@ -343,7 +344,7 @@ describe('moveTo action: engine discoveredNodes population (Phase 27)', () => {
 
 describe('resolveCurrentMapEvent: engine consumedNodes population (Phase 27)', () => {
     it('marks the current node consumed when a non-none event resolves', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
         // Walk to a node before resolving — the starting node may be a
         // 'none' kind in some fixtures.
@@ -364,7 +365,7 @@ describe('resolveCurrentMapEvent: engine consumedNodes population (Phase 27)', (
     });
 
     it('does NOT mark consumed when event.kind is “none”', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
         // The starting node may or may not have an event pool. The
         // assertion is robust either way: if the produced-true branch
@@ -385,7 +386,7 @@ describe('resolveCurrentMapEvent: engine consumedNodes population (Phase 27)', (
 
 describe('selectExplorationViewModel: drawer copy', () => {
     it('exposes a lowercase-ritual empty-state and swipe hint on the VM', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const vm = selectExplorationViewModel(store.getState());
 
         expect(vm.drawerCopy.emptyMessage).toBe('the paths close.');
@@ -396,7 +397,7 @@ describe('selectExplorationViewModel: drawer copy', () => {
     });
 
     it('drops the prior sentence-case empty literal that mismatched the screen voice', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const vm = selectExplorationViewModel(store.getState());
 
         // Pin regression: the pre-fix copy started with a capital and
@@ -418,7 +419,7 @@ describe('selectExplorationViewModel: drawer copy', () => {
 
 describe('selectExplorationViewModel: LEAGUES bucket', () => {
     it('populates a non-empty leagues value (I | II | III) on every option', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const vm = selectExplorationViewModel(store.getState());
 
         expect(vm.options.length).toBeGreaterThan(0);
@@ -428,7 +429,7 @@ describe('selectExplorationViewModel: LEAGUES bucket', () => {
     });
 
     it('buckets options monotonically by distance from the current node', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const vm = selectExplorationViewModel(store.getState());
 
         if (vm.options.length < 2) return;
@@ -458,7 +459,7 @@ describe('selectExplorationViewModel: LEAGUES bucket', () => {
     });
 
     it('respects the documented thresholds (≤80=I, ≤160=II, >160=III)', () => {
-        const store = createGameStore(createMemoryAdapter());
+        const store = createAppStore({ adapter: createMemoryAdapter() });
         const vm = selectExplorationViewModel(store.getState());
 
         const current = vm.nodes.find((n) => n.id === vm.currentNodeId);
@@ -486,7 +487,6 @@ describe('selectExplorationViewModel: LEAGUES bucket', () => {
 // is hermetic (pure props in, dispatches out).
 // ---------------------------------------------------------------------------
 
-import { createAppStore } from '@/state/store';
 import { selectEventViewModel, selectHasActiveEvent } from '@/state/presenters/event.engine';
 
 describe('encounter-modal seam (Tick D)', () => {

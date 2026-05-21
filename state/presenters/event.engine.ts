@@ -21,6 +21,7 @@
  */
 
 import type {
+    ActiveEffect,
     DialogueChoice,
     DialogueNode,
     DialogueTree,
@@ -698,10 +699,15 @@ function composeCutscene(body: string, artSlug: EventArtSlug): Omit<EventViewMod
 
 function composeHazard(
     damage: number,
-    effects: ReadonlyArray<{ id?: string; name?: string }>,
+    effects: ReadonlyArray<ActiveEffect>,
     body: string,
     artSlug: EventArtSlug,
 ): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
+    // Phase 60e — engine `ActiveEffect` carries `effectId`, not
+    // `id` / `name`. The prior `{ id?, name? }` parameter type
+    // always landed on the 'effect' fallback because neither field
+    // exists on the engine type. The label is now the engine's
+    // canonical `effectId` (e.g. 'bleed', 'mind-burn').
     const consequences: EventConsequence[] = [];
     if (damage > 0) {
         consequences.push({ kind: 'damage', amount: damage });
@@ -709,7 +715,7 @@ function composeHazard(
     for (const effect of effects) {
         consequences.push({
             kind: 'flag',
-            label: effect.name ?? effect.id ?? 'effect',
+            label: effect.effectId,
         });
     }
     return {

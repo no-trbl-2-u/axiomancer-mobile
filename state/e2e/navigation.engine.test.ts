@@ -206,11 +206,20 @@ describe('navigation.engine', () => {
     });
 
     describe('selectNavigationViewModel', () => {
+        // Phase 60e — `selectNavigationViewModel(state: AppStoreState)`
+        // expects the mobile-only slice composition. Previously
+        // these tests used `createGameStore` (engine-level) and
+        // passed plain GameState; works on engine 0.10.0 with
+        // permissive types but would fail under 0.10.2 strict.
+        // Switched to `createAppStore` so the type alignment is
+        // honest and the lockfile bump (Phase 60f) is a no-op
+        // here.
+
         it('combines active tab and badges correctly', () => {
-            const store = createGameStore(createMemoryAdapter());
-            
+            const store: AppStore = createAppStore({ adapter: createMemoryAdapter() });
+
             const result = selectNavigationViewModel(store.getState());
-            
+
             expect(result).toMatchObject({
                 activeTab: 'exploration',
                 badges: expect.objectContaining({
@@ -224,31 +233,31 @@ describe('navigation.engine', () => {
         });
 
         it('reflects combat state in active tab', () => {
-            const store = createGameStore(createMemoryAdapter());
-            
+            const store: AppStore = createAppStore({ adapter: createMemoryAdapter() });
+
             // Start combat
             store.getState().startCombat(makeEnemy());
-            
+
             const result = selectNavigationViewModel(store.getState());
             expect(result.activeTab).toBe('combat');
         });
 
         it('is frozen in development', () => {
-            const store = createGameStore(createMemoryAdapter());
-            
+            const store: AppStore = createAppStore({ adapter: createMemoryAdapter() });
+
             const result = selectNavigationViewModel(store.getState());
-            
+
             expect(Object.isFrozen(result)).toBe(true);
             expect(Object.isFrozen(result.badges)).toBe(true);
         });
 
         it('maintains referential stability for same input', () => {
-            const store = createGameStore(createMemoryAdapter());
+            const store: AppStore = createAppStore({ adapter: createMemoryAdapter() });
             const state = store.getState();
-            
+
             const result1 = selectNavigationViewModel(state);
             const result2 = selectNavigationViewModel(state);
-            
+
             expect(result1.activeTab).toBe(result2.activeTab);
             expect(result1.badges).toEqual(result2.badges);
         });

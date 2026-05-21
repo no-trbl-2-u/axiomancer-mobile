@@ -187,7 +187,7 @@ describe('migrations.engine', () => {
                 state: v2State,
             };
 
-            const result = unwrap(v2Envelope) as Record<string, unknown>;
+            const result = unwrap(v2Envelope) as unknown as Record<string, unknown>;
 
             expect(result.philosophicalAlignment).toEqual(defaultAlignment());
             // Other fields pass through untouched.
@@ -198,7 +198,7 @@ describe('migrations.engine', () => {
     describe('v2 → v3 migration (alignment backfill, engine 0.10.0)', () => {
         test('adds philosophicalAlignment when missing, using defaultAlignment()', () => {
             const v2State = { player: { name: 'Pilgrim' } };
-            const result = unwrap({ schemaVersion: 2, state: v2State }) as Record<string, unknown>;
+            const result = unwrap({ schemaVersion: 2, state: v2State }) as unknown as Record<string, unknown>;
 
             expect(result.philosophicalAlignment).toEqual(defaultAlignment());
         });
@@ -209,7 +209,7 @@ describe('migrations.engine', () => {
                 player: { name: 'Pilgrim' },
                 philosophicalAlignment: existing,
             };
-            const result = unwrap({ schemaVersion: 2, state: v2State }) as Record<string, unknown>;
+            const result = unwrap({ schemaVersion: 2, state: v2State }) as unknown as Record<string, unknown>;
 
             expect(result.philosophicalAlignment).toEqual(existing);
         });

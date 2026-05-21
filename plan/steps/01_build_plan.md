@@ -1056,11 +1056,15 @@ we've ported so far.") and the matching iterate row at
 track scope creep on the meta-feature. Sub-phases ship in
 listed order; each one is a `/ship-a-phase` dispatch.
 
-- [parent] Phase 61 — DEV-mode coverage expansion. Tracks the
-      meta-feature as a whole; sub-phases 61a–61f are the
-      actual work units. Closes when 61f ships clean (or when
-      the user signals "dev expansion complete" via
-      `/oversight`).
+- [x] Phase 61 — DEV-mode coverage expansion. All six
+      sub-phases shipped: 61a `e846942` (menu structure), 61b
+      `5fef0fd` (XP + level-up), 61c `01cd261` (mana
+      drain/restore), 61d `bd24fc4` (alignment shift), 61e
+      `1ce56b1` (effect apply), 61f `01932f7` (event-kind
+      trigger override). SELF-tab DevMenu now exposes 11
+      collapsible debug affordances spanning every ported
+      mechanic class (existing 6 + new 5). 800/800 green at
+      Phase 61 close (was 766 at Phase 61a's land).
 - [x] Phase 61a — DEV menu structure refresh. Shipped
       `e846942` — `feat(spec61a): dev-menu structure refresh —
       collapsible group on SELF tab`. New `<DevMenu>` wrapper
@@ -1102,17 +1106,14 @@ listed order; each one is a `/ship-a-phase` dispatch.
       carries singular `enemy` per engine 0.10.2). Picker UI
       deferred — two static ids are enough for manual-test
       observability. +6 hermetic tests. 793/793 green (was 787).
-- [ ] Phase 61f — Event-kind trigger override.
-      `<DebugEventKindForce>` — kind picker (rest / gather /
-      loot-cache / npc-interaction / hazard / encounter) that
-      sets `setNodeEventPoolOverride` for the current node to
-      a one-shot pool of that kind. Sibling to
-      `DebugChaosToggle` (Phase 58) but per-node + per-kind
-      rather than chaos-wide. Tests every event-kind composer
-      surface without grinding to a matching node. Hermetic
-      test: force-rest then resolveMapEvent returns a rest
-      event regardless of node's canonical kind. Commit:
-      `feat(spec61f): dev-menu event-kind trigger override`.
+- [x] Phase 61f — Event-kind trigger override. Shipped
+      `01932f7` — `feat(spec61f): dev-menu event-kind trigger
+      override`. Five-button panel (REST / GATHER / TREASURE /
+      QUEST / FIGHT) routed through new
+      `forceEventKindOnNode(mapId, nodeId, kind)` helper in
+      `event-pools.ts`. Reuses existing `poolIdForNode` mapping
+      so per-map pool variations propagate automatically. +7
+      hermetic tests. 800/800 green (was 793).
 
       **Follow-ups out of scope for Phase 61** (re-file as
       candidates if the user wants them): dialogue-tree jump,

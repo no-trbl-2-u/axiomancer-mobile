@@ -8,6 +8,7 @@ import { DebugCombatButton } from '@/components/DebugCombatButton';
 import { DebugAlignmentShift } from '@/components/DebugAlignmentShift';
 import { DebugDialogueJump } from '@/components/DebugDialogueJump';
 import { DebugEffectApply } from '@/components/DebugEffectApply';
+import { DebugQuestState } from '@/components/DebugQuestState';
 import { DebugEventKindForce } from '@/components/DebugEventKindForce';
 import { DebugManaControl } from '@/components/DebugManaControl';
 import { DebugMapResetButton } from '@/components/DebugMapResetButton';
@@ -248,6 +249,7 @@ export default function CharacterScreen() {
         <DebugEffectApply />
         <DebugEventKindForce />
         <DebugDialogueJump />
+        <DebugQuestState />
       </DevMenu>
     </ScreenBg>
   );

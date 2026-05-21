@@ -68,7 +68,7 @@ interface TreeOption {
     npcName: string;
 }
 
-const TREES: ReadonlyArray<TreeOption> = [
+const TREES: readonly TreeOption[] = [
     { key: 'omen', label: 'OMEN', tree: OMEN_TREE, npcName: 'forgotten-pilgrim' },
     { key: 'friend', label: 'FRIEND', tree: FRIEND_TREE, npcName: 'boy-priest' },
 ];
@@ -85,7 +85,7 @@ export function DebugDialogueJump() {
             npcName: option.npcName,
             dialogue: option.tree,
         };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         store.setState({
             event: {
                 pending: { state, event: interaction },

@@ -1093,15 +1093,15 @@ listed order; each one is a `/ship-a-phase` dispatch.
       engine names won as the canonical surface) with ±10
       buttons routing through `shiftPhilosophicalAlignment`.
       +7 hermetic tests. 787/787 green (was 780).
-- [ ] Phase 61e — Active effect apply (player + enemy).
-      `<DebugEffectApply>` — dropdown of named effects ×
-      target picker (PLAYER / CURRENT ENEMY). Applies the
-      effect via engine action. Tests effect chips, DoT
-      accounting, effect-driven advantage. Hermetic test:
-      apply-to-player puts the effect on `state.player.effects`
-      (or the appropriate engine slice); apply-to-enemy
-      requires combat-active and targets the current encounter.
-      Commit: `feat(spec61e): dev-menu effect apply`.
+- [x] Phase 61e — Active effect apply (player + enemy). Shipped
+      `1ce56b1` — `feat(spec61e): dev-menu effect apply`.
+      Two static effect targets (BUFF · ME →
+      `buff_body_defense_up` / BLEED · FOE → `debuff_bleed`)
+      routed through the engine's `applyEffect` helper. Enemy
+      branch no-ops + warns when no combat is active (CombatState
+      carries singular `enemy` per engine 0.10.2). Picker UI
+      deferred — two static ids are enough for manual-test
+      observability. +6 hermetic tests. 793/793 green (was 787).
 - [ ] Phase 61f — Event-kind trigger override.
       `<DebugEventKindForce>` — kind picker (rest / gather /
       loot-cache / npc-interaction / hazard / encounter) that

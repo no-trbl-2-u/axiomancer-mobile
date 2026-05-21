@@ -89,7 +89,18 @@ export default function TabLayout() {
   // node and sees the modal but the tab bar still reads WILDS until
   // they pick FIGHT — visual continuity gap.
   const hasCombatPrelude = useGameState(selectHasActiveCombatPrelude);
-  const combatContext = inCombat || hasCombatPrelude;
+  // Phase 63c regression fix (2026-05-21): pickEventChoice('fight')
+  // clears the event slice AND starts combat, which flipped
+  // `combatContext` true via `inCombat`. The exploration tab's
+  // href became null → expo-router navigated AWAY from
+  // exploration → the modal (which lives inside
+  // <ExplorationScreen>) unmounted → user saw the combat tab
+  // (or nothing). When the encounter modal is active, the tab
+  // mutex must NOT swap WILDS↔STRIFE — the user has to stay on
+  // exploration so the modal stays mounted. The modal's internal
+  // mode flips prelude → combat; the combat tab is irrelevant
+  // while the modal session is alive.
+  const combatContext = (inCombat || hasCombatPrelude) && !inEncounterModal;
   // Subscribe to the slim slices `selectTabBadges` reads, then memo
   // the badges object. The presenter returns a stable `EMPTY_BADGES`
   // reference in the no-event / no-levelup steady state but a fresh
@@ -115,18 +126,18 @@ export default function TabLayout() {
 
   // Phase 63c — hard-stop the tab bar while the encounter modal is
   // open (prelude / in-modal combat / aftermath). The chat1 contract
-  // says "user cannot exit these modals" — locking the tab bar
-  // enforces that at the navigation layer. The modal itself owns the
-  // dismissal back to exploration.
-  const tabBarStyle = inEncounterModal
-    ? { ...styles.tabBar, display: 'none' as const }
-    : styles.tabBar;
+  // says "user cannot exit these modals". Implemented via `href: null`
+  // on every non-exploration tab (exploration stays navigable so the
+  // modal-bearing screen remains mounted). The tab bar visually stays
+  // to maintain layout stability; tab buttons just become non-tappable
+  // (gray-out via accessibilityState on the navigator).
+  const lockOtherTabs = inEncounterModal;
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle,
+        tabBarStyle: styles.tabBar,
         tabBarActiveTintColor: AXM.sulfur,
         tabBarInactiveTintColor: AXM.bone,
         tabBarLabelStyle: styles.tabLabel,
@@ -177,6 +188,7 @@ export default function TabLayout() {
               badge={badges.character}
             />
           ),
+          href: lockOtherTabs ? null : undefined,
         }}
       />
       <Tabs.Screen
@@ -192,6 +204,7 @@ export default function TabLayout() {
               badge={badges.memoir}
             />
           ),
+          href: lockOtherTabs ? null : undefined,
         }}
       />
       <Tabs.Screen
@@ -207,6 +220,7 @@ export default function TabLayout() {
               badge={badges.inventory}
             />
           ),
+          href: lockOtherTabs ? null : undefined,
         }}
       />
     </Tabs>

@@ -286,17 +286,21 @@ const styles = StyleSheet.create({
     },
     panel: {
         position: 'absolute',
-        // Insets match `prototype.jsx:456` (`left: 12, right: 12,
-        // top: 56, bottom: 84`) so a strip of map shows above the
-        // panel and the WILDS/STRIFE tab bar peeks through below —
-        // the diegetic-stack continuity the chat-2 §IV "map persists
-        // behind every modal" decision targets. Was `bottom: 80`
-        // pre-Phase 48; tightened to 84 so the bottom inset reads
-        // identically to the design specimen.
+        // User-direct tighter insets (2026-05-21): combat content
+        // (CombatPanel renders enemy panel + log + HUD +
+        // PhaseStack) outgrew the prior `top: 56, bottom: 84`
+        // padding tuned for the design's prelude-only modal.
+        // The tab bar is hidden during the modal session now
+        // (Phase 63c+), so the bottom inset no longer needs to
+        // leave room for it. Tightened insets still preserve the
+        // chat-2 §IV diegetic-stack continuity (a thin strip of
+        // map shows above + below) while giving the combat
+        // surface ~120 more vertical pixels to fit content
+        // without aggressive scrolling.
         left: 12,
         right: 12,
-        top: 56,
-        bottom: 84,
+        top: 24,
+        bottom: 24,
         backgroundColor: AXM.bg,
         borderWidth: 1,
         borderColor: AXM.rust,

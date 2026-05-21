@@ -223,27 +223,58 @@ export function CombatPanel() {
     }, [inEncounterModal, closeEncounterModal, router]);
 
     const onContinueRound = useCallback(() => {
+        if (__DEV__) {
+            // Phase-65 [9.5] Next Round diagnostic 2026-05-21
+            // (user-direct). User report: "Next Round always exits
+            // combat or completes combat. Even if there is no damage
+            // done." Surface which branch fires + the vm values
+            // driving it. Remove with the rest of the Phase 65
+            // diagnostic stream once [9.5] Next Round narrows.
+            // eslint-disable-next-line no-console
+            console.log(
+                '[combat] onContinueRound fired — vm.friendshipCounter=', vm.friendshipCounter,
+                'friendshipCounterMax=', vm.friendshipCounterMax,
+                'vm.enemy.hp=', vm.enemy.hp,
+                'vm.player.hp=', vm.player.hp,
+            );
+        }
         // Combat-end outcome resolution for the aftermath banner (Phase 41
         // port). Order matters: friendship max BEFORE enemy HP because a
         // parley fight ends when the friendship counter hits the cap even
         // if the enemy hasn't dropped. Player HP <= 0 is the defeat branch.
         if (vm.friendshipCounter >= vm.friendshipCounterMax) {
+            if (__DEV__) {
+                // eslint-disable-next-line no-console
+                console.log('[combat] onContinueRound branch=PARLEY (friendshipCounter >= max)');
+            }
             actions.endCombat();
             exitCombatWith('parley');
             finalizeCombatExit();
             return;
         }
         if (vm.enemy.hp <= 0) {
+            if (__DEV__) {
+                // eslint-disable-next-line no-console
+                console.log('[combat] onContinueRound branch=VICTORY (enemy.hp <= 0)');
+            }
             actions.endCombat();
             exitCombatWith('victory');
             finalizeCombatExit();
             return;
         }
         if (vm.player.hp <= 0) {
+            if (__DEV__) {
+                // eslint-disable-next-line no-console
+                console.log('[combat] onContinueRound branch=DEFEAT (player.hp <= 0)');
+            }
             actions.endCombat();
             exitCombatWith('defeat');
             finalizeCombatExit();
             return;
+        }
+        if (__DEV__) {
+            // eslint-disable-next-line no-console
+            console.log('[combat] onContinueRound branch=NEXT_ROUND (no exit condition)');
         }
         actions.nextRound();
     }, [actions, exitCombatWith, finalizeCombatExit, vm.enemy.hp, vm.player.hp, vm.friendshipCounter, vm.friendshipCounterMax]);

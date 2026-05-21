@@ -1079,12 +1079,12 @@ listed order; each one is a `/ship-a-phase` dispatch.
       which flips `notifications.levelUpAcknowledged` false and
       re-arms the character-tab badge. +7 hermetic tests. 773/773
       green (was 766).
-- [ ] Phase 61c — Mana drain/restore. `<DebugManaSlider>`
-      (or two buttons: `DRAIN` / `FULL`). Mutates the mobile
-      `combatMana` slice from Phase 60d. Tests skill-picker
-      disabling at zero mana. Hermetic test: zero-mana state
-      blocks the skill picker; full state re-enables it.
-      Commit: `feat(spec61c): dev-menu mana drain/restore`.
+- [x] Phase 61c — Mana drain/restore. Shipped `01cd261` —
+      `feat(spec61c): dev-menu mana drain/restore`. New
+      `<DebugManaControl>` row with two buttons (DRAIN / FULL)
+      mutating the mobile `combatMana` slice. Seeds from null
+      when no combat is active; preserves `.max` when slice
+      exists. +7 hermetic tests. 780/780 green (was 773).
 - [ ] Phase 61d — Philosophical alignment shift.
       `<DebugAlignmentShift>` — three rows (epistemic / ethical
       / metaphysical) with ±N buttons. Mutates

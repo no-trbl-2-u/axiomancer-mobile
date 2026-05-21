@@ -1217,17 +1217,16 @@ that row gets revisited via `/iterate` once Phase 63 lands.
       `components/combat/CombatPanel.tsx` re-exports for
       callers outside the (tabs) folder. +2 hermetic surface
       tests. 898/898 green (was 896).
-- [ ] Phase 63b — Mount `<CombatPanel>` inside
-      `EncounterModalOverlay` after the player commits FIGHT.
-      The overlay grows a `mode` state machine
-      (`'prelude' | 'combat' | 'aftermath'`); FIGHT transitions
-      `prelude → combat`. The `router.replace('/combat')` call
-      in `app/(tabs)/exploration/index.tsx`'s
-      `onEncounterFight` is removed; the modal stays mounted.
-      Tests: pin the overlay's three-mode shape; FIGHT
-      transition into combat mode; tap-outside is still
-      blocked. Commit: `feat(spec63b): combat lives inside
-      EncounterModalOverlay`.
+- [x] Phase 63b — Mount `<CombatPanel>` inside
+      `EncounterModalOverlay`. Shipped `8deeb27` —
+      `feat(spec63b): combat lives inside EncounterModalOverlay`.
+      Internal `useState<'prelude' | 'combat' | 'aftermath'>`
+      on the overlay; FIGHT advances prelude → combat and
+      swaps content to a ScrollView-wrapped `<CombatPanel>`.
+      `router.replace('/combat')` removed from exploration's
+      `onEncounterFight`; useRouter import dropped. +3 hermetic
+      cases pin the prelude→combat transition. 901/901 green
+      (was 898).
 - [ ] Phase 63c — Wire aftermath dismissal back to exploration
       from inside the modal. When the round ends (victory /
       parley / flee), the overlay's mode transitions to

@@ -102,7 +102,19 @@ export function EncounterModalOverlay({
         transform: [{ translateY: panelOffset.value }],
     }));
 
-    if (vm.kind !== 'combat-prelude' || vm.preludeChrome === null) return null;
+    // Phase 63c follow-up (2026-05-21): the prelude branch requires
+    // a `combat-prelude` VM + populated `preludeChrome`, but the
+    // `combat` mode branch MUST stay mounted even after the engine
+    // event slice clears (which `pickEventChoice('fight')` does
+    // synchronously). Gate the early-return on mode: only non-combat
+    // modes need the prelude VM. Combat mode reads from the engine
+    // combat slice via `<CombatPanel>`; aftermath (reserved) will
+    // read from `lastOutcome`.
+    const preludeRenderable = vm.kind === 'combat-prelude' && vm.preludeChrome !== null;
+    if (mode !== 'combat' && !preludeRenderable) return null;
+    // preludeChrome is non-null in the prelude render path per the
+    // early-return above; combat-mode JSX never reads it. The
+    // non-null assertions in the prelude branch are safe.
     const isBoss = vm.variant === 'boss';
     const fightChoice = vm.choices.find((c) => c.id === 'fight');
     const fleeChoice = vm.choices.find((c) => c.id === 'flee');
@@ -137,14 +149,14 @@ export function EncounterModalOverlay({
                             const { left, right } = selectEventCodexHeader(vm);
                             return <EventCodexHeader left={left} right={right} />;
                         })()}
-                        <ChainBar label={vm.preludeChrome.sealLabel} />
+                        <ChainBar label={vm.preludeChrome!.sealLabel} />
 
                         <View style={styles.preludeHeader}>
                             <Svg width={10} height={10} viewBox="0 0 10 10">
                                 <SvgPath d="M5 1 L 7 7 L 3 7 Z" fill={AXM.blood} />
                             </Svg>
                             <Text style={styles.preludeHeaderText}>
-                                {vm.preludeChrome.eyebrow}
+                                {vm.preludeChrome!.eyebrow}
                             </Text>
                         </View>
 
@@ -153,7 +165,7 @@ export function EncounterModalOverlay({
                             <EventArt slug={vm.artSlug} />
                             <View style={styles.strifeSash} testID="encounter-modal-sash">
                                 <Text style={styles.strifeSashText}>
-                                    {vm.preludeChrome.sashLabel}
+                                    {vm.preludeChrome!.sashLabel}
                                 </Text>
                             </View>
                             <Splatter
@@ -220,14 +232,14 @@ export function EncounterModalOverlay({
                                     )}
                                     {!fleeEnabled && fleeSubtitle === null && (
                                         <Text style={styles.choiceSub}>
-                                            {vm.preludeChrome.fleeDisabledHint}
+                                            {vm.preludeChrome!.fleeDisabledHint}
                                         </Text>
                                     )}
                                 </View>
                             </TouchableOpacity>
                         </View>
 
-                        <ChainBar label={vm.preludeChrome.sealLabel} />
+                        <ChainBar label={vm.preludeChrome!.sealLabel} />
                     </>
                 )}
             </Animated.View>

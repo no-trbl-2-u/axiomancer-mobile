@@ -310,3 +310,68 @@ describe('EncounterModalOverlay: prelude → combat mode transition', () => {
         expect(onFight).toHaveBeenCalledTimes(1);
     });
 });
+
+// ---------------------------------------------------------------------------
+// Phase 63c follow-up — modal stays mounted after engine clears the event
+// slice (the regression user surfaced 2026-05-21).
+// ---------------------------------------------------------------------------
+
+describe('EncounterModalOverlay: combat mode survives vm.kind change', () => {
+    function withAllProviders(child: React.ReactNode) {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { GameStoreProvider } = require('@/state/GameStoreProvider');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { createAppStore } = require('@/state/store');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { createMemoryAdapter } = require('@/test-utils/memoryAdapter');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { CombatModeProvider } = require('@/state/combat-mode');
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        return (
+            <AestheticModeProvider initialMode="canonical" skipHydration>
+                <CombatModeProvider>
+                    <GameStoreProvider store={store}>
+                        {child}
+                    </GameStoreProvider>
+                </CombatModeProvider>
+            </AestheticModeProvider>
+        );
+    }
+
+    it('combat mode stays mounted even when vm.kind flips to "none" mid-encounter', () => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { fireEvent, render: localRender } = require('@testing-library/react-native');
+        // Initial vm is combat-prelude; user taps FIGHT; on the next
+        // render the parent (exploration) passes a non-prelude vm
+        // because pickEventChoice('fight') clears the event slice.
+        // The overlay must NOT return null in this state — the user-
+        // facing regression "combat modal disappears when I tap FIGHT".
+        const initialVm = makeCombatPreludeVm();
+        const { rerender, queryByTestId } = localRender(
+            withAllProviders(
+                <EncounterModalOverlay vm={initialVm} onFight={() => {}} onFlee={() => {}} />,
+            ),
+        );
+        fireEvent.press(queryByTestId('encounter-modal-fight'));
+        expect(queryByTestId('encounter-modal-combat-mode')).not.toBeNull();
+
+        // Now simulate the parent re-rendering with a cleared event slice
+        // (vm.kind flips to a non-prelude shape — what selectEventViewModel
+        // returns when state.event.pending is null).
+        const clearedVm: EventViewModel = {
+            ...initialVm,
+            kind: 'narrative-choice',
+            preludeChrome: null,
+        };
+        rerender(
+            withAllProviders(
+                <EncounterModalOverlay vm={clearedVm} onFight={() => {}} onFlee={() => {}} />,
+            ),
+        );
+
+        // Pre-fix this would unmount (vm.kind !== 'combat-prelude' →
+        // early-return null). Post-fix: combat mode stays mounted.
+        expect(queryByTestId('encounter-modal-overlay')).not.toBeNull();
+        expect(queryByTestId('encounter-modal-combat-mode')).not.toBeNull();
+    });
+});

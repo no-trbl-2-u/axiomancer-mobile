@@ -112,20 +112,26 @@ export default function TabLayout() {
     [player, eventSlice, combat, notifications],
   );
 
-  // Phase 63c — hard-stop the tab bar while the encounter modal is
-  // open (prelude / in-modal combat / aftermath). The chat1 contract
-  // says "user cannot exit these modals". Implemented via `href: null`
-  // on every non-exploration tab (exploration stays navigable so the
-  // modal-bearing screen remains mounted). The tab bar visually stays
-  // to maintain layout stability; tab buttons just become non-tappable
-  // (gray-out via accessibilityState on the navigator).
+  // Phase 63c+ (2026-05-21) — hard-stop the tab bar while the
+  // encounter modal is open. User confirmed the WILDS tab being
+  // visible during the modal breaks the hard-stop feel. Hide the
+  // tab bar entirely via `display: 'none'` AND lock every
+  // non-exploration tab's href to null (defense in depth). The
+  // previous attempt at hiding the bar caused a "blank screen"
+  // symptom — root cause was the modal early-return null'ing once
+  // the event slice cleared (since fixed in the overlay's
+  // mode-gated early-return). Re-enabling now that the modal
+  // stays mounted across the combat-active boundary.
   const lockOtherTabs = inEncounterModal;
+  const tabBarStyle = inEncounterModal
+    ? { ...styles.tabBar, display: 'none' as const }
+    : styles.tabBar;
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle,
         tabBarActiveTintColor: AXM.sulfur,
         tabBarInactiveTintColor: AXM.bone,
         tabBarLabelStyle: styles.tabLabel,

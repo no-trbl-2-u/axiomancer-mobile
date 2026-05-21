@@ -8,6 +8,7 @@ import { DebugCombatButton } from '@/components/DebugCombatButton';
 import { DebugMapResetButton } from '@/components/DebugMapResetButton';
 import { DebugPresetPicker } from '@/components/DebugPresetPicker';
 import { DebugSeedButton } from '@/components/DebugSeedButton';
+import { DebugXpGrant } from '@/components/DebugXpGrant';
 import { DevMenu } from '@/components/DevMenu';
 import { ScreenBg } from '@/components/ScreenBg';
 import { SectionLabel } from '@/components/SectionLabel';
@@ -236,6 +237,7 @@ export default function CharacterScreen() {
         <DebugMapResetButton />
         <DebugChaosToggle />
         <DebugPresetPicker />
+        <DebugXpGrant />
       </DevMenu>
     </ScreenBg>
   );

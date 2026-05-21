@@ -26,7 +26,7 @@
  * prelude'` VMs via `withPreludeChrome`). Component-level pins live
  * in `components/event/__tests__/EncounterModalOverlay.test.tsx`.
  */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path as SvgPath } from 'react-native-svg';
 import Animated, {
@@ -43,6 +43,7 @@ import { Splatter } from '@/components/Splatter';
 import { ActionIcon } from '@/components/ActionIcon';
 import { AXM, FONTS } from '@/theme/axm';
 import { useAesthetic } from '@/state/aesthetic-mode';
+import { useGameState } from '@/state/GameStoreProvider';
 import { selectEventCodexHeader } from '@/state/presenters/event.codex.engine';
 import type { EventViewModel } from '@/state/presenters/event.engine';
 
@@ -79,6 +80,28 @@ export function EncounterModalOverlay({
         onFight();
         setMode('combat');
     }, [onFight]);
+
+    // Phase 64 follow-up (2026-05-21) — auto-scroll on combat phase
+    // change. User-direct symptom: "choosing the Action does nothing
+    // but logs it to the screen." Engine layer mutates state
+    // correctly per Phase 64's integration tests; the suspected
+    // root cause is layout (hypothesis A in AUDIT [9.8]): the
+    // ResolvePanel mounts when `combat.phase` flips to 'resolving',
+    // but the modal's bounded ScrollView leaves it below the
+    // visible viewport. This hook scrolls the modal to bottom
+    // whenever the engine phase advances, surfacing the new
+    // active row (action picker → resolving → choosing_action of
+    // next round) into view.
+    const combatScrollRef = useRef<ScrollView>(null);
+    const combatPhase = useGameState((s) => s.combat?.phase ?? null);
+    useEffect(() => {
+        if (mode !== 'combat' || combatPhase === null) return;
+        // Defer to next tick so layout finishes before scrolling.
+        const handle = setTimeout(() => {
+            combatScrollRef.current?.scrollToEnd({ animated: true });
+        }, 16);
+        return () => clearTimeout(handle);
+    }, [mode, combatPhase]);
     const { mode: aesthetic } = useAesthetic();
 
     // Rise animation (Phase 44 port from prototype.jsx:632-638 — the
@@ -136,6 +159,7 @@ export function EncounterModalOverlay({
             <Animated.View style={[styles.panel, panelStyle]}>
                 {mode === 'combat' ? (
                     <ScrollView
+                        ref={combatScrollRef}
                         style={styles.combatScroll}
                         contentContainerStyle={styles.combatScrollContent}
                         showsVerticalScrollIndicator={false}

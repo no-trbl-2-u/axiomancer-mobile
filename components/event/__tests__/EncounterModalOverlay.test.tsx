@@ -29,12 +29,19 @@ import React from 'react';
 
 import { EncounterModalOverlay } from '../EncounterModalOverlay';
 import { AestheticModeProvider, type AestheticMode } from '@/state/aesthetic-mode';
+import { GameStoreProvider } from '@/state/GameStoreProvider';
+import { createAppStore } from '@/state/store';
+import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
 import type { EventViewModel } from '@/state/presenters/event.engine';
 
+// Phase 64 follow-up: overlay now reads `useGameState((s) => s.combat?.phase)`
+// for the auto-scroll-on-phase-change effect, so it requires
+// GameStoreProvider even for prelude-mode mount tests.
 function withAesthetic(child: React.ReactNode, mode: AestheticMode = 'canonical') {
+    const store = createAppStore({ adapter: createMemoryAdapter() });
     return (
         <AestheticModeProvider initialMode={mode} skipHydration>
-            {child}
+            <GameStoreProvider store={store}>{child}</GameStoreProvider>
         </AestheticModeProvider>
     );
 }

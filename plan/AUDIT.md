@@ -78,20 +78,15 @@
 
 ## Pending
 
-### [3.2] `components/MindMark.tsx` has no colocated test coverage
-
-- category: tests
-- impact: 4 (combat-HUD mind-mark badge — null-render branch
-  when `stacks <= 0` plus the SVG + 'MARK ×N' text branch when
-  stacks > 0. Silent drift could surface a phantom badge on
-  zero-stack states or mis-format the stack count.)
-- ease: 8 (pure presentation, 42 LOC, single conditional)
-- next: add `components/__tests__/MindMark.test.tsx` — null
-  render at stacks=0 and negative; rendered badge at stacks>=1;
-  text content reflects stacks; SVG nodes present
-- source: iterate audit 2026-05-21
+_(Empty.)_
 
 ## Done
+
+### [3.2] `components/MindMark.tsx` colocated test coverage ✅
+- Resolved 2026-05-21 (commit `fb83c43`). Added 6 hermetic cases
+  pinning the null-render branch (default / explicit 0 /
+  negative) and the badge render branch (SVG circles + 'MARK ×N'
+  text reflects stacks). 853/853 green at land (+6 over 847).
 
 ### [3.6] `components/NodeMark.tsx` colocated test coverage ✅
 - Resolved 2026-05-21 (commit `806a0c4`). Added 7 hermetic cases

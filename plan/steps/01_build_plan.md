@@ -887,7 +887,7 @@ phase row.
       `<DebugPresetPicker>` (DEV-only); covers apprentice /
       wanderer / sage from the engine's `characterPresets`
       array. Closes mirror issue #94.
-- [parent] Phase 60 — Engine bump axiomancer-mechanics 0.10.0
+- [x] Phase 60 — Engine bump axiomancer-mechanics 0.10.0
       → 0.10.2. Queued via `/triage` 2026-05-20 from user-filed
       issue #93. **Re-shaped via `/oversight` 2026-05-20 (16th
       call) into a multi-phase sequence (60a/60d/60b promoted;
@@ -1007,11 +1007,18 @@ phase row.
       (navigation × 4, exploration × 13, migrations × 3 casts)
       to honor the strict AppStoreState shape under 0.10.2.
       760/760 tests green. Closes mirror issue #99.
-- [ ] Phase 60f — Lockfile bump `axiomancer-mechanics`
+- [x] Phase 60f — Lockfile bump `axiomancer-mechanics`
       0.10.0 → 0.10.2 + upgrade doc. Promoted via `/oversight`
       2026-05-20 (19th call) after 60a–60e all shipped clean.
-      Closes the Phase 60 parent + drains the engine-bump
-      AUDIT row.
+      Shipped `a6cd028` — `feat(spec60f): bump axiomancer-mechanics
+      0.10.0 → 0.10.2 + upgrade doc`. The bump surfaced 56 residual
+      typecheck errors (test-fixture sites 60a–60e missed) — all
+      same root cause as 60e (strict 0.10.2 types catching
+      implicit GameStore → AppStoreState coercions). Folded the
+      fixture sweep into this same commit rather than spawning a
+      Phase 60g. 760/760 tests green at the bumped pin. Closes
+      the Phase 60 parent + drains the engine-bump AUDIT row.
+      Closes mirror issue #93.
 
       Scope (single phase, single commit):
 

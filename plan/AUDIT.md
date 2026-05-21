@@ -78,64 +78,29 @@
 
 ## Pending
 
-
-### [in-progress via Phase 60f (60a–60e all shipped; lockfile bump dispatched)] `axiomancer-mechanics@0.10.2` published; surface drift drained
-
-- category: external-dependency (engine package)
-- source: cross-repo versioning audit (integrated 2026-05-15), filed via `/oversight` 2026-05-15
-- impact: 5 (gates mobile Phase 16, PHASE_CANDIDATES Phase 20 / 21)
-- ease: 0 (mobile cannot fix this row directly — it's the
-  reference; the actual work lives in build-plan Phase 60a/60d/60b)
-- **2026-05-20 (16th oversight call):** engine has published
-  0.10.2 (covers handoff items 1 + 2; item 3 deferred engine-side).
-  The bump introduced 9 breaking surface changes documented in
-  `plan/steps/01_build_plan.md` Phase 60 parent row. User
-  selected the multi-phase migration shape; Phase 60a/60d/60b
-  now in dispatch queue. This audit row drains to Done once the
-  lockfile lands at 0.10.2 (Phase 60f, gated on 60a–60e).
-- **2026-05-20 (18th oversight call):** 60a/60d/60b/60c all
-  shipped. 60e (ActiveEffect + GameStore reconciliation) just
-  promoted; 60f (lockfile bump) stays gated. Row drains to
-  Done when 60f lands.
-- **2026-05-20 (19th oversight call):** 60e shipped clean
-  (`8596409`). 60f (lockfile bump 0.10.0 → 0.10.2 + upgrade
-  doc) promoted from `## Considered (below threshold)` to a
-  `[ ]` build-plan row. Row drains to Done when 60f ships.
-- **status 2026-05-20 (15th oversight call)** — Engine GH#64
-  is **CLOSED**:
-  - **Issue 1 (`skillLibrary` / `getSkillById` re-export)** —
-    shipped at engine Phase 50 (`19f2015`). `src/index.ts`
-    Skills block now forwards both symbols from `./Skills`.
-    Hermetic test at
-    `src/test-utils/e2e/public-barrel.engine.test.ts` pins
-    the surface.
-  - **Issue 2 (`dist/<sub>/types.d.ts` emission)** —
-    shipped at engine Phase 50 (`57c06ab`). Root cause: `tsc`
-    doesn't process pre-existing `.d.ts` files. Engine
-    renamed 10 × `src/<Module>/types.d.ts` → `types.ts` via
-    `git mv`; `dist/<Module>/types.d.ts` now emits for all
-    11 modules. `scripts/deploy-check.mjs` got a count-based
-    guard against regression.
-  - **Issue 3 (`PersistenceAdapter` ergonomics)** — explicitly
-    deferred per engine Phase 50 D2; tracked engine-side in
-    its `plan/PHASE_CANDIDATES.md` as "PersistenceAdapter
-    ergonomics — Phase 50 follow-up". Mobile retains
-    `wrapDeflectingAdapter` shim in `state/store.ts`; no
-    breakage.
-- **only remaining unblock: 0.10.1 npm republish.** Per the
-  engine team's GH#64 closing comment, the republish is
-  user-triggered post-merge. When `npm view axiomancer-mechanics
-  versions` shows `0.10.1`, flip Phase 16 to `[ ]`, promote
-  PHASE_CANDIDATES Phase 20 + 21, and bump
-  `package.json` / `package-lock.json`.
-- watch: `npm view axiomancer-mechanics version` on each
-  `/march` tick. Once `>= 0.10.1` published, this row drains
-  to Done.
-- handoff doc: [`docs/engine-team-handoff-2026-05-16.md`](../docs/engine-team-handoff-2026-05-16.md)
-  (historical — captures the original three asks; superseded
-  by GH#64's closing comment).
+_(Empty — the engine-bump row drained to Done with Phase 60f.)_
 
 ## Done
+
+### [Done 2026-05-20] `axiomancer-mechanics@0.10.2` adopted; surface drift drained ✅
+
+- category: external-dependency (engine package)
+- source: cross-repo versioning audit (integrated 2026-05-15)
+- **Resolved 2026-05-20** with Phase 60f (commit `a6cd028`).
+  The engine published 0.10.2 mid-cycle with 9 breaking surface
+  changes (`getCoastalMap` removed; `Encounter.enemy` → `enemies[0]`;
+  `DialogueChoice` / `DialogueNode` flattened; `Character.mana`
+  removed; `ActiveEffect` shape change + latent `composeHazard` bug;
+  `GameStore` ↔ `AppStoreState` strictness; `EffectStatTarget`
+  literal union; `MobileNotificationsSlice` `toast` required;
+  `GameState` lost string index signature). Mobile migrated the
+  drift across **Phases 60a–60f**: 60a (`baf66fa`), 60d (`579a6a7`),
+  60b (`0ee7f63`), 60c (`7e29be5`), 60e (`8596409`), 60f
+  (`a6cd028`). Lockfile pin now at 0.10.2; verify gate green at
+  760/760. Upgrade doc at `docs/engine-upgrade-0.10.0-to-0.10.2.md`.
+- handoff doc: [`docs/engine-team-handoff-2026-05-16.md`](../docs/engine-team-handoff-2026-05-16.md)
+  (historical context for the original three engine asks; all
+  resolved at engine Phase 50 / GH#64 closing comment).
 
 ### [needs-user-call] Phase 32 — port-commit ambiguity RESOLVED ✅
 - Resolved 2026-05-16 via `/oversight`. The prior oversight pass

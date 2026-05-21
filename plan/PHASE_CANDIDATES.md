@@ -1,6 +1,6 @@
 # Phase candidates
 
-> Last pass: 2026-05-21 at commit f25321b
+> Last pass: 2026-05-21 at commit 01d0c26
 > Pass count: 33
 > Posture: bold
 
@@ -8,6 +8,9 @@
 > `/oversight`. See `skills/expand.md` for the contract.
 
 ## Pending
+
+<details>
+<summary>[promoted 2026-05-21 → status Phase 64] [score 7.5] Multi-screen integration test harness (preserved for traceability)</summary>
 
 ### [score 7.5] Phase 64 — Multi-screen integration test harness
 
@@ -44,6 +47,10 @@
   symptom early.
 - estimated phases: 1
 - conflicts: none.
+
+**Resolution:** promoted via `/oversight` 2026-05-21 (24th call).
+See `01_build_plan.md` Phase 64 row for the live brief.
+</details>
 
 ### [score 6.0] Phase 65 — Aftermath rendering inside the modal
 
@@ -301,6 +308,20 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted 2026-05-21 → status Phase 64] [score 7.5] Phase 64 — Multi-screen integration test harness
+
+- promoted via `/oversight` 2026-05-21 (24th call). Three
+  corrective commits on Phase 63 (`ce90615`, `d460b64`,
+  `d460b64`'s mode-gated early-return) all addressed
+  integration regressions invisible to single-component tests.
+  Promotion is the single strongest signal yet for closing the
+  testing-strategy gap documented in
+  `plan/NEEDS_HUMAN_ATTENTION.md` Option B.
+- Assigned **Phase 64** in `01_build_plan.md` Status block.
+  See the build-plan row for the full tick-by-tick scope
+  (`withAllProviders` helper, encounter-flow suite,
+  combat-in-modal suite).
 
 ### [promoted 2026-05-21 → status Phase 62 parent + 62a–62e] [score 5.5] Phase 62 — DEV-mode follow-up affordances
 

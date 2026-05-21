@@ -1274,6 +1274,42 @@ that row gets revisited via `/iterate` once Phase 63 lands.
       their existing tests — dead code now; a future iterate
       can prune.
 
+**Multi-screen integration test harness (Phase 64, filed via
+`/oversight` 2026-05-21, 24th call).** Promoted from
+`plan/PHASE_CANDIDATES.md` [score 7.5]. Closes the testing gap
+documented in `plan/NEEDS_HUMAN_ATTENTION.md` — every Phase
+62/63 regression this session was an integration bug invisible
+to single-component tests. The three corrective commits on
+Phase 63 (`ce90615`, `d460b64`, plus this oversight) all
+addressed regressions that would have surfaced earlier with
+multi-screen integration coverage.
+
+- [ ] Phase 64 — Multi-screen integration test harness. Three
+      hermetic Jest cases mounted with the full provider stack
+      (`AestheticModeProvider` + `CombatModeProvider` +
+      `GameStoreProvider`) so multi-component interactions are
+      exercised before reaching the preview build:
+      - Tick A — extract a `withAllProviders(child)` helper
+        into `test-utils/withAllProviders.tsx`; the existing
+        inline copies in `EncounterModalOverlay.test.tsx`
+        consolidate around the new helper.
+      - Tick B — write `state/e2e/encounter-flow.engine.test.tsx`:
+        (1) simulate exploration mount with a player on an
+        encounter node; assert `EncounterModalOverlay`
+        mounts. (2) Simulate FIGHT tap; assert (a)
+        `inEncounterModal` flips true, (b) modal stays
+        mounted across the event-slice clear (would have
+        caught `d460b64`'s regression). (3) Simulate a
+        non-encounter node tap; assert modal does NOT mount.
+      - Tick C — write `state/e2e/combat-in-modal.engine.test.tsx`:
+        simulate combat resolution flow inside the modal —
+        stance tap → action tap → resolveRound → assert
+        `combat.phase === 'resolving'` AND `vm.phase ===
+        'resolving'` (would have caught the open [9.8] row's
+        runtime symptom if it's a render/memo issue).
+      - Commit: `feat(spec64): multi-screen integration test
+        harness — provider helper + 2 flow suites`.
+
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh
 > `Phase 25 — Aesthetic toggle` candidate filed via

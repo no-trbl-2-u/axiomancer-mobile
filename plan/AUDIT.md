@@ -95,14 +95,15 @@
   rename to e.g. "mana" / lowercase
 - source: user 2026-05-21 (preview build)
 
-### [9.8] Combat regression — Base combat mechanics not wired into UI (DEFERRED behind Phase 63)
+### [9.8] Combat regression — Base combat mechanics not wired into UI (STILL OPEN, post-Phase-63)
 
 - category: bug (combat blocking, architecture)
 - impact: 10 (combat completely non-functional — selections
   visible but no real combat resolution surfaces to player)
-- user re-confirmed 2026-05-21 oversight 22nd + escalated: "For
-  body and mind, I can see that the selection is made, but it
-  doesn't effect the combat."
+- user re-confirmed 2026-05-21 oversight 24th: "Modal now
+  displays correctly, however choosing the 'Action' does
+  nothing but logs it to the screen. We must wire in the
+  full combat flow."
 - **wiring verified 2026-05-21 oversight 23rd:** structurally,
   combat IS wired into the UI. The screen calls
   `actions.startCombat`, `setPlayerStance`, `setPlayerAction`,
@@ -110,13 +111,37 @@
   reducers; 30+ e2e tests in `combat.engine.test.ts` exercise
   the flow end-to-end and pass. The "doesn't effect combat"
   is a runtime/UX symptom, not missing wiring.
-- next: deferred behind Phase 63 (modal-contained encounter).
-  The router transition (`router.replace('/combat')`) is
-  suspected to be part of why selections don't propagate
-  visibly; if Phase 63 removes the route transition the bug
-  may resolve as a side effect. If it remains after Phase 63,
-  revisit via `/iterate` with the diagnostic data from the
-  toast/console-log build (`169d44a`).
+- **post-Phase-63 narrowing (oversight 24th):** the diagnostic
+  toast (`commit 169d44a`) confirms `onPickAction` fires when
+  the user taps an action (toast appears = handler ran). So:
+  (1) tap handler ✓ executes; (2) `actions.setPlayerAction(key)` +
+  `actions.resolveRound()` should fire after the toast; (3)
+  the round should resolve, log entries should appear, the
+  PhaseStack should advance to 'resolving'. The user sees
+  step 1 but NOT steps 2/3. Candidate root causes:
+  - **A) Layout / scroll**: ResolvePanel mounts but below
+    the visible area inside the modal panel; user would
+    need to scroll down to see. Modal panel just got taller
+    (commit 01d0c26) but combat content is still tall.
+  - **B) State propagation**: CombatPanel inside the modal
+    reads from a stale store reference (provider scope
+    issue between the modal and the action layer).
+  - **C) Re-render**: combat slice updates but
+    `useCombatViewModel` memo doesn't re-fire (deps mismatch).
+  - **D) Engine action no-op**: `resolveRound` bails early
+    before mutating state (some defensive guard hits).
+- next: needs concrete user data to root-cause. Asks for the
+  user (see oversight 24th-call response):
+  - (a) **Scroll inside the modal after tapping action** —
+    rules out / confirms hypothesis A (layout).
+  - (b) **Dev console log content** for `[combat]` lines —
+    confirms whether `resolveRound` runs and what
+    `combat.phase` is afterwards. Distinguishes B / C / D.
+  - (c) **Visual confirmation** — does the action picker
+    visibly collapse to a 'past' row + does any new row
+    appear below it?
+  - (d) **Enemy HP bar** — does it tick down at all after
+    tapping ATTACK?
 - source: user 2026-05-21 (preview build, 2x)
 
 ### [9.8] Encounter UX — keep entire encounter inside the modal (PROMOTED → Phase 63)

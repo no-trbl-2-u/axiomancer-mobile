@@ -5,6 +5,7 @@ import { AXM, FONTS } from '@/theme/axm';
 import { AestheticDevToggle } from '@/components/AestheticDevToggle';
 import { DebugChaosToggle } from '@/components/DebugChaosToggle';
 import { DebugCombatButton } from '@/components/DebugCombatButton';
+import { DebugAlignmentShift } from '@/components/DebugAlignmentShift';
 import { DebugManaControl } from '@/components/DebugManaControl';
 import { DebugMapResetButton } from '@/components/DebugMapResetButton';
 import { DebugPresetPicker } from '@/components/DebugPresetPicker';
@@ -240,6 +241,7 @@ export default function CharacterScreen() {
         <DebugPresetPicker />
         <DebugXpGrant />
         <DebugManaControl />
+        <DebugAlignmentShift />
       </DevMenu>
     </ScreenBg>
   );

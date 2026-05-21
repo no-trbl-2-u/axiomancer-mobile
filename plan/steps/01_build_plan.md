@@ -136,31 +136,17 @@ commit that ships the phase.
       zero-fills otherwise). Drop the `(player as any)` casts
       and `?? 0` fallbacks introduced in Phase 14. See commit
       `c8e29a8`.
-- [ ] Phase 16 — Drain `combat.skills.fixture.ts` mock: wire
-      engine skill selectors into the combat presenter.
-      **Unblocked 2026-05-21 via `/oversight` (20th call):** Phase
-      60f shipped engine 0.10.2 (commit `a6cd028`) which exports
-      `skillLibrary` + `getSkillById` from the top-level barrel
-      (`node_modules/axiomancer-mechanics/dist/index.d.ts:17`).
-      The [skipped] flip-back trigger documented in the original
-      row body has fired; row is back to active `[ ]` and ready
-      for `/march` dispatch.
-      Original promotion: 2026-05-15 via `/oversight` (score 5.5).
+- [x] Phase 16 — Drain `combat.skills.fixture.ts` mock: wire
+      engine skill selectors into the combat presenter. Shipped
+      `eb95806` — `feat(spec16): wire engine skill selectors —
+      drain combat.skills.fixture.ts mock`. New
+      `state/selectors/combat-skills.ts` adapter exports
+      `COMBAT_SKILLS` (engine library projected to mobile shape)
+      + `getCombatSkillById`. Consumers (`combat.engine.ts`,
+      `actions.ts`, two e2e fixtures, debug-seed test) all
+      swapped imports. `state/mocks/combat.skills.fixture.ts`
+      deleted. +10 hermetic tests; 875/875 green (was 865).
       Brief at `plan/phases/phase_16_engine_skills.md`.
-      Re-promoted via `/oversight` 2026-05-21 (20th call) at score
-      **8.5** — engine-release unblock + cascade-unlocking effect
-      for Phase 21.
-      Scope (per the candidate row in PHASE_CANDIDATES.md):
-      Tick A — replace fixture imports in
-      `state/presenters/combat.engine.ts` + `state/actions.ts` with
-      `getSkillById(skillId)`; rename
-      `state/mocks/combat.skills.fixture.ts` →
-      `state/mocks/combat.skills.test-fixture.ts` to make the
-      role explicit. Tick B — e2e coverage for the engine-skill
-      round-trip (skill picker → engine resolution → effect
-      application).
-      Commit: `feat(spec16): wire engine skill selectors — drain
-      combat.skills.fixture.ts mock`.
 - [ ] Phase 21 — Engine-driven `executeSkill` wiring. Promoted
       via `/oversight` 2026-05-21 (20th call) from
       `plan/PHASE_CANDIDATES.md` Considered (score 7.0).

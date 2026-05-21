@@ -1085,15 +1085,14 @@ listed order; each one is a `/ship-a-phase` dispatch.
       mutating the mobile `combatMana` slice. Seeds from null
       when no combat is active; preserves `.max` when slice
       exists. +7 hermetic tests. 780/780 green (was 773).
-- [ ] Phase 61d — Philosophical alignment shift.
-      `<DebugAlignmentShift>` — three rows (epistemic / ethical
-      / metaphysical) with ±N buttons. Mutates
-      `state.alignment` (engine 0.10.0 PhilosophicalAlignment
-      cube). Tests the alignment readout on the SELF tab
-      (Phase 52 surface). Hermetic test: shifts re-resolve
-      the active `PhilosophicalAlignmentCell`; bucket chips
-      reflect new values. Commit: `feat(spec61d): dev-menu
-      alignment shift`.
+- [x] Phase 61d — Philosophical alignment shift. Shipped
+      `bd24fc4` — `feat(spec61d): dev-menu alignment shift`.
+      Three-axis panel (epistemology / outlook / scope per the
+      engine's `PhilosophicalAlignment` shape — brief used the
+      aspirational names epistemic/ethical/metaphysical;
+      engine names won as the canonical surface) with ±10
+      buttons routing through `shiftPhilosophicalAlignment`.
+      +7 hermetic tests. 787/787 green (was 780).
 - [ ] Phase 61e — Active effect apply (player + enemy).
       `<DebugEffectApply>` — dropdown of named effects ×
       target picker (PLAYER / CURRENT ENEMY). Applies the

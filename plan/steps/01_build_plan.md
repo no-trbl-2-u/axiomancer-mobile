@@ -147,21 +147,18 @@ commit that ships the phase.
       swapped imports. `state/mocks/combat.skills.fixture.ts`
       deleted. +10 hermetic tests; 875/875 green (was 865).
       Brief at `plan/phases/phase_16_engine_skills.md`.
-- [ ] Phase 21 — Engine-driven `executeSkill` wiring. Promoted
-      via `/oversight` 2026-05-21 (20th call) from
-      `plan/PHASE_CANDIDATES.md` Considered (score 7.0).
-      Forms a 2-phase chain with Phase 16: ships AFTER 16 lands.
-      Stop downgrading `action: 'skill'` → `'attack'` in
-      `resolveRound`; pass real `skillLookup` built from
-      `getSkillById`; drain the placeholder mana model in favour
-      of engine per-resource pools; combat log surfaces
-      engine-emitted `SkillPhaseEvent` rows.
-      Scope: 1 phase, 2–3 ticks. Tick A — `skillLookup` wiring +
-      `resolveRound` routes `action: 'skill'` through
-      `executeSkill`. Tick B — combat log consumes
-      `SkillPhaseEvent`. Tick C (if needed) — engine per-resource
-      mana model wiring (or defer per current scope estimate).
-      Commit: `feat(spec21): engine-driven executeSkill wiring`.
+- [x] Phase 21 — Engine-driven `executeSkill` wiring. Shipped
+      `7a69658` — `feat(spec21): engine-driven executeSkill
+      wiring`. Two changes in `state/actions.ts:resolveRound`:
+      `skillLookup` swapped from `() => null` stub to the engine's
+      `getSkillById`; `playerCombatAction` now passes
+      `{ action: 'skill', skillId }` (was downgraded to
+      `'attack'`). +2 hermetic cases pin the contract (mana
+      drains by manaCost via the engine library; unknown skillIds
+      tolerated). 877/877 green (was 875). Engine per-resource
+      pools deferred (Tick C in the original brief; mobile single-
+      mana model still satisfies the picker's insufficient-mana
+      gating).
 - [x] Phase 17 — Token Crucible: five-resource pool UI (port
       from design handoff). Shipped in commit `261a238`
       ("feat: Token Crucible — port five-resource pool UI from

@@ -78,22 +78,17 @@
 
 ## Pending
 
-### [3.5] `components/AftermathBanner.tsx` has no colocated test coverage
-
-- category: tests
-- impact: 7 (Phase 41 post-combat banner has real behavior:
-  2500ms auto-dismiss timer, AccessibilityInfo screen-reader
-  announce, conditional `rewards` row — pure-render
-  snapshots don't catch timer drift or a11y regressions)
-- ease: 5 (needs jest.useFakeTimers + AccessibilityInfo mock)
-- next: add `components/__tests__/AftermathBanner.test.tsx` —
-  render contract (eyebrow/title/subtitle present, rewards
-  conditional), accessibility (live region + label + announce
-  one-shot), auto-dismiss timer fires onDismiss after
-  displayMs, testID exposed
-- source: iterate audit 2026-05-21
+_(Empty.)_
 
 ## Done
+
+### [3.5] `components/AftermathBanner.tsx` colocated test coverage ✅
+- Resolved 2026-05-21 (commit `cd7ddfc`). Added 10 hermetic
+  cases pinning render shape (eyebrow/title/subtitle/rewards
+  conditional, testID), accessibility (live region, label,
+  announce one-shot), and the auto-dismiss timer (default
+  2500ms, custom displayMs, unmount cleanup). 830/830 green
+  at land (+10 over 820).
 
 ### [3.2] `components/FriendshipMeter.tsx` colocated test coverage ✅
 - Resolved 2026-05-21 (commit `ebd1fe1`). Added 9 hermetic cases

@@ -38,7 +38,7 @@ import Svg, { Path, Circle, Ellipse, Defs, RadialGradient, Stop } from 'react-na
 import { AXM, FONTS } from '@/theme/axm';
 import { useAesthetic } from '@/state/aesthetic-mode';
 import { useCombatMode } from '@/state/combat-mode';
-import { useGameActions, useGameState } from '@/state/GameStoreProvider';
+import { useGameActions, useGameState, useGameStore } from '@/state/GameStoreProvider';
 import { createMockEncounterEnemy } from '@/state/mocks/combat.mock';
 import {
     useCombatViewModel,
@@ -110,13 +110,36 @@ export default function CombatScreen() {
         return () => clearTimeout(handle);
     }, [toast]);
 
+    const store = useGameStore();
+
     const onPickStance = useCallback((stance: StanceKey) => {
+        if (__DEV__) {
+            // Phase-62-bug-sweep diagnostic 2026-05-21 (user-direct):
+            // Heart-stance tap not registering per user reports.
+            // Log + toast confirm the handler fires + show the
+            // resulting combat phase. Remove once the bug is fixed.
+            // eslint-disable-next-line no-console
+            console.log('[combat] onPickStance fired:', stance);
+            setToast(`stance: ${stance}`);
+        }
         setSelectedStance(stance);
         actions.setPlayerStance(stance);
         actions.setCombatPhase('choosing_action');
-    }, [actions]);
+        if (__DEV__) {
+            const after = store.getState().combat?.phase;
+            // eslint-disable-next-line no-console
+            console.log('[combat] phase after setCombatPhase:', after);
+        }
+    }, [actions, store]);
 
     const onPickAction = useCallback((key: ActionOption['key']) => {
+        if (__DEV__) {
+            // Phase-62-bug-sweep diagnostic 2026-05-21: action-no-effect
+            // bug. Confirm handler fires + show what branch we hit.
+            // eslint-disable-next-line no-console
+            console.log('[combat] onPickAction fired:', key);
+            setToast(`action: ${key}`);
+        }
         if (key === 'skill') {
             actions.setCombatPhase('choosing_skill');
             return;
@@ -127,7 +150,12 @@ export default function CombatScreen() {
         }
         actions.setPlayerAction(key);
         actions.resolveRound();
-    }, [actions, vm.actionPicker.itemMessage]);
+        if (__DEV__) {
+            const after = store.getState().combat?.phase;
+            // eslint-disable-next-line no-console
+            console.log('[combat] phase after resolveRound:', after);
+        }
+    }, [actions, store, vm.actionPicker.itemMessage]);
 
     const onPickSkill = useCallback((skill: SkillOption) => {
         if (!skill.enabled) return;

@@ -1156,13 +1156,12 @@ DevMenu (Phase 61a wrapper); none change production surfaces.
       `startQuest` / `progressQuest` / `completeQuest`. Memoir
       tab reflects the state changes. +7 hermetic tests; 888/888
       green (was 881).
-- [ ] Phase 62c — Friendship counter override. New
-      `<DebugFriendship>` row. Two buttons: `+1` and `RESET`
-      (back to 0). Mutates `state.combat?.friendshipCounter`
-      when combat is active; warns + no-ops when no combat
-      (sibling pattern to `DebugEffectApply`'s enemy-debuff
-      branch). Tests pin the increment + reset + no-op branches.
-      Commit: `feat(spec62c): dev-menu friendship counter`.
+- [x] Phase 62c — Friendship counter override. Shipped `2f058d8`
+      — `feat(spec62c): dev-menu friendship counter override`.
+      New `<DebugFriendship>` with +1 / RESET buttons mutating
+      `state.combat.friendshipCounter`. Combat-only; warns +
+      no-ops outside combat. +8 hermetic tests; 896/896 green
+      (was 888).
 - [ ] Phase 62d — Currency grant. New `<DebugCurrencyGrant>`
       row. Single `+100` button that adds to the player's
       currency slice (engine field — verify shape first; may

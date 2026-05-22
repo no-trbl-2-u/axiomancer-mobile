@@ -47,6 +47,7 @@ import {
     revealAdjacent,
     unlockNode as worldUnlockNode,
     type Action,
+    type BattleLogEntry,
     type Character,
     type CombatAction,
     type CombatPhase,
@@ -282,13 +283,25 @@ function findSkill(skillId: string): CombatSkill | null {
 // Log + resolve summary helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Mobile-side free-text log entry. Engine `BattleLogEntry`
+ * (`Combat/types.d.ts:16-30`) is the structured round-resolution
+ * record (round, playerAction, advantage, rolls, damage, …); mobile
+ * pushes ad-hoc text entries through the same engine reducer for
+ * the combat-log surface. The presenter filters
+ * (`combat.engine.ts:1131-1133` — "Skip pure metadata entries") so
+ * both shapes coexist at runtime; declaring the mobile shape here
+ * keeps the boundary findable.
+ */
+type MobileLogEntry = { readonly severity: LogSeverityKey; readonly text: string };
+
 function pushLog(
     combat: CombatState,
     severity: LogSeverityKey,
     text: string,
 ): CombatState {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return combatAppendLog(combat, { severity, text } as any);
+    const entry: MobileLogEntry = { severity, text };
+    return combatAppendLog(combat, entry as unknown as BattleLogEntry);
 }
 
 interface ResolutionSummary {
@@ -553,9 +566,7 @@ export function createAppActions(store: AppStore): AppActions {
                 enemyChoice: {
                     ...(nextState.enemyChoice ?? {}),
                     stance: enemyStance,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    action: enemyAction.action as any,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    action: enemyAction.action,
                 },
             };
 
@@ -603,8 +614,7 @@ export function createAppActions(store: AppStore): AppActions {
             const cleared: CombatState = {
                 ...combat,
                 playerChoice: {},
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any;
+            };
             updateCombat(combatSetPhase(cleared, 'choosing_stance'));
         },
         // Action creators used elsewhere — wired here for completeness.

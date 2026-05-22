@@ -811,6 +811,34 @@ Prior text preserved below for traceability:
 
 ## Done
 
+### [3.0] DRIFT — final 3 `as any` casts in `state/actions.ts` (pushLog, enemyChoice.action, playerChoice cleared) ✅
+- Resolved 2026-05-22. Three remaining casts at the bottom of
+  the action-layer sweep:
+  - `pushLog` at `state/actions.ts:285`: was casting a
+    `{severity, text}` mobile-shape entry to `any` for the
+    engine `combatAppendLog(state, entry: BattleLogEntry)`
+    reducer. Introduced a local `MobileLogEntry =
+    { severity: LogSeverityKey; text: string }` type and cast
+    through `unknown` instead of `any` — boundary stays the
+    same but the shape is documented. The presenter
+    (`combat.engine.ts:1131-1133`) already filters these
+    metadata entries at the read side; both shapes coexist
+    at runtime.
+  - `action: enemyAction.action as any` at line 557:
+    `enemyAction` is engine-typed `CombatAction`; `.action` is
+    `Action`. Assignment target `enemyChoice.action` accepts
+    `Action | undefined` (`Partial<CombatAction>`). Cast was
+    redundant. Dropped along with both surrounding
+    eslint-disables.
+  - `{ playerChoice: {} } as any` at line 601: empty `{}` IS
+    a valid `Partial<CombatAction>`. Cast was redundant.
+    Dropped.
+  After this commit, `state/actions.ts` is `as any`-free in
+  code (only documentation comments referencing prior closes
+  remain). 1060/1060 green at land.
+  This finishes the action-layer cast sweep that ran across
+  4 ticks this session.
+
 ### [3.0] DRIFT — `summarizeRoundEvents` typed `unknown[]` + `as Record<string, any>` probe; latent dead branch ✅
 - Resolved 2026-05-22. `summarizeRoundEvents` at `state/actions.ts:301`
   accepted `readonly unknown[]` and cast each event to

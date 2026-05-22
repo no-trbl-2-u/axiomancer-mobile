@@ -175,7 +175,7 @@ See `01_build_plan.md` Phase 64 row for the live brief.
   never fires. User retest required before this phase
   becomes meaningful.
 
-### [score 5.5] `store.setState` typed-wrapper sweep — drain 9+ `as any` casts in `state/actions.ts`
+### [score 5.5] `store.setState` typed-wrapper sweep — drain 9+ `as any` casts in `state/actions.ts` [PROMOTED → Phase 69]
 
 - proposed: 2026-05-22, expand pass 35
 - source signals:
@@ -215,7 +215,9 @@ See `01_build_plan.md` Phase 64 row for the live brief.
 - estimated phases: 1
 - conflicts: none. Typing-only, no runtime change.
 
-### [score 4.5] Engine ↔ mobile MapDefinition reconciliation — single source of truth for node connectivity
+**Resolution:** promoted via `/oversight` 2026-05-22 (30th call) as Phase 69; brief drafted at `plan/phases/phase_69_store_setstate_typed_wrapper.md`. See `01_build_plan.md` Phase 69 row.
+
+### [score 4.5] Engine ↔ mobile MapDefinition reconciliation — single source of truth for node connectivity [resolution: engine-widens]
 
 - proposed: 2026-05-22, expand pass 35
 - source signals:
@@ -262,6 +264,8 @@ See `01_build_plan.md` Phase 64 row for the live brief.
 - estimated phases: 1
 - conflicts: **needs-user-call** — resolution is a product
   decision; no auto-promote path.
+
+**Resolution (oversight 2026-05-22, 30th call):** option (a) **engine widens** — engine MapDefinition for `fishing-village` (and any sibling continents) gets the branching edges the mobile layout fixture already declares. Engine becomes the documented unlock graph; mobile follows by migrating the [3.0] OPEN-set per the original oversight-29th design. This work is **out-of-mobile-repo** — engine PR required before the mobile-side [3.0] migration can ship. AUDIT [4.0] and [3.0] stay open as `[needs-engine-release]` until the engine PR lands; the mobile loop should not pick them again until then.
 
 <details>
 <summary>[promoted 2026-05-20 → status Phase 61 parent + 61a–61f] [score 6.0] DEV-mode coverage expansion (preserved for traceability)</summary>

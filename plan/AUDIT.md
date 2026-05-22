@@ -399,7 +399,9 @@ Prior text preserved below for traceability:
 - next: file iterate fix tick after [3.5] StanceKey row.
 - source: user-jot 2026-05-22 — engine-duplication scan
 
-### [4.0] DRIFT — engine `MapDefinition` connectivity diverges from mobile layout fixture (blocks Phase 27 OPEN-set migration)
+### [4.0] DRIFT — engine `MapDefinition` connectivity diverges from mobile layout fixture (blocks Phase 27 OPEN-set migration) — **`[needs-engine-release]`**
+
+- **Resolution path (oversight 2026-05-22, 30th call): engine widens.** User picked option (a): the engine `MapDefinition` for `fishing-village` (and any sibling continents) gets the branching edges that the mobile layout fixture already declares. Engine becomes the documented unlock graph. Mobile follows by migrating the [3.0] row per the original oversight-29th design **after** the engine PR lands. Until then, this row stays open as `[needs-engine-release]` and the mobile loop should not pick it again.
 
 - category: bug (engine / mobile data-source disagreement; **needs-user-call** — likely engine fix, not mobile fix)
 - impact: 7 (blocks the oversight 29th OPEN-set design migration entirely; latent visual-vs-traversal mismatch — mobile draws edges the engine doesn't know exist, so engine-driven gating would hide them)
@@ -409,8 +411,9 @@ Prior text preserved below for traceability:
 - next: surface to user via `/oversight`. Likely outcomes: (a) engine MapDefinition expands to match the mobile layout's branching (preferred — engine becomes source of truth); (b) the mobile layout collapses to match the engine's linear chain (loses visual richness); (c) the OPEN-set design accepts the narrower engine graph and the user-facing visual map narrows. The [3.0] row stays BLOCKED until this is resolved.
 - source: discovered while attempting [3.0] migration (`/iterate` 2026-05-22).
 
-### [3.0] DRIFT — exploration presenter still reads legacy `availableNodes` / `completedNodes` / `lockedNodes` (exploration-audit row 1) — **BLOCKED**
+### [3.0] DRIFT — exploration presenter still reads legacy `availableNodes` / `completedNodes` / `lockedNodes` (exploration-audit row 1) — **BLOCKED — `[needs-engine-release]`**
 
+- **Resolution path (oversight 2026-05-22, 30th call):** waits on the engine-widens PR (see [4.0] above). Once engine MapDefinition matches the mobile layout's branching graph, this row's `discoveredNodes` migration runs cleanly. Until the engine PR lands, this row stays open and the mobile loop should not pick it again.
 - **Blocked 2026-05-22** by newly-filed [4.0] engine/mobile map-connectivity divergence (see row below). Direct migration attempt this tick (swap OPEN-set source `availableNodes` → `discoveredNodes`) failed 4 hermetic tests in `state/e2e/exploration.engine.test.ts`: fv-3 / fv-4 / fv-5 / fv-6 classify as `locked` instead of `available` because the engine `MapDefinition` for `fishing-village` declares `fv-2.connectedNodes = ['fv-3']` (linear) while the mobile layout fixture has `['fv-3', 'fv-4']` (branching). `revealAdjacent` reads from the engine, so `discoveredNodes` post-move is narrower than the visual graph the screen draws. The migration cannot ship until engine / mobile-fixture connectivity is reconciled.
 - category: refactor (Phase 27 migration tail)
 - impact: 5 (design semantic settled via oversight 29th;

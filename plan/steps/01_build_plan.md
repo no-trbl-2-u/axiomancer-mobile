@@ -1440,6 +1440,24 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       - Commit: `feat(spec67a): /playtest skill — Playwright
         regression sentinel`.
 
+- [ ] Phase 69 — `store.setState` typed-wrapper sweep. Drain
+      ~9 `(store.setState({ ... } as any))` casts in
+      `state/actions.ts` via a one-shot typing fix at the
+      wrapper layer; mirror the cleanup pattern that closed
+      4 cast-drift rows on the presenter side this session.
+      Promoted via `/oversight` 2026-05-22 (30th call) from
+      PHASE_CANDIDATES.md pass-35 entry. Brief drafted at
+      `plan/phases/phase_69_store_setstate_typed_wrapper.md`.
+      - Tick A — investigate root cause: the wrapper
+        (`createAppStore`), the `AppStoreState` shape, or
+        engine `GameStore`'s `setState` signature?
+        Land the typing fix (or typed `setAppState` helper)
+        with co-located tests pinning the contract.
+      - Tick B — drain the 9 sites in `state/actions.ts`
+        (`262, 267, 274, 425, 427, 560, 610, 876, 898, 969,
+        989, 1011, 1062` per `expand` pass-35 inventory). No
+        runtime change expected — inputs/outputs identical.
+
 - [x] Phase 68 — Character + Memoir mechanics-vs-UI audits.
       Both ticks shipped 2026-05-22; closes the 6-surface
       audit series (combat ✅, event ✅, exploration ✅,

@@ -1440,8 +1440,8 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       - Commit: `feat(spec67a): /playtest skill — Playwright
         regression sentinel`.
 
-- [ ] Phase 70 — Aftermath modals (Victory · Friendship · Defeat
-      · Error). Ports the four non-dismissible outcome panels from
+- [x] Phase 70 — Aftermath modals (Victory · Friendship · Defeat
+      · Error). All four ticks shipped 2026-05-22. Ports the four non-dismissible outcome panels from
       `design/handoff-2026-05-22/project/screens/aftermath-modal.jsx`
       into mobile, mounted **inside** the encounter seal so the
       encounter never leaves the modal until the final dismiss
@@ -1491,6 +1491,20 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
         28 new tests across 3 suites; 1140/1140 verify green.
         Engine-side respawn-with-fresh-seed deferred (engine has
         no run-loop semantics yet).
+      - **[x] Tick D** — shipped `bd37594`
+        (`feat(spec70d): in-world ErrorBoundary refresh — THE
+        BINDING TORE`). `<ErrorBoundary>` fallback rewritten into
+        the gothic-chronicle register: heavy hatched background,
+        gothic title with blood drop-shadow, in-world error code
+        (`deriveErrorCode` maps Error.name + message onto 4 codes
+        — `E_PAGE_TORN` / `E_SIGIL_BROKE` / `E_THE_LINE_WENT_QUIET`
+        / `E_BOUND_LOOSE`), torn-edge inset panel, UI-only `✎ COPY`
+        pressed-state toggle (no native clipboard dep), italic
+        scribe-note hint, `✠ TRY AGAIN` + `return to the hearth`
+        ghost, consolation line. Diagnostics (STATE SNAPSHOT,
+        BUILD CONTEXT) preserved below. 9 new tests on the boundary
+        suite (4 → 13); 1147/1147 verify green. Independent of the
+        encounter modal — closes the phase 70 series.
 
 - [ ] Phase 71 — Encounter-seal chrome refresh. Sibling to
       Phase 70 — phase-aware top + bottom `SEALED` chain bars

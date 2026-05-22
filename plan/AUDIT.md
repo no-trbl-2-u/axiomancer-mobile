@@ -811,6 +811,22 @@ Prior text preserved below for traceability:
 
 ## Done
 
+### [2.5] DRIFT — 5 setState `as any` casts in `components/Debug*` — finish the Phase 69 sweep ✅
+- Resolved 2026-05-22. Phase 69 drained the `state/actions.ts`
+  setState casts but didn't reach `components/Debug*` —
+  same wrapper-typing-already-correct gap, different surface.
+  Dropped 5 casts:
+  - `components/DebugQuestState.tsx:92, 100, 107` —
+    `store.setState({ quests: log } as any)` × 3 (start /
+    advance / complete handlers)
+  - `components/DebugXpGrant.tsx:39, 55` —
+    `store.setState({ player: {...} } as any)` × 2
+    (grant-xp / force-level-up handlers)
+  All five use `useGameStore()` which returns `AppStore =
+  StoreApi<AppStoreState>` — `setState` already accepts the
+  partial shapes passed. No code change beyond cast removal.
+  1060/1060 green at land.
+
 ### [2.5] DRIFT — 2 `as any` casts in shared item helpers (`material`, `templateToEquipment`) ✅
 - Resolved 2026-05-22. Two construction helpers in the data
   layer:

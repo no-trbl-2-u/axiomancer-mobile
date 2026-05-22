@@ -35,8 +35,7 @@ export function DebugXpGrant() {
                 ...player,
                 experience: (player.experience ?? 0) + XP_GRANT_AMOUNT,
             },
-             
-        } as any);
+        });
     };
 
     const onForceLevelUp = () => {
@@ -51,8 +50,7 @@ export function DebugXpGrant() {
                 ...player,
                 experience: player.experienceToNextLevel ?? 100,
             },
-             
-        } as any);
+        });
         store.getState().levelUp();
     };
 

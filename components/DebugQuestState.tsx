@@ -89,7 +89,7 @@ export function DebugQuestState() {
         const state = store.getState();
         const log = engineStartQuest(state.quests, spec.quest);
          
-        store.setState({ quests: log } as any);
+        store.setState({ quests: log });
     };
 
     const onAdvance = (spec: QuestSpec) => {
@@ -97,14 +97,14 @@ export function DebugQuestState() {
         const obj = spec.quest.objectives[0];
         const result = engineProgressQuest(state.quests, spec.quest.name, obj.id, 1);
          
-        store.setState({ quests: result.log } as any);
+        store.setState({ quests: result.log });
     };
 
     const onComplete = (spec: QuestSpec) => {
         const state = store.getState();
         const log = engineCompleteQuest(state.quests, spec.quest.name);
          
-        store.setState({ quests: log } as any);
+        store.setState({ quests: log });
     };
 
     return (

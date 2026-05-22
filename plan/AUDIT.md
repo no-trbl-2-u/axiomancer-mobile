@@ -317,36 +317,39 @@ Prior text preserved below for traceability:
 - next: file iterate fix tick.
 - source: exploration-surface mechanics audit 2026-05-22, row 4
 
-### [3.0] DRIFT — exploration presenter still reads legacy `availableNodes` / `completedNodes` / `lockedNodes` (exploration-audit row 1) — [needs-design-call]
+### [3.0] DRIFT — exploration presenter still reads legacy `availableNodes` / `completedNodes` / `lockedNodes` (exploration-audit row 1)
 
 - category: refactor (Phase 27 migration tail)
-- impact: 4 (if engine ever stops dual-populating the legacy
-  fields the presenter silently loses signal; today no risk)
-- ease: 3 (NOT a simple swap — investigated 2026-05-22)
-- **Investigation 2026-05-22 (iterate):** engine `discoveredNodes`
-  is the full reveal history (every node ever revealed via
-  `revealAdjacent`), NOT "reachable from current." The mobile
-  visual model (TRODDEN / OPEN / SHUT) maps:
-  - TRODDEN ← `completedNodes` (visited)
-  - OPEN ← `availableNodes` (reachable next step)
-  - SHUT ← `lockedNodes` (hidden / unreachable)
-  - A clean swap to `discoveredNodes` would conflate visited
-    nodes' neighbors-since-passing with current-neighbors —
-    behavior change, not refactor.
-- next: needs a design call on whether "OPEN" should mean
-  "currently reachable from current node" (stricter) or
-  "every node ever-reachable" (broader). Today's mobile
-  semantics is the former; engine's discoveredNodes is the
-  latter. Possible paths:
-  - (a) keep legacy fields; remove this audit row as
-    permanent-design-state.
-  - (b) compute OPEN from `getMapDefinition().nodes[currentId]
-    .connectedNodes \ completedNodes` (stricter "adjacent to
-    current"); migrate to engine fields for the other two.
-  - (c) keep both; expose a new vm field for "ever-reachable"
-    if a future surface wants it.
-- ship-when: `[needs-user-call]` for the design direction.
-- source: exploration-surface mechanics audit 2026-05-22, row 1
+- impact: 5 (design semantic settled via oversight 29th;
+  fixes the latent risk of engine dropping the legacy fields
+  + widens OPEN to match engine's actual reveal history)
+- ease: 5 (presenter migration to `discoveredNodes` /
+  `consumedNodes` + corresponding moveToAction legacy-chain
+  retirement; preserve `connectedNodes` for visual edges)
+- **Design decision (oversight 29th call, 2026-05-22):** OPEN =
+  every node ever-reachable (broader; matches engine
+  `discoveredNodes`). Player will see neighbors-of-past-
+  visits stay OPEN even after the player moves on; visual
+  map widens accordingly. Engine semantic is the source of
+  truth.
+- next: file iterate fix tick. Concrete shape:
+  1. Migrate `selectExplorationViewModel` to read
+     `world.currentMap.discoveredNodes` for the OPEN set
+     (instead of `availableNodes`).
+  2. Migrate to read `world.currentMap.consumedNodes`
+     where appropriate (`completedNodes` stays for the
+     TRODDEN classification since "visited" is distinct from
+     "event-consumed").
+  3. Update the legend / "available" count to match the new
+     semantic.
+  4. Retire the `moveToAction` legacy `worldCompleteNode` +
+     `worldUnlockNode` chain (engine `revealAdjacent` +
+     `completeNode` cover it). Keep one round of dual-write
+     until consumer migration verified.
+  5. Pre-existing exploration test suite must be updated to
+     match the new semantic (some assertions on OPEN node
+     count will widen).
+- source: exploration-surface mechanics audit 2026-05-22, row 1; design call via oversight 29th 2026-05-22.
 
 ### [2.5] DRIFT — `(state as any).world` cast in exploration presenter + moveToAction ✅
 

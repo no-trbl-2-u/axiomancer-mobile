@@ -399,8 +399,19 @@ Prior text preserved below for traceability:
 - next: file iterate fix tick after [3.5] StanceKey row.
 - source: user-jot 2026-05-22 — engine-duplication scan
 
-### [3.0] DRIFT — exploration presenter still reads legacy `availableNodes` / `completedNodes` / `lockedNodes` (exploration-audit row 1)
+### [4.0] DRIFT — engine `MapDefinition` connectivity diverges from mobile layout fixture (blocks Phase 27 OPEN-set migration)
 
+- category: bug (engine / mobile data-source disagreement; **needs-user-call** — likely engine fix, not mobile fix)
+- impact: 7 (blocks the oversight 29th OPEN-set design migration entirely; latent visual-vs-traversal mismatch — mobile draws edges the engine doesn't know exist, so engine-driven gating would hide them)
+- ease: ? (engine repo edit; out of mobile-iterate scope)
+- observation: discovered while attempting the [3.0] OPEN-set migration. Engine `MapDefinition` for `fishing-village` (in `axiomancer-mechanics/dist/World/Continents/Coastal-Village/maps.js:227`) declares the nodes as a strictly linear chain — `fv-2.connectedNodes = ['fv-3']`, `fv-3.connectedNodes = ['fv-4']`, etc. The mobile layout fixture (`state/exploration-maps/fishing-village.layout.ts:24`) has branching — `fv-2.connectedNodes = ['fv-3', 'fv-4']`, `fv-4.connectedNodes = ['fv-5', 'fv-6']`, and so on. The mobile fixture is the source of truth for the *visual* graph; the engine `MapDefinition` is the source of truth for the *unlock* graph the [3.0] row wants to migrate the OPEN set onto. They disagree, and the engine variant is strictly narrower.
+- evidence: a direct presenter swap (`world.currentMap.availableNodes` → `discoveredNodes`) fails 4 hermetic exploration tests — fv-3/fv-4/fv-5/fv-6 fall to `locked` after their first move, because `revealAdjacent` reads from the engine's narrower connectivity graph.
+- next: surface to user via `/oversight`. Likely outcomes: (a) engine MapDefinition expands to match the mobile layout's branching (preferred — engine becomes source of truth); (b) the mobile layout collapses to match the engine's linear chain (loses visual richness); (c) the OPEN-set design accepts the narrower engine graph and the user-facing visual map narrows. The [3.0] row stays BLOCKED until this is resolved.
+- source: discovered while attempting [3.0] migration (`/iterate` 2026-05-22).
+
+### [3.0] DRIFT — exploration presenter still reads legacy `availableNodes` / `completedNodes` / `lockedNodes` (exploration-audit row 1) — **BLOCKED**
+
+- **Blocked 2026-05-22** by newly-filed [4.0] engine/mobile map-connectivity divergence (see row below). Direct migration attempt this tick (swap OPEN-set source `availableNodes` → `discoveredNodes`) failed 4 hermetic tests in `state/e2e/exploration.engine.test.ts`: fv-3 / fv-4 / fv-5 / fv-6 classify as `locked` instead of `available` because the engine `MapDefinition` for `fishing-village` declares `fv-2.connectedNodes = ['fv-3']` (linear) while the mobile layout fixture has `['fv-3', 'fv-4']` (branching). `revealAdjacent` reads from the engine, so `discoveredNodes` post-move is narrower than the visual graph the screen draws. The migration cannot ship until engine / mobile-fixture connectivity is reconciled.
 - category: refactor (Phase 27 migration tail)
 - impact: 5 (design semantic settled via oversight 29th;
   fixes the latent risk of engine dropping the legacy fields

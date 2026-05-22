@@ -9,7 +9,7 @@
 
 ## Pending
 
-### [score 5.0] Phase 67 — Recurring playtest cadence (Playwright-driven regression sentinel)
+### [score 5.0] Phase 67 — Recurring playtest cadence (Playwright-driven regression sentinel) [PROMOTED]
 
 - proposed: 2026-05-22, expand pass 34
 - source signals:
@@ -50,7 +50,9 @@
 - estimated phases: 1-2.
 - conflicts: none. The playtest skill is purely additive.
 
-### [score 4.0] Phase 68 — Character + Memoir mechanics-vs-UI audits (complete the series)
+**Resolution:** promoted via `/oversight` 2026-05-22 (28th call). See `01_build_plan.md` Phase 67 row for the live brief. Live-drive playtest in that oversight call validated the workflow + filed a new `[5.5]` HP-scaling AUDIT finding — confirming the cadence's value.
+
+### [score 4.0] Phase 68 — Character + Memoir mechanics-vs-UI audits (complete the series) [PROMOTED]
 
 - proposed: 2026-05-22, expand pass 34
 - source signals:
@@ -80,6 +82,8 @@
     `app/(tabs)/memoir/index.tsx` + chronicle helpers).
 - estimated phases: 1.
 - conflicts: none.
+
+**Resolution:** promoted via `/oversight` 2026-05-22 (28th call). See `01_build_plan.md` Phase 68 row for the live brief.
 
 
 

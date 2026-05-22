@@ -1403,6 +1403,53 @@ cleanup is trivial in the same surface.
       becomes the natural next-up once 65 lands clean and
       user retests playable combat.
 
+**Promoted via `/oversight` 2026-05-22 (28th call):** Phase 67
+(playtest cadence) + Phase 68 (Character + Memoir audits) — both
+filed by `/expand` pass 34 (`2a76cf8`) and promoted together
+during the same oversight call that ran the live-drive playtest
+on the dev server. The playtest validated Phase 65 / 5.0 / 3.5
+/ 4.5 end-to-end and filed a new `[5.5]` HP-scaling AUDIT row;
+Phase 67's deliverable codifies that pattern so future drift
+gets caught on a cadence, not by ad-hoc oversight playtests.
+
+- [ ] Phase 67 — Recurring playtest cadence (Playwright-driven
+      regression sentinel). 1-2 ticks.
+      - Tick A: `/playtest` skill at `skills/playtest.md`.
+        Orchestrates a single drive against a user-started
+        `pnpm web` instance per `setup/04_claude_playtest.md`:
+        load page → walk one encounter (exploration tap →
+        modal mount → stance commit → action commit → resolve
+        → continue) → snapshot key states → read console for
+        errors → file findings (if any) to `plan/AUDIT.md`
+        with the `playtest 2026-05-22` voice register.
+        Hermetic-test the skill's deliverable contract.
+      - Tick B (optional, gated on user opt-in): wire
+        `/playtest` into `/march`'s repertoire as a periodic
+        dispatcher entry. Default off — runs only when the
+        user adds it to a cron explicitly (the playtest skill
+        itself is opt-in by design; chicken-and-egg with
+        Claude bash sessions starting the dev server).
+      - Commit: `feat(spec67a): /playtest skill — Playwright
+        regression sentinel`.
+
+- [ ] Phase 68 — Character + Memoir mechanics-vs-UI audits
+      (complete the series). 1 phase, 2 ticks.
+      - Tick A: character/SELF surface audit. Authored at
+        `docs/mechanics-ui-audit-2026-05-22-character.md` (or
+        whatever date when shipped). Covers
+        `character.engine.ts` + `app/(tabs)/character/index.tsx`
+        + alignment cube + equipment dock + derived stats
+        readouts. Verdict table → ALIGNED / DRIFT / MOBILE-
+        ONLY rows + drift sub-rows filed in `plan/AUDIT.md`.
+      - Tick B: memoir surface audit. Same template, applied
+        to `memoir.engine.ts` + `app/(tabs)/memoir/index.tsx`
+        + chronicle helpers + alignment/moral readouts +
+        Phase 33 philosopher-quote slot.
+      - Closes the 6-surface audit series (combat ✅, event
+        ✅, exploration ✅, inventory ✅, character + memoir
+        in this phase). No further mechanics-vs-UI audit
+        phases expected until a new tab/surface ships.
+
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh
 > `Phase 25 — Aesthetic toggle` candidate filed via

@@ -91,6 +91,50 @@
 
 ## Pending
 
+### [5.5] Combat HUD HP scaling mismatch — exploration card shows 22/38, combat HUD shows 10/10 (NEW — playtest 2026-05-22)
+
+- category: bug (combat numbers / player trust)
+- impact: 8 (player sees `HP 22/38` walking the map; tap an
+  encounter → combat HUD reads `HP 10/10`. The mismatch is
+  not explained anywhere; player would reasonably ask "where
+  did 28 HP go?" or "which number is real?")
+- ease: ? (root cause investigation needed)
+- next: file iterate tick. Investigation paths:
+  - (a) engine `startCombat` may compute combat.player.health
+    from derived stats with a different formula than
+    out-of-combat (e.g. `combat.player.maxHealth = Math.floor
+    (player.maxHealth / 4)`)
+  - (b) the combat HUD reads from a different source than the
+    exploration card — one reads `state.combat?.player ?? state
+    .player`, the other reads `state.player` only
+  - (c) `combatBegin` may reset to combat-only baseline
+    rather than carrying over `state.player.health`
+- observed: live-drive playtest 2026-05-22 (oversight 28th call).
+  - exploration card: `HP 22/38` (`state.player.health` /
+    `.maxHealth`)
+  - combat HUD: `HP 10/10` (`combat.player.health` /
+    `.maxHealth`)
+  - level 7 character, fresh combat against MOURNFUL GULL
+    (level 2, 60 hp)
+- source: live-drive playtest (oversight 28th call)
+
+### [2.5] Three console deprecation warnings from web bundle (LOW)
+
+- category: tests / tech-debt
+- impact: 2 (deprecation warnings, not errors; will become
+  errors in a future React Native / Expo version but not
+  today)
+- ease: 5 (the warnings reference text/style prop name
+  changes — `textShadow*` → `textShadow`, `shadow*` →
+  `boxShadow`, `props.pointerEvents` → `style.pointerEvents`.
+  All three originate from transitive Expo / RN dependencies
+  per the stack trace, not mobile code; mostly waiting on
+  an upstream release to suppress)
+- observed: live-drive playtest 2026-05-22 — 3 warnings on
+  every page load. Zero errors.
+- next: tracking only; revisit when Expo SDK ships a fix.
+- source: live-drive playtest (oversight 28th call)
+
 ### [4.0] Mechanics-vs-UI logic audit — event surface ✅ (drifts filed as [4.5] / [2.5])
 
 - category: docs / quality (project coherence)

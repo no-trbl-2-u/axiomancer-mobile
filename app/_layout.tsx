@@ -23,6 +23,7 @@ import '@/state/exploration-maps/event-pools';
 import { createAsyncStorageAdapter } from '@/state/persistence/asyncStorageAdapter';
 import { CorruptSaveModal } from '@/components/CorruptSaveModal';
 import { DevAutoSeed } from '@/components/DevAutoSeed';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { HardwareBackHandler } from '@/components/HardwareBackHandler';
 import { EventGate } from '@/components/EventGate';
 import { ToastHost } from '@/components/ToastHost';
@@ -114,27 +115,33 @@ export default function RootLayout() {
         onCancel={onCorruptCancel}
       />
       <GameStoreProvider adapter={persistenceAdapter}>
-        <AestheticModeProvider>
-        <CombatModeProvider>
-          <StatusBar style="light" />
-          <HardwareBackHandler />
-          <EventGate />
-          <ToastHost />
-          <DevAutoSeed />
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="event/index"
-              options={{ headerShown: false, presentation: 'fullScreenModal' }}
-            />
-            <Stack.Screen
-              name="crucible"
-              options={{ headerShown: false, presentation: 'fullScreenModal' }}
-            />
-          </Stack>
-        </CombatModeProvider>
-        </AestheticModeProvider>
+        {/* ErrorBoundary mounts INSIDE the GameStoreProvider so
+            the fallback ErrorScreen can read engine state via
+            useGameState for the debug snapshot (filed via
+            user-jot 2026-05-22 oversight 29th). */}
+        <ErrorBoundary>
+          <AestheticModeProvider>
+          <CombatModeProvider>
+            <StatusBar style="light" />
+            <HardwareBackHandler />
+            <EventGate />
+            <ToastHost />
+            <DevAutoSeed />
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="event/index"
+                options={{ headerShown: false, presentation: 'fullScreenModal' }}
+              />
+              <Stack.Screen
+                name="crucible"
+                options={{ headerShown: false, presentation: 'fullScreenModal' }}
+              />
+            </Stack>
+          </CombatModeProvider>
+          </AestheticModeProvider>
+        </ErrorBoundary>
       </GameStoreProvider>
     </GestureHandlerRootView>
   );

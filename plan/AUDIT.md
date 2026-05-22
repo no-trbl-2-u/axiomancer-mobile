@@ -176,6 +176,55 @@
 - next: file iterate fix tick.
 - source: character-surface mechanics audit 2026-05-22, row 10
 
+### [3.0] DRIFT — `(e.payload as any)` casts in memoir chronicle event mapper (5 sites) (memoir-audit row 4)
+
+- category: refactor / typing hygiene
+- impact: 3 (bypasses engine's typed-event-payload guarantees
+  from `is*Event` guards; surfaces would catch payload-shape
+  changes if typing were intact)
+- ease: 5 (bigger than a one-line drop; some chained reads
+  go deeper than the engine's typed payload shape and need
+  narrower extension types)
+- next: file iterate fix tick.
+- source: memoir-surface mechanics audit 2026-05-22, row 4
+
+### [2.5] DRIFT — `selectMemoirViewModel(state: GameStore)` should widen to AppStoreState to drop `_recentEvents` cast (memoir-audit row 1)
+
+- category: refactor / typing hygiene
+- impact: 2 (mobile `_recentEvents` is honestly outside engine
+  GameStore; widen the param type so the cast disappears)
+- ease: 7 (one-line signature swap + import)
+- next: file iterate fix tick.
+- source: memoir-surface mechanics audit 2026-05-22, row 1
+
+### [2.5] DRIFT — `(state as any).quests` cast in memoir presenter (memoir-audit row 2)
+
+- category: refactor / typing hygiene
+- impact: 2 (engine `GameState.quests: QuestLog` typed cleanly;
+  cast is stale)
+- ease: 8 (drop cast; import `QuestLog`)
+- next: file iterate fix tick.
+- source: memoir-surface mechanics audit 2026-05-22, row 2
+
+### [2.5] DRIFT — `(state as any).moralMeter` cast in memoir presenter (memoir-audit row 3)
+
+- category: refactor / typing hygiene
+- impact: 2 (engine `GameState.moralMeter: number` typed cleanly)
+- ease: 8 (drop cast; one-line)
+- next: file iterate fix tick.
+- source: memoir-surface mechanics audit 2026-05-22, row 3
+
+### [2.5] DRIFT — `(q: any)` / `(o: any)` quest + objective casts in memoir presenter (memoir-audit row 5)
+
+- category: refactor / typing hygiene
+- impact: 2 (engine `Quest` / `QuestObjective` typed cleanly;
+  the `synthesizeObjectiveText` helper may need a narrower
+  extension type for fields not on engine's QuestObjective)
+- ease: 6 (drop casts; type properly; may surface fields
+  not on engine shape)
+- next: file iterate fix tick.
+- source: memoir-surface mechanics audit 2026-05-22, row 5
+
 ### [4.0] Mechanics-vs-UI logic audit — event surface ✅ (drifts filed as [4.5] / [2.5])
 
 - category: docs / quality (project coherence)

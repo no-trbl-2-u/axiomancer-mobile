@@ -352,10 +352,12 @@ function toRomanLowerEvent(n: number): string {
 
 function composeCombatPrelude(encounter: Encounter, isBoss: boolean): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
     // Phase 60b — engine's canonical `Encounter` shape is
-    // `{ enemies: Enemy[], origin: string }`. The prelude
+    // `{ enemies: Enemy[], origin?: string }`. The prelude
     // consumes the first enemy (combat is single-enemy today).
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const enemy = (encounter as any).enemies[0];
+    // The earlier `as any` cast (closed via [2.5] event-audit
+    // row 4) dated back to Phase 60b's migration; engine
+    // `Encounter` exposes `.enemies` directly today.
+    const enemy = encounter.enemies[0];
     const badge = isBoss ? 'OMEN OF DOOM' : ENCOUNTER_LABEL;
     // Phase 43 port: boss encounters swap FIGHT/FLEE labels for
     // STRIKE/KNEEL per the design's chat-1 spec ("KNEEL / STRIKE for

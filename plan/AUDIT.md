@@ -128,7 +128,7 @@
   SELF tab so the side-effect is visible.
 - source: event-surface mechanics audit 2026-05-22, row 10
 
-### [2.5] DRIFT — `(encounter as any).enemies[0]` cast in composeCombatPrelude (event-audit row 4)
+### [2.5] DRIFT — `(encounter as any).enemies[0]` cast in composeCombatPrelude ✅
 
 - category: refactor / typing hygiene
 - impact: 2 (no behavior change; the `as any` cast hides any

@@ -1026,10 +1026,13 @@ function pickEventChoiceAction(store: AppStore, choiceId: string): void {
     if (processed.kind === 'encounter') {
         if (choiceId === 'fight') {
             // Phase 60b — engine's canonical `Encounter` shape is
-            // `{ enemies: Enemy[], origin: string }`; the prelude
-            // consumes the first enemy.
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const enemy = (processed.encounter as any).enemies[0] as Enemy;
+            // `{ enemies: Enemy[], origin?: string, rewards?:
+            // Reward[] }` (axiomancer-mechanics/dist/World/types.d.ts).
+            // The prelude consumes the first enemy. The earlier
+            // `as any` cast (closed via [2.5] event-audit row 4)
+            // dated back to Phase 60b's migration; the engine type
+            // exposes `.enemies` directly today.
+            const enemy = processed.encounter.enemies[0];
             store.getState().startCombat(enemy);
             // Phase 60d — seed mobile-only mana slice after the
             // encounter-prelude path starts combat. Matches the

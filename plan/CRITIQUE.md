@@ -53,6 +53,16 @@
 
 ## Pending
 
+### [MED] general — Tap-tooltip phase: explain buffs / stats / effects on tap
+- pass: user-jot (commit HEAD)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: I want to add a phase where we add "tap" tooltips that explain whatever it is they tapped (ie. any buff icons during combat, what each stat does in the "SELF" tab, stat effects for afflictions and blessings, etc.)
+- evidence: user-spotted at 2026-05-22
+- suggested_fix: [user has not specified — iterate to determine]
+- source: user
+
 ## Done
 
 ### [MED] general — Expand DEV mode to cover every ported mechanic ✅

@@ -808,6 +808,20 @@ Prior text preserved below for traceability:
 
 ## Done
 
+### [2.5] DRIFT — `event.payload as any` cast in inventory-feedback presenter ✅
+- Resolved 2026-05-22. Engine declares
+  `TypedInventoryChangedEvent.payload: EnginePayload` (`{action,
+  state, ...}`), but the runtime non-dispatch `addItem` path ships
+  `{item, state}` and skips the `action` slot — so the presenter
+  can't trust the typed shape. Replaced `as any` with a precise
+  local `InventoryChangedPayloadProbe` extension type listing
+  every field the presenter actually reads, cast through `unknown`
+  so subsequent reads stay typed. Tightened the per-field reads
+  with `typeof === 'string'` guards so the toast strings are
+  type-safe. Picked via fresh presenter-cast sweep — last `as any`
+  in `state/presenters/` outside annotated audit holdouts.
+  1060/1060 green at land.
+
 ### [2.5] DRIFT — `rawBaseStats as any` cast in memoir `buildPhilosophicalAlignment` ✅
 - Resolved 2026-05-22. Tightened the function's input type from
   `unknown` to `BaseStats | undefined` — the only caller passes

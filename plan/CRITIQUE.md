@@ -53,6 +53,16 @@
 
 ## Pending
 
+### [MED] /self — Level Up button at top of SELF screen + stat-allocation modal
+- pass: user-jot (commit HEAD)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: We need a "Level up" button at the top of the "SELF" screen to allow for the player to level up. I'll go to design and have us create a modal for stat allocation on level up
+- evidence: user-spotted at 2026-05-22
+- suggested_fix: [user has not specified — iterate to determine; user has indicated design handoff for the modal is forthcoming]
+- source: user
+
 ### [MED] general — Tap-tooltip phase: explain buffs / stats / effects on tap
 - pass: user-jot (commit HEAD)
 - viewport: unspecified

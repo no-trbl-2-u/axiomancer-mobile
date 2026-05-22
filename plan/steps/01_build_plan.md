@@ -1477,6 +1477,20 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
         (engine doesn't surface per-foe codex entries yet — engine
         integration is a follow-up). 36 new tests across 3 suites;
         4 retired with the banner. 1112/1112 verify green.
+      - **[x] Tick C** — shipped `a6b1665`
+        (`feat(spec70c): CombatDefeatPanel + run-stats counter +
+        BEGIN AGAIN`). Defeat branch closes the previously-silent
+        defeat path (no aftermath chrome before this tick). New
+        `<CombatDefeatPanel>` (spent-wick, gothic character name,
+        italic fell-to line, mono damage ledger, chronicle
+        paragraph, run-summary ledger, blood seep). New mobile-side
+        `encountersFaced` / `deepestNodeId` counters on combat-mode
+        + `recordDeepestNode` hook in the exploration screen.
+        `BEGIN AGAIN` full-heals + resets run-stats + dismisses;
+        `let the page close` dismisses only (abandon-run path).
+        28 new tests across 3 suites; 1140/1140 verify green.
+        Engine-side respawn-with-fresh-seed deferred (engine has
+        no run-loop semantics yet).
 
 - [ ] Phase 71 — Encounter-seal chrome refresh. Sibling to
       Phase 70 — phase-aware top + bottom `SEALED` chain bars

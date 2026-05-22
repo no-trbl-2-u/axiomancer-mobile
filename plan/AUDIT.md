@@ -544,8 +544,9 @@ Prior text preserved below for traceability:
 - source: Phase 65 close-out (filed 2026-05-21); ungated
   oversight 26th
 
-### [5.9] User-enablement playtest runbook (let Claude drive the live app)
+### [5.9] User-enablement playtest runbook (let Claude drive the live app) ✅
 
+- Resolved 2026-05-22. `setup/04_claude_playtest.md` shipped, walking the user through `pnpm web` + Playwright MCP smoke test. The recurring playtest cadence was then formalized as Phase 67 (`966a990` `feat(spec67a): /playtest skill — Playwright regression sentinel + hermetic structural test`). Drained as Done during the audit-hygiene sweep 2026-05-22.
 - category: docs / workflow (high impact — unblocks
   loop-driven self-testing)
 - impact: 9 (today the loop ships fixes blind; user has to
@@ -664,7 +665,9 @@ Prior text preserved below for traceability:
   renames it to lowercase `mana` to match the surrounding
   voice register (`cost` label is lowercase).
 
-### [9.8] Combat regression — `selectCombatViewModel` returns stale `vm.phase` despite fresh `combat.phase=resolving` input (NARROWED, ready-to-fix)
+### [9.8] Combat regression — `selectCombatViewModel` returns stale `vm.phase` despite fresh `combat.phase=resolving` input ✅
+
+- Resolved 2026-05-21 via Phase 65 Tick A — commit `8f7265c` `fix(spec65a): useCombatViewModel — vm.phase stuck while engine advances; React Compiler ignored opaque store.getState() deps`. Root cause confirmed: the `useMemo` deps array passed `store.getState()` opaquely; the React Compiler couldn't trace the inner reads, so the memo never invalidated when `combat.phase` advanced. Fix threaded the combat slice through explicit deps. Drained as Done during the audit-hygiene sweep 2026-05-22.
 
 - category: bug (combat blocking, presenter layer)
 - impact: 10 (combat completely non-functional — engine
@@ -710,7 +713,9 @@ Prior text preserved below for traceability:
 - source: user 2026-05-21 (preview build, 3x; latest with
   inner-vs-outer diagnostics)
 
-### [9.8] Encounter UX — keep entire encounter inside the modal (PROMOTED → Phase 63)
+### [9.8] Encounter UX — keep entire encounter inside the modal ✅ (PROMOTED → Phase 63; all 4 sub-ticks shipped)
+
+- Resolved 2026-05-21 via Phase 63 (parent + 4 sub-ticks 63a/b/c/d, all marked `[x]` in `plan/steps/01_build_plan.md`). Combat UI extracted into reusable `<CombatPanel>`, mounted inside `EncounterModalOverlay`, aftermath dismissal wired, standalone `/combat` route retired. Drained as Done during the audit-hygiene sweep 2026-05-22.
 
 - category: bug (UX architecture)
 - impact: 10 (user-stated top priority: "KEEP the full
@@ -727,7 +732,9 @@ Prior text preserved below for traceability:
   briefs.
 - source: user 2026-05-21 (preview build)
 
-### [9.5] Combat regression — Heart appears pre-selected; there is no default/starting stance (RE-DIAGNOSED 2026-05-21 oversight 25th)
+### [9.5] Combat regression — Heart appears pre-selected; there is no default/starting stance ✅
+
+- Resolved 2026-05-21 via Phase 65 Tick B — commit `33f8fdc` `feat(spec65b): no default stance — fix [9.5] Heart appears pre-selected`. `previewStance` now stays `null` until the player previews via `localUi.selectedStance` or commits via `playerChoice.stance`; presenter comment at `state/presenters/combat.engine.ts:1096-1100` documents the contract. Drained as Done during the audit-hygiene sweep 2026-05-22.
 
 - category: bug (combat UX, default-state leak)
 - impact: 8 (player misreads pre-highlighted Heart as
@@ -757,7 +764,9 @@ Prior text preserved below for traceability:
 - source: user 2026-05-21 (preview build, twice + clarification
   via oversight 25th)
 
-### [9.5] Combat regression — Action selection has no effect (LIKELY-DUPLICATE of [9.8])
+### [9.5] Combat regression — Action selection has no effect ✅ (duplicate of [9.8])
+
+- Resolved 2026-05-21. Hypothesis confirmed: same root cause as the [9.8] vm.phase staleness. When Phase 65 Tick A (`8f7265c`) fixed the memo-staleness in `useCombatViewModel`, action selection visibly took effect again. Drained as Done during the audit-hygiene sweep 2026-05-22.
 
 - category: bug (combat blocking)
 - impact: 10 (combat completely unusable — player can pick
@@ -776,7 +785,9 @@ Prior text preserved below for traceability:
   hypothesis holds.
 - source: user 2026-05-21 (preview build, twice now)
 
-### [9.5] Combat regression — Encounter modal closes before resolution
+### [9.5] Combat regression — Encounter modal closes before resolution ✅
+
+- Resolved 2026-05-21 via Phase 63 (modal-contained encounter). Combat now lives inside `EncounterModalOverlay`; the modal cannot dismiss until the encounter resolves (Phase 63c). The original symptom — the overlay vanishing on a pending-event race — is structurally impossible once Phase 63b/c land. Confirmed by the 2026-05-22 live-drive playtest (oversight 28th call). Drained as Done during the audit-hygiene sweep 2026-05-22.
 
 - category: bug (combat blocking)
 - impact: 8 (player must pick FIGHT/FLEE; modal dismissing

@@ -811,6 +811,23 @@ Prior text preserved below for traceability:
 
 ## Done
 
+### [2.5] DRIFT — 2 `as any` casts in shared item helpers (`material`, `templateToEquipment`) ✅
+- Resolved 2026-05-22. Two construction helpers in the data
+  layer:
+  - `state/exploration-maps/event-pools.ts:183` `material(...)` —
+    returns engine `Material = BaseItem & { category: 'material';
+    quantity: number }`. The function already supplies all 5
+    required fields. The `as any as Material` cast was fully
+    redundant. Dropped.
+  - `state/selectors/equipment.ts:templateToEquipment` —
+    legitimately a boundary cast: returns an `Equipment` shape
+    plus mobile-side `stackable` / `quantity` / `modifiers`
+    fields the engine type doesn't declare. Promoted the cast
+    from `as any as Equipment` to `as unknown as Equipment`,
+    boundary now explicit instead of an `any` masking
+    typos. JSDoc updated to describe the wrapper.
+  1060/1060 green at land.
+
 ### [3.0] DRIFT — final 3 `as any` casts in `state/actions.ts` (pushLog, enemyChoice.action, playerChoice cleared) ✅
 - Resolved 2026-05-22. Three remaining casts at the bottom of
   the action-layer sweep:

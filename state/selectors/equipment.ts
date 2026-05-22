@@ -110,6 +110,11 @@ export function findEquippedInSlot(
  * retires.
  */
 export function templateToEquipment(template: EquipmentTemplate): Equipment {
+    // The engine `Equipment` type doesn't declare `stackable` /
+    // `quantity` / `modifiers`, but the mobile inventory layer reads
+    // them on every Item. Cast through `unknown` so the boundary is
+    // explicit (instead of `as any`, which masks every typo) and
+    // findable for future engine-shape reconciliation.
     return {
         ...template,
         category: 'equipment',
@@ -117,6 +122,5 @@ export function templateToEquipment(template: EquipmentTemplate): Equipment {
         quantity: 1,
         rarity: 'common',
         modifiers: [],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any as Equipment;
+    } as unknown as Equipment;
 }

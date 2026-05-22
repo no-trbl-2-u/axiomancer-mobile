@@ -187,8 +187,7 @@ function material(id: string, name: string, description: string, quantity = 1): 
         description,
         category: 'material',
         quantity,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any as Material;
+    };
 }
 
 // `templateToEquipment` extracted to

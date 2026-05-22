@@ -108,8 +108,27 @@ export interface AftermathParleyViewModel {
 
 export interface AftermathDefeatViewModel {
     kind: 'defeat';
-    enemyName: string;
-    enemyEpithet: string | null;
+    /** Display name of the player character ("WORM-EATEN PILGRIM"
+     *  in the design's exemplar). Sourced from engine player.name
+     *  (uppercased) at snapshot time. */
+    characterName: string;
+    /** The killer — the foe that took the final blow. */
+    killer: {
+        name: string;
+        epithet: string | null;
+        finalSkill: string;
+        damage: number;
+    } | null;
+    /** Chronicle paragraph rendered with the `axm-dropcap` rule.
+     *  Presenter-selected from a small variant table. */
+    causePhrase: string;
+    /** Run summary ledger — three rows. `deepestNodeId` may be
+     *  null when the player died on their first node. */
+    runSummary: {
+        rounds: number;
+        encountersFaced: number;
+        deepestNodeId: string | null;
+    };
 }
 
 export type AftermathViewModel =
@@ -158,8 +177,30 @@ export function selectAftermathViewModel(
             journalEntry: data.journalEntry,
         };
     }
-    // Defeat ships in Tick C.
-    return null;
+    // Defeat — Tick C.
+    return {
+        kind: 'defeat',
+        characterName: data.characterName.toUpperCase(),
+        killer: data.finalBlow !== null
+            ? {
+                  name: data.enemy.name.toUpperCase(),
+                  epithet: deriveEpithet(data.enemy.description),
+                  finalSkill: data.finalBlow.skillName ?? 'STRIKE',
+                  damage: data.finalBlow.damage,
+              }
+            : {
+                  name: data.enemy.name.toUpperCase(),
+                  epithet: deriveEpithet(data.enemy.description),
+                  finalSkill: 'STRIKE',
+                  damage: 0,
+              },
+        causePhrase: deriveCausePhrase(data),
+        runSummary: {
+            rounds: data.runSummary.roundsEndured,
+            encountersFaced: data.runSummary.encountersFaced,
+            deepestNodeId: data.runSummary.deepestNodeId,
+        },
+    };
 }
 
 /**
@@ -222,6 +263,27 @@ function deriveFinalBlowPhrase(
     }
     // Ironic — the foe falls almost by accident.
     return `it set the bell down, slow. the bell did not ring. the wet ground took the rest.`;
+}
+
+/**
+ * Pick a chronicle cause-of-death paragraph keyed off the damage
+ * tier of the killing blow. Three variants from the bundle's tone
+ * reference — brutal / quiet / ironic — rendered as a marginal note
+ * in a medieval death-book. The panel applies the `axm-dropcap`
+ * first-letter rule.
+ */
+function deriveCausePhrase(
+    data: Extract<AftermathData, { variant: 'defeat' }>,
+): string {
+    const damage = data.finalBlow?.damage ?? 0;
+    const killerName = data.enemy.name;
+    if (damage >= 20) {
+        return `And so the pilgrim laid down where it stood, while the ${killerName.toLowerCase()}'s blade learned its ribs by name. The journey had been short. The journey had been kept.`;
+    }
+    if (damage >= 10) {
+        return `It came in pieces. First the breath, then the legs, then a long silence that did not break. The ${killerName.toLowerCase()} looked once, then looked away.`;
+    }
+    return `Not a great wound; a steady one. The pilgrim sat down to rest, and did not stand up. The page closed without ceremony.`;
 }
 
 /**

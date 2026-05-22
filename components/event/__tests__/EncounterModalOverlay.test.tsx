@@ -574,3 +574,108 @@ describe('EncounterModalOverlay: combat → aftermath swap (parley)', () => {
         expect(tree.queryByTestId('combat-friendship-panel')).toBeNull();
     });
 });
+
+// ---------------------------------------------------------------------------
+// Phase 70 Tick C — defeat swap
+// ---------------------------------------------------------------------------
+
+describe('EncounterModalOverlay: combat → aftermath swap (defeat)', () => {
+    function withDefeatOutcome(child: React.ReactNode) {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { GameStoreProvider } = require('@/state/GameStoreProvider');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { createAppStore } = require('@/state/store');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { createMemoryAdapter } = require('@/test-utils/memoryAdapter');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const {
+            CombatModeProvider,
+            useCombatMode,
+        } = require('@/state/combat-mode') as typeof import('@/state/combat-mode');
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        function DefeatTrigger() {
+            const { exitCombatWith } = useCombatMode();
+            React.useEffect(() => {
+                exitCombatWith('defeat', {
+                    variant: 'defeat',
+                    enemy: {
+                        name: 'Hierophant',
+                        description: 'A figure long since gnawed.',
+                        level: 7,
+                    },
+                    characterName: 'Worm-Eaten Pilgrim',
+                    finalBlow: { skillName: 'AXE-FALL', damage: 28, descriptor: 'cleaves the rib' },
+                    runSummary: { roundsEndured: 4, encountersFaced: 12, deepestNodeId: 'iii.b' },
+                });
+            }, [exitCombatWith]);
+            return null;
+        }
+        return (
+            <AestheticModeProvider initialMode="canonical" skipHydration>
+                <CombatModeProvider>
+                    <GameStoreProvider store={store}>
+                        {child}
+                        <DefeatTrigger />
+                    </GameStoreProvider>
+                </CombatModeProvider>
+            </AestheticModeProvider>
+        );
+    }
+
+    it('swaps to <CombatDefeatPanel> when lastOutcome flips to defeat', () => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { fireEvent } = require('@testing-library/react-native');
+        const tree = render(
+            withDefeatOutcome(
+                <EncounterModalOverlay
+                    vm={makeCombatPreludeVm()}
+                    onFight={() => {}}
+                    onFlee={() => {}}
+                />,
+            ),
+        );
+        fireEvent.press(tree.getByTestId('encounter-modal-fight'));
+
+        expect(tree.queryByTestId('combat-defeat-panel')).not.toBeNull();
+        expect(tree.queryByTestId('combat-victory-panel')).toBeNull();
+        expect(tree.queryByTestId('combat-friendship-panel')).toBeNull();
+    });
+
+    it('let-the-page-close dismisses the panel', () => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { fireEvent } = require('@testing-library/react-native');
+        const tree = render(
+            withDefeatOutcome(
+                <EncounterModalOverlay
+                    vm={makeCombatPreludeVm()}
+                    onFight={() => {}}
+                    onFlee={() => {}}
+                />,
+            ),
+        );
+        fireEvent.press(tree.getByTestId('encounter-modal-fight'));
+        expect(tree.queryByTestId('combat-defeat-panel')).not.toBeNull();
+
+        fireEvent.press(tree.getByTestId('combat-defeat-panel-let-close'));
+        expect(tree.queryByTestId('combat-defeat-panel')).toBeNull();
+    });
+
+    it('BEGIN AGAIN dismisses the panel', () => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { fireEvent } = require('@testing-library/react-native');
+        const tree = render(
+            withDefeatOutcome(
+                <EncounterModalOverlay
+                    vm={makeCombatPreludeVm()}
+                    onFight={() => {}}
+                    onFlee={() => {}}
+                />,
+            ),
+        );
+        fireEvent.press(tree.getByTestId('encounter-modal-fight'));
+        expect(tree.queryByTestId('combat-defeat-panel')).not.toBeNull();
+
+        fireEvent.press(tree.getByTestId('combat-defeat-panel-begin-again'));
+        expect(tree.queryByTestId('combat-defeat-panel')).toBeNull();
+    });
+});

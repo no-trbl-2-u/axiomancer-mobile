@@ -26,13 +26,9 @@ describe('selectAftermathViewModel', () => {
         expect(selectAftermathViewModel(null)).toBeNull();
     });
 
-    it('returns null on defeat (Tick C will populate that branch)', () => {
-        const defeat: AftermathData = {
-            variant: 'defeat',
-            enemy: { name: 'Hierophant', description: 'iron-tongued.', level: 7 },
-        };
-        expect(selectAftermathViewModel(defeat)).toBeNull();
-    });
+    // Defeat branch now ships in Tick C — see the dedicated describe
+    // block at the bottom of this file. The Tick A "returns null on
+    // defeat" pin was retired with the Tick C swap.
 
     it('uppercases the enemy name for the gothic title slot', () => {
         const vm = selectAftermathViewModel(VICTORY_SNAPSHOT);
@@ -205,5 +201,95 @@ describe('selectAftermathViewModel: parley branch', () => {
     it('leaves journalEntry null when the snapshot has none', () => {
         const vm = selectAftermathViewModel(PARLEY_SNAPSHOT_MID);
         expect(vm?.kind === 'parley' && vm.journalEntry).toBeNull();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 70 Tick C — defeat branch
+// ---------------------------------------------------------------------------
+
+const DEFEAT_SNAPSHOT: Extract<AftermathData, { variant: 'defeat' }> = {
+    variant: 'defeat',
+    enemy: {
+        name: 'Hierophant',
+        description: 'A figure long since gnawed by iron tongues.',
+        level: 7,
+    },
+    characterName: 'Worm-Eaten Pilgrim',
+    finalBlow: {
+        skillName: 'AXE-FALL',
+        damage: 28,
+        descriptor: 'cleaves the binding rib',
+    },
+    runSummary: {
+        roundsEndured: 4,
+        encountersFaced: 12,
+        deepestNodeId: 'iii.b',
+    },
+};
+
+describe('selectAftermathViewModel: defeat branch', () => {
+    it('returns a defeat VM with uppercased character name', () => {
+        const vm = selectAftermathViewModel(DEFEAT_SNAPSHOT);
+        expect(vm?.kind).toBe('defeat');
+        expect(vm?.kind === 'defeat' && vm.characterName).toBe('WORM-EATEN PILGRIM');
+    });
+
+    it('populates the killer block (uppercased name + epithet + final skill + damage)', () => {
+        const vm = selectAftermathViewModel(DEFEAT_SNAPSHOT);
+        expect(vm?.kind === 'defeat' && vm.killer).toEqual({
+            name: 'HIEROPHANT',
+            epithet: 'figure long since gnawed by iron tongues',
+            finalSkill: 'AXE-FALL',
+            damage: 28,
+        });
+    });
+
+    it('falls back to STRIKE + 0 damage when finalBlow is null', () => {
+        const vm = selectAftermathViewModel({ ...DEFEAT_SNAPSHOT, finalBlow: null });
+        expect(vm?.kind === 'defeat' && vm.killer).toEqual({
+            name: 'HIEROPHANT',
+            epithet: 'figure long since gnawed by iron tongues',
+            finalSkill: 'STRIKE',
+            damage: 0,
+        });
+    });
+
+    it('picks the brutal cause phrase for damage >= 20', () => {
+        const vm = selectAftermathViewModel(DEFEAT_SNAPSHOT);
+        expect(vm?.kind === 'defeat' && vm.causePhrase).toContain('laid down where it stood');
+    });
+
+    it('picks the broken-down cause phrase for damage in [10, 20)', () => {
+        const vm = selectAftermathViewModel({
+            ...DEFEAT_SNAPSHOT,
+            finalBlow: { skillName: 'STRIKE', damage: 12, descriptor: null },
+        });
+        expect(vm?.kind === 'defeat' && vm.causePhrase).toContain('came in pieces');
+    });
+
+    it('picks the quiet cause phrase for damage < 10', () => {
+        const vm = selectAftermathViewModel({
+            ...DEFEAT_SNAPSHOT,
+            finalBlow: { skillName: 'STRIKE', damage: 4, descriptor: null },
+        });
+        expect(vm?.kind === 'defeat' && vm.causePhrase).toContain('steady one');
+    });
+
+    it('threads the run-summary trio through verbatim', () => {
+        const vm = selectAftermathViewModel(DEFEAT_SNAPSHOT);
+        expect(vm?.kind === 'defeat' && vm.runSummary).toEqual({
+            rounds: 4,
+            encountersFaced: 12,
+            deepestNodeId: 'iii.b',
+        });
+    });
+
+    it('preserves a null deepestNodeId for the "died on first node" branch', () => {
+        const vm = selectAftermathViewModel({
+            ...DEFEAT_SNAPSHOT,
+            runSummary: { roundsEndured: 1, encountersFaced: 1, deepestNodeId: null },
+        });
+        expect(vm?.kind === 'defeat' && vm.runSummary.deepestNodeId).toBeNull();
     });
 });

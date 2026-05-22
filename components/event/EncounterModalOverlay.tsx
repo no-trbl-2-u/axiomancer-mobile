@@ -37,6 +37,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { CombatPanel } from '@/components/combat/CombatPanel';
+import { CombatDefeatPanel } from '@/components/event/aftermath/CombatDefeatPanel';
 import { CombatFriendshipPanel } from '@/components/event/aftermath/CombatFriendshipPanel';
 import { CombatVictoryPanel } from '@/components/event/aftermath/CombatVictoryPanel';
 import { EventArt } from '@/components/event/EventArt';
@@ -46,7 +47,7 @@ import { ActionIcon } from '@/components/ActionIcon';
 import { AXM, FONTS } from '@/theme/axm';
 import { useAesthetic } from '@/state/aesthetic-mode';
 import { useCombatMode } from '@/state/combat-mode';
-import { useGameState } from '@/state/GameStoreProvider';
+import { useGameState, useGameStore } from '@/state/GameStoreProvider';
 import { selectAftermathViewModel } from '@/state/presenters/aftermath.engine';
 import { selectEventCodexHeader } from '@/state/presenters/event.codex.engine';
 import type { EventViewModel } from '@/state/presenters/event.engine';
@@ -85,7 +86,12 @@ export function EncounterModalOverlay({
     // in place, and the seal stays closed until the panel's
     // CARRY ON button fires `dismissAftermath()`.
     const [mode, setMode] = useState<EncounterModalMode>('prelude');
-    const { lastOutcome, aftermathData, dismissAftermath } = useCombatMode();
+    const {
+        lastOutcome,
+        aftermathData,
+        dismissAftermath,
+        resetRunStats,
+    } = useCombatMode();
     const handleFight = useCallback(() => {
         onFight();
         setMode('combat');
@@ -94,17 +100,35 @@ export function EncounterModalOverlay({
     // Phase 70 Tick A — watch the outcome signal. On 'victory' (the
     // only branch with a Tick A panel), swap mode to 'aftermath'.
     // Phase 70 Tick B — extend to 'parley' (friendship panel).
-    // Defeat / flee still bypass the modal (defeat lands in Tick C;
-    // flee was always silent).
+    // Phase 70 Tick C — extend to 'defeat' (defeat panel).
     useEffect(() => {
         if (
             mode === 'combat'
-            && (lastOutcome === 'victory' || lastOutcome === 'parley')
+            && (lastOutcome === 'victory' || lastOutcome === 'parley' || lastOutcome === 'defeat')
             && aftermathData !== null
         ) {
             setMode('aftermath');
         }
     }, [mode, lastOutcome, aftermathData]);
+
+    // Phase 70 Tick C — BEGIN AGAIN restarts the run. Full-heal the
+    // player + reset the run-stats counters + dismiss. Engine-level
+    // "new game" / fresh-seed restart is a follow-up; this is the
+    // minimum meaningful "start over" hook.
+    const store = useGameStore();
+    const handleBeginAgain = useCallback(() => {
+        const state = store.getState();
+        if (state.player !== undefined) {
+            store.setState({
+                player: {
+                    ...state.player,
+                    health: state.player.maxHealth,
+                } as never,
+            });
+        }
+        resetRunStats();
+        dismissAftermath();
+    }, [store, resetRunStats, dismissAftermath]);
 
     const aftermathVm = selectAftermathViewModel(aftermathData);
 
@@ -200,6 +224,12 @@ export function EncounterModalOverlay({
                     <CombatFriendshipPanel
                         vm={aftermathVm}
                         onContinue={dismissAftermath}
+                    />
+                ) : mode === 'aftermath' && aftermathVm !== null && aftermathVm.kind === 'defeat' ? (
+                    <CombatDefeatPanel
+                        vm={aftermathVm}
+                        onBeginAgain={handleBeginAgain}
+                        onLetClose={dismissAftermath}
                     />
                 ) : mode === 'combat' ? (
                     <ScrollView

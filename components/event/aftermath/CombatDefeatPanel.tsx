@@ -1,0 +1,334 @@
+/**
+ * CombatDefeatPanel — the "the page closes" panel rendered inside
+ * the encounter modal seal once `lastOutcome === 'defeat'`.
+ *
+ * Phase 70 Tick C port of the handoff bundle's `CombatDefeatModal`
+ * (`design/handoff-2026-05-22/project/screens/aftermath-modal.jsx:
+ * 585-703`). Sibling of `<CombatVictoryPanel>` /
+ * `<CombatFriendshipPanel>` but tuned darker — no splatter, no
+ * pixel emblem, no celebration. A spent-wick hairline above the
+ * title, gothic character name, italic fell-to line, mono damage
+ * ledger, chronicle paragraph with drop-cap, run-summary ledger
+ * (rounds endured · encounters faced · deepest node), and a bottom
+ * blood seep clipped to a torn edge.
+ *
+ * Two action buttons:
+ *   1. `BEGIN AGAIN` — primary parchment-bordered gothic. Wired
+ *      via `onBeginAgain` to a full-heal-and-dismiss restart at
+ *      the call site.
+ *   2. `let the page close` — ghost bone-italic lowercase. Wired
+ *      via `onLetClose`; the panel dismisses without resetting
+ *      anything, leaving the player on the map at 0 HP (the
+ *      "abandon run" path).
+ */
+
+import React from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+
+import { AXM, FONTS } from '@/theme/axm';
+import type { AftermathDefeatViewModel } from '@/state/presenters/aftermath.engine';
+
+export interface CombatDefeatPanelProps {
+    vm: AftermathDefeatViewModel;
+    onBeginAgain: () => void;
+    onLetClose: () => void;
+}
+
+/**
+ * Tiny lowercase-roman converter. Mirrors the design bundle's
+ * `roman()` helper (`design/handoff-2026-05-22/project/screens/
+ * aftermath-modal.jsx:206-212`). Used only here; if other panels
+ * need lowercase roman the helper can be promoted to a shared
+ * utility.
+ */
+function roman(n: number): string {
+    if (n <= 0) return '·';
+    const map: ReadonlyArray<readonly [string, number]> = [
+        ['m', 1000], ['cm', 900], ['d', 500], ['cd', 400],
+        ['c', 100], ['xc', 90], ['l', 50], ['xl', 40],
+        ['x', 10], ['ix', 9], ['v', 5], ['iv', 4],
+        ['i', 1],
+    ];
+    let out = '';
+    let remaining = n;
+    for (const [s, v] of map) {
+        while (remaining >= v) {
+            out += s;
+            remaining -= v;
+        }
+    }
+    return out;
+}
+
+export function CombatDefeatPanel({ vm, onBeginAgain, onLetClose }: CombatDefeatPanelProps) {
+    const deepest = vm.runSummary.deepestNodeId ?? '·';
+    return (
+        <View style={styles.root} testID="combat-defeat-panel">
+            {/* Spent wick — a single hairline drop from the very top
+                with an extinguished ember at its tip. */}
+            <View style={styles.wickStem} />
+            <View style={styles.wickEmber} />
+
+            <View style={styles.body}>
+                <Text style={styles.eyebrow}>✠ THE PAGE CLOSES</Text>
+
+                <Text
+                    style={styles.characterName}
+                    testID="combat-defeat-panel-character-name"
+                >
+                    {vm.characterName}
+                </Text>
+
+                {vm.killer !== null && (
+                    <Text
+                        style={styles.fellTo}
+                        testID="combat-defeat-panel-killer"
+                    >
+                        fell to <Text style={styles.fellToName}>{vm.killer.name}</Text>
+                        {vm.killer.epithet !== null && (
+                            <>
+                                {', '}
+                                <Text style={styles.fellToEpithet}>{vm.killer.epithet}</Text>
+                            </>
+                        )}
+                    </Text>
+                )}
+
+                {vm.killer !== null && (
+                    <Text style={styles.damageLedger}>
+                        {vm.killer.finalSkill} · {vm.killer.damage}
+                    </Text>
+                )}
+
+                <Text
+                    style={styles.causePhrase}
+                    testID="combat-defeat-panel-cause-phrase"
+                >
+                    {vm.causePhrase}
+                </Text>
+
+                <View style={styles.ledgerSpacer} />
+
+                <View style={styles.ledger} testID="combat-defeat-panel-ledger">
+                    <Text style={styles.ledgerHeader}>· LEDGER ·</Text>
+                    <LedgerRow
+                        label="rounds endured"
+                        value={roman(vm.runSummary.rounds)}
+                    />
+                    <LedgerRow
+                        label="encounters survived"
+                        value={roman(vm.runSummary.encountersFaced)}
+                    />
+                    <LedgerRow
+                        label="deepest node"
+                        value={deepest}
+                    />
+                </View>
+
+                <View style={styles.actions}>
+                    <Pressable
+                        onPress={onBeginAgain}
+                        accessibilityRole="button"
+                        accessibilityLabel="Begin again"
+                        testID="combat-defeat-panel-begin-again"
+                        style={({ pressed }) => [
+                            styles.beginAgain,
+                            pressed && styles.beginAgainPressed,
+                        ]}
+                    >
+                        <Text style={styles.beginAgainLabel}>✠ BEGIN AGAIN</Text>
+                    </Pressable>
+                    <Pressable
+                        onPress={onLetClose}
+                        accessibilityRole="button"
+                        accessibilityLabel="Let the page close"
+                        testID="combat-defeat-panel-let-close"
+                        style={styles.letClose}
+                    >
+                        <Text style={styles.letCloseLabel}>let the page close</Text>
+                    </Pressable>
+                </View>
+            </View>
+
+            {/*
+             * Bottom blood seep — a vertical gradient clipped by a
+             * torn edge. react-native doesn't ship gradient
+             * primitives, but a stacked solid + half-opacity wash
+             * gives a similar feel. The torn edge is approximated
+             * with a thicker top border of mixed blood + ash dots.
+             * Phase 71 chrome refresh will tune this further.
+             */}
+            <View style={styles.bloodSeep} pointerEvents="none">
+                <View style={styles.bloodSeepInner} />
+            </View>
+        </View>
+    );
+}
+
+function LedgerRow({ label, value }: { label: string; value: string }) {
+    return (
+        <View style={styles.ledgerRow}>
+            <Text style={styles.ledgerLabel}>{label}</Text>
+            <Text style={styles.ledgerValue}>{value}</Text>
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    root: {
+        flex: 1,
+        backgroundColor: AXM.deepBg,
+        position: 'relative',
+    },
+    wickStem: {
+        position: 'absolute',
+        top: 28,
+        left: '50%',
+        width: 1,
+        height: 80,
+        backgroundColor: AXM.ash,
+    },
+    wickEmber: {
+        position: 'absolute',
+        top: 26,
+        left: '50%',
+        marginLeft: -2,
+        width: 4,
+        height: 4,
+        borderRadius: 2,
+        backgroundColor: AXM.ash,
+    },
+    body: {
+        flex: 1,
+        paddingTop: 120,
+        paddingHorizontal: 24,
+        paddingBottom: 14,
+    },
+    eyebrow: {
+        fontFamily: FONTS.sans,
+        fontSize: 11,
+        color: AXM.blood,
+        letterSpacing: 2.2,
+        textAlign: 'center',
+    },
+    characterName: {
+        fontFamily: FONTS.gothic,
+        fontSize: 28,
+        lineHeight: 30,
+        letterSpacing: 1,
+        color: AXM.parchment,
+        textAlign: 'center',
+        marginTop: 14,
+    },
+    fellTo: {
+        fontFamily: FONTS.serifItalic,
+        fontSize: 13,
+        color: AXM.bone,
+        marginTop: 8,
+        textAlign: 'center',
+    },
+    fellToName: {
+        color: AXM.parchment,
+    },
+    fellToEpithet: {
+        fontStyle: 'italic',
+    },
+    damageLedger: {
+        fontFamily: FONTS.mono,
+        fontSize: 9,
+        letterSpacing: 1.4,
+        color: AXM.ash,
+        marginTop: 6,
+        textAlign: 'center',
+    },
+    causePhrase: {
+        fontFamily: FONTS.serif,
+        fontSize: 14,
+        lineHeight: 22,
+        color: AXM.parchment,
+        marginTop: 22,
+        textAlign: 'left',
+    },
+    ledgerSpacer: { flex: 1, minHeight: 8 },
+    ledger: {
+        marginBottom: 16,
+        paddingVertical: 6,
+    },
+    ledgerHeader: {
+        fontFamily: FONTS.sans,
+        fontSize: 9,
+        color: AXM.bone,
+        letterSpacing: 2,
+        opacity: 0.7,
+        textAlign: 'center',
+        marginBottom: 6,
+    },
+    ledgerRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'baseline',
+        paddingVertical: 8,
+        paddingHorizontal: 2,
+        borderTopWidth: 1,
+        borderTopColor: AXM.ash,
+        borderStyle: 'dotted',
+    },
+    ledgerLabel: {
+        fontFamily: FONTS.serifItalic,
+        fontSize: 12,
+        color: AXM.bone,
+    },
+    ledgerValue: {
+        fontFamily: FONTS.mono,
+        fontSize: 14,
+        color: AXM.parchment,
+    },
+    actions: {
+        flexDirection: 'row',
+        gap: 12,
+        alignItems: 'center',
+    },
+    beginAgain: {
+        flex: 1.4,
+        paddingVertical: 12,
+        backgroundColor: '#0a0807',
+        borderWidth: 2,
+        borderColor: AXM.parchment,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    beginAgainPressed: { opacity: 0.85 },
+    beginAgainLabel: {
+        fontFamily: FONTS.gothic,
+        fontSize: 16,
+        color: AXM.parchment,
+        letterSpacing: 2,
+    },
+    letClose: {
+        flex: 1,
+        paddingVertical: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    letCloseLabel: {
+        fontFamily: FONTS.serifItalic,
+        fontSize: 13,
+        color: AXM.bone,
+    },
+    bloodSeep: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: 80,
+        opacity: 0.55,
+    },
+    bloodSeepInner: {
+        flex: 1,
+        backgroundColor: AXM.blood,
+        borderTopWidth: 4,
+        borderTopColor: AXM.blood,
+        borderStyle: 'dashed',
+        opacity: 0.6,
+    },
+});

@@ -218,3 +218,54 @@ describe('combat-mode: aftermathData + dismissAftermath', () => {
         expect(result.current.aftermathData).toBeNull();
     });
 });
+
+// ---------------------------------------------------------------------------
+// Phase 70 Tick C — run-stats counters (encountersFaced + deepestNodeId)
+// ---------------------------------------------------------------------------
+
+describe('combat-mode: run-stats counters', () => {
+    it('encountersFaced starts at 0 and deepestNodeId at null', () => {
+        const { result } = renderHook(() => useCombatMode(), { wrapper });
+        expect(result.current.encountersFaced).toBe(0);
+        expect(result.current.deepestNodeId).toBeNull();
+    });
+
+    it('enterCombat increments encountersFaced by one', () => {
+        const { result } = renderHook(() => useCombatMode(), { wrapper });
+        act(() => result.current.enterCombat());
+        expect(result.current.encountersFaced).toBe(1);
+        act(() => result.current.exitCombat());
+        act(() => result.current.enterCombat());
+        expect(result.current.encountersFaced).toBe(2);
+    });
+
+    it('recordDeepestNode overwrites with the most-recent node id', () => {
+        const { result } = renderHook(() => useCombatMode(), { wrapper });
+        act(() => result.current.recordDeepestNode('i.a'));
+        expect(result.current.deepestNodeId).toBe('i.a');
+        act(() => result.current.recordDeepestNode('iii.b'));
+        expect(result.current.deepestNodeId).toBe('iii.b');
+    });
+
+    it('resetRunStats zeros encountersFaced + nulls deepestNodeId', () => {
+        const { result } = renderHook(() => useCombatMode(), { wrapper });
+        act(() => result.current.enterCombat());
+        act(() => result.current.exitCombat());
+        act(() => result.current.recordDeepestNode('iv.c'));
+        expect(result.current.encountersFaced).toBeGreaterThan(0);
+        expect(result.current.deepestNodeId).not.toBeNull();
+
+        act(() => result.current.resetRunStats());
+        expect(result.current.encountersFaced).toBe(0);
+        expect(result.current.deepestNodeId).toBeNull();
+    });
+
+    it('clearLastOutcome does NOT reset run-stats (they persist across encounters)', () => {
+        const { result } = renderHook(() => useCombatMode(), { wrapper });
+        act(() => result.current.enterCombat());
+        act(() => result.current.recordDeepestNode('ii.a'));
+        act(() => result.current.clearLastOutcome());
+        expect(result.current.encountersFaced).toBe(1);
+        expect(result.current.deepestNodeId).toBe('ii.a');
+    });
+});

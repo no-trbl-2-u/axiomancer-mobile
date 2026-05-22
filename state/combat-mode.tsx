@@ -52,7 +52,32 @@ export type AftermathData =
            */
           journalEntry: { bookName: string; entryTitle: string; preview: string } | null;
       }
-    | { variant: 'defeat'; enemy: { name: string; description: string; level: number } };
+    | {
+          variant: 'defeat';
+          /** The killer — the foe that delivered the final blow. */
+          enemy: { name: string; description: string; level: number };
+          /** Character name snapshot (the fallen pilgrim). Uppercased
+           *  by the presenter; raw form here. */
+          characterName: string;
+          /**
+           * Final-blow data captured before `actions.endCombat()`
+           * cleared the slice (mirror of the victory branch's
+           * field). The damage figure here is the damage taken by
+           * the player on the killing round, not damage dealt.
+           */
+          finalBlow: { skillName: string | null; damage: number; descriptor: string | null } | null;
+          /**
+           * Run summary snapshot — `roundsEndured` comes from the
+           * combat slice; `encountersFaced` + `deepestNodeId` come
+           * from the mobile-side run-stats counter (engine doesn't
+           * yet expose run-level progression).
+           */
+          runSummary: {
+              roundsEndured: number;
+              encountersFaced: number;
+              deepestNodeId: string | null;
+          };
+      };
 
 export interface CombatModeApi {
     inCombat: boolean;
@@ -109,6 +134,33 @@ export interface CombatModeApi {
     inEncounterModal: boolean;
     openEncounterModal: () => void;
     closeEncounterModal: () => void;
+    /**
+     * Phase 70 Tick C — mobile-side run-summary counters. The
+     * engine doesn't currently surface run-level progression
+     * (encounters faced, deepest node reached), so the shim
+     * tracks them in-session for the defeat panel's run-summary
+     * ledger.
+     *
+     * `encountersFaced` increments on each `enterCombat()` call —
+     * any combat you got past (regardless of outcome) counts as
+     * "faced." The defeat panel labels the count "encounters
+     * survived" to match the design's chronicle voice, but the
+     * semantics are "combats begun this run."
+     *
+     * `deepestNodeId` is updated by callers (typically the
+     * exploration screen on `onNodePress`) via `recordDeepestNode`.
+     * It carries the latest node the player visited; the panel
+     * formats it as the "deepest node" ledger line. No depth
+     * comparison is done — the most-recent node wins.
+     *
+     * Both fields persist for the lifetime of the provider; a
+     * future "new game" / "respawn" flow would need to reset them
+     * explicitly via `resetRunStats()`.
+     */
+    encountersFaced: number;
+    deepestNodeId: string | null;
+    recordDeepestNode: (nodeId: string) => void;
+    resetRunStats: () => void;
 }
 
 const CombatModeContext = createContext<CombatModeApi | null>(null);
@@ -118,11 +170,21 @@ export function CombatModeProvider({ children }: { children: React.ReactNode }) 
     const [lastOutcome, setLastOutcome] = useState<CombatOutcome | null>(null);
     const [aftermathData, setAftermathData] = useState<AftermathData | null>(null);
     const [inEncounterModal, setInEncounterModal] = useState<boolean>(false);
+    const [encountersFaced, setEncountersFaced] = useState<number>(0);
+    const [deepestNodeId, setDeepestNodeId] = useState<string | null>(null);
 
     const enterCombat = useCallback(() => {
         setInCombat(true);
         setLastOutcome(null);
         setAftermathData(null);
+        setEncountersFaced((n) => n + 1);
+    }, []);
+    const recordDeepestNode = useCallback((nodeId: string) => {
+        setDeepestNodeId(nodeId);
+    }, []);
+    const resetRunStats = useCallback(() => {
+        setEncountersFaced(0);
+        setDeepestNodeId(null);
     }, []);
     const exitCombat = useCallback(() => setInCombat(false), []);
     const exitCombatWith = useCallback((outcome: CombatOutcome, data?: AftermathData) => {
@@ -155,6 +217,10 @@ export function CombatModeProvider({ children }: { children: React.ReactNode }) 
             inEncounterModal,
             openEncounterModal,
             closeEncounterModal,
+            encountersFaced,
+            deepestNodeId,
+            recordDeepestNode,
+            resetRunStats,
         }),
         [
             inCombat,
@@ -168,6 +234,10 @@ export function CombatModeProvider({ children }: { children: React.ReactNode }) 
             inEncounterModal,
             openEncounterModal,
             closeEncounterModal,
+            encountersFaced,
+            deepestNodeId,
+            recordDeepestNode,
+            resetRunStats,
         ],
     );
 

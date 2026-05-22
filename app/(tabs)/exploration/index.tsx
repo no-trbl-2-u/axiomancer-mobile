@@ -57,6 +57,7 @@ export default function ExplorationScreen() {
         enterCombat,
         inEncounterModal,
         openEncounterModal,
+        recordDeepestNode,
     } = useCombatMode();
     const { mode: aesthetic } = useAesthetic();
     const store = useGameStore();
@@ -177,6 +178,14 @@ export default function ExplorationScreen() {
         }
         if (node.kind !== 'available') return;
         const result = actions.moveTo(node.id);
+        // Phase 70 Tick C — run-stats counter. Each successful move
+        // updates the deepest-node-id reading; the defeat panel
+        // surfaces it in the run-summary ledger. Records on move,
+        // not on node-tap, so failed taps (locked / completed) don't
+        // bump the figure.
+        if (result.moved) {
+            recordDeepestNode(node.id);
+        }
         // Phase 32 design-handoff port (2026-05-16): encounter / boss
         // taps no longer fast-path straight into combat. Instead the
         // arrival resolves the map event, populating the pending event

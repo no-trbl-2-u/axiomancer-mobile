@@ -151,6 +151,8 @@ export function CombatPanel() {
         exitCombatWith,
         inEncounterModal,
         closeEncounterModal,
+        encountersFaced,
+        deepestNodeId,
     } = useCombatMode();
     const { mode: aesthetic } = useAesthetic();
     const combat = useGameState((s) => s.combat);
@@ -276,9 +278,47 @@ export function CombatPanel() {
             return;
         }
         if (vm.player.hp <= 0) {
+            // Phase 70 Tick C — same snapshot pattern as victory /
+            // parley. The defeat panel reads enemy + killer + run
+            // summary from the AftermathData snapshot after
+            // actions.endCombat() clears the slice.
+            const defeatSnapshot = combat !== null
+                ? {
+                      variant: 'defeat' as const,
+                      enemy: {
+                          name: combat.enemy.name,
+                          description: combat.enemy.description,
+                          level: combat.enemy.level,
+                      },
+                      characterName: combat.player.name,
+                      // Damage figure here is what the enemy dealt
+                      // to the player on the killing round (mirror
+                      // of the victory branch's damageToEnemy).
+                      finalBlow: (() => {
+                          const last = combat.log[combat.log.length - 1];
+                          if (last === undefined) return null;
+                          const rawName =
+                              last.enemyAction.skillId
+                              ?? last.enemyAction.action
+                              ?? null;
+                          return {
+                              skillName: rawName !== null ? rawName.toUpperCase() : null,
+                              damage: last.damageToPlayer,
+                              descriptor: last.result.length > 0 ? last.result : null,
+                          };
+                      })(),
+                      runSummary: {
+                          roundsEndured: combat.round,
+                          encountersFaced,
+                          deepestNodeId,
+                      },
+                  }
+                : undefined;
             actions.endCombat();
-            exitCombatWith('defeat');
-            finalizeCombatExit();
+            exitCombatWith('defeat', defeatSnapshot);
+            if (!inEncounterModal) {
+                finalizeCombatExit();
+            }
             return;
         }
         actions.nextRound();
@@ -288,6 +328,8 @@ export function CombatPanel() {
         exitCombatWith,
         finalizeCombatExit,
         inEncounterModal,
+        encountersFaced,
+        deepestNodeId,
         vm.enemy.hp,
         vm.player.hp,
         vm.friendshipCounter,

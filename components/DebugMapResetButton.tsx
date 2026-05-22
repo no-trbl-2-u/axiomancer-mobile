@@ -22,7 +22,7 @@ import { AXM, FONTS } from '@/theme/axm';
 export function DebugMapResetButton() {
     const actions = useGameActions();
      
-    const currentMapName = useGameState((s) => (s as any).world?.currentMap?.name ?? null);
+    const currentMapName = useGameState((s) => s.world?.currentMap?.name ?? null);
 
     if (!__DEV__) return null;
     if (currentMapName === null) return null;

@@ -811,6 +811,21 @@ Prior text preserved below for traceability:
 
 ## Done
 
+### [2.5] DRIFT — 2 more `as any` casts in `components/Debug*` (DialogueJump setState + MapResetButton selector) ✅
+- Resolved 2026-05-22. Tail of the Debug-component sweep:
+  - `components/DebugDialogueJump.tsx:95` —
+    `store.setState({ event: {...} } as any)`. Same
+    Phase-69 wrapper-already-correct gap; dropped.
+  - `components/DebugMapResetButton.tsx:25` —
+    `useGameState((s) => (s as any).world?.currentMap?.name)`.
+    `useGameState`'s selector is typed
+    `(state: AppStoreState) => U` (see
+    `state/GameStoreProvider.tsx:61`); `s.world` is
+    `WorldState | undefined` natively. Cast was redundant.
+  1060/1060 green at land. Production `as any` count now down
+  to 7 (1 persistence-migrations + 4 ErrorBoundary defensive
+  probes + Splatter style typing + tokens ViewStyle).
+
 ### [2.5] DRIFT — 5 setState `as any` casts in `components/Debug*` — finish the Phase 69 sweep ✅
 - Resolved 2026-05-22. Phase 69 drained the `state/actions.ts`
   setState casts but didn't reach `components/Debug*` —

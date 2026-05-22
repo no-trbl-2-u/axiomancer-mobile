@@ -92,7 +92,7 @@ export function DebugDialogueJump() {
                 dialogueCursor: { tree: option.tree, nodeId: option.tree.rootId },
                 history: [],
             },
-        } as any);
+        });
     };
 
     return (

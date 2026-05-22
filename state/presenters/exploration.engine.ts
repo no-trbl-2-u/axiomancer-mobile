@@ -247,8 +247,13 @@ const FALLBACK_VM: ExplorationViewModel = {
 };
 
 export function selectExplorationViewModel(state: GameStore): ExplorationViewModel {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const world = (state as any).world;
+    // Engine `GameStore = GameState & GameActions`; `GameState.world:
+    // WorldState` is typed cleanly (engine
+    // `axiomancer-mechanics/dist/Game/types.d.ts:GameState`). The
+    // earlier `(state as any).world` cast (closed via [2.5]
+    // exploration-audit row 7) was a stale defensive holdover from
+    // when `world` was added late.
+    const world = state.world;
     if (!world || !world.currentMap || !world.currentContinent) {
         return freezeViewModel(FALLBACK_VM);
     }

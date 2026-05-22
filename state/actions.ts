@@ -743,8 +743,7 @@ function writeCurrentNodeId(map: MapState, nodeId: string): MapState {
 }
 
 function moveToAction(store: AppStore, nodeId: string): MoveToResult {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const world = (store.getState() as any).world as WorldState | undefined;
+    const world: WorldState | undefined = store.getState().world;
     if (!world) {
         return { moved: false, currentNodeId: '', locked: false };
     }
@@ -815,8 +814,7 @@ function moveToAction(store: AppStore, nodeId: string): MoveToResult {
 }
 
 function changeMapAction(store: AppStore, mapName: MapName): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const world = (store.getState() as any).world as WorldState | undefined;
+    const world: WorldState | undefined = store.getState().world;
     if (!world) return;
 
     // Phase 60a — adopted `createMapState(getMapDefinition(...))`
@@ -924,8 +922,7 @@ function debugSeedAction(store: AppStore): DebugSeedResult {
     //    `getCoastalMap`; both paths exist on 0.10.0 but 0.10.1+
     //    drops the old form.)
     let mapReset = false;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const world = (store.getState() as any).world as WorldState | undefined;
+    const world: WorldState | undefined = store.getState().world;
     if (world && world.currentMap) {
         try {
             const fresh = createMapState(

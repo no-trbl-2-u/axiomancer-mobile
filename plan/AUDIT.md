@@ -199,7 +199,7 @@
 - ship-when: `[needs-user-call]` for the design direction.
 - source: exploration-surface mechanics audit 2026-05-22, row 1
 
-### [2.5] DRIFT — `(state as any).world` cast in exploration presenter + moveToAction (exploration-audit row 7)
+### [2.5] DRIFT — `(state as any).world` cast in exploration presenter + moveToAction ✅
 
 - category: refactor / typing hygiene
 - impact: 2 (cast hides any future engine field rename; no

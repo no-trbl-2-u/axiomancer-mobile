@@ -62,6 +62,7 @@ import {
     type MapName,
     type MapState,
     type ResolveMapEventResult,
+    type RoundEvent,
     type Stance,
     type WorldState,
 } from 'axiomancer-mechanics';
@@ -299,7 +300,7 @@ interface ResolutionSummary {
 }
 
 function summarizeRoundEvents(
-    events: readonly unknown[],
+    events: readonly RoundEvent[],
     playerStance: Stance,
     enemyStance: Stance,
     friendshipDelta: number,
@@ -312,14 +313,12 @@ function summarizeRoundEvents(
     let lethal = false;
     let crit = false;
 
-    for (const raw of events) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const ev = raw as Record<string, any>;
+    for (const ev of events) {
         if (ev.phase === 'scenario' && ev.kind === 'attack-roll') {
-            if (ev.actor === 'player') playerRoll = Number(ev.total ?? 0);
-            else enemyRoll = Number(ev.total ?? 0);
+            if (ev.actor === 'player') playerRoll = ev.total;
+            else enemyRoll = ev.total;
         } else if (ev.phase === 'scenario' && ev.kind === 'damage-applied') {
-            const amount = Math.max(0, Number(ev.finalDamage ?? 0));
+            const amount = Math.max(0, ev.finalDamage);
             if (ev.attacker === 'player') {
                 damageDealtToEnemy += amount;
                 logLines.push({
@@ -333,18 +332,13 @@ function summarizeRoundEvents(
                     text: `Foe strikes — you take ${amount} damage.`,
                 });
             }
-            if (Number(ev.hpAfter ?? 1) <= 0) lethal = true;
+            if (ev.hpAfter <= 0) lethal = true;
         } else if (ev.phase === 'scenario' && ev.kind === 'contest-outcome') {
             if (ev.winner === 'tie') {
                 logLines.push({ severity: 'info', text: 'Blades cross — neither lands.' });
             }
-        } else if (ev.phase === 'scenario' && ev.kind === 'both-defend') {
-            logLines.push({
-                severity: 'friendship',
-                text: `Both defend — friendship grows (${ev.friendshipAfter}/${ev.friendshipAfter + 0}).`,
-            });
         } else if (ev.phase === 'stance-effects' && ev.kind === 'applied') {
-            const effectName = String(ev.effect?.name ?? ev.effect?.id ?? 'effect');
+            const effectName = ev.effect.name ?? ev.effect.id ?? 'effect';
             logLines.push({
                 severity: 'effect',
                 text: `${ev.actor === 'player' ? 'You' : 'Foe'} apply ${effectName}.`,
@@ -368,7 +362,7 @@ function summarizeRoundEvents(
                 text: `${who} bleed for ${ev.amount} at round's end.`,
             });
         } else if (ev.phase === 'skill' && ev.kind === 'damage') {
-            damageDealtToEnemy += Math.max(0, Number(ev.amount ?? 0));
+            damageDealtToEnemy += Math.max(0, ev.amount);
             logLines.push({
                 severity: 'crit',
                 text: `Skill bites — ${ev.amount} damage.`,

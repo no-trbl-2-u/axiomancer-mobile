@@ -811,6 +811,25 @@ Prior text preserved below for traceability:
 
 ## Done
 
+### [3.0] DRIFT — `summarizeRoundEvents` typed `unknown[]` + `as Record<string, any>` probe; latent dead branch ✅
+- Resolved 2026-05-22. `summarizeRoundEvents` at `state/actions.ts:301`
+  accepted `readonly unknown[]` and cast each event to
+  `Record<string, any>` for ad-hoc probing — bypassing the engine's
+  clean discriminated `RoundEvent` union (`Combat/combat.resolver.d.ts:246`).
+  Caller already passes a typed `resolution.combatEvents:
+  RoundEvent[]`. Retyped the parameter to `readonly RoundEvent[]`;
+  TS now narrows each `phase`/`kind` branch automatically — drops
+  the cast, drops the `?? 0` defaults (engine fields are
+  non-optional under the narrowed shape), drops the
+  `Number(...)` coercions, drops the `String(...)` on
+  `effect.name`.
+  Discovered a **dead branch** along the way:
+  `ev.phase === 'scenario' && ev.kind === 'both-defend'` never
+  fires — engine's `ScenarioEvent` union has no `'both-defend'`
+  variant (likely an older engine shape; current
+  `combat.resolver.d.ts:67-145` doesn't list it). Removed.
+  1060/1060 unchanged at land — confirms the branch was unreachable.
+
 ### [2.5] DRIFT — `setLastResolution` triple-`as any` in combat action layer ✅
 - Resolved 2026-05-22. `setLastResolution` at `state/actions.ts:413`
   was casting the function declaration line, the inner

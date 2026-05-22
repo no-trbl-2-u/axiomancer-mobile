@@ -56,7 +56,6 @@ import {
     type DialogueTree,
     type Enemy,
     type Equipment,
-    type EquipmentTemplate,
     type GameState,
     type Item,
     type MapName,
@@ -73,6 +72,7 @@ import {
     getCombatSkillById,
     type CombatSkill,
 } from '@/state/selectors/combat-skills';
+import { templateToEquipment } from '@/state/selectors/equipment';
 import { EMPTY_EVENT_SLICE, type AppStore } from './store';
 
 // ---------------------------------------------------------------------------
@@ -843,23 +843,10 @@ function changeMapAction(store: AppStore, mapName: MapName): void {
 // Debug seed (Phase 54 — dev-only manual-testing affordance)
 // ---------------------------------------------------------------------------
 
-/** Build a minimal `Equipment` Item from an engine `EquipmentTemplate`.
- * Templates carry the chrome (id/name/description/slot/baseStatModifiers);
- * `Equipment` needs the `BaseItem` shape on top (category, stackable,
- * quantity, rarity, modifiers). For dev-seed purposes we stamp common /
- * unrolled defaults — the engine's `equipItem` reducer and the inventory
- * screen are happy with this shape (verified via the Phase 32 dock work). */
-function templateToEquipment(template: EquipmentTemplate): Equipment {
-    return {
-        ...template,
-        category: 'equipment',
-        stackable: false,
-        quantity: 1,
-        rarity: 'common',
-        modifiers: [],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any as Equipment;
-}
+// `templateToEquipment` extracted to `state/selectors/equipment.ts`
+// (AUDIT [4.0] engine-duplication fix 2026-05-22). Both this
+// debug-seed path and `state/exploration-maps/event-pools.ts`
+// (treasure-pool synthesis) now route through the shared helper.
 
 function debugSeedAction(store: AppStore): DebugSeedResult {
     const state = store.getState();

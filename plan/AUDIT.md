@@ -326,7 +326,7 @@ Prior text preserved below for traceability:
 > Phase 60d stop-gaps, defensive defense-in-depth) are
 > documented in the scan report but not re-filed here.
 
-### [4.0] Engine-dup — `templateToEquipment` helper duplicated at 2 sites
+### [4.0] Engine-dup — `templateToEquipment` helper duplicated at 2 sites ✅
 
 - category: refactor / engine-duplication
 - impact: 6 (two parallel implementations of the same

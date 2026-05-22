@@ -32,8 +32,6 @@ import {
     registerMapEventPool,
     setNodeEventPoolOverride,
     type EnemySlug,
-    type Equipment,
-    type EquipmentTemplate,
     type Item,
     type MapEventPool,
     type Material,
@@ -42,6 +40,7 @@ import {
 import { fishingVillageLayout } from './fishing-village.layout';
 import { northernForestLayout } from './northern-forest.layout';
 import type { NodeType } from '@/state/presenters/exploration.engine';
+import { templateToEquipment } from '@/state/selectors/equipment';
 
 const CONTINENT = 'coastal-continent';
 
@@ -192,22 +191,14 @@ function material(id: string, name: string, description: string, quantity = 1): 
     } as any as Material;
 }
 
-/** Phase 57 — convert an EquipmentTemplate to a full Equipment
- * item by stamping the BaseItem fields the template lacks.
- * Mirrors the helper in `state/actions.ts:templateToEquipment`
- * (Phase 54 origin); duplicated here to avoid cross-importing
- * the action layer from the data layer. */
-function templateToEquipment(template: EquipmentTemplate): Equipment {
-    return {
-        ...template,
-        category: 'equipment',
-        stackable: false,
-        quantity: 1,
-        rarity: 'common',
-        modifiers: [],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any as Equipment;
-}
+// `templateToEquipment` extracted to
+// `state/selectors/equipment.ts` (AUDIT [4.0] engine-duplication
+// fix 2026-05-22). Both this treasure-pool synthesis path and
+// `state/actions.ts` (debug seed + loot grant) now route through
+// the shared helper. The previous "duplicated here to avoid
+// cross-importing the action layer from the data layer" comment
+// is satisfied by routing through `selectors/`, which is the
+// canonical neutral location for equipment-domain helpers.
 
 /** Lookup helper — pull a consumable from the engine library or
  * return null. */

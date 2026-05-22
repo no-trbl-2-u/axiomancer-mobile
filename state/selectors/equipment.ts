@@ -21,7 +21,12 @@
  * This module is the single source of truth.
  */
 
-import { isEquipment, type Equipment, type Item } from 'axiomancer-mechanics';
+import {
+    isEquipment,
+    type Equipment,
+    type EquipmentTemplate,
+    type Item,
+} from 'axiomancer-mechanics';
 
 /**
  * Walk the inventory in order; for each equipment slot, capture
@@ -74,4 +79,44 @@ export function findEquippedInSlot(
     if (worn === undefined) return null;
     if (worn.id === target.id) return null;
     return worn;
+}
+
+// ---------------------------------------------------------------------------
+// Equipment construction (engine `EquipmentTemplate` → mobile-typed `Equipment`)
+// ---------------------------------------------------------------------------
+
+/**
+ * Inflate an engine `EquipmentTemplate` into the mobile-typed
+ * `Equipment` shape ready to drop into inventory. Templates from
+ * the engine's `equipmentTemplates` library carry the slot +
+ * statModifiers; mobile adds the `category`, `stackable`,
+ * `quantity`, `rarity`, and `modifiers` defaults the engine's
+ * `equipItem` reducer and the inventory presenter both expect.
+ *
+ * Single source of truth — closes the AUDIT [4.0]
+ * engine-duplication row (oversight 29th user-jot). Pre-extract
+ * this body lived at:
+ *   - `state/actions.ts:templateToEquipment` (debug seed +
+ *     loot grant)
+ *   - `state/exploration-maps/event-pools.ts:templateToEquipment`
+ *     (treasure pool synthesis)
+ * Both call sites now route through this helper.
+ *
+ * The `as any` boundary cast is intentional and isolated here —
+ * engine `Equipment` types don't expose `category`/`stackable`/
+ * `quantity`/`rarity`/`modifiers` as required fields on the
+ * spread input, but the inventory layer expects them. When/if
+ * the engine ships a richer `Equipment` factory, this helper
+ * retires.
+ */
+export function templateToEquipment(template: EquipmentTemplate): Equipment {
+    return {
+        ...template,
+        category: 'equipment',
+        stackable: false,
+        quantity: 1,
+        rarity: 'common',
+        modifiers: [],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any as Equipment;
 }

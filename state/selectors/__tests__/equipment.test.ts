@@ -15,6 +15,7 @@ import {
     findEquippedInSlot,
     firstEquippedPerSlot,
     isEquippedFirstOfSlot,
+    templateToEquipment,
 } from '@/state/selectors/equipment';
 
 function eq(id: string, slot: Equipment['slot'], name = id): Equipment {
@@ -107,5 +108,50 @@ describe('findEquippedInSlot', () => {
         const helm = eq('helm-1', 'head');
         const orphan = eq('weapon-x', 'weapon');
         expect(findEquippedInSlot([helm], orphan)).toBeNull();
+    });
+});
+
+describe('templateToEquipment', () => {
+    it('stamps BaseItem fields onto the engine template (closes AUDIT [4.0])', () => {
+        // Closes the engine-duplication row that filed 2 parallel
+        // implementations of this helper (actions.ts + event-pools.ts).
+        // Both call sites now import from selectors/equipment.
+        const template = {
+            id: 'iron-blade',
+            name: 'Iron Blade',
+            description: 'A plain iron blade.',
+            slot: 'weapon',
+            statModifiers: [],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any;
+        const eqResult = templateToEquipment(template);
+        expect(eqResult.id).toBe('iron-blade');
+        expect(eqResult.name).toBe('Iron Blade');
+        expect(eqResult.slot).toBe('weapon');
+        expect(eqResult.category).toBe('equipment');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((eqResult as any).stackable).toBe(false);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((eqResult as any).quantity).toBe(1);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((eqResult as any).rarity).toBe('common');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((eqResult as any).modifiers).toEqual([]);
+    });
+
+    it('preserves additional fields from the template via spread', () => {
+        const template = {
+            id: 'cloth-wrap',
+            name: 'Cloth Wrap',
+            description: 'A torn cloth wrap.',
+            slot: 'body',
+            statModifiers: [{ stat: 'physicalDefense', value: 1, isMultiplier: false }],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any;
+        const eqResult = templateToEquipment(template);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((eqResult as any).statModifiers).toEqual([
+            { stat: 'physicalDefense', value: 1, isMultiplier: false },
+        ]);
     });
 });

@@ -1414,15 +1414,18 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
 
 - [ ] Phase 67 — Recurring playtest cadence (Playwright-driven
       regression sentinel). 1-2 ticks.
-      - Tick A: `/playtest` skill at `skills/playtest.md`.
-        Orchestrates a single drive against a user-started
-        `pnpm web` instance per `setup/04_claude_playtest.md`:
-        load page → walk one encounter (exploration tap →
-        modal mount → stance commit → action commit → resolve
-        → continue) → snapshot key states → read console for
-        errors → file findings (if any) to `plan/AUDIT.md`
-        with the `playtest 2026-05-22` voice register.
-        Hermetic-test the skill's deliverable contract.
+      - Tick A ✅ — `/playtest` skill at `skills/playtest.md`
+        landed in this commit's tick. Codifies the canonical
+        walk: load page → exploration → encounter modal →
+        stance → action → resolve → continue. Files
+        observations to `plan/AUDIT.md` via the §5 template;
+        hard rule: never starts the dev server.
+        Hermetic structural test at
+        `scripts/__tests__/playtest-skill.test.ts` pins the
+        skill file's required sections + AUDIT-row template +
+        canonical walk beats. 14 cases. 1042/1042 green.
+        Reference walk in §10 documents the 28th oversight
+        call's live drive — exactly the procedure now codified.
       - Tick B (optional, gated on user opt-in): wire
         `/playtest` into `/march`'s repertoire as a periodic
         dispatcher entry. Default off — runs only when the

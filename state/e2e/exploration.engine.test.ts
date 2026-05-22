@@ -129,6 +129,26 @@ describe('selectExplorationViewModel: engine reads', () => {
         expect(fv4.kind).toBe('available');
         expect(fv4.triggersCombat).toBe(false);
     });
+
+    it('encounter step-card icon is "sword", NOT "flee" — exploration-audit [3.5] DRIFT fix', () => {
+        // Pre-fix the encounter step-card's iconKey was 'flee' (the
+        // same glyph the combat modal uses for the FLEE button),
+        // surfacing as "this step lets you flee" rather than
+        // "this step starts combat". Pin the new mapping so a
+        // future refactor doesn't silently revert.
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        actions.moveTo('fv-2'); // unlocks fv-3 (encounter) as an option
+
+        const vm = selectExplorationViewModel(store.getState());
+        const encounterOption = vm.options.find((o) => o.nodeId === 'fv-3');
+        expect(encounterOption).toBeDefined();
+        // actions[i] mirrors options[i] order; find the matching action.
+        const idx = vm.options.findIndex((o) => o.nodeId === 'fv-3');
+        const encounterAction = vm.actions[idx];
+        expect(encounterAction.iconKey).toBe('sword');
+        expect(encounterAction.iconKey).not.toBe('flee');
+    });
 });
 
 // ---------------------------------------------------------------------------

@@ -140,7 +140,7 @@
 
 ### [4.0] Mechanics-vs-UI logic audit — exploration surface ✅ (drifts filed as [3.5]/[3.0]/[3.0]/[2.5])
 
-### [3.5] DRIFT — exploration encounter icon is `'flee'` (looks like the FLEE button) (exploration-audit row 10)
+### [3.5] DRIFT — exploration encounter icon is `'flee'` (looks like the FLEE button) ✅
 
 - category: bug (chrome / visual vocabulary)
 - impact: 6 (every exploration screen with an encounter node

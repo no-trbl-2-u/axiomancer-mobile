@@ -91,6 +91,13 @@
 
 ## Pending
 
+### [3.15] Phase 70/71 stale refs + missing test-doc entries — picked
+
+- category: tests (doc) + refactor (stale comments)
+- impact: 4.5 — `docs/E2E_INVENTORY.md` is the canonical test-coverage map (the doc /iterate audits read against); a stale row + 6 missing files means future audits read the wrong picture. Stale comments in shipped code mislead the next reader about which fallback path is live.
+- ease: 7 — text edits only; no code-logic changes.
+- next: drain — fix `app/(tabs)/combat.tsx:259` (claims AftermathBanner is the parley fallback, but Tick B retired the banner); fix the doc-block in `state/presenters/aftermath.engine.ts` line 145 (still talks about the legacy banner as the parley render path); update `docs/E2E_INVENTORY.md` row 51 (drop `selectAftermathCopy` from the description, refresh counts) + add 6 new aftermath-related test-file rows.
+
 ### [5.5] Combat HUD HP scaling mismatch — exploration card shows 22/38, combat HUD shows 10/10 ✅ (root cause + fix shipped)
 
 **Root cause (investigated 2026-05-22):** the exploration card's

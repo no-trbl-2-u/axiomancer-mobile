@@ -255,9 +255,10 @@ export function CombatPanel() {
             // inside the encounter modal, skip finalizeCombatExit:
             // the panel's CARRY ON button drives dismissal via
             // dismissAftermath() instead. The legacy /combat tab
-            // path (modal-less) keeps the immediate finalize so
-            // it falls back to the AftermathBanner toast like
-            // before (parley still does that for now).
+            // path (modal-less) finalizes immediately — that route
+            // is unused in practice (encounters always open the
+            // modal), but the branch stays for the /combat tab's
+            // direct-mount harness pass.
             const aftermathSnapshot = combat !== null
                 ? {
                       variant: 'victory' as const,

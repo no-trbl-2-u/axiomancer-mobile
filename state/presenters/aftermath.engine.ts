@@ -139,11 +139,15 @@ export type AftermathViewModel =
 /**
  * Build the aftermath VM from the snapshot stashed at combat-exit
  * time. Returns `null` when the snapshot is null (no aftermath to
- * render) or its variant doesn't yet have a Tick A render path.
+ * render).
  *
- * Tick A: only `'victory'` returns a populated VM. The `'parley'`
- * and `'defeat'` branches return null (the legacy `<AftermathBanner>`
- * still handles parley until Tick B; defeat is silent until Tick C).
+ * Phase 70 shipped all four outcome panels — Victory (Tick A),
+ * Friendship/Parley (Tick B), Defeat (Tick C), Error (Tick D —
+ * separate boundary fallback, not consumed by this selector).
+ * The three combat outcomes each return a populated VM with their
+ * `kind` set; flee never lands here (the panel/banner stayed silent
+ * pre-Phase-70 and stays silent now — the seal dismisses without
+ * an aftermath render).
  */
 export function selectAftermathViewModel(
     data: AftermathData | null,

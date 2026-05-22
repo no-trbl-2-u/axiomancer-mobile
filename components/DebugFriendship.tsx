@@ -37,20 +37,18 @@ export function DebugFriendship() {
          
         store.setState({
             combat: { ...combat, friendshipCounter: (combat.friendshipCounter ?? 0) + 1 },
-        } as any);
+        });
     };
 
     const onReset = () => {
         const combat = store.getState().combat;
         if (!combat) {
-             
             console.warn('DebugFriendship: no active combat to reset.');
             return;
         }
-         
         store.setState({
             combat: { ...combat, friendshipCounter: 0 },
-        } as any);
+        });
     };
 
     return (

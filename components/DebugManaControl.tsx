@@ -39,7 +39,7 @@ export function DebugManaControl() {
          
         store.setState({
             combatMana: { current: Math.max(0, Math.min(current, max)), max },
-        } as any);
+        });
     };
 
     return (

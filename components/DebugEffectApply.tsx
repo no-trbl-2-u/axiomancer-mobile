@@ -50,7 +50,7 @@ export function DebugEffectApply() {
          
         store.setState({
             player: { ...player, effects: activeEffects },
-        } as any);
+        });
     };
 
     const onBleedEnemy = () => {
@@ -74,7 +74,7 @@ export function DebugEffectApply() {
          
         store.setState({
             combat: { ...combat, enemy: nextEnemy },
-        } as any);
+        });
     };
 
     return (

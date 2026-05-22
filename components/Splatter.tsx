@@ -22,7 +22,7 @@ export function Splatter({ color = AXM.blood, size = 220, seed = 1, style = {} }
   };
 
   return (
-    <Svg viewBox="0 0 220 220" width={size} height={size} style={[{ pointerEvents: 'none' } as any, style]}>
+    <Svg viewBox="0 0 220 220" width={size} height={size} pointerEvents="none" style={style}>
       <Circle cx={main.cx} cy={main.cy} r={main.r} fill={color} opacity={0.9} />
       {drops.map((d, i) => (
         <Circle key={i} cx={d.cx} cy={d.cy} r={d.r} fill={color} opacity={0.4 + rnd(i + 200, seed) * 0.55} />

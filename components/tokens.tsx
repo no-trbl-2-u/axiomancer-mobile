@@ -13,7 +13,7 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import { View, Text, StyleSheet, type TextStyle } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 
 import { AXM, FONTS } from '@/theme/axm';
@@ -248,5 +248,5 @@ const styles = StyleSheet.create({
         letterSpacing: 1.5,
         color: AXM.bone,
         textTransform: 'uppercase',
-    } as ViewStyle as any,
+    } satisfies TextStyle,
 });

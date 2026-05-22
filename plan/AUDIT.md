@@ -150,7 +150,7 @@
   scoped out of this tick — file as separate audit ticks if
   the user wants them.
 
-### [5.0] DRIFT — stance advantage chips ignore effect-driven advantage modifiers (`resolveEffectiveAdvantage`)
+### [5.0] DRIFT — stance advantage chips ignore effect-driven advantage modifiers (`resolveEffectiveAdvantage`) ✅
 
 - category: bug (combat UX, presenter)
 - impact: 7 (the ADV / DIS chip on a stance card can mislead

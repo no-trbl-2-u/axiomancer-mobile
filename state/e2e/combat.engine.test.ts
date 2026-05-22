@@ -278,6 +278,85 @@ describe('selectCombatViewModel: stance picker', () => {
         expect(byKey.mind).toBe('cipher, ruse');
     });
 
+    it('respects engine-driven effect advantage modifiers — buff_advantage_body flips body stance vs body enemy from neutral to adv (mechanics-ui audit [5.0])', () => {
+        // Engine effect: `buff_advantage_body` grants ADVANTAGE on
+        // body stance regardless of matchup. With this effect on
+        // the player, the body-vs-body chip MUST read 'adv' even
+        // though the raw triangle yields 'neutral'. Pre-fix the
+        // chip stayed at 'neutral' (raw triangle only).
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
+        actions.setPlayerStance('body');
+        actions.setPlayerAction('attack');
+        actions.resolveRound();
+
+        // Apply the effect to the in-combat player snapshot. The
+        // engine's `resolveEffectiveAdvantage` reads `effects`
+        // from whatever we pass — so writing to combat.player.effects
+        // exercises the same data path the live presenter sees.
+        const state = store.getState();
+        const combat = state.combat!;
+        store.setState({
+            combat: {
+                ...combat,
+                player: {
+                    ...combat.player,
+                    effects: [
+                        ...combat.player.effects,
+                        {
+                            effectId: 'buff_advantage_body',
+                            intensity: 1,
+                            remainingDuration: 3,
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        } as any,
+                    ],
+                },
+                // Force the enemy's last stance to body so the raw
+                // matchup is neutral (body vs body) — the effect is
+                // what should flip it to 'adv'.
+                enemyChoice: { ...combat.enemyChoice, stance: 'body' },
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any,
+        });
+
+        const vm = selectCombatViewModel(store.getState());
+        const body = vm.stancePicker.options.find((o) => o.key === 'body');
+        expect(body?.advantage).toBe('adv');
+    });
+
+    it('no effects → behaves identically to the raw triangle (regression guard)', () => {
+        // Sanity: with no advantage-affecting effects, the wired-in
+        // resolveEffectiveAdvantage must not perturb the raw triangle.
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
+        actions.setPlayerStance('heart');
+        actions.setPlayerAction('attack');
+        actions.resolveRound();
+
+        const state = store.getState();
+        const combat = state.combat!;
+        // Force enemy stance to body — heart beats body via raw
+        // triangle. No effects on player.
+        store.setState({
+            combat: {
+                ...combat,
+                player: { ...combat.player, effects: [] },
+                enemyChoice: { ...combat.enemyChoice, stance: 'body' },
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any,
+        });
+
+        const vm = selectCombatViewModel(store.getState());
+        const heart = vm.stancePicker.options.find((o) => o.key === 'heart');
+        const body = vm.stancePicker.options.find((o) => o.key === 'body');
+        const mind = vm.stancePicker.options.find((o) => o.key === 'mind');
+        expect(heart?.advantage).toBe('adv');     // raw: heart > body
+        expect(body?.advantage).toBe('neutral');  // raw: body vs body
+        expect(mind?.advantage).toBe('dis');      // raw: mind < body
+    });
+
     it('derives stance attack/skill/defense from player.derivedStats (engine deriveStats), not a constant', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const player = store.getState().player;

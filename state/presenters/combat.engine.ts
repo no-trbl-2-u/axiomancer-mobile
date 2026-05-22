@@ -25,7 +25,11 @@
 import {
     FRIENDSHIP_COUNTER_MAX,
     determineAdvantage,
+    resolveEffectiveAdvantage,
+    type ActiveEffect,
+    type Advantage,
     type DerivedStats,
+    type Stance,
 } from 'axiomancer-mechanics';
 
 import type { AppStoreState } from '@/state/store';
@@ -703,7 +707,7 @@ function readManaPair(state: AppStoreState): { mana: number; manaMax: number } {
     };
 }
 
-function stanceAdvantage(
+function rawStanceAdvantage(
     playerStance: StanceKey,
     enemyStance: StanceKey | null,
 ): AdvantageKind {
@@ -711,6 +715,50 @@ function stanceAdvantage(
     if (BEATS[playerStance] === enemyStance) return 'adv';
     if (BEATS[enemyStance] === playerStance) return 'dis';
     return 'neutral';
+}
+
+/**
+ * Mobile `AdvantageKind` ('adv' | 'dis' | 'neutral') is the
+ * presenter's wire shape for the stance chip. The engine's
+ * `Advantage` is ('advantage' | 'disadvantage' | 'neutral').
+ * Map between them at the engine boundary.
+ */
+function toMobileAdvantage(adv: Advantage): AdvantageKind {
+    if (adv === 'advantage') return 'adv';
+    if (adv === 'disadvantage') return 'dis';
+    return 'neutral';
+}
+
+function toEngineAdvantage(kind: AdvantageKind): Advantage {
+    if (kind === 'adv') return 'advantage';
+    if (kind === 'dis') return 'disadvantage';
+    return 'neutral';
+}
+
+/**
+ * Stance-vs-stance advantage as the *engine* would resolve it
+ * for the upcoming roll. Composes the raw triangle (`BEATS`)
+ * with the player's active effects via the engine's
+ * `resolveEffectiveAdvantage` — so effects like "Inspired"
+ * (advantage grants) or "Off-balance" (advantage denies) flip
+ * the chip the player sees. Closes the [5.0] DRIFT row from
+ * `docs/mechanics-ui-audit-2026-05-21-combat.md`.
+ */
+function stanceAdvantage(
+    playerStance: StanceKey,
+    enemyStance: StanceKey | null,
+    playerEffects: readonly ActiveEffect[],
+): AdvantageKind {
+    const raw = rawStanceAdvantage(playerStance, enemyStance);
+    if (playerEffects.length === 0) return raw;
+    const effective = resolveEffectiveAdvantage(
+        toEngineAdvantage(raw),
+        // engine signature wants a mutable array; pass a shallow
+        // copy to satisfy it without leaking mutation back.
+        [...playerEffects],
+        playerStance as Stance,
+    );
+    return toMobileAdvantage(effective);
 }
 
 function advantageLabelFor(kind: AdvantageKind): 'ADVANTAGE' | 'DISADVANTAGE' | 'NEUTRAL' {
@@ -728,6 +776,7 @@ const STANCE_GLOSS: Record<StanceKey, string> = {
 function buildStanceOptions(
     derivedStats: DerivedStats | undefined,
     enemyLastStance: StanceKey | null,
+    playerEffects: readonly ActiveEffect[] = [],
 ): readonly StanceOption[] {
     const perStance = deriveStancePerformance(derivedStats);
     return (['heart', 'body', 'mind'] as const).map((key) => {
@@ -741,7 +790,7 @@ function buildStanceOptions(
             counters: STANCE_LABEL[counters],
             weakTo: STANCE_LABEL[weakTo],
             derived: perStance[key],
-            advantage: stanceAdvantage(key, enemyLastStance),
+            advantage: stanceAdvantage(key, enemyLastStance, playerEffects),
             gloss: STANCE_GLOSS[key],
         };
     });
@@ -830,7 +879,13 @@ function resolveSliceFromState(
 ): ResolveSlice {
     const pStance: StanceKey = playerStance ?? 'heart';
     const eStance: StanceKey = enemyStance ?? 'mind';
-    const adv = stanceAdvantage(pStance, eStance);
+    // Thread player effects so resolve-slice advantage stays
+    // consistent with the picker chip (engine's
+    // resolveEffectiveAdvantage applies effect-driven flips).
+    const playerEffects: readonly ActiveEffect[] = Array.isArray(combat?.player?.effects)
+        ? (combat.player.effects as readonly ActiveEffect[])
+        : [];
+    const adv = stanceAdvantage(pStance, eStance, playerEffects);
     const advantageLabel = advantageLabelFor(adv);
 
     // The engine's combat state doesn't expose a structured "last
@@ -1048,8 +1103,14 @@ export function selectCombatViewModel(
         localUi.selectedStance
             ?? toStanceKey(c.playerChoice?.stance ?? null);
 
+    // Thread player effects so `resolveEffectiveAdvantage` (engine)
+    // can flip stance chips when effects grant/deny advantage. Empty
+    // array on the no-combat path (handled via the default arg above).
+    const playerActiveEffects: readonly ActiveEffect[] = Array.isArray(playerEntity.effects)
+        ? (playerEntity.effects as readonly ActiveEffect[])
+        : [];
     const stancePicker: StancePickerSlice = {
-        options: buildStanceOptions(playerEntity.derivedStats, enemy.lastStance),
+        options: buildStanceOptions(playerEntity.derivedStats, enemy.lastStance, playerActiveEffects),
         selected: previewStance,
         canConfirm: phase === 'choosing_stance',
     };

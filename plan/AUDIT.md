@@ -91,7 +91,7 @@
 
 ## Pending
 
-### [3.15] Phase 70/71 stale refs + missing test-doc entries — picked
+### [3.15] Phase 70/71 stale refs + missing test-doc entries ✅ (drained `ca77530`)
 
 - category: tests (doc) + refactor (stale comments)
 - impact: 4.5 — `docs/E2E_INVENTORY.md` is the canonical test-coverage map (the doc /iterate audits read against); a stale row + 6 missing files means future audits read the wrong picture. Stale comments in shipped code mislead the next reader about which fallback path is live.

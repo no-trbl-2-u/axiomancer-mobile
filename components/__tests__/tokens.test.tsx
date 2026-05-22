@@ -9,7 +9,7 @@
 import { describe, expect, it } from '@jest/globals';
 import { render } from '@testing-library/react-native';
 import React from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import Svg from 'react-native-svg';
 
 import {

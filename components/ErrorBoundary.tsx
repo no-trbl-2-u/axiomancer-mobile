@@ -57,7 +57,7 @@ export class ErrorBoundary extends Component<
     }
 
     componentDidCatch(error: Error, info: ErrorInfo): void {
-        // eslint-disable-next-line no-console
+         
         console.error('[ErrorBoundary] caught', error, info);
         this.setState({ componentStack: info.componentStack ?? null });
     }
@@ -181,9 +181,9 @@ function useStateSnapshot(): string {
                   continent: world.currentContinent?.name,
                   map: world.currentMap.name,
                   currentNode: world.currentMap.currentNode ?? null,
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                   
                   completedCount: Array.isArray((world.currentMap as any).completedNodes)
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                       
                       ? (world.currentMap as any).completedNodes.length
                       : 0,
               }
@@ -203,9 +203,9 @@ function buildContext(): string {
         {
             dev,
             timestamp: new Date().toISOString(),
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             platform: typeof (globalThis as any).navigator?.userAgent === 'string'
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                 
                 ? (globalThis as any).navigator.userAgent
                 : 'native',
         },

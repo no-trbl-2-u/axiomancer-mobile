@@ -30,11 +30,11 @@ export function DebugFriendship() {
     const onIncrement = () => {
         const combat = store.getState().combat;
         if (!combat) {
-            // eslint-disable-next-line no-console
+             
             console.warn('DebugFriendship: no active combat to mutate.');
             return;
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         store.setState({
             combat: { ...combat, friendshipCounter: (combat.friendshipCounter ?? 0) + 1 },
         } as any);
@@ -43,11 +43,11 @@ export function DebugFriendship() {
     const onReset = () => {
         const combat = store.getState().combat;
         if (!combat) {
-            // eslint-disable-next-line no-console
+             
             console.warn('DebugFriendship: no active combat to reset.');
             return;
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         store.setState({
             combat: { ...combat, friendshipCounter: 0 },
         } as any);

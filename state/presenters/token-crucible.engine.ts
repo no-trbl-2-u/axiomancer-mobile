@@ -15,6 +15,8 @@
  * `plan/phases/phase_17_token_crucible.md`.
  */
 
+import type { Stance } from 'axiomancer-mechanics';
+
 import {
     TOKEN,
     TOKEN_KEYS,
@@ -28,8 +30,6 @@ import {
     type TokenSkillFixture,
 } from '../mocks/tokens.fixture';
 import { freezeViewModel } from './freeze';
-
-export type StanceKey = 'heart' | 'body' | 'mind';
 
 /** One row in the per-stance skill grid. */
 export interface CrucibleSkillRow {
@@ -64,7 +64,7 @@ export interface TokenCrucibleViewModel {
     /** Stable token-kind order — `body | mind | heart | fallacy | paradox`. */
     tokenKeys: ReadonlyArray<TokenKey>;
     /** Skills partitioned by stance, in fixture order. */
-    skillsByStance: Record<StanceKey, ReadonlyArray<CrucibleSkillRow>>;
+    skillsByStance: Record<Stance, ReadonlyArray<CrucibleSkillRow>>;
     /** Total number of skills surfaced (currently 12). */
     totalSkillCount: number;
     /** Count of skills the caller's pool can currently cover. */
@@ -75,7 +75,7 @@ export interface TokenCrucibleViewModel {
     legend: ReadonlyArray<CrucibleLegendEntry>;
 }
 
-const STANCES: ReadonlyArray<StanceKey> = ['heart', 'body', 'mind'];
+const STANCES: ReadonlyArray<Stance> = ['heart', 'body', 'mind'];
 
 function buildCostEntries(
     cost: Partial<TokenCounts>,
@@ -107,7 +107,7 @@ function buildSkillRow(skill: TokenSkillFixture, pool: TokenCounts): CrucibleSki
  * castable-now check.
  */
 export function selectTokenCrucibleViewModel(pool: TokenCounts): TokenCrucibleViewModel {
-    const skillsByStance: Record<StanceKey, CrucibleSkillRow[]> = {
+    const skillsByStance: Record<Stance, CrucibleSkillRow[]> = {
         heart: [],
         body: [],
         mind: [],

@@ -342,8 +342,10 @@ Prior text preserved below for traceability:
 - next: file iterate fix tick.
 - source: user-jot 2026-05-22 — engine-duplication scan
 
-### [3.5] Engine-dup — `StanceKey` type re-declared in token-crucible presenter
+### [3.5] Engine-dup — `StanceKey` type re-declared in token-crucible presenter ✅
 
+- issue: #136 (closed by this commit)
+- Resolved 2026-05-22. Dropped the local `StanceKey = 'heart' | 'body' | 'mind'` re-declaration in `state/presenters/token-crucible.engine.ts`; imported `type Stance` from `axiomancer-mechanics` and re-typed all internal refs (interface field, function generics, local `STANCES` array) to use the engine union directly. No external consumer imported `StanceKey` from this module — TokenCrucible.tsx + the e2e test pull `CRUCIBLE_STANCE_ORDER` only. 1055/1055 green at land.
 - category: refactor / typing hygiene (engine-duplication)
 - impact: 3 (mobile re-declares the engine's `Stance` union
   as a local `StanceKey` type; future engine extension
@@ -353,7 +355,6 @@ Prior text preserved below for traceability:
   where needed)
 - sites:
   - `state/presenters/token-crucible.engine.ts:32`
-- next: file iterate fix tick.
 - source: user-jot 2026-05-22 — engine-duplication scan
 
 ### [3.0] Engine-dup — `MAX_EFFECTS_SHOWN` constant duplicated in 2 presenters

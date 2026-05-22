@@ -410,18 +410,24 @@ function summarizeRoundEvents(
     };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function setLastResolution(combat: CombatState, summary: ResolutionSummary): CombatState {
-    // CombatState is typed by the engine but is open in dist (types
-    // file isn't published) so we tack on a custom field for the VM
-    // to read. The metadata entry doubles as a log marker so callers
-    // walking the log don't see structured noise.
+/**
+ * Mobile-extended `CombatState`: tacks on the round-resolve summary
+ * the presenter reads in `selectCombatViewModel` (`combat?.lastResolution`).
+ * Engine's `CombatState` doesn't have this field; the presenter's
+ * `combat: Record<string, any> | null` signature is loose enough to
+ * read it back at runtime. Defining the extension typed (instead of
+ * `as any`) keeps the field a documented mobile slice rather than
+ * an unfindable cast.
+ */
+type MobileCombatState = CombatState & {
+    readonly lastResolution?: ResolutionSummary;
+};
+
+function setLastResolution(combat: CombatState, summary: ResolutionSummary): MobileCombatState {
     return {
         ...combat,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        lastResolution: summary as any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any;
+        lastResolution: summary,
+    };
 }
 
 // ---------------------------------------------------------------------------

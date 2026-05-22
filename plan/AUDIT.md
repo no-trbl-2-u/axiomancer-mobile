@@ -811,6 +811,22 @@ Prior text preserved below for traceability:
 
 ## Done
 
+### [2.5] DRIFT — `setLastResolution` triple-`as any` in combat action layer ✅
+- Resolved 2026-05-22. `setLastResolution` at `state/actions.ts:413`
+  was casting the function declaration line, the inner
+  `lastResolution: summary as any`, and the outer return `} as any`
+  — all three lines guarded by eslint-disables. The whole stack
+  exists because engine `CombatState` (`Combat/types.d.ts:31-42`)
+  has no `lastResolution` field; mobile tacks one on for the
+  presenter to read at `combat.engine.ts:895`.
+  Defined a local `MobileCombatState = CombatState & { readonly
+  lastResolution?: ResolutionSummary }` and changed
+  `setLastResolution`'s return type to it. All three `as any`
+  casts drop; the documented extension makes the mobile slice
+  findable rather than invisible. 1060/1060 green at land.
+  Follows the pattern that closed the memoir [2.5] DRIFT
+  (`MemoirObjectiveInput` extension type) earlier this session.
+
 ### [2.5] DRIFT — `event.payload as any` cast in inventory-feedback presenter ✅
 - Resolved 2026-05-22. Engine declares
   `TypedInventoryChangedEvent.payload: EnginePayload` (`{action,

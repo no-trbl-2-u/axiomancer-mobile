@@ -611,3 +611,90 @@ describe('EncounterModalOverlay: combat → aftermath swap (defeat)', () => {
         expect(tree.queryByTestId('combat-defeat-panel')).toBeNull();
     });
 });
+
+// ---------------------------------------------------------------------------
+// Phase 71 — phase-aware seal chrome (chain bars + border / glow)
+// ---------------------------------------------------------------------------
+
+describe('EncounterModalOverlay: phase-aware seal chrome', () => {
+    function withAllProviders(child: React.ReactNode) {
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        return (
+            <AestheticModeProvider initialMode="canonical" skipHydration>
+                <CombatModeProvider>
+                    <GameStoreProvider store={store}>
+                        {child}
+                    </GameStoreProvider>
+                </CombatModeProvider>
+            </AestheticModeProvider>
+        );
+    }
+
+    it('renders the prelude chain-bar labels (SEALED · AT ARMS + NO RETREAT)', () => {
+        const tree = render(
+            withAllProviders(
+                <EncounterModalOverlay
+                    vm={makeCombatPreludeVm()}
+                    onFight={() => {}}
+                    onFlee={() => {}}
+                />,
+            ),
+        );
+        // Both chain bars mount (top + bottom) — two testIDs.
+        const bars = tree.queryAllByTestId('encounter-modal-chain');
+        expect(bars).toHaveLength(2);
+        expect(tree.queryByText('SEALED · AT ARMS')).not.toBeNull();
+        expect(tree.queryByText('NO RETREAT')).not.toBeNull();
+    });
+
+    it('swaps to a ROUND chain-bar label after FIGHT (combat mode)', () => {
+        const tree = render(
+            withAllProviders(
+                <EncounterModalOverlay
+                    vm={makeCombatPreludeVm()}
+                    onFight={() => {}}
+                    onFlee={() => {}}
+                />,
+            ),
+        );
+        fireEvent.press(tree.getByTestId('encounter-modal-fight'));
+        // The engine combat slice isn't seeded in this test (no
+        // startCombat() called), so round defaults to 1 — the
+        // chrome's combat branch fires with round=1 → "ROUND i".
+        expect(tree.queryByText('SEALED · ROUND i')).not.toBeNull();
+        expect(tree.queryByText('SEALED · AT ARMS')).toBeNull();
+    });
+
+    it('swaps to IT IS DONE + CARRY ON when the outcome lands (aftermath)', () => {
+        function VictoryTrigger() {
+            const { exitCombatWith } = useCombatMode();
+            React.useEffect(() => {
+                exitCombatWith('victory', {
+                    variant: 'victory',
+                    enemy: { name: 'Foe', description: 'A figure.', level: 1 },
+                    finalBlow: { skillName: 'STRIKE', damage: 12, descriptor: 'd' },
+                    xpReward: 5,
+                });
+            }, [exitCombatWith]);
+            return null;
+        }
+        const tree = render(
+            withAllProviders(
+                <>
+                    <EncounterModalOverlay
+                        vm={makeCombatPreludeVm()}
+                        onFight={() => {}}
+                        onFlee={() => {}}
+                    />
+                    <VictoryTrigger />
+                </>,
+            ),
+        );
+        fireEvent.press(tree.getByTestId('encounter-modal-fight'));
+        // After fight + victory outcome:
+        expect(tree.queryByText('IT IS DONE')).not.toBeNull();
+        expect(tree.queryByText('CARRY ON')).not.toBeNull();
+        // Old labels are gone.
+        expect(tree.queryByText('SEALED · AT ARMS')).toBeNull();
+    });
+});

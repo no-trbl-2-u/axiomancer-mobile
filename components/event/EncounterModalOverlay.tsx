@@ -49,6 +49,10 @@ import { useAesthetic } from '@/state/aesthetic-mode';
 import { useCombatMode } from '@/state/combat-mode';
 import { useGameState, useGameStore } from '@/state/GameStoreProvider';
 import { selectAftermathViewModel } from '@/state/presenters/aftermath.engine';
+import {
+    selectEncounterSealChrome,
+    type EncounterSealMode,
+} from '@/state/presenters/encounter-seal.engine';
 import { selectEventCodexHeader } from '@/state/presenters/event.codex.engine';
 import type { EventViewModel } from '@/state/presenters/event.engine';
 
@@ -145,6 +149,11 @@ export function EncounterModalOverlay({
     // next round) into view.
     const combatScrollRef = useRef<ScrollView>(null);
     const combatPhase = useGameState((s) => s.combat?.phase ?? null);
+    // Phase 71 — phase-aware seal chrome. Round count comes from
+    // the engine combat slice (defaults to 1 in prelude / when the
+    // slice isn't live).
+    const combatRound = useGameState((s) => s.combat?.round ?? 1);
+    const sealChrome = selectEncounterSealChrome(mode as EncounterSealMode, combatRound);
     useEffect(() => {
         if (mode !== 'combat' || combatPhase === null) return;
         // Defer to next tick so layout finishes before scrolling.
@@ -214,7 +223,21 @@ export function EncounterModalOverlay({
             testID="encounter-modal-overlay"
         >
             <Animated.View style={[styles.backdrop, backdropStyle]} />
-            <Animated.View style={[styles.panel, panelStyle]}>
+            <Animated.View
+                style={[
+                    styles.panel,
+                    // Phase 71 — phase-aware border + glow. Pre-71 the
+                    // panel border was always AXM.rust; now it tracks
+                    // the seal chrome (blood in prelude / combat,
+                    // sulfur on aftermath).
+                    { borderColor: sealChrome.accentColor, shadowColor: sealChrome.glowColor },
+                    panelStyle,
+                ]}
+            >
+                {/* Phase 71 — top chain bar wraps every phase, not
+                  * just prelude. Label + color come from the seal
+                  * chrome helper. */}
+                <ChainBar label={sealChrome.topLabel} accentColor={sealChrome.accentColor} />
                 {mode === 'aftermath' && aftermathVm !== null && aftermathVm.kind === 'victory' ? (
                     <CombatVictoryPanel
                         vm={aftermathVm}
@@ -247,7 +270,6 @@ export function EncounterModalOverlay({
                             const { left, right } = selectEventCodexHeader(vm);
                             return <EventCodexHeader left={left} right={right} />;
                         })()}
-                        <ChainBar label={vm.preludeChrome!.sealLabel} />
 
                         <View style={styles.preludeHeader}>
                             <Svg width={10} height={10} viewBox="0 0 10 10">
@@ -336,21 +358,24 @@ export function EncounterModalOverlay({
                                 </View>
                             </TouchableOpacity>
                         </View>
-
-                        <ChainBar label={vm.preludeChrome!.sealLabel} />
                     </>
                 )}
+                {/* Phase 71 — bottom chain bar, also phase-aware. */}
+                <ChainBar
+                    label={sealChrome.bottomLabel}
+                    accentColor={sealChrome.accentColor}
+                />
             </Animated.View>
         </View>
     );
 }
 
-function ChainBar({ label }: { label: string }) {
+function ChainBar({ label, accentColor }: { label: string; accentColor: string }) {
     return (
         <View style={styles.chainBar} testID="encounter-modal-chain">
-            <View style={styles.chainRule} />
-            <Text style={styles.chainText}>{label}</Text>
-            <View style={styles.chainRule} />
+            <View style={[styles.chainRule, { backgroundColor: accentColor }]} />
+            <Text style={[styles.chainText, { color: accentColor }]}>{label}</Text>
+            <View style={[styles.chainRule, { backgroundColor: accentColor }]} />
         </View>
     );
 }

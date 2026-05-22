@@ -140,36 +140,56 @@
   through step-by-step (ELI5) to provide you the ability to
   walk through the gameplay to fully test things yourself"
 
-### [3.7] Mechanics-vs-UI logic consistency audit (engine semantics vs screen behavior)
+### [3.7] Mechanics-vs-UI logic consistency audit — combat surface ✅ (combat done; event/exploration/inventory deferred)
 
-- category: refactor / quality (project coherence)
-- impact: 8 (the user is seeing "odd behavior" in combat;
-  Phase 65 fixed the vm.phase staleness but didn't audit
-  every UI branch against engine truth; an explicit pass
-  surfaces any other mappings that drift quietly)
-- ease: 4 (research-heavy: enumerate UI logic decisions,
-  trace each one back to the engine source, document
-  alignment / drift / TODO per row)
-- next: file as iterate tick after the playtest runbook
-  ships. Concrete approach:
-  1. Build a checklist of UI-side branches in `combat.tsx`,
-     `EncounterModalOverlay`, `event.tsx`, exploration tab
-     (anything that gates UI on engine state or runs derived
-     logic). Examples: `onContinueRound` exit branches,
-     stance-advantage rendering, mana/cost gating, friendship
-     counter, effect chips, log entry classification, enemy
-     last-stance derivation.
-  2. For each: cite the engine source-of-truth function /
-     constant. Flag any mismatch as a sub-row + propose the
-     fix. The audit deliverable is a markdown report at
-     `docs/mechanics-ui-audit-<date>.md`.
-  3. Out of scope for the audit (deliverable from a future
-     iterate): fixing the surfaced mismatches. Each one
-     becomes its own iterate row scored individually.
-- source: user 2026-05-21 oversight 26th (direct request):
-  "I want you to audit to make sure the logic for the base
-  mechanics are perfectly in line with the logic being used
-  in the UI. I'm seeing some odd behavior."
+- Resolved 2026-05-21 for the combat surface via
+  `docs/mechanics-ui-audit-2026-05-21-combat.md`. 11 decisions
+  audited; 6 ALIGNED, 2 MOBILE-ONLY by design, 3 DRIFT (one
+  MED, two LOW). Drift sub-rows filed below (rows [5.0], [3.0],
+  [2.5]). Other surfaces (event / exploration / inventory)
+  scoped out of this tick — file as separate audit ticks if
+  the user wants them.
+
+### [5.0] DRIFT — stance advantage chips ignore effect-driven advantage modifiers (`resolveEffectiveAdvantage`)
+
+- category: bug (combat UX, presenter)
+- impact: 7 (the ADV / DIS chip on a stance card can mislead
+  the player when they carry any effect with advantage
+  grants/denies; the actual roll inside `resolveCombatRound`
+  uses `resolveEffectiveAdvantage` and may invert the chip)
+- ease: 7 (thread `player.effects` into `buildStanceOptions`;
+  call engine's already-public `resolveEffectiveAdvantage(raw,
+  effects, stanceKey)` per option)
+- next: file iterate fix tick. See
+  `docs/mechanics-ui-audit-2026-05-21-combat.md` row 4 for
+  the full citation + fix proposal.
+- source: mechanics-vs-UI audit 2026-05-21
+
+### [3.0] DRIFT — HUD HP fallback can briefly show stale out-of-combat HP
+
+- category: bug (combat UX, hud)
+- impact: 4 (post-combat aftermath window shows out-of-combat
+  HP rather than the post-combat HP; impact small today
+  because exploration doesn't display HP and the character
+  tab is hidden during combat)
+- ease: 8 (one-line action-layer change in `endCombat`: copy
+  `state.combat.player.health` to `state.player.health` before
+  clearing the combat slice)
+- next: file iterate fix tick. See
+  `docs/mechanics-ui-audit-2026-05-21-combat.md` row 11.
+- source: mechanics-vs-UI audit 2026-05-21
+
+### [2.5] DRIFT — `playerChoice.skillId` typed via `as any` cast at three sites
+
+- category: refactor / typing hygiene
+- impact: 2 (no behavior change; cast hides any future engine
+  field rename)
+- ease: 7 (declare a mobile-extended `MobileCombatState` shape
+  in `state/store.ts`, drop the three `as any` casts in
+  `state/actions.ts`)
+- next: file iterate fix tick. See
+  `docs/mechanics-ui-audit-2026-05-21-combat.md` row 10.
+- source: mechanics-vs-UI audit 2026-05-21
 
 
 

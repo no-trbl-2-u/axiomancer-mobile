@@ -338,7 +338,14 @@ export default function InventoryScreen() {
             actions.useItem(modalVm.itemId);
         } else if (modalVm.mode === 'equip') {
             actions.equipItem(modalVm.itemId);
+        } else if (modalVm.mode === 'unequip') {
+            // User-jot 2026-05-22 (oversight 29th): unequip is the
+            // swap counterpart to equip; mobile "first-per-slot =
+            // worn" convention surfaces it as a slot-peer swap.
+            actions.unequipItem(modalVm.itemId);
         }
+        // mode === 'view' (e.g. WORN sole-item-in-slot) → no
+        // dispatch; just dismiss the modal.
         setModalItemId(null);
         setExpandedItemId(null);
     }, [actions, modalVm]);

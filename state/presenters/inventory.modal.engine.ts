@@ -25,7 +25,20 @@ import {
     isEquippedFirstOfSlot as selectIsEquippedFirstOfSlot,
 } from '../selectors/equipment';
 
-export type ItemModalMode = 'use' | 'equip' | 'view';
+/**
+ * Modal mode discriminator. The screen branches on this to pick
+ * which action to dispatch on confirm:
+ * - `'use'` → `actions.useItem` (consumables).
+ * - `'equip'` → `actions.equipItem` (equipment NOT currently worn).
+ * - `'unequip'` → `actions.unequipItem` (equipment currently worn
+ *   AND has at least one other slot peer to swap to). Filed via
+ *   user-jot 2026-05-22 (oversight 29th call).
+ * - `'view'` → no action (display-only; for items with no available
+ *   action, including equipment that's the sole worn item in its
+ *   slot — see notes on `unequipItemAction` for why sole-item
+ *   unequip is a no-op under mobile's first-in-slot convention).
+ */
+export type ItemModalMode = 'use' | 'equip' | 'unequip' | 'view';
 
 export interface StatDelta {
     label: string;
@@ -148,32 +161,75 @@ function buildEquipmentModal(player: Character, item: Item): ItemModalViewModel 
         delta('EMOT DEF', before.emotionalDefense, after.emotionalDefense),
     ];
 
-    const previewLines: string[] = [
-        `Slot · ${eq.slot.toUpperCase()}`,
-        isAlreadyEquipped
-            ? 'Already worn.'
-            : 'No stat change — engine modifiers pending.',
-    ];
+    // User-jot 2026-05-22 (oversight 29th): equipment needs an
+    // 'unequip' option in addition to equip + discard. Under
+    // mobile's "first-equipment-per-slot = worn" convention,
+    // unequip = swap to a different slot-peer (move the worn
+    // item to the back of its slot peers). When the worn item
+    // is the sole entry in its slot, there's no peer to swap to
+    // — the row falls back to display-only with the WORN label
+    // (engine-true "unequip to bare" requires a mobile-side
+    // unequipped-marker that's not in scope today).
+    const slotPeerCount = player.inventory.filter(
+        (it: Item): it is Equipment =>
+            isEquipment(it) && (it as Equipment).slot === eq.slot,
+    ).length;
+    const canUnequip = isAlreadyEquipped && slotPeerCount > 1;
+    const wornSibling = canUnequip
+        ? player.inventory.find(
+              (it: Item): it is Equipment =>
+                  isEquipment(it)
+                  && (it as Equipment).slot === eq.slot
+                  && it.id !== eq.id,
+          ) ?? null
+        : null;
 
-    // Phase 36 port: when the equip would replace a worn sibling, the
-    // confirm button surfaces the swap so the player can't miss what
-    // they're discarding. Bare-slot equip keeps the plain `EQUIP`
-    // label.
+    // Phase 36 + user-jot 2026-05-22 confirmLabel matrix:
+    // - Not equipped, slot empty → 'EQUIP'
+    // - Not equipped, slot has worn sibling → 'EQUIP · REPLACE <NAME>'
+    // - Equipped, has peer → 'UNEQUIP · WEAR <NAME>' (or just
+    //   'UNEQUIP' if no clear next-up — but slotPeerCount > 1
+    //   guarantees at least one)
+    // - Equipped, sole item in slot → 'WORN' (display-only).
     let confirmLabel: string;
-    if (isAlreadyEquipped) {
+    let mode: ItemModalMode;
+    if (isAlreadyEquipped && canUnequip) {
+        mode = 'unequip';
+        confirmLabel = wornSibling !== null
+            ? `UNEQUIP · WEAR ${wornSibling.name.toUpperCase()}`
+            : 'UNEQUIP';
+    } else if (isAlreadyEquipped) {
+        // Sole item in slot — 'view' mode (no action on confirm);
+        // confirmLabel stays 'WORN' to communicate display-only.
+        mode = 'view';
         confirmLabel = 'WORN';
     } else if (replacing !== null) {
+        mode = 'equip';
         confirmLabel = `EQUIP · REPLACE ${replacing.name.toUpperCase()}`;
     } else {
+        mode = 'equip';
         confirmLabel = 'EQUIP';
     }
+
+    const previewLines: string[] = [
+        `Slot · ${eq.slot.toUpperCase()}`,
+        mode === 'unequip'
+            ? wornSibling !== null
+                ? `Worn now. Swaps with ${wornSibling.name}.`
+                : 'Worn now.'
+            : isAlreadyEquipped
+              ? 'Worn now.'
+              : 'No stat change — engine modifiers pending.',
+    ];
 
     return freezeViewModel({
         itemId: item.id,
         name: item.name,
         description: item.description,
-        mode: 'equip' as ItemModalMode,
-        confirmPrompt: `Wear the ${item.name.toLowerCase()}?`,
+        mode,
+        confirmPrompt: mode === 'unequip'
+            ? `Stop wearing the ${item.name.toLowerCase()}?`
+            : `Wear the ${item.name.toLowerCase()}?`,
         confirmLabel,
         previewLines: previewLines as readonly string[],
         statDeltas: statDeltas as readonly StatDelta[],

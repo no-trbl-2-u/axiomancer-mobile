@@ -165,6 +165,17 @@ export interface AppActions {
      * `selectCharacterViewModel`. No-op when the item isn't equipment.
      */
     equipItem: (itemId: string) => void;
+    /**
+     * User-jot 2026-05-22 (oversight 29th): unequip is the swap
+     * counterpart to equip. Under mobile's
+     * "first-equipment-per-slot = worn" convention, unequip moves
+     * the target to the END of its slot peers in inventory; the
+     * next slot-peer (currently at index 1) becomes the new
+     * first-in-slot worn item. If the target is the sole item in
+     * its slot, the action is a no-op (the convention can't
+     * express "worn nothing" without a richer mobile-side flag).
+     */
+    unequipItem: (itemId: string) => void;
     /** Discard an item — wraps `removeItem` with a quest-item guard. */
     dropItem: (itemId: string) => void;
     /**
@@ -604,6 +615,7 @@ export function createAppActions(store: AppStore): AppActions {
         useConsumable: (itemId) => store.getState().useConsumable(itemId),
         useItem: (itemId) => useItemAction(store, itemId),
         equipItem: (itemId) => equipItemAction(store, itemId),
+        unequipItem: (itemId) => unequipItemAction(store, itemId),
         dropItem: (itemId) => dropItemAction(store, itemId),
         moveTo: (nodeId) => moveToAction(store, nodeId),
         changeMap: (mapName) => changeMapAction(store, mapName),
@@ -707,6 +719,52 @@ function equipItemAction(store: AppStore, itemId: string): void {
         }
     }
     const next: Item[] = [target, ...slotPeers, ...nonSlot];
+
+    store.setState({ player: { ...state.player, inventory: next } });
+}
+
+function unequipItemAction(store: AppStore, itemId: string): void {
+    // Mobile "worn" convention: first equipment item per slot is
+    // worn (see `state/selectors/equipment.ts:firstEquippedPerSlot`).
+    // To "unequip" the worn item under that convention, move it
+    // to the END of its slot peers in inventory; the next peer
+    // (formerly second in slot) becomes the new first-in-slot
+    // worn item. If there's only one item in the slot, the move
+    // is a no-op — the convention can't express "wearing nothing"
+    // without a richer flag (could be added when engine surfaces a
+    // proper `unequipItem(slot)` API and the mobile presenter
+    // reads from `character.equipment` directly).
+    const state = store.getState();
+    const inventory: readonly Item[] = state.player.inventory;
+    const target = inventory.find((i: Item) => i.id === itemId);
+    if (!target || !isEquipment(target)) return;
+    const targetSlot = (target as Equipment).slot;
+
+    // Count slot peers (including target). If only one, no-op —
+    // there's no other item to "swap to."
+    const slotPeerCount = inventory.filter(
+        (it: Item) => isEquipment(it) && (it as Equipment).slot === targetSlot,
+    ).length;
+    if (slotPeerCount <= 1) return;
+
+    // Rebuild inventory:
+    //   1. All non-target, non-slot items in their original order.
+    //   2. All slot peers (except target) in their original order
+    //      — the formerly-second-in-slot becomes first-in-slot
+    //      and so on.
+    //   3. Target appended at the end of its slot peers (so it's
+    //      last-in-slot, definitively NOT worn).
+    const slotPeersExceptTarget: Item[] = [];
+    const nonSlot: Item[] = [];
+    for (const it of inventory) {
+        if (it.id === target.id) continue;
+        if (isEquipment(it) && (it as Equipment).slot === targetSlot) {
+            slotPeersExceptTarget.push(it);
+        } else {
+            nonSlot.push(it);
+        }
+    }
+    const next: Item[] = [...nonSlot, ...slotPeersExceptTarget, target];
 
     store.setState({ player: { ...state.player, inventory: next } });
 }

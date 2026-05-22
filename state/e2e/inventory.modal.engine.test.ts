@@ -156,13 +156,63 @@ describe('selectItemModalViewModel: equipment preview (Q5)', () => {
         expect(vm.replacingName).toBeNull();
     });
 
-    it('reports "WORN" + null replacingName when the target is already first-in-slot', () => {
+    it('reports "WORN" + null replacingName when the target is already first-in-slot AND sole item in slot', () => {
+        // User-jot 2026-05-22 (oversight 29th): sole-item-in-slot
+        // falls back to mode='view' confirmLabel='WORN' — there's
+        // no other peer to swap to, so unequip is a no-op under
+        // the mobile first-per-slot convention.
         const store = makeStore([blade]);
 
         const vm = selectItemModalViewModel(store.getState(), 'long-blade')!;
 
+        expect(vm.mode).toBe('view');
         expect(vm.confirmLabel).toBe('WORN');
         expect(vm.replacingName).toBeNull();
+    });
+
+    it('reports mode "unequip" + UNEQUIP confirm label when target is worn AND has a slot peer (user-jot 2026-05-22)', () => {
+        // Worn weapon + a peer: tapping the worn one offers
+        // UNEQUIP · WEAR <peer-name>. After the action layer
+        // moves the worn item to the back of its slot peers,
+        // the peer becomes the new first-in-slot worn item.
+        const peer: Equipment = {
+            id: 'short-blade',
+            name: 'Short Blade',
+            description: 'Cracked at the hilt.',
+            category: 'equipment',
+            slot: 'weapon',
+            rarity: 'common',
+            requiredLevel: 1,
+        };
+        const store = makeStore([blade, peer]);
+
+        const vm = selectItemModalViewModel(store.getState(), 'long-blade')!;
+
+        expect(vm.mode).toBe('unequip');
+        expect(vm.confirmLabel).toContain('UNEQUIP');
+        expect(vm.confirmLabel).toContain('SHORT BLADE');
+        expect(vm.confirmPrompt).toMatch(/stop wearing/i);
+    });
+
+    it('reports mode "equip" + EQUIP confirm label when target is the peer (not worn)', () => {
+        // Same fixture as above; tap the peer (not worn) →
+        // standard equip flow with EQUIP · REPLACE Long Blade.
+        const peer: Equipment = {
+            id: 'short-blade',
+            name: 'Short Blade',
+            description: 'Cracked at the hilt.',
+            category: 'equipment',
+            slot: 'weapon',
+            rarity: 'common',
+            requiredLevel: 1,
+        };
+        const store = makeStore([blade, peer]);
+
+        const vm = selectItemModalViewModel(store.getState(), 'short-blade')!;
+
+        expect(vm.mode).toBe('equip');
+        expect(vm.confirmLabel).toContain('EQUIP · REPLACE');
+        expect(vm.confirmLabel).toContain('LONG BLADE');
     });
 
     it('exposes a stat delta table for the modal to render', () => {

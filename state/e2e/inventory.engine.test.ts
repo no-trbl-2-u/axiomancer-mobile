@@ -512,6 +512,58 @@ describe('equipItem action: reorders inventory by slot', () => {
     });
 });
 
+describe('unequipItem action: swaps worn to back of slot peers (user-jot 2026-05-22)', () => {
+    it('moves the worn item to the END of its slot; next peer becomes worn', () => {
+        const store = makeStore([sword('first'), dagger('second')]);
+        const actions = createAppActions(store);
+        // 'first' is currently worn (first-in-slot).
+        actions.unequipItem('first');
+
+        const inv = store.getState().player.inventory as readonly Item[];
+        const weapons = inv.filter((i: Item) => i.category === 'equipment') as Equipment[];
+        // 'second' is now first-in-slot (worn); 'first' is last.
+        expect(weapons[0].id).toBe('second');
+        expect(weapons[1].id).toBe('first');
+    });
+
+    it('reports the new worn item on the VM after unequip', () => {
+        const store = makeStore([sword('first'), dagger('second')]);
+        const actions = createAppActions(store);
+
+        actions.unequipItem('first');
+
+        const vm = selectInventoryViewModel(store.getState());
+        const a = vm.items.find((i) => i.id === 'first')!;
+        const b = vm.items.find((i) => i.id === 'second')!;
+        expect(b.equipped).toBe(true);
+        expect(a.equipped).toBe(false);
+    });
+
+    it('no-ops when the item is the sole entry in its slot (no peer to swap to)', () => {
+        const store = makeStore([sword('alone')]);
+        const before = store.getState().player.inventory;
+        const actions = createAppActions(store);
+
+        actions.unequipItem('alone');
+
+        // Mobile convention can't express "wearing nothing" without
+        // a richer marker; sole-item unequip is a no-op (the modal
+        // surfaces this as mode='view' confirmLabel='WORN').
+        expect(store.getState().player.inventory).toEqual(before);
+    });
+
+    it('no-ops when the item is missing or not equipment', () => {
+        const store = makeStore([potion('phial')]);
+        const before = store.getState().player.inventory;
+        const actions = createAppActions(store);
+
+        actions.unequipItem('missing');
+        actions.unequipItem('phial');
+
+        expect(store.getState().player.inventory).toEqual(before);
+    });
+});
+
 describe('dropItem action: removes the item, except quest items', () => {
     it('removes a discardable item from inventory', () => {
         const store = makeStore([sword()]);

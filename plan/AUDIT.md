@@ -205,7 +205,43 @@
   `docs/mechanics-ui-audit-2026-05-22-exploration.md`.
 - source: oversight 27th (2026-05-22)
 
-### [3.8] Mechanics-vs-UI logic audit — inventory surface (sibling of combat audit [3.7] ✅)
+### [3.8] Mechanics-vs-UI logic audit — inventory surface ✅ (three-audit series complete; drifts filed as [3.5]/[3.0]/[2.5])
+
+### [3.5] DRIFT — "first-equipment-per-slot = worn" convention is undeclared (inventory-audit row 1)
+
+- category: refactor / contract hygiene
+- impact: 5 (presenter + equipItemAction + character presenter
+  all rely on this convention; no test or shared helper pins
+  it. If any consumer ever traverses inventory in a different
+  order, all worn UI flips silently)
+- ease: 7 (extract a `firstEquippedPerSlot(inventory)` helper
+  and have all three consumers route through it; or push for
+  an engine-side `equipped` flag)
+- next: file iterate fix tick.
+- source: inventory-surface mechanics audit 2026-05-22, row 1
+
+### [3.0] DRIFT — `BURDEN_MAX` silently caps burden display (inventory-audit row 11)
+
+- category: bug (chrome integrity)
+- impact: 4 (a player with 60 items reads "50/50" — bar appears
+  full, data lies; could mask hoarding bugs in DEV mode + just
+  confuse players on real saves)
+- ease: 7 (return uncapped total from `computeBurden`; render
+  overflow visual treatment on the burden bar)
+- next: file iterate fix tick.
+- source: inventory-surface mechanics audit 2026-05-22, row 11
+
+### [2.5] DRIFT — `readShilling` defensively reads `shilling ?? currency` (inventory-audit row 7)
+
+- category: refactor / typing hygiene
+- impact: 2 (the defensive `??` chain hides which engine field
+  is actually canonical; if engine ever standardizes, the
+  presenter silently picks the other)
+- ease: 8 (check engine `Character` type, pick canonical field,
+  drop `as any` cast)
+- next: file iterate fix tick.
+- source: inventory-surface mechanics audit 2026-05-22, row 7
+
 
 - category: docs / quality (project coherence)
 - impact: 7 (inventory has the most engine-bound decisions

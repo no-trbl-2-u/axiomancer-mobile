@@ -17,11 +17,11 @@ import {
     lookupEffect,
     type ActiveEffect,
     type Character,
-    type Equipment,
     type GameStore,
 } from 'axiomancer-mechanics';
 
 import { freezeViewModel } from './freeze';
+import { firstEquippedPerSlot } from '../selectors/equipment';
 
 export type StanceKey = 'heart' | 'body' | 'mind';
 export type EffectKind = 'buff' | 'debuff' | 'poison' | 'bleed';
@@ -215,16 +215,12 @@ function buildEffects(player: Character): readonly CharacterEffectRow[] {
 }
 
 function buildEquipment(player: Character): readonly EquipmentSlotRow[] {
-    const bySlot = new Map<string, string>();
-    for (const item of player.inventory) {
-        if (item.category === 'equipment') {
-            const eq = item as Equipment;
-            if (!bySlot.has(eq.slot)) bySlot.set(eq.slot, eq.name);
-        }
-    }
+    // Worn-state convention lives in `state/selectors/equipment.ts`
+    // (AUDIT [3.5] inventory-audit row 1).
+    const worn = firstEquippedPerSlot(player.inventory);
     return SLOT_ORDER.map((slot) => ({
         name: SLOT_LABELS[slot],
-        item: bySlot.get(slot) ?? null,
+        item: worn.get(slot)?.name ?? null,
     }));
 }
 

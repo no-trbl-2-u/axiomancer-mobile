@@ -20,6 +20,10 @@ import {
 
 import { freezeViewModel } from './freeze';
 import { parseHealAmount } from '../actions';
+import {
+    findEquippedInSlot as selectFindEquippedInSlot,
+    isEquippedFirstOfSlot as selectIsEquippedFirstOfSlot,
+} from '../selectors/equipment';
 
 export type ItemModalMode = 'use' | 'equip' | 'view';
 
@@ -126,29 +130,10 @@ function buildConsumableModal(player: Character, item: Item): ItemModalViewModel
     });
 }
 
-/**
- * Find the currently-equipped item in the same slot as `target`, or
- * `null` when the slot is empty / `target` is itself the equipped one.
- * Mirrors `isEquippedFirstOfSlot` (first-equipment-per-slot is the
- * worn item, per `selectCharacterViewModel` convention) but returns
- * the equipped item rather than a boolean.
- */
-function findEquippedInSlot(player: Character, target: Equipment): Equipment | null {
-    const inventory: readonly Item[] = player.inventory;
-    for (const item of inventory) {
-        if (!isEquipment(item)) continue;
-        const eq = item as Equipment;
-        if (eq.slot !== target.slot) continue;
-        if (eq.id === target.id) return null; // target is the worn one
-        return eq;
-    }
-    return null;
-}
-
 function buildEquipmentModal(player: Character, item: Item): ItemModalViewModel {
     const eq = item as Equipment;
-    const isAlreadyEquipped = isEquippedFirstOfSlot(player, eq);
-    const replacing = isAlreadyEquipped ? null : findEquippedInSlot(player, eq);
+    const isAlreadyEquipped = selectIsEquippedFirstOfSlot(player.inventory, eq);
+    const replacing = isAlreadyEquipped ? null : selectFindEquippedInSlot(player.inventory, eq);
 
     // Equipment in this engine snapshot carries no stat modifiers, so
     // the deltas are all 0 today. The contract stabilises the UI ahead
@@ -200,12 +185,3 @@ function delta(label: string, before: number, after: number): StatDelta {
     return { label, before, after, delta: after - before };
 }
 
-function isEquippedFirstOfSlot(player: Character, target: Equipment): boolean {
-    const inventory: readonly Item[] = player.inventory;
-    for (const item of inventory) {
-        if (isEquipment(item) && (item as Equipment).slot === target.slot) {
-            return item.id === target.id;
-        }
-    }
-    return false;
-}

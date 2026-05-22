@@ -207,7 +207,7 @@
 
 ### [3.8] Mechanics-vs-UI logic audit — inventory surface ✅ (three-audit series complete; drifts filed as [3.5]/[3.0]/[2.5])
 
-### [3.5] DRIFT — "first-equipment-per-slot = worn" convention is undeclared (inventory-audit row 1)
+### [3.5] DRIFT — "first-equipment-per-slot = worn" convention is undeclared ✅
 
 - category: refactor / contract hygiene
 - impact: 5 (presenter + equipItemAction + character presenter

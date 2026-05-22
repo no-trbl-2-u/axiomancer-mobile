@@ -22,6 +22,7 @@ import {
 } from 'axiomancer-mechanics';
 
 import { freezeViewModel } from './freeze';
+import { firstEquippedPerSlot } from '../selectors/equipment';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -345,10 +346,10 @@ function computeReplacePreview(
 function buildRows(inventory: readonly Item[]): InventoryItemRow[] {
     const rowsById = new Map<string, InventoryItemRow>();
     const order: string[] = [];
-    const equippedSlots = new Set<string>();
-    // Engine-side handles for replace-preview computation. Keyed by
-    // engine slot so the second pass can look up the equipped sibling.
-    const equippedBySlot = new Map<Equipment['slot'], Equipment>();
+    // Worn-state convention lives in `state/selectors/equipment.ts`
+    // (AUDIT [3.5] inventory-audit row 1). Compute once; all
+    // consumers in this function read from the same map.
+    const equippedBySlot = firstEquippedPerSlot(inventory);
     // First-seen engine item per ID — used to grab the StatModifier
     // array on non-equipped equipment when we compute the preview.
     const itemById = new Map<string, Equipment>();
@@ -366,12 +367,8 @@ function buildRows(inventory: readonly Item[]): InventoryItemRow[] {
 
         let equipped = false;
         if (isEquipment(item)) {
-            const slot = item.slot;
-            if (!equippedSlots.has(slot)) {
-                equipped = true;
-                equippedSlots.add(slot);
-                equippedBySlot.set(slot, item);
-            }
+            const worn = equippedBySlot.get(item.slot);
+            equipped = worn !== undefined && worn.id === item.id;
             itemById.set(item.id, item);
         }
 

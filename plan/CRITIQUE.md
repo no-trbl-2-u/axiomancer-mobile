@@ -53,27 +53,20 @@
 
 ## Pending
 
-### [MED] /self — Level Up button at top of SELF screen + stat-allocation modal
-- pass: user-jot (commit HEAD)
+### [MED] /self — Level Up button at top of SELF screen + stat-allocation modal — **design generation pending**
+- pass: user-jot (commit `3de163f`)
 - viewport: unspecified
 - auth_state: anonymous
 - category: observation
 - observation: We need a "Level up" button at the top of the "SELF" screen to allow for the player to level up. I'll go to design and have us create a modal for stat allocation on level up
 - evidence: user-spotted at 2026-05-22
-- suggested_fix: [user has not specified — iterate to determine; user has indicated design handoff for the modal is forthcoming]
-- source: user
-
-### [MED] general — Tap-tooltip phase: explain buffs / stats / effects on tap
-- pass: user-jot (commit HEAD)
-- viewport: unspecified
-- auth_state: anonymous
-- category: observation
-- observation: I want to add a phase where we add "tap" tooltips that explain whatever it is they tapped (ie. any buff icons during combat, what each stat does in the "SELF" tab, stat effects for afflictions and blessings, etc.)
-- evidence: user-spotted at 2026-05-22
-- suggested_fix: [user has not specified — iterate to determine]
+- suggested_fix: [waiting on design — the prompt file `design/levelup-modal-prompt.txt` landed 2026-05-22 specifying both surfaces (SELF-header `ASCEND` strip + full-screen LevelUpModal). The actual handoff bundle hasn't been generated yet — the 2026-05-22 bundle at `design/handoff-2026-05-22/` covers aftermath modals only. Once the levelup bundle lands (likely `design/handoff-<date>/project/screens/levelup.jsx`), this row promotes to its own phase. Until then it stays Pending so the next /oversight sees it.]
 - source: user
 
 ## Done
+
+### [MED] general — Tap-tooltip phase ✅ (PROMOTED → PHASE_CANDIDATES.md candidate)
+- pass: user-jot (commit `cfc524c`); promoted via oversight 31st call 2026-05-22 to `plan/PHASE_CANDIDATES.md` as `[score 5.0] Tap-tooltip primitive + per-surface wiring`. Multi-tick scope — touches every interactive icon across SELF / combat / inventory surfaces. Next `/expand` or `/oversight` decides the slicing (one global primitive + per-surface wiring vs. per-surface ticks).
 
 ### [MED] general — Expand DEV mode to cover every ported mechanic ✅
 - pass: user-jot (commit 7821f13); addressed at commit `<this-tick>` by filing as a phase candidate (not a one-tick fix — meta-feature ask requires planning).

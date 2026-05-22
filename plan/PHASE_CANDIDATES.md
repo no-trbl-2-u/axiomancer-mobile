@@ -9,6 +9,23 @@
 
 ## Pending
 
+### [score 5.0] Tap-tooltip primitive + per-surface wiring (user-jot)
+
+- proposed: 2026-05-22, filed via `/oversight` (31st call) from user-jot `cfc524c`
+- source signals:
+  - **User-jot 2026-05-22 (`cfc524c`)** — "I want to add a phase where we add 'tap' tooltips that explain whatever it is they tapped (ie. any buff icons during combat, what each stat does in the 'SELF' tab, stat effects for afflictions and blessings, etc.)" User-source +0.5 bump.
+  - **§A audit-pattern signal** — combat / event / SELF mechanics-vs-UI audits surfaced multiple "chrome lies / chrome unclear" drift rows that a tooltip would have caught at first paint (`Trinket` vs `Accessory` slot label cross-tab confusion; `ADV/DIS` chips ignoring effect-driven modifiers; FLEE chrome promising `-ii morale` the engine never applied). Tooltips give the player the engine-truth on tap, closing the chrome-vs-engine gap without code-side audit rotations.
+  - **§E design signal** — no design handoff yet, but the design language (parchment / mono / gothic / dotted hairlines) has a natural tooltip register: torn-edge panel at finger-bottom, lowercase chronicle voice on the body, mono on the engine numbers. A future handoff would be 1-2 boards.
+- rationale: a cross-cutting UI primitive that incrementally pays off across every interactive icon surface. Stat tooltips on SELF, buff/debuff tooltips during combat, slot tooltips in the inventory dock, alignment-cube tooltips in the memoir / SELF alignment grid. Each surface is a small wiring tick; the primitive is the load-bearing first tick.
+- proposed scope: 1 phase, 4-6 ticks.
+  - Tick A — `<TapTooltip>` primitive component + presenter (`selectTooltipContentFor(kind, id, state) → { title, body, footnote }`). Renders as a torn-edge panel anchored to the tapped element; dismisses on tap-outside or 6s timeout.
+  - Tick B — Combat surface wiring: buff/debuff icons in HUD strips + stance ADV/DIS chips + skill picker rows. Content sourced from engine `effectsLibrary.lookupEffect(id).description`.
+  - Tick C — SELF surface wiring: each of the 3 base stats + the 9 derived cells + the alignment cube + each affliction/blessing row.
+  - Tick D — Inventory surface wiring: equipment slot labels + item-card stat lines + the burden bar.
+  - Tick E (optional) — Memoir tab: chronicle entry types + quest objective rows.
+- estimated phases: 1 (with sub-ticks)
+- conflicts: none. Pure additive UI primitive; no engine dependency.
+
 ### [score 5.0] Phase 67 — Recurring playtest cadence (Playwright-driven regression sentinel) [PROMOTED]
 
 - proposed: 2026-05-22, expand pass 34

@@ -1440,6 +1440,32 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       - Commit: `feat(spec67a): /playtest skill — Playwright
         regression sentinel`.
 
+- [ ] Phase 70 — Aftermath modals (Victory · Friendship · Defeat
+      · Error). Ports the four non-dismissible outcome panels from
+      `design/handoff-2026-05-22/project/screens/aftermath-modal.jsx`
+      into mobile, mounted **inside** the encounter seal so the
+      encounter never leaves the modal until the final dismiss
+      button fires. Replaces today's `<AftermathBanner>` toast +
+      the `ErrorBoundary` fallback. 4 ticks (one per modal):
+      A = Victory + presenter scaffold + in-modal mount,
+      B = Friendship + pixel emblem (the only pixel art in the
+      app), C = Defeat + run summary, D = ErrorScreen in-world
+      replacement for the ErrorBoundary fallback. Promoted to
+      **top of the build plan** per user instruction
+      ("Top priority is getting all these new designs in place").
+      Brief at `plan/phases/phase_70_aftermath_modals.md`.
+
+- [ ] Phase 71 — Encounter-seal chrome refresh. Sibling to
+      Phase 70 — phase-aware top + bottom `SEALED` chain bars
+      (`SEALED · AT ARMS` → `SEALED · ROUND I/II/III` → `IT IS
+      DONE` / `CARRY ON`) plus panel border color flip from blood
+      (intro / combat) → sulfur (aftermath). Source-of-truth in
+      `design/handoff-2026-05-22/project/prototype.jsx:558-617`.
+      Single-tick phase — touches `EncounterModalOverlay` + a
+      small `selectEncounterSealChrome` presenter helper.
+      Ordering with Phase 70 is loose (see brief §3). Brief at
+      `plan/phases/phase_71_encounter_seal_chrome.md`.
+
 - [x] Phase 69 — `store.setState` typed-wrapper sweep.
       Shipped 2026-05-22 in commit `c669ed8` as a single tick
       (Tick A + Tick B combined). Root-cause investigation

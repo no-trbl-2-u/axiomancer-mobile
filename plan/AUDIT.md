@@ -91,7 +91,7 @@
 
 ## Pending
 
-### [4.0] Mechanics-vs-UI logic audit — event surface (sibling of combat audit [3.7] ✅)
+### [4.0] Mechanics-vs-UI logic audit — event surface ✅ (drifts filed as [4.5] / [2.5])
 
 - category: docs / quality (project coherence)
 - impact: 8 (event-modal flow is the most user-visible surface
@@ -108,6 +108,35 @@
   the index table at the top.
 - source: oversight 27th (2026-05-22) — user-direct: "run the
   other 3 mechanics audits (event / exploration / inventory)"
+
+### [4.5] DRIFT — FLEE subtitle promises `-ii morale` that engine never applies (event-audit row 10)
+
+- category: bug (chrome integrity / player-trust)
+- impact: 6 (the non-boss FLEE button's chrome subtitle reads
+  `forfeit the path · -ii morale`; the action layer's flee
+  branch sets the event slice and routes back to exploration
+  without touching `state.moralMeter`. Player taps FLEE,
+  morale meter is unchanged — chrome lies)
+- ease: 7 (small action-layer edit in `pickEventChoiceAction`
+  flee branch: dispatch a moralMeter delta of -2 alongside the
+  event clear; +1 hermetic case)
+- next: file iterate fix tick. Either wire the engine moral
+  decrement to match the chrome, or drop the `-ii morale`
+  text and replace with `'forfeit the path'` (engine-honest).
+  Recommendation: wire it — gives the FLEE choice real
+  weight; the engine's moralMeter is already surfaced on the
+  SELF tab so the side-effect is visible.
+- source: event-surface mechanics audit 2026-05-22, row 10
+
+### [2.5] DRIFT — `(encounter as any).enemies[0]` cast in composeCombatPrelude (event-audit row 4)
+
+- category: refactor / typing hygiene
+- impact: 2 (no behavior change; the `as any` cast hides any
+  future engine field rename)
+- ease: 8 (drop the cast; `encounter.enemies` is already on
+  the engine's `Encounter` type post-Phase-60b)
+- next: file iterate fix tick.
+- source: event-surface mechanics audit 2026-05-22, row 4
 
 ### [4.0] Mechanics-vs-UI logic audit — exploration surface (sibling of combat audit [3.7] ✅)
 

@@ -28,6 +28,8 @@ import {
     changeMap as worldChangeMap,
     completeNode as worldCompleteNode,
     consumableLibrary,
+    equipmentTemplates,
+    uniqueTemplates,
     createMapState,
     determineAdvantage,
     determineCombatEnd,
@@ -111,6 +113,27 @@ export interface DebugSeedResult {
     skillsLearned: number;
     /** True when the current map was successfully re-seeded. */
     mapReset: boolean;
+}
+
+/**
+ * Dev-only "populate every item" affordance (user-direct request
+ * 2026-05-22, mid-`/march` interjection). Adds one of every item
+ * known to the engine's central registries to the player's
+ * inventory: equipment templates, unique-item templates,
+ * consumables. Useful for surface-testing inventory rendering,
+ * equip dock peer ordering, and per-rarity / per-slot chrome under
+ * a maximal load. Mirrors `DebugSeedResult`'s shape so callers can
+ * toast a uniform summary.
+ */
+export interface PopulateAllItemsResult {
+    /** Total items pushed across all registries. */
+    itemsAdded: number;
+    /** Per-registry breakdown so the dev toast can spot a regression at a glance. */
+    breakdown: {
+        equipment: number;
+        unique: number;
+        consumable: number;
+    };
 }
 
 /** Phase 59 — character-preset adoption result. */
@@ -198,6 +221,14 @@ export interface AppActions {
      * mount is `__DEV__`-guarded; production never reaches this.
      */
     debugSeed: () => DebugSeedResult;
+    /**
+     * Dev-only "populate every item" affordance (user-direct request
+     * 2026-05-22). Walks the engine's central item registries
+     * (`equipmentTemplates`, `uniqueTemplates`, `consumableLibrary`)
+     * and pushes one of each to the player's inventory. Component
+     * mount is `__DEV__`-guarded; production never reaches this.
+     */
+    populateAllItems: () => PopulateAllItemsResult;
     /**
      * Dev-only character preset adoption (Phase 59). Looks up the
      * engine `characterPresets` row by id and replaces the player
@@ -628,6 +659,7 @@ export function createAppActions(store: AppStore): AppActions {
         moveTo: (nodeId) => moveToAction(store, nodeId),
         changeMap: (mapName) => changeMapAction(store, mapName),
         debugSeed: () => debugSeedAction(store),
+        populateAllItems: () => populateAllItemsAction(store),
         applyCharacterPreset: (presetId) => applyCharacterPresetAction(store, presetId),
         save: () => store.getState().save(),
         resolveCurrentMapEvent: () => resolveCurrentMapEventAction(store),
@@ -999,6 +1031,57 @@ function debugSeedAction(store: AppStore): DebugSeedResult {
     }
 
     return { itemsAdded, skillsLearned, mapReset };
+}
+
+/**
+ * Walk every engine item registry and push one of each into the
+ * player's inventory. Dev-only — surfaced via the SELF-tab Debug
+ * menu's POPULATE button. Mirrors the existing `debugSeedAction`
+ * shape so the Debug button can render a uniform toast.
+ *
+ * Filed against the user-direct request 2026-05-22 (mid-`/march`
+ * interjection): "let's add a button that 'populates' items and
+ * gives the player every item in the game". "Every item" here means
+ * every entry in the engine's three central item registries:
+ * `equipmentTemplates` (base equipment), `uniqueTemplates` (uniques,
+ * marked `rarity: 'unique'`), and `consumableLibrary`. Materials
+ * and quest-items aren't in central registries (materials are
+ * constructed inline in `event-pools.ts`; quest-items live per
+ * quest), so they're out of scope.
+ */
+function populateAllItemsAction(store: AppStore): PopulateAllItemsResult {
+    const state = store.getState();
+    const addItem = state.addItem;
+
+    let equipment = 0;
+    let unique = 0;
+    let consumable = 0;
+
+    for (const tpl of equipmentTemplates) {
+        addItem(templateToEquipment(tpl));
+        equipment++;
+    }
+
+    // Uniques share the EquipmentTemplate shape (UniqueItemTemplate
+    // extends it) so `templateToEquipment` works, but the helper
+    // hard-codes `rarity: 'common'`. Override per-item so the
+    // inventory chrome surfaces the unique rarity correctly.
+    for (const tpl of uniqueTemplates) {
+        const base = templateToEquipment(tpl);
+        addItem({ ...base, rarity: 'unique' });
+        unique++;
+    }
+
+    for (const item of consumableLibrary) {
+        // Spread to a fresh object so the engine's stack-merge path
+        // can do its work without alias issues (same pattern as
+        // `debugSeedAction`).
+        addItem({ ...item });
+        consumable++;
+    }
+
+    const itemsAdded = equipment + unique + consumable;
+    return { itemsAdded, breakdown: { equipment, unique, consumable } };
 }
 
 function applyCharacterPresetAction(

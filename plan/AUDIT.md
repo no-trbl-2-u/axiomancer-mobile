@@ -811,6 +811,29 @@ Prior text preserved below for traceability:
 
 ## Done
 
+### [6.0] FEATURE — Debug "POPULATE" button (user-direct request 2026-05-22) ✅
+- Resolved 2026-05-22. Sibling to `DebugSeedButton` (which seeds
+  a representative sample). New `<DebugPopulateAllItems>` walks
+  the engine's three central item registries
+  (`equipmentTemplates`, `uniqueTemplates`, `consumableLibrary`)
+  and pushes one of each into the player's inventory. Uniques
+  receive `rarity: 'unique'` override per-item so the chrome
+  surfaces the rarity correctly.
+  - New action: `populateAllItems()` →
+    `{ itemsAdded, breakdown: { equipment, unique, consumable } }`
+  - New component: `DebugPopulateAllItems.tsx` (mirrors
+    DebugSeedButton's dashed-ash / sulfur-accent / mono-label
+    shape).
+  - Mounted between SEED and COMBAT in the SELF-tab DevMenu.
+  - 6 hermetic test cases (DEV gate, action routing pins
+    "every registry" intent — at least one equipment + one
+    consumable + one unique present after tap, accessibility,
+    non-destructive second tap).
+  - Out of scope: materials (no central registry — inline in
+    `event-pools.ts`) and quest-items (per-quest, no
+    registry). Could expand later if needed.
+  1066/1066 green at land (+6 over 1060).
+
 ### [2.5] DRIFT — 4 `as any` casts in `ErrorBoundary.tsx` (MapState probe + globalThis.navigator probe) ✅
 - Resolved 2026-05-22. Two clusters in the error-display
   surface:

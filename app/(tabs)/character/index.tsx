@@ -14,6 +14,7 @@ import { DebugFriendship } from '@/components/DebugFriendship';
 import { DebugManaControl } from '@/components/DebugManaControl';
 import { DebugMapResetButton } from '@/components/DebugMapResetButton';
 import { DebugPresetPicker } from '@/components/DebugPresetPicker';
+import { DebugPopulateAllItems } from '@/components/DebugPopulateAllItems';
 import { DebugSeedButton } from '@/components/DebugSeedButton';
 import { DebugXpGrant } from '@/components/DebugXpGrant';
 import { DevMenu } from '@/components/DevMenu';
@@ -240,6 +241,7 @@ export default function CharacterScreen() {
       <DevMenu>
         <AestheticDevToggle />
         <DebugSeedButton />
+        <DebugPopulateAllItems />
         <DebugCombatButton />
         <DebugMapResetButton />
         <DebugChaosToggle />

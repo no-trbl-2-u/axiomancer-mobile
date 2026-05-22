@@ -109,7 +109,7 @@
 - source: oversight 27th (2026-05-22) — user-direct: "run the
   other 3 mechanics audits (event / exploration / inventory)"
 
-### [4.5] DRIFT — FLEE subtitle promises `-ii morale` that engine never applies (event-audit row 10)
+### [4.5] DRIFT — FLEE subtitle promises `-ii morale` that engine never applies ✅
 
 - category: bug (chrome integrity / player-trust)
 - impact: 6 (the non-boss FLEE button's chrome subtitle reads

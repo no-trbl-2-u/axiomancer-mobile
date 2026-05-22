@@ -623,16 +623,37 @@ describe('eventActions.pickEventChoice', () => {
         expect(store.getState().event.pending).toBeNull();
     });
 
-    it('combat-prelude + flee -> no engine dispatch; pending clears', () => {
+    it('combat-prelude + flee (non-boss) -> no startCombat; moralMeter -= 2; pending clears (AUDIT [4.5] fix)', () => {
         const store = makeStore();
         const actions = createAppActions(store);
-        setPending(store, makeEncounterResult());
+        setPending(store, makeEncounterResult({ isBoss: false }));
         const startCombatSpy = jest.spyOn(store.getState(), 'startCombat');
+        const moralBefore = store.getState().moralMeter;
 
         actions.pickEventChoice('flee');
 
         expect(startCombatSpy).not.toHaveBeenCalled();
         expect(store.getState().event.pending).toBeNull();
+        // The FLEE chrome subtitle reads `forfeit the path · -ii morale`
+        // — the action layer must honor it (pre-[4.5] the chrome was
+        // a lie; engine moralMeter was unchanged on flee).
+        expect(store.getState().moralMeter).toBe(moralBefore - 2);
+    });
+
+    it('combat-prelude + flee (boss) -> no morale delta even if dispatched (chrome reads "sealed · no retreat")', () => {
+        // Boss flee is engine-disabled in the UI (KNEEL / `enabled:
+        // false`). If the dispatch somehow lands anyway, the
+        // action layer must NOT shift moralMeter — the boss chrome
+        // subtitle reads `sealed · no retreat`, not a morale cost.
+        const store = makeStore();
+        const actions = createAppActions(store);
+        setPending(store, makeEncounterResult({ isBoss: true }));
+        const moralBefore = store.getState().moralMeter;
+
+        actions.pickEventChoice('flee');
+
+        expect(store.getState().event.pending).toBeNull();
+        expect(store.getState().moralMeter).toBe(moralBefore);
     });
 
     it('narrative-choice auto-resolve (rest) clears pending without engine dispatch', () => {

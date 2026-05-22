@@ -1060,6 +1060,20 @@ function pickEventChoiceAction(store: AppStore, choiceId: string): void {
             return;
         }
         if (choiceId === 'flee') {
+            // [4.5] DRIFT fix (mechanics-vs-UI audit row 10):
+            // the FLEE button's chrome subtitle reads
+            // `forfeit the path · -ii morale` on non-boss
+            // encounters. Honour the chrome — shift the
+            // engine `moralMeter` by -2 so the SELF tab's
+            // alignment readout reflects the cost. Boss
+            // flee is engine-disabled in the UI (KNEEL /
+            // `enabled: false`) and the subtitle reads
+            // `sealed · no retreat` — no morale delta
+            // applies there even if the choice somehow
+            // dispatched.
+            if (!processed.isBoss) {
+                store.getState().shiftMoralMeter(-2);
+            }
             clearEventSlice(store);
             return;
         }

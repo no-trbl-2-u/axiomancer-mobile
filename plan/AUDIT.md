@@ -372,8 +372,10 @@ Prior text preserved below for traceability:
   - `state/presenters/combat.engine.ts:560`
 - source: user-jot 2026-05-22 — engine-duplication scan
 
-### [3.0] Engine-dup — debug seed hardcodes equipment slot list instead of using engine library
+### [3.0] Engine-dup — debug seed hardcodes equipment slot list instead of using engine library ✅
 
+- issue: #138 (closed by this commit)
+- Resolved 2026-05-22. Typed the seed-slot array as `ReadonlyArray<EquipmentSlot>` (engine slot renames now tsc errors) and swapped template lookup from a hand-rolled `equipmentTemplates.find` to the engine's `getTemplatesBySlot(slot)[0]`. UX preserved: still seeds the same 3 major slots (head/body/weapon). Dropped the unused `equipmentTemplates` import. 1055/1055 green at land.
 - category: refactor (engine-duplication)
 - impact: 3 (debug-only path; hardcoded `['head', 'body',
   'weapon']` should iterate the engine's `equipmentTemplates`
@@ -382,7 +384,6 @@ Prior text preserved below for traceability:
   query; preserve the "one item per major slot" UX intent)
 - sites:
   - `state/actions.ts:884` (debug seed action)
-- next: file iterate fix tick.
 - source: user-jot 2026-05-22 — engine-duplication scan
 
 ### [2.5] Engine-dup — `STANCES` array literal in token-crucible

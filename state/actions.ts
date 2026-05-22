@@ -32,8 +32,8 @@ import {
     determineAdvantage,
     determineCombatEnd,
     determineEnemyAction,
-    equipmentTemplates,
     getDialogueNode,
+    getTemplatesBySlot,
     getMapDefinition,
     getPresetById,
     getSkillById,
@@ -56,6 +56,7 @@ import {
     type DialogueTree,
     type Enemy,
     type Equipment,
+    type EquipmentSlot,
     type GameState,
     type Item,
     type MapName,
@@ -923,12 +924,16 @@ function debugSeedAction(store: AppStore): DebugSeedResult {
         itemsAdded++;
     }
 
-    // 2. One equipment per common slot (head / body / weapon). The
+    // 2. One equipment per major slot (head / body / weapon). The
     //    inventory dock and equip-replace preview both key off slot,
-    //    so covering three slots gives a meaningful smoke test.
-    const slots: ReadonlyArray<'head' | 'body' | 'weapon'> = ['head', 'body', 'weapon'];
-    for (const slot of slots) {
-        const tpl = equipmentTemplates.find((t) => t.slot === slot);
+    //    so covering three slots gives a meaningful smoke test. The
+    //    slot list is typed by engine `EquipmentSlot` so an engine
+    //    rename is a tsc error; templates are pulled via the engine's
+    //    `getTemplatesBySlot` rather than a local `equipmentTemplates`
+    //    scan, so new templates per slot pick the first available.
+    const seedSlots: ReadonlyArray<EquipmentSlot> = ['head', 'body', 'weapon'];
+    for (const slot of seedSlots) {
+        const tpl = getTemplatesBySlot(slot)[0];
         if (tpl) {
             addItem(templateToEquipment(tpl));
             itemsAdded++;

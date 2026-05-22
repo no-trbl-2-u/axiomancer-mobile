@@ -1465,6 +1465,18 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
         on `lastOutcome !== 'victory'`; banner still mounts for
         parley until Tick B retires it. 38 new hermetic tests;
         1098/1098 verify green.
+      - **[x] Tick B** — shipped `8baf37a`
+        (`feat(spec70b): CombatFriendshipPanel + PixelEmblem +
+        AftermathBanner retirement`). Parley branch of the
+        presenter + `<CombatFriendshipPanel>` + new `<PixelEmblem>`
+        (the app's lone pixel-art carve-out, with an invariant
+        test fence). `<AftermathBanner>` + `selectAftermathCopy`
+        deleted — both victory and parley display paths now run
+        through the in-encounter-modal panels. Journal-entry field
+        exposed in the VM type but null in current snapshots
+        (engine doesn't surface per-foe codex entries yet — engine
+        integration is a follow-up). 36 new tests across 3 suites;
+        4 retired with the banner. 1112/1112 verify green.
 
 - [ ] Phase 71 — Encounter-seal chrome refresh. Sibling to
       Phase 70 — phase-aware top + bottom `SEALED` chain bars

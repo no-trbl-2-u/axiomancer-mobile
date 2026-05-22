@@ -255,6 +255,6 @@ pin).
 | Tick | Status | Commit | Notes |
 |------|--------|--------|-------|
 | A    | `[x]`  | `05d85e7` | Victory panel + presenter + in-modal mount. 38 new tests across 3 suites (presenter / panel / combat-mode); modal overlay test extended for combat→aftermath swap. 1098/1098 verify green. AftermathBanner still mounts for parley until Tick B retires it. |
-| B    | `[ ]`  | —      | Friendship panel + pixel emblem + journal entry |
+| B    | `[x]`  | `8baf37a` | Friendship panel + PixelEmblem (the lone carve-out, with invariant-fence tests) + parley presenter branch. AftermathBanner + selectAftermathCopy retired (both display paths now live in the modal). 36 new tests; 4 retired with the banner. 1112/1112 verify green. Journal-entry field exposed in type but null in current snapshots; engine integration deferred to a follow-up. |
 | C    | `[ ]`  | —      | Defeat panel + run-summary counter + reset wiring |
 | D    | `[ ]`  | —      | ErrorScreen panel + ErrorBoundary refactor |

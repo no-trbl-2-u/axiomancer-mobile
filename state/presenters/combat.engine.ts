@@ -45,6 +45,7 @@ import {
     selectCombatHudViewModel,
     type CombatHudViewModel,
 } from './combat-hud.engine';
+import { MAX_EFFECTS_SHOWN } from './constants';
 import { freezeViewModel } from './freeze';
 
 // ---------------------------------------------------------------------------
@@ -556,8 +557,6 @@ const ACTION_DEFAULTS: readonly ActionOption[] = [
         enabled: false,
     },
 ];
-
-const MAX_EFFECTS_SHOWN = 4;
 
 const EMPTY_ENEMY: CombatEnemySummary = {
     name: '',

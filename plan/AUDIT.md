@@ -357,8 +357,10 @@ Prior text preserved below for traceability:
   - `state/presenters/token-crucible.engine.ts:32`
 - source: user-jot 2026-05-22 — engine-duplication scan
 
-### [3.0] Engine-dup — `MAX_EFFECTS_SHOWN` constant duplicated in 2 presenters
+### [3.0] Engine-dup — `MAX_EFFECTS_SHOWN` constant duplicated in 2 presenters ✅
 
+- issue: #137 (closed by this commit)
+- Resolved 2026-05-22. Created `state/presenters/constants.ts` with `MAX_EFFECTS_SHOWN = 4` as the single source; both `combat.engine.ts` and `combat-hud.engine.ts` now import from there. Future bumps live in one place. 1055/1055 green at land.
 - category: refactor (single-source consolidation)
 - impact: 3 (display-only cap; two presenters carry their
   own copy of `const MAX_EFFECTS_SHOWN = 4`. Engine has no
@@ -368,7 +370,6 @@ Prior text preserved below for traceability:
 - sites:
   - `state/presenters/combat-hud.engine.ts:6`
   - `state/presenters/combat.engine.ts:560`
-- next: file iterate fix tick.
 - source: user-jot 2026-05-22 — engine-duplication scan
 
 ### [3.0] Engine-dup — debug seed hardcodes equipment slot list instead of using engine library

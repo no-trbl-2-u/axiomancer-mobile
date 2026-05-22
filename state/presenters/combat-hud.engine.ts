@@ -3,7 +3,7 @@ import type { ActiveEffect } from 'axiomancer-mechanics';
 
 import type { AppStoreState } from '@/state/store';
 
-const MAX_EFFECTS_SHOWN = 4;
+import { MAX_EFFECTS_SHOWN } from './constants';
 
 export interface ActiveEffectDisplay {
     effectId: string;

@@ -168,17 +168,35 @@
 - next: file iterate fix tick.
 - source: exploration-surface mechanics audit 2026-05-22, row 4
 
-### [3.0] DRIFT — exploration presenter still reads legacy `availableNodes` / `completedNodes` / `lockedNodes` (exploration-audit row 1)
+### [3.0] DRIFT — exploration presenter still reads legacy `availableNodes` / `completedNodes` / `lockedNodes` (exploration-audit row 1) — [needs-design-call]
 
 - category: refactor (Phase 27 migration tail)
 - impact: 4 (if engine ever stops dual-populating the legacy
   fields the presenter silently loses signal; today no risk)
-- ease: 5 (migrate `selectExplorationViewModel` to engine
-  `discoveredNodes` / `consumedNodes` reads; remove the
-  `moveToAction` legacy chain; preserve the visual edges via
-  the layout fixture's `connectedNodes`)
-- next: file iterate fix tick (gated on confirming the engine
-  surface is rich enough for the visual classification UI needs).
+- ease: 3 (NOT a simple swap — investigated 2026-05-22)
+- **Investigation 2026-05-22 (iterate):** engine `discoveredNodes`
+  is the full reveal history (every node ever revealed via
+  `revealAdjacent`), NOT "reachable from current." The mobile
+  visual model (TRODDEN / OPEN / SHUT) maps:
+  - TRODDEN ← `completedNodes` (visited)
+  - OPEN ← `availableNodes` (reachable next step)
+  - SHUT ← `lockedNodes` (hidden / unreachable)
+  - A clean swap to `discoveredNodes` would conflate visited
+    nodes' neighbors-since-passing with current-neighbors —
+    behavior change, not refactor.
+- next: needs a design call on whether "OPEN" should mean
+  "currently reachable from current node" (stricter) or
+  "every node ever-reachable" (broader). Today's mobile
+  semantics is the former; engine's discoveredNodes is the
+  latter. Possible paths:
+  - (a) keep legacy fields; remove this audit row as
+    permanent-design-state.
+  - (b) compute OPEN from `getMapDefinition().nodes[currentId]
+    .connectedNodes \ completedNodes` (stricter "adjacent to
+    current"); migrate to engine fields for the other two.
+  - (c) keep both; expose a new vm field for "ever-reachable"
+    if a future surface wants it.
+- ship-when: `[needs-user-call]` for the design direction.
 - source: exploration-surface mechanics audit 2026-05-22, row 1
 
 ### [2.5] DRIFT — `(state as any).world` cast in exploration presenter + moveToAction (exploration-audit row 7)
@@ -231,7 +249,7 @@
 - next: file iterate fix tick.
 - source: inventory-surface mechanics audit 2026-05-22, row 11
 
-### [2.5] DRIFT — `readShilling` defensively reads `shilling ?? currency` (inventory-audit row 7)
+### [2.5] DRIFT — `readShilling` defensively reads `shilling ?? currency` ✅
 
 - category: refactor / typing hygiene
 - impact: 2 (the defensive `??` chain hides which engine field

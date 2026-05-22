@@ -438,9 +438,17 @@ function filterRowsByTab(
 }
 
 function readShilling(state: GameStore): number {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const p = state.player as unknown as Record<string, any>;
-    const raw = Number(p.shilling ?? p.currency ?? 0);
+    // The engine canonical currency field is `Character.currency`
+    // (engine type def `Character/types.d.ts:41`). "Shilling" is the
+    // mobile chrome label for the same value — the VM field name +
+    // the SHILLING screen literal carry the voice-register choice.
+    // Closes the [2.5] DRIFT row from
+    // `docs/mechanics-ui-audit-2026-05-22-inventory.md` row 7: the
+    // earlier `p.shilling ?? p.currency` fallback hid which engine
+    // field was canonical; no save / migration / fixture writes
+    // `shilling` (cross-tree grep confirms) so the fallback was
+    // dead code.
+    const raw = Number(state.player.currency ?? 0);
     return Number.isFinite(raw) && raw >= 0 ? raw : 0;
 }
 

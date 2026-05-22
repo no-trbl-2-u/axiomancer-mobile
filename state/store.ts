@@ -168,8 +168,7 @@ export function createAppStore(options: CreateAppStoreOptions = {}): AppStore {
         const typed = event as TypedGameEvent;
         const prev = store.getState()._recentEvents;
         const next = [typed, ...prev].slice(0, RECENT_EVENTS_CAPACITY);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        store.setState({ _recentEvents: next } as any);
+        store.setState({ _recentEvents: next });
     });
 
     // Phase 29 Tick A: flip `levelUpAcknowledged` to false when the

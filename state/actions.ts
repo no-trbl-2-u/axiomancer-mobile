@@ -256,24 +256,21 @@ export const PLAYER_MANA_DEFAULT_START = 9;
 function seedCombatMana(store: AppStore): void {
     const cur = store.getState().combatMana;
     if (cur !== null) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     store.setState({
         combatMana: { current: PLAYER_MANA_DEFAULT_START, max: PLAYER_MANA_DEFAULT_MAX },
-    } as any);
+    });
 }
 
 function clearCombatMana(store: AppStore): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    store.setState({ combatMana: null } as any);
+    store.setState({ combatMana: null });
 }
 
 function burnCombatMana(store: AppStore, cost: number): void {
     const cur = store.getState().combatMana;
     if (cur === null) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     store.setState({
         combatMana: { current: Math.max(0, cur.current - cost), max: cur.max },
-    } as any);
+    });
 }
 
 function findSkill(skillId: string): CombatSkill | null {
@@ -872,8 +869,7 @@ function moveToAction(store: AppStore, nodeId: string): MoveToResult {
         currentMap: revealAdjacent(nextWorld.currentMap, nodeId),
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    store.setState({ world: nextWorld } as any);
+    store.setState({ world: nextWorld });
 
     return { moved: true, currentNodeId: nodeId, locked: false };
 }
@@ -894,8 +890,7 @@ function changeMapAction(store: AppStore, mapName: MapName): void {
     const continent = world.currentMap.continent;
     const nextMap = createMapState(getMapDefinition(continent, mapName));
     const nextWorld = worldChangeMap(world, nextMap);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    store.setState({ world: nextWorld } as any);
+    store.setState({ world: nextWorld });
 }
 
 // ---------------------------------------------------------------------------
@@ -965,8 +960,7 @@ function debugSeedAction(store: AppStore): DebugSeedResult {
             ...player,
             knownSkills: Array.from(known),
         };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        store.setState({ player: nextPlayer } as any);
+        store.setState({ player: nextPlayer });
     }
 
     // 4. Reset the current map: re-seed via the engine's two-step
@@ -985,8 +979,7 @@ function debugSeedAction(store: AppStore): DebugSeedResult {
                 getMapDefinition(world.currentMap.continent, world.currentMap.name),
             );
             const nextWorld = worldChangeMap(world, fresh);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            store.setState({ world: nextWorld } as any);
+            store.setState({ world: nextWorld });
             mapReset = true;
         } catch {
             // changeMap can throw if the map name is unknown. Swallow
@@ -1007,8 +1000,7 @@ function applyCharacterPresetAction(
         return { applied: false, presetId: null, presetName: null };
     }
     const nextPlayer = buildCharacterFromPreset(preset) as Character;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    store.setState({ player: nextPlayer } as any);
+    store.setState({ player: nextPlayer });
     return { applied: true, presetId: preset.id, presetName: preset.name };
 }
 
@@ -1058,8 +1050,7 @@ function resolveCurrentMapEventAction(store: AppStore): boolean {
                 : null,
         history: [],
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    store.setState({ ...resolvedState, event: nextEvent } as any);
+    store.setState({ ...resolvedState, event: nextEvent });
 
     return result.event.kind !== 'none';
 }

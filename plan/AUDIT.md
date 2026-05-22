@@ -162,7 +162,7 @@ Prior text preserved below for traceability:
 - next: file iterate fix tick.
 - source: character-surface mechanics audit 2026-05-22, row 9
 
-### [2.5] DRIFT — `(player as any).effects` cast in character presenter (character-audit row 4)
+### [2.5] DRIFT — `(player as any).effects` cast in character presenter ✅
 
 - category: refactor / typing hygiene
 - impact: 2 (engine `Character.effects: ActiveEffect[]` typed
@@ -171,7 +171,7 @@ Prior text preserved below for traceability:
 - next: file iterate fix tick.
 - source: character-surface mechanics audit 2026-05-22, row 4
 
-### [2.5] DRIFT — `(state as any).philosophicalAlignment` cast + dead fallback (character-audit row 6)
+### [2.5] DRIFT — `(state as any).philosophicalAlignment` cast + dead fallback ✅
 
 - category: refactor / typing hygiene
 - impact: 2 (Phase 51 migration v2→v3 backfills the field on
@@ -181,7 +181,7 @@ Prior text preserved below for traceability:
 - next: file iterate fix tick.
 - source: character-surface mechanics audit 2026-05-22, row 6
 
-### [2.5] DRIFT — `buildEffects(player)` called 3x in same return object (character-audit row 10)
+### [2.5] DRIFT — `buildEffects(player)` called 3x in same return object ✅
 
 - category: refactor (perf / brittleness)
 - impact: 2 (negligible cost today; redundancy becomes

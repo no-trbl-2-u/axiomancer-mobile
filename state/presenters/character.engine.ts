@@ -202,8 +202,11 @@ function buildSaves(player: Character): readonly SaveOrTestRow[] {
 }
 
 function buildEffects(player: Character): readonly CharacterEffectRow[] {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const effects: ActiveEffect[] = (player as any).effects ?? [];
+    // Character-audit [2.5] fix 2026-05-22: dropped `(player as
+    // any).effects` cast. Engine `Character.effects: ActiveEffect[]`
+    // is typed cleanly; the `?? []` defensive fallback covers
+    // synthetic test fixtures that build a Character via spreads.
+    const effects: readonly ActiveEffect[] = player.effects ?? [];
     return effects.map((ae) => {
         const def = lookupEffect(ae.effectId);
         const rawKind = def?.type ?? 'debuff';
@@ -241,14 +244,13 @@ const ALIGNMENT_AXIS_LABELS: Record<AlignmentAxisKey, string> = {
 };
 
 function buildAlignmentSlice(state: GameStore): AlignmentSlice {
-    // The engine's `GameState` exposes the alignment cube as
-    // `philosophicalAlignment`. v3 saves backfill it; for any caller
-    // that injects a sparse fixture without the field (e.g. test
-    // shapes built from `{player} as never`), fall back to the
-    // engine's neutral default rather than crashing.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const raw = (state as any).philosophicalAlignment;
-    const alignment = (raw && typeof raw === 'object') ? raw : defaultAlignment();
+    // Character-audit [2.5] fix 2026-05-22: dropped `(state as
+    // any).philosophicalAlignment` cast. Engine `GameState.philosophicalAlignment:
+    // PhilosophicalAlignment` is typed cleanly (non-optional);
+    // v3 saves backfill it via the persistence migration. The
+    // `?? defaultAlignment()` defensive fallback only covers
+    // synthetic test fixtures that bypass `createNewGameState`.
+    const alignment = state.philosophicalAlignment ?? defaultAlignment();
 
     const cell = getAlignmentCell(alignment);
 
@@ -268,6 +270,11 @@ export function selectCharacterViewModel(state: GameStore): CharacterViewModel {
     const luck: number = player.derivedStats.luck;
 
     const alignment = buildAlignmentSlice(state);
+    // Character-audit [2.5] fix 2026-05-22: lifted `buildEffects(player)`
+    // to a single call. Pre-fix called it 3x (vm field + 2x a11y
+    // branches) — wasteful + brittle if the helper extends to
+    // engine library reads.
+    const effects = buildEffects(player);
 
     return freezeViewModel({
         displayName: player.name,
@@ -279,7 +286,7 @@ export function selectCharacterViewModel(state: GameStore): CharacterViewModel {
         derived: buildDerived(player),
         luck,
         saves: buildSaves(player),
-        effects: buildEffects(player),
+        effects,
         emptyEffectsMessage: 'none at hand.',
         equipment: buildEquipment(player),
         skills: [],
@@ -292,8 +299,8 @@ export function selectCharacterViewModel(state: GameStore): CharacterViewModel {
             derivedStats: 'Derived statistics: attack, skill, and defense values',
             saves: 'Saving throws and ability tests',
             equipment: 'Equipment slots and equipped items',
-            effects: buildEffects(player).length > 0
-                ? `${buildEffects(player).length} active effects`
+            effects: effects.length > 0
+                ? `${effects.length} active effects`
                 : 'No active effects',
             crucibleOpen: 'Open Token Crucible.',
             alignment: `Philosophical alignment: ${alignment.cellName}. ${alignment.axes.map((a) => `${a.label.toLowerCase()} ${a.bucket}`).join(', ')}.`,

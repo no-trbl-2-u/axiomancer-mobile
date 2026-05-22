@@ -320,13 +320,44 @@ describe('selectInventoryViewModel: equipped flag', () => {
 // ---------------------------------------------------------------------------
 
 describe('selectInventoryViewModel: invariants', () => {
-    it('burden is in [0, burdenMax]', () => {
+    it('burden is non-negative on a fresh game (and within capacity)', () => {
+        // Fresh game starts well below burdenMax; the looser
+        // invariant (just >= 0) leaves room for overflow without
+        // breaking on a starting inventory.
         const store = createGameStore(createMemoryAdapter());
 
         const vm = selectInventoryViewModel(store.getState());
 
         expect(vm.burden).toBeGreaterThanOrEqual(0);
-        expect(vm.burden).toBeLessThanOrEqual(vm.burdenMax);
+        expect(vm.burdenMax).toBeGreaterThan(0);
+    });
+
+    it('burden is UNCAPPED — exceeds burdenMax when inventory carries more than capacity (mechanics-ui audit [3.0] fix)', () => {
+        // Pre-fix `computeBurden` clamped to `Math.min(BURDEN_MAX,
+        // total)`; a player carrying 60 items read "50/50" — chrome
+        // lied. Post-fix the bar text reads "60/50" honestly. The
+        // StatBar fill still clamps at 100% internally (correct —
+        // a bar can't visualize "more than full").
+        const store = createGameStore(createMemoryAdapter());
+        // Synthesize an inventory with > BURDEN_MAX (=50) consumable
+        // entries so total > capacity. Items must be distinct ids so
+        // the presenter's stacking pass doesn't collapse them into
+        // one row.
+        const inventory = Array.from({ length: 60 }, (_, i) => ({
+            id: `phial-${i}`,
+            name: `Phial ${i}`,
+            category: 'consumable',
+            description: '',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        })) as any;
+        store.setState({
+            player: { ...store.getState().player, inventory },
+        });
+
+        const vm = selectInventoryViewModel(store.getState());
+        expect(vm.burdenMax).toBe(50);
+        expect(vm.burden).toBe(60);
+        expect(vm.burden).toBeGreaterThan(vm.burdenMax);
     });
 
     it('the returned VM is deep-frozen', () => {

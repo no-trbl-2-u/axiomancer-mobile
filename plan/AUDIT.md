@@ -220,7 +220,7 @@
 - next: file iterate fix tick.
 - source: inventory-surface mechanics audit 2026-05-22, row 1
 
-### [3.0] DRIFT — `BURDEN_MAX` silently caps burden display (inventory-audit row 11)
+### [3.0] DRIFT — `BURDEN_MAX` silently caps burden display ✅
 
 - category: bug (chrome integrity)
 - impact: 4 (a player with 60 items reads "50/50" — bar appears

@@ -445,8 +445,15 @@ function readShilling(state: GameStore): number {
 }
 
 function computeBurden(rows: readonly InventoryItemRow[]): number {
-    const total = rows.reduce((acc, r) => acc + r.quantity, 0);
-    return Math.min(BURDEN_MAX, total);
+    // Return the uncapped total so the BURDEN bar's text reads
+    // honestly ("60 / 50" when over capacity) rather than silently
+    // clamping the display to "50 / 50". The bar fill renders
+    // clamped at 100% (StatBar handles its own pct clamp) — that's
+    // correct because the bar can't visualize "more than full" —
+    // but the numeric text on the label row carries the overflow
+    // signal. Closes the [3.0] DRIFT row from
+    // `docs/mechanics-ui-audit-2026-05-22-inventory.md` row 11.
+    return rows.reduce((acc, r) => acc + r.quantity, 0);
 }
 
 /**

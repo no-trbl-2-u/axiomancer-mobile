@@ -137,11 +137,11 @@ function buildFinalBlowSnapshot(combat: CombatStateLike): {
 // Structural type — the bits buildFinalBlowSnapshot reads. Avoids
 // dragging the full engine CombatState import in for one helper.
 type CombatStateLike = {
-    log: Array<{
+    log: {
         playerAction: { skillId?: string; action?: string };
         damageToEnemy: number;
         result: string;
-    }>;
+    }[];
 };
 
 export function CombatPanel() {

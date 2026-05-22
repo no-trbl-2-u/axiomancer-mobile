@@ -3,29 +3,40 @@
  *
  * Catches runtime render errors anywhere in the subtree so the
  * app shows a debug screen instead of breaking (white screen on
- * web, native red box on iOS/Android). Filed via user-jot
- * 2026-05-22 (oversight 29th call).
+ * web, native red box on iOS/Android).
  *
- * Scope: deliberately simple. Surfaces:
- * - The error message + stack
- * - The React component stack (which surface threw)
- * - A snapshot of `state.player` + `state.combat` + the last few
- *   typed events (so the user can see *what game state was loaded
- *   when the crash happened*)
- * - "Try again" (reset boundary state) + "Reload page" affordances
+ * Phase 70 Tick D port of the handoff bundle's `ErrorScreen`
+ * (`design/handoff-2026-05-22/project/screens/aftermath-modal.jsx:
+ * 709-809`). The fallback now lives in the same gothic-chronicle
+ * register as the rest of the app:
  *
- * NOT in scope today:
- * - Error reporting (Sentry / similar) — wire when the team
- *   picks a provider.
- * - Persisted error log — could write to AsyncStorage in a
- *   follow-up if the user wants post-mortem analysis after a
- *   reload.
+ *   - Heavy diagonal hatch background (a "damaged page" feel).
+ *   - `THE BINDING TORE` gothic title with a blood drop-shadow.
+ *   - In-world error code (`E_BOUND_LOOSE`, etc.) as a chapter
+ *     marker eyebrow.
+ *   - Torn-edge inset panel containing the technical stack +
+ *     a ✎ COPY button that flashes sulfur on press.
+ *   - Italic scribe-note hint line.
+ *   - ✠ TRY AGAIN primary parchment button + `return to the
+ *     hearth` ghost bone-italic.
+ *   - "the chronicle is incomplete — but not lost." consolation
+ *     line at the very bottom.
  *
- * The boundary must be mounted INSIDE the GameStoreProvider so
- * the fallback's `ErrorScreen` can read state via `useGameState`.
+ * The technical diagnostics (state snapshot + build context)
+ * still ship for crash-report purposes — they sit below the
+ * design's main chrome as collapsible-feel sections so a debug
+ * audience can scroll to them without breaking the in-world
+ * register for non-debug users.
+ *
+ * COPY is UI-only by design: the bundle's prompt notes
+ * "no need to wire — show the pressed state." A clipboard write
+ * would require adding `expo-clipboard` as a native dep; the
+ * pressed-state feedback alone meets the design intent. When
+ * crash reporting (Sentry / similar) lands, the technical block
+ * goes there automatically and COPY becomes redundant anyway.
  */
 
-import React, { Component, type ErrorInfo, type ReactNode } from 'react';
+import React, { Component, type ErrorInfo, type ReactNode, useState } from 'react';
 import {
     Pressable,
     ScrollView,
@@ -57,7 +68,7 @@ export class ErrorBoundary extends Component<
     }
 
     componentDidCatch(error: Error, info: ErrorInfo): void {
-         
+
         console.error('[ErrorBoundary] caught', error, info);
         this.setState({ componentStack: info.componentStack ?? null });
     }
@@ -86,7 +97,32 @@ interface ErrorScreenProps {
     onReset: () => void;
 }
 
+/**
+ * Map a thrown Error onto a short in-world code rendered as a
+ * chapter marker under the gothic title. Mirrors the bundle's
+ * `E_BOUND_LOOSE` example. Fallback covers any uncategorized
+ * crash so the chrome always has a code to render.
+ */
+function deriveErrorCode(error: Error): string {
+    const name = error.name ?? '';
+    const msg = error.message ?? '';
+    if (name === 'TypeError' || /undefined|null/.test(msg)) {
+        return 'E_PAGE_TORN';
+    }
+    if (name === 'SyntaxError') {
+        return 'E_SIGIL_BROKE';
+    }
+    if (/network|fetch/i.test(msg)) {
+        return 'E_THE_LINE_WENT_QUIET';
+    }
+    return 'E_BOUND_LOOSE';
+}
+
 function ErrorScreen({ error, componentStack, onReset }: ErrorScreenProps) {
+    const [copyPressed, setCopyPressed] = useState<boolean>(false);
+    const errorCode = deriveErrorCode(error);
+    const technical = `${error.message || '(no message)'}${error.stack ? `\n${error.stack}` : ''}${componentStack !== null ? `\n\n— component stack —${componentStack}` : ''}`;
+
     // Read engine state for the debug snapshot. Guard against the
     // store throwing too (the provider may itself be where the
     // crash originated); fall back to a "store unavailable" line.
@@ -101,26 +137,56 @@ function ErrorScreen({ error, componentStack, onReset }: ErrorScreenProps) {
     return (
         <View style={styles.root} testID="error-boundary-screen">
             <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-                <Text style={styles.eyebrow}>✠ SOMETHING TORE</Text>
-                <Text style={styles.title}>The page split.</Text>
-                <Text style={styles.body}>
-                    a render fell mid-step. the lines below carry what was on
-                    the table when it did.
+                <View style={styles.hatchBg} pointerEvents="none" />
+
+                {/* Chapter marker — rust eyebrow */}
+                <Text style={styles.errorCode} testID="error-boundary-code">
+                    {errorCode}
                 </Text>
 
-                <Section label="ERROR">
-                    <Text style={styles.codeMessage}>{error.message || '(no message)'}</Text>
-                    {error.stack ? (
-                        <Text style={styles.codeBlock}>{error.stack}</Text>
-                    ) : null}
-                </Section>
+                {/* Illuminated gothic title with blood drop-shadow */}
+                <Text style={styles.title}>
+                    <Text style={styles.titleShadowBlood}>THE BINDING TORE</Text>
+                </Text>
+                <Text style={styles.titleOverlay}>THE BINDING TORE</Text>
 
-                {componentStack !== null ? (
-                    <Section label="COMPONENT STACK">
-                        <Text style={styles.codeBlock}>{componentStack.trim()}</Text>
-                    </Section>
-                ) : null}
+                {/* Scribe note — italic margin gloss */}
+                <Text style={styles.scribeHint}>
+                    “a brittle binding came apart in the press; the scribe is rebinding.”
+                </Text>
 
+                {/* Torn-edge inset panel for the technical stack */}
+                <View style={styles.technicalPanel}>
+                    <Text style={styles.technicalCaption}>— scribe&apos;s transcription —</Text>
+                    <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel="Copy"
+                        testID="error-boundary-copy"
+                        onPress={() => setCopyPressed(true)}
+                        style={[
+                            styles.copyButton,
+                            copyPressed && styles.copyButtonPressed,
+                        ]}
+                    >
+                        <Text
+                            style={[
+                                styles.copyButtonLabel,
+                                copyPressed && styles.copyButtonLabelPressed,
+                            ]}
+                        >
+                            {copyPressed ? '✎ COPIED' : '✎ COPY'}
+                        </Text>
+                    </Pressable>
+                    <Text
+                        style={styles.technicalText}
+                        numberOfLines={12}
+                        testID="error-boundary-technical"
+                    >
+                        {technical}
+                    </Text>
+                </View>
+
+                {/* Diagnostics — kept for crash-report eyeballing */}
                 <Section label="STATE SNAPSHOT">
                     <Text style={styles.codeBlock}>{stateSnapshot}</Text>
                 </Section>
@@ -129,16 +195,36 @@ function ErrorScreen({ error, componentStack, onReset }: ErrorScreenProps) {
                     <Text style={styles.codeBlock}>{buildContext()}</Text>
                 </Section>
 
+                {/* Primary + ghost actions */}
                 <View style={styles.actions}>
                     <Pressable
-                        style={styles.action}
+                        style={({ pressed }) => [
+                            styles.tryAgain,
+                            pressed && styles.tryAgainPressed,
+                        ]}
                         accessibilityRole="button"
                         accessibilityLabel="Try again"
+                        testID="error-boundary-try-again"
                         onPress={onReset}
                     >
-                        <Text style={styles.actionText}>TRY AGAIN ↻</Text>
+                        <Text style={styles.tryAgainLabel}>✠ TRY AGAIN</Text>
+                    </Pressable>
+                    <Pressable
+                        style={styles.returnHearth}
+                        accessibilityRole="button"
+                        accessibilityLabel="Return to the hearth"
+                        testID="error-boundary-return-hearth"
+                        onPress={onReset}
+                    >
+                        <Text style={styles.returnHearthLabel}>
+                            return to the hearth
+                        </Text>
                     </Pressable>
                 </View>
+
+                <Text style={styles.consolation}>
+                    the chronicle is incomplete — but not lost.
+                </Text>
             </ScrollView>
         </View>
     );
@@ -237,40 +323,123 @@ declare const __DEV__: boolean | undefined;
 const styles = StyleSheet.create({
     root: {
         flex: 1,
-        backgroundColor: AXM.bg,
+        backgroundColor: AXM.panelBg,
     },
-    scroll: {
-        flex: 1,
-    },
+    scroll: { flex: 1 },
     scrollContent: {
-        padding: 16,
-        paddingTop: 48,
+        padding: 20,
+        paddingTop: 40,
         paddingBottom: 48,
     },
-    eyebrow: {
-        fontFamily: FONTS.sans,
-        fontSize: 11,
-        letterSpacing: 3,
-        color: AXM.blood,
-        marginBottom: 6,
+    /**
+     * Heavy diagonal hatch overlay — approximation using a
+     * borderStyle: 'dashed' top edge. react-native doesn't ship
+     * proper diagonal-stripe primitives; this gives the surface
+     * a visibly-distressed feel without bringing in an SVG dep.
+     * Phase 71 chrome refresh may tune this further.
+     */
+    hatchBg: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        opacity: 0.06,
+        borderTopWidth: 100,
+        borderTopColor: AXM.parchment,
+        borderStyle: 'dashed',
     },
+    errorCode: {
+        fontFamily: FONTS.sans,
+        fontSize: 10,
+        letterSpacing: 2,
+        color: AXM.rust,
+        textAlign: 'center',
+        marginBottom: 4,
+    },
+    // The gothic title renders twice — blood-shadow underneath +
+    // parchment overlay on top. Stacked Text nodes inside a single
+    // line keep the offsets predictable.
     title: {
         fontFamily: FONTS.gothic,
-        fontSize: 28,
-        lineHeight: 32,
+        fontSize: 38,
+        lineHeight: 42,
+        letterSpacing: 1.5,
         color: AXM.parchment,
-        marginBottom: 8,
+        textAlign: 'center',
+        marginTop: 8,
     },
-    body: {
-        fontFamily: FONTS.serif,
+    titleShadowBlood: {
+        color: AXM.blood,
+        opacity: 0.35,
+    },
+    titleOverlay: {
+        position: 'absolute',
+        top: 56,
+        left: 0,
+        right: 0,
+        fontFamily: FONTS.gothic,
+        fontSize: 38,
+        lineHeight: 42,
+        letterSpacing: 1.5,
+        color: AXM.parchment,
+        textAlign: 'center',
+    },
+    scribeHint: {
+        fontFamily: FONTS.serifItalic,
         fontSize: 13,
         lineHeight: 18,
         color: AXM.bone,
-        marginBottom: 20,
+        textAlign: 'center',
+        marginTop: 22,
+        paddingHorizontal: 14,
     },
-    section: {
-        marginBottom: 16,
+    technicalPanel: {
+        marginTop: 22,
+        backgroundColor: AXM.deepBg,
+        borderWidth: 1,
+        borderColor: AXM.ash,
+        position: 'relative',
+        padding: 12,
+        paddingTop: 28,
     },
+    technicalCaption: {
+        position: 'absolute',
+        top: 8,
+        left: 12,
+        fontFamily: FONTS.mono,
+        fontSize: 8,
+        letterSpacing: 1.4,
+        color: AXM.ash,
+    },
+    copyButton: {
+        position: 'absolute',
+        top: 6,
+        right: 8,
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderWidth: 1,
+        borderColor: AXM.ash,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+    },
+    copyButtonPressed: {
+        borderColor: AXM.sulfur,
+        backgroundColor: 'rgba(212,192,38,0.10)',
+    },
+    copyButtonLabel: {
+        fontFamily: FONTS.sans,
+        fontSize: 9,
+        letterSpacing: 2,
+        color: AXM.bone,
+    },
+    copyButtonLabelPressed: { color: AXM.sulfur },
+    technicalText: {
+        fontFamily: FONTS.mono,
+        fontSize: 10.5,
+        lineHeight: 14,
+        color: 'rgba(232,223,200,0.62)',
+    },
+    section: { marginTop: 14 },
     sectionLabel: {
         fontFamily: FONTS.sans,
         fontSize: 9,
@@ -284,12 +453,6 @@ const styles = StyleSheet.create({
         borderLeftColor: AXM.ash,
         padding: 8,
     },
-    codeMessage: {
-        fontFamily: FONTS.mono,
-        fontSize: 12,
-        color: AXM.blood,
-        marginBottom: 6,
-    },
     codeBlock: {
         fontFamily: FONTS.mono,
         fontSize: 10,
@@ -297,22 +460,40 @@ const styles = StyleSheet.create({
         color: AXM.parchment,
     },
     actions: {
-        marginTop: 16,
-        flexDirection: 'row',
-        gap: 8,
+        marginTop: 22,
+        gap: 6,
     },
-    action: {
-        flex: 1,
-        paddingVertical: 10,
-        borderWidth: 1,
-        borderColor: AXM.sulfur,
-        backgroundColor: AXM.panelBg,
+    tryAgain: {
+        paddingVertical: 12,
+        borderWidth: 2,
+        borderColor: AXM.parchment,
+        backgroundColor: '#0a0807',
         alignItems: 'center',
+        justifyContent: 'center',
     },
-    actionText: {
-        fontFamily: FONTS.sans,
-        fontSize: 11,
+    tryAgainPressed: { opacity: 0.85 },
+    tryAgainLabel: {
+        fontFamily: FONTS.gothic,
+        fontSize: 16,
+        color: AXM.parchment,
         letterSpacing: 2,
-        color: AXM.sulfur,
+    },
+    returnHearth: {
+        paddingVertical: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    returnHearthLabel: {
+        fontFamily: FONTS.serifItalic,
+        fontSize: 13,
+        color: AXM.bone,
+    },
+    consolation: {
+        fontFamily: FONTS.sans,
+        fontSize: 9,
+        letterSpacing: 1.8,
+        color: AXM.bone,
+        textAlign: 'center',
+        marginTop: 14,
     },
 });

@@ -24,12 +24,12 @@
  */
 
 import { afterEach, describe, it, expect, jest } from '@jest/globals';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
 
 import { EncounterModalOverlay } from '../EncounterModalOverlay';
 import { AestheticModeProvider, type AestheticMode } from '@/state/aesthetic-mode';
-import { CombatModeProvider } from '@/state/combat-mode';
+import { CombatModeProvider, useCombatMode } from '@/state/combat-mode';
 import { GameStoreProvider } from '@/state/GameStoreProvider';
 import { createAppStore } from '@/state/store';
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
@@ -265,14 +265,6 @@ describe('EncounterModalOverlay: non-dismissible backdrop (chat1 invariant)', ()
 
 describe('EncounterModalOverlay: prelude → combat mode transition', () => {
     function withAllProviders(child: React.ReactNode) {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { GameStoreProvider } = require('@/state/GameStoreProvider');
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { createAppStore } = require('@/state/store');
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { createMemoryAdapter } = require('@/test-utils/memoryAdapter');
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { CombatModeProvider } = require('@/state/combat-mode');
         const store = createAppStore({ adapter: createMemoryAdapter() });
         return (
             <AestheticModeProvider initialMode="canonical" skipHydration>
@@ -296,8 +288,6 @@ describe('EncounterModalOverlay: prelude → combat mode transition', () => {
     });
 
     it('transitions to combat mode after FIGHT is pressed', () => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { fireEvent } = require('@testing-library/react-native');
         const tree = render(
             withAllProviders(
                 <EncounterModalOverlay vm={makeCombatPreludeVm()} onFight={() => {}} onFlee={() => {}} />,
@@ -311,8 +301,6 @@ describe('EncounterModalOverlay: prelude → combat mode transition', () => {
     });
 
     it('still calls the onFight callback when FIGHT is pressed', () => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { fireEvent } = require('@testing-library/react-native');
         const onFight = jest.fn();
         const tree = render(
             withAllProviders(
@@ -331,14 +319,6 @@ describe('EncounterModalOverlay: prelude → combat mode transition', () => {
 
 describe('EncounterModalOverlay: combat mode survives vm.kind change', () => {
     function withAllProviders(child: React.ReactNode) {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { GameStoreProvider } = require('@/state/GameStoreProvider');
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { createAppStore } = require('@/state/store');
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { createMemoryAdapter } = require('@/test-utils/memoryAdapter');
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { CombatModeProvider } = require('@/state/combat-mode');
         const store = createAppStore({ adapter: createMemoryAdapter() });
         return (
             <AestheticModeProvider initialMode="canonical" skipHydration>
@@ -352,8 +332,7 @@ describe('EncounterModalOverlay: combat mode survives vm.kind change', () => {
     }
 
     it('combat mode stays mounted even when vm.kind flips to "none" mid-encounter', () => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { fireEvent, render: localRender } = require('@testing-library/react-native');
+        const localRender = render;
         // Initial vm is combat-prelude; user taps FIGHT; on the next
         // render the parent (exploration) passes a non-prelude vm
         // because pickEventChoice('fight') clears the event slice.
@@ -395,17 +374,6 @@ describe('EncounterModalOverlay: combat mode survives vm.kind change', () => {
 
 describe('EncounterModalOverlay: combat → aftermath swap', () => {
     function withAllProvidersAndOutcome(child: React.ReactNode) {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { GameStoreProvider } = require('@/state/GameStoreProvider');
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { createAppStore } = require('@/state/store');
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { createMemoryAdapter } = require('@/test-utils/memoryAdapter');
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const {
-            CombatModeProvider,
-            useCombatMode,
-        } = require('@/state/combat-mode') as typeof import('@/state/combat-mode');
         const store = createAppStore({ adapter: createMemoryAdapter() });
         // Helper component that fires the victory outcome after mount,
         // so the modal advances from combat → aftermath inside one
@@ -439,8 +407,6 @@ describe('EncounterModalOverlay: combat → aftermath swap', () => {
     }
 
     it('swaps to <CombatVictoryPanel> when lastOutcome flips to victory mid-combat', () => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { fireEvent } = require('@testing-library/react-native');
         const tree = render(
             withAllProvidersAndOutcome(
                 <EncounterModalOverlay
@@ -466,8 +432,6 @@ describe('EncounterModalOverlay: combat → aftermath swap', () => {
     });
 
     it('CARRY ON dismisses the aftermath and unmounts the panel', () => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { fireEvent } = require('@testing-library/react-native');
         const tree = render(
             withAllProvidersAndOutcome(
                 <EncounterModalOverlay
@@ -494,17 +458,6 @@ describe('EncounterModalOverlay: combat → aftermath swap', () => {
 
 describe('EncounterModalOverlay: combat → aftermath swap (parley)', () => {
     function withParleyOutcome(child: React.ReactNode) {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { GameStoreProvider } = require('@/state/GameStoreProvider');
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { createAppStore } = require('@/state/store');
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { createMemoryAdapter } = require('@/test-utils/memoryAdapter');
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const {
-            CombatModeProvider,
-            useCombatMode,
-        } = require('@/state/combat-mode') as typeof import('@/state/combat-mode');
         const store = createAppStore({ adapter: createMemoryAdapter() });
         function ParleyTrigger() {
             const { exitCombatWith } = useCombatMode();
@@ -535,8 +488,6 @@ describe('EncounterModalOverlay: combat → aftermath swap (parley)', () => {
     }
 
     it('swaps to <CombatFriendshipPanel> when lastOutcome flips to parley', () => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { fireEvent } = require('@testing-library/react-native');
         const tree = render(
             withParleyOutcome(
                 <EncounterModalOverlay
@@ -556,8 +507,6 @@ describe('EncounterModalOverlay: combat → aftermath swap (parley)', () => {
     });
 
     it('PART AS FRIENDS dismisses the aftermath', () => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { fireEvent } = require('@testing-library/react-native');
         const tree = render(
             withParleyOutcome(
                 <EncounterModalOverlay
@@ -581,17 +530,6 @@ describe('EncounterModalOverlay: combat → aftermath swap (parley)', () => {
 
 describe('EncounterModalOverlay: combat → aftermath swap (defeat)', () => {
     function withDefeatOutcome(child: React.ReactNode) {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { GameStoreProvider } = require('@/state/GameStoreProvider');
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { createAppStore } = require('@/state/store');
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { createMemoryAdapter } = require('@/test-utils/memoryAdapter');
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const {
-            CombatModeProvider,
-            useCombatMode,
-        } = require('@/state/combat-mode') as typeof import('@/state/combat-mode');
         const store = createAppStore({ adapter: createMemoryAdapter() });
         function DefeatTrigger() {
             const { exitCombatWith } = useCombatMode();
@@ -623,8 +561,6 @@ describe('EncounterModalOverlay: combat → aftermath swap (defeat)', () => {
     }
 
     it('swaps to <CombatDefeatPanel> when lastOutcome flips to defeat', () => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { fireEvent } = require('@testing-library/react-native');
         const tree = render(
             withDefeatOutcome(
                 <EncounterModalOverlay
@@ -642,8 +578,6 @@ describe('EncounterModalOverlay: combat → aftermath swap (defeat)', () => {
     });
 
     it('let-the-page-close dismisses the panel', () => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { fireEvent } = require('@testing-library/react-native');
         const tree = render(
             withDefeatOutcome(
                 <EncounterModalOverlay
@@ -661,8 +595,6 @@ describe('EncounterModalOverlay: combat → aftermath swap (defeat)', () => {
     });
 
     it('BEGIN AGAIN dismisses the panel', () => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { fireEvent } = require('@testing-library/react-native');
         const tree = render(
             withDefeatOutcome(
                 <EncounterModalOverlay

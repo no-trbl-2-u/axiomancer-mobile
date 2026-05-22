@@ -46,7 +46,9 @@ import {
     resolveMapEvent,
     revealAdjacent,
     unlockNode as worldUnlockNode,
+    type Action,
     type Character,
+    type CombatAction,
     type CombatPhase,
     type CombatState,
     type Consumable,
@@ -447,17 +449,21 @@ export function createAppActions(store: AppStore): AppActions {
         setPlayerAction: (action, skillId) => {
             const { combat, updateCombat } = store.getState();
             if (!combat) return;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const withAction = combatSetPlayerAction(combat, action as any);
-            const finalCombat = skillId
+            // Mobile `CombatActionKey` is a strict subset of engine
+            // `Action` (no 'flee'); the engine signature accepts
+            // it directly. Engine `CombatAction.skillId?: string` is
+            // a typed field — closes [2.5] combat-audit row 10 (the
+            // earlier triplet of `as any` casts dated to before the
+            // engine type exposed skillId; today they're all clean).
+            const withAction = combatSetPlayerAction(combat, action);
+            const finalCombat: CombatState = skillId
                 ? {
                     ...withAction,
                     playerChoice: {
                         ...withAction.playerChoice,
                         skillId,
                     },
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                } as any
+                }
                 : withAction;
             updateCombat(finalCombat);
         },
@@ -473,13 +479,15 @@ export function createAppActions(store: AppStore): AppActions {
                 };
             }
 
-            const playerStance: Stance =
-                (combat.playerChoice?.stance as Stance) ?? 'heart';
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const requestedAction = (combat.playerChoice?.action as any) ?? 'attack';
-            const playerAction = requestedAction === 'item' ? 'attack' : requestedAction;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const skillIdRaw = (combat.playerChoice as any)?.skillId;
+            const playerStance: Stance = combat.playerChoice?.stance ?? 'heart';
+            // Engine `CombatAction.action: Action` ('attack' |
+            // 'defend' | 'skill' | 'item' | 'flee'). Item is a
+            // mobile-only no-op (Spec 06 doesn't apply consumables
+            // mid-combat yet) — downgrade to 'attack' so the engine
+            // resolver picks the basic-attack path.
+            const requestedAction: Action = combat.playerChoice?.action ?? 'attack';
+            const playerAction: Action = requestedAction === 'item' ? 'attack' : requestedAction;
+            const skillIdRaw = combat.playerChoice?.skillId;
             const skillId =
                 playerAction === 'skill' && typeof skillIdRaw === 'string'
                     ? skillIdRaw
@@ -496,12 +504,10 @@ export function createAppActions(store: AppStore): AppActions {
             // (was previously downgraded to 'attack' when a skillId was
             // set; the engine now resolves the skill itself, using
             // skillLookup above).
-            const playerCombatAction =
+            const playerCombatAction: CombatAction =
                 skillId !== undefined
-                    ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    ({ stance: playerStance, action: 'skill', skillId } as any)
-                    : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    ({ stance: playerStance, action: playerAction } as any);
+                    ? { stance: playerStance, action: 'skill', skillId }
+                    : { stance: playerStance, action: playerAction };
 
             const enemyStance: Stance =
                 (enemyAction.stance as Stance) ??

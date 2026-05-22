@@ -375,7 +375,7 @@
   `docs/mechanics-ui-audit-2026-05-21-combat.md` row 11.
 - source: mechanics-vs-UI audit 2026-05-21
 
-### [2.5] DRIFT — `playerChoice.skillId` typed via `as any` cast at three sites
+### [2.5] DRIFT — `playerChoice.skillId` typed via `as any` cast at three sites ✅
 
 - category: refactor / typing hygiene
 - impact: 2 (no behavior change; cast hides any future engine

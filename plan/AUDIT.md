@@ -808,6 +808,18 @@ Prior text preserved below for traceability:
 
 ## Done
 
+### [3.2] `components/event/EventArt.tsx` colocated test coverage ✅
+- Resolved 2026-05-22. Added 5 hermetic cases pinning the
+  slug → component dispatch — `encounter` / `boss` route to
+  their bespoke illustrations (no 60-segment placeholder grid;
+  ≥1 Path), `rest` / `gathering` / `hazard` route to
+  `PlaceholderIllustration` with the slug forwarded (60-segment
+  grid + the expected per-slug Path counts from the placeholder
+  contract). Picked via fresh audit (F. Tests category — sole
+  remaining untested component with logic, vs. the bare-SVG
+  Boss/Encounter illustrations). 1060/1060 green at land (+5
+  over 1055).
+
 ### [3.2] `components/Splatter.tsx` colocated test coverage ✅
 - Resolved 2026-05-21 (commit `9eb3359`). Added 6 hermetic
   cases pinning circle count (29 = main + 28 droplets),

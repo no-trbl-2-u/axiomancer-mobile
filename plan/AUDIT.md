@@ -191,7 +191,7 @@ Prior text preserved below for traceability:
 - next: file iterate fix tick.
 - source: character-surface mechanics audit 2026-05-22, row 10
 
-### [3.0] DRIFT — `(e.payload as any)` casts in memoir chronicle event mapper (5 sites) (memoir-audit row 4)
+### [3.0] DRIFT — `(e.payload as any)` casts in memoir chronicle event mapper ✅
 
 - category: refactor / typing hygiene
 - impact: 3 (bypasses engine's typed-event-payload guarantees

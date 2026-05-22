@@ -15,7 +15,7 @@
  * frozen-new object every call.
  */
 
-import type { GameStore, TypedGameEvent } from 'axiomancer-mechanics';
+import type { DialogueTree, GameStore, TypedGameEvent } from 'axiomancer-mechanics';
 import {
     isCombatEndedEvent,
     isDialogueAppliedEvent,
@@ -266,13 +266,14 @@ function buildChronicle(rawEvents: unknown): ReadonlyArray<ChronicleEntry> {
     for (const e of events) {
         ordinal += 1;
         if (isCombatEndedEvent(e)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const report = (e.payload as any)?.report;
-            const outcome: string | undefined =
-                typeof report?.outcome === 'string' ? report.outcome : undefined;
+            // Engine `EnginePayload.report?: CombatEndReport` with
+            // `{outcome: 'victory'|'defeat'|'friendship'|'flee',
+            // xpGained: number, loot: Item[]}`. Memoir-audit [3.0]
+            // fix 2026-05-22 dropped the `(e.payload as any)` cast.
+            const report = e.payload.report;
+            const outcome = report?.outcome;
             if (!outcome) continue;
-            const xp: number =
-                typeof report?.xpGained === 'number' ? report.xpGained : 0;
+            const xp: number = typeof report?.xpGained === 'number' ? report.xpGained : 0;
             const label =
                 outcome === 'victory'
                     ? 'FELLED'
@@ -298,8 +299,9 @@ function buildChronicle(rawEvents: unknown): ReadonlyArray<ChronicleEntry> {
             continue;
         }
         if (isLevelUpEvent(e)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const level = (e.payload as any)?.state?.player?.level;
+            // Engine `EnginePayload.state: GameState`;
+            // `Character.level: number` — typed directly.
+            const level = e.payload.state?.player?.level;
             if (typeof level !== 'number') continue;
             entries.push(
                 Object.freeze({
@@ -312,14 +314,17 @@ function buildChronicle(rawEvents: unknown): ReadonlyArray<ChronicleEntry> {
             continue;
         }
         if (isWorldMovedEvent(e)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const world = (e.payload as any)?.state?.world;
+            // Engine `WorldState.currentContinent: Continent` (an
+            // object with `.name`), NOT a string. The previous
+            // `typeof world?.currentContinent === 'string'` read was
+            // dead code; current shape pulls the continent name off
+            // the typed Continent object. Defensive `?? null` on
+            // each chain step.
+            const world = e.payload.state?.world;
             const continent: string | undefined =
-                typeof world?.currentContinent === 'string'
-                    ? world.currentContinent
-                    : typeof world?.continent === 'string'
-                      ? world.continent
-                      : undefined;
+                typeof world?.currentContinent?.name === 'string'
+                    ? world.currentContinent.name
+                    : undefined;
             if (!continent) continue;
             if (lastSeenContinent !== null && continent === lastSeenContinent) continue;
             lastSeenContinent = continent;
@@ -334,12 +339,21 @@ function buildChronicle(rawEvents: unknown): ReadonlyArray<ChronicleEntry> {
             continue;
         }
         if (isDialogueAppliedEvent(e)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const tree = (e.payload as any)?.action?.payload?.tree;
+            // Engine `EnginePayload.action: GameAction` is a
+            // discriminated union; narrow to APPLY_DIALOGUE to
+            // access the tree payload. DialogueTree itself has no
+            // `npcName` field — that's a mobile-side convention
+            // (some fixtures inject one). Cast only at the deepest
+            // boundary so the rest of the chain stays typed.
+            if (e.payload.action.type !== 'APPLY_DIALOGUE') continue;
+            const tree = e.payload.action.payload.tree as DialogueTree & {
+                npcName?: string;
+                name?: string;
+            };
             const npcName: string | undefined =
-                typeof tree?.npcName === 'string' && tree.npcName.length > 0
+                typeof tree.npcName === 'string' && tree.npcName.length > 0
                     ? tree.npcName
-                    : typeof tree?.name === 'string' && tree.name.length > 0
+                    : typeof tree.name === 'string' && tree.name.length > 0
                       ? tree.name
                       : undefined;
             if (!npcName) continue;

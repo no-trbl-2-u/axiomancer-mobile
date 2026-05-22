@@ -465,19 +465,24 @@ describe('selectMemoirViewModel: chronicle (Tick D)', () => {
     });
 
     it('emits world:moved only when the continent CHANGES', () => {
+        // Engine `WorldState.currentContinent: Continent` is an
+        // OBJECT with `.name`, not a string. Fixtures shape the
+        // currentContinent as `{name: <string>}` to match the
+        // engine type. Memoir-audit [3.0] typing fix
+        // 2026-05-22 dropped the dead string-shape read.
         const store = createGameStore(createMemoryAdapter());
         setRecentEvents(store, [
             {
                 type: 'world:moved',
-                payload: { state: { world: { currentContinent: 'Ash Marches' } } },
+                payload: { state: { world: { currentContinent: { name: 'Ash Marches' } } } },
             },
             {
                 type: 'world:moved',
-                payload: { state: { world: { currentContinent: 'Ash Marches' } } }, // same
+                payload: { state: { world: { currentContinent: { name: 'Ash Marches' } } } }, // same
             },
             {
                 type: 'world:moved',
-                payload: { state: { world: { currentContinent: 'Bell Vale' } } }, // change
+                payload: { state: { world: { currentContinent: { name: 'Bell Vale' } } } }, // change
             },
         ]);
         const vm = selectMemoirViewModel(store.getState());
@@ -488,11 +493,20 @@ describe('selectMemoirViewModel: chronicle (Tick D)', () => {
     });
 
     it('maps a dialogue:applied event to SPOKE WITH <npc> when tree carries npcName', () => {
+        // Engine `EnginePayload.action: GameAction` is a
+        // discriminated union; the dialogue path narrows on
+        // `action.type === 'APPLY_DIALOGUE'`. Fixtures must
+        // include the discriminator. Memoir-audit [3.0] fix.
         const store = createGameStore(createMemoryAdapter());
         setRecentEvents(store, [
             {
                 type: 'dialogue:applied',
-                payload: { action: { payload: { tree: { npcName: 'Old Marrow' } } } },
+                payload: {
+                    action: {
+                        type: 'APPLY_DIALOGUE',
+                        payload: { tree: { npcName: 'Old Marrow' } },
+                    },
+                },
             },
         ]);
         const vm = selectMemoirViewModel(store.getState());
@@ -505,7 +519,12 @@ describe('selectMemoirViewModel: chronicle (Tick D)', () => {
         setRecentEvents(store, [
             {
                 type: 'dialogue:applied',
-                payload: { action: { payload: { tree: {} } } }, // no npcName / name
+                payload: {
+                    action: {
+                        type: 'APPLY_DIALOGUE',
+                        payload: { tree: {} }, // no npcName / name
+                    },
+                },
             },
         ]);
         const vm = selectMemoirViewModel(store.getState());

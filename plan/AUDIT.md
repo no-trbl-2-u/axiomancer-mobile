@@ -150,7 +150,7 @@ Prior text preserved below for traceability:
 - next: tracking only; revisit when Expo SDK ships a fix.
 - source: live-drive playtest (oversight 28th call)
 
-### [3.0] DRIFT — character Equipment slot labels `'Accessory'` (not `'Trinket'`) — cross-tab vocabulary mismatch (character-audit row 9)
+### [3.0] DRIFT — character Equipment slot labels `'Accessory'` (not `'Trinket'`) — cross-tab vocabulary mismatch ✅
 
 - category: bug (chrome / cross-tab consistency)
 - impact: 5 (player sees `Accessory` on SELF tab; same slot

@@ -160,7 +160,12 @@ const SLOT_LABELS: Record<SlotKey, string> = {
     feet: 'Feet',
     weapon: 'Weapon',
     armor: 'Armor',
-    accessory: 'Accessory',
+    // [3.0] DRIFT fix: aligned to 'Trinket' (matches inventory
+    // dock's 'TRINKET' chrome + chat 1's "HEAD, WEAPON, HANDS,
+    // FEET, BODY, ARMOR, TRINKET" specimen). Pre-fix the SELF tab
+    // read 'Accessory' for the same slot — inconsistent
+    // vocabulary across tabs.
+    accessory: 'Trinket',
 };
 
 function buildBase(player: Character): readonly BaseStatRow[] {

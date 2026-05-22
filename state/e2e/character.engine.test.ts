@@ -108,7 +108,11 @@ describe('selectCharacterViewModel: shape contract', () => {
 
         expect(vm.equipment).toHaveLength(7);
         const names = vm.equipment.map((s) => s.name);
-        expect(names).toEqual(['Head', 'Body', 'Hands', 'Feet', 'Weapon', 'Armor', 'Accessory']);
+        // 'Trinket' (not 'Accessory') aligns the SELF tab with
+        // the inventory dock's TRINKET chrome + chat 1's "HEAD,
+        // WEAPON, HANDS, FEET, BODY, ARMOR, TRINKET" specimen.
+        // Character-audit [3.0] fix 2026-05-22.
+        expect(names).toEqual(['Head', 'Body', 'Hands', 'Feet', 'Weapon', 'Armor', 'Trinket']);
     });
 });
 

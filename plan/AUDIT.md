@@ -138,7 +138,59 @@
 - next: file iterate fix tick.
 - source: event-surface mechanics audit 2026-05-22, row 4
 
-### [4.0] Mechanics-vs-UI logic audit — exploration surface (sibling of combat audit [3.7] ✅)
+### [4.0] Mechanics-vs-UI logic audit — exploration surface ✅ (drifts filed as [3.5]/[3.0]/[3.0]/[2.5])
+
+### [3.5] DRIFT — exploration encounter icon is `'flee'` (looks like the FLEE button) (exploration-audit row 10)
+
+- category: bug (chrome / visual vocabulary)
+- impact: 6 (every exploration screen with an encounter node
+  shows the FLEE icon on its step-card; reads as "this lets
+  you flee" rather than "this starts combat" — high-visibility
+  chrome inconsistency)
+- ease: 8 (one-line swap in
+  `state/presenters/exploration.engine.ts:120` —
+  `'encounter' → 'sword'` to match the combat ATTACK icon)
+- next: file iterate fix tick. Live-verify via the playtest
+  runbook (visible on Fishing Village's fv-3 encounter node).
+- source: exploration-surface mechanics audit 2026-05-22, row 10
+
+### [3.0] DRIFT — no test pins mobile NodeType ↔ engine event-pool registration (exploration-audit row 4)
+
+- category: tests (latent contract)
+- impact: 5 (a node typed `'encounter'` in the layout fixture
+  could be registered to fire e.g. `'rest-shared'`; today they
+  agree but no test enforces it. New map additions risk silent
+  visual/behavior mismatch)
+- ease: 6 (write a hermetic test that walks every node in
+  both layouts and asserts the registered pool matches the
+  type; gate by checking only when chaos-pool DEV toggle is
+  OFF)
+- next: file iterate fix tick.
+- source: exploration-surface mechanics audit 2026-05-22, row 4
+
+### [3.0] DRIFT — exploration presenter still reads legacy `availableNodes` / `completedNodes` / `lockedNodes` (exploration-audit row 1)
+
+- category: refactor (Phase 27 migration tail)
+- impact: 4 (if engine ever stops dual-populating the legacy
+  fields the presenter silently loses signal; today no risk)
+- ease: 5 (migrate `selectExplorationViewModel` to engine
+  `discoveredNodes` / `consumedNodes` reads; remove the
+  `moveToAction` legacy chain; preserve the visual edges via
+  the layout fixture's `connectedNodes`)
+- next: file iterate fix tick (gated on confirming the engine
+  surface is rich enough for the visual classification UI needs).
+- source: exploration-surface mechanics audit 2026-05-22, row 1
+
+### [2.5] DRIFT — `(state as any).world` cast in exploration presenter + moveToAction (exploration-audit row 7)
+
+- category: refactor / typing hygiene
+- impact: 2 (cast hides any future engine field rename; no
+  behavior change)
+- ease: 8 (drop the `as any` at ~5 sites; let GameStore /
+  AppStoreState narrow `state.world` directly)
+- next: file iterate fix tick.
+- source: exploration-surface mechanics audit 2026-05-22, row 7
+
 
 - category: docs / quality (project coherence)
 - impact: 8 (exploration drives the map / move / event-trigger

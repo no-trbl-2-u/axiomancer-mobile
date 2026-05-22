@@ -91,7 +91,22 @@
 
 ## Pending
 
-### [5.5] Combat HUD HP scaling mismatch — exploration card shows 22/38, combat HUD shows 10/10 (NEW — playtest 2026-05-22)
+### [5.5] Combat HUD HP scaling mismatch — exploration card shows 22/38, combat HUD shows 10/10 ✅ (root cause + fix shipped)
+
+**Root cause (investigated 2026-05-22):** the exploration card's
+`<StatusCard />` was rendered with NO props, so it displayed the
+component's default placeholder values
+(`name='WORM-EATEN PILGRIM', level=7, hp=22, hpMax=38`). The
+combat HUD's `10/10` was the REAL `state.player.health /
+maxHealth`. Not an HP scaling mismatch — the exploration card
+was never wired to engine state.
+
+**Fix:** `StatusCard` now reads from engine `state.player` via
+`useGameState`. Props win when explicitly passed (preserves the
+test-fixture override path). Tests rewritten to use
+`withAllProviders`. Component tests refreshed.
+
+Prior text preserved below for traceability:
 
 - category: bug (combat numbers / player trust)
 - impact: 8 (player sees `HP 22/38` walking the map; tap an

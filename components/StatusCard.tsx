@@ -3,25 +3,41 @@ import { View, Text, StyleSheet } from 'react-native';
 import { AXM, FONTS } from '@/theme/axm';
 import { StatBar } from './StatBar';
 import { SectionLabel } from './SectionLabel';
+import { useGameState } from '@/state/GameStoreProvider';
 
 interface StatusCardProps {
+  /**
+   * Optional override props for tests / fixtures. In production
+   * the card reads from engine state directly via `useGameState`;
+   * the props win only when explicitly passed. Closes the
+   * `[5.5]` AUDIT row from the live-drive playtest 2026-05-22 —
+   * the card was previously rendered with NO props by every
+   * caller, so the defaults (HP 22/38, level 7, hardcoded name)
+   * were what every player saw, regardless of real game state.
+   */
   name?: string;
   level?: number;
   hp?: number;
   hpMax?: number;
 }
 
-export function StatusCard({
-  name = 'WORM-EATEN PILGRIM',
-  level = 7,
-  hp = 22,
-  hpMax = 38,
-}: StatusCardProps) {
-  // Phase-62 bug-sweep 2026-05-21 (user-direct): the mana bar
-  // was dropped here. Mana is no longer a player-visible mechanic
-  // outside combat (the engine moved to per-resource pools — see
-  // Token Crucible / CombatResources); the SELF-tab status card
-  // should not surface a number it can't model honestly.
+export function StatusCard(props: StatusCardProps = {}) {
+  // Read from engine `state.player` so the card reflects real
+  // game state. Test fixtures may still inject props directly —
+  // the prop wins when defined, otherwise we fall through to the
+  // store. Phase-62 bug-sweep 2026-05-21 dropped the mana bar
+  // (mana is combat-only via Phase 60d's combatMana slice); the
+  // status card surfaces only the HP that exists out-of-combat.
+  const playerName = useGameState((s) => s.player?.name ?? 'WORM-EATEN PILGRIM');
+  const playerLevel = useGameState((s) => s.player?.level ?? 1);
+  const playerHp = useGameState((s) => s.player?.health ?? 0);
+  const playerHpMax = useGameState((s) => s.player?.maxHealth ?? 0);
+
+  const name = props.name ?? playerName;
+  const level = props.level ?? playerLevel;
+  const hp = props.hp ?? playerHp;
+  const hpMax = props.hpMax ?? playerHpMax;
+
   return (
     <View style={styles.card}>
       <View style={styles.row}>

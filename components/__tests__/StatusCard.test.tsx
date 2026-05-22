@@ -2,16 +2,20 @@
  * Hermetic component tests — StatusCard.
  *
  * StatusCard is the SELF-tab summary header: name + level
- * badge + HP bar. Pure prop-driven render. The contract worth
- * pinning is **prop wiring** (each input flows to the right
- * child) and **default values** so the component doesn't
- * crash when mounted without props during early presenter-
- * bootstrap states.
+ * badge + HP bar. Wired to engine `state.player` via
+ * `useGameState` post-2026-05-22 (live-drive playtest found
+ * the prop-less render on the exploration screen was
+ * displaying hardcoded placeholder values; the [5.5] AUDIT
+ * row drove the engine-state wiring).
  *
- * Phase-62 bug-sweep 2026-05-21 (user-direct): the mana bar
- * was dropped — mana isn't a player-visible mechanic outside
- * combat (engine uses per-resource pools; Token Crucible
- * surfaces them in combat). Tests for the MP bar were removed.
+ * Tests cover three regimes:
+ * - **store-driven defaults** — no props passed; values read
+ *   from the engine store via the provider.
+ * - **prop overrides** — explicit props win over the store
+ *   read (useful for test fixtures + the rare case a caller
+ *   wants to display synthetic state).
+ * - **structural landmarks** — HP bar present; NO MP/MANA
+ *   bar (Phase-62 bug-sweep dropped mana out of combat).
  */
 
 import { describe, expect, it } from '@jest/globals';
@@ -19,54 +23,62 @@ import { render } from '@testing-library/react-native';
 import React from 'react';
 
 import { StatusCard } from '@/components/StatusCard';
+import { withAllProviders } from '@/test-utils/withAllProviders';
 
-describe('StatusCard: default props', () => {
+function mount(node: React.ReactElement) {
+    const { tree } = withAllProviders(node);
+    return render(tree);
+}
+
+describe('StatusCard: store-driven defaults (no props)', () => {
     it('renders without crashing when no props are given', () => {
-        const tree = render(<StatusCard />);
+        const tree = mount(<StatusCard />);
         expect(tree.toJSON()).not.toBeNull();
     });
 
-    it('uses the canonical placeholder name when no name prop is given', () => {
-        const tree = render(<StatusCard />);
-        expect(tree.queryByText('WORM-EATEN PILGRIM')).not.toBeNull();
+    it('reads name + level from `state.player` via the provider', () => {
+        // Fresh game-store player: `createNewGameState` ships a
+        // canonical starting character. Name + level surface
+        // verbatim from the store.
+        const { store, tree } = withAllProviders(<StatusCard />);
+        const expectedName = store.getState().player.name;
+        const expectedLevel = store.getState().player.level;
+
+        const rendered = render(tree);
+        expect(rendered.queryByText(expectedName)).not.toBeNull();
+        expect(rendered.queryByText(new RegExp(`LVL ${expectedLevel}`))).not.toBeNull();
     });
 
-    it('uses the canonical placeholder level (7) when no level is given', () => {
-        const tree = render(<StatusCard />);
-        // Level appears in the level box AND in the "LEVEL · LVL 7 PILGRIM" label.
-        // Both are valid signals that the default routed through.
-        expect(tree.queryByText('7')).not.toBeNull();
-        expect(tree.queryByText(/LVL 7/)).not.toBeNull();
-    });
+    it('reads HP / maxHealth from `state.player.health` via the provider', () => {
+        const { store, tree } = withAllProviders(<StatusCard />);
+        const hp = store.getState().player.health;
+        const hpMax = store.getState().player.maxHealth;
 
-    it('shows the default HP fraction (22/38) in the HP bar', () => {
-        const tree = render(<StatusCard />);
-        expect(tree.queryByText('HP')).not.toBeNull();
-        expect(tree.queryByText('22/38')).not.toBeNull();
+        const rendered = render(tree);
+        expect(rendered.queryByText('HP')).not.toBeNull();
+        expect(rendered.queryByText(`${hp}/${hpMax}`)).not.toBeNull();
     });
-
 });
 
-describe('StatusCard: prop wiring', () => {
-    it('passes the name prop through to the header line', () => {
-        const tree = render(<StatusCard name="ASHEN WAYFARER" />);
+describe('StatusCard: explicit prop overrides', () => {
+    it('name prop wins over the store-read name', () => {
+        const tree = mount(<StatusCard name="ASHEN WAYFARER" />);
         expect(tree.queryByText('ASHEN WAYFARER')).not.toBeNull();
-        expect(tree.queryByText('WORM-EATEN PILGRIM')).toBeNull();
     });
 
-    it('passes the level prop through to both the badge and the secondary label', () => {
-        const tree = render(<StatusCard level={42} />);
+    it('level prop wins over the store-read level (badge + label)', () => {
+        const tree = mount(<StatusCard level={42} />);
         expect(tree.queryByText('42')).not.toBeNull();
         expect(tree.queryByText(/LVL 42/)).not.toBeNull();
     });
 
-    it('passes hp/hpMax through to the HP bar counter', () => {
-        const tree = render(<StatusCard hp={5} hpMax={50} />);
+    it('hp/hpMax props win over the store-read HP', () => {
+        const tree = mount(<StatusCard hp={5} hpMax={50} />);
         expect(tree.queryByText('5/50')).not.toBeNull();
     });
 
     it('multiple props compose without crashing (name + level + hp)', () => {
-        const tree = render(
+        const tree = mount(
             <StatusCard name="STILLED WALKER" level={1} hp={1} hpMax={1} />,
         );
         expect(tree.queryByText('STILLED WALKER')).not.toBeNull();
@@ -77,14 +89,14 @@ describe('StatusCard: prop wiring', () => {
 
 describe('StatusCard: structural landmarks', () => {
     it('renders the HP bar label and no MP/MANA bar (Phase-62 bug-sweep)', () => {
-        const tree = render(<StatusCard />);
+        const tree = mount(<StatusCard />);
         expect(tree.queryByText('HP')).not.toBeNull();
         expect(tree.queryByText('MP')).toBeNull();
         expect(tree.queryByText('MANA')).toBeNull();
     });
 
     it('renders the LEVEL section label', () => {
-        const tree = render(<StatusCard />);
+        const tree = mount(<StatusCard />);
         // Match the SectionLabel's text content; the LEVEL chip
         // composes the formatted level number into a "LEVEL · LVL N PILGRIM"
         // string.

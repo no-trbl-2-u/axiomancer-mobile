@@ -154,7 +154,7 @@
   runbook (visible on Fishing Village's fv-3 encounter node).
 - source: exploration-surface mechanics audit 2026-05-22, row 10
 
-### [3.0] DRIFT — no test pins mobile NodeType ↔ engine event-pool registration (exploration-audit row 4)
+### [3.0] DRIFT — no test pins mobile NodeType ↔ engine event-pool registration ✅
 
 - category: tests (latent contract)
 - impact: 5 (a node typed `'encounter'` in the layout fixture

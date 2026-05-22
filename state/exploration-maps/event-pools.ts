@@ -394,8 +394,10 @@ const POOLS: ReadonlyArray<MapEventPool> = [
  * specific node id. Phase 56 layers per-quest-node overrides on
  * top of the per-type defaults: a quest node with a `QUEST_NPCS`
  * entry resolves to its per-node pool; quest nodes without an
- * entry fall back to `questCommon`. */
-function poolIdForNode(mapId: string, nodeId: string, nodeType: NodeType): string | null {
+ * entry fall back to `questCommon`. Exported for hermetic
+ * contract tests (`state/e2e/event-pools.engine.test.ts`) that
+ * pin the type→pool prefix invariant. */
+export function poolIdForNode(mapId: string, nodeId: string, nodeType: NodeType): string | null {
     switch (nodeType) {
         case 'rest':
             return POOL_IDS.restCommon;

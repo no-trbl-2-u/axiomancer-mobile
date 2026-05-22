@@ -29,6 +29,7 @@ import {
 // engine's per-node-id override key to demonstrate scope (an
 // unregistered node id returns `none`).
 import {
+    poolIdForNode,
     registerExplorationEventPools,
     setChaosMode,
 } from '@/state/exploration-maps/event-pools';
@@ -401,6 +402,63 @@ describe('chaos-mode toggle (Phase 58)', () => {
             expect(result.event.kind).toBe('encounter');
         } finally {
             g.__DEV__ = original;
+        }
+    });
+});
+
+describe('NodeType <-> pool-id prefix contract (mechanics-ui audit [3.0] exploration row 4)', () => {
+    // Without this contract a new map added with a `type: 'encounter'`
+    // node but no encounter-pool registration would render the
+    // encounter step-card AND fire a non-encounter event — the kind
+    // of silent layout/pool mismatch the audit flagged.
+    //
+    // Pinning: `poolIdForNode(mapId, nodeId, type)` must return a
+    // pool id whose prefix matches `type` (or `null` for the
+    // current-location pseudo-type). All quest nodes resolve to
+    // a `quest-*` id whether they have a per-node override or
+    // fall back to `quest-common`.
+
+    const PREFIX_BY_TYPE: Record<string, string> = {
+        rest: 'rest-',
+        gather: 'gather-',
+        treasure: 'treasure-',
+        quest: 'quest-',
+        encounter: 'encounter-',
+        boss: 'boss-',
+    };
+
+    for (const layout of [fishingVillageLayout, northernForestLayout]) {
+        for (const node of layout.nodes) {
+            const expectedPrefix = PREFIX_BY_TYPE[node.type];
+            // 'current' is the player's location pseudo-type; poolId
+            // should be null (no event attaches).
+            if (node.type === 'current') {
+                it(`${layout.mapId}:${node.id} (current) → null pool id`, () => {
+                    expect(poolIdForNode(layout.mapId, node.id, node.type)).toBeNull();
+                });
+                continue;
+            }
+            it(`${layout.mapId}:${node.id} (${node.type}) → pool id starts with "${expectedPrefix}"`, () => {
+                const id = poolIdForNode(layout.mapId, node.id, node.type);
+                expect(id).not.toBeNull();
+                expect(id!.startsWith(expectedPrefix)).toBe(true);
+            });
+        }
+    }
+
+    it('every non-current node type in the PREFIX_BY_TYPE map matches the NodeType union (drift catch)', () => {
+        // Sanity: if the engine ever adds a new node type, this
+        // assertion is a chokepoint that drives the test author to
+        // also extend PREFIX_BY_TYPE. We assert the present set
+        // covers the layouts' actual types.
+        const usedTypes = new Set<string>();
+        for (const layout of [fishingVillageLayout, northernForestLayout]) {
+            for (const node of layout.nodes) {
+                if (node.type !== 'current') usedTypes.add(node.type);
+            }
+        }
+        for (const t of usedTypes) {
+            expect(PREFIX_BY_TYPE[t]).toBeDefined();
         }
     });
 });

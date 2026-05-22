@@ -724,6 +724,35 @@ describe('selectCombatViewModel: store lifecycle', () => {
         store.getState().endCombat();
         expect(selectCombatViewModel(store.getState()).isInCombat).toBe(false);
     });
+
+    it('endCombat syncs combat.player.health back to state.player.health — closes mechanics-ui audit [3.0] HUD HP fallback row as non-issue', () => {
+        // The combat audit row 11 worried the HUD's fallback
+        // (`state.combat?.player ?? state.player`) would show stale
+        // out-of-combat HP after endCombat. In fact the engine's
+        // END_COMBAT reducer sets `state.player = nextPlayer` from
+        // the combat.player snapshot (engine
+        // `Game/game.reducer.js:END_COMBAT`). This test pins the
+        // engine guarantee so future engine refactors that break the
+        // sync surface here rather than as a subtle UI regression.
+        mockFixedRng(0.5);
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        const playerHpBefore = store.getState().player.health;
+
+        actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
+        // Drive a round of damage so combat.player.health < starting hp.
+        actions.setPlayerStance('mind');
+        actions.setPlayerAction('attack');
+        actions.resolveRound();
+        const combatHp = store.getState().combat?.player.health ?? -1;
+        expect(combatHp).toBeLessThanOrEqual(playerHpBefore);
+
+        // Engine ends combat → state.player.health must match the
+        // post-round combat.player.health, not the pre-combat value.
+        store.getState().endCombat();
+        expect(store.getState().combat).toBeNull();
+        expect(store.getState().player.health).toBe(combatHp);
+    });
 });
 
 // ---------------------------------------------------------------------------

@@ -343,7 +343,7 @@
   the full citation + fix proposal.
 - source: mechanics-vs-UI audit 2026-05-21
 
-### [3.0] DRIFT — HUD HP fallback can briefly show stale out-of-combat HP
+### [3.0] DRIFT — HUD HP fallback can briefly show stale out-of-combat HP ✅ (closed as non-issue)
 
 - category: bug (combat UX, hud)
 - impact: 4 (post-combat aftermath window shows out-of-combat

@@ -15,13 +15,33 @@
  * frozen-new object every call.
  */
 
-import type { DialogueTree, GameStore, TypedGameEvent } from 'axiomancer-mechanics';
+import type {
+    DialogueTree,
+    GameStore,
+    Quest,
+    QuestLog,
+    QuestObjective,
+    TypedGameEvent,
+} from 'axiomancer-mechanics';
 import {
     isCombatEndedEvent,
     isDialogueAppliedEvent,
     isLevelUpEvent,
     isWorldMovedEvent,
 } from 'axiomancer-mechanics';
+
+/**
+ * Honest signature for `selectMemoirViewModel`: takes engine
+ * `GameStore` (the canonical game state) and optionally the
+ * mobile-private `_recentEvents` ring buffer from
+ * `AppStoreState` (Phase 25). The optional `_recentEvents`
+ * field keeps the presenter usable from hermetic test fixtures
+ * that build a `GameStore` via `createGameStore` (no mobile
+ * slices) — they pass undefined and chronicle stays empty.
+ */
+type MemoirStateInput = GameStore & {
+    readonly _recentEvents?: readonly TypedGameEvent[];
+};
 import { freezeViewModel } from './freeze';
 
 /** Visible chronicle entry cap. The screen scrolls if more exist. */
@@ -428,43 +448,64 @@ const FALLBACK_VM: MemoirViewModel = Object.freeze({
  * render. Progress fraction is appended only when the engine
  * actually returns a useful count.
  */
-function synthesizeObjectiveText(objective: unknown): string {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const o = objective as any;
+/**
+ * Mobile-extended `QuestObjective` shape: engine `description` is the
+ * canonical field; tests + older fixtures sometimes inject `text` or
+ * `label` for free-form objective copy. Memoir-audit [2.5] fix
+ * 2026-05-22 replaced the `as any` cast with this narrower extension.
+ */
+type MemoirObjectiveInput = Partial<QuestObjective> & {
+    readonly text?: unknown;
+    readonly label?: unknown;
+};
+
+function synthesizeObjectiveText(objective: MemoirObjectiveInput): string {
     const provided: string | undefined =
-        (typeof o?.text === 'string' && o.text) ||
-        (typeof o?.label === 'string' && o.label) ||
-        (typeof o?.description === 'string' && o.description) ||
+        (typeof objective.text === 'string' && objective.text) ||
+        (typeof objective.label === 'string' && objective.label) ||
+        (typeof objective.description === 'string' && objective.description) ||
         undefined;
     if (provided) return provided;
     const verb: string =
-        typeof o?.type === 'string' && o.type.length > 0 ? String(o.type) : 'task';
+        typeof objective.type === 'string' && objective.type.length > 0
+            ? objective.type
+            : 'task';
     const target: string =
-        typeof o?.target === 'string' && o.target.length > 0 ? `: ${o.target}` : '';
+        typeof objective.target === 'string' && objective.target.length > 0
+            ? `: ${objective.target}`
+            : '';
     return `${verb}${target}`;
 }
 
-function buildActiveRows(activeQuests: unknown): ReadonlyArray<MemoirQuestRow> {
+/**
+ * Memoir-audit [2.5] fix 2026-05-22: dropped `(q: any)` /
+ * `(o: any)` casts. Engine `Quest` / `QuestObjective` types
+ * (axiomancer-mechanics/dist/World/types.d.ts) shape the input;
+ * objectives extend via `MemoirObjectiveInput` for the
+ * mobile-side `text` / `label` fallback fields that legacy
+ * fixtures inject.
+ */
+function buildActiveRows(activeQuests: readonly Quest[] | undefined): ReadonlyArray<MemoirQuestRow> {
     if (!Array.isArray(activeQuests)) return Object.freeze([]) as readonly MemoirQuestRow[];
     return Object.freeze(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        activeQuests.map((q: any) => {
+        activeQuests.map((q) => {
             const name: string = typeof q?.name === 'string' ? q.name : '';
             const description: string =
                 typeof q?.description === 'string' ? q.description : '';
-            const rawObjectives = Array.isArray(q?.objectives) ? q.objectives : [];
+            const rawObjectives: readonly MemoirObjectiveInput[] = Array.isArray(q?.objectives)
+                ? (q.objectives as readonly MemoirObjectiveInput[])
+                : [];
             const objectives = Object.freeze(
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                rawObjectives.map((o: any) => {
+                rawObjectives.map((o) => {
                     const currentCount =
-                        typeof o?.currentCount === 'number' ? o.currentCount : 0;
+                        typeof o.currentCount === 'number' ? o.currentCount : 0;
                     const requiredCount =
-                        typeof o?.requiredCount === 'number' && o.requiredCount > 0
+                        typeof o.requiredCount === 'number' && o.requiredCount > 0
                             ? o.requiredCount
                             : 1;
                     const done = currentCount >= requiredCount;
                     return Object.freeze({
-                        id: typeof o?.id === 'string' ? o.id : `obj-${name}`,
+                        id: typeof o.id === 'string' ? o.id : `obj-${name}`,
                         text: synthesizeObjectiveText(o),
                         done,
                         bullet: done ? QUEST_OBJECTIVE_BULLET.done : QUEST_OBJECTIVE_BULLET.pending,
@@ -562,25 +603,27 @@ function buildCompletedRows(
  *   alignment from `baseStats`.
  * - Tick D `9ccdee2` — chronicle from `_recentEvents`.
  */
-export function selectMemoirViewModel(state: GameStore): MemoirViewModel {
+export function selectMemoirViewModel(state: MemoirStateInput): MemoirViewModel {
+    // Memoir-audit [2.5] fix 2026-05-22: typed `state` as
+    // `MemoirStateInput` (GameStore + optional `_recentEvents`)
+    // instead of `GameStore` with `(state as any)` casts. Engine
+    // `GameState.quests: QuestLog` and `GameState.moralMeter:
+    // number` are typed cleanly on `GameStore`; the
+    // `_recentEvents` ring buffer is mobile-private (Phase 25)
+    // so we extend with the optional field. Tests that pass an
+    // engine `GameStore` (no mobile slices) still work — the
+    // optional field is undefined and chronicle stays empty.
     const player = state.player;
     const subline =
         player && typeof player.name === 'string' && player.name.length > 0
             ? `${player.name}, pilgrim.`
             : FALLBACK_VM.headerSubline;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const log = (state as any).quests as
-        | { available?: unknown; active?: unknown; completed?: unknown }
-        | undefined;
+    const log: QuestLog | undefined = state.quests;
     const active = buildActiveRows(log?.active);
     const completed = buildCompletedRows(log?.completed);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const moralRaw = (state as any).moralMeter;
-    const moralAlignment = buildMoralAlignment(moralRaw);
+    const moralAlignment = buildMoralAlignment(state.moralMeter);
     const philosophicalAlignment = buildPhilosophicalAlignment(player?.baseStats);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const recentEvents = (state as any)._recentEvents;
-    const chronicle = buildChronicle(recentEvents);
+    const chronicle = buildChronicle(state._recentEvents);
     return freezeViewModel({
         ...FALLBACK_VM,
         headerSubline: subline,

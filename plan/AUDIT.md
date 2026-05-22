@@ -203,7 +203,7 @@ Prior text preserved below for traceability:
 - next: file iterate fix tick.
 - source: memoir-surface mechanics audit 2026-05-22, row 4
 
-### [2.5] DRIFT — `selectMemoirViewModel(state: GameStore)` should widen to AppStoreState to drop `_recentEvents` cast (memoir-audit row 1)
+### [2.5] DRIFT — `selectMemoirViewModel(state: GameStore)` should widen to AppStoreState to drop `_recentEvents` cast ✅
 
 - category: refactor / typing hygiene
 - impact: 2 (mobile `_recentEvents` is honestly outside engine
@@ -212,7 +212,7 @@ Prior text preserved below for traceability:
 - next: file iterate fix tick.
 - source: memoir-surface mechanics audit 2026-05-22, row 1
 
-### [2.5] DRIFT — `(state as any).quests` cast in memoir presenter (memoir-audit row 2)
+### [2.5] DRIFT — `(state as any).quests` cast in memoir presenter ✅
 
 - category: refactor / typing hygiene
 - impact: 2 (engine `GameState.quests: QuestLog` typed cleanly;
@@ -221,7 +221,7 @@ Prior text preserved below for traceability:
 - next: file iterate fix tick.
 - source: memoir-surface mechanics audit 2026-05-22, row 2
 
-### [2.5] DRIFT — `(state as any).moralMeter` cast in memoir presenter (memoir-audit row 3)
+### [2.5] DRIFT — `(state as any).moralMeter` cast in memoir presenter ✅
 
 - category: refactor / typing hygiene
 - impact: 2 (engine `GameState.moralMeter: number` typed cleanly)
@@ -229,7 +229,7 @@ Prior text preserved below for traceability:
 - next: file iterate fix tick.
 - source: memoir-surface mechanics audit 2026-05-22, row 3
 
-### [2.5] DRIFT — `(q: any)` / `(o: any)` quest + objective casts in memoir presenter (memoir-audit row 5)
+### [2.5] DRIFT — `(q: any)` / `(o: any)` quest + objective casts in memoir presenter ✅
 
 - category: refactor / typing hygiene
 - impact: 2 (engine `Quest` / `QuestObjective` typed cleanly;

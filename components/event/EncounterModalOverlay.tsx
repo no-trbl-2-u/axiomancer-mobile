@@ -37,13 +37,16 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { CombatPanel } from '@/components/combat/CombatPanel';
+import { CombatVictoryPanel } from '@/components/event/aftermath/CombatVictoryPanel';
 import { EventArt } from '@/components/event/EventArt';
 import { EventCodexHeader } from '@/components/event/EventCodexHeader';
 import { Splatter } from '@/components/Splatter';
 import { ActionIcon } from '@/components/ActionIcon';
 import { AXM, FONTS } from '@/theme/axm';
 import { useAesthetic } from '@/state/aesthetic-mode';
+import { useCombatMode } from '@/state/combat-mode';
 import { useGameState } from '@/state/GameStoreProvider';
+import { selectAftermathViewModel } from '@/state/presenters/aftermath.engine';
 import { selectEventCodexHeader } from '@/state/presenters/event.codex.engine';
 import type { EventViewModel } from '@/state/presenters/event.engine';
 
@@ -75,11 +78,30 @@ export function EncounterModalOverlay({
     // Phase 63b — internal mode. FIGHT advances prelude → combat
     // and bubbles the existing onFight callback up (which still
     // starts combat in the engine but no longer routes away).
+    // Phase 70 Tick A — `combat` flips to `aftermath` when the
+    // combat-mode shim's `lastOutcome === 'victory'`; the modal
+    // body swaps from `<CombatPanel>` to `<CombatVictoryPanel>`
+    // in place, and the seal stays closed until the panel's
+    // CARRY ON button fires `dismissAftermath()`.
     const [mode, setMode] = useState<EncounterModalMode>('prelude');
+    const { lastOutcome, aftermathData, dismissAftermath } = useCombatMode();
     const handleFight = useCallback(() => {
         onFight();
         setMode('combat');
     }, [onFight]);
+
+    // Phase 70 Tick A — watch the outcome signal. On 'victory' (the
+    // only branch with a Tick A panel), swap mode to 'aftermath'.
+    // Other outcomes (parley/defeat/flee) keep the legacy banner
+    // flow via the exploration-screen mount until later ticks
+    // build their panels.
+    useEffect(() => {
+        if (mode === 'combat' && lastOutcome === 'victory' && aftermathData !== null) {
+            setMode('aftermath');
+        }
+    }, [mode, lastOutcome, aftermathData]);
+
+    const aftermathVm = selectAftermathViewModel(aftermathData);
 
     // Phase 64 follow-up (2026-05-21) — auto-scroll on combat phase
     // change. User-direct symptom: "choosing the Action does nothing
@@ -129,12 +151,19 @@ export function EncounterModalOverlay({
     // a `combat-prelude` VM + populated `preludeChrome`, but the
     // `combat` mode branch MUST stay mounted even after the engine
     // event slice clears (which `pickEventChoice('fight')` does
-    // synchronously). Gate the early-return on mode: only non-combat
-    // modes need the prelude VM. Combat mode reads from the engine
-    // combat slice via `<CombatPanel>`; aftermath (reserved) will
-    // read from `lastOutcome`.
+    // synchronously). Gate the early-return on mode: only the
+    // prelude branch needs the prelude VM. Combat mode reads from
+    // the engine combat slice via `<CombatPanel>`; aftermath mode
+    // (Phase 70 Tick A) reads from the snapshot stashed in
+    // `combat-mode` and surfaced via `aftermathVm`.
     const preludeRenderable = vm.kind === 'combat-prelude' && vm.preludeChrome !== null;
-    if (mode !== 'combat' && !preludeRenderable) return null;
+    if (mode === 'prelude' && !preludeRenderable) return null;
+    if (mode === 'aftermath' && aftermathVm === null) {
+        // Defensive — should not happen because we only flip into
+        // aftermath when aftermathData is non-null. If it does (e.g.
+        // a stale outcome signal), fall back to closing the modal.
+        return null;
+    }
     // preludeChrome is non-null in the prelude render path per the
     // early-return above; combat-mode JSX never reads it. The
     // non-null assertions in the prelude branch are safe.
@@ -157,7 +186,12 @@ export function EncounterModalOverlay({
         >
             <Animated.View style={[styles.backdrop, backdropStyle]} />
             <Animated.View style={[styles.panel, panelStyle]}>
-                {mode === 'combat' ? (
+                {mode === 'aftermath' && aftermathVm !== null && aftermathVm.kind === 'victory' ? (
+                    <CombatVictoryPanel
+                        vm={aftermathVm}
+                        onContinue={dismissAftermath}
+                    />
+                ) : mode === 'combat' ? (
                     <ScrollView
                         ref={combatScrollRef}
                         style={styles.combatScroll}

@@ -110,6 +110,40 @@ export default function CombatScreen() {
  * any container (tab shell, modal overlay, etc.) and own the
  * outer scrolling / safe-area behaviour.
  */
+/**
+ * Phase 70 Tick A — capture the last log entry's skill / damage /
+ * result-descriptor as the "final blow" snapshot the aftermath
+ * panel shows. Engine doesn't tag skill *name* on log entries
+ * (only the skillId on the action), so we surface the id (uppercased)
+ * or the action verb (`attack` / `defend` / `skill` / `item` /
+ * `flee`) as the fallback. A presenter-side name lookup is a
+ * promotion candidate when the writers add display names.
+ */
+function buildFinalBlowSnapshot(combat: CombatStateLike): {
+    skillName: string | null;
+    damage: number;
+    descriptor: string | null;
+} | null {
+    const last = combat.log[combat.log.length - 1];
+    if (last === undefined) return null;
+    const rawName = last.playerAction.skillId ?? last.playerAction.action ?? null;
+    return {
+        skillName: rawName !== null ? rawName.toUpperCase() : null,
+        damage: last.damageToEnemy,
+        descriptor: last.result.length > 0 ? last.result : null,
+    };
+}
+
+// Structural type — the bits buildFinalBlowSnapshot reads. Avoids
+// dragging the full engine CombatState import in for one helper.
+type CombatStateLike = {
+    log: Array<{
+        playerAction: { skillId?: string; action?: string };
+        damageToEnemy: number;
+        result: string;
+    }>;
+};
+
 export function CombatPanel() {
     const router = useRouter();
     const {
@@ -193,9 +227,32 @@ export function CombatPanel() {
             return;
         }
         if (vm.enemy.hp <= 0) {
+            // Phase 70 Tick A — snapshot the combat state before
+            // endCombat() clears the slice, so the in-modal
+            // CombatVictoryPanel has data to render. When we're
+            // inside the encounter modal, skip finalizeCombatExit:
+            // the panel's CARRY ON button drives dismissal via
+            // dismissAftermath() instead. The legacy /combat tab
+            // path (modal-less) keeps the immediate finalize so
+            // it falls back to the AftermathBanner toast like
+            // before (parley still does that for now).
+            const aftermathSnapshot = combat !== null
+                ? {
+                      variant: 'victory' as const,
+                      enemy: {
+                          name: combat.enemy.name,
+                          description: combat.enemy.description,
+                          level: combat.enemy.level,
+                      },
+                      finalBlow: buildFinalBlowSnapshot(combat),
+                      xpReward: combat.enemy.xpReward ?? null,
+                  }
+                : undefined;
             actions.endCombat();
-            exitCombatWith('victory');
-            finalizeCombatExit();
+            exitCombatWith('victory', aftermathSnapshot);
+            if (!inEncounterModal) {
+                finalizeCombatExit();
+            }
             return;
         }
         if (vm.player.hp <= 0) {
@@ -205,7 +262,17 @@ export function CombatPanel() {
             return;
         }
         actions.nextRound();
-    }, [actions, exitCombatWith, finalizeCombatExit, vm.enemy.hp, vm.player.hp, vm.friendshipCounter, vm.friendshipCounterMax]);
+    }, [
+        actions,
+        combat,
+        exitCombatWith,
+        finalizeCombatExit,
+        inEncounterModal,
+        vm.enemy.hp,
+        vm.player.hp,
+        vm.friendshipCounter,
+        vm.friendshipCounterMax,
+    ]);
 
     const onFlee = useCallback(() => {
         setToast(vm.actionPicker.fleeMessage);

@@ -29,6 +29,7 @@ import React from 'react';
 
 import { EncounterModalOverlay } from '../EncounterModalOverlay';
 import { AestheticModeProvider, type AestheticMode } from '@/state/aesthetic-mode';
+import { CombatModeProvider } from '@/state/combat-mode';
 import { GameStoreProvider } from '@/state/GameStoreProvider';
 import { createAppStore } from '@/state/store';
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
@@ -37,11 +38,16 @@ import type { EventViewModel } from '@/state/presenters/event.engine';
 // Phase 64 follow-up: overlay now reads `useGameState((s) => s.combat?.phase)`
 // for the auto-scroll-on-phase-change effect, so it requires
 // GameStoreProvider even for prelude-mode mount tests.
+// Phase 70 Tick A follow-up: overlay also reads `useCombatMode()` to
+// watch `lastOutcome` / `aftermathData` for the in-modal aftermath
+// swap. Tests now mount inside <CombatModeProvider> too.
 function withAesthetic(child: React.ReactNode, mode: AestheticMode = 'canonical') {
     const store = createAppStore({ adapter: createMemoryAdapter() });
     return (
         <AestheticModeProvider initialMode={mode} skipHydration>
-            <GameStoreProvider store={store}>{child}</GameStoreProvider>
+            <GameStoreProvider store={store}>
+                <CombatModeProvider>{child}</CombatModeProvider>
+            </GameStoreProvider>
         </AestheticModeProvider>
     );
 }
@@ -380,5 +386,104 @@ describe('EncounterModalOverlay: combat mode survives vm.kind change', () => {
         // early-return null). Post-fix: combat mode stays mounted.
         expect(queryByTestId('encounter-modal-overlay')).not.toBeNull();
         expect(queryByTestId('encounter-modal-combat-mode')).not.toBeNull();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 70 Tick A — combat → aftermath transition inside the modal
+// ---------------------------------------------------------------------------
+
+describe('EncounterModalOverlay: combat → aftermath swap', () => {
+    function withAllProvidersAndOutcome(child: React.ReactNode) {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { GameStoreProvider } = require('@/state/GameStoreProvider');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { createAppStore } = require('@/state/store');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { createMemoryAdapter } = require('@/test-utils/memoryAdapter');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const {
+            CombatModeProvider,
+            useCombatMode,
+        } = require('@/state/combat-mode') as typeof import('@/state/combat-mode');
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        // Helper component that fires the victory outcome after mount,
+        // so the modal advances from combat → aftermath inside one
+        // render cycle.
+        function VictoryTrigger() {
+            const { exitCombatWith } = useCombatMode();
+            React.useEffect(() => {
+                exitCombatWith('victory', {
+                    variant: 'victory',
+                    enemy: {
+                        name: 'Larch-Stalker',
+                        description: 'A figure long since gnawed.',
+                        level: 3,
+                    },
+                    finalBlow: { skillName: 'STRIKE', damage: 24, descriptor: 'cleaves the rib' },
+                    xpReward: 18,
+                });
+            }, [exitCombatWith]);
+            return null;
+        }
+        return (
+            <AestheticModeProvider initialMode="canonical" skipHydration>
+                <CombatModeProvider>
+                    <GameStoreProvider store={store}>
+                        {child}
+                        <VictoryTrigger />
+                    </GameStoreProvider>
+                </CombatModeProvider>
+            </AestheticModeProvider>
+        );
+    }
+
+    it('swaps to <CombatVictoryPanel> when lastOutcome flips to victory mid-combat', () => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { fireEvent } = require('@testing-library/react-native');
+        const tree = render(
+            withAllProvidersAndOutcome(
+                <EncounterModalOverlay
+                    vm={makeCombatPreludeVm()}
+                    onFight={() => {}}
+                    onFlee={() => {}}
+                />,
+            ),
+        );
+        // Tap FIGHT to enter combat mode first; the VictoryTrigger
+        // effect then fires exitCombatWith('victory', snapshot),
+        // which the overlay watches via useEffect.
+        fireEvent.press(tree.getByTestId('encounter-modal-fight'));
+
+        // Aftermath panel mounted; combat ScrollView gone.
+        expect(tree.queryByTestId('combat-victory-panel')).not.toBeNull();
+        expect(tree.queryByTestId('encounter-modal-combat-mode')).toBeNull();
+
+        // The enemy name was sourced from the snapshot, not the (now-null) combat slice.
+        expect(tree.queryByTestId('combat-victory-panel-enemy-name')?.props.children).toBe(
+            'LARCH-STALKER',
+        );
+    });
+
+    it('CARRY ON dismisses the aftermath and unmounts the panel', () => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { fireEvent } = require('@testing-library/react-native');
+        const tree = render(
+            withAllProvidersAndOutcome(
+                <EncounterModalOverlay
+                    vm={makeCombatPreludeVm()}
+                    onFight={() => {}}
+                    onFlee={() => {}}
+                />,
+            ),
+        );
+        fireEvent.press(tree.getByTestId('encounter-modal-fight'));
+        expect(tree.queryByTestId('combat-victory-panel')).not.toBeNull();
+
+        // Press CARRY ON; dismissAftermath fires, lastOutcome clears,
+        // aftermathData clears, modal-mode collapses back to combat
+        // (the aftermath useEffect won't re-flip without aftermathData).
+        fireEvent.press(tree.getByTestId('combat-victory-panel-carry-on'));
+        expect(tree.queryByTestId('combat-victory-panel')).toBeNull();
     });
 });

@@ -152,3 +152,94 @@ describe('combat-mode: inEncounterModal session flag (Phase 63c)', () => {
         expect(result.current.inEncounterModal).toBe(false);
     });
 });
+
+// ---------------------------------------------------------------------------
+// Phase 70 Tick A — aftermath data snapshot + dismissAftermath
+// ---------------------------------------------------------------------------
+
+describe('combat-mode: aftermathData + dismissAftermath', () => {
+    it('aftermathData starts null on a fresh provider', () => {
+        const { result } = renderHook(() => useCombatMode(), { wrapper });
+        expect(result.current.aftermathData).toBeNull();
+    });
+
+    it('exitCombatWith accepts an optional snapshot payload and stashes it', () => {
+        const { result } = renderHook(() => useCombatMode(), { wrapper });
+        act(() => result.current.enterCombat());
+        act(() =>
+            result.current.exitCombatWith('victory', {
+                variant: 'victory',
+                enemy: { name: 'Larch-Stalker', description: 'A figure long since gnawed.', level: 3 },
+                finalBlow: { skillName: 'STRIKE', damage: 24, descriptor: 'cleaves the rib' },
+                xpReward: 18,
+            }),
+        );
+        expect(result.current.lastOutcome).toBe('victory');
+        expect(result.current.aftermathData).toEqual({
+            variant: 'victory',
+            enemy: { name: 'Larch-Stalker', description: 'A figure long since gnawed.', level: 3 },
+            finalBlow: { skillName: 'STRIKE', damage: 24, descriptor: 'cleaves the rib' },
+            xpReward: 18,
+        });
+    });
+
+    it('exitCombatWith without a payload leaves aftermathData null (back-compat)', () => {
+        const { result } = renderHook(() => useCombatMode(), { wrapper });
+        act(() => result.current.enterCombat());
+        act(() => result.current.exitCombatWith('parley'));
+        expect(result.current.lastOutcome).toBe('parley');
+        expect(result.current.aftermathData).toBeNull();
+    });
+
+    it('dismissAftermath atomically clears outcome + data + modal flag', () => {
+        const { result } = renderHook(() => useCombatMode(), { wrapper });
+        act(() => result.current.enterCombat());
+        act(() => result.current.openEncounterModal());
+        act(() =>
+            result.current.exitCombatWith('victory', {
+                variant: 'victory',
+                enemy: { name: 'Larch-Stalker', description: 'A figure.', level: 1 },
+                finalBlow: null,
+                xpReward: null,
+            }),
+        );
+        expect(result.current.lastOutcome).toBe('victory');
+        expect(result.current.aftermathData).not.toBeNull();
+        expect(result.current.inEncounterModal).toBe(true);
+
+        act(() => result.current.dismissAftermath());
+        expect(result.current.lastOutcome).toBeNull();
+        expect(result.current.aftermathData).toBeNull();
+        expect(result.current.inEncounterModal).toBe(false);
+    });
+
+    it('enterCombat clears any stale aftermathData (mirrors lastOutcome behavior)', () => {
+        const { result } = renderHook(() => useCombatMode(), { wrapper });
+        act(() =>
+            result.current.exitCombatWith('victory', {
+                variant: 'victory',
+                enemy: { name: 'Foe', description: 'old.', level: 1 },
+                finalBlow: null,
+                xpReward: null,
+            }),
+        );
+        expect(result.current.aftermathData).not.toBeNull();
+        act(() => result.current.enterCombat());
+        expect(result.current.aftermathData).toBeNull();
+    });
+
+    it('clearLastOutcome also clears aftermathData (paired one-shot)', () => {
+        const { result } = renderHook(() => useCombatMode(), { wrapper });
+        act(() =>
+            result.current.exitCombatWith('victory', {
+                variant: 'victory',
+                enemy: { name: 'Foe', description: 'short.', level: 1 },
+                finalBlow: null,
+                xpReward: null,
+            }),
+        );
+        act(() => result.current.clearLastOutcome());
+        expect(result.current.lastOutcome).toBeNull();
+        expect(result.current.aftermathData).toBeNull();
+    });
+});

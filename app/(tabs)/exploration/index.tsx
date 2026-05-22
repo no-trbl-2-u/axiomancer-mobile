@@ -405,7 +405,14 @@ export default function ExplorationScreen() {
               * shape, which filters 'defeat' / 'flee' out
               * automatically.
               */}
-            {lastOutcome !== null && (() => {
+            {/* Phase 70 Tick A — the victory aftermath path now lives
+              * inside <EncounterModalOverlay> via the in-modal
+              * CombatVictoryPanel; the legacy banner here keeps
+              * mounting for the parley branch until Tick B builds
+              * the friendship panel. selectAftermathCopy already
+              * returns null for defeat / flee, so the only path
+              * still flowing through here post-Tick-A is parley. */}
+            {lastOutcome !== null && lastOutcome !== 'victory' && (() => {
                 const copy = selectAftermathCopy(lastOutcome);
                 if (copy === null) return null;
                 return (

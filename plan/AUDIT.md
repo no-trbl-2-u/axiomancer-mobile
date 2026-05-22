@@ -808,6 +808,17 @@ Prior text preserved below for traceability:
 
 ## Done
 
+### [2.5] DRIFT — `(item as any).quantity` cast in inventory presenter `quantityFor` ✅
+- Resolved 2026-05-22. Tightened the union narrowing from
+  `isConsumable(item) || ('quantity' in item && typeof item.quantity === 'number')`
+  to `isConsumable(item) || isMaterial(item)` (the only two
+  `Item` union members carrying `quantity: number` per engine
+  `Items/types.d.ts:55-78`). Cast drops; the `?? 1` fallback
+  stays — needed for a test fixture that synthesizes
+  consumable-shaped items without the engine-required field,
+  and a useful defense in depth against further shape drift.
+  Picked via fresh presenter-cast sweep. 1060/1060 green at land.
+
 ### [3.2] `components/event/EventArt.tsx` colocated test coverage ✅
 - Resolved 2026-05-22. Added 5 hermetic cases pinning the
   slug → component dispatch — `encounter` / `boss` route to

@@ -15,6 +15,7 @@
 import {
     isConsumable,
     isEquipment,
+    isMaterial,
     isQuestItem,
     type Equipment,
     type GameStore,
@@ -283,9 +284,11 @@ function subFor(item: Item): string | null {
 }
 
 function quantityFor(item: Item): number {
-    if (isConsumable(item) || ('quantity' in item && typeof item.quantity === 'number')) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return Math.max(1, Number((item as any).quantity ?? 1));
+    if (isConsumable(item) || isMaterial(item)) {
+        // `?? 1` defends against fixtures that omit the engine-required
+        // `quantity` field; pre-cast-drop refactor preserved this
+        // fallback under `(item as any).quantity ?? 1`.
+        return Math.max(1, Number(item.quantity ?? 1));
     }
     return 1;
 }

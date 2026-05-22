@@ -1454,6 +1454,17 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       **top of the build plan** per user instruction
       ("Top priority is getting all these new designs in place").
       Brief at `plan/phases/phase_70_aftermath_modals.md`.
+      - **[x] Tick A** — shipped `05d85e7`
+        (`feat(spec70a): CombatVictoryPanel + in-encounter
+        aftermath mount`). New
+        `selectAftermathViewModel` presenter + `CombatVictoryPanel`
+        + snapshot-based combat-mode extension (`aftermathData`,
+        `dismissAftermath`). Mode `combat` → `aftermath` swap in
+        `<EncounterModalOverlay>` driven by `lastOutcome ===
+        'victory'`. Exploration-screen `<AftermathBanner>` gated
+        on `lastOutcome !== 'victory'`; banner still mounts for
+        parley until Tick B retires it. 38 new hermetic tests;
+        1098/1098 verify green.
 
 - [ ] Phase 71 — Encounter-seal chrome refresh. Sibling to
       Phase 70 — phase-aware top + bottom `SEALED` chain bars

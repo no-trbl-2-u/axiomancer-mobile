@@ -254,7 +254,7 @@ pin).
 
 | Tick | Status | Commit | Notes |
 |------|--------|--------|-------|
-| A    | `[ ]`  | —      | Victory panel + presenter + in-modal mount |
+| A    | `[x]`  | `05d85e7` | Victory panel + presenter + in-modal mount. 38 new tests across 3 suites (presenter / panel / combat-mode); modal overlay test extended for combat→aftermath swap. 1098/1098 verify green. AftermathBanner still mounts for parley until Tick B retires it. |
 | B    | `[ ]`  | —      | Friendship panel + pixel emblem + journal entry |
 | C    | `[ ]`  | —      | Defeat panel + run-summary counter + reset wiring |
 | D    | `[ ]`  | —      | ErrorScreen panel + ErrorBoundary refactor |

@@ -26,6 +26,7 @@
  */
 
 import { AXM } from '@/theme/axm';
+import { toRomanLower } from './roman';
 
 export type EncounterSealMode = 'prelude' | 'combat' | 'aftermath';
 
@@ -40,31 +41,9 @@ export interface EncounterSealChrome {
     glowColor: string;
 }
 
-/**
- * Tiny lowercase-roman converter. Matches the bundle's `roman()`
- * helper. Used here for round labels (`ROUND i/ii/iii`); the
- * defeat panel has its own copy because it needs different
- * formatting. If a third caller needs roman conversion, promote
- * this to a shared util.
- */
-function roman(n: number): string {
-    if (n <= 0) return '·';
-    const map: readonly (readonly [string, number])[] = [
-        ['m', 1000], ['cm', 900], ['d', 500], ['cd', 400],
-        ['c', 100], ['xc', 90], ['l', 50], ['xl', 40],
-        ['x', 10], ['ix', 9], ['v', 5], ['iv', 4],
-        ['i', 1],
-    ];
-    let out = '';
-    let remaining = n;
-    for (const [s, v] of map) {
-        while (remaining >= v) {
-            out += s;
-            remaining -= v;
-        }
-    }
-    return out;
-}
+// Lowercase Roman helper consolidated into `./roman`. The
+// `·` fallback for `n <= 0` is preserved by passing `'·'` as
+// the second arg at the call site.
 
 const BLOOD_GLOW = 'rgba(192, 21, 42, 0.35)';
 const SULFUR_GLOW = 'rgba(212, 192, 38, 0.30)';
@@ -96,7 +75,7 @@ export function selectEncounterSealChrome(
     }
     if (mode === 'combat') {
         return {
-            topLabel: `SEALED · ROUND ${roman(round)}`,
+            topLabel: `SEALED · ROUND ${toRomanLower(round, '·')}`,
             bottomLabel: 'NO RETREAT',
             accentColor: AXM.blood,
             glowColor: BLOOD_GLOW,

@@ -40,6 +40,7 @@ import {
     type EventArtSlug,
 } from './event-assets';
 import { freezeViewModel } from './freeze';
+import { toRomanLower } from './roman';
 
 export type EventKind = 'combat-prelude' | 'narrative-choice';
 export type EventVariant = 'encounter' | 'boss' | 'quest' | 'rest' | 'gather' | 'npc';
@@ -332,23 +333,11 @@ const BOSS_OMEN_BY_LEVEL: readonly string[] = [
     'fifth seal · the long count',
 ];
 
-/**
- * Local lowercase-roman helper for the Phase 45 subtitle chrome.
- * Duplicates `combat.engine.ts::toRoman` rather than depending on
- * it cross-file; the function is 5 lines and the alternative is a
- * cross-presenter import that drags the combat module into the
- * event presenter's load path. Out-of-range numbers fall back to
- * decimal — enemy levels above x are vanishingly rare in practice.
- */
-const ROMAN_LOWER_EVENT: readonly string[] = [
-    '', 'i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix', 'x',
-];
-
-function toRomanLowerEvent(n: number): string {
-    if (!isFinite(n) || n <= 0) return 'i';
-    if (n < ROMAN_LOWER_EVENT.length) return ROMAN_LOWER_EVENT[n];
-    return String(n);
-}
+// Lowercase-Roman helper consolidated into `./roman` (close
+// `[3.0]` engine-dup audit row). The earlier "duplicate of
+// combat.engine.ts::toRoman" was self-acknowledged in the
+// doc-block on this surface; both call sites now import from the
+// shared util.
 
 function composeCombatPrelude(encounter: Encounter, isBoss: boolean): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
     // Phase 60b — engine's canonical `Encounter` shape is
@@ -375,7 +364,7 @@ function composeCombatPrelude(encounter: Encounter, isBoss: boolean): Omit<Event
     // ritual-register kicker. Boss variant tightens the kicker
     // since the engine's boss-blocks-flee rule is part of the
     // design intent (KNEEL is sealed, not a real choice).
-    const fightSubtitle = `${toRomanLowerEvent(enemy.level)} · ${toRomanLowerEvent(enemy.health)} vitae · adv. unknown`;
+    const fightSubtitle = `${toRomanLower(enemy.level)} · ${toRomanLower(enemy.health)} vitae · adv. unknown`;
     const fleeSubtitle = isBoss
         ? 'sealed · no retreat'
         : 'forfeit the path · -ii morale';

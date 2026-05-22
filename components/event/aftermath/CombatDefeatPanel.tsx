@@ -27,6 +27,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { AXM, FONTS } from '@/theme/axm';
 import type { AftermathDefeatViewModel } from '@/state/presenters/aftermath.engine';
+import { toRomanLower } from '@/state/presenters/roman';
 
 export interface CombatDefeatPanelProps {
     vm: AftermathDefeatViewModel;
@@ -34,31 +35,10 @@ export interface CombatDefeatPanelProps {
     onLetClose: () => void;
 }
 
-/**
- * Tiny lowercase-roman converter. Mirrors the design bundle's
- * `roman()` helper (`design/handoff-2026-05-22/project/screens/
- * aftermath-modal.jsx:206-212`). Used only here; if other panels
- * need lowercase roman the helper can be promoted to a shared
- * utility.
- */
-function roman(n: number): string {
-    if (n <= 0) return '·';
-    const map: readonly (readonly [string, number])[] = [
-        ['m', 1000], ['cm', 900], ['d', 500], ['cd', 400],
-        ['c', 100], ['xc', 90], ['l', 50], ['xl', 40],
-        ['x', 10], ['ix', 9], ['v', 5], ['iv', 4],
-        ['i', 1],
-    ];
-    let out = '';
-    let remaining = n;
-    for (const [s, v] of map) {
-        while (remaining >= v) {
-            out += s;
-            remaining -= v;
-        }
-    }
-    return out;
-}
+// Lowercase Roman helper consolidated into
+// `@/state/presenters/roman`. The `·` fallback the bundle source
+// uses for n <= 0 is preserved via the helper's `fallback` arg at
+// the call sites.
 
 export function CombatDefeatPanel({ vm, onBeginAgain, onLetClose }: CombatDefeatPanelProps) {
     const deepest = vm.runSummary.deepestNodeId ?? '·';
@@ -113,11 +93,11 @@ export function CombatDefeatPanel({ vm, onBeginAgain, onLetClose }: CombatDefeat
                     <Text style={styles.ledgerHeader}>· LEDGER ·</Text>
                     <LedgerRow
                         label="rounds endured"
-                        value={roman(vm.runSummary.rounds)}
+                        value={toRomanLower(vm.runSummary.rounds, '·')}
                     />
                     <LedgerRow
                         label="encounters survived"
-                        value={roman(vm.runSummary.encountersFaced)}
+                        value={toRomanLower(vm.runSummary.encountersFaced, '·')}
                     />
                     <LedgerRow
                         label="deepest node"

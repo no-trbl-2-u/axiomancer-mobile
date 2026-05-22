@@ -47,6 +47,7 @@ import {
 } from './combat-hud.engine';
 import { MAX_EFFECTS_SHOWN } from './constants';
 import { freezeViewModel } from './freeze';
+import { toRomanLower as toRoman } from './roman';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -827,13 +828,8 @@ function buildSkillPicker(
     };
 }
 
-const ROMAN: readonly string[] = ['', 'i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix', 'x'];
-
-function toRoman(n: number): string {
-    if (!isFinite(n) || n <= 0) return 'i';
-    if (n < ROMAN.length) return ROMAN[n];
-    return String(n);
-}
+// Lowercase-Roman helper consolidated into `./roman` — `toRoman` is
+// imported at the top of the file.
 
 function classifyLogEntry(raw: unknown): CombatLogEntryDisplay {
     if (typeof raw === 'string') {

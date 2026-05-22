@@ -13,21 +13,7 @@
  */
 
 import type { CombatViewModel } from './combat.engine';
-
-/**
- * Roman-numeral table used by the codex status strip. Capped at x;
- * past ten the strip falls back to the decimal. Identical bound to
- * the event-side helper (`state/presenters/event.engine.ts`).
- */
-const ROMAN_LOWER_CODEX: readonly string[] = [
-    '', 'i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix', 'x',
-];
-
-function toRomanLowerCodex(n: number): string {
-    if (!Number.isFinite(n) || n <= 0) return 'i';
-    if (n < ROMAN_LOWER_CODEX.length) return ROMAN_LOWER_CODEX[n];
-    return String(n);
-}
+import { toRomanLower } from './roman';
 
 /**
  * Codex slug for the enemy name. Lowercases and replaces hyphens
@@ -56,6 +42,6 @@ export function selectCodexEnemySlug(name: string): string {
  */
 export function selectCodexStatusLine(vm: CombatViewModel): string {
     const enc = vm.isInCombat ? selectCodexEnemySlug(vm.enemy.name) : 'none';
-    const round = toRomanLowerCodex(vm.round);
+    const round = toRomanLower(vm.round);
     return `ENC=${enc} · ROUND=${round} · STATE=${vm.phase}`;
 }

@@ -120,9 +120,14 @@ describe('selectCodexStatusLine', () => {
         }
     });
 
-    it('falls back to decimal for rounds past x', () => {
+    it('extends to proper lowercase Roman past x (post 2026-05-22 consolidation onto `toRomanLower`)', () => {
         const vm = makeVm({ isInCombat: true, round: 11 });
-        expect(selectCodexStatusLine(vm)).toContain('ROUND=11');
+        // Pre-consolidation the array-lookup helper bailed out
+        // at `n >= 11` with `String(n)` (rendering `ROUND=11`);
+        // the consolidated `toRomanLower` produces proper Roman
+        // for any positive integer. Behavior change documented
+        // in `state/presenters/roman.ts`.
+        expect(selectCodexStatusLine(vm)).toContain('ROUND=xi');
     });
 
     it('threads the engine phase through verbatim (no display literal in the screen)', () => {

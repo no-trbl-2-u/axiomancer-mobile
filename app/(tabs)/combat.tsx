@@ -221,9 +221,29 @@ export function CombatPanel() {
         // parley fight ends when the friendship counter hits the cap even
         // if the enemy hasn't dropped. Player HP <= 0 is the defeat branch.
         if (vm.friendshipCounter >= vm.friendshipCounterMax) {
+            // Phase 70 Tick B — same snapshot pattern as victory; the
+            // CombatFriendshipPanel reads the snapshot from
+            // combat-mode after actions.endCombat() clears the slice.
+            const parleySnapshot = combat !== null
+                ? {
+                      variant: 'parley' as const,
+                      enemy: {
+                          name: combat.enemy.name,
+                          description: combat.enemy.description,
+                          level: combat.enemy.level,
+                      },
+                      xpReward: combat.enemy.xpReward ?? null,
+                      // Engine doesn't yet expose per-foe codex
+                      // entries; the panel collapses the journal
+                      // section when this is null.
+                      journalEntry: null,
+                  }
+                : undefined;
             actions.endCombat();
-            exitCombatWith('parley');
-            finalizeCombatExit();
+            exitCombatWith('parley', parleySnapshot);
+            if (!inEncounterModal) {
+                finalizeCombatExit();
+            }
             return;
         }
         if (vm.enemy.hp <= 0) {

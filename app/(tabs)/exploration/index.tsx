@@ -15,10 +15,9 @@ import { SectionLabel } from '@/components/SectionLabel';
 import { NodeMark } from '@/components/NodeMark';
 import { ActionIcon } from '@/components/ActionIcon';
 import { Splatter } from '@/components/Splatter';
-import { AftermathBanner } from '@/components/AftermathBanner';
 import { ExplorationCodexHeader } from '@/components/ExplorationCodexHeader';
 import { useAesthetic } from '@/state/aesthetic-mode';
-import { selectAftermathCopy, useCombatMode } from '@/state/combat-mode';
+import { useCombatMode } from '@/state/combat-mode';
 import { selectExplorationCodexHeader } from '@/state/presenters/exploration.codex.engine';
 import { useGameActions, useGameState, useGameStore } from '@/state/GameStoreProvider';
 import {
@@ -56,8 +55,6 @@ const OPTION_ICON: Record<NodeType, string> = {
 export default function ExplorationScreen() {
     const {
         enterCombat,
-        lastOutcome,
-        clearLastOutcome,
         inEncounterModal,
         openEncounterModal,
     } = useCombatMode();
@@ -397,33 +394,13 @@ export default function ExplorationScreen() {
                 />
             )}
             {nodeTip !== null && <NodeToast tip={nodeTip} />}
-            {/*
-              * Phase 41 port — aftermath banner on victory / parley
-              * combat exits. Copy comes from `selectAftermathCopy`
-              * (Hard Rule #8 lift from critique pass 16); banner
-              * mounts only when the helper returns a non-null
-              * shape, which filters 'defeat' / 'flee' out
-              * automatically.
-              */}
-            {/* Phase 70 Tick A — the victory aftermath path now lives
-              * inside <EncounterModalOverlay> via the in-modal
-              * CombatVictoryPanel; the legacy banner here keeps
-              * mounting for the parley branch until Tick B builds
-              * the friendship panel. selectAftermathCopy already
-              * returns null for defeat / flee, so the only path
-              * still flowing through here post-Tick-A is parley. */}
-            {lastOutcome !== null && lastOutcome !== 'victory' && (() => {
-                const copy = selectAftermathCopy(lastOutcome);
-                if (copy === null) return null;
-                return (
-                    <AftermathBanner
-                        eyebrow={copy.eyebrow}
-                        title={copy.title}
-                        subtitle={copy.subtitle}
-                        onDismiss={clearLastOutcome}
-                    />
-                );
-            })()}
+            {/* Phase 70 Tick B — `<AftermathBanner>` retired. Both
+              * victory and parley outcomes now render inside
+              * `<EncounterModalOverlay>` via `<CombatVictoryPanel>`
+              * / `<CombatFriendshipPanel>`. Defeat (Tick C pending)
+              * and flee paths intentionally don't surface anything
+              * on the exploration screen — the seal dismisses
+              * silently in those cases. */}
         </ScreenBg>
     );
 }

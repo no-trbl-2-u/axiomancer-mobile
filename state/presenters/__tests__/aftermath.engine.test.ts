@@ -26,12 +26,7 @@ describe('selectAftermathViewModel', () => {
         expect(selectAftermathViewModel(null)).toBeNull();
     });
 
-    it('returns null on non-victory variants (Tick A only ships victory)', () => {
-        const parley: AftermathData = {
-            variant: 'parley',
-            enemy: { name: 'Hierophant', description: 'iron-tongued.', level: 7 },
-        };
-        expect(selectAftermathViewModel(parley)).toBeNull();
+    it('returns null on defeat (Tick C will populate that branch)', () => {
         const defeat: AftermathData = {
             variant: 'defeat',
             enemy: { name: 'Hierophant', description: 'iron-tongued.', level: 7 },
@@ -131,5 +126,84 @@ describe('selectAftermathViewModel', () => {
     it('nulls xpReward when the enemy has none', () => {
         const vm = selectAftermathViewModel({ ...VICTORY_SNAPSHOT, xpReward: null });
         expect(vm?.kind === 'victory' && vm.rewards.xp).toBeNull();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 70 Tick B — parley branch
+// ---------------------------------------------------------------------------
+
+const PARLEY_SNAPSHOT_MID: Extract<AftermathData, { variant: 'parley' }> = {
+    variant: 'parley',
+    enemy: {
+        name: 'Larch-Stalker',
+        description: 'A figure long since gnawed by the road.',
+        level: 4,
+    },
+    xpReward: 12,
+    journalEntry: null,
+};
+
+describe('selectAftermathViewModel: parley branch', () => {
+    it('returns a parley VM with uppercased enemy name', () => {
+        const vm = selectAftermathViewModel(PARLEY_SNAPSHOT_MID);
+        expect(vm?.kind).toBe('parley');
+        expect(vm?.kind === 'parley' && vm.enemyName).toBe('LARCH-STALKER');
+    });
+
+    it('derives the epithet the same way as the victory branch', () => {
+        const vm = selectAftermathViewModel(PARLEY_SNAPSHOT_MID);
+        expect(vm?.kind === 'parley' && vm.enemyEpithet).toBe(
+            'figure long since gnawed by the road',
+        );
+    });
+
+    it('picks the quiet-yield pact phrase for low-level enemies (<=2)', () => {
+        const vm = selectAftermathViewModel({
+            ...PARLEY_SNAPSHOT_MID,
+            enemy: { ...PARLEY_SNAPSHOT_MID.enemy, level: 1 },
+        });
+        expect(vm?.kind === 'parley' && vm.pactPhrase).toContain('stopped');
+    });
+
+    it('picks the bell pact phrase for mid-level enemies (3-5)', () => {
+        const vm = selectAftermathViewModel(PARLEY_SNAPSHOT_MID);
+        expect(vm?.kind === 'parley' && vm.pactPhrase).toContain('set down the bell');
+    });
+
+    it('picks the heavy-yield pact phrase for higher-level enemies (>5)', () => {
+        const vm = selectAftermathViewModel({
+            ...PARLEY_SNAPSHOT_MID,
+            enemy: { ...PARLEY_SNAPSHOT_MID.enemy, level: 8 },
+        });
+        expect(vm?.kind === 'parley' && vm.pactPhrase).toContain('held out the bell');
+    });
+
+    it('threads xpReward + collapses currency / loot to nullish defaults', () => {
+        const vm = selectAftermathViewModel(PARLEY_SNAPSHOT_MID);
+        expect(vm?.kind === 'parley' && vm.rewards.xp).toBe(12);
+        expect(vm?.kind === 'parley' && vm.rewards.currency).toBeNull();
+        expect(vm?.kind === 'parley' && vm.rewards.loot).toEqual([]);
+    });
+
+    it('passes journalEntry through verbatim when populated', () => {
+        const vm = selectAftermathViewModel({
+            ...PARLEY_SNAPSHOT_MID,
+            journalEntry: {
+                bookName: 'CODEX',
+                entryTitle: 'Of the Larch-Stalker',
+                preview: 'a bell that does not ring',
+            },
+        });
+        expect(vm?.kind === 'parley' && vm.journalEntry).toEqual({
+            bookName: 'CODEX',
+            entryTitle: 'Of the Larch-Stalker',
+            preview: 'a bell that does not ring',
+        });
+    });
+
+    it('leaves journalEntry null when the snapshot has none', () => {
+        const vm = selectAftermathViewModel(PARLEY_SNAPSHOT_MID);
+        expect(vm?.kind === 'parley' && vm.journalEntry).toBeNull();
     });
 });

@@ -39,52 +39,20 @@ export type AftermathData =
           finalBlow: { skillName: string | null; damage: number; descriptor: string | null } | null;
           xpReward: number | null;
       }
-    | { variant: 'parley'; enemy: { name: string; description: string; level: number } }
+    | {
+          variant: 'parley';
+          enemy: { name: string; description: string; level: number };
+          xpReward: number | null;
+          /**
+           * Optional journal entry unlocked by the pact. Engine doesn't
+           * yet expose this — the snapshot stays null and the panel
+           * collapses the "A NEW ENTRY" section. Promote to engine
+           * integration as a Phase 70 follow-up when the writers
+           * surface per-foe codex entries.
+           */
+          journalEntry: { bookName: string; entryTitle: string; preview: string } | null;
+      }
     | { variant: 'defeat'; enemy: { name: string; description: string; level: number } };
-
-/**
- * Display chrome for the post-combat aftermath banner, keyed off the
- * outcome. Lifted off the screen (was inline branching in
- * `app/(tabs)/exploration/index.tsx`) per Hard Rule #8 — no display
- * literals in the view layer. Filed via critique pass 16 (MED voice
- * finding). Per-outcome copy chosen to fit the ritual register —
- * 'IT IS DONE / The foe fell.' is the victory finality; 'IT IS WON /
- * The foe yielded.' reads as a parley peace. `defeat` and `flee`
- * return null because the banner stays silent on those paths (the
- * mount-side guard in exploration filters them out, but the helper
- * is total for safety).
- */
-export interface AftermathCopy {
-    eyebrow: string;
-    title: string;
-    /** Italic subtitle below the title. Currently invariant across
-     * outcomes that surface a banner; kept as a field so future
-     * outcome-specific subtitles can branch without re-touching
-     * the screen. */
-    subtitle: string;
-}
-
-const AFTERMATH_SUBTITLE = 'The map returns. Walk on.';
-
-export function selectAftermathCopy(outcome: CombatOutcome): AftermathCopy | null {
-    switch (outcome) {
-        case 'victory':
-            return {
-                eyebrow: 'IT IS DONE',
-                title: 'The foe fell.',
-                subtitle: AFTERMATH_SUBTITLE,
-            };
-        case 'parley':
-            return {
-                eyebrow: 'IT IS WON',
-                title: 'The foe yielded.',
-                subtitle: AFTERMATH_SUBTITLE,
-            };
-        case 'defeat':
-        case 'flee':
-            return null;
-    }
-}
 
 export interface CombatModeApi {
     inCombat: boolean;

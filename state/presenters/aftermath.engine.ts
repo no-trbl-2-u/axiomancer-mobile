@@ -68,10 +68,42 @@ export interface AftermathVictoryViewModel {
     rewards: AftermathRewards;
 }
 
+/**
+ * Optional journal-entry card surfaced under the reward strip on
+ * the friendship panel. Engine doesn't yet expose per-foe codex
+ * entries, so this stays null in Tick B; the panel collapses the
+ * section. Bundle shape per
+ * `design/handoff-2026-05-22/project/screens/aftermath-modal.jsx:454-458`.
+ */
+export interface AftermathJournalEntry {
+    bookName: string;
+    entryTitle: string;
+    /** First sentence-or-so of the entry, no trailing ellipsis (the
+     *  panel adds it). */
+    preview: string;
+}
+
 export interface AftermathParleyViewModel {
     kind: 'parley';
     enemyName: string;
     enemyEpithet: string | null;
+    /**
+     * One-line chronicle phrase rendered in italic under the pixel
+     * emblem. Presenter-selected from a small variant table keyed
+     * off enemy "softness" (currently a coarse heuristic on level —
+     * lower-level foes lay down quiet; higher-level foes set things
+     * down before yielding). The engine doesn't currently surface
+     * per-foe pact lines.
+     */
+    pactPhrase: string;
+    rewards: {
+        xp: number | null;
+        /** Currency reads the same rust accent as the pact emblem; the
+         *  field stays null until engine integration. */
+        currency: AftermathCurrency | null;
+        loot: AftermathLootEntry[];
+    };
+    journalEntry: AftermathJournalEntry | null;
 }
 
 export interface AftermathDefeatViewModel {
@@ -98,19 +130,36 @@ export function selectAftermathViewModel(
     data: AftermathData | null,
 ): AftermathViewModel | null {
     if (data === null) return null;
-    if (data.variant !== 'victory') return null;
-    return {
-        kind: 'victory',
-        enemyName: data.enemy.name.toUpperCase(),
-        enemyEpithet: deriveEpithet(data.enemy.description),
-        finalBlow: deriveFinalBlow(data),
-        finalBlowPhrase: deriveFinalBlowPhrase(data),
-        rewards: {
-            xp: data.xpReward,
-            currency: null,
-            loot: [],
-        },
-    };
+    if (data.variant === 'victory') {
+        return {
+            kind: 'victory',
+            enemyName: data.enemy.name.toUpperCase(),
+            enemyEpithet: deriveEpithet(data.enemy.description),
+            finalBlow: deriveFinalBlow(data),
+            finalBlowPhrase: deriveFinalBlowPhrase(data),
+            rewards: {
+                xp: data.xpReward,
+                currency: null,
+                loot: [],
+            },
+        };
+    }
+    if (data.variant === 'parley') {
+        return {
+            kind: 'parley',
+            enemyName: data.enemy.name.toUpperCase(),
+            enemyEpithet: deriveEpithet(data.enemy.description),
+            pactPhrase: derivePactPhrase(data),
+            rewards: {
+                xp: data.xpReward,
+                currency: null,
+                loot: [],
+            },
+            journalEntry: data.journalEntry,
+        };
+    }
+    // Defeat ships in Tick C.
+    return null;
 }
 
 /**
@@ -173,4 +222,28 @@ function deriveFinalBlowPhrase(
     }
     // Ironic — the foe falls almost by accident.
     return `it set the bell down, slow. the bell did not ring. the wet ground took the rest.`;
+}
+
+/**
+ * Pick a chronicle pact phrase keyed off enemy level. Coarse
+ * heuristic — lower-level foes yield quietly, higher-level foes
+ * give up a thing of theirs (a bell, a sigil, a held breath). Three
+ * variants from the bundle's tone reference, all third-person past,
+ * concrete nouns. Engine-side per-foe pact lines are a Phase 70
+ * follow-up if the writers want to author them.
+ */
+function derivePactPhrase(
+    data: Extract<AftermathData, { variant: 'parley' }>,
+): string {
+    const level = data.enemy.level;
+    if (level <= 2) {
+        // Quiet yield — the foe simply stops.
+        return `it stopped, then lowered its long face against the wet ground.`;
+    }
+    if (level <= 5) {
+        // The foe sets a thing down (the bundle's exemplar phrase).
+        return `it set down the bell, slow, and laid its long face against the wet ground.`;
+    }
+    // Heavy yield — the foe gives up a held thing.
+    return `it held out the bell, mouth-down, so it would not sound. then it knelt.`;
 }

@@ -37,6 +37,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { CombatPanel } from '@/components/combat/CombatPanel';
+import { CombatFriendshipPanel } from '@/components/event/aftermath/CombatFriendshipPanel';
 import { CombatVictoryPanel } from '@/components/event/aftermath/CombatVictoryPanel';
 import { EventArt } from '@/components/event/EventArt';
 import { EventCodexHeader } from '@/components/event/EventCodexHeader';
@@ -92,11 +93,15 @@ export function EncounterModalOverlay({
 
     // Phase 70 Tick A — watch the outcome signal. On 'victory' (the
     // only branch with a Tick A panel), swap mode to 'aftermath'.
-    // Other outcomes (parley/defeat/flee) keep the legacy banner
-    // flow via the exploration-screen mount until later ticks
-    // build their panels.
+    // Phase 70 Tick B — extend to 'parley' (friendship panel).
+    // Defeat / flee still bypass the modal (defeat lands in Tick C;
+    // flee was always silent).
     useEffect(() => {
-        if (mode === 'combat' && lastOutcome === 'victory' && aftermathData !== null) {
+        if (
+            mode === 'combat'
+            && (lastOutcome === 'victory' || lastOutcome === 'parley')
+            && aftermathData !== null
+        ) {
             setMode('aftermath');
         }
     }, [mode, lastOutcome, aftermathData]);
@@ -188,6 +193,11 @@ export function EncounterModalOverlay({
             <Animated.View style={[styles.panel, panelStyle]}>
                 {mode === 'aftermath' && aftermathVm !== null && aftermathVm.kind === 'victory' ? (
                     <CombatVictoryPanel
+                        vm={aftermathVm}
+                        onContinue={dismissAftermath}
+                    />
+                ) : mode === 'aftermath' && aftermathVm !== null && aftermathVm.kind === 'parley' ? (
+                    <CombatFriendshipPanel
                         vm={aftermathVm}
                         onContinue={dismissAftermath}
                     />

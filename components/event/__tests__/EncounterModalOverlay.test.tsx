@@ -487,3 +487,90 @@ describe('EncounterModalOverlay: combat → aftermath swap', () => {
         expect(tree.queryByTestId('combat-victory-panel')).toBeNull();
     });
 });
+
+// ---------------------------------------------------------------------------
+// Phase 70 Tick B — parley swap
+// ---------------------------------------------------------------------------
+
+describe('EncounterModalOverlay: combat → aftermath swap (parley)', () => {
+    function withParleyOutcome(child: React.ReactNode) {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { GameStoreProvider } = require('@/state/GameStoreProvider');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { createAppStore } = require('@/state/store');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { createMemoryAdapter } = require('@/test-utils/memoryAdapter');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const {
+            CombatModeProvider,
+            useCombatMode,
+        } = require('@/state/combat-mode') as typeof import('@/state/combat-mode');
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        function ParleyTrigger() {
+            const { exitCombatWith } = useCombatMode();
+            React.useEffect(() => {
+                exitCombatWith('parley', {
+                    variant: 'parley',
+                    enemy: {
+                        name: 'Larch-Stalker',
+                        description: 'A figure long since gnawed.',
+                        level: 4,
+                    },
+                    xpReward: 12,
+                    journalEntry: null,
+                });
+            }, [exitCombatWith]);
+            return null;
+        }
+        return (
+            <AestheticModeProvider initialMode="canonical" skipHydration>
+                <CombatModeProvider>
+                    <GameStoreProvider store={store}>
+                        {child}
+                        <ParleyTrigger />
+                    </GameStoreProvider>
+                </CombatModeProvider>
+            </AestheticModeProvider>
+        );
+    }
+
+    it('swaps to <CombatFriendshipPanel> when lastOutcome flips to parley', () => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { fireEvent } = require('@testing-library/react-native');
+        const tree = render(
+            withParleyOutcome(
+                <EncounterModalOverlay
+                    vm={makeCombatPreludeVm()}
+                    onFight={() => {}}
+                    onFlee={() => {}}
+                />,
+            ),
+        );
+        fireEvent.press(tree.getByTestId('encounter-modal-fight'));
+
+        expect(tree.queryByTestId('combat-friendship-panel')).not.toBeNull();
+        // Victory panel must NOT mount for the parley path.
+        expect(tree.queryByTestId('combat-victory-panel')).toBeNull();
+        // The pixel emblem (the lone carve-out) is present.
+        expect(tree.queryByTestId('pixel-emblem')).not.toBeNull();
+    });
+
+    it('PART AS FRIENDS dismisses the aftermath', () => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { fireEvent } = require('@testing-library/react-native');
+        const tree = render(
+            withParleyOutcome(
+                <EncounterModalOverlay
+                    vm={makeCombatPreludeVm()}
+                    onFight={() => {}}
+                    onFlee={() => {}}
+                />,
+            ),
+        );
+        fireEvent.press(tree.getByTestId('encounter-modal-fight'));
+        expect(tree.queryByTestId('combat-friendship-panel')).not.toBeNull();
+
+        fireEvent.press(tree.getByTestId('combat-friendship-panel-part-as-friends'));
+        expect(tree.queryByTestId('combat-friendship-panel')).toBeNull();
+    });
+});

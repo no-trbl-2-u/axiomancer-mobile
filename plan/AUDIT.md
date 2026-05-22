@@ -808,6 +808,17 @@ Prior text preserved below for traceability:
 
 ## Done
 
+### [2.5] DRIFT — `rawBaseStats as any` cast in memoir `buildPhilosophicalAlignment` ✅
+- Resolved 2026-05-22. Tightened the function's input type from
+  `unknown` to `BaseStats | undefined` — the only caller passes
+  `player?.baseStats`, which is exactly that. Engine
+  `BaseStats` (`Character/types.d.ts:4-8`) declares
+  `heart/body/mind: number` as required, so the per-field
+  `typeof === 'number'` probe was redundant; collapsed to a
+  single `stats && Number.isFinite(...)` guard (defense against
+  NaN / Infinity injected by a future effect). Cast drops.
+  Picked via fresh presenter-cast sweep. 1060/1060 green at land.
+
 ### [2.5] DRIFT — `(item as any).quantity` cast in inventory presenter `quantityFor` ✅
 - Resolved 2026-05-22. Tightened the union narrowing from
   `isConsumable(item) || ('quantity' in item && typeof item.quantity === 'number')`

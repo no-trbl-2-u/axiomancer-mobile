@@ -16,6 +16,7 @@
  */
 
 import type {
+    BaseStats,
     DialogueTree,
     GameStore,
     Quest,
@@ -395,12 +396,14 @@ function buildChronicle(rawEvents: unknown): ReadonlyArray<ChronicleEntry> {
     return Object.freeze(capped) as readonly ChronicleEntry[];
 }
 
-function buildPhilosophicalAlignment(rawBaseStats: unknown): PhilosophicalAlignment {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const stats = rawBaseStats as any;
-    const heart = typeof stats?.heart === 'number' && Number.isFinite(stats.heart) ? stats.heart : 0;
-    const body = typeof stats?.body === 'number' && Number.isFinite(stats.body) ? stats.body : 0;
-    const mind = typeof stats?.mind === 'number' && Number.isFinite(stats.mind) ? stats.mind : 0;
+function buildPhilosophicalAlignment(stats: BaseStats | undefined): PhilosophicalAlignment {
+    // Engine `BaseStats` declares `heart/body/mind: number` as required;
+    // the `Number.isFinite` guard stays as defense against NaN /
+    // Infinity that a downstream effect might inject before the
+    // memoir reads here.
+    const heart = stats && Number.isFinite(stats.heart) ? stats.heart : 0;
+    const body = stats && Number.isFinite(stats.body) ? stats.body : 0;
+    const mind = stats && Number.isFinite(stats.mind) ? stats.mind : 0;
     // 3-way tie → untested
     if (heart === body && body === mind) return DEFAULT_PHILOSOPHICAL;
     // Pairwise tie-break favours Heart per brief

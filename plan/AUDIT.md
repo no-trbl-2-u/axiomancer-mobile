@@ -93,6 +93,19 @@
 
 ### [3.15] Phase 70/71 stale refs + missing test-doc entries ✅ (drained `ca77530`)
 
+### [3.0] Engine-dup — 5 lowercase-roman helpers across presenters + panel ✅ (drained — consolidated to `state/presenters/roman.ts`)
+
+- category: refactor (engine-dup)
+- impact: 5 — 5 functions, 3 distinct shapes, with one of them already carrying a "Duplicates `combat.engine.ts::toRoman` rather than depending on…" acknowledgment comment in `state/presenters/event.engine.ts:337`. Consolidating extends the closed `[3.0]-[3.5]` engine-dup audit series (`StanceKey`, `MAX_EFFECTS_SHOWN`, debug-seed equipment slot list).
+- ease: 6 — proper Roman algorithm in a new shared util; 5 mechanical call-site rewrites; tests confirm round-tokens still render as strings (existing test pins are typeof-only, not value-pinned, so the "n ≥ 11 → 'xi'" improvement is non-breaking).
+- next: ship — new `state/presenters/util/roman.ts` exporting `toRomanLower(n, fallback?)`; refactor the 5 callers; small hermetic test pin for the new util.
+- callers to drain:
+  - `state/presenters/combat.engine.ts:830-836` — `ROMAN` array + `toRoman()` lookup
+  - `state/presenters/combat.codex.engine.ts:22-30` — `ROMAN_LOWER_CODEX` array + `toRomanLowerCodex()` lookup
+  - `state/presenters/event.engine.ts:337+` — duplicate self-acknowledged
+  - `state/presenters/encounter-seal.engine.ts:50` — proper algorithm with `·` fallback (Phase 71)
+  - `components/event/aftermath/CombatDefeatPanel.tsx:44` — proper algorithm with `·` fallback (Phase 70 Tick C)
+
 - category: tests (doc) + refactor (stale comments)
 - impact: 4.5 — `docs/E2E_INVENTORY.md` is the canonical test-coverage map (the doc /iterate audits read against); a stale row + 6 missing files means future audits read the wrong picture. Stale comments in shipped code mislead the next reader about which fallback path is live.
 - ease: 7 — text edits only; no code-logic changes.

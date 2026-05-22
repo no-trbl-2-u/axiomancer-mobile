@@ -3,6 +3,19 @@
 > Latest findings from `/iterate audit`. Rewritten on each
 > audit pass. The Pending list at the bottom queues `/iterate`.
 
+> **Next-oversight directive (set via `/oversight` 2026-05-22,
+> 27th call):** when the user next invokes `/oversight`,
+> schedule a **live-drive playtest tick** — Claude uses the
+> Playwright MCP workflow from `setup/04_claude_playtest.md`
+> to drive a full encounter (exploration tap → modal mount →
+> stance commit → action commit → resolve → continue or exit)
+> against the user's running `pnpm web` instance. The playtest
+> surfaces any visible regressions the code-read audits miss,
+> filed as fresh iterate rows. **The user wanted this scheduled
+> for an oversight call, not autonomously fired** — so /march
+> should NOT spontaneously launch a playtest tick in the
+> meantime.
+
 > Bias: memoir-surface (set via `/oversight` 2026-05-16 after
 > critique pass 7 surfaced 4 MED findings clustered on
 > `state/presenters/memoir.engine.ts` +
@@ -77,6 +90,54 @@
 - Resolved 2026-05-15 — Phase 6 shipped. See Done section for details.
 
 ## Pending
+
+### [4.0] Mechanics-vs-UI logic audit — event surface (sibling of combat audit [3.7] ✅)
+
+- category: docs / quality (project coherence)
+- impact: 8 (event-modal flow is the most user-visible surface
+  after combat; drift would manifest as visible bugs the user
+  has not yet reported)
+- ease: 5 (research-heavy — enumerate decisions in
+  `EncounterModalOverlay`, `event.tsx`, `event.engine.ts`,
+  `EventGate`, `EventArt` dispatch; trace each against engine
+  `resolveMapEvent` / `MapEvent` / `DialogueChoice`)
+- next: file as iterate tick. Deliverable:
+  `docs/mechanics-ui-audit-2026-05-22-event.md` mirroring the
+  combat audit's shape (one row per decision, verdict ALIGNED /
+  DRIFT / MOBILE-ONLY, fix proposals on drift rows). Replicate
+  the index table at the top.
+- source: oversight 27th (2026-05-22) — user-direct: "run the
+  other 3 mechanics audits (event / exploration / inventory)"
+
+### [4.0] Mechanics-vs-UI logic audit — exploration surface (sibling of combat audit [3.7] ✅)
+
+- category: docs / quality (project coherence)
+- impact: 8 (exploration drives the map / move / event-trigger
+  loop; drift here breaks the gameplay-traversal feedback
+  layer)
+- ease: 5 (research-heavy — `exploration/index.tsx`,
+  `exploration.engine.ts`, `moveToAction`,
+  `resolveCurrentMapEvent`, `event-pools.ts`; trace against
+  engine `revealAdjacent` / `markNodeConsumed` / `changeMap` /
+  `getMapDefinition` / `resolveMapEvent`)
+- next: file as iterate tick. Deliverable:
+  `docs/mechanics-ui-audit-2026-05-22-exploration.md`.
+- source: oversight 27th (2026-05-22)
+
+### [3.8] Mechanics-vs-UI logic audit — inventory surface (sibling of combat audit [3.7] ✅)
+
+- category: docs / quality (project coherence)
+- impact: 7 (inventory has the most engine-bound decisions
+  per byte — equip preview, slot constraints, consumable
+  semantics, drop logic — but is a lower-traffic surface
+  than combat/event)
+- ease: 5 (research-heavy — `inventory.tsx`, the inventory
+  presenter, equip/replace/drop actions, modal logic; trace
+  against engine equip-slot rules, `useConsumable`,
+  `templateToEquipment`)
+- next: file as iterate tick. Deliverable:
+  `docs/mechanics-ui-audit-2026-05-22-inventory.md`.
+- source: oversight 27th (2026-05-22)
 
 ### [3.2] Phase 65 diagnostic strip + COMBAT_DEBUG_PICKUP.md delete (ungated 2026-05-21 oversight 26th)
 

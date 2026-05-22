@@ -811,6 +811,26 @@ Prior text preserved below for traceability:
 
 ## Done
 
+### [2.5] DRIFT — 4 `as any` casts in `ErrorBoundary.tsx` (MapState probe + globalThis.navigator probe) ✅
+- Resolved 2026-05-22. Two clusters in the error-display
+  surface:
+  - **MapState completedNodes probe (×2 — lines 185, 187):**
+    was `(world.currentMap as any).completedNodes` despite
+    engine `MapState.completedNodes: NodeId[]` being declared
+    required at `World/types.d.ts:81`. Casts dropped. The
+    `Array.isArray` defense-in-depth stays (this is an
+    error-display surface — better to render `0` than throw
+    inside the ErrorBoundary on store-state corruption).
+  - **globalThis.navigator probe (×2 — lines 207, 209):**
+    cross-runtime narrow needed for the web/native split.
+    Replaced 2x `(globalThis as any).navigator.userAgent` with
+    a single `GlobalWithNavigator` narrow extension type +
+    one `as` cast. No DOM-lib types pulled in.
+  1060/1060 green at land. Production `as any` count now 5
+  (persistence migrations, 2 RN styling quirks, tokens
+  ViewStyle double-cast, and the templateToEquipment boundary
+  cast — all genuinely intentional).
+
 ### [2.5] DRIFT — 2 more `as any` casts in `components/Debug*` (DialogueJump setState + MapResetButton selector) ✅
 - Resolved 2026-05-22. Tail of the Debug-component sweep:
   - `components/DebugDialogueJump.tsx:95` —

@@ -181,10 +181,14 @@ function useStateSnapshot(): string {
                   continent: world.currentContinent?.name,
                   map: world.currentMap.name,
                   currentNode: world.currentMap.currentNode ?? null,
-                   
-                  completedCount: Array.isArray((world.currentMap as any).completedNodes)
-                       
-                      ? (world.currentMap as any).completedNodes.length
+                  // `Array.isArray` is defense-in-depth at the
+                  // error-display surface — engine declares
+                  // `completedNodes: NodeId[]` as required, but if a
+                  // future store-state corruption ever surfaces here,
+                  // we'd rather render `0` than throw inside the
+                  // ErrorBoundary itself.
+                  completedCount: Array.isArray(world.currentMap.completedNodes)
+                      ? world.currentMap.completedNodes.length
                       : 0,
               }
             : null,
@@ -195,19 +199,24 @@ function useStateSnapshot(): string {
     return JSON.stringify(snapshot, null, 2);
 }
 
+/**
+ * Cross-runtime narrow on `globalThis` — `navigator.userAgent` exists
+ * on web (browser, Expo web), is absent on native. The narrow extension
+ * keeps the boundary cast explicit (single `as`, no `any`) without
+ * pulling DOM-lib typings into a file that ships on both platforms.
+ */
+type GlobalWithNavigator = { readonly navigator?: { readonly userAgent?: unknown } };
+
 function buildContext(): string {
     // Module-time captured at first render; effectively constant
     // for the session.
     const dev = typeof __DEV__ !== 'undefined' ? Boolean(__DEV__) : 'unknown';
+    const ua = (globalThis as GlobalWithNavigator).navigator?.userAgent;
     return JSON.stringify(
         {
             dev,
             timestamp: new Date().toISOString(),
-             
-            platform: typeof (globalThis as any).navigator?.userAgent === 'string'
-                 
-                ? (globalThis as any).navigator.userAgent
-                : 'native',
+            platform: typeof ua === 'string' ? ua : 'native',
         },
         null,
         2,

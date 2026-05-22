@@ -135,6 +135,47 @@
 - next: tracking only; revisit when Expo SDK ships a fix.
 - source: live-drive playtest (oversight 28th call)
 
+### [3.0] DRIFT — character Equipment slot labels `'Accessory'` (not `'Trinket'`) — cross-tab vocabulary mismatch (character-audit row 9)
+
+- category: bug (chrome / cross-tab consistency)
+- impact: 5 (player sees `Accessory` on SELF tab; same slot
+  reads `TRINKET` on SATCHEL tab Equipment Dock. Inconsistent
+  vocabulary across the same player's gear interaction)
+- ease: 8 (align `SLOT_LABELS.accessory` to `'Trinket'` in
+  `state/presenters/character.engine.ts:156-164`, matching
+  the inventory dock + chat 1 spec)
+- next: file iterate fix tick.
+- source: character-surface mechanics audit 2026-05-22, row 9
+
+### [2.5] DRIFT — `(player as any).effects` cast in character presenter (character-audit row 4)
+
+- category: refactor / typing hygiene
+- impact: 2 (engine `Character.effects: ActiveEffect[]` typed
+  cleanly; cast is stale holdover)
+- ease: 8 (drop cast; one-line presenter edit)
+- next: file iterate fix tick.
+- source: character-surface mechanics audit 2026-05-22, row 4
+
+### [2.5] DRIFT — `(state as any).philosophicalAlignment` cast + dead fallback (character-audit row 6)
+
+- category: refactor / typing hygiene
+- impact: 2 (Phase 51 migration v2→v3 backfills the field on
+  every persisted save; the defensive fallback covers only
+  sparse test fixtures that shouldn't exist)
+- ease: 8 (drop cast + fallback; one-line presenter edit)
+- next: file iterate fix tick.
+- source: character-surface mechanics audit 2026-05-22, row 6
+
+### [2.5] DRIFT — `buildEffects(player)` called 3x in same return object (character-audit row 10)
+
+- category: refactor (perf / brittleness)
+- impact: 2 (negligible cost today; redundancy becomes
+  brittle if buildEffects extends to engine library reads)
+- ease: 8 (lift to single `const effects = buildEffects(player);`
+  call; reference `effects.length` in the a11y branch)
+- next: file iterate fix tick.
+- source: character-surface mechanics audit 2026-05-22, row 10
+
 ### [4.0] Mechanics-vs-UI logic audit — event surface ✅ (drifts filed as [4.5] / [2.5])
 
 - category: docs / quality (project coherence)

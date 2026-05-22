@@ -256,7 +256,7 @@
   `docs/mechanics-ui-audit-2026-05-22-inventory.md`.
 - source: oversight 27th (2026-05-22)
 
-### [3.2] Phase 65 diagnostic strip + COMBAT_DEBUG_PICKUP.md delete (ungated 2026-05-21 oversight 26th)
+### [3.2] Phase 65 diagnostic strip + COMBAT_DEBUG_PICKUP.md delete ✅
 
 - category: refactor / housekeeping
 - impact: 4 (8 diagnostic streams + 1 toast + 1 brief file linger

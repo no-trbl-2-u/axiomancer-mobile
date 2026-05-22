@@ -463,16 +463,6 @@ export function createAppActions(store: AppStore): AppActions {
         },
         resolveRound: () => {
             const { combat, updateCombat } = store.getState();
-            if (__DEV__) {
-                // Phase-64 follow-up diagnostic (2026-05-21): [9.8]
-                // combat-mechanics row. User sees toast on action
-                // tap but no visible round resolution. Trace whether
-                // resolveRound: (a) gets called at all, (b) finds
-                // combat non-null, (c) reaches updateCombat with the
-                // new 'resolving' phase. Remove once [9.8] closes.
-                // eslint-disable-next-line no-console
-                console.log('[actions.resolveRound] entry combat=', combat === null ? 'null' : `{phase=${combat.phase}, action=${combat.playerChoice?.action ?? '?'}, stance=${combat.playerChoice?.stance ?? '?'}}`);
-            }
             if (!combat) {
                 return {
                     combatEnded: false,
@@ -574,16 +564,7 @@ export function createAppActions(store: AppStore): AppActions {
             }
             withLog = combatSetPhase(withLog, 'resolving');
 
-            if (__DEV__) {
-                // eslint-disable-next-line no-console
-                console.log('[actions.resolveRound] calling updateCombat with phase=', withLog.phase, 'damageToEnemy=', damageToEnemy, 'damageToPlayer=', damageToPlayer);
-            }
             updateCombat(withLog);
-            if (__DEV__) {
-                const after = store.getState().combat;
-                // eslint-disable-next-line no-console
-                console.log('[actions.resolveRound] post-updateCombat store combat=', after === null ? 'null' : `{phase=${after.phase}, enemy.hp=${after.enemy?.health}, player.hp=${after.player?.health}}`);
-            }
 
             const endReason = determineCombatEnd(withLog);
 

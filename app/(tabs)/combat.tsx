@@ -38,7 +38,7 @@ import Svg, { Path, Circle, Ellipse, Defs, RadialGradient, Stop } from 'react-na
 import { AXM, FONTS } from '@/theme/axm';
 import { useAesthetic } from '@/state/aesthetic-mode';
 import { useCombatMode } from '@/state/combat-mode';
-import { useGameActions, useGameState, useGameStore } from '@/state/GameStoreProvider';
+import { useGameActions, useGameState } from '@/state/GameStoreProvider';
 import { createMockEncounterEnemy } from '@/state/mocks/combat.mock';
 import {
     useCombatViewModel,
@@ -141,49 +141,13 @@ export function CombatPanel() {
         return () => clearTimeout(handle);
     }, [toast]);
 
-    const store = useGameStore();
-
-    if (__DEV__) {
-        // Phase-64 follow-up diagnostic — log every CombatPanel
-        // render with current vm.phase + engine combat.phase. If
-        // engine phase advances but vm.phase doesn't on the same
-        // render, that's hypothesis C (memo doesn't refire).
-        // eslint-disable-next-line no-console
-        console.log(
-            '[CombatPanel.render] vm.phase=', vm.phase,
-            'engine.combat.phase=', combat?.phase ?? 'null',
-            'isInCombat=', vm.isInCombat,
-        );
-    }
-
     const onPickStance = useCallback((stance: StanceKey) => {
-        if (__DEV__) {
-            // Phase-62-bug-sweep diagnostic 2026-05-21 (user-direct):
-            // Heart-stance tap not registering per user reports.
-            // Log + toast confirm the handler fires + show the
-            // resulting combat phase. Remove once the bug is fixed.
-            // eslint-disable-next-line no-console
-            console.log('[combat] onPickStance fired:', stance);
-            setToast(`stance: ${stance}`);
-        }
         setSelectedStance(stance);
         actions.setPlayerStance(stance);
         actions.setCombatPhase('choosing_action');
-        if (__DEV__) {
-            const after = store.getState().combat?.phase;
-            // eslint-disable-next-line no-console
-            console.log('[combat] phase after setCombatPhase:', after);
-        }
-    }, [actions, store]);
+    }, [actions]);
 
     const onPickAction = useCallback((key: ActionOption['key']) => {
-        if (__DEV__) {
-            // Phase-62-bug-sweep diagnostic 2026-05-21: action-no-effect
-            // bug. Confirm handler fires + show what branch we hit.
-            // eslint-disable-next-line no-console
-            console.log('[combat] onPickAction fired:', key);
-            setToast(`action: ${key}`);
-        }
         if (key === 'skill') {
             actions.setCombatPhase('choosing_skill');
             return;
@@ -194,12 +158,7 @@ export function CombatPanel() {
         }
         actions.setPlayerAction(key);
         actions.resolveRound();
-        if (__DEV__) {
-            const after = store.getState().combat?.phase;
-            // eslint-disable-next-line no-console
-            console.log('[combat] phase after resolveRound:', after);
-        }
-    }, [actions, store, vm.actionPicker.itemMessage]);
+    }, [actions, vm.actionPicker.itemMessage]);
 
     const onPickSkill = useCallback((skill: SkillOption) => {
         if (!skill.enabled) return;
@@ -223,58 +182,27 @@ export function CombatPanel() {
     }, [inEncounterModal, closeEncounterModal, router]);
 
     const onContinueRound = useCallback(() => {
-        if (__DEV__) {
-            // Phase-65 [9.5] Next Round diagnostic 2026-05-21
-            // (user-direct). User report: "Next Round always exits
-            // combat or completes combat. Even if there is no damage
-            // done." Surface which branch fires + the vm values
-            // driving it. Remove with the rest of the Phase 65
-            // diagnostic stream once [9.5] Next Round narrows.
-            // eslint-disable-next-line no-console
-            console.log(
-                '[combat] onContinueRound fired — vm.friendshipCounter=', vm.friendshipCounter,
-                'friendshipCounterMax=', vm.friendshipCounterMax,
-                'vm.enemy.hp=', vm.enemy.hp,
-                'vm.player.hp=', vm.player.hp,
-            );
-        }
         // Combat-end outcome resolution for the aftermath banner (Phase 41
         // port). Order matters: friendship max BEFORE enemy HP because a
         // parley fight ends when the friendship counter hits the cap even
         // if the enemy hasn't dropped. Player HP <= 0 is the defeat branch.
         if (vm.friendshipCounter >= vm.friendshipCounterMax) {
-            if (__DEV__) {
-                // eslint-disable-next-line no-console
-                console.log('[combat] onContinueRound branch=PARLEY (friendshipCounter >= max)');
-            }
             actions.endCombat();
             exitCombatWith('parley');
             finalizeCombatExit();
             return;
         }
         if (vm.enemy.hp <= 0) {
-            if (__DEV__) {
-                // eslint-disable-next-line no-console
-                console.log('[combat] onContinueRound branch=VICTORY (enemy.hp <= 0)');
-            }
             actions.endCombat();
             exitCombatWith('victory');
             finalizeCombatExit();
             return;
         }
         if (vm.player.hp <= 0) {
-            if (__DEV__) {
-                // eslint-disable-next-line no-console
-                console.log('[combat] onContinueRound branch=DEFEAT (player.hp <= 0)');
-            }
             actions.endCombat();
             exitCombatWith('defeat');
             finalizeCombatExit();
             return;
-        }
-        if (__DEV__) {
-            // eslint-disable-next-line no-console
-            console.log('[combat] onContinueRound branch=NEXT_ROUND (no exit condition)');
         }
         actions.nextRound();
     }, [actions, exitCombatWith, finalizeCombatExit, vm.enemy.hp, vm.player.hp, vm.friendshipCounter, vm.friendshipCounterMax]);

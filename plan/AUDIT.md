@@ -78,58 +78,117 @@
 
 ## Pending
 
-### [3.5] Phase 65 diagnostic strip + COMBAT_DEBUG_PICKUP.md delete (deferred housekeeping)
+### [3.2] Phase 65 diagnostic strip + COMBAT_DEBUG_PICKUP.md delete (ungated 2026-05-21 oversight 26th)
 
 - category: refactor / housekeeping
 - impact: 4 (8 diagnostic streams + 1 toast + 1 brief file linger
   in main; modest noise, no behavior impact)
 - ease: 8 (mechanical delete pass across 3 files)
-- next: gated on `[9.5]` "Next Round exits combat" closing —
-  the `onContinueRound` diagnostics added in `b76303e` are
-  load-bearing for the next user retest; the older streams in
-  `combat.tsx` (`onPickStance`, `onPickAction`, render trace,
-  diagnostic toast) + `actions.ts` (`resolveRound` entry /
-  updateCombat / post-updateCombat) carry context for the same
-  investigation. Strip ALL of them in one iterate tick when
-  `[9.5]` Next Round closes; delete `plan/COMBAT_DEBUG_PICKUP.md`
-  in the same commit.
-- source: Phase 65 close-out (filed 2026-05-21)
+- **Ungated 2026-05-21 oversight 26th** — `[9.5]` Next Round
+  closed (user-confirmed combat "MOSTLY as expected"). Loop
+  can ship this whenever an iterate tick picks it up. Strip
+  scope:
+  - `state/presenters/combat.engine.ts` — diagnostic logs
+    already stripped in Phase 65 Tick A.
+  - `app/(tabs)/combat.tsx` — `[combat] onPickStance fired:`,
+    `[combat] phase after setCombatPhase:`, `[combat]
+    onPickAction fired:`, `[combat] phase after resolveRound:`,
+    `[CombatPanel.render] vm.phase=`, `[combat]
+    onContinueRound fired —`, the four
+    `[combat] onContinueRound branch=` lines, plus the
+    diagnostic toast on stance/action taps.
+  - `state/actions.ts` — `[actions.resolveRound] entry`,
+    `calling updateCombat`, `post-updateCombat`.
+  - Delete `plan/COMBAT_DEBUG_PICKUP.md` in the same commit.
+- source: Phase 65 close-out (filed 2026-05-21); ungated
+  oversight 26th
+
+### [5.9] User-enablement playtest runbook (let Claude drive the live app)
+
+- category: docs / workflow (high impact — unblocks
+  loop-driven self-testing)
+- impact: 9 (today the loop ships fixes blind; user has to
+  run a preview build and paste console output for every
+  retest cycle. A runbook that lets Claude drive
+  `expo start --web` via Playwright MCP closes the loop —
+  next bug surfaces in a Claude session, gets fixed, gets
+  verified, all in one turn)
+- ease: 6 (write `setup/04_claude_playtest.md` mirroring
+  `setup/02_eas.md` shape; verify the workflow in a Claude
+  session by walking through it end-to-end against the
+  current app)
+- next: file as next iterate tick. Concrete deliverables:
+  1. `setup/04_claude_playtest.md` — ELI5 step-by-step. Cover:
+     prereqs (pnpm install, expo cli), `pnpm web` invocation,
+     the URL it serves on (typically http://localhost:8081),
+     how to leave the server running in a separate terminal so
+     Claude's bash isn't blocked, how to confirm Claude can
+     reach it (`mcp__playwright__browser_navigate` smoke test),
+     and how to wind down cleanly.
+  2. Verify the workflow during the same iterate tick — start
+     the server in a background bash, navigate via Playwright,
+     drive through an encounter (walk → FIGHT → stance → action),
+     screenshot key states, confirm the workflow works
+     end-to-end. The runbook gets a "verified by Claude on
+     <commit-sha>" line.
+  3. Followup row: once verified, a recurring iterate-style
+     "playtest tick" can be added to /march's repertoire
+     (drive a fresh encounter every N ticks, flag any visible
+     regression).
+- source: user 2026-05-21 oversight 26th (direct request):
+  "If it doesn't exist already give me a document to walk me
+  through step-by-step (ELI5) to provide you the ability to
+  walk through the gameplay to fully test things yourself"
+
+### [3.7] Mechanics-vs-UI logic consistency audit (engine semantics vs screen behavior)
+
+- category: refactor / quality (project coherence)
+- impact: 8 (the user is seeing "odd behavior" in combat;
+  Phase 65 fixed the vm.phase staleness but didn't audit
+  every UI branch against engine truth; an explicit pass
+  surfaces any other mappings that drift quietly)
+- ease: 4 (research-heavy: enumerate UI logic decisions,
+  trace each one back to the engine source, document
+  alignment / drift / TODO per row)
+- next: file as iterate tick after the playtest runbook
+  ships. Concrete approach:
+  1. Build a checklist of UI-side branches in `combat.tsx`,
+     `EncounterModalOverlay`, `event.tsx`, exploration tab
+     (anything that gates UI on engine state or runs derived
+     logic). Examples: `onContinueRound` exit branches,
+     stance-advantage rendering, mana/cost gating, friendship
+     counter, effect chips, log entry classification, enemy
+     last-stance derivation.
+  2. For each: cite the engine source-of-truth function /
+     constant. Flag any mismatch as a sub-row + propose the
+     fix. The audit deliverable is a markdown report at
+     `docs/mechanics-ui-audit-<date>.md`.
+  3. Out of scope for the audit (deliverable from a future
+     iterate): fixing the surfaced mismatches. Each one
+     becomes its own iterate row scored individually.
+- source: user 2026-05-21 oversight 26th (direct request):
+  "I want you to audit to make sure the logic for the base
+  mechanics are perfectly in line with the logic being used
+  in the UI. I'm seeing some odd behavior."
+
 
 
 > **User-direct report 2026-05-21 (latest preview build):** four
 > combat-mechanics bugs blocking playability. Filed at HIGH
 > severity; user-source +0.5 bump applied per iterate §4.
 
-### [9.5] Combat regression — "Next Round" exits / completes combat even with no damage done (NEW)
+### [9.5] Combat regression — "Next Round" exits / completes combat even with no damage done ✅ (likely closed; user-confirmed combat "MOSTLY as expected")
 
-- category: bug (combat blocking, screen-layer)
-- impact: 9 (combat unusable for multi-round fights — every
-  round taps Continue → exits regardless of HP)
-- ease: ? (needs console-log data after Phase 65 Tick A ships
-  to user's preview build; new diagnostics required)
-- user report 2026-05-21 oversight 25th (mid-Phase-65, after
-  Tick A `8f7265c` landed): "combat is starting to move along!
-  I can see that the actions are causing changes. However,
-  'Next Round' always exits combat or completes combat. Even
-  if there is no damage done"
-- prime suspects in `app/(tabs)/combat.tsx:onContinueRound`:
-  - (a) `vm.enemy.hp <= 0` evaluating true even when engine
-    `combat.enemy.health > 0` — vm staleness on a different
-    field than `phase` (similar shape to [9.8] but on hp).
-  - (b) `vm.friendshipCounter >= vm.friendshipCounterMax`
-    misfiring — engine const is 3; maybe vm.friendshipCounter
-    reads from a default `?? 3` somewhere.
-  - (c) `vm.player.hp <= 0` after large damage → defeat branch
-    fires correctly but user reports zero-damage scenario.
-  - (d) Some effect/side-effect end-combat call we're not
-    seeing in the read.
-- next: ship Phase 65 Tick A to the user's preview build;
-  user retests Next Round; user pastes new console output;
-  this row narrows to (a/b/c/d). May fold into Phase 65
-  Tick C if same-root-cause as the existing diagnostic.
-- ship-in: Phase 65 (added to its scope after Tick A; will
-  surface as Tick D if not absorbed elsewhere).
-- source: user 2026-05-21 (preview build, post-Phase-65-Tick-A)
+- Resolved 2026-05-21 (oversight 26th call). User report:
+  "Okay, so combat is now working MOSTLY as expected." User
+  speculates remaining oddness may be enemy-strength tuning
+  rather than a vm-staleness bug. The `onContinueRound`
+  diagnostics in `b76303e` were never narrowed because the
+  bug stopped reproducing — likely an artifact of testing
+  earlier-than-Tick-A bundles. Diagnostic stream now safe to
+  strip (see `[3.5]` row below — no longer gated).
+- Re-open and file fresh narrowing tick if the symptom returns
+  in a future preview build.
 
 
 ### [9.5] Combat regression — "MP" label still appears in player HP/MP bars ✅

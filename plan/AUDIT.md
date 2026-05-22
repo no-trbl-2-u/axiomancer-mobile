@@ -317,6 +317,85 @@ Prior text preserved below for traceability:
 - next: file iterate fix tick.
 - source: exploration-surface mechanics audit 2026-05-22, row 4
 
+### Engine duplication drain (user-jot 2026-05-22 oversight 29th)
+
+> User asked for a list of "hardcoded values that are supposed
+> to be swapped out with code from the mechanics." Found via
+> repo-wide scan. Rows below are the actionable subset; rows
+> already acknowledged-as-intentional (mobile-only chrome,
+> Phase 60d stop-gaps, defensive defense-in-depth) are
+> documented in the scan report but not re-filed here.
+
+### [4.0] Engine-dup — `templateToEquipment` helper duplicated at 2 sites
+
+- category: refactor / engine-duplication
+- impact: 6 (two parallel implementations of the same
+  Equipment template→Equipment mapping; drift risk on the
+  Equipment shape if engine surface evolves)
+- ease: 7 (extract to `state/utils/equipment.ts` (or sibling
+  to `state/selectors/equipment.ts`); both callers route
+  through the shared helper)
+- sites:
+  - `state/actions.ts:852-862` (debug seed / loot grant path)
+  - `state/exploration-maps/event-pools.ts:200-210`
+    (treasure pool synthesis)
+- next: file iterate fix tick.
+- source: user-jot 2026-05-22 — engine-duplication scan
+
+### [3.5] Engine-dup — `StanceKey` type re-declared in token-crucible presenter
+
+- category: refactor / typing hygiene (engine-duplication)
+- impact: 3 (mobile re-declares the engine's `Stance` union
+  as a local `StanceKey` type; future engine extension
+  silently won't propagate)
+- ease: 9 (one-line import swap — drop local `StanceKey`,
+  import `type Stance` from `axiomancer-mechanics` and alias
+  where needed)
+- sites:
+  - `state/presenters/token-crucible.engine.ts:32`
+- next: file iterate fix tick.
+- source: user-jot 2026-05-22 — engine-duplication scan
+
+### [3.0] Engine-dup — `MAX_EFFECTS_SHOWN` constant duplicated in 2 presenters
+
+- category: refactor (single-source consolidation)
+- impact: 3 (display-only cap; two presenters carry their
+  own copy of `const MAX_EFFECTS_SHOWN = 4`. Engine has no
+  opinion; consolidate to one mobile-local constant)
+- ease: 8 (lift to `state/presenters/_constants.ts` (or
+  similar); both presenters import)
+- sites:
+  - `state/presenters/combat-hud.engine.ts:6`
+  - `state/presenters/combat.engine.ts:560`
+- next: file iterate fix tick.
+- source: user-jot 2026-05-22 — engine-duplication scan
+
+### [3.0] Engine-dup — debug seed hardcodes equipment slot list instead of using engine library
+
+- category: refactor (engine-duplication)
+- impact: 3 (debug-only path; hardcoded `['head', 'body',
+  'weapon']` should iterate the engine's `equipmentTemplates`
+  / `getTemplatesBySlot` so new slots auto-seed)
+- ease: 7 (swap the hardcoded array for an engine library
+  query; preserve the "one item per major slot" UX intent)
+- sites:
+  - `state/actions.ts:884` (debug seed action)
+- next: file iterate fix tick.
+- source: user-jot 2026-05-22 — engine-duplication scan
+
+### [2.5] Engine-dup — `STANCES` array literal in token-crucible
+
+- category: refactor (engine-duplication)
+- impact: 2 (local `STANCES: readonly StanceKey[] = ['heart',
+  'body', 'mind']` array; should derive from the engine
+  `Stance` union or a centralized mobile constant)
+- ease: 8 (small refactor; depends on whether the [3.5]
+  StanceKey type fix ships first)
+- sites:
+  - `state/presenters/token-crucible.engine.ts:78`
+- next: file iterate fix tick after [3.5] StanceKey row.
+- source: user-jot 2026-05-22 — engine-duplication scan
+
 ### [3.0] DRIFT — exploration presenter still reads legacy `availableNodes` / `completedNodes` / `lockedNodes` (exploration-audit row 1)
 
 - category: refactor (Phase 27 migration tail)

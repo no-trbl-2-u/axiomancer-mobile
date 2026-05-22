@@ -1506,16 +1506,16 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
         suite (4 → 13); 1147/1147 verify green. Independent of the
         encounter modal — closes the phase 70 series.
 
-- [ ] Phase 71 — Encounter-seal chrome refresh. Sibling to
-      Phase 70 — phase-aware top + bottom `SEALED` chain bars
-      (`SEALED · AT ARMS` → `SEALED · ROUND I/II/III` → `IT IS
-      DONE` / `CARRY ON`) plus panel border color flip from blood
-      (intro / combat) → sulfur (aftermath). Source-of-truth in
-      `design/handoff-2026-05-22/project/prototype.jsx:558-617`.
-      Single-tick phase — touches `EncounterModalOverlay` + a
-      small `selectEncounterSealChrome` presenter helper.
-      Ordering with Phase 70 is loose (see brief §3). Brief at
-      `plan/phases/phase_71_encounter_seal_chrome.md`.
+- [x] Phase 71 — Encounter-seal chrome refresh. Shipped
+      2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —
+      phase-aware top + bottom `SEALED` chain bars (`SEALED · AT
+      ARMS` → `SEALED · ROUND i/ii/iii` → `IT IS DONE` / `CARRY
+      ON`) plus panel border + outer glow flip from blood (intro
+      / combat) → sulfur (aftermath). New `selectEncounterSealChrome
+      (mode, round?)` presenter helper. Single-tick phase; the
+      chain bars now wrap every mode (pre-71 they only mounted
+      in prelude). 12 new tests across 2 suites; 1159/1159
+      verify green.
 
 - [x] Phase 69 — `store.setState` typed-wrapper sweep.
       Shipped 2026-05-22 in commit `c669ed8` as a single tick

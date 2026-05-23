@@ -117,6 +117,16 @@
 
 ## Pending
 
+### [3.2] `bearings.md` engine-bump row doesn't warn against `pnpm install` — recurring trap (already cost 1 EAS build + PR #153) ✅ (drained `1b0c273`)
+
+- issue: #154 (closed)
+- filed: 2026-05-23 by /iterate
+- category: tests (process / tooling)
+- Resolved 2026-05-23 in commit `1b0c273`. Extended `plan/bearings.md`
+  row 03 to lock the npm-only workflow + mirrored to project
+  memory as `feedback_engine_bump_lockfile` so future sessions
+  catch this without rereading bearings.
+
 ### [3.8] `.gitignore` misses playtest screenshots + scheduled-tasks lock — every tick shows 9 untracked files ✅ (drained `3e757b6`)
 
 - issue: #152 (closed)

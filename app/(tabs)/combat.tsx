@@ -414,57 +414,99 @@ export function CombatPanel() {
 
 function EnemyPanel({ vm }: { vm: CombatViewModel }) {
     const lastStance: StanceKey = vm.enemy.lastStance ?? 'mind';
+    // Phase 72 — restructured to the design's left-portrait pattern
+    // (`design/handoff-2026-05-23/project/screens-canonical.jsx:213-243`).
+    // Three columns: 60×72 framed portrait left, info column middle (flex),
+    // STANDS-stance indicator right. Pre-Phase-72 the SVG was a 180×200
+    // off-bleed overlay on the right — the user-reported "cleaner placing
+    // of the enemy's image/svg" addressed.
     return (
         <View style={styles.enemyPanel}>
-            <View style={[StyleSheet.absoluteFillObject, { backgroundColor: AXM.panelBg }]} />
-            <Splatter color={AXM.blood} size={120} seed={17} style={{ position: 'absolute', top: -10, left: -10, opacity: 0.6 }} />
-
-            <Svg viewBox="0 0 200 200" width={180} height={200} style={styles.enemySvg}>
-                <Defs>
-                    <RadialGradient id="eg" cx="50%" cy="40%">
-                        <Stop offset="0%" stopColor={AXM.blood} stopOpacity={0.4} />
-                        <Stop offset="100%" stopColor={AXM.blood} stopOpacity={0} />
-                    </RadialGradient>
-                </Defs>
-                <Ellipse cx={100} cy={100} rx={90} ry={80} fill="url(#eg)" />
-                <Path d="M100 30 C 60 30 40 70 50 130 L 30 200 L 170 200 L 150 130 C 160 70 140 30 100 30 Z"
-                    fill="#06050a" stroke={AXM.parchment} strokeWidth={1.5} />
-                <Path d="M70 70 Q 100 50 130 70 L 130 110 Q 100 130 70 110 Z" fill="#000" />
-                <Circle cx={85} cy={90} r={3.5} fill={AXM.blood} />
-                <Circle cx={115} cy={90} r={3.5} fill={AXM.blood} />
-                <Circle cx={85} cy={90} r={1.2} fill={AXM.sulfur} />
-                <Circle cx={115} cy={90} r={1.2} fill={AXM.sulfur} />
-                <Path d="M82 110 L 88 112 L 92 109 L 98 113 L 104 109 L 110 113 L 116 110 L 120 113"
-                    stroke={AXM.parchment} strokeWidth={1.2} fill="none" />
-            </Svg>
-
-            <View style={styles.enemyInfo}>
-                <View style={styles.enemyTopRow}>
-                    <DifficultyBadge tier={vm.enemy.tier || 'normal'} />
-                    <Text style={styles.roundText}>{vm.roundToken}</Text>
+            <Splatter
+                color={AXM.blood}
+                size={100}
+                seed={17}
+                style={{ position: 'absolute', top: -16, left: -16, opacity: 0.5 }}
+            />
+            <View style={styles.enemyRow}>
+                <View style={styles.enemyPortrait}>
+                    <Svg
+                        viewBox="0 0 200 200"
+                        width={58}
+                        height={70}
+                        // The detailed hooded silhouette renders smaller now;
+                        // the eye/mouth pixels become subtle marks rather than
+                        // the dominant chrome they were pre-Phase-72.
+                    >
+                        <Defs>
+                            <RadialGradient id="eg" cx="50%" cy="40%">
+                                <Stop offset="0%" stopColor={AXM.blood} stopOpacity={0.4} />
+                                <Stop offset="100%" stopColor={AXM.blood} stopOpacity={0} />
+                            </RadialGradient>
+                        </Defs>
+                        <Ellipse cx={100} cy={100} rx={90} ry={80} fill="url(#eg)" />
+                        <Path
+                            d="M100 30 C 60 30 40 70 50 130 L 30 200 L 170 200 L 150 130 C 160 70 140 30 100 30 Z"
+                            fill="#06050a"
+                            stroke={AXM.parchment}
+                            strokeWidth={1.5}
+                        />
+                        <Path
+                            d="M70 70 Q 100 50 130 70 L 130 110 Q 100 130 70 110 Z"
+                            fill="#000"
+                        />
+                        <Circle cx={85} cy={90} r={3.5} fill={AXM.blood} />
+                        <Circle cx={115} cy={90} r={3.5} fill={AXM.blood} />
+                    </Svg>
                 </View>
-                <Text style={styles.enemyName}>{vm.enemy.name}</Text>
-                {vm.enemy.flavor !== '' && (
-                    <Text style={styles.enemyFlavor}>{`"…${vm.enemy.flavor}"`}</Text>
-                )}
-                <View style={{ marginTop: 8 }}>
-                    <StatBar value={vm.enemy.hp} max={vm.enemy.hpMax} color={AXM.blood} label="VITALS" height={10} />
-                </View>
-                <View style={styles.enemyMetaRow}>
-                    <FriendshipMeter value={vm.friendshipCounter} max={vm.friendshipCounterMax} />
-                    <MindMark stacks={vm.enemy.mindMarks} />
-                </View>
-                <View style={styles.effectsRow}>
-                    {vm.enemy.effects.map((e, i) => (
-                        <EffectChip key={`${e.kind}-${i}`} effect={{ ...e, tint: e.tint ?? undefined, duration: e.duration ?? undefined }} />
-                    ))}
-                </View>
-                <View style={styles.lastStanceRow}>
-                    <SectionLabel size={9}>LAST STANCE →</SectionLabel>
-                    <View style={[styles.lastStanceBadge, { borderColor: vm.enemy.lastStance === null ? AXM.bone : AXM.sulfur }]}>
-                        <StanceGlyph kind={lastStance} size={12} color={AXM.sulfur} />
-                        <Text style={styles.lastStanceText}>{lastStance.toUpperCase()}</Text>
+                <View style={styles.enemyInfo}>
+                    <View style={styles.enemyTopRow}>
+                        <Text style={styles.enemyEyebrow}>WHAT WAITS</Text>
+                        <View style={{ flex: 1 }} />
+                        <DifficultyBadge tier={vm.enemy.tier || 'normal'} />
+                        <Text style={styles.roundText}>{vm.roundToken}</Text>
                     </View>
+                    <Text style={styles.enemyName} numberOfLines={1}>{vm.enemy.name}</Text>
+                    {vm.enemy.flavor !== '' && (
+                        <Text style={styles.enemyFlavor} numberOfLines={1}>
+                            {`"…${vm.enemy.flavor}"`}
+                        </Text>
+                    )}
+                    <View style={{ marginTop: 6 }}>
+                        <StatBar
+                            value={vm.enemy.hp}
+                            max={vm.enemy.hpMax}
+                            color={AXM.blood}
+                            label="VITAE"
+                            height={8}
+                        />
+                    </View>
+                    <View style={styles.enemyMetaRow}>
+                        <FriendshipMeter value={vm.friendshipCounter} max={vm.friendshipCounterMax} />
+                        <MindMark stacks={vm.enemy.mindMarks} />
+                    </View>
+                    {vm.enemy.effects.length > 0 && (
+                        <View style={styles.effectsRow}>
+                            {vm.enemy.effects.map((e, i) => (
+                                <EffectChip
+                                    key={`${e.kind}-${i}`}
+                                    effect={{
+                                        ...e,
+                                        tint: e.tint ?? undefined,
+                                        duration: e.duration ?? undefined,
+                                    }}
+                                />
+                            ))}
+                        </View>
+                    )}
+                </View>
+                <View style={styles.enemyStanceCol}>
+                    <Text style={styles.enemyStanceLabel}>STANDS</Text>
+                    <StanceGlyph
+                        kind={lastStance}
+                        size={28}
+                        color={vm.enemy.lastStance === null ? AXM.bone : AXM.sulfur}
+                    />
                 </View>
             </View>
         </View>
@@ -1114,18 +1156,86 @@ const styles = StyleSheet.create({
         color: AXM.bone,
         textTransform: 'uppercase',
     },
-    enemyPanel: { position: 'relative', padding: 6, paddingHorizontal: 10, height: 200, overflow: 'hidden' },
-    enemySvg: { position: 'absolute', right: -10, bottom: -8, opacity: 0.95 },
-    enemyInfo: { position: 'absolute', top: 10, left: 12, right: 110 },
-    enemyTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 },
+    // Phase 72 — three-column EnemyPanel layout matching the design's
+    // PtCombatBody EnemyPanel (`screens-canonical.jsx:213-243`).
+    // Portrait left (60×72 framed), info middle (flex), stance indicator
+    // right. Pre-Phase-72 layout was an off-bleed right-aligned SVG with
+    // info absolute-positioned left — surface still rendered as the
+    // overlapped collage the user flagged for cleanup.
+    enemyPanel: {
+        position: 'relative',
+        padding: 10,
+        paddingHorizontal: 16,
+        backgroundColor: AXM.panelBg,
+        overflow: 'hidden',
+    },
+    enemyRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        gap: 12,
+    },
+    enemyPortrait: {
+        width: 60,
+        height: 72,
+        backgroundColor: AXM.deepBg,
+        borderWidth: 1,
+        borderColor: AXM.ash,
+        alignItems: 'center',
+        justifyContent: 'center',
+        // Subtle hatch via thin internal stripe — react-native doesn't
+        // ship the `axm-hatch` CSS class the design uses, but the
+        // bordered+deepBg backdrop carries the visual contract.
+    },
+    enemyInfo: { flex: 1, minWidth: 0 },
+    enemyEyebrow: {
+        fontFamily: FONTS.sans,
+        fontSize: 9,
+        letterSpacing: 1.8,
+        color: AXM.bone,
+    },
+    enemyTopRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginBottom: 2,
+    },
     roundText: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone },
-    enemyName: { fontFamily: FONTS.gothic, fontSize: 22, lineHeight: 24, color: AXM.parchment, marginTop: 4, textShadowColor: AXM.blood, textShadowOffset: { width: 2, height: 2 }, textShadowRadius: 0 },
-    enemyFlavor: { fontFamily: FONTS.serifItalic, fontSize: 10, color: AXM.bone, marginTop: 2 },
-    enemyMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 5 },
-    effectsRow: { flexDirection: 'row', gap: 4, marginTop: 6, flexWrap: 'wrap' },
-    lastStanceRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 8 },
-    lastStanceBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingVertical: 1, paddingHorizontal: 4, backgroundColor: '#000', borderWidth: 1 },
-    lastStanceText: { fontFamily: FONTS.sans, fontSize: 10, color: AXM.sulfur, letterSpacing: 1.5 },
+    enemyName: {
+        fontFamily: FONTS.gothic,
+        fontSize: 20,
+        lineHeight: 22,
+        color: AXM.parchment,
+        marginTop: 2,
+    },
+    enemyFlavor: {
+        fontFamily: FONTS.serifItalic,
+        fontSize: 10,
+        color: AXM.bone,
+        marginTop: 2,
+    },
+    enemyMetaRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        marginTop: 5,
+    },
+    effectsRow: {
+        flexDirection: 'row',
+        gap: 4,
+        marginTop: 5,
+        flexWrap: 'wrap',
+    },
+    enemyStanceCol: {
+        alignItems: 'center',
+        gap: 4,
+        paddingTop: 2,
+    },
+    enemyStanceLabel: {
+        fontFamily: FONTS.sans,
+        fontSize: 9,
+        letterSpacing: 1.6,
+        color: AXM.bone,
+    },
     logWrap: { padding: 6, paddingHorizontal: 10, paddingBottom: 0 },
     logBox: { backgroundColor: '#06050a', borderWidth: 1, borderColor: AXM.ash, borderStyle: 'dashed', padding: 5, paddingHorizontal: 8, height: 78, overflow: 'hidden' },
     logScroll: { flex: 1, marginTop: 2 },

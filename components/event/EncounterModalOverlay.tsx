@@ -425,12 +425,25 @@ const styles = StyleSheet.create({
         top: 24,
         bottom: 24,
         backgroundColor: AXM.bg,
-        borderWidth: 1,
+        // Phase 72 — border bumped 1px → 2px to match the design
+        // bundle's PtEncounterFlow (`design/handoff-2026-05-23/project/
+        // prototype.jsx:574`) `border: 2px solid $accent`. The color
+        // itself still comes from `sealChrome.accentColor` (Phase 71).
+        borderWidth: 2,
+        // Color is overridden per-mode by the Animated.View's style
+        // override (sealChrome.accentColor). This default is the
+        // pre-Phase-71 rust fallback; Phase 71's override always
+        // takes precedence at runtime.
         borderColor: AXM.rust,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.8,
-        shadowRadius: 40,
+        // Phase 72 — shadow radius softened so the panel reads with
+        // a tighter wax-seal glow rather than a diffuse halo. Design
+        // prototype uses `boxShadow: 0 0 24px <accent-tint>` plus
+        // an inset shadow; react-native can't compose box-shadow that
+        // richly, but tighter radius is the closest approximation.
+        shadowRadius: 24,
         elevation: 10,
         flexDirection: 'column',
     },
@@ -561,5 +574,11 @@ const styles = StyleSheet.create({
     // panel viewport, so the scroll lets the player see all of
     // it without breaking the modal containment.
     combatScroll: { flex: 1 },
-    combatScrollContent: { paddingBottom: 12 },
+    // Phase 72 — combat-body horizontal inset aligns with the
+    // design bundle's `PtCombatBody` outer wrap
+    // (`design/handoff-2026-05-23/project/prototype.jsx:697`
+    // `padding: '8px 14px 12px'`). Pre-Phase-72 the scroll was
+    // edge-to-edge and the EnemyPanel + phase rows looked cramped
+    // against the modal border.
+    combatScrollContent: { paddingBottom: 12, paddingHorizontal: 4 },
 });

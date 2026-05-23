@@ -248,8 +248,16 @@ export interface ResolveSlice {
     nextActionLabel: string;
 }
 
-const NEXT_ROUND_LABEL = '✠ NEXT ROUND';
-const DEPART_LABEL = '✠ DEPART';
+// Phase 72 port from 2026-05-23 design — `screens-canonical.jsx::ResolvePane`
+// renders the resolve-phase button as `'LET IT FALL ━━━━━ ▸'` (axm-caption,
+// sulfur border, sulfur text). The terminal-round variant uses the
+// `prototype.jsx::ResolvePaneLive` form `'LET IT FALL · IT IS DONE ▸'`
+// signalling the encounter is about to release. Pre-Phase-72 labels
+// (`'✠ NEXT ROUND'` / `'✠ DEPART'`) drained — the design intent is the
+// heavy-line "let it fall" phrasing that carries the gravity of
+// committing the round.
+const LET_IT_FALL_LABEL = 'LET IT FALL ━━━━━ ▸';
+const LET_IT_FALL_TERMINAL_LABEL = 'LET IT FALL · IT IS DONE ▸';
 
 export interface CombatLogEntryDisplay {
     severity: LogSeverity;
@@ -913,7 +921,13 @@ function resolveSliceFromState(
             header = '… NO BLOW LANDS';
     }
     const phaseRaw = String(combat?.phase ?? 'choosing_stance');
-    const nextActionLabel = phaseRaw === 'ended' ? DEPART_LABEL : NEXT_ROUND_LABEL;
+    // Phase 72 — `'ended'` is the post-resolve terminal state where
+    // the encounter is about to release. Use the heavier "IT IS DONE"
+    // variant so the player feels the weight of the closing blow.
+    // Mid-fight rounds use the standard heavy-line label.
+    const nextActionLabel = phaseRaw === 'ended'
+        ? LET_IT_FALL_TERMINAL_LABEL
+        : LET_IT_FALL_LABEL;
     return {
         playerStance: pStance,
         enemyStance: eStance,

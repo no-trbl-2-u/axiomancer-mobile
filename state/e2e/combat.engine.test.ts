@@ -984,33 +984,36 @@ describe('selectCombatViewModel: phaseStack contract (Tick C)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// ResolveSlice.nextActionLabel — CRITIQUE pass 8 HIGH drain
+// ResolveSlice.nextActionLabel — CRITIQUE pass 8 HIGH drain (refreshed Phase 72)
 //
 // Lifted off the screen (was inline `isEnded ? '✠ DEPART' : '✠ NEXT ROUND'`
-// in `app/(tabs)/combat.tsx:761`) onto the VM per Hard Rule #8. The
-// label is keyed off engine `phase`: `'✠ DEPART'` once `phase === 'ended'`,
-// `'✠ NEXT ROUND'` otherwise.
+// in `app/(tabs)/combat.tsx:761`) onto the VM per Hard Rule #8. Phase 72
+// refreshed the labels per the 2026-05-23 design handoff —
+// `screens-canonical.jsx::ResolvePane` uses `'LET IT FALL ━━━━━ ▸'`
+// for mid-fight rounds and `prototype.jsx::ResolvePaneLive` uses
+// `'LET IT FALL · IT IS DONE ▸'` for the terminal `phase === 'ended'`
+// state.
 // ---------------------------------------------------------------------------
 
 describe('selectCombatViewModel: resolve.nextActionLabel', () => {
-    it('returns NEXT ROUND on the no-combat fallback (idle store)', () => {
+    it('returns LET IT FALL on the no-combat fallback (idle store)', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const vm = selectCombatViewModel(store.getState());
 
-        expect(vm.resolve.nextActionLabel).toBe('✠ NEXT ROUND');
+        expect(vm.resolve.nextActionLabel).toBe('LET IT FALL ━━━━━ ▸');
     });
 
-    it('returns NEXT ROUND while combat is still in a non-ended phase', () => {
+    it('returns LET IT FALL while combat is still in a non-ended phase', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
         actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
         const vm = selectCombatViewModel(store.getState());
 
         expect(vm.phase).not.toBe('ended');
-        expect(vm.resolve.nextActionLabel).toBe('✠ NEXT ROUND');
+        expect(vm.resolve.nextActionLabel).toBe('LET IT FALL ━━━━━ ▸');
     });
 
-    it('flips to DEPART when combat phase reaches ended', () => {
+    it('flips to the IT IS DONE terminal variant when combat phase reaches ended', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
         actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
@@ -1018,7 +1021,7 @@ describe('selectCombatViewModel: resolve.nextActionLabel', () => {
         const vm = selectCombatViewModel(store.getState());
 
         expect(vm.phase).toBe('ended');
-        expect(vm.resolve.nextActionLabel).toBe('✠ DEPART');
+        expect(vm.resolve.nextActionLabel).toBe('LET IT FALL · IT IS DONE ▸');
     });
 });
 

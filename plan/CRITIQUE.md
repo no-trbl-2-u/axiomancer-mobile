@@ -53,7 +53,7 @@
 
 ## Pending
 
-### [MED] /self — Level Up button at top of SELF screen + stat-allocation modal — **design generation pending**
+### [MED] /self — Level Up button at top of SELF screen + stat-allocation modal ✅ (PROMOTED → Phase 73 via /oversight 33rd call, design bundle landed `design/handoff-2026-05-23/`)
 - pass: user-jot (commit `3de163f`)
 - viewport: unspecified
 - auth_state: anonymous

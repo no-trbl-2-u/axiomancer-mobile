@@ -1506,6 +1506,39 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
         suite (4 → 13); 1147/1147 verify green. Independent of the
         encounter modal — closes the phase 70 series.
 
+- [ ] Phase 72 — Combat modal polish (port from 2026-05-22 design).
+      **TOP PRIORITY** — user-prompted 2026-05-23 via /oversight
+      33rd call after reviewing the live combat modal against the
+      Claude Design prototype. Five concrete divergences to close:
+      modal panel border weight, body spacing, phase-row "sections"
+      (clearly-bordered cards instead of an unsegmented stack),
+      resolve button label (`✠ NEXT ROUND` → `LET IT FALL ━━━━━ ▸`
+      with `LET IT FALL · IT IS DONE ▸` on the terminal round), and
+      enemy SVG placement (left-side bordered portrait frame
+      instead of right-aligned off-bleed overlay). Mobile's MANA
+      bar omission is correct — design prototype shows MANA but
+      mobile shouldn't (Phase 62). Verification includes a
+      Playwright walkthrough per `skills/playtest.md` against
+      `design/handoff-2026-05-23/project/prototype.html`. Single
+      tick. Brief at `plan/phases/phase_72_combat_modal_polish.md`.
+
+- [ ] Phase 73 — Level-Up modal + SELF-tab ASCEND strip (port
+      from 2026-05-23 design). **TOP PRIORITY** — user-prompted
+      2026-05-23 via the same /oversight call. The third design
+      bundle of the day (`EGG6baZVzqIxkylHpXJo-Q`,
+      stashed at `design/handoff-2026-05-23/`) includes the
+      previously-pending `screens/levelup.jsx` — closes the
+      long-standing critique row "[MED] /self — Level Up button
+      + stat-allocation modal" (filed via /jot 2026-05-22). Two
+      surfaces: `<SelfTabHeaderWithLevelUp>` (inline ASCEND strip
+      between the level box and XP chain when pendingPoints > 0)
+      + `<LevelUpModal>` (ledger-opens stat-allocation modal with
+      HEART / BODY / MIND ± controls + derived-preview ribbon +
+      discard-confirm inset). Decomposed into Tick A (engine
+      surface + SELF header strip) + Tick B (full LevelUpModal +
+      commit flow). Brief at
+      `plan/phases/phase_73_levelup_modal.md`.
+
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped
       2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —
       phase-aware top + bottom `SEALED` chain bars (`SEALED · AT

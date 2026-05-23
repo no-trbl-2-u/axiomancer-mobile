@@ -1506,20 +1506,20 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
         suite (4 → 13); 1147/1147 verify green. Independent of the
         encounter modal — closes the phase 70 series.
 
-- [ ] Phase 72 — Combat modal polish (port from 2026-05-22 design).
-      **TOP PRIORITY** — user-prompted 2026-05-23 via /oversight
-      33rd call after reviewing the live combat modal against the
-      Claude Design prototype. Five concrete divergences to close:
-      modal panel border weight, body spacing, phase-row "sections"
-      (clearly-bordered cards instead of an unsegmented stack),
-      resolve button label (`✠ NEXT ROUND` → `LET IT FALL ━━━━━ ▸`
-      with `LET IT FALL · IT IS DONE ▸` on the terminal round), and
-      enemy SVG placement (left-side bordered portrait frame
-      instead of right-aligned off-bleed overlay). Mobile's MANA
-      bar omission is correct — design prototype shows MANA but
-      mobile shouldn't (Phase 62). Verification includes a
-      Playwright walkthrough per `skills/playtest.md` against
-      `design/handoff-2026-05-23/project/prototype.html`. Single
+- [x] Phase 72 — Combat modal polish (port from 2026-05-22 design).
+      Shipped 2026-05-23 in commit `4b394a1`. User-reported five
+      divergences closed: resolve button label (`✠ NEXT ROUND` →
+      `LET IT FALL ━━━━━ ▸` mid-fight + `LET IT FALL · IT IS DONE ▸`
+      terminal), enemy panel restructured to design's three-column
+      pattern (60×72 framed portrait left / info middle / STANDS
+      column right — was off-bleed right-aligned SVG overlay), modal
+      panel border bumped 1px → 2px, body horizontal padding added,
+      shadow radius tightened. MANA bar omission preserved (design
+      shows it but mobile shouldn't, per Phase 62). 1165/1165 verify
+      green; 3 pin refreshes on `nextActionLabel` test suite. Plus
+      a precursor hotfix `043d607` for a user-reported crash on the
+      defeat path (boss-skill killing blow → undefined `enemyAction`).
+      Playwright walkthrough scheduled for the user-driven /verify
       tick. Brief at `plan/phases/phase_72_combat_modal_polish.md`.
 
 - [ ] Phase 73 — Level-Up modal + SELF-tab ASCEND strip (port

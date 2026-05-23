@@ -117,6 +117,16 @@
 
 ## Pending
 
+### [3.8] Drain 2 lint warnings from combat-modal rewrite (`accent` + `ChainBar` unused) ✅ (drained `24e3ec4`)
+
+- issue: #151 (closed)
+- filed: 2026-05-23 by /iterate (post-`02b75db` `feat(combat): align combat modal to 2026-05-23 design handoff`)
+- category: tests (quality / verify-gate noise)
+- Resolved 2026-05-23 in commit `24e3ec4`. Both unused symbols
+  removed; `isFriend` retained (it's still read at L1149/L1153
+  in ResolvePanel styling). 1224/1224 verify green; 0 lint
+  warnings (was 2).
+
 ### [2.0] Phase 72 acceptance — Playwright walkthrough against `design/handoff-2026-05-23/project/prototype.html`
 
 - filed: 2026-05-23 by /ship-a-phase

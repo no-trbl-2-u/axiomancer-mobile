@@ -23,6 +23,7 @@
 
 import React from 'react';
 
+import { TooltipProvider } from '@/components/tooltip/TooltipProvider';
 import { CombatModeProvider } from '@/state/combat-mode';
 import { GameStoreProvider } from '@/state/GameStoreProvider';
 import { AestheticModeProvider, type AestheticMode } from '@/state/aesthetic-mode';
@@ -58,7 +59,7 @@ export function withAllProviders(
         <AestheticModeProvider initialMode={options.aesthetic ?? 'canonical'} skipHydration>
             <CombatModeProvider>
                 <GameStoreProvider store={store}>
-                    {child}
+                    <TooltipProvider>{child}</TooltipProvider>
                 </GameStoreProvider>
             </CombatModeProvider>
         </AestheticModeProvider>

@@ -13,6 +13,7 @@ import * as NavigationBar from 'expo-navigation-bar';
 import { useCallback, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { TooltipProvider } from '@/components/tooltip/TooltipProvider';
 import { AestheticModeProvider } from '@/state/aesthetic-mode';
 import { CombatModeProvider } from '@/state/combat-mode';
 import { GameStoreProvider } from '@/state/GameStoreProvider';
@@ -122,6 +123,7 @@ export default function RootLayout() {
         <ErrorBoundary>
           <AestheticModeProvider>
           <CombatModeProvider>
+          <TooltipProvider>
             <StatusBar style="light" />
             <HardwareBackHandler />
             <EventGate />
@@ -135,6 +137,7 @@ export default function RootLayout() {
                 options={{ headerShown: false, presentation: 'fullScreenModal' }}
               />
             </Stack>
+          </TooltipProvider>
           </CombatModeProvider>
           </AestheticModeProvider>
         </ErrorBoundary>

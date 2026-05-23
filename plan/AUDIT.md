@@ -451,7 +451,7 @@ Prior text preserved below for traceability:
   - `state/actions.ts:884` (debug seed action)
 - source: user-jot 2026-05-22 — engine-duplication scan
 
-### [3.5] Engine-dup — `STANCES` array literal across 7 sites (re-scored 2026-05-23) — picked
+### [3.5] Engine-dup — `STANCES` array literal across 7 sites (re-scored 2026-05-23) ✅ (drained `9a3f0a5` → consolidated to `state/presenters/stances.ts`)
 
 - category: refactor (engine-duplication)
 - impact: 4 — re-scored from 2 to 4 after the audit pass surfaced 7 sites (1 typed const, 4 inline `['heart', 'body', 'mind']` literals across two presenters, 2 test fixtures). Phase 73 (`components/levelup/LevelUpModal.tsx:168`) shipped with a new duplicate. The engine exports the `Stance` type union but no `STANCES` constant array, so a shared mobile-side constant is the right consolidation. Mirrors the lowercase-Roman drain at `state/presenters/roman.ts` (commit `02217b7`).

@@ -31,6 +31,7 @@ import {
     type QuestName,
 } from 'axiomancer-mechanics';
 
+import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useGameStore } from '@/state/GameStoreProvider';
 import { AXM, FONTS } from '@/theme/axm';
 
@@ -83,7 +84,7 @@ const QUESTS: readonly QuestSpec[] = [
 export function DebugQuestState() {
     const store = useGameStore();
 
-    if (!__DEV__) return null;
+    if (!isDevToolsEnabled()) return null;
 
     const onStart = (spec: QuestSpec) => {
         const state = store.getState();

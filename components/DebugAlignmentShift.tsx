@@ -23,6 +23,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useGameStore } from '@/state/GameStoreProvider';
 import { AXM, FONTS } from '@/theme/axm';
 
@@ -39,7 +40,7 @@ const AXES: readonly { key: AxisKey; label: string }[] = [
 export function DebugAlignmentShift() {
     const store = useGameStore();
 
-    if (!__DEV__) return null;
+    if (!isDevToolsEnabled()) return null;
 
     const onShift = (axis: AxisKey, sign: 1 | -1) => {
         const delta = { [axis]: sign * SHIFT_STEP };

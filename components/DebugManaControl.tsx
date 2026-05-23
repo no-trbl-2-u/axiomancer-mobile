@@ -25,13 +25,14 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import {
     PLAYER_MANA_DEFAULT_MAX,
 } from '@/state/actions';
+import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useGameStore } from '@/state/GameStoreProvider';
 import { AXM, FONTS } from '@/theme/axm';
 
 export function DebugManaControl() {
     const store = useGameStore();
 
-    if (!__DEV__) return null;
+    if (!isDevToolsEnabled()) return null;
 
     const setMana = (current: number) => {
         const cur = store.getState().combatMana;

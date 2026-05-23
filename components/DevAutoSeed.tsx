@@ -20,6 +20,7 @@
 
 import { useEffect, useRef } from 'react';
 
+import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useGameActions, useGameState } from '@/state/GameStoreProvider';
 
 export function DevAutoSeed() {
@@ -28,7 +29,7 @@ export function DevAutoSeed() {
     const seeded = useRef(false);
 
     useEffect(() => {
-        if (!__DEV__) return;
+        if (!isDevToolsEnabled()) return;
         if (seeded.current) return;
         if (inventoryLength > 0) {
             // Either the prior session already seeded, or the

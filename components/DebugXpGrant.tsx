@@ -18,6 +18,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useGameStore } from '@/state/GameStoreProvider';
 import { AXM, FONTS } from '@/theme/axm';
 
@@ -26,7 +27,7 @@ const XP_GRANT_AMOUNT = 100;
 export function DebugXpGrant() {
     const store = useGameStore();
 
-    if (!__DEV__) return null;
+    if (!isDevToolsEnabled()) return null;
 
     const onGrantXp = () => {
         const player = store.getState().player;

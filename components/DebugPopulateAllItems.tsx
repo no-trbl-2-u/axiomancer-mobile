@@ -22,6 +22,7 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useGameActions } from '@/state/GameStoreProvider';
 import { AXM, FONTS } from '@/theme/axm';
 
@@ -29,7 +30,7 @@ export function DebugPopulateAllItems() {
     const actions = useGameActions();
     const [lastResult, setLastResult] = useState<string | null>(null);
 
-    if (!__DEV__) return null;
+    if (!isDevToolsEnabled()) return null;
 
     const onPress = () => {
         const result = actions.populateAllItems();

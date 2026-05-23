@@ -26,6 +26,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { applyEffect, effectsLibrary } from 'axiomancer-mechanics';
 
+import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useGameStore } from '@/state/GameStoreProvider';
 import { AXM, FONTS } from '@/theme/axm';
 
@@ -35,7 +36,7 @@ const ENEMY_DEBUFF_ID = 'debuff_bleed';
 export function DebugEffectApply() {
     const store = useGameStore();
 
-    if (!__DEV__) return null;
+    if (!isDevToolsEnabled()) return null;
 
     const onBuffPlayer = () => {
         const effect = effectsLibrary.registry.get(PLAYER_BUFF_ID);

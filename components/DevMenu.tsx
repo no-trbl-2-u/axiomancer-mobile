@@ -28,6 +28,7 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { AXM, FONTS } from '@/theme/axm';
 
 interface DevMenuProps {
@@ -43,7 +44,7 @@ interface DevMenuProps {
 export function DevMenu({ children, initiallyExpanded = false }: DevMenuProps) {
     const [expanded, setExpanded] = useState(initiallyExpanded);
 
-    if (!__DEV__) return null;
+    if (!isDevToolsEnabled()) return null;
 
     return (
         <View style={styles.root} testID="dev-menu">

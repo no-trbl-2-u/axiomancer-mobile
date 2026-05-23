@@ -20,13 +20,14 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { setChaosMode } from '@/state/exploration-maps/event-pools';
 import { AXM, FONTS } from '@/theme/axm';
 
 export function DebugChaosToggle() {
     const [chaosOn, setChaosOn] = useState<boolean>(false);
 
-    if (!__DEV__) return null;
+    if (!isDevToolsEnabled()) return null;
 
     const onPress = () => {
         const next = !chaosOn;

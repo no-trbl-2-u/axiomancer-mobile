@@ -22,6 +22,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useGameStore } from '@/state/GameStoreProvider';
 import { forceEventKindOnNode } from '@/state/exploration-maps/event-pools';
 import type { NodeType } from '@/state/presenters/exploration.engine';
@@ -38,7 +39,7 @@ const FORCEABLE_KINDS: readonly { key: NodeType; label: string }[] = [
 export function DebugEventKindForce() {
     const store = useGameStore();
 
-    if (!__DEV__) return null;
+    if (!isDevToolsEnabled()) return null;
 
     const onForce = (kind: NodeType) => {
         const world = store.getState().world;

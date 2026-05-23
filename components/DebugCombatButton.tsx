@@ -20,6 +20,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
+import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useCombatMode } from '@/state/combat-mode';
 import { useGameActions } from '@/state/GameStoreProvider';
 import { createMockEncounterEnemy } from '@/state/mocks/combat.mock';
@@ -30,7 +31,7 @@ export function DebugCombatButton() {
     const { enterCombat } = useCombatMode();
     const router = useRouter();
 
-    if (!__DEV__) return null;
+    if (!isDevToolsEnabled()) return null;
 
     const onPress = () => {
         actions.startCombat(createMockEncounterEnemy());

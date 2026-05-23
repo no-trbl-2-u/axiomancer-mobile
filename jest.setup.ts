@@ -29,3 +29,14 @@ jest.mock('@react-native-async-storage/async-storage', () =>
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
+
+// `@/lib/buildProfile` reads `Constants.expoConfig.extra.devToolsEnabled`
+// (set by `app.config.ts` from `EAS_BUILD_PROFILE`). Under Jest that
+// signal isn't present and we want the existing `__DEV__`-toggling
+// suite contracts (DevMenu, Debug*, AestheticDevToggle, DevAutoSeed)
+// to keep working, so route the helper directly to the same global
+// flag those suites already swap.
+jest.mock('@/lib/buildProfile', () => ({
+    isDevToolsEnabled: () => (globalThis as { __DEV__?: boolean }).__DEV__ !== false,
+    getBuildProfile: () => null,
+}));

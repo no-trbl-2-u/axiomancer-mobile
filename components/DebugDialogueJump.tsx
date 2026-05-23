@@ -23,6 +23,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { DialogueTree } from 'axiomancer-mechanics';
 
+import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useGameStore } from '@/state/GameStoreProvider';
 import { AXM, FONTS } from '@/theme/axm';
 
@@ -76,7 +77,7 @@ const TREES: readonly TreeOption[] = [
 export function DebugDialogueJump() {
     const store = useGameStore();
 
-    if (!__DEV__) return null;
+    if (!isDevToolsEnabled()) return null;
 
     const onJump = (option: TreeOption) => {
         const state = store.getState();

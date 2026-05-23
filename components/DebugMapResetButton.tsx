@@ -16,6 +16,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useGameActions, useGameState } from '@/state/GameStoreProvider';
 import { AXM, FONTS } from '@/theme/axm';
 
@@ -24,7 +25,7 @@ export function DebugMapResetButton() {
      
     const currentMapName = useGameState((s) => s.world?.currentMap?.name ?? null);
 
-    if (!__DEV__) return null;
+    if (!isDevToolsEnabled()) return null;
     if (currentMapName === null) return null;
 
     const onPress = () => {

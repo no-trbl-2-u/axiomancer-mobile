@@ -16,13 +16,14 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useAesthetic } from '@/state/aesthetic-mode';
 import { AXM, FONTS } from '@/theme/axm';
 
 export function AestheticDevToggle() {
     const { mode, toggle, hydrated } = useAesthetic();
 
-    if (!__DEV__) return null;
+    if (!isDevToolsEnabled()) return null;
 
     return (
         <View style={styles.row}>

@@ -431,27 +431,6 @@ function ChainBarFixed({
 // 2026-05-23 handoff bundle (`prototype.jsx:566 / :614`).
 const DIAMOND_STRAND = '◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆';
 
-function ChainBar({ label, accentColor }: { label: string; accentColor: string }) {
-    return (
-        <View style={styles.chainBar} testID="encounter-modal-chain">
-            <Text
-                style={[styles.chainDiamonds, { color: accentColor }]}
-                numberOfLines={1}
-                ellipsizeMode="clip"
-            >
-                {DIAMOND_STRAND}
-            </Text>
-            <Text style={[styles.chainText, { color: accentColor }]}>{label}</Text>
-            <Text
-                style={[styles.chainDiamonds, { color: accentColor }]}
-                numberOfLines={1}
-                ellipsizeMode="clip"
-            >
-                {DIAMOND_STRAND}
-            </Text>
-        </View>
-    );
-}
 
 // Four corner rivets inside the seal panel — ports the design's
 // `PtRivet` components (`prototype.jsx:621-630`) which render as

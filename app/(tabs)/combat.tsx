@@ -1105,7 +1105,6 @@ function ResolvePanel({
                 : AXM.parchment;
     const isFriend = resolve.outcome === 'friendship';
     const isCrit = resolve.outcome === 'crit';
-    const accent = isFriend ? AXM.rust : AXM.blood;
 
     // Trigger haptics for crit/fumble per Phase 10 spec
     useEffect(() => {

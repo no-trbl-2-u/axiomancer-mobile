@@ -1522,22 +1522,24 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       Playwright walkthrough scheduled for the user-driven /verify
       tick. Brief at `plan/phases/phase_72_combat_modal_polish.md`.
 
-- [ ] Phase 73 — Level-Up modal + SELF-tab ASCEND strip (port
-      from 2026-05-23 design). **TOP PRIORITY** — user-prompted
-      2026-05-23 via the same /oversight call. The third design
-      bundle of the day (`EGG6baZVzqIxkylHpXJo-Q`,
-      stashed at `design/handoff-2026-05-23/`) includes the
-      previously-pending `screens/levelup.jsx` — closes the
-      long-standing critique row "[MED] /self — Level Up button
-      + stat-allocation modal" (filed via /jot 2026-05-22). Two
-      surfaces: `<SelfTabHeaderWithLevelUp>` (inline ASCEND strip
-      between the level box and XP chain when pendingPoints > 0)
-      + `<LevelUpModal>` (ledger-opens stat-allocation modal with
-      HEART / BODY / MIND ± controls + derived-preview ribbon +
-      discard-confirm inset). Decomposed into Tick A (engine
-      surface + SELF header strip) + Tick B (full LevelUpModal +
-      commit flow). Brief at
-      `plan/phases/phase_73_levelup_modal.md`.
+- [x] Phase 73 — Level-Up modal + SELF-tab ASCEND strip (port
+      from 2026-05-23 design). Shipped 2026-05-23 in commit
+      `030e2a1` as a single tick (Tick A + Tick B combined per
+      the brief's single-tick alternative — both surfaces are
+      tightly coupled). Closes the long-standing critique row
+      "[MED] /self — Level Up button + stat-allocation modal"
+      (filed via /jot 2026-05-22). New `<AscendStrip>` (inline,
+      sulfur-banded, only mounts when `vm.pendingPoints > 0`) +
+      `<LevelUpModal>` (full-screen ledger-opens with ± controls,
+      points-remaining strip, COMMIT ghost↔live transition,
+      discard-confirm inset on cancel-with-spent). `vm.pendingPoints`
+      threads from engine `Character.availableStatPoints`; commit
+      dispatches `actions.allocateStatPoint(stance)` N times via
+      the engine's existing action. 29 new tests across 3 suites;
+      1193/1193 verify green. Engine derived-stats preview ribbon
+      deferred (no engine `previewAllocation` helper yet); LockSeal
+      pulse animation static for now (real reanimated loop
+      tighten later, gated on reduce-motion).
 
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped
       2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —

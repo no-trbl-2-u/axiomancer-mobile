@@ -91,6 +91,14 @@
 
 ## Pending
 
+### [2.0] Phase 72 acceptance — Playwright walkthrough against `design/handoff-2026-05-23/project/prototype.html`
+
+- filed: 2026-05-23 by /ship-a-phase
+- category: tests (acceptance)
+- impact: 2 — visual-acceptance check on the Phase 72 combat-modal polish that's already shipped. Not a regression risk; just confirms the live build matches the design after the user's "many divergences" pass.
+- ease: ? — requires a user-started `pnpm web` per `skills/playtest.md` §1 (opt-in by design; chicken-and-egg with Claude bash sessions). Cannot run autonomously overnight.
+- next: user invokes `/playtest` after starting `pnpm web`. Sane URL is `http://localhost:8081`. The skill drives a canonical encounter walk + files visible regressions back to this file.
+
 ### [needs-user-call] Design-board prototype vs live mobile app — user reports "many divergences" + "none of the work I requested earlier was done" ✅ (resolved 2026-05-23 — see Phase 72 + 73)
 
 - filed: 2026-05-23 via /oversight 33rd call

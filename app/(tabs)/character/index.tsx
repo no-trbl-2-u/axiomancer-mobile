@@ -1,8 +1,10 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AXM, FONTS } from '@/theme/axm';
 import { AestheticDevToggle } from '@/components/AestheticDevToggle';
+import { AscendStrip } from '@/components/levelup/AscendStrip';
+import { LevelUpModal } from '@/components/levelup/LevelUpModal';
 import { DebugChaosToggle } from '@/components/DebugChaosToggle';
 import { DebugCombatButton } from '@/components/DebugCombatButton';
 import { DebugAlignmentShift } from '@/components/DebugAlignmentShift';
@@ -24,7 +26,7 @@ import { StanceGlyph } from '@/components/StanceGlyph';
 import { EffectGlyph } from '@/components/EffectGlyph';
 import { XpChain } from '@/components/XpChain';
 import { BodyDiagram } from '@/components/BodyDiagram';
-import { useGameState, useGameStore } from '@/state/GameStoreProvider';
+import { useGameActions, useGameState, useGameStore } from '@/state/GameStoreProvider';
 import { selectCharacterViewModel } from '@/state/presenters/character.engine';
 
 export default function CharacterScreen() {
@@ -40,6 +42,7 @@ export default function CharacterScreen() {
   );
   const router = useRouter();
   const store = useGameStore();
+  const actions = useGameActions();
 
   // Phase 29 Tick A: acknowledge any pending level-up the moment the
   // character screen renders. The tab badge clears via
@@ -51,6 +54,26 @@ export default function CharacterScreen() {
       notifications: { ...prev, levelUpAcknowledged: true },
     });
   }, [store]);
+
+  // Phase 73 — LevelUpModal mount toggle. Strip tap opens, modal
+  // commit / keep-deliberating dismisses. Snapshot the level + base
+  // stat values at the moment the modal opens so it has the "before"
+  // figures even if the engine mutates underneath us mid-allocation.
+  const [levelUpOpen, setLevelUpOpen] = useState<boolean>(false);
+  const onOpenLevelUp = useCallback(() => setLevelUpOpen(true), []);
+  const onCloseLevelUp = useCallback(() => setLevelUpOpen(false), []);
+  const onCommitAllocation = useCallback(
+    (spent: { heart: number; body: number; mind: number }) => {
+      // Dispatch the engine action N times — once per allocated
+      // point. The engine clamps internally; we trust the modal's
+      // local state to be valid (sum === totalPoints).
+      for (let i = 0; i < spent.heart; i += 1) actions.allocateStatPoint('heart');
+      for (let i = 0; i < spent.body; i += 1) actions.allocateStatPoint('body');
+      for (let i = 0; i < spent.mind; i += 1) actions.allocateStatPoint('mind');
+      setLevelUpOpen(false);
+    },
+    [actions],
+  );
 
   return (
     <ScreenBg>
@@ -67,6 +90,17 @@ export default function CharacterScreen() {
             <Text style={styles.levelText}>{vm.level}</Text>
           </View>
         </View>
+        {/* Phase 73 — ASCEND strip mounts between the level box row
+            and the XP chain when the player has unspent stat-allocation
+            points. When pendingPoints === 0 the header is byte-identical
+            to pre-Phase-73. */}
+        {vm.pendingPoints > 0 && (
+          <AscendStrip
+            pendingPoints={vm.pendingPoints}
+            level={vm.level}
+            onOpen={onOpenLevelUp}
+          />
+        )}
         <View style={{ marginTop: 8 }}>
           <View style={styles.xpRow}>
             <Text style={styles.xpLabel}>XP CHAIN TO LVL {vm.level + 1}</Text>
@@ -75,6 +109,27 @@ export default function CharacterScreen() {
           <XpChain value={vm.xp} max={vm.xpMax} />
         </View>
       </View>
+
+      {/* Phase 73 — LevelUpModal overlays the SELF tab when the
+          ASCEND strip is tapped. Non-tap-out-dismissible per the
+          design (chat5 brief). Closes via COMMIT (allocates + closes)
+          or "keep deliberating" / discard-confirm step. */}
+      {levelUpOpen && (
+        <LevelUpModal
+          characterName={vm.displayName}
+          fromLevel={vm.level}
+          toLevel={vm.level + 1}
+          totalPoints={vm.pendingPoints}
+          current={(() => {
+            const heart = vm.base.find((r) => r.stanceKey === 'heart')?.value ?? 0;
+            const body = vm.base.find((r) => r.stanceKey === 'body')?.value ?? 0;
+            const mind = vm.base.find((r) => r.stanceKey === 'mind')?.value ?? 0;
+            return { heart, body, mind };
+          })()}
+          onCommit={onCommitAllocation}
+          onCancel={onCloseLevelUp}
+        />
+      )}
 
       {/* Base Stats */}
       <View style={styles.section} accessible accessibilityLabel={vm.a11y.baseStats}>

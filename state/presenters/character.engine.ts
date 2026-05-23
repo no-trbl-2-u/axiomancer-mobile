@@ -105,6 +105,14 @@ export interface CharacterViewModel {
     level: number;
     xp: number;
     xpMax: number;
+    /**
+     * Phase 73 — unspent stat-allocation points. Engine surfaces this
+     * via `Character.availableStatPoints`; the SELF-tab header inserts
+     * the `<AscendStrip>` between the level box and XP chain when
+     * `pendingPoints > 0`. When zero the header renders exactly as
+     * pre-Phase-73.
+     */
+    pendingPoints: number;
     base: readonly BaseStatRow[];
     derived: readonly DerivedStatRow[];
     /** Average of the three base stats — the engine's "luck" surface. */
@@ -282,6 +290,7 @@ export function selectCharacterViewModel(state: GameStore): CharacterViewModel {
         level: player.level,
         xp: player.experience,
         xpMax: player.experienceToNextLevel,
+        pendingPoints: player.availableStatPoints ?? 0,
         base: buildBase(player),
         derived: buildDerived(player),
         luck,

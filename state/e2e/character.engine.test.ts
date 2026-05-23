@@ -50,6 +50,7 @@ describe('selectCharacterViewModel: shape contract', () => {
         expect(typeof vm.level).toBe('number');
         expect(typeof vm.xp).toBe('number');
         expect(typeof vm.xpMax).toBe('number');
+        expect(typeof vm.pendingPoints).toBe('number');
         expect(typeof vm.luck).toBe('number');
         expect(Array.isArray(vm.base)).toBe(true);
         expect(Array.isArray(vm.derived)).toBe(true);
@@ -57,6 +58,16 @@ describe('selectCharacterViewModel: shape contract', () => {
         expect(Array.isArray(vm.effects)).toBe(true);
         expect(Array.isArray(vm.equipment)).toBe(true);
         expect(Array.isArray(vm.skills)).toBe(true);
+    });
+
+    it('threads availableStatPoints onto vm.pendingPoints (Phase 73)', () => {
+        const store = createGameStore(createMemoryAdapter());
+        // Fresh game starts with availableStatPoints === 0 (no
+        // pending levelup at boot). The mobile-side VM reads the
+        // engine field with a `?? 0` fallback so older saves with
+        // an absent field still resolve.
+        const vm = selectCharacterViewModel(store.getState());
+        expect(vm.pendingPoints).toBe(0);
     });
 
     it('exposes the three base stat rows keyed by stance', () => {

@@ -238,6 +238,15 @@ export interface AppActions {
      * this.
      */
     applyCharacterPreset: (presetId: string) => ApplyCharacterPresetResult;
+    /**
+     * Phase 73 — allocate a single stat point. Wraps the engine's
+     * `allocateStatPoint(stat)` action. The engine clamps
+     * `availableStatPoints >= 1` before applying; this wrapper trusts
+     * the caller to gate. Returns the new `availableStatPoints` count
+     * so the LevelUpModal can update its local "spent / total" math
+     * without round-tripping through the store selector.
+     */
+    allocateStatPoint: (stat: 'heart' | 'body' | 'mind') => number;
     save: () => void;
     /**
      * Run `resolveMapEvent(state)` on the current node, cache the
@@ -661,6 +670,17 @@ export function createAppActions(store: AppStore): AppActions {
         debugSeed: () => debugSeedAction(store),
         populateAllItems: () => populateAllItemsAction(store),
         applyCharacterPreset: (presetId) => applyCharacterPresetAction(store, presetId),
+        allocateStatPoint: (stat) => {
+            // Engine's `allocateStatPoint` is a zustand action attached
+            // to the GameStore (`node_modules/axiomancer-mechanics/dist/
+            // Game/store.d.ts:34`). We forward verbatim and return the
+            // post-mutation `availableStatPoints` value for the UI.
+            const engineStore = store.getState() as unknown as {
+                allocateStatPoint?: (s: 'heart' | 'body' | 'mind') => void;
+            };
+            engineStore.allocateStatPoint?.(stat);
+            return store.getState().player?.availableStatPoints ?? 0;
+        },
         save: () => store.getState().save(),
         resolveCurrentMapEvent: () => resolveCurrentMapEventAction(store),
         pickEventChoice: (choiceId) => pickEventChoiceAction(store, choiceId),

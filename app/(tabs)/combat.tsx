@@ -126,11 +126,21 @@ function buildFinalBlowSnapshot(combat: CombatStateLike): {
 } | null {
     const last = combat.log[combat.log.length - 1];
     if (last === undefined) return null;
-    const rawName = last.playerAction.skillId ?? last.playerAction.action ?? null;
+    // Defensive optional chaining — same shape-mismatch the
+    // defeat-branch snapshot guards against. Engine types
+    // playerAction as required, but log entries can ship the
+    // field undefined in practice.
+    const rawName =
+        last.playerAction?.skillId
+        ?? last.playerAction?.action
+        ?? null;
     return {
         skillName: rawName !== null ? rawName.toUpperCase() : null,
-        damage: last.damageToEnemy,
-        descriptor: last.result.length > 0 ? last.result : null,
+        damage: last.damageToEnemy ?? 0,
+        descriptor:
+            typeof last.result === 'string' && last.result.length > 0
+                ? last.result
+                : null,
     };
 }
 
@@ -138,9 +148,9 @@ function buildFinalBlowSnapshot(combat: CombatStateLike): {
 // dragging the full engine CombatState import in for one helper.
 type CombatStateLike = {
     log: {
-        playerAction: { skillId?: string; action?: string };
-        damageToEnemy: number;
-        result: string;
+        playerAction?: { skillId?: string; action?: string };
+        damageToEnemy?: number;
+        result?: string;
     }[];
 };
 
@@ -295,17 +305,28 @@ export function CombatPanel() {
                       // Damage figure here is what the enemy dealt
                       // to the player on the killing round (mirror
                       // of the victory branch's damageToEnemy).
+                      // Defensive optional chaining on enemyAction —
+                      // the engine's BattleLogEntry types it as a
+                      // required CombatAction, but a user-reported
+                      // crash 2026-05-23 ("boss test encounter tried
+                      // to use a skill") showed the field can be
+                      // undefined in practice when a boss's enemy
+                      // action lands on the killing log entry. Read
+                      // defensively rather than trust the engine type.
                       finalBlow: (() => {
                           const last = combat.log[combat.log.length - 1];
                           if (last === undefined) return null;
                           const rawName =
-                              last.enemyAction.skillId
-                              ?? last.enemyAction.action
+                              last.enemyAction?.skillId
+                              ?? last.enemyAction?.action
                               ?? null;
                           return {
                               skillName: rawName !== null ? rawName.toUpperCase() : null,
-                              damage: last.damageToPlayer,
-                              descriptor: last.result.length > 0 ? last.result : null,
+                              damage: last.damageToPlayer ?? 0,
+                              descriptor:
+                                  typeof last.result === 'string' && last.result.length > 0
+                                      ? last.result
+                                      : null,
                           };
                       })(),
                       runSummary: {

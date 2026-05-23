@@ -51,6 +51,7 @@ import {
     type StanceOption,
 } from '@/state/presenters/combat.engine';
 import { selectCodexStatusLine } from '@/state/presenters/combat.codex.engine';
+import { toRomanLower } from '@/state/presenters/roman';
 import { CodexStatusStrip } from '@/components/CodexStatusStrip';
 import { ScreenBg } from '@/components/ScreenBg';
 import { SectionLabel } from '@/components/SectionLabel';
@@ -210,6 +211,19 @@ export function CombatPanel() {
         if (!skill.enabled) return;
         actions.setPlayerAction('skill', skill.id);
         actions.resolveRound();
+    }, [actions]);
+
+    // Phase 73 (user-direct 2026-05-23) — past phase rows are tappable
+    // so a player can undo a stance or action choice before the round
+    // resolves. Set the engine phase back to the tapped phase; the
+    // picker for that phase re-mounts as the current row and the
+    // player can pick again. The committed choice is preserved until
+    // the player commits a new one (the engine's setStance / setAction
+    // overwrite). Resolving rounds can't be "undone" — but the player
+    // hasn't yet pressed LET IT FALL, so re-picking the action is
+    // still meaningful up to that point.
+    const onGoBackToPhase = useCallback((phase: 'choosing_stance' | 'choosing_action' | 'choosing_skill') => {
+        actions.setCombatPhase(phase);
     }, [actions]);
 
     // Phase 63c — when CombatPanel runs inside the encounter modal,
@@ -389,16 +403,24 @@ export function CombatPanel() {
             )}
             <EnemyPanel vm={vm} />
             <BattleLog log={vm.log} round={vm.round} emptyMessage={vm.logEmptyMessage} />
-            <PlayerHud vm={vm} />
+            {/* Phase 73 — PlayerHud now renders AFTER the phase stack
+              * to match the design's PtCombatBody order (`prototype.jsx:
+              * 692-711`): enemy / round strip / phase stack (scrollable) /
+              * player HUD at the bottom. Pre-Phase-73 the HUD sat above
+              * the phase stack, which read as a player-summary block
+              * before the action choices — the design wires it as a
+              * "your turn" footer beneath the active picker. */}
             <PhaseBottom
                 vm={vm}
                 onPickStance={onPickStance}
                 onPickAction={onPickAction}
                 onPickSkill={onPickSkill}
+                onGoBackToPhase={onGoBackToPhase}
                 onFlee={onFlee}
                 onContinue={onContinueRound}
                 onLeave={onLeaveCombat}
             />
+            <PlayerHud vm={vm} />
             {toast !== null && (
                 <View style={styles.toast} accessibilityLiveRegion="polite">
                     <Text style={styles.toastText}>{toast}</Text>
@@ -560,21 +582,39 @@ function BattleLog({
 // ---------------------------------------------------------------------------
 
 function PlayerHud({ vm }: { vm: CombatViewModel }) {
-    // Phase-62 bug-sweep 2026-05-21 (user-direct): the mana bar
-    // was dropped. Mana isn't a player-visible single-number
-    // mechanic anymore — the engine moved to per-resource pools
-    // (heart/body/mind/fallacy/paradox) surfaced via the Token
-    // Crucible. The HUD now shows HP + effect chips only.
+    // Phase 73 — port the design's PlayerHUDLive (`prototype.jsx:
+    // 452-472`). Sits at the bottom of the seal as a "your turn"
+    // footer: stance glyph on the left (sulfur when a stance is
+    // committed, bone otherwise), then a column on the right with
+    // the VITAE bar across the top and the friendship meter +
+    // effect chips on the bottom row. Mana bar omitted per user-
+    // direct override (2026-05-23) — only VITAE is player-visible.
+    const stance = vm.stancePicker.selected;
     return (
         <View style={styles.playerWrap}>
-            <View style={styles.playerBar}>
-                <View style={styles.playerBarItem}>
-                    <StatBar value={vm.player.hp} max={vm.player.hpMax} color={AXM.blood} label="HP" height={8} />
-                </View>
-                <View style={styles.playerEffects}>
-                    {vm.player.effects.map((e, i) => (
-                        <EffectChip key={`${e.kind}-${i}`} effect={{ ...e, tint: e.tint ?? undefined, duration: e.duration ?? undefined }} />
-                    ))}
+            <View style={styles.playerInner}>
+                <StanceGlyph
+                    kind={stance ?? 'body'}
+                    size={26}
+                    color={stance !== null ? AXM.sulfur : AXM.bone}
+                />
+                <View style={styles.playerCol}>
+                    <StatBar value={vm.player.hp} max={vm.player.hpMax} color={AXM.blood} label="VITAE" height={8} />
+                    <View style={styles.playerMetaRow}>
+                        <FriendshipMeter
+                            value={vm.friendshipCounter}
+                            max={vm.friendshipCounterMax}
+                        />
+                        <View style={{ flex: 1 }} />
+                        <View style={styles.playerEffects}>
+                            {vm.player.effects.map((e, i) => (
+                                <EffectChip
+                                    key={`${e.kind}-${i}`}
+                                    effect={{ ...e, tint: e.tint ?? undefined, duration: e.duration ?? undefined }}
+                                />
+                            ))}
+                        </View>
+                    </View>
                 </View>
             </View>
         </View>
@@ -590,12 +630,13 @@ interface PhaseBottomProps {
     onPickStance: (s: StanceKey) => void;
     onPickAction: (k: ActionOption['key']) => void;
     onPickSkill: (s: SkillOption) => void;
+    onGoBackToPhase: (phase: 'choosing_stance' | 'choosing_action' | 'choosing_skill') => void;
     onFlee: () => void;
     onContinue: () => void;
     onLeave: () => void;
 }
 
-function PhaseBottom({ vm, onPickStance, onPickAction, onPickSkill, onFlee, onContinue, onLeave }: PhaseBottomProps) {
+function PhaseBottom({ vm, onPickStance, onPickAction, onPickSkill, onGoBackToPhase, onFlee, onContinue, onLeave }: PhaseBottomProps) {
     return (
         <View style={styles.phaseSection} testID={`combat-phase-${vm.phase}`}>
             <View style={styles.phaseHeader}>
@@ -617,6 +658,7 @@ function PhaseBottom({ vm, onPickStance, onPickAction, onPickSkill, onFlee, onCo
                 onPickStance={onPickStance}
                 onPickAction={onPickAction}
                 onPickSkill={onPickSkill}
+                onGoBackToPhase={onGoBackToPhase}
                 onFlee={onFlee}
                 onContinue={onContinue}
                 onLeave={onLeave}
@@ -644,6 +686,7 @@ function PhaseStack({
     onPickStance,
     onPickAction,
     onPickSkill,
+    onGoBackToPhase,
     onFlee,
     onContinue,
     onLeave,
@@ -652,6 +695,7 @@ function PhaseStack({
     onPickStance: (s: StanceKey) => void;
     onPickAction: (k: ActionOption['key']) => void;
     onPickSkill: (s: SkillOption) => void;
+    onGoBackToPhase: (phase: 'choosing_stance' | 'choosing_action' | 'choosing_skill') => void;
     onFlee: () => void;
     onContinue: () => void;
     onLeave: () => void;
@@ -660,7 +704,32 @@ function PhaseStack({
         <View style={stack_styles.column} testID="combat-phase-stack">
             {vm.phaseStack
                 .filter((entry) => entry.visible)
-                .map((entry) => (
+                .map((entry) => {
+                    // Phase 73 (user-direct 2026-05-23) — past rows for
+                    // pre-resolve phases are tappable. Tapping rewinds
+                    // the engine phase so the player can re-pick. The
+                    // resolving row stays passive: the player commits
+                    // via LET IT FALL, so there's no "past resolving"
+                    // to undo without unrolling the engine.
+                    const reversiblePast =
+                        entry.state === 'past'
+                        && (entry.key === 'choosing_stance'
+                            || entry.key === 'choosing_action'
+                            || entry.key === 'choosing_skill');
+                    const HeaderContainer: React.ComponentType<{ children: React.ReactNode }> = reversiblePast
+                        ? ({ children }) => (
+                            <TouchableOpacity
+                                onPress={() => onGoBackToPhase(entry.key as 'choosing_stance' | 'choosing_action' | 'choosing_skill')}
+                                style={stack_styles.rowHeader}
+                                accessibilityRole="button"
+                                accessibilityLabel={`Change ${entry.label}`}
+                                testID={`phase-stack-undo-${entry.key}`}
+                            >
+                                {children}
+                            </TouchableOpacity>
+                        )
+                        : ({ children }) => <View style={stack_styles.rowHeader}>{children}</View>;
+                    return (
                     <View
                         key={entry.key}
                         style={[
@@ -669,7 +738,7 @@ function PhaseStack({
                         ]}
                         testID={`phase-stack-row-${entry.key}`}
                     >
-                        <View style={stack_styles.rowHeader}>
+                        <HeaderContainer>
                             <Text
                                 style={[
                                     stack_styles.rowLabel,
@@ -681,12 +750,14 @@ function PhaseStack({
                             </Text>
                             <View style={stack_styles.rowRule} />
                             {entry.state === 'past' && entry.summary.length > 0 && (
-                                <Text style={stack_styles.rowSummary}>{entry.summary}</Text>
+                                <Text style={[stack_styles.rowSummary, reversiblePast && stack_styles.rowSummaryUndo]}>
+                                    {entry.summary}
+                                </Text>
                             )}
                             {entry.state === 'current' && (
                                 <View style={stack_styles.rowDot} />
                             )}
-                        </View>
+                        </HeaderContainer>
                         {entry.state === 'current' && (
                             <View style={stack_styles.rowBody}>
                                 {entry.key === 'choosing_stance' && (
@@ -725,7 +796,8 @@ function PhaseStack({
                             </View>
                         )}
                     </View>
-                ))}
+                    );
+                })}
         </View>
     );
 }
@@ -869,19 +941,18 @@ function ActionPhase({
  * `design/handoff-2026-05-16/project/prototype.jsx:303-322`. Compact
  * horizontal row showing the player's current 5-token pool above
  * the action picker so the player can see their resources before
- * committing an action. Tap OPEN ▸ to route to the full crucible
- * surface at `/crucible`.
+ * committing an action.
  *
- * Token counts currently sourced from the mock pool that the full
- * `<TokenCrucible>` already uses — engine doesn't yet expose
- * `player.tokens`. Wiring real engine state is a follow-up once
- * the engine ships the surface (gated alongside the Phase 20/21
- * skill-resolution work).
+ * Phase 73 (user-direct 2026-05-23) — strip is read-only inside
+ * combat. The pre-Phase-73 `OPEN ▸` button routed to a standalone
+ * Token Crucible screen; that screen has been removed (it was a
+ * design-reference sheet, not a player surface).
+ *
+ * Token counts currently sourced from a local mock — engine doesn't
+ * yet expose `player.tokens`. Wiring real engine state is a follow-
+ * up once the engine ships the surface.
  */
 function CrucibleStrip() {
-    const router = useRouter();
-    // Mirrors `TokenCrucible.tsx:36` DEFAULT_POOL — same mock the
-    // full surface ships when no engine token state exists.
     const pool: readonly { key: string; glyph: string; count: number; color: string }[] = [
         { key: 'body', glyph: '◐', count: 2, color: AXM.blood },
         { key: 'mind', glyph: '◒', count: 1, color: AXM.rust },
@@ -904,15 +975,6 @@ function CrucibleStrip() {
                     </View>
                 ))}
             </View>
-            <TouchableOpacity
-                accessibilityRole="button"
-                accessibilityLabel="Open Token Crucible"
-                onPress={() => router.push('/crucible' as never)}
-                style={crucible_strip_styles.openBtn}
-                testID="combat-crucible-open"
-            >
-                <Text style={crucible_strip_styles.openBtnText}>OPEN ▸</Text>
-            </TouchableOpacity>
         </View>
     );
 }
@@ -979,62 +1041,42 @@ function SkillPhase({
     totalCount: number;
     onPick: (s: SkillOption) => void;
 }) {
+    // Phase 73 — port the design's SkillPickerLive shape
+    // (`prototype.jsx:391-419`). Vertical list of single-row buttons
+    // (no horizontal card scroll, no category badge, single ash
+    // border). Row layout: stance glyph (24px) | name + description
+    // stacked | cost stacked. User-direct 2026-05-23: only show
+    // skills that are currently castable — disabled rows (wrong
+    // stance or insufficient resources) are filtered out entirely so
+    // the picker shows what the player can actually pick this round.
+    const available = skills.filter((s) => s.enabled);
     return (
-        <View>
-            <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={skill_styles.scroll}
-                accessibilityLabel="Skill options"
-            >
-                {skills.map((s) => {
-                    const borderColor = s.category === 'paradox' ? AXM.sulfur : AXM.parchment;
-                    return (
-                        <TouchableOpacity
-                            key={s.id}
-                            onPress={() => onPick(s)}
-                            disabled={!s.enabled}
-                            style={[skill_styles.cardTouch, !s.enabled && { opacity: 0.45 }]}
-                            accessibilityRole="button"
-                            accessibilityLabel={`Skill ${s.name}`}
-                            accessibilityState={{ disabled: !s.enabled }}
-                        >
-                            <View style={[skill_styles.card, {
-                                borderColor,
-                                borderStyle: s.category === 'paradox' ? 'solid' : 'dashed',
-                            }]}>
-                                <View style={skill_styles.cardTop}>
-                                    <View style={[
-                                        skill_styles.catBadge,
-                                        s.category === 'paradox'
-                                            ? { backgroundColor: AXM.sulfur }
-                                            : { borderWidth: 1, borderColor: AXM.parchment },
-                                    ]}>
-                                        <Text style={[
-                                            skill_styles.catText,
-                                            { color: s.category === 'paradox' ? '#0a0a0a' : AXM.parchment },
-                                        ]}>
-                                            {s.category.toUpperCase()}
-                                        </Text>
-                                    </View>
-                                    <StanceGlyph kind={s.stance} size={14} color={AXM.bone} />
-                                </View>
-                                <Text style={skill_styles.skillName}>{s.name}</Text>
-                                <Text style={skill_styles.skillDesc}>{s.description}</Text>
-                                <View style={skill_styles.costRow}>
-                                    <Text style={skill_styles.costLabel}>cost</Text>
-                                    <Text style={[
-                                        skill_styles.costValue,
-                                        { color: s.disabledReason === 'insufficient-mana' ? AXM.blood : AXM.sulfur },
-                                    ]}>
-                                        {s.manaCost} mana
-                                    </Text>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-                    );
-                })}
-            </ScrollView>
+        <View style={skill_styles.list}>
+            {available.map((s) => (
+                <TouchableOpacity
+                    key={s.id}
+                    onPress={() => onPick(s)}
+                    style={skill_styles.row}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Skill ${s.name}`}
+                >
+                    <StanceGlyph kind={s.stance} size={24} color={AXM.parchment} />
+                    <View style={skill_styles.rowText}>
+                        <Text style={skill_styles.skillName} numberOfLines={1}>{s.name}</Text>
+                        <Text style={skill_styles.skillDesc} numberOfLines={2}>
+                            {s.description}
+                        </Text>
+                    </View>
+                    <View style={skill_styles.rowCostCol}>
+                        <Text style={skill_styles.costValue}>
+                            {toRomanLower(s.manaCost, '·')}
+                        </Text>
+                    </View>
+                </TouchableOpacity>
+            ))}
+            {available.length === 0 && (
+                <Text style={skill_styles.emptyHint}>none open · stance bound.</Text>
+            )}
             <Text style={skill_styles.availHint}>
                 {availableCount} of {totalCount} open · stance bound.
             </Text>
@@ -1074,68 +1116,43 @@ function ResolvePanel({
         }
     }, [isCrit, resolve.outcome]);
 
+    // Phase 73 (user-direct 2026-05-23) — port the design's
+    // ResolvePaneLive layout (`prototype.jsx:421-450`). Three-column
+    // grid: YOU | VS | ENEMY, each centered, with a tiny eyebrow
+    // caption, a big sulfur/parchment Roman roll, and an italic
+    // action verb beneath. Single sulfur-bordered LET IT FALL button
+    // commits the round.
     return (
-        <View>
-            <View style={resolve_styles.vs}>
-                <View style={resolve_styles.vsPlayer}>
-                    <SectionLabel size={8}>YOU</SectionLabel>
-                    <StanceGlyph kind={resolve.playerStance} size={36} color={advColor} />
+        <View style={resolve_styles.wrap}>
+            <View style={resolve_styles.vsGrid}>
+                <View style={resolve_styles.vsCol}>
+                    <Text style={resolve_styles.vsEyebrow}>YOU</Text>
+                    <Text style={[resolve_styles.vsRoll, { color: advColor }]}>
+                        {resolve.playerRoll}
+                    </Text>
+                    <Text style={resolve_styles.vsVerb}>{resolve.header.toLowerCase()}</Text>
                 </View>
-                <View style={resolve_styles.vsCenter}>
-                    <Text style={[resolve_styles.advLabel, { color: advColor }]}>{resolve.advantageLabel}</Text>
-                    <View style={resolve_styles.rollRow}>
-                        <Text style={resolve_styles.rollText}>
-                            YOU <Text style={resolve_styles.rollVal}>{resolve.playerRoll}</Text>
-                        </Text>
-                        <Text style={resolve_styles.vsText}>vs</Text>
-                        <Text style={resolve_styles.rollText}>
-                            FOE <Text style={resolve_styles.rollVal}>{resolve.enemyRoll}</Text>
-                        </Text>
-                    </View>
+                <View style={resolve_styles.vsDivider}>
+                    <Text style={resolve_styles.vsDividerRule}>━━</Text>
+                    <Text style={resolve_styles.vsLabel}>VS</Text>
+                    <Text style={resolve_styles.vsDividerRule}>━━</Text>
                 </View>
-                <View style={resolve_styles.vsFoe}>
-                    <SectionLabel size={8}>FOE</SectionLabel>
-                    <StanceGlyph kind={resolve.enemyStance} size={36} color={AXM.bone} />
+                <View style={resolve_styles.vsCol}>
+                    <Text style={resolve_styles.vsEyebrow}>FOE</Text>
+                    <Text style={resolve_styles.vsRoll}>{resolve.enemyRoll}</Text>
+                    <Text style={resolve_styles.vsVerb}>{resolve.message.toLowerCase()}</Text>
                 </View>
             </View>
-
-            <View style={[
-                resolve_styles.outcome,
-                {
-                    borderColor: accent,
-                    backgroundColor: isFriend ? '#1a0d05' : '#1a0a0a',
-                },
-            ]}>
-                <Splatter color={accent} size={180} seed={5} style={{ position: 'absolute', top: -30, right: -30, opacity: 0.5 }} />
-                <SectionLabel size={9} style={{ position: 'relative' }}>
-                    {resolve.header}
-                </SectionLabel>
-                <Text style={[
-                    resolve_styles.damage,
-                    isFriend ? { fontSize: 36 } : {},
-                    {
-                        textShadowColor: accent,
-                        textShadowOffset: { width: 3, height: 3 },
-                        textShadowRadius: 0,
-                    },
-                ]}>
-                    {resolve.primaryText}
-                </Text>
-                <Text style={resolve_styles.outcomeText}>
-                    {resolve.message}
-                </Text>
-                {isCrit && (
-                    <Text style={[resolve_styles.outcomeText, { color: AXM.sulfur }]}>CRIT — DOUBLE</Text>
-                )}
-            </View>
-
+            {isCrit && (
+                <Text style={resolve_styles.critFlag}>CRIT — DOUBLE</Text>
+            )}
             <TouchableOpacity
                 onPress={canContinue ? onContinue : onLeave}
-                style={resolve_styles.nextBtn}
+                style={[resolve_styles.letBtn, { borderColor: isFriend ? AXM.rust : AXM.sulfur }]}
                 accessibilityRole="button"
                 accessibilityLabel={canContinue ? 'Continue to next round' : 'Leave combat'}
             >
-                <Text style={resolve_styles.nextText}>
+                <Text style={[resolve_styles.letText, { color: isFriend ? AXM.rust : AXM.sulfur }]}>
                     {resolve.nextActionLabel}
                 </Text>
             </TouchableOpacity>
@@ -1240,9 +1257,14 @@ const styles = StyleSheet.create({
     logBox: { backgroundColor: '#06050a', borderWidth: 1, borderColor: AXM.ash, borderStyle: 'dashed', padding: 5, paddingHorizontal: 8, height: 78, overflow: 'hidden' },
     logScroll: { flex: 1, marginTop: 2 },
     logLine: { fontFamily: FONTS.serif, fontSize: 11, lineHeight: 14, marginTop: 1 },
-    playerWrap: { padding: 4, paddingHorizontal: 10, paddingBottom: 0 },
-    playerBar: { backgroundColor: AXM.panelBg, padding: 5, paddingHorizontal: 8, borderWidth: 1, borderColor: AXM.ash, flexDirection: 'row', gap: 8, alignItems: 'center' },
-    playerBarItem: { flex: 1 },
+    // Phase 73 — design's PlayerHUDLive frame (`prototype.jsx:454`).
+    // Sits at the bottom of the seal with a deepBg fill + 1px
+    // borderTop, padding 8x16. The stance glyph sits left, content
+    // column right.
+    playerWrap: { paddingHorizontal: 16, paddingVertical: 8, borderTopWidth: 1, borderTopColor: AXM.ash, backgroundColor: AXM.deepBg },
+    playerInner: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    playerCol: { flex: 1, flexDirection: 'column', gap: 4 },
+    playerMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     playerEffects: { flexDirection: 'row', gap: 3 },
     phaseSection: { padding: 8, paddingHorizontal: 10, paddingBottom: 14 },
     phaseHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
@@ -1287,6 +1309,11 @@ const stack_styles = StyleSheet.create({
         letterSpacing: 1.4,
         color: AXM.bone,
     },
+    // Phase 73 — past rows the player can re-pick (stance / action /
+    // skill) underline the summary in sulfur so the tap target reads
+    // as an "undo" affordance, not a flat past-record. The
+    // TouchableOpacity wraps the entire rowHeader.
+    rowSummaryUndo: { color: AXM.sulfur, borderBottomWidth: 1, borderBottomColor: AXM.sulfur, paddingBottom: 1 },
     rowDot: { width: 5, height: 5, backgroundColor: AXM.sulfur },
     rowBody: { marginTop: 10 },
 });
@@ -1323,33 +1350,49 @@ const action_styles = StyleSheet.create({
 });
 
 const skill_styles = StyleSheet.create({
-    scroll: { gap: 6, paddingVertical: 2 },
-    cardTouch: { width: 130 },
-    card: { backgroundColor: '#0a0a0a', borderWidth: 2, padding: 7, minHeight: 138 },
-    cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    catBadge: { paddingVertical: 1, paddingHorizontal: 4 },
-    catText: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1.5 },
-    skillName: { fontFamily: FONTS.gothic, fontSize: 14, lineHeight: 16, color: AXM.parchment, marginTop: 6 },
-    skillDesc: { fontFamily: FONTS.serif, fontSize: 10, color: AXM.bone, marginTop: 4, flex: 1, lineHeight: 13 },
-    costRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4, paddingTop: 4, borderTopWidth: 1, borderTopColor: AXM.ash },
-    costLabel: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone },
-    costValue: { fontFamily: FONTS.gothic, fontSize: 16 },
+    // Phase 73 — vertical row list, gap 6 (matches the design's
+    // `flexDirection: 'column', gap: 6` on the picker root).
+    list: { flexDirection: 'column', gap: 6 },
+    row: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        paddingVertical: 8,
+        paddingHorizontal: 10,
+        borderWidth: 1,
+        borderColor: AXM.ash,
+        backgroundColor: 'transparent',
+    },
+    rowDim: { opacity: 0.6 },
+    rowText: { flex: 1, minWidth: 0 },
+    rowCostCol: { alignItems: 'flex-end', minWidth: 48 },
+    skillName: { fontFamily: FONTS.serif, fontSize: 14, color: AXM.parchment },
+    skillDesc: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone, marginTop: 2, lineHeight: 12 },
+    costValue: { fontFamily: FONTS.mono, fontSize: 14, color: AXM.parchment },
+    // Empty state when the picker has no castable skills given the
+    // current stance and resource pools. Mirrors the design's
+    // empty-list registers — short ritual line, bone color.
+    emptyHint: { textAlign: 'center', paddingVertical: 14, fontFamily: FONTS.serifItalic, fontSize: 12, color: AXM.bone },
     availHint: { textAlign: 'center', marginTop: 6, fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone, letterSpacing: 1 },
 });
 
 const resolve_styles = StyleSheet.create({
-    vs: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', backgroundColor: '#0a0a0a', borderWidth: 1, borderColor: AXM.ash, padding: 6, paddingHorizontal: 8 },
-    vsPlayer: { alignItems: 'center' },
-    vsFoe: { alignItems: 'center' },
-    vsCenter: { flex: 1, alignItems: 'center', paddingHorizontal: 6 },
-    advLabel: { fontFamily: FONTS.gothic, fontSize: 22, letterSpacing: 2 },
-    rollRow: { flexDirection: 'row', justifyContent: 'space-around', width: '100%', marginTop: 1 },
-    rollText: { fontFamily: FONTS.mono, fontSize: 10, color: AXM.bone, letterSpacing: 1 },
-    rollVal: { fontFamily: FONTS.gothic, fontSize: 14, color: AXM.parchment },
-    vsText: { fontFamily: FONTS.mono, fontSize: 10, color: AXM.ash },
-    outcome: { position: 'relative', marginTop: 6, padding: 14, paddingHorizontal: 12, paddingBottom: 12, borderWidth: 2, overflow: 'hidden', alignItems: 'center' },
-    damage: { fontFamily: FONTS.gothic, fontSize: 64, lineHeight: 68, color: AXM.parchment, position: 'relative' },
-    outcomeText: { fontFamily: FONTS.mono, fontSize: 10, color: AXM.parchment, letterSpacing: 1, position: 'relative', textAlign: 'center' },
-    nextBtn: { width: '100%', marginTop: 8, padding: 10, paddingHorizontal: 12, backgroundColor: '#0a0a0a', borderWidth: 2, borderColor: AXM.parchment, alignItems: 'center' },
-    nextText: { fontFamily: FONTS.gothic, fontSize: 16, letterSpacing: 2, color: AXM.parchment },
+    // Phase 73 — port the design's ResolvePaneLive
+    // (`prototype.jsx:421-450`). Vertical stack: 3-col VS grid +
+    // optional CRIT flag + LET IT FALL button.
+    wrap: { flexDirection: 'column', gap: 10 },
+    vsGrid: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, gap: 8 },
+    vsCol: { flex: 1, alignItems: 'center' },
+    vsDivider: { alignItems: 'center', gap: 2 },
+    vsDividerRule: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone },
+    vsLabel: { fontFamily: FONTS.sans, fontSize: 9, color: AXM.sulfur, letterSpacing: 1.4 },
+    vsEyebrow: { fontFamily: FONTS.sans, fontSize: 9, color: AXM.bone, letterSpacing: 1.4 },
+    vsRoll: { fontFamily: FONTS.mono, fontSize: 26, color: AXM.parchment, marginTop: 2, lineHeight: 28 },
+    vsVerb: { fontFamily: FONTS.serifItalic, fontSize: 11, color: AXM.parchment, marginTop: 2 },
+    critFlag: { textAlign: 'center', fontFamily: FONTS.sans, fontSize: 10, color: AXM.sulfur, letterSpacing: 2 },
+    // Single sulfur-bordered button at the bottom — `LET IT FALL`.
+    // No backgroundColor on the button itself so the panel's deepBg
+    // shows through.
+    letBtn: { paddingVertical: 12, alignItems: 'center', borderWidth: 1, backgroundColor: AXM.bg },
+    letText: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 2 },
 });

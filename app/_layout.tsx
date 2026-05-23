@@ -134,10 +134,6 @@ export default function RootLayout() {
                 name="event/index"
                 options={{ headerShown: false, presentation: 'fullScreenModal' }}
               />
-              <Stack.Screen
-                name="crucible"
-                options={{ headerShown: false, presentation: 'fullScreenModal' }}
-              />
             </Stack>
           </CombatModeProvider>
           </AestheticModeProvider>

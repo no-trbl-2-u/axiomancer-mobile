@@ -553,7 +553,11 @@ const ACTION_DEFAULTS: readonly ActionOption[] = [
     {
         key: 'skill',
         label: 'SKILL',
-        hint: 'SPEND MANA · INVOKE',
+        // User-direct 2026-05-23: drop the "mana" word from
+        // user-visible chrome — mana isn't a player-facing
+        // single-number mechanic anymore (Phase-62 swept the HUD
+        // bar; this is the trailing hint copy).
+        hint: 'INVOKE A CRAFT',
         iconKind: 'arcane',
         accentKind: 'sulfur',
         enabled: true,

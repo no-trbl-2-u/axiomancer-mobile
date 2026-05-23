@@ -28,7 +28,7 @@
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import Svg, { Path as SvgPath } from 'react-native-svg';
+import Svg, { Path as SvgPath, Circle as SvgCircle, Defs as SvgDefs, RadialGradient as SvgRadialGradient, Stop as SvgStop } from 'react-native-svg';
 import Animated, {
     useAnimatedStyle,
     useSharedValue,
@@ -223,21 +223,36 @@ export function EncounterModalOverlay({
             testID="encounter-modal-overlay"
         >
             <Animated.View style={[styles.backdrop, backdropStyle]} />
+            {/* Phase 73 — chain bars now sit OUTSIDE the seal panel
+              * to match the design (`prototype.jsx:558-569` for the
+              * top chain, `:605-617` for the bottom). The panel is
+              * inset between them so the diamond strands frame the
+              * seal rather than living inside its border. */}
+            <ChainBarFixed position="top" label={sealChrome.topLabel} accentColor={sealChrome.accentColor} />
             <Animated.View
                 style={[
                     styles.panel,
-                    // Phase 71 — phase-aware border + glow. Pre-71 the
-                    // panel border was always AXM.rust; now it tracks
-                    // the seal chrome (blood in prelude / combat,
-                    // sulfur on aftermath).
-                    { borderColor: sealChrome.accentColor, shadowColor: sealChrome.glowColor },
+                    // Phase 71/73 — phase-aware border + glow. Border
+                    // color tracks the seal chrome (blood in prelude /
+                    // combat, sulfur on aftermath). boxShadow uses the
+                    // glow color so the outer halo around the panel
+                    // matches the seal-state accent (rgba colors come
+                    // from selectEncounterSealChrome).
+                    {
+                        borderColor: sealChrome.accentColor,
+                        shadowColor: sealChrome.glowColor,
+                        boxShadow: `0 0 0 1px #0a0a0a, 0 0 24px ${sealChrome.glowColor}, inset 0 0 60px rgba(0,0,0,0.7)`,
+                    },
                     panelStyle,
                 ]}
             >
-                {/* Phase 71 — top chain bar wraps every phase, not
-                  * just prelude. Label + color come from the seal
-                  * chrome helper. */}
-                <ChainBar label={sealChrome.topLabel} accentColor={sealChrome.accentColor} />
+                {/* Phase 73 — four corner rivets inside the seal,
+                  * porting the design's `PtRivet` chrome (handoff
+                  * bundle `prototype.jsx:580-583`). */}
+                <Rivet position="tl" />
+                <Rivet position="tr" />
+                <Rivet position="bl" />
+                <Rivet position="br" />
                 {mode === 'aftermath' && aftermathVm !== null && aftermathVm.kind === 'victory' ? (
                     <CombatVictoryPanel
                         vm={aftermathVm}
@@ -360,22 +375,107 @@ export function EncounterModalOverlay({
                         </View>
                     </>
                 )}
-                {/* Phase 71 — bottom chain bar, also phase-aware. */}
-                <ChainBar
-                    label={sealChrome.bottomLabel}
-                    accentColor={sealChrome.accentColor}
-                />
             </Animated.View>
+            {/* Phase 73 — bottom chain, also outside the panel. */}
+            <ChainBarFixed
+                position="bottom"
+                label={sealChrome.bottomLabel}
+                accentColor={sealChrome.accentColor}
+            />
         </View>
     );
 }
 
+function ChainBarFixed({
+    position,
+    label,
+    accentColor,
+}: {
+    position: 'top' | 'bottom';
+    label: string;
+    accentColor: string;
+}) {
+    return (
+        <View
+            style={[
+                styles.chainBarFixed,
+                position === 'top' ? styles.chainBarTop : styles.chainBarBottom,
+            ]}
+            testID="encounter-modal-chain"
+            pointerEvents="none"
+        >
+            <Text
+                style={[styles.chainDiamonds, { color: accentColor }]}
+                numberOfLines={1}
+                ellipsizeMode="clip"
+            >
+                {DIAMOND_STRAND}
+            </Text>
+            <Text style={[styles.chainText, { color: accentColor }]}>{label}</Text>
+            <Text
+                style={[styles.chainDiamonds, { color: accentColor }]}
+                numberOfLines={1}
+                ellipsizeMode="clip"
+            >
+                {DIAMOND_STRAND}
+            </Text>
+        </View>
+    );
+}
+
+// Diamond strand flanking the label — ports the design's
+// `<span>◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆</span>` chrome on either side of
+// `SEALED · …`. The character itself comes from the mono font;
+// letter-spacing matches the design (~2px) so the strand reads as
+// a chain of rivets, not run-on glyphs. Phase 73 port from the
+// 2026-05-23 handoff bundle (`prototype.jsx:566 / :614`).
+const DIAMOND_STRAND = '◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆';
+
 function ChainBar({ label, accentColor }: { label: string; accentColor: string }) {
     return (
         <View style={styles.chainBar} testID="encounter-modal-chain">
-            <View style={[styles.chainRule, { backgroundColor: accentColor }]} />
+            <Text
+                style={[styles.chainDiamonds, { color: accentColor }]}
+                numberOfLines={1}
+                ellipsizeMode="clip"
+            >
+                {DIAMOND_STRAND}
+            </Text>
             <Text style={[styles.chainText, { color: accentColor }]}>{label}</Text>
-            <View style={[styles.chainRule, { backgroundColor: accentColor }]} />
+            <Text
+                style={[styles.chainDiamonds, { color: accentColor }]}
+                numberOfLines={1}
+                ellipsizeMode="clip"
+            >
+                {DIAMOND_STRAND}
+            </Text>
+        </View>
+    );
+}
+
+// Four corner rivets inside the seal panel — ports the design's
+// `PtRivet` components (`prototype.jsx:621-630`) which render as
+// metallic dots with a radial highlight at top-left, dark base,
+// thin black border. We approximate the gradient via SVG so it
+// reads the same on web + native.
+function Rivet({ position }: { position: 'tl' | 'tr' | 'bl' | 'br' }) {
+    const offsetStyle =
+        position === 'tl' ? styles.rivetTL :
+        position === 'tr' ? styles.rivetTR :
+        position === 'bl' ? styles.rivetBL :
+        styles.rivetBR;
+    return (
+        <View style={[styles.rivetWrap, offsetStyle]} pointerEvents="none">
+            <Svg width={8} height={8} viewBox="0 0 8 8">
+                <SvgDefs>
+                    <SvgRadialGradient id="rivetFill" cx="35%" cy="30%" r="65%">
+                        <SvgStop offset="0%" stopColor="#6a625a" />
+                        <SvgStop offset="60%" stopColor="#2a2520" />
+                        <SvgStop offset="100%" stopColor="#0a0a0a" />
+                    </SvgRadialGradient>
+                </SvgDefs>
+                <SvgCircle cx={4} cy={4} r={3.5} fill="url(#rivetFill)" stroke="#0a0a0a" strokeWidth={0.5} />
+            </Svg>
         </View>
     );
 }
@@ -409,40 +509,44 @@ const styles = StyleSheet.create({
     },
     panel: {
         position: 'absolute',
-        // User-direct tighter insets (2026-05-21): combat content
-        // (CombatPanel renders enemy panel + log + HUD +
-        // PhaseStack) outgrew the prior `top: 56, bottom: 84`
-        // padding tuned for the design's prelude-only modal.
-        // The tab bar is hidden during the modal session now
-        // (Phase 63c+), so the bottom inset no longer needs to
-        // leave room for it. Tightened insets still preserve the
-        // chat-2 §IV diegetic-stack continuity (a thin strip of
-        // map shows above + below) while giving the combat
-        // surface ~120 more vertical pixels to fit content
-        // without aggressive scrolling.
-        left: 12,
-        right: 12,
-        top: 24,
-        bottom: 24,
-        backgroundColor: AXM.bg,
+        // Phase 73 (2026-05-23, user-direct): pull the panel
+        // close to all four screen edges. The seal should fill
+        // the available real estate so the combat content
+        // (enemy + log + phase stack + HUD) has room to breathe
+        // without the body scrolling for every interaction. The
+        // top/bottom insets leave 26px for the SEALED chain bars
+        // that sit OUTSIDE the panel per the design
+        // (`prototype.jsx:558-617`): each chain bar is 18px tall,
+        // pinned 4px in from the screen edge, plus a 4px breath
+        // gap before the panel border begins.
+        left: 8,
+        right: 8,
+        top: 26,
+        bottom: 22,
+        // Phase 73 — match the design's panel fill `#0a0807`
+        // (`prototype.jsx:574`). Slightly warmer than AXM.bg so
+        // the panel reads as a sealed parchment leaf rather
+        // than the same flat near-black as the page behind it.
+        backgroundColor: '#0a0807',
         // Phase 72 — border bumped 1px → 2px to match the design
-        // bundle's PtEncounterFlow (`design/handoff-2026-05-23/project/
-        // prototype.jsx:574`) `border: 2px solid $accent`. The color
-        // itself still comes from `sealChrome.accentColor` (Phase 71).
+        // bundle's PtEncounterFlow (`prototype.jsx:574`)
+        // `border: 2px solid $accent`. The color itself comes
+        // from `sealChrome.accentColor` (Phase 71).
         borderWidth: 2,
-        // Color is overridden per-mode by the Animated.View's style
-        // override (sealChrome.accentColor). This default is the
-        // pre-Phase-71 rust fallback; Phase 71's override always
-        // takes precedence at runtime.
         borderColor: AXM.rust,
+        // Phase 73 — port the design's `boxShadow: 0 0 0 1px
+        // #0a0a0a, 0 0 24px <accent-tint>, inset 0 0 60px
+        // rgba(0,0,0,0.7)` (`prototype.jsx:576`). React Native's
+        // legacy shadowProps can only carry the outer halo, so
+        // we surface the dark 1px outer ring + inset darken via
+        // `boxShadow` (RN 0.76+ web-compatible) and keep the
+        // shadow* keys as a native fallback for older Android.
+        // The accent-tint outer glow is driven by sealChrome.
+        boxShadow:
+            '0 0 0 1px #0a0a0a, 0 0 24px rgba(192,21,42,0.35), inset 0 0 60px rgba(0,0,0,0.7)',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.8,
-        // Phase 72 — shadow radius softened so the panel reads with
-        // a tighter wax-seal glow rather than a diffuse halo. Design
-        // prototype uses `boxShadow: 0 0 24px <accent-tint>` plus
-        // an inset shadow; react-native can't compose box-shadow that
-        // richly, but tighter radius is the closest approximation.
         shadowRadius: 24,
         elevation: 10,
         flexDirection: 'column',
@@ -456,17 +560,61 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: 'rgba(232, 223, 200, 0.12)',
     },
+    // Phase 73 — chain bars OUTSIDE the panel, pinned to the screen
+    // edges. Mirrors the design's `position: absolute, top: 0,
+    // height: 18` / `bottom: 72, height: 18` chrome
+    // (`prototype.jsx:558 / :605`). Gradient backgrounds + thin
+    // accent rule are kept as native shadows because RN can't do
+    // CSS gradients without an extra dep; the diamond strand + label
+    // already carry the seal signal.
+    chainBarFixed: {
+        position: 'absolute',
+        left: 4,
+        right: 4,
+        height: 18,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 6,
+        backgroundColor: '#0e0506',
+    },
+    chainBarTop: {
+        top: 4,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(192, 21, 42, 0.55)',
+    },
+    chainBarBottom: {
+        bottom: 4,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(192, 21, 42, 0.55)',
+    },
     chainRule: {
         flex: 1,
         height: 1,
         backgroundColor: AXM.rust,
         opacity: 0.6,
     },
+    // Phase 73 — diamond strand flanking the chain label. Mono
+    // glyph, narrow letter-spacing to keep the strand readable as
+    // a chain rather than a run of glyphs. Width is `flex: 1` so
+    // the label stays centered with equal-width strands either
+    // side. `overflow: hidden` clips on phones too narrow to fit
+    // the full strand.
+    chainDiamonds: {
+        flex: 1,
+        fontFamily: FONTS.mono,
+        fontSize: 8,
+        letterSpacing: 2,
+        color: AXM.blood,
+        opacity: 0.85,
+        overflow: 'hidden',
+    },
     chainText: {
         fontFamily: FONTS.sans,
         fontSize: 9,
         letterSpacing: 2.4,
         color: AXM.blood,
+        textAlign: 'center',
+        paddingHorizontal: 6,
     },
     preludeHeader: {
         flexDirection: 'row',
@@ -574,6 +722,20 @@ const styles = StyleSheet.create({
     // panel viewport, so the scroll lets the player see all of
     // it without breaking the modal containment.
     combatScroll: { flex: 1 },
+    // Phase 73 — corner rivets. Absolute-positioned 8px SVG dots
+    // pinned 6px in from each panel corner. zIndex above the chain
+    // bars + body so they read as part of the panel's metal-binding
+    // chrome rather than getting clipped by content.
+    rivetWrap: {
+        position: 'absolute',
+        width: 8,
+        height: 8,
+        zIndex: 5,
+    },
+    rivetTL: { top: 6, left: 6 },
+    rivetTR: { top: 6, right: 6 },
+    rivetBL: { bottom: 6, left: 6 },
+    rivetBR: { bottom: 6, right: 6 },
     // Phase 72 — combat-body horizontal inset aligns with the
     // design bundle's `PtCombatBody` outer wrap
     // (`design/handoff-2026-05-23/project/prototype.jsx:697`

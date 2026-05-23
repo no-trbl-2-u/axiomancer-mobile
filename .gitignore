@@ -30,6 +30,13 @@ expo-env.d.ts
 # Playwright MCP scratch
 .playwright-mcp/
 
+# /playtest skill screenshots — written to repo root by the
+# Playwright-driven encounter walks; never committed.
+walk-*.png
+
+# /loop session-local scheduler lock; recreated on each session.
+.claude/scheduled_tasks.lock
+
 # Visual-smoke artefacts (baseline PNGs are committed; current + diff are not)
 .smoke-dist/
 screenshots/current/

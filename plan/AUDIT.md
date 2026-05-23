@@ -117,6 +117,16 @@
 
 ## Pending
 
+### [3.8] `.gitignore` misses playtest screenshots + scheduled-tasks lock — every tick shows 9 untracked files ✅ (drained `3e757b6`)
+
+- issue: #152 (closed)
+- filed: 2026-05-23 by /iterate
+- category: tests (tooling / verify-gate noise)
+- Resolved 2026-05-23 in commit `3e757b6`. Added `walk-*.png`
+  + `.claude/scheduled_tasks.lock` to `.gitignore` under the
+  existing Playwright / Visual-smoke block. `git status
+  --short` is empty on a fresh tree; staging discipline restored.
+
 ### [3.8] Drain 2 lint warnings from combat-modal rewrite (`accent` + `ChainBar` unused) ✅ (drained `24e3ec4`)
 
 - issue: #151 (closed)

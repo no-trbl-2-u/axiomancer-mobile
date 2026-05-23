@@ -3,38 +3,64 @@
 > Latest findings from `/iterate audit`. Rewritten on each
 > audit pass. The Pending list at the bottom queues `/iterate`.
 
-> **Next-oversight directive (set via `/oversight` 2026-05-22,
-> 27th call):** when the user next invokes `/oversight`,
-> schedule a **live-drive playtest tick** — Claude uses the
-> Playwright MCP workflow from `setup/04_claude_playtest.md`
-> to drive a full encounter (exploration tap → modal mount →
-> stance commit → action commit → resolve → continue or exit)
-> against the user's running `pnpm web` instance. The playtest
-> surfaces any visible regressions the code-read audits miss,
-> filed as fresh iterate rows. **The user wanted this scheduled
-> for an oversight call, not autonomously fired** — so /march
-> should NOT spontaneously launch a playtest tick in the
-> meantime.
+> **Coordination directive (set via `/oversight` 2026-05-23,
+> 35th call):** a parallel Claude instance is editing the combat
+> modal surface — `app/(tabs)/combat.tsx`,
+> `components/event/EncounterModalOverlay.tsx`,
+> `state/presenters/combat.engine.ts`. /march MUST NOT promote
+> any of the three newly-unblocked PHASE_CANDIDATES candidates
+> ([5.5] narrative prose / [4.5] BEGIN AGAIN run-loop / [4.0]
+> codex card) until that WIP commits — all three mobile-side
+> consumers wire into the same surface. Bias next tick toward
+> **Phase 74 — Tap-tooltip primitive** (brief at
+> `plan/phases/phase_74_tap_tooltip_primitive.md`) which has
+> zero combat-modal overlap (Tick A only — primitive +
+> presenter + provider mount in `app/_layout.tsx`). Ticks B–E
+> stay deferred. Re-promote the engine-unblocked candidates
+> and Ticks B–E in a follow-up oversight call after parallel
+> Claude commits.
+>
+> Playtest directive carried forward from the 27th call: when
+> the user next invokes `/oversight`, schedule a live-drive
+> playtest tick — Claude uses the Playwright MCP workflow from
+> `setup/04_claude_playtest.md` to drive a full encounter
+> (exploration tap → modal mount → stance commit → action
+> commit → resolve → continue or exit) against the user's
+> running `pnpm web` instance. **The user wanted this
+> scheduled for an oversight call, not autonomously fired** —
+> so /march should NOT spontaneously launch a playtest tick in
+> the meantime. (Deferred this call to avoid the combat-modal
+> collision — playtest walks through the surface parallel
+> Claude is editing.)
 
+> **Memoir-surface bias closed 2026-05-23 via /oversight (35th
+> call).** Original 4-MED cluster (set 2026-05-16) has largely
+> drained — ~9 DRIFT ✅ rows in Done since then. `/iterate`
+> resumes natural HIGH-first ordering across the remaining
+> Pending queue. Historical bias body preserved below for
+> traceability.
+>
+> <details>
+> <summary>Historical memoir-surface bias (2026-05-16 → 2026-05-23)</summary>
+>
 > Bias: memoir-surface (set via `/oversight` 2026-05-16 after
 > critique pass 7 surfaced 4 MED findings clustered on
 > `state/presenters/memoir.engine.ts` +
 > `app/(tabs)/memoir/index.tsx` — same shape as the
 > event-surface cluster that followed the Phase 32 port).
-> `/iterate` weights cluster members 1.5× until the surface
-> drains: the 4 MED rows (JSDoc stale, `emptyMoral` /
+> `/iterate` weighted cluster members 1.5× until the surface
+> drained: the 4 MED rows (JSDoc stale, `emptyMoral` /
 > `emptyPhilosophical` unconsumed, PARLEYED-WITH-for-flee
 > re-voice to FLED per oversight 2026-05-16, and the Phase 33
 > shipped-state body SACK → SATCHEL fix) plus the LOW
-> `'untested.'` chip-vs-narrative split. Once those rows
-> close, bias resets and `/iterate` resumes natural HIGH-first
-> ordering across the remaining queue (smoke-screens memoir
-> route + SACK docs sweep). Prior event-surface bias closed
-> 2026-05-16 after 3 of 4 cluster rows drained
+> `'untested.'` chip-vs-narrative split. Prior event-surface
+> bias closed 2026-05-16 after 3 of 4 cluster rows drained
 > (HIGH event.tsx chrome `994fb02`, MED ENCOUNTER dedup
 > `11c47db`, LOW empty-state voice `d6bf779`); the 4th cluster
-> row (LOW STRIFE STIRS) is moving to Done as
+> row (LOW STRIFE STIRS) moved to Done as
 > `[accepted-as-design]` per oversight 2026-05-16.
+>
+> </details>
 
 ## Top 5 findings (scored) — 2026-05-13 (stale; archived below)
 

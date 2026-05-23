@@ -1541,20 +1541,19 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       pulse animation static for now (real reanimated loop
       tighten later, gated on reduce-motion).
 
-- [ ] Phase 74 — Tap-tooltip primitive + per-surface wiring.
-      Promoted via `/oversight` 2026-05-23 (34th call) from the
-      `### [score 5.0]` candidate in `plan/PHASE_CANDIDATES.md`
-      (originally filed via /oversight 31st call from user-jot
-      `cfc524c`). Cross-cutting `<TapTooltip>` UI primitive
-      (torn-edge panel, tap-outside / 6s timeout dismiss) plus a
-      `selectTooltipContentFor(kind, id, state) → { title, body,
-      footnote }` presenter, wired across combat HUD / SELF /
-      inventory surfaces. Refills the mobile-only runway while
-      four of the five `## Pending` engine-blocked candidates wait
-      on `axiomancer-mechanics` releases. Brief to be drafted via
-      `/plan-a-phase phase 74` before shipping. Proposed scope:
-      4-6 ticks (A primitive; B combat; C SELF; D inventory; E
-      optional memoir).
+- [x] Phase 74 — Tap-tooltip primitive + per-surface wiring.
+      Tick A shipped 2026-05-23 in commit `77bb85c` (TapTooltip
+      primitive + TooltipProvider + selectTooltipContentFor
+      presenter with stat content for HEART/BODY/MIND + root
+      provider mount + withAllProviders extension). 1224/1224
+      verify green (+28 from 1196). Brief at
+      `plan/phases/phase_74_tap_tooltip_primitive.md`.
+      Per-surface wiring (Ticks B–E: combat HUD / SELF /
+      inventory / memoir) ships as follow-up sub-phases once
+      their briefs land. Tick A scoped deliberately small to
+      avoid the combat-modal surface parallel Claude was
+      editing — that work has since shipped (commit `02b75db`)
+      so Ticks B–E are unblocked for the next /march cycle.
 
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped
       2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —

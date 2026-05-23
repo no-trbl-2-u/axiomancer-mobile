@@ -1142,6 +1142,47 @@ Prior text preserved below for traceability:
   conditional rendering, and the dim opacity branch. 811/811
   green at land (+11 over 800).
 
+### [Done 2026-05-23] `axiomancer-mechanics@0.11.0` adopted; engine bump landed clean ✅
+
+- category: external-dependency (engine package)
+- source: user-request 2026-05-23 ("bump versions and account for the changes")
+- **Resolved 2026-05-23** in the engine-bump commit. Engine 0.11.0
+  ships six additions across two arcs:
+  - **Friendship arc** — Phase 68 `BefriendabilityConfig` (per-foe
+    befriend predicate), Phase 69 `FriendshipReward.alignmentDelta`,
+    Phase 70 boss-tier `CoastalTyrant.friendshipReward`.
+  - **GH#65 mobile aftermath trio** — Phase 71 per-foe
+    `finalBlowLines`/`pactLines`/`causeLines`, Phase 72
+    `store.resetRun()` + `GameState.runId`, Phase 73 `Codex` slice
+    + `Enemy.journalEntry` + `CombatEndReport.friendshipReward.
+    codexEntryUnlocked`.
+  - **Apprentice preset buffed** 3/2/2 → 5/5/5 (data only).
+  - **Deprecation** — combat-reducer legacy aliases
+    (`endCombatPlayerVictory` / `endCombatPlayerDefeat` /
+    `endCombatWithFriendship`). Mobile doesn't call any of them
+    (grep clean) — nothing to migrate.
+- `GAME_STATE_VERSION` jumped 5 → 7 with two migrators
+  (`migrateV5toV6`, `migrateV6toV7`); engine runs them internally
+  via `createGameStore`, mobile's separate `state/persistence`
+  envelope is unaffected.
+- Mobile migration cost: **zero**. Bump landed clean: 1203/1203
+  verify green after a single `package.json` patch + `pnpm install`.
+  Three PHASE_CANDIDATES candidates flip from `engine-blocked` to
+  `ready to promote` (Phase 71 → [5.5] narrative prose, Phase 72
+  → [4.5] BEGIN AGAIN run-loop, Phase 73 → [4.0] codex/journal).
+  The fourth ([4.0] LevelUpModal derived-preview ribbon) stays
+  blocked — engine didn't ship a `previewAllocation` helper in
+  0.11.0.
+- side-fix: `jest.config.js` `transformIgnorePatterns` was missing
+  `\.pnpm` — the regex matched the first `node_modules/` segment
+  against `.pnpm` and silently ignored every transitive ESM file
+  in the pnpm content-addressed store. Without the fix, any clean
+  `pnpm install` would fail jest's load step with
+  `SyntaxError: Cannot use import statement outside a module` from
+  `react-native/jest/setup.js`. Added `\\.pnpm` to the allowlist
+  (jest-expo's own preset already includes it for the same
+  reason).
+
 ### [Done 2026-05-20] `axiomancer-mechanics@0.10.2` adopted; surface drift drained ✅
 
 - category: external-dependency (engine package)

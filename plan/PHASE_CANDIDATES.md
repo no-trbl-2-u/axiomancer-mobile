@@ -90,7 +90,7 @@
 - conflicts: Tick A is mobile-only; Tick B needs coordination
   with the engine repo.
 
-### [score 5.5] Engine-side narrative prose for aftermath panels (per-foe final-blow / pact / cause-of-death phrases)
+### [score 5.5] Engine-side narrative prose for aftermath panels (per-foe final-blow / pact / cause-of-death phrases) [ENGINE LANDED — 0.11.0 Phase 71]
 
 - proposed: 2026-05-22, expand pass 36
 - source signals:
@@ -136,7 +136,7 @@
   the engine repo / a writer pass to author lines for existing
   enemies.
 
-### [score 4.5] Engine-side run-loop semantics — BEGIN AGAIN beyond the full-heal placeholder
+### [score 4.5] Engine-side run-loop semantics — BEGIN AGAIN beyond the full-heal placeholder [ENGINE LANDED — 0.11.0 Phase 72]
 
 - proposed: 2026-05-22, expand pass 36
 - source signals:
@@ -179,7 +179,7 @@
   arguably worse than the previously-silent defeat path
   (because it implies a restart actually happened).
 
-### [score 4.0] Engine-side codex / journal-entry surface on parley outcomes
+### [score 4.0] Engine-side codex / journal-entry surface on parley outcomes [ENGINE LANDED — 0.11.0 Phase 73]
 
 - proposed: 2026-05-22, expand pass 36
 - source signals:

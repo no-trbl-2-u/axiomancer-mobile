@@ -23,6 +23,7 @@ import { SectionLabel } from '@/components/SectionLabel';
 import { StanceGlyph } from '@/components/StanceGlyph';
 import { AXM, FONTS } from '@/theme/axm';
 import { toRomanLower } from '@/state/presenters/roman';
+import { STANCES } from '@/state/presenters/stances';
 
 export type LevelStance = 'heart' | 'body' | 'mind';
 
@@ -165,7 +166,7 @@ export function LevelUpModal({
 
                 {/* Three stance rows */}
                 <View style={styles.stanceRows}>
-                    {(['heart', 'body', 'mind'] as const).map((stance) => (
+                    {STANCES.map((stance) => (
                         <StanceRow
                             key={stance}
                             stance={stance}

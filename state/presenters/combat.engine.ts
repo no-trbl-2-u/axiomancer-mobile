@@ -48,6 +48,7 @@ import {
 import { MAX_EFFECTS_SHOWN } from './constants';
 import { freezeViewModel } from './freeze';
 import { toRomanLower as toRoman } from './roman';
+import { STANCES } from './stances';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -787,7 +788,7 @@ function buildStanceOptions(
     playerEffects: readonly ActiveEffect[] = [],
 ): readonly StanceOption[] {
     const perStance = deriveStancePerformance(derivedStats);
-    return (['heart', 'body', 'mind'] as const).map((key) => {
+    return STANCES.map((key) => {
         const counters = BEATS[key];
         const weakTo = (Object.keys(BEATS) as StanceKey[]).find(
             (k) => BEATS[k] === key,
@@ -950,8 +951,8 @@ function resolveSliceFromState(
 function _devAssertTriangleMatchesEngine(): void {
     /* istanbul ignore if */
     if (typeof __DEV__ !== 'undefined' && __DEV__) {
-        for (const a of ['heart', 'body', 'mind'] as const) {
-            for (const b of ['heart', 'body', 'mind'] as const) {
+        for (const a of STANCES) {
+            for (const b of STANCES) {
                 const expected = BEATS[a] === b ? 'advantage' : BEATS[b] === a ? 'disadvantage' : 'neutral';
                 const got = determineAdvantage(a, b);
                 /* istanbul ignore next */

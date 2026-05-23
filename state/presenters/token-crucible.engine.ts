@@ -30,6 +30,7 @@ import {
     type TokenSkillFixture,
 } from '../mocks/tokens.fixture';
 import { freezeViewModel } from './freeze';
+import { STANCES } from './stances';
 
 /** One row in the per-stance skill grid. */
 export interface CrucibleSkillRow {
@@ -74,8 +75,6 @@ export interface TokenCrucibleViewModel {
     /** Legend key — one entry per token kind, in `TOKEN_KEYS` order. */
     legend: ReadonlyArray<CrucibleLegendEntry>;
 }
-
-const STANCES: ReadonlyArray<Stance> = ['heart', 'body', 'mind'];
 
 function buildCostEntries(
     cost: Partial<TokenCounts>,

@@ -91,6 +91,43 @@
 
 ## Pending
 
+### [needs-user-call] Design-board prototype vs live mobile app — user reports "many divergences" + "none of the work I requested earlier was done"
+
+- filed: 2026-05-23 via /oversight 33rd call
+- category: external-critique (user observation)
+- observation: User reports the live mobile app diverges from the
+  Claude Design prototype at
+  <https://claude.ai/design/p/019e0f5a-a0f0-753b-be1e-8939e6011384>
+  in many places, and that none of the work they requested earlier
+  was done. The specific divergences haven't been enumerated.
+- background: Phase 70 (Tick A/B/C/D = Victory / Friendship /
+  Defeat / Error aftermath modals) + Phase 71 (phase-aware
+  encounter-seal chrome) shipped 2026-05-22 from handoff bundle
+  `design/handoff-2026-05-22/`. Commits `05d85e7` / `8baf37a` /
+  `a6b1665` / `bd37594` / `5568b1f`. 1159/1159 verify green. The
+  follow-up design bundle URL the user posted later
+  (`MhgHpIE6_bRGdZpgPzAtjQ`) was byte-identical to the prior one
+  in `project/` (only an empty `chat5.md` was added — no new
+  screens / no level-up modal / no UI touchups).
+- needs-from-user (pick one):
+  1. **Enumerate the specific divergences** they see between the
+     design-board prototype and the live mobile app — surface +
+     element + observed vs expected. The loop drains one per
+     iterate tick.
+  2. **Re-export the design board** so a fresh handoff bundle
+     captures the current state of the prototype (which may have
+     been updated on the design side since `7L19LA4OhXujt8i2Mt8inQ`
+     was exported earlier 2026-05-22). The new bundle's hash
+     must differ from the prior one in `project/` for the loop
+     to detect new content.
+  3. **Confirm the live app isn't running stale code** — the
+     shipped commits are on main, but a local dev server or
+     simulator without hot-reload could be showing the
+     pre-Phase-70 build. `git log --oneline -10` on the user's
+     working tree should include `5568b1f feat(spec71)…`.
+- suggested_fix: blocked until the user picks one of the above.
+- source: user
+
 ### [3.15] Phase 70/71 stale refs + missing test-doc entries ✅ (drained `ca77530`)
 
 ### [3.0] Engine-dup — 5 lowercase-roman helpers across presenters + panel ✅ (drained — consolidated to `state/presenters/roman.ts`)

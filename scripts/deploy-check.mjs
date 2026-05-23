@@ -88,19 +88,25 @@ if (PROVIDER === 'eas') {
       process.exit(2) // timeout - no build triggered yet
     }
     
-    // Map status to exit codes
-    switch (latestBuild.status) {
+    // Map status to exit codes. EAS has returned both lowercase
+    // (`finished`) and uppercase (`FINISHED`) over time; normalize.
+    const status = String(latestBuild.status ?? '').toLowerCase()
+    switch (status) {
       case 'finished':
         console.log(`deploy-check: ✓ build ${latestBuild.id} finished`)
         process.exit(0)
       case 'errored':
-      case 'canceled':  
-        console.error(`deploy-check: ✗ build ${latestBuild.id} ${latestBuild.status}`)
+      case 'canceled':
+      case 'cancelled':
+        console.error(`deploy-check: ✗ build ${latestBuild.id} ${status}`)
         process.exit(1)
       case 'in-progress':
+      case 'in_progress':
       case 'in-queue':
+      case 'in_queue':
+      case 'pending':
       case 'new':
-        console.log(`deploy-check: ⏳ build ${latestBuild.id} ${latestBuild.status}`)  
+        console.log(`deploy-check: ⏳ build ${latestBuild.id} ${status}`)
         process.exit(2)
       default:
         console.error(`deploy-check: unknown build status: ${latestBuild.status}`)

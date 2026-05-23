@@ -258,7 +258,7 @@
   Mechanical lift; presenter pin pattern is well-established
   (see `event.engine.ts::preludeChrome`).
 
-### [score 5.0] Tap-tooltip primitive + per-surface wiring (user-jot)
+### [score 5.0] Tap-tooltip primitive + per-surface wiring (user-jot) [PROMOTED → Phase 74]
 
 - proposed: 2026-05-22, filed via `/oversight` (31st call) from user-jot `cfc524c`
 - source signals:
@@ -274,6 +274,8 @@
   - Tick E (optional) — Memoir tab: chronicle entry types + quest objective rows.
 - estimated phases: 1 (with sub-ticks)
 - conflicts: none. Pure additive UI primitive; no engine dependency.
+
+**Resolution:** promoted via `/oversight` 2026-05-23 (34th call) to refill the mobile-only runway — 4 of 5 `## Pending` candidates are engine-blocked. See `01_build_plan.md` Phase 74 row for the live entry; brief to be drafted via `/plan-a-phase phase 74`.
 
 ### [score 5.0] Phase 67 — Recurring playtest cadence (Playwright-driven regression sentinel) [PROMOTED]
 

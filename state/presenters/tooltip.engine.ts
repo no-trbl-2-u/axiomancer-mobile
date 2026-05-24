@@ -91,6 +91,43 @@ const STANCE_CHIP_CONTENT: Record<string, TooltipContent> = {
     },
 };
 
+// Phase 74 follow-up walkthrough Tick 3 — equipment slot content.
+// Keys match engine `EquipmentSlot` literals (`head | body | hands |
+// feet | weapon | armor | accessory`). SELF equipment cells pass
+// the slotKey verbatim as the tooltip id; "accessory" stays the
+// engine key (the chrome label "Trinket" lives on the row, not the
+// tooltip lookup).
+const SLOT_CONTENT: Record<string, TooltipContent> = {
+    head: {
+        title: 'HEAD',
+        body: 'helms, hoods, crowns. tightens what you can take to the face — defense against direct blows, mind-test bonuses for those that bear sigils.',
+    },
+    body: {
+        title: 'BODY',
+        body: 'breastplates, robes, mail. the largest hit zone; bulk goes here. carries the heaviest contribution to physical defense and burden.',
+    },
+    hands: {
+        title: 'HANDS',
+        body: 'gauntlets, gloves, wraps. shapes how you strike — sharpens physical attack, sometimes carries fingered sigils for skill cost.',
+    },
+    feet: {
+        title: 'FEET',
+        body: 'boots, sandals, none. shapes how you stand. defense in the lower line, sometimes the wherewithal to flee.',
+    },
+    weapon: {
+        title: 'WEAPON',
+        body: 'sword, ledger, censer, voice. the thing you bring to the exchange — primary contributor to physical attack and the action verb.',
+    },
+    armor: {
+        title: 'ARMOR',
+        body: 'layered over the body slot — full harness, surcoat, ritual mantle. raw defense; the heaviest single item the burden bar feels.',
+    },
+    accessory: {
+        title: 'TRINKET',
+        body: 'rings, charms, kept things. small numbers; sometimes the only place a particular blessing or save bonus appears.',
+    },
+};
+
 // Phase 74 follow-up walkthrough Tick 2 — alignment axis content.
 // Keys match `AlignmentAxisKey` in `state/presenters/character.engine.ts`
 // (`'epistemology' | 'outlook' | 'scope'`); SELF axis chips pass
@@ -240,6 +277,9 @@ export function selectTooltipContentFor(
     }
     if (kind === 'alignment') {
         return ALIGNMENT_CONTENT[id] ?? null;
+    }
+    if (kind === 'slot') {
+        return SLOT_CONTENT[id] ?? null;
     }
     if (kind === 'effect') {
         if (!id) return null;

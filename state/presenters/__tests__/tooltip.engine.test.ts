@@ -59,7 +59,6 @@ describe('selectTooltipContentFor', () => {
             'derived',
             'affliction',
             'blessing',
-            'slot',
             'burden',
             'item-stat',
             'chronicle-entry',
@@ -67,6 +66,29 @@ describe('selectTooltipContentFor', () => {
         ];
         it.each(unwiredKinds)('returns null for kind: %s with any id', (kind) => {
             expect(selectTooltipContentFor(kind, 'anything', EMPTY_STATE)).toBeNull();
+        });
+    });
+
+    describe('kind: slot (Phase 74 walkthrough Tick 3)', () => {
+        const slotKeys = ['head', 'body', 'hands', 'feet', 'weapon', 'armor', 'accessory'] as const;
+        it.each(slotKeys)('returns content for slot id %s', (key) => {
+            const content = selectTooltipContentFor('slot', key, EMPTY_STATE);
+            expect(content).not.toBeNull();
+            expect(typeof content?.title).toBe('string');
+            expect(typeof content?.body).toBe('string');
+        });
+
+        it("renders 'accessory' as TRINKET in the title (chrome convention)", () => {
+            const content = selectTooltipContentFor('slot', 'accessory', EMPTY_STATE);
+            expect(content?.title).toBe('TRINKET');
+        });
+
+        it('returns null for an unknown slot id', () => {
+            expect(selectTooltipContentFor('slot', 'mouth', EMPTY_STATE)).toBeNull();
+        });
+
+        it('returns null for an empty slot id', () => {
+            expect(selectTooltipContentFor('slot', '', EMPTY_STATE)).toBeNull();
         });
     });
 

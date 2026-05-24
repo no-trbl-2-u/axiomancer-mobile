@@ -293,12 +293,25 @@ export default function CharacterScreen() {
           <BodyDiagram />
           <View style={styles.slotsGrid}>
             {vm.equipment.map((s) => (
-              <View key={s.name} style={[styles.slotCell, s.item === null && styles.slotEmpty]}>
-                <Text style={styles.slotName}>{s.name.toUpperCase()}</Text>
-                <Text style={[styles.slotItem, s.item === null && { color: AXM.ash }]}>
-                  {s.item ?? '—'}
-                </Text>
-              </View>
+              // Phase 74 follow-up walkthrough Tick 3: wrap each
+              // slot cell in a TooltipTarget pointing at the new
+              // kind:'slot' content (7 engine slot ids). Tap
+              // explains the slot's gameplay role.
+              <TooltipTarget
+                key={s.slotKey}
+                kind="slot"
+                id={s.slotKey}
+                accessibilityLabel={`Explain ${s.name} slot`}
+                accessibilityHint="tap to read description"
+                testID={`self-slot-${s.slotKey}`}
+              >
+                <View style={[styles.slotCell, s.item === null && styles.slotEmpty]}>
+                  <Text style={styles.slotName}>{s.name.toUpperCase()}</Text>
+                  <Text style={[styles.slotItem, s.item === null && { color: AXM.ash }]}>
+                    {s.item ?? '—'}
+                  </Text>
+                </View>
+              </TooltipTarget>
             ))}
           </View>
         </View>

@@ -93,6 +93,13 @@ export interface CharacterEffectRow {
 }
 
 export interface EquipmentSlotRow {
+    /**
+     * Phase 74 follow-up walkthrough Tick 3 — engine slot literal
+     * (`head | body | hands | feet | weapon | armor | accessory`).
+     * The SELF tooltip wrapper passes this to
+     * `selectTooltipContentFor('slot', slotKey)`.
+     */
+    slotKey: 'head' | 'body' | 'hands' | 'feet' | 'weapon' | 'armor' | 'accessory';
     /** Slot label, e.g. `'Head'`. */
     name: string;
     /** Equipped item name, or `null` when empty. */
@@ -263,6 +270,7 @@ function buildEquipment(player: Character): readonly EquipmentSlotRow[] {
     // (AUDIT [3.5] inventory-audit row 1).
     const worn = firstEquippedPerSlot(player.inventory);
     return SLOT_ORDER.map((slot) => ({
+        slotKey: slot,
         name: SLOT_LABELS[slot],
         item: worn.get(slot)?.name ?? null,
     }));

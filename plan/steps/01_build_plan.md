@@ -1718,15 +1718,12 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       engine silently blocks every pick on `not-equipped` and
       (B) mobile flat-sum `manaCost` diverges from engine
       per-resource `canUseSkill`. Dispatch 82a → 82b.
-- [ ] Phase 82a — Skill picker filters by `player.equippedSkills`.
-      Resolves Phase 79 finding A. Without it, every non-equipped
-      pick costs the player a round. Scope: extend combat presenter
-      to derive `availableSkills` as the intersection of the
-      player's skill list and `player.equippedSkills`; picker
-      consumes the filtered list. Acceptance: only equipped skills
-      appear in the picker; Phase 79's `'blocked'` log entries
-      stop firing in normal play. See PHASE_CANDIDATES.md `[score
-      7.5]` row.
+- [x] Phase 82a — Skill picker filters by `player.equippedSkills`.
+      Shipped in commit `2aeda82`. buildSkillPicker now accepts
+      optional equippedSkills filter; reads from state.player
+      (global character), falls back to combat entity, then no
+      filter. +1 test pinning the contract. 1344/1344 verify green
+      (+1 from 1343).
 - [ ] Phase 82b — Mobile skill enablement reads engine
       `combatResources` per-type. Resolves Phase 79 finding B.
       Mobile flat-sum `manaCost = body + mind + heart + fallacy +

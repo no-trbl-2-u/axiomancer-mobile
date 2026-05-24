@@ -20,7 +20,7 @@
  *     (body + mind + heart + fallacy + paradox; missing keys 0)
  */
 
-import { skillLibrary, getSkillById, type Skill } from 'axiomancer-mechanics';
+import { skillLibrary, getSkillById, type Skill, type ResourceCost } from 'axiomancer-mechanics';
 
 import type { StanceKey } from '@/state/presenters/combat.engine';
 
@@ -37,8 +37,10 @@ export interface CombatSkill {
     category: SkillCategoryKey;
     /** Stance the skill is locked to. */
     stance: StanceKey;
-    /** Mana cost — sum of all resource pools the engine reads from. */
+    /** Mana cost — sum of all resource pools (kept for display). */
     manaCost: number;
+    /** Per-resource cost from the engine. */
+    resourceCost: ResourceCost;
 }
 
 function totalResourceCost(skill: Skill): number {
@@ -54,6 +56,7 @@ function toCombatSkill(skill: Skill): CombatSkill {
         category: skill.category,
         stance: skill.philosophicalAspect,
         manaCost: totalResourceCost(skill),
+        resourceCost: skill.resourceCost,
     };
 }
 

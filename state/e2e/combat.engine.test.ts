@@ -170,14 +170,16 @@ describe('selectCombatViewModel: active combat', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
         actions.startCombat(makeEnemy());
+        // Seed per-resource pools so body-stance skills are affordable.
+        const c = store.getState().combat!;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        store.setState({ combat: { ...c, combatResources: { body: 10, mind: 10, heart: 10, fallacy: 10, paradox: 10 } } } as any);
 
         const vmWithBody = selectCombatViewModel(store.getState(), { selectedStance: 'body' });
         const vmWithMind = selectCombatViewModel(store.getState(), { selectedStance: 'mind' });
 
         expect(vmWithBody.stancePicker.selected).toBe('body');
         expect(vmWithMind.stancePicker.selected).toBe('mind');
-        // skillPicker is driven by the previewed stance (the action
-        // layer seeds the combat.player with mana scaffolding).
         expect(vmWithBody.skillPicker.skills.some((s) => s.stance === 'body' && s.enabled)).toBe(true);
     });
 
@@ -434,7 +436,7 @@ describe('selectCombatViewModel: skill picker', () => {
         expect(allDisabled).toBe(true);
         for (const s of vm.skillPicker.skills) {
             if (s.stance === 'heart') {
-                expect(s.disabledReason).toBe('insufficient-mana');
+                expect(s.disabledReason).toBe('insufficient-resources');
             }
         }
         expect(vm.skillPicker.availableCount).toBe(0);

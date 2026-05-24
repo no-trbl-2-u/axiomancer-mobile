@@ -214,9 +214,9 @@ export interface SkillOption {
     category: SkillCategoryKey;
     stance: StanceKey;
     manaCost: number;
-    /** False = greyed out (wrong stance or not enough mana). */
+    /** False = greyed out (wrong stance or insufficient resources). */
     enabled: boolean;
-    disabledReason: 'wrong-stance' | 'insufficient-mana' | null;
+    disabledReason: 'wrong-stance' | 'insufficient-resources' | null;
 }
 
 export interface SkillPickerSlice {
@@ -224,8 +224,6 @@ export interface SkillPickerSlice {
     /** Number of currently-castable skills (matches stance + cost). */
     availableCount: number;
     totalCount: number;
-    mana: number;
-    manaMax: number;
 }
 
 export interface ResolveSlice {
@@ -817,10 +815,24 @@ function buildStanceOptions(
     });
 }
 
+interface ResourcePool {
+    body: number; mind: number; heart: number;
+    fallacy: number; paradox: number;
+}
+
+const EMPTY_POOL: ResourcePool = { body: 0, mind: 0, heart: 0, fallacy: 0, paradox: 0 };
+
+function canAffordSkill(cost: { body?: number; mind?: number; heart?: number; fallacy?: number; paradox?: number }, pool: ResourcePool): boolean {
+    return (cost.body ?? 0) <= pool.body
+        && (cost.mind ?? 0) <= pool.mind
+        && (cost.heart ?? 0) <= pool.heart
+        && (cost.fallacy ?? 0) <= pool.fallacy
+        && (cost.paradox ?? 0) <= pool.paradox;
+}
+
 function buildSkillPicker(
     stance: StanceKey,
-    mana: number,
-    manaMax: number,
+    resources: ResourcePool,
     equippedSkills?: readonly string[],
 ): SkillPickerSlice {
     const pool = equippedSkills
@@ -828,10 +840,10 @@ function buildSkillPicker(
         : COMBAT_SKILLS;
     const skills: SkillOption[] = pool.map((s) => {
         const wrongStance = s.stance !== stance;
-        const tooExpensive = s.manaCost > mana;
+        const tooExpensive = !canAffordSkill(s.resourceCost, resources);
         let disabledReason: SkillOption['disabledReason'] = null;
         if (wrongStance) disabledReason = 'wrong-stance';
-        else if (tooExpensive) disabledReason = 'insufficient-mana';
+        else if (tooExpensive) disabledReason = 'insufficient-resources';
         return {
             id: s.id,
             name: s.name,
@@ -848,8 +860,6 @@ function buildSkillPicker(
         skills,
         availableCount,
         totalCount: skills.length,
-        mana,
-        manaMax,
     };
 }
 
@@ -1037,7 +1047,7 @@ export function selectCombatViewModel(
             selected: localUi.selectedStance ?? null,
             canConfirm: false,
         };
-        const skillPicker = buildSkillPicker(stancePicker.selected ?? 'heart', 0, 0);
+        const skillPicker = buildSkillPicker(stancePicker.selected ?? 'heart', EMPTY_POOL);
         const vm = {
             isInCombat: false,
             phase: 'choosing_stance' as CombatPhaseKey,
@@ -1110,6 +1120,16 @@ export function selectCombatViewModel(
     const playerHp = Number(playerEntity.health ?? 0);
     const playerHpMax = Number(playerEntity.maxHealth ?? playerHp);
     const { mana, manaMax } = readManaPair(state);
+    const rawResources = c.combatResources ?? null;
+    const resources: ResourcePool = rawResources !== null
+        ? {
+            body: Number(rawResources.body ?? 0),
+            mind: Number(rawResources.mind ?? 0),
+            heart: Number(rawResources.heart ?? 0),
+            fallacy: Number(rawResources.fallacy ?? 0),
+            paradox: Number(rawResources.paradox ?? 0),
+        }
+        : EMPTY_POOL;
     const player: CombatPlayerSummary = {
         hp: playerHp,
         hpMax: playerHpMax,
@@ -1151,7 +1171,7 @@ export function selectCombatViewModel(
         : Array.isArray(playerEntity.equippedSkills)
             ? playerEntity.equippedSkills
             : [];
-    const skillPicker = buildSkillPicker(previewStance ?? 'heart', player.mana, player.manaMax, equipped.length > 0 ? equipped : undefined);
+    const skillPicker = buildSkillPicker(previewStance ?? 'heart', resources, equipped.length > 0 ? equipped : undefined);
 
     const phaseIndex: number = phase === 'ended' ? -1 : PHASE_ORDER.indexOf(phase);
     const friendshipCounter = Number(c.friendshipCounter ?? 0);

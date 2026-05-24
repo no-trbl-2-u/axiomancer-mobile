@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { AXM, FONTS } from '@/theme/axm';
+import { TooltipTarget } from '@/components/tooltip/TooltipTarget';
 import { AestheticDevToggle } from '@/components/AestheticDevToggle';
 import { AscendStrip } from '@/components/levelup/AscendStrip';
 import { LevelReadyStrip } from '@/components/levelup/LevelReadyStrip';
@@ -149,11 +150,25 @@ export default function CharacterScreen() {
         <SectionLabel size={10}>✠ BASE</SectionLabel>
         <View style={styles.baseRow}>
           {vm.base.map((r) => (
-            <View key={r.stanceKey} style={styles.baseCard}>
-              <StanceGlyph kind={r.stanceKey} size={28} color={AXM.parchment} />
-              <Text style={styles.baseStatLabel}>{r.label}</Text>
-              <Text style={styles.baseStatValue}>{r.value}</Text>
-            </View>
+            // Phase 74 follow-up walkthrough Tick 1: wrap the base
+            // stat card in a TooltipTarget so a tap fires the
+            // existing kind:'stat' content (Phase 74 Tick A
+            // authored HEART/BODY/MIND). id is the uppercased
+            // stance key, matching STAT_CONTENT's keys.
+            <TooltipTarget
+              key={r.stanceKey}
+              kind="stat"
+              id={r.stanceKey.toUpperCase()}
+              accessibilityLabel={`Explain ${r.label} stat`}
+              accessibilityHint="tap to read description"
+              testID={`self-base-${r.stanceKey}`}
+            >
+              <View style={styles.baseCard}>
+                <StanceGlyph kind={r.stanceKey} size={28} color={AXM.parchment} />
+                <Text style={styles.baseStatLabel}>{r.label}</Text>
+                <Text style={styles.baseStatValue}>{r.value}</Text>
+              </View>
+            </TooltipTarget>
           ))}
         </View>
       </View>
@@ -218,27 +233,41 @@ export default function CharacterScreen() {
             <Text style={styles.emptyLabel}>{vm.emptyEffectsMessage}</Text>
           ) : (
             vm.effects.map((e) => (
-              <View
+              // Phase 74 follow-up walkthrough Tick 1: wrap the
+              // affliction/blessing row in a TooltipTarget so a tap
+              // fires the existing kind:'effect' content (Phase 75
+              // authored — reads engine `Effect.payload` for the
+              // stat-effect line + accent). id is the engine
+              // effectId threaded through CharacterEffectRow.
+              <TooltipTarget
                 key={e.name}
-                style={[
-                  styles.effectRow,
-                  {
-                    backgroundColor: e.tint === 'buff' ? AXM.buff : AXM.debuff,
-                    borderColor: e.tint === 'buff' ? AXM.sulfur : AXM.blood,
-                  },
-                ]}
+                kind="effect"
+                id={e.effectId}
+                accessibilityLabel={`Effect ${e.name}`}
+                accessibilityHint="tap to read description"
+                testID={`self-effect-${e.effectId || e.name}`}
               >
-                <EffectGlyph kind={e.kind} size={20} color={e.tint === 'buff' ? AXM.sulfur : AXM.blood} />
-                <View style={{ flex: 1 }}>
-                  <View style={styles.effectTopRow}>
-                    <Text style={styles.effectName}>{e.name}</Text>
-                    <Text style={styles.effectMeta}>
-                      {e.duration === null ? '∞' : `${e.duration}r`} · ×{e.intensity}
-                    </Text>
+                <View
+                  style={[
+                    styles.effectRow,
+                    {
+                      backgroundColor: e.tint === 'buff' ? AXM.buff : AXM.debuff,
+                      borderColor: e.tint === 'buff' ? AXM.sulfur : AXM.blood,
+                    },
+                  ]}
+                >
+                  <EffectGlyph kind={e.kind} size={20} color={e.tint === 'buff' ? AXM.sulfur : AXM.blood} />
+                  <View style={{ flex: 1 }}>
+                    <View style={styles.effectTopRow}>
+                      <Text style={styles.effectName}>{e.name}</Text>
+                      <Text style={styles.effectMeta}>
+                        {e.duration === null ? '∞' : `${e.duration}r`} · ×{e.intensity}
+                      </Text>
+                    </View>
+                    <Text style={styles.effectDesc}>{e.description}</Text>
                   </View>
-                  <Text style={styles.effectDesc}>{e.description}</Text>
                 </View>
-              </View>
+              </TooltipTarget>
             ))
           )}
         </View>

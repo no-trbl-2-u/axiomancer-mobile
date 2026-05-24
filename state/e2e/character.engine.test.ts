@@ -329,6 +329,19 @@ describe('selectCharacterViewModel: effects', () => {
         expect(typeof vm.effects[0].description).toBe('string');
     });
 
+    it('threads the engine effectId onto vm.effects[i].effectId (Phase 74 walkthrough Tick 1)', () => {
+        // The SELF tooltip wrapper needs the engine id to look up
+        // the kind:'effect' tooltip content. Pin the threading.
+        const buff = effectsLibrary.buffs[0];
+        const base = createCharacter({ name: 'Hero', level: 1, baseStats: { heart: 1, body: 1, mind: 1 } });
+        const { activeEffects } = applyEffect(base.effects, buff, 1);
+        const player = { ...base, effects: activeEffects };
+        const store = createGameStore(createMemoryAdapter(), { player });
+
+        const vm = selectCharacterViewModel(store.getState());
+        expect(vm.effects[0].effectId).toBe(buff.id);
+    });
+
     it('maps a debuff effect to kind="debuff" and tint="debuff"', () => {
         const debuff = effectsLibrary.debuffs[0];
         const base = createCharacter({ name: 'Hero', level: 1, baseStats: { heart: 1, body: 1, mind: 1 } });

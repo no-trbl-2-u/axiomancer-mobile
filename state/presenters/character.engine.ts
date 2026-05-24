@@ -75,6 +75,14 @@ export interface SaveOrTestRow {
 }
 
 export interface CharacterEffectRow {
+    /**
+     * Phase 74 follow-up — engine `effectId` threaded through so the
+     * SELF tap-tooltip wrapper can fire `selectTooltipContentFor(
+     * 'effect', effectId)`. Empty string when the source effect has
+     * no engine id (synthetic fixtures); the tooltip presenter
+     * short-circuits on empty.
+     */
+    effectId: string;
     name: string;
     kind: EffectKind;
     tint: EffectTint;
@@ -231,6 +239,7 @@ function buildEffects(player: Character): readonly CharacterEffectRow[] {
         const rawKind = def?.type ?? 'debuff';
         const kind = (rawKind === 'buff' ? 'buff' : 'debuff') as EffectKind;
         return {
+            effectId: ae.effectId ?? '',
             name: def?.name ?? ae.effectId,
             kind,
             tint: (kind === 'buff' ? 'buff' : 'debuff') as EffectTint,

@@ -63,17 +63,19 @@
 - suggested_fix: [waiting on design — the prompt file `design/levelup-modal-prompt.txt` landed 2026-05-22 specifying both surfaces (SELF-header `ASCEND` strip + full-screen LevelUpModal). User confirmed via /oversight 2026-05-22 (32nd call) that the design is in progress at <https://claude.ai/design/p/019e0f5a-a0f0-753b-be1e-8939e6011384>. The actual handoff bundle hasn't been generated yet — the 2026-05-22 bundle at `design/handoff-2026-05-22/` covers aftermath modals only. Once the levelup bundle lands (likely `design/handoff-<date>/project/screens/levelup.jsx`), this row promotes to its own phase. Until then it stays Pending so the next /oversight sees it.]
 - source: user
 
-### [MED] general — Tooltip walkthrough across non-combat surfaces (inventory, SELF, exploration, memoir)
-- pass: user-jot (commit `6415787`)
+## Done
+
+### [MED] general — Tooltip walkthrough across non-combat surfaces (inventory, SELF, exploration, memoir) ✅
+- pass: user-jot (commit `6415787`); walkthrough delivered at commit `<this-tick>` via /iterate.
+- issue: #162
 - viewport: unspecified
 - auth_state: anonymous
 - category: observation
 - observation: Make sure to add tooltips to other things, outside of combat as well. Do a walkthrough and see if there are any icons that don't have explanations for them.
 - evidence: user-spotted at 2026-05-24T03:55:00Z (follow-up to Phase 75 ship `de3bb7b`)
-- suggested_fix: [user has not specified — iterate to determine. The Phase 74 brief already lists Ticks C-E covering this: Tick C = SELF (stats/derived/alignment/affliction/blessing), Tick D = inventory (slot labels/item stats/burden), Tick E = memoir (chronicle entries/quest objectives). Promote Ticks C-E to standalone phases via /oversight; do a walkthrough pass to catch icons not covered by the Tick C-E enumeration (exploration map glyphs, codex toggle, friendship meter, mind-mark counter, etc.).]
+- resolution: Walkthrough audit pass delivered as 4 AUDIT.md rows (one per surface: SELF [4.5], Inventory [4.0], Memoir [3.5], Exploration [3.5]). Each row enumerates the icons / glyphs lacking tap-tooltip wiring, maps each to the appropriate presenter `TooltipKind` (most already in the union; exploration needs an additive `'map-node'` kind), and notes the natural Phase-74-Ticks-C-E mapping. The wiring itself remains under the Phase 74 Ticks C-E candidate (PHASE_CANDIDATES.md `[score 5.5]`) — `/oversight` promotes the multi-phase split when ready; the walkthrough findings feed each sub-tick's brief. Surfaces audited: 4. Discrete icon families enumerated: 14.
 - source: user
 
-## Done
 
 ### [MED] /self — Level Up button gating + stat-allocation lifecycle ✅
 - pass: user-jot (commit `b96ea05`); addressed at commit `<this-tick>` via /iterate.

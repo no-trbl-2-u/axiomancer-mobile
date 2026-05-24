@@ -102,6 +102,127 @@
 
 ## Pending
 
+### [4.5] Non-combat tooltip walkthrough — SELF surface (user-jot `9457378`)
+
+- filed: 2026-05-24 by /iterate (mirror #162)
+- category: external-critique / a11y
+- impact: 5 (covers 4 distinct icon families on the
+  highest-visited screen; player can't tell what stat /
+  effect / equipment slot means without leaving the screen)
+- ease: 7 (presenter branches `'derived' / 'alignment' /
+  'affliction' / 'blessing'` already typed in
+  `state/presenters/tooltip.engine.ts` `TooltipKind` union;
+  only content + tap-target wires needed)
+- inventory (icons / glyphs that should fire `useTooltip`):
+  - **Base stat cards** (`character/index.tsx:136-144`) — 3×
+    `<StanceGlyph kind={r.stanceKey}>` for HEART / BODY /
+    MIND. Tooltip kind already authored (Phase 74 Tick A
+    `kind: 'stat'`). Just wrap glyph in `<TooltipTarget kind="stat" id={r.stanceKey.toUpperCase()}>`.
+  - **Affliction / blessing rows**
+    (`character/index.tsx:205-228`) — `<EffectGlyph kind={e.kind}>`
+    per row. Effect tooltip presenter branch already shipped
+    in Phase 75; need to thread `effect.effectId` through
+    `CharacterEffectRow` (mirror of the Phase 75
+    `CombatEffectDisplay.effectId` add) and wrap the glyph.
+  - **Skill cards** (`character/index.tsx:265-275`) —
+    `<StanceGlyph kind={s.stanceKey}>` per skill. Skill
+    presenter branch shipped in Phase 75; needs id thread on
+    `CharacterSkillRow` (currently uses `name` as key, no id
+    exposed). Tooltip target wraps the whole card.
+  - **Equipment slot cells**
+    (`character/index.tsx:238-244`) — slot names are text
+    labels; tooltip would explain each slot's role + worn
+    item details. Presenter `kind: 'slot'` already in the
+    union, not yet authored.
+  - **Alignment axis chips**
+    (`character/index.tsx:188-194`) — 3× chips
+    (epistemology / ethics / metaphysics buckets). Tooltip
+    would explain each axis dimension. Presenter
+    `kind: 'alignment'` in the union, not authored.
+  - **Saves & tests cells** (`character/index.tsx:175-179`)
+    — 6 cells. Presenter `kind: 'derived'` in the union;
+    not authored. Lower priority than the others — saves
+    are derived stats players don't directly act on.
+- next: promote PHASE_CANDIDATES.md row `[score 5.5] Tooltip
+  walkthrough — non-combat surfaces (Phase 74 Ticks C-E
+  redux)` via /oversight; the SELF surface is the natural
+  Tick C deliverable.
+
+### [4.0] Non-combat tooltip walkthrough — Inventory surface (user-jot `9457378`)
+
+- filed: 2026-05-24 by /iterate (mirror #162)
+- category: external-critique / a11y
+- impact: 4 (slot labels + burden are the unexplained
+  affordances; item-card stat lines are partly
+  self-explanatory)
+- ease: 7
+- inventory:
+  - **PaperDoll equipment slots**
+    (`inventory/index.tsx:188-216`) — `<TouchableOpacity>`
+    per slot wrapping `<ItemGlyph category="equipment">`.
+    Tooltip would explain slot name + worn-item details.
+    Presenter `kind: 'slot'` (shared with SELF).
+  - **Burden bar** (`inventory/index.tsx:379`) —
+    `<StatBar label="BURDEN · STONE">`. Tooltip would
+    explain burden mechanic + threshold consequences.
+    Presenter `kind: 'burden'` already in the union.
+  - **Item-card stat lines** (per-item rows in the
+    category sections) — would explain each stat's
+    contribution. Presenter `kind: 'item-stat'` already in
+    the union, not authored.
+- next: same — Phase 74 Tick D in the multi-phase
+  candidate.
+
+### [3.5] Non-combat tooltip walkthrough — Memoir surface (user-jot `9457378`)
+
+- filed: 2026-05-24 by /iterate (mirror #162)
+- category: external-critique / a11y
+- impact: 4 (chronicle entry types + alignment chips are
+  the unexplained affordances; the memoir is a low-traffic
+  surface)
+- ease: 7
+- inventory:
+  - **Moral alignment chip**
+    (`memoir/index.tsx:162-172`, testID
+    `memoir-moral-chip`) — would explain moral-meter
+    semantics. Presenter `kind: 'alignment'` in the union
+    (shared with SELF axis chips).
+  - **Philosophical alignment chip**
+    (`memoir/index.tsx:180`, testID
+    `memoir-philosophical-chip`) — would explain the
+    philosophical axis bucket. Same presenter kind.
+  - **Chronicle entry rows** — would explain each
+    chronicle-entry type ("a recognition", "a falter",
+    "an oath"). Presenter `kind: 'chronicle-entry'`
+    already in the union.
+  - **Quest objective rows** — would explain each
+    objective's goal / completion criteria. Presenter
+    `kind: 'quest-objective'` already in the union.
+- next: Phase 74 Tick E in the multi-phase candidate.
+
+### [3.5] Non-combat tooltip walkthrough — Exploration surface (user-jot `9457378`)
+
+- filed: 2026-05-24 by /iterate (mirror #162)
+- category: external-critique / a11y
+- impact: 4 (NodeMark icons are the primary affordance;
+  the player taps them to engage encounters but the
+  encounter type isn't surfaced until tap)
+- ease: 6
+- inventory:
+  - **NodeMark icons** (`exploration/index.tsx:309`) —
+    `<NodeMark kind={n.kind}>` per map node. Tooltip would
+    explain node type (combat / event / friend / boss /
+    treasure) at long-press (single-tap commits the move,
+    mirror of Phase 75 skill-row long-press pattern).
+    Presenter would need a new kind — `'map-node'` is NOT
+    in the current `TooltipKind` union, so this surface
+    requires an additive union entry plus content. Filed
+    as the walkthrough finding's escape-hatch entry per
+    candidate 5.5's "exploration sub-tick" note.
+- next: extends Phase 74 Tick C-E enumeration with a
+  fourth sub-tick for exploration; the candidate already
+  flags this as the walkthrough-discovered piece.
+
 ### [3.2] `bearings.md` engine-bump row doesn't warn against `pnpm install` — recurring trap (already cost 1 EAS build + PR #153) ✅ (drained `1b0c273`)
 
 - issue: #154 (closed)

@@ -73,16 +73,6 @@
 - suggested_fix: [user has not specified — iterate to determine]
 - source: user
 
-### [MED] /combat — Tighten Phase 75 tooltip content (name + stat effect, colour-coded)
-- pass: user-jot (commit `6415787`)
-- viewport: unspecified
-- auth_state: anonymous
-- category: visual
-- observation: For the combat HUD tap-tooltips, make sure the explanation is concise (name, and stat effect. No description, no explanation. Just Name, and the effect it has on the stats. Try to color coordinate both the effect and the tooltip to which stat it effects
-- evidence: user-spotted at 2026-05-24T03:55:00Z (follow-up to Phase 75 ship `de3bb7b`)
-- suggested_fix: [user has not specified — iterate to determine. Likely: drop engine `description` body, derive a short payload-formatted line (e.g. `+1 physical attack · 2 rnd`) from `Effect.payload.statModifiers`/`damageOverTime`/`regeneration`; tint the tooltip border/title to the affected stat colour (heart=blood, body=parchment-on-iron, mind=sulfur, neutral=ash). Touches `selectTooltipContentFor('effect')` + a new payload-summary helper + `TapTooltip` accent-prop wiring.]
-- source: user
-
 ### [MED] general — Tooltip walkthrough across non-combat surfaces (inventory, SELF, exploration, memoir)
 - pass: user-jot (commit `6415787`)
 - viewport: unspecified
@@ -94,6 +84,17 @@
 - source: user
 
 ## Done
+
+### [MED] /combat — Tighten Phase 75 tooltip content (name + stat effect, colour-coded) ✅
+- pass: user-jot (commit `6415787`); addressed at commit `<this-tick>` via /iterate.
+- issue: #160
+- viewport: unspecified
+- auth_state: anonymous
+- category: visual
+- observation: For the combat HUD tap-tooltips, make sure the explanation is concise (name, and stat effect. No description, no explanation. Just Name, and the effect it has on the stats. Try to color coordinate both the effect and the tooltip to which stat it effects
+- evidence: user-spotted at 2026-05-24T03:55:00Z (follow-up to Phase 75 ship `de3bb7b`)
+- resolution: Effect tooltip body now reads the payload-derived stat-effect line (e.g. `+1 physical attack`) via new `formatEffectStatEffect(payload, fallback)` helper; engine `description` is dropped. `<TapTooltip>` gains an optional `accent: 'heart' | 'body' | 'mind' | 'neutral'` prop that tints the title + border; `selectTooltipContentFor('effect')` derives the accent from the primary stat target (`physical*` → body/rust, `mental*` → mind/sulfur, `emotional*` → heart/blood). Skill tooltips also get stance-derived accents. 16 new pins + 1 contract update; 1285/1285 verify green.
+- source: user
 
 ### [MED] general — Tap-tooltip phase ✅ (PROMOTED → PHASE_CANDIDATES.md candidate)
 - pass: user-jot (commit `cfc524c`); promoted via oversight 31st call 2026-05-22 to `plan/PHASE_CANDIDATES.md` as `[score 5.0] Tap-tooltip primitive + per-surface wiring`. Multi-tick scope — touches every interactive icon across SELF / combat / inventory surfaces. Next `/expand` or `/oversight` decides the slicing (one global primitive + per-surface wiring vs. per-surface ticks).

@@ -156,6 +156,20 @@ describe('selectTooltipContentFor', () => {
         it('returns null for an empty alignment id', () => {
             expect(selectTooltipContentFor('alignment', '', EMPTY_STATE)).toBeNull();
         });
+
+        it('returns content for the memoir "moral" id (Tick 1 follow-up)', () => {
+            const content = selectTooltipContentFor('alignment', 'moral', EMPTY_STATE);
+            expect(content?.title).toBe('MORAL ALIGNMENT');
+            expect(content?.body).toContain('kindness');
+            expect(content?.footnote).toMatch(/ruthless.*saintly/i);
+        });
+
+        it('returns content for the memoir "philosophical" id (Tick 1 follow-up)', () => {
+            const content = selectTooltipContentFor('alignment', 'philosophical', EMPTY_STATE);
+            expect(content?.title).toBe('PHILOSOPHICAL DOMINANCE');
+            expect(content?.body).toContain('three base stats');
+            expect(content?.footnote).toContain('ties');
+        });
     });
 
     describe('kind: stance-chip (Phase 75)', () => {

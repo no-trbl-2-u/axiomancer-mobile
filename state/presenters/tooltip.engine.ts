@@ -198,6 +198,21 @@ const ALIGNMENT_CONTENT: Record<string, TooltipContent> = {
         body: 'who your actions are meant to serve. low keeps the self at the centre; high places the world above the self.',
         footnote: 'low ← solitary · mid ← relational · high → cosmic',
     },
+    // Memoir walkthrough Tick 1 — two derived alignment chips read
+    // from `state.moralMeter` + `player.baseStats`. Bands ladder
+    // from RUTHLESS / STERN / UNDECLARED / BENEVOLENT / SAINTLY for
+    // moral; from HEART/BODY/MIND for philosophical (dominant base
+    // stat, ties land in 'UNDECLARED').
+    moral: {
+        title: 'MORAL ALIGNMENT',
+        body: 'where your actions place you on the kindness axis. each merciful or cruel decision nudges the meter; the band on this chip is the band the world currently sees.',
+        footnote: 'ruthless ← stern ← undeclared → benevolent → saintly',
+    },
+    philosophical: {
+        title: 'PHILOSOPHICAL DOMINANCE',
+        body: 'which of the three base stats — heart, body, mind — leads the others. the dominant stat colours how the world reads you; ties leave you undeclared.',
+        footnote: 'derived from base stats · ties → undeclared',
+    },
 };
 
 // ---------------------------------------------------------------------------

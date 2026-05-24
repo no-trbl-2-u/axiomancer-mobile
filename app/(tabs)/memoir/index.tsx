@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 
 import { ScreenBg } from '@/components/ScreenBg';
 import { SectionLabel } from '@/components/SectionLabel';
+import { TooltipTarget } from '@/components/tooltip/TooltipTarget';
 import { useGameState } from '@/state/GameStoreProvider';
 import {
     selectMemoirViewModel,
@@ -156,42 +157,62 @@ export default function MemoirScreen() {
                 <View style={styles.section} testID="memoir-measure">
                     <SectionLabel size={10}>{vm.measureEyebrow}</SectionLabel>
                     <View style={styles.measureRow}>
-                        <View
-                            style={[
-                                styles.measureChip,
-                                { borderColor: resolveTint(vm.moralAlignment.chip.tintKey) },
-                            ]}
-                            testID="memoir-moral-chip"
+                        {/* Phase 74 follow-up walkthrough — memoir Tick 1:
+                            wrap each alignment chip in a TooltipTarget
+                            pointing at the new kind:'alignment' ids
+                            ('moral', 'philosophical'). */}
+                        <TooltipTarget
+                            kind="alignment"
+                            id="moral"
+                            accessibilityLabel="Explain moral alignment"
+                            accessibilityHint="tap to read description"
+                            testID="memoir-moral-chip-tooltip"
                         >
-                            <Text
+                            <View
                                 style={[
-                                    styles.measureLabel,
-                                    { color: resolveTint(vm.moralAlignment.chip.tintKey) },
+                                    styles.measureChip,
+                                    { borderColor: resolveTint(vm.moralAlignment.chip.tintKey) },
                                 ]}
+                                testID="memoir-moral-chip"
                             >
-                                {vm.moralAlignment.chip.label}
-                            </Text>
-                            {vm.moralAlignment.isEmpty && (
-                                <Text style={styles.measureEmpty} testID="memoir-moral-empty">
-                                    {vm.emptyMoral}
+                                <Text
+                                    style={[
+                                        styles.measureLabel,
+                                        { color: resolveTint(vm.moralAlignment.chip.tintKey) },
+                                    ]}
+                                >
+                                    {vm.moralAlignment.chip.label}
                                 </Text>
-                            )}
-                        </View>
-                        <View style={styles.measureChip} testID="memoir-philosophical-chip">
-                            <Text style={styles.measureLabel}>
-                                {vm.philosophicalAlignment.label}
-                            </Text>
-                            {vm.philosophicalAlignment.rationale.length > 0 && (
-                                <Text style={styles.measureRationale}>
-                                    {vm.philosophicalAlignment.rationale}
+                                {vm.moralAlignment.isEmpty && (
+                                    <Text style={styles.measureEmpty} testID="memoir-moral-empty">
+                                        {vm.emptyMoral}
+                                    </Text>
+                                )}
+                            </View>
+                        </TooltipTarget>
+                        <TooltipTarget
+                            kind="alignment"
+                            id="philosophical"
+                            accessibilityLabel="Explain philosophical alignment"
+                            accessibilityHint="tap to read description"
+                            testID="memoir-philosophical-chip-tooltip"
+                        >
+                            <View style={styles.measureChip} testID="memoir-philosophical-chip">
+                                <Text style={styles.measureLabel}>
+                                    {vm.philosophicalAlignment.label}
                                 </Text>
-                            )}
-                            {vm.philosophicalAlignment.rationale.length === 0 && (
-                                <Text style={styles.measureEmpty} testID="memoir-philosophical-empty">
-                                    {vm.emptyPhilosophical}
-                                </Text>
-                            )}
-                        </View>
+                                {vm.philosophicalAlignment.rationale.length > 0 && (
+                                    <Text style={styles.measureRationale}>
+                                        {vm.philosophicalAlignment.rationale}
+                                    </Text>
+                                )}
+                                {vm.philosophicalAlignment.rationale.length === 0 && (
+                                    <Text style={styles.measureEmpty} testID="memoir-philosophical-empty">
+                                        {vm.emptyPhilosophical}
+                                    </Text>
+                                )}
+                            </View>
+                        </TooltipTarget>
                     </View>
                     {vm.philosopherQuote !== null && (
                         <Text style={styles.quote}>{vm.philosopherQuote}</Text>

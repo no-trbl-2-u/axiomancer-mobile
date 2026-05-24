@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { useTooltip } from '@/hooks/useTooltip';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
     useAnimatedStyle,
@@ -281,45 +282,9 @@ export default function ExplorationScreen() {
                         </Svg>
 
                         {/* Node markers */}
-                        {vm.nodes.map((n) => {
-                            const ev = EVENT_BADGE[n.type] ?? EVENT_BADGE.encounter;
-                            const left = (n.x - 18) / 360 * 100;
-                            const top = (n.y - 18) / 400 * 100;
-                            const dim = n.kind === 'locked';
-                            return (
-                                <TouchableOpacity
-                                    key={n.id}
-                                    accessibilityRole="button"
-                                    accessibilityLabel={`${n.label}, ${
-                                        n.kind === 'locked' ? 'sealed'
-                                            : n.kind === 'completed' ? 'walked'
-                                                : n.kind === 'current' ? 'here'
-                                                    : 'open'
-                                    }`}
-                                    accessibilityState={{ disabled: n.kind !== 'available' }}
-                                    onPress={() => onNodePress(n)}
-                                    activeOpacity={n.kind === 'available' ? 0.7 : 1}
-                                    testID={`node-${n.id}`}
-                                    style={[
-                                        styles.nodeWrap,
-                                        { left: `${left}%` as unknown as number, top: `${top}%` as unknown as number },
-                                        dim && styles.nodeWrapLocked,
-                                    ]}
-                                >
-                                    <NodeMark kind={n.kind} size={36} />
-                                    <View style={[styles.nodeLabel, { opacity: dim ? 0.4 : 1 }]}>
-                                        <Text style={[styles.nodeLabelText, { color: dim ? AXM.ash : AXM.parchment }]}>
-                                            {n.label}
-                                        </Text>
-                                    </View>
-                                    {n.kind === 'available' && (
-                                        <View style={[styles.nodeTypeBadge, { backgroundColor: ev.c }]}>
-                                            <Text style={styles.nodeTypeBadgeText}>{ev.label}</Text>
-                                        </View>
-                                    )}
-                                </TouchableOpacity>
-                            );
-                        })}
+                        {vm.nodes.map((n) => (
+                            <MapNodeMarker key={n.id} node={n} onNodePress={onNodePress} />
+                        ))}
                     </Animated.View>
                 </GestureDetector>
 
@@ -421,6 +386,66 @@ export default function ExplorationScreen() {
  * timeout (the existing useEffect at line 60-65); this component
  * handles the mount-time fade-in only.
  */
+/**
+ * MapNodeMarker — per-node touch target on the exploration map.
+ *
+ * Single-tap commits movement (existing onNodePress behaviour);
+ * long-press fires the kind:'map-node' tooltip (Phase 74 follow-up
+ * walkthrough — Exploration Tick 1). Mirrors the Phase 75
+ * skill-row pattern: tap is reserved for the action, long-press
+ * for the explanation. Extracted from the parent's map() body so
+ * each node owns its own measure ref.
+ */
+function MapNodeMarker({
+    node: n,
+    onNodePress,
+}: {
+    node: ExplorationNode;
+    onNodePress: (n: ExplorationNode) => void;
+}) {
+    const tooltip = useTooltip();
+    const ref = useRef<View | null>(null);
+    const ev = EVENT_BADGE[n.type] ?? EVENT_BADGE.encounter;
+    const left = (n.x - 18) / 360 * 100;
+    const top = (n.y - 18) / 400 * 100;
+    const dim = n.kind === 'locked';
+    return (
+        <TouchableOpacity
+            ref={ref}
+            accessibilityRole="button"
+            accessibilityLabel={`${n.label}, ${
+                n.kind === 'locked' ? 'sealed'
+                    : n.kind === 'completed' ? 'walked'
+                        : n.kind === 'current' ? 'here'
+                            : 'open'
+            }`}
+            accessibilityHint="hold to read node type description"
+            accessibilityState={{ disabled: n.kind !== 'available' }}
+            onPress={() => onNodePress(n)}
+            onLongPress={() => tooltip.show({ kind: 'map-node', id: n.type, anchorRef: ref })}
+            activeOpacity={n.kind === 'available' ? 0.7 : 1}
+            testID={`node-${n.id}`}
+            style={[
+                styles.nodeWrap,
+                { left: `${left}%` as unknown as number, top: `${top}%` as unknown as number },
+                dim && styles.nodeWrapLocked,
+            ]}
+        >
+            <NodeMark kind={n.kind} size={36} />
+            <View style={[styles.nodeLabel, { opacity: dim ? 0.4 : 1 }]}>
+                <Text style={[styles.nodeLabelText, { color: dim ? AXM.ash : AXM.parchment }]}>
+                    {n.label}
+                </Text>
+            </View>
+            {n.kind === 'available' && (
+                <View style={[styles.nodeTypeBadge, { backgroundColor: ev.c }]}>
+                    <Text style={styles.nodeTypeBadgeText}>{ev.label}</Text>
+                </View>
+            )}
+        </TouchableOpacity>
+    );
+}
+
 function NodeToast({ tip }: { tip: string }) {
     const opacity = useSharedValue(0);
     useEffect(() => {

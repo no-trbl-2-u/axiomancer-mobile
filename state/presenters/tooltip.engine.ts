@@ -38,7 +38,8 @@ export type TooltipKind =
     | 'burden'
     | 'item-stat'
     | 'chronicle-entry'
-    | 'quest-objective';
+    | 'quest-objective'
+    | 'map-node';
 
 /**
  * Stat-stance accent for tooltip tinting (Phase 75 follow-up,
@@ -88,6 +89,49 @@ const STANCE_CHIP_CONTENT: Record<string, TooltipContent> = {
         title: 'DISADVANTAGE',
         body: 'roll twice, keep the lower value.',
         footnote: 'your stance falls to theirs',
+    },
+};
+
+// Phase 74 follow-up — exploration walkthrough Tick 1: map-node
+// content. Keys match the 7 NodeType variants emitted by the
+// exploration presenter (`encounter | treasure | boss | quest |
+// rest | gather | current`). Each entry: uppercased title + short
+// description of what happens when the node is engaged.
+const MAP_NODE_CONTENT: Record<string, TooltipContent> = {
+    encounter: {
+        title: 'ENCOUNTER',
+        body: 'a hostile presence stands between you and the next step. step in and the seal closes; fight, parley, or fall.',
+        footnote: 'commits combat',
+    },
+    boss: {
+        title: 'BOSS',
+        body: 'a named foe — bigger threat, bigger reward. the seal still closes; you cannot flee a boss seal.',
+        footnote: 'no retreat',
+    },
+    treasure: {
+        title: 'TREASURE',
+        body: 'something left behind for the careful. pick through it; items go to inventory.',
+        footnote: 'no combat',
+    },
+    quest: {
+        title: 'QUEST',
+        body: 'a thread of story to be picked up — a dialogue, a marker, sometimes both. consequences carry forward.',
+        footnote: 'opens dialogue',
+    },
+    rest: {
+        title: 'REST',
+        body: 'a place to mend. recover hp + clear short-duration effects without leaving the map.',
+        footnote: 'no combat',
+    },
+    gather: {
+        title: 'GATHER',
+        body: 'forage, scavenge, salvage. yields are small but reliable; one of the cheaper ways to refill consumables.',
+        footnote: 'no combat',
+    },
+    current: {
+        title: 'HERE',
+        body: 'where you stand. tap an adjacent node to step toward it.',
+        footnote: 'your current position',
     },
 };
 
@@ -350,6 +394,9 @@ export function selectTooltipContentFor(
     }
     if (kind === 'burden') {
         return BURDEN_CONTENT[id] ?? null;
+    }
+    if (kind === 'map-node') {
+        return MAP_NODE_CONTENT[id] ?? null;
     }
     if (kind === 'effect') {
         if (!id) return null;

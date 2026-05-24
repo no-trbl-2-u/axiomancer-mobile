@@ -67,6 +67,29 @@ describe('selectTooltipContentFor', () => {
         });
     });
 
+    describe('kind: map-node (Phase 74 walkthrough — exploration Tick 1)', () => {
+        const nodeTypes = ['encounter', 'boss', 'treasure', 'quest', 'rest', 'gather', 'current'] as const;
+        it.each(nodeTypes)('returns content for node type %s', (type) => {
+            const content = selectTooltipContentFor('map-node', type, EMPTY_STATE);
+            expect(content).not.toBeNull();
+            expect(typeof content?.title).toBe('string');
+            expect(typeof content?.body).toBe('string');
+        });
+
+        it('boss footnote includes "no retreat"', () => {
+            const content = selectTooltipContentFor('map-node', 'boss', EMPTY_STATE);
+            expect(content?.footnote).toContain('no retreat');
+        });
+
+        it('returns null for an unknown map-node id', () => {
+            expect(selectTooltipContentFor('map-node', 'whatever', EMPTY_STATE)).toBeNull();
+        });
+
+        it('returns null for an empty map-node id', () => {
+            expect(selectTooltipContentFor('map-node', '', EMPTY_STATE)).toBeNull();
+        });
+    });
+
     describe('kind: burden (Phase 74 walkthrough — inventory Tick 1)', () => {
         it('returns content for id "burden"', () => {
             const content = selectTooltipContentFor('burden', 'burden', EMPTY_STATE);

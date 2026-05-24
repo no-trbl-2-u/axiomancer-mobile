@@ -1551,18 +1551,20 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       B–E promoted as separate phases via /oversight 2026-05-23
       (36th call); Tick B → Phase 75 below.
 
-- [ ] Phase 75 — Combat HUD tap-tooltips (Phase 74 Tick B).
-      Promoted via /oversight 2026-05-23 (36th call). Wire
-      `<TapTooltip>` to combat HUD surfaces: buff/debuff icons
-      in HUD strips, stance ADV/DIS chips, skill picker rows.
-      Content sourced from engine
-      `effectsLibrary.lookupEffect(id).description` (read inside
-      `selectTooltipContentFor` `kind: 'effect'` branch — that
-      branch currently returns `null` per the Phase 74 brief's
-      Decision 5; this phase fills it in). Brief to be drafted
-      via `/plan-a-phase phase 75`. See
-      `plan/phases/phase_74_tap_tooltip_primitive.md` §6
-      Follow-ups for proposed scope.
+- [x] Phase 75 — Combat HUD tap-tooltips (Phase 74 Tick B).
+      Shipped 2026-05-24 in commit `de3bb7b`. `<TapTooltip>` now
+      wires three combat HUD surfaces: buff/debuff effect chips
+      (enemy + player HUDs), stance ADV/DIS badges, and skill
+      picker rows (long-press). `selectTooltipContentFor` fills
+      the `kind: 'effect'` / `'stance-chip'` / `'skill'`
+      branches Tick A left null — effects + skills read engine
+      static data via `lookupEffect` / `getCombatSkillById`;
+      stance chips use locked static content. `CombatEffectDisplay`
+      gains `effectId` so chips can pass the engine id through.
+      No combat-modal layout changes (additive tap targets only;
+      honours the 36th /oversight call's combat-modal-audit
+      bias). 1234/1234 verify green (+10 from 1224). Brief at
+      `plan/phases/phase_75_combat_hud_tap_tooltips.md`.
 
 - [ ] Phase 76 — Engine narrative prose consumer (aftermath
       panels). Promoted via /oversight 2026-05-23 (36th call)

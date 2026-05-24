@@ -893,7 +893,7 @@ function StancePhase({
                         }
                         accessibilityState={{ selected: isSel }}
                     >
-                        <View style={[stance_styles.card, { borderColor: isSel ? AXM.sulfur : accent, backgroundColor: isSel ? '#1a1410' : '#0a0a0a' }]}>
+                        <View style={[stance_styles.card, { borderColor: isSel ? AXM.sulfur : accent, backgroundColor: isSel ? '#1a1410' : AXM.bg }]}>
                             {(isAdv || isDis) && (
                                 <TooltipTarget
                                     kind="stance-chip"
@@ -1332,7 +1332,7 @@ const styles = StyleSheet.create({
         color: AXM.bone,
     },
     logWrap: { padding: 6, paddingHorizontal: 10, paddingBottom: 0 },
-    logBox: { backgroundColor: '#06050a', borderWidth: 1, borderColor: AXM.ash, borderStyle: 'dashed', padding: 5, paddingHorizontal: 8, height: 78, overflow: 'hidden' },
+    logBox: { backgroundColor: AXM.deepBg, borderWidth: 1, borderColor: AXM.ash, borderStyle: 'dashed', padding: 5, paddingHorizontal: 8, height: 78, overflow: 'hidden' },
     logScroll: { flex: 1, marginTop: 2 },
     logLine: { fontFamily: FONTS.serif, fontSize: 11, lineHeight: 14, marginTop: 1 },
     // Phase 73 — design's PlayerHUDLive frame (`prototype.jsx:454`).
@@ -1348,7 +1348,7 @@ const styles = StyleSheet.create({
     phaseHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
     phaseHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     phaseIndexBox: { width: 18, height: 18, backgroundColor: AXM.sulfur, alignItems: 'center', justifyContent: 'center' },
-    phaseIndex: { fontFamily: FONTS.gothic, fontSize: 14, color: '#0a0a0a' },
+    phaseIndex: { fontFamily: FONTS.gothic, fontSize: 14, color: AXM.bg },
     phasePips: { flexDirection: 'row', gap: 3 },
     pip: { width: 14, height: 4 },
     pipActive: { backgroundColor: AXM.sulfur },
@@ -1400,7 +1400,7 @@ const stance_styles = StyleSheet.create({
     row: { flexDirection: 'row', gap: 6 },
     cardTouch: { flex: 1 },
     card: { borderWidth: 2, padding: 8, paddingHorizontal: 6, minHeight: 178 },
-    advBadge: { position: 'absolute', top: 4, right: 4, borderWidth: 1, paddingHorizontal: 3, paddingVertical: 1, backgroundColor: '#0a0a0a', zIndex: 1 },
+    advBadge: { position: 'absolute', top: 4, right: 4, borderWidth: 1, paddingHorizontal: 3, paddingVertical: 1, backgroundColor: AXM.bg, zIndex: 1 },
     advText: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1 },
     glyphWrap: { alignItems: 'center', marginTop: 4, marginBottom: 2 },
     stanceName: { textAlign: 'center', fontFamily: FONTS.gothic, fontSize: 17, letterSpacing: 1 },
@@ -1419,7 +1419,7 @@ const stance_styles = StyleSheet.create({
 const action_styles = StyleSheet.create({
     grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
     cardTouch: { width: '48%' },
-    card: { backgroundColor: '#0a0a0a', borderWidth: 2, padding: 10, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 64 },
+    card: { backgroundColor: AXM.bg, borderWidth: 2, padding: 10, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 64 },
     textCol: { flex: 1 },
     label: { fontFamily: FONTS.gothic, fontSize: 18, color: AXM.parchment, lineHeight: 20, letterSpacing: 1 },
     hint: { fontFamily: FONTS.mono, fontSize: 8, color: AXM.bone, letterSpacing: 1, marginTop: 2 },

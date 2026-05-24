@@ -292,7 +292,7 @@ export function EncounterModalOverlay({
                         </View>
 
                         <View style={styles.illustration}>
-                            <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#06050a' }]} />
+                            <View style={[StyleSheet.absoluteFillObject, { backgroundColor: AXM.deepBg }]} />
                             <EventArt slug={vm.artSlug} />
                             <View style={styles.strifeSash} testID="encounter-modal-sash">
                                 <Text style={styles.strifeSashText}>

@@ -86,7 +86,7 @@ function ChoiceRow({
                 styles.choiceRow,
                 {
                     borderColor: accent,
-                    backgroundColor: isFirst ? '#1a0a0a' : '#0a0a0a',
+                    backgroundColor: isFirst ? '#1a0a0a' : AXM.bg,
                     opacity: choice.enabled ? 1 : 0.4,
                 },
             ]}
@@ -209,7 +209,7 @@ export default function EventScreen() {
                         accessibilityRole="button"
                         accessibilityLabel="Back"
                         onPress={onBack}
-                        style={[styles.choiceRow, { borderColor: AXM.bone, backgroundColor: '#0a0a0a' }]}
+                        style={[styles.choiceRow, { borderColor: AXM.bone, backgroundColor: AXM.bg }]}
                         testID="event-choice-back"
                     >
                         <ActionIcon kind="flee" size={24} color={AXM.bone} />
@@ -235,7 +235,7 @@ export default function EventScreen() {
                 </View>
             )}
             <View style={[styles.illustration, { height: illustrationHeight }]}>
-                <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#06050a' }]} />
+                <View style={[StyleSheet.absoluteFillObject, { backgroundColor: AXM.deepBg }]} />
                 <EventArt slug={vm.artSlug} />
                 {preludeChrome !== null ? (
                     <View style={styles.strifeSash} testID="event-strife-sash">
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
         left: 12,
         paddingVertical: 4,
         paddingHorizontal: 8,
-        backgroundColor: '#0a0a0a',
+        backgroundColor: AXM.bg,
         borderWidth: 2,
         borderColor: AXM.blood,
     },

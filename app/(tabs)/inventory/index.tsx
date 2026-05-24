@@ -6,6 +6,7 @@ import { ActionIcon } from '@/components/ActionIcon';
 import { ScreenBg } from '@/components/ScreenBg';
 import { SectionLabel } from '@/components/SectionLabel';
 import { StatBar } from '@/components/StatBar';
+import { TooltipProvider } from '@/components/tooltip/TooltipProvider';
 import { TooltipTarget } from '@/components/tooltip/TooltipTarget';
 import { useTooltip } from '@/hooks/useTooltip';
 import { useGameActions, useGameState, useGameStore } from '@/state/GameStoreProvider';
@@ -480,6 +481,7 @@ export default function InventoryScreen() {
                 animationType="fade"
                 onRequestClose={() => setModalItemId(null)}
             >
+                <TooltipProvider>
                 <Pressable style={styles.modalBackdrop} onPress={() => setModalItemId(null)}>
                     <Pressable style={styles.modalCard} onPress={() => undefined}>
                         {modalVm !== null && (
@@ -495,15 +497,29 @@ export default function InventoryScreen() {
                                 )}
                                 {modalVm.statDeltas.length > 0 && (
                                     <View style={styles.modalStatTable}>
-                                        {modalVm.statDeltas.map((d) => (
-                                            <View key={d.label} style={styles.modalStatRow}>
-                                                <Text style={styles.modalStatLabel}>{d.label}</Text>
-                                                <Text style={styles.modalStatVal}>
-                                                    {d.before} → {d.after}
-                                                    {d.delta === 0 ? '' : ` (${d.delta > 0 ? '+' : ''}${d.delta})`}
-                                                </Text>
-                                            </View>
-                                        ))}
+                                        {modalVm.statDeltas.map((d) => {
+                                            const row = (
+                                                <View style={styles.modalStatRow}>
+                                                    <Text style={styles.modalStatLabel}>{d.label}</Text>
+                                                    <Text style={styles.modalStatVal}>
+                                                        {d.before} → {d.after}
+                                                        {d.delta === 0 ? '' : ` (${d.delta > 0 ? '+' : ''}${d.delta})`}
+                                                    </Text>
+                                                </View>
+                                            );
+                                            return d.id !== undefined ? (
+                                                <TooltipTarget
+                                                    key={d.label}
+                                                    kind="item-stat"
+                                                    id={d.id}
+                                                    testID={`inv-modal-stat-${d.id}`}
+                                                >
+                                                    {row}
+                                                </TooltipTarget>
+                                            ) : (
+                                                <View key={d.label}>{row}</View>
+                                            );
+                                        })}
                                     </View>
                                 )}
                                 {modalVm.confirmPrompt !== '' && (
@@ -532,6 +548,7 @@ export default function InventoryScreen() {
                         )}
                     </Pressable>
                 </Pressable>
+                </TooltipProvider>
             </Modal>
         </ScreenBg>
     );
@@ -729,9 +746,9 @@ const styles = StyleSheet.create({
     },
     tabActive: { backgroundColor: AXM.parchment },
     tabText: { fontFamily: FONTS.gothic, fontSize: 12, letterSpacing: 1, color: AXM.parchment, textAlign: 'center' },
-    tabTextActive: { color: '#0a0a0a' },
+    tabTextActive: { color: AXM.bg },
     tabCount: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone },
-    tabCountActive: { color: '#0a0a0a' },
+    tabCountActive: { color: AXM.bg },
     gridOuter: { paddingHorizontal: 10, paddingBottom: 14 },
     categorySection: { marginTop: 8 },
     grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
@@ -746,7 +763,7 @@ const styles = StyleSheet.create({
     itemIcon: {
         width: '100%',
         height: 50,
-        backgroundColor: '#06050a',
+        backgroundColor: AXM.deepBg,
         borderWidth: 1,
         borderColor: AXM.ash,
         alignItems: 'center',
@@ -754,9 +771,9 @@ const styles = StyleSheet.create({
     },
     itemName: { fontFamily: FONTS.gothic, fontSize: 11, color: AXM.parchment, lineHeight: 14, marginTop: 4 },
     qtyBadge: { position: 'absolute', top: 2, right: 2, backgroundColor: AXM.parchment, paddingHorizontal: 4 },
-    qtyText: { fontFamily: FONTS.mono, fontSize: 10, color: '#0a0a0a' },
+    qtyText: { fontFamily: FONTS.mono, fontSize: 10, color: AXM.bg },
     wornBadge: { position: 'absolute', top: 2, left: 2, backgroundColor: AXM.sulfur, paddingHorizontal: 3 },
-    wornText: { fontFamily: FONTS.sans, fontSize: 7, letterSpacing: 1, color: '#0a0a0a' },
+    wornText: { fontFamily: FONTS.sans, fontSize: 7, letterSpacing: 1, color: AXM.bg },
     expandedContent: { marginTop: 6, paddingTop: 6, borderTopWidth: 1, borderTopColor: AXM.ash, borderStyle: 'dashed' },
     itemDesc: { fontFamily: FONTS.serifItalic, fontSize: 11, color: AXM.bone },
     actionsRow: { flexDirection: 'row', gap: 4, marginTop: 6 },
@@ -809,7 +826,7 @@ const styles = StyleSheet.create({
     modalStatTable: {
         marginTop: 8,
         padding: 8,
-        backgroundColor: '#06050a',
+        backgroundColor: AXM.deepBg,
         borderWidth: 1,
         borderColor: AXM.ash,
     },
@@ -902,7 +919,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     dockSlotGlyphFilled: {
-        backgroundColor: '#06050a',
+        backgroundColor: AXM.deepBg,
         borderWidth: 1,
         borderColor: AXM.ash,
     },

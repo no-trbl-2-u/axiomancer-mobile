@@ -448,7 +448,7 @@ const styles = StyleSheet.create({
   slotName: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1.5, color: AXM.bone },
   slotItem: { fontFamily: FONTS.serif, fontSize: 11, color: AXM.parchment, lineHeight: 14 },
   skillsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
-  skillCard: { width: '48%', borderWidth: 2, padding: 4, paddingHorizontal: 6, backgroundColor: '#0a0a0a', flexDirection: 'row', alignItems: 'center', gap: 6 },
+  skillCard: { width: '48%', borderWidth: 2, padding: 4, paddingHorizontal: 6, backgroundColor: AXM.bg, flexDirection: 'row', alignItems: 'center', gap: 6 },
   skillName: { fontFamily: FONTS.gothic, fontSize: 12, color: AXM.parchment, lineHeight: 14 },
   skillCat: { fontFamily: FONTS.mono, fontSize: 8, letterSpacing: 1 },
 });

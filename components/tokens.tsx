@@ -55,7 +55,7 @@ export function TokenIcon({ kind, size = 16, color }: TokenIconProps) {
                         fill={c} fillOpacity={0.18} stroke={c} strokeWidth={1.3} strokeLinejoin="round"
                     />
                     <Circle cx={8} cy={8} r={2.3} fill={c} />
-                    <Circle cx={8.7} cy={7.4} r={0.6} fill="#0a0a0a" />
+                    <Circle cx={8.7} cy={7.4} r={0.6} fill={AXM.bg} />
                 </Svg>
             );
         case 'heart':
@@ -66,7 +66,7 @@ export function TokenIcon({ kind, size = 16, color }: TokenIconProps) {
                         fill={c} stroke={c} strokeWidth={0.8} strokeLinejoin="round"
                     />
                     <Path d="M5 5 L 7 7 M 11 5 L 9 7"
-                        stroke="#0a0a0a" strokeWidth={0.8} opacity={0.6} />
+                        stroke={AXM.bg} strokeWidth={0.8} opacity={0.6} />
                 </Svg>
             );
         case 'fallacy':
@@ -112,7 +112,7 @@ export function TokenChip({ kind, count = 0, dim = false, glow = false, compact 
                     minWidth: compact ? 36 : 44,
                     paddingVertical: compact ? 2 : 3,
                     paddingHorizontal: compact ? 4 : 5,
-                    backgroundColor: has ? t.bg : '#0a0a0a',
+                    backgroundColor: has ? t.bg : AXM.bg,
                     borderColor: has ? t.color : AXM.ash,
                     opacity: dim ? 0.4 : 1,
                 },

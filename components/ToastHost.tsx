@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     toast: {
         paddingVertical: 6,
         paddingHorizontal: 12,
-        backgroundColor: '#0a0a0a',
+        backgroundColor: AXM.bg,
         borderWidth: 1,
         borderColor: AXM.ash,
     },

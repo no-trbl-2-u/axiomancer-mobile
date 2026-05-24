@@ -1703,19 +1703,13 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       (no new token additions needed). SVG glyph fills in
       illustration components left as double-quote string
       attributes (follow-up concern). 1343/1343 verify green.
-- [ ] Phase 81c — `app/(tabs)/combat.tsx` sub-component
-      extraction. Smell-driven; 1520-line file is 3.4× folder
-      median. Sequences **after** Phase 80b (TooltipTarget
-      consolidation) to avoid merge conflicts on the inline
-      TooltipTarget removal line. Scope:
-      - Tick A — extract `PhaseBottom` to
-        `components/combat/PhaseBottom.tsx` + styles.
-      - Tick B — extract stance-cards block to
-        `components/combat/StanceCard.tsx`.
-      - Tick C (optional) — extract `LogBox` / `AdvBadge` chrome.
-      Acceptance: combat.tsx under ~1000 lines; combat suite
-      green; no behavioural change. See PHASE_CANDIDATES.md
-      `[score 4.0]` row.
+- [x] Phase 81c — `app/(tabs)/combat.tsx` sub-component
+      extraction. Shipped in commit `7ae9ee9`. Extracted 8
+      components + 6 style sheets to
+      `components/combat/PhaseBottom.tsx`. combat.tsx dropped from
+      1476 to 786 lines (47% reduction, well under the ~1000-line
+      target). Combined all three ticks into one since the
+      components form a cohesive tree. 1343/1343 verify green.
 
 - [parent] Phase 82 — Phase 79 audit follow-ups (skill picker +
       per-resource enablement). Promoted via `/oversight`

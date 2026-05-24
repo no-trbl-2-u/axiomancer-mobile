@@ -113,6 +113,17 @@ export interface CharacterViewModel {
      * pre-Phase-73.
      */
     pendingPoints: number;
+    /**
+     * Phase 73 follow-up (user-jot 2026-05-24): true when XP has
+     * crossed the level-up threshold but `levelUp` has not yet been
+     * dispatched. The SELF header mounts `<LevelReadyStrip>` in this
+     * state — tap drains XP via `actions.levelUp()` and converts to
+     * pending stat points (which then surface via `<AscendStrip>`).
+     * Mutually-prioritized below `pendingPoints > 0` at the view
+     * layer — when both are true, AscendStrip wins (spend before
+     * earning more).
+     */
+    levelUpReady: boolean;
     base: readonly BaseStatRow[];
     derived: readonly DerivedStatRow[];
     /** Average of the three base stats — the engine's "luck" surface. */
@@ -291,6 +302,8 @@ export function selectCharacterViewModel(state: GameStore): CharacterViewModel {
         xp: player.experience,
         xpMax: player.experienceToNextLevel,
         pendingPoints: player.availableStatPoints ?? 0,
+        levelUpReady:
+            (player.experience ?? 0) >= (player.experienceToNextLevel ?? Infinity),
         base: buildBase(player),
         derived: buildDerived(player),
         luck,

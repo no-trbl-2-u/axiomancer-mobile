@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { AXM, FONTS } from '@/theme/axm';
 import { AestheticDevToggle } from '@/components/AestheticDevToggle';
 import { AscendStrip } from '@/components/levelup/AscendStrip';
+import { LevelReadyStrip } from '@/components/levelup/LevelReadyStrip';
 import { LevelUpModal } from '@/components/levelup/LevelUpModal';
 import { DebugChaosToggle } from '@/components/DebugChaosToggle';
 import { DebugCombatButton } from '@/components/DebugCombatButton';
@@ -97,6 +98,20 @@ export default function CharacterScreen() {
             pendingPoints={vm.pendingPoints}
             level={vm.level}
             onOpen={onOpenLevelUp}
+          />
+        )}
+        {/* Phase 73 follow-up (user-jot 2026-05-24): the
+            LevelReadyStrip mounts when XP has crossed the threshold
+            but levelUp() has not yet been dispatched. Mutually
+            exclusive with the AscendStrip above — when both
+            conditions hold, AscendStrip takes priority (spend
+            before earning more). Tap dispatches actions.levelUp(),
+            engine drains XP into pending stat points, AscendStrip
+            replaces this strip next render. */}
+        {vm.pendingPoints === 0 && vm.levelUpReady && (
+          <LevelReadyStrip
+            level={vm.level}
+            onLevelUp={() => actions.levelUp()}
           />
         )}
         <View style={{ marginTop: 8 }}>

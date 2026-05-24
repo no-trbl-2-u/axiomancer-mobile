@@ -70,6 +70,56 @@ describe('selectCharacterViewModel: shape contract', () => {
         expect(vm.pendingPoints).toBe(0);
     });
 
+    describe('levelUpReady (Phase 73 follow-up — user-jot 2026-05-24)', () => {
+        it('is false on a fresh game (xp 0 < threshold)', () => {
+            const store = createGameStore(createMemoryAdapter());
+            const vm = selectCharacterViewModel(store.getState());
+            expect(vm.levelUpReady).toBe(false);
+        });
+
+        it('flips true the moment xp crosses experienceToNextLevel', () => {
+            const store = createGameStore(createMemoryAdapter());
+            const p = store.getState().player;
+            store.setState({
+                player: {
+                    ...p,
+                    experience: p.experienceToNextLevel,
+                },
+            });
+            const vm = selectCharacterViewModel(store.getState());
+            expect(vm.levelUpReady).toBe(true);
+        });
+
+        it('stays true when xp overshoots the threshold', () => {
+            const store = createGameStore(createMemoryAdapter());
+            const p = store.getState().player;
+            store.setState({
+                player: {
+                    ...p,
+                    experience: p.experienceToNextLevel + 50,
+                },
+            });
+            const vm = selectCharacterViewModel(store.getState());
+            expect(vm.levelUpReady).toBe(true);
+        });
+
+        it('flips back to false after the engine levelUp drains the XP', () => {
+            const store = createGameStore(createMemoryAdapter());
+            const p = store.getState().player;
+            store.setState({
+                player: { ...p, experience: p.experienceToNextLevel },
+            });
+            expect(selectCharacterViewModel(store.getState()).levelUpReady).toBe(true);
+            // Drain via engine levelUp — applyLevelUps lifts xp under
+            // the new threshold (or to 0 when xp exactly hit the
+            // boundary).
+            store.getState().levelUp();
+            expect(selectCharacterViewModel(store.getState()).levelUpReady).toBe(false);
+            // And the player picked up stat points.
+            expect(selectCharacterViewModel(store.getState()).pendingPoints).toBeGreaterThan(0);
+        });
+    });
+
     it('exposes the three base stat rows keyed by stance', () => {
         const store = createGameStore(createMemoryAdapter());
 

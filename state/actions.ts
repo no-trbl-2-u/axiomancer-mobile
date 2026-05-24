@@ -264,6 +264,15 @@ export interface AppActions {
      */
     allocateStatPoint: (stat: 'heart' | 'body' | 'mind') => number;
     /**
+     * Phase 73 follow-up (user-jot 2026-05-24): engine `levelUp`
+     * action. Drains accumulated XP and grants stat points via the
+     * engine's `applyLevelUps` loop (handles stacked level-ups in
+     * one pass). Caller is responsible for gating on
+     * `vm.levelUpReady`; the engine's `LEVEL_UP` reducer is a no-op
+     * when `experience < experienceToNextLevel`.
+     */
+    levelUp: () => void;
+    /**
      * Phase 77 — engine run-reset (`RESET_RUN` action). Atomic:
      * regenerates `runId`, full-heals the player, clears active
      * effects, regenerates world / quests / flags. With
@@ -789,6 +798,17 @@ export function createAppActions(store: AppStore): AppActions {
                 resetRun?: (o: { keepCharacter: boolean }) => unknown;
             };
             engineStore.resetRun?.(opts);
+        },
+        levelUp: () => {
+            // Phase 73 follow-up — engine `levelUp` action. Same
+            // cast pattern as `allocateStatPoint` / `resetRun`. The
+            // engine's `LEVEL_UP` reducer applies `applyLevelUps`
+            // which loops while `experience >= experienceToNextLevel`,
+            // so a single dispatch covers stacked level-ups.
+            const engineStore = store.getState() as unknown as {
+                levelUp?: () => void;
+            };
+            engineStore.levelUp?.();
         },
         save: () => store.getState().save(),
         resolveCurrentMapEvent: () => resolveCurrentMapEventAction(store),

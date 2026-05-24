@@ -130,18 +130,22 @@
   - **Item-card stat lines** — pending. Presenter `kind: 'item-stat'` in the union; needs content authoring (one entry per engine stat key) + wrap on each item row.
 - next: Tick 2 (item-stat content + wrap) closes this row.
 
-### [3.5] Non-combat tooltip walkthrough — Memoir surface (user-jot `9457378`) — partial (Tick 1 of 2)
+### [3.5] Non-combat tooltip walkthrough — Memoir surface (user-jot `9457378`) ✅ (CLOSED — 2 ticks)
 
 - filed: 2026-05-24 by /iterate (mirror #162)
-- partial: 2026-05-24 by /iterate Tick 1 (mirror #168; commit `<this-tick>`)
+- ticks: #168 (alignment chips), #170 (chronicle + quest cards)
 - category: external-critique / a11y
-- impact: 4 / ease: 7
-- inventory progress:
-  - **Moral alignment chip** — ✅ **wired Tick 1.** New `kind: 'alignment'` id `'moral'` authored (band-ladder footnote); chip wraps in `<TooltipTarget kind="alignment" id="moral">`.
-  - **Philosophical alignment chip** — ✅ **wired Tick 1.** New `kind: 'alignment'` id `'philosophical'` authored (dominant-stat derivation); chip wraps in `<TooltipTarget kind="alignment" id="philosophical">`.
-  - **Chronicle entry rows** — pending. Presenter `kind: 'chronicle-entry'` in the union; needs content for 4 engine event types (`'combat:ended' | 'character:levelup' | 'world:moved' | 'dialogue:applied'`).
-  - **Quest objective rows** — pending. Presenter `kind: 'quest-objective'` in the union; needs per-row content authoring.
-- next: Tick 2 (chronicle + quest) closes this row.
+- Resolved 2026-05-24 across 2 iterate ticks. All memoir
+  surface sub-items wired:
+  - Moral + philosophical alignment chips → `kind:'alignment'`
+    ids `'moral'` / `'philosophical'`.
+  - Chronicle entry rows → new `kind:'chronicle-entry'`
+    branch keyed by 4 engine event ids (`combat:ended`,
+    `character:levelup`, `world:moved`, `dialogue:applied`).
+  - Quest cards → new `kind:'quest-objective'` branch
+    keyed by 3 engine quest-status ids (`active`,
+    `completed`, `failed`); 'failed' renders as the UI's
+    "FORGOTTEN QUEST" title.
 
 ### [3.5] Non-combat tooltip walkthrough — Exploration surface (user-jot `9457378`) ✅ (CLOSED — single tick)
 

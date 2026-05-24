@@ -57,7 +57,6 @@ describe('selectTooltipContentFor', () => {
     describe('null contract for unwired kinds (later ticks)', () => {
         const unwiredKinds: TooltipKind[] = [
             'derived',
-            'alignment',
             'affliction',
             'blessing',
             'slot',
@@ -68,6 +67,26 @@ describe('selectTooltipContentFor', () => {
         ];
         it.each(unwiredKinds)('returns null for kind: %s with any id', (kind) => {
             expect(selectTooltipContentFor(kind, 'anything', EMPTY_STATE)).toBeNull();
+        });
+    });
+
+    describe('kind: alignment (Phase 74 walkthrough Tick 2)', () => {
+        it('returns content for each AlignmentAxisKey', () => {
+            for (const key of ['epistemology', 'outlook', 'scope'] as const) {
+                const content = selectTooltipContentFor('alignment', key, EMPTY_STATE);
+                expect(content).not.toBeNull();
+                expect(content?.title).toBe(key.toUpperCase());
+                expect(typeof content?.body).toBe('string');
+                expect(typeof content?.footnote).toBe('string');
+            }
+        });
+
+        it('returns null for an unknown alignment id', () => {
+            expect(selectTooltipContentFor('alignment', 'whatever', EMPTY_STATE)).toBeNull();
+        });
+
+        it('returns null for an empty alignment id', () => {
+            expect(selectTooltipContentFor('alignment', '', EMPTY_STATE)).toBeNull();
         });
     });
 

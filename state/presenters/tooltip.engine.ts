@@ -91,6 +91,29 @@ const STANCE_CHIP_CONTENT: Record<string, TooltipContent> = {
     },
 };
 
+// Phase 74 follow-up walkthrough Tick 2 — alignment axis content.
+// Keys match `AlignmentAxisKey` in `state/presenters/character.engine.ts`
+// (`'epistemology' | 'outlook' | 'scope'`); SELF axis chips pass
+// the axisKey verbatim as the tooltip id. Each entry explains what
+// the axis measures + the bucket-direction convention.
+const ALIGNMENT_CONTENT: Record<string, TooltipContent> = {
+    epistemology: {
+        title: 'EPISTEMOLOGY',
+        body: 'how you decide what is true. low trusts the felt and remembered; high trusts the measured and proven.',
+        footnote: 'low ← gnostic · mid ← agnostic · high → empiric',
+    },
+    outlook: {
+        title: 'OUTLOOK',
+        body: 'whether the world is a thing to suffer or a thing to use. low expects ruin; high expects opportunity.',
+        footnote: 'low ← bleak · mid ← neutral · high → ambitious',
+    },
+    scope: {
+        title: 'SCOPE',
+        body: 'who your actions are meant to serve. low keeps the self at the centre; high places the world above the self.',
+        footnote: 'low ← solitary · mid ← relational · high → cosmic',
+    },
+};
+
 // ---------------------------------------------------------------------------
 // Effect payload formatter (Phase 75 follow-up).
 //
@@ -214,6 +237,9 @@ export function selectTooltipContentFor(
     }
     if (kind === 'stance-chip') {
         return STANCE_CHIP_CONTENT[id] ?? null;
+    }
+    if (kind === 'alignment') {
+        return ALIGNMENT_CONTENT[id] ?? null;
     }
     if (kind === 'effect') {
         if (!id) return null;

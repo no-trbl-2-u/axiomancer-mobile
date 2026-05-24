@@ -217,10 +217,23 @@ export default function CharacterScreen() {
         <Text style={styles.alignmentCellName}>{vm.alignment.cellName}</Text>
         <View style={styles.alignmentAxesRow}>
           {vm.alignment.axes.map((axis) => (
-            <View key={axis.axisKey} style={styles.alignmentAxisChip}>
-              <Text style={styles.alignmentAxisLabel}>{axis.label}</Text>
-              <Text style={styles.alignmentAxisBucket}>{axis.bucket}</Text>
-            </View>
+            // Phase 74 follow-up walkthrough Tick 2: wrap each
+            // axis chip in a TooltipTarget pointing at the new
+            // kind:'alignment' content (epistemology / outlook /
+            // scope). Tap explains the axis dimension.
+            <TooltipTarget
+              key={axis.axisKey}
+              kind="alignment"
+              id={axis.axisKey}
+              accessibilityLabel={`Explain ${axis.label.toLowerCase()} axis`}
+              accessibilityHint="tap to read description"
+              testID={`self-alignment-${axis.axisKey}`}
+            >
+              <View style={styles.alignmentAxisChip}>
+                <Text style={styles.alignmentAxisLabel}>{axis.label}</Text>
+                <Text style={styles.alignmentAxisBucket}>{axis.bucket}</Text>
+              </View>
+            </TooltipTarget>
           ))}
         </View>
       </View>
@@ -297,24 +310,38 @@ export default function CharacterScreen() {
           <SectionLabel size={10}>✠ FALLACIES &amp; PARADOXES</SectionLabel>
           <View style={styles.skillsGrid}>
             {vm.skills.map((s) => (
-              <View
-                key={s.name}
-                style={[
-                  styles.skillCard,
-                  {
-                    borderColor: s.category === 'paradox' ? AXM.sulfur : AXM.parchment,
-                    borderStyle: s.category === 'paradox' ? 'solid' : 'dashed',
-                  },
-                ]}
+              // Phase 74 follow-up walkthrough Tick 2: wrap each
+              // skill card in a TooltipTarget pointing at the
+              // existing kind:'skill' content (Phase 75 authored
+              // — engine description + cost/stance footnote).
+              // vm.skills is currently dead surface ([] in the
+              // presenter); the wire-up is forward-looking.
+              <TooltipTarget
+                key={s.id || s.name}
+                kind="skill"
+                id={s.id}
+                accessibilityLabel={`Explain ${s.name} skill`}
+                accessibilityHint="tap to read description"
+                testID={`self-skill-${s.id || s.name}`}
               >
-                <StanceGlyph kind={s.stanceKey} size={16} color={AXM.bone} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.skillName}>{s.name}</Text>
-                  <Text style={[styles.skillCat, { color: s.category === 'paradox' ? AXM.sulfur : AXM.parchment }]}>
-                    {s.category.toUpperCase()}
-                  </Text>
+                <View
+                  style={[
+                    styles.skillCard,
+                    {
+                      borderColor: s.category === 'paradox' ? AXM.sulfur : AXM.parchment,
+                      borderStyle: s.category === 'paradox' ? 'solid' : 'dashed',
+                    },
+                  ]}
+                >
+                  <StanceGlyph kind={s.stanceKey} size={16} color={AXM.bone} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.skillName}>{s.name}</Text>
+                    <Text style={[styles.skillCat, { color: s.category === 'paradox' ? AXM.sulfur : AXM.parchment }]}>
+                      {s.category.toUpperCase()}
+                    </Text>
+                  </View>
                 </View>
-              </View>
+              </TooltipTarget>
             ))}
           </View>
         </View>

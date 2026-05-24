@@ -100,6 +100,14 @@ export interface EquipmentSlotRow {
 }
 
 export interface CharacterSkillRow {
+    /**
+     * Phase 74 follow-up walkthrough Tick 2 — engine skill id
+     * threaded through so the SELF tap-tooltip wrapper can fire
+     * `selectTooltipContentFor('skill', id)`. `vm.skills` is the
+     * dead `[]` surface today; the field is in place for when
+     * `player.knownSkills` consumption ships.
+     */
+    id: string;
     name: string;
     category: 'fallacy' | 'paradox';
     stanceKey: StanceKey;

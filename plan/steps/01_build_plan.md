@@ -1695,20 +1695,14 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       becomes the documented source of truth for fishing-village
       connectivity; exploration suite green. See PHASE_CANDIDATES.md
       `[score 7.0]` row.
-- [ ] Phase 81b — Hex-literal `'#0a0a0a'` + `'#06050a'` cluster
-      drain to AXM tokens. Smell-driven (no AUDIT row); third
-      such drain after `#100d0a` → `AXM.panelBg` and `#0a0807`
-      → `AXM.silhouette`. Scope:
-      - Add `AXM.cardBg = '#0a0a0a'` + `AXM.deepBg = '#06050a'`
-        (or rename per existing convention) to
-        `components/tokens.tsx`.
-      - Sweep all production hex-literal occurrences via grep +
-        Edit. Skip `components/ErrorBoundary.tsx:470` (pre-token
-        fallback for error boundary itself).
-      - Verify gate green; no behavioural change.
-      Acceptance: `grep -rE "'#0a0a0a'" app components` returns 0
-      production hits; AXM token export complete; verify gate
-      green. See PHASE_CANDIDATES.md `[score 5.0]` row.
+- [x] Phase 81b — Hex-literal `'#0a0a0a'` + `'#06050a'` cluster
+      drain to AXM tokens. Shipped in commit `c0bbb33`. Swept
+      17 style-property `'#0a0a0a'` → `AXM.bg` + 6 `'#06050a'`
+      → `AXM.deepBg` + 2 SVG attributes in tokens.tsx across
+      8 production files. Tokens already existed in `theme/axm.ts`
+      (no new token additions needed). SVG glyph fills in
+      illustration components left as double-quote string
+      attributes (follow-up concern). 1343/1343 verify green.
 - [ ] Phase 81c — `app/(tabs)/combat.tsx` sub-component
       extraction. Smell-driven; 1520-line file is 3.4× folder
       median. Sequences **after** Phase 80b (TooltipTarget

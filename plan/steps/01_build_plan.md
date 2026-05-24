@@ -1612,24 +1612,24 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       §6 Follow-ups. 1255/1255 verify green (+10 from 1245).
       Brief at `plan/phases/phase_78_codex_unlock_consumer.md`.
 
-- [ ] Phase 79 — Skill / craft functionality audit. Promoted
-      via /oversight 2026-05-23 (36th call) from user
-      observation: "Skills in the UI don't appear to have any
-      effect? Audit the skill's (or 'craft's') functionality."
-      Investigation phase. Reproduce in `pnpm web`; trace skill
-      selection (combat phase `craft`) through the engine's
-      `executeSkill` → `applyDamage`/`applyEffect` path; verify
-      the combat VM surfaces skill effects to `ResolvePanel`
-      + the combat log. Likely root-causes to check: (a) the
-      combat-modal rewrite (`02b75db`) changed the SkillPhase
-      shape — presenter may not be threading `executeSkill`
-      result to the resolve VM; (b) skill picker dispatching
-      wrong action shape after the rewrite; (c) the existing
-      `[2.0]` AUDIT row — `state/mocks/combat.skills.fixture.ts`
-      still mocks skills instead of reading engine selectors
-      (engine Spec 04 shipped but the mobile mock never
-      migrated). File fixes as sub-ticks per finding. Brief to
-      be drafted via `/plan-a-phase phase 79`.
+- [x] Phase 79 — Skill / craft functionality audit. Shipped
+      2026-05-24 in commit `1053ef8`. Three findings: (A) engine
+      silently blocks every pick on `not-equipped` (player has
+      no equipped skills); (B) mobile flat-sum `manaCost`
+      diverges from engine per-resource `canUseSkill` check;
+      (C) `summarizeRoundEvents` dropped 9 of 10
+      `phase: 'skill'` event kinds — A and B invisible because
+      of it. Combat-modal rewrite (`02b75db`) was NOT a
+      contributor (dispatch shape survived cleanly). AUDIT
+      `[2.0]` combat.skills.fixture row was stale (file deleted
+      in Phase 16) — marked resolved. Shipped fix for (C):
+      `summarizeRoundEvents` now logs all 10 kinds, including
+      the critical `blocked` reason in chronicle voice. (A) +
+      (B) filed as Phase 79a (equippedSkills filter, score 7.5)
+      + Phase 79b (per-resource enablement, score 6.5) in
+      `PHASE_CANDIDATES.md`. 14 new pins, 1269/1269 verify
+      green (+14 from 1255). Brief at
+      `plan/phases/phase_79_skill_craft_audit.md`.
 
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped
       2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —

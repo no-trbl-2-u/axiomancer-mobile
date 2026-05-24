@@ -59,11 +59,43 @@ describe('selectTooltipContentFor', () => {
             'affliction',
             'blessing',
             'item-stat',
-            'chronicle-entry',
-            'quest-objective',
         ];
         it.each(unwiredKinds)('returns null for kind: %s with any id', (kind) => {
             expect(selectTooltipContentFor(kind, 'anything', EMPTY_STATE)).toBeNull();
+        });
+    });
+
+    describe('kind: chronicle-entry (Phase 74 walkthrough — memoir Tick 2)', () => {
+        const ids = ['combat:ended', 'character:levelup', 'world:moved', 'dialogue:applied'] as const;
+        it.each(ids)('returns content for chronicle id %s', (id) => {
+            const content = selectTooltipContentFor('chronicle-entry', id, EMPTY_STATE);
+            expect(content).not.toBeNull();
+            expect(typeof content?.title).toBe('string');
+            expect(typeof content?.body).toBe('string');
+            expect(content?.footnote).toMatch(/^engine: /);
+        });
+
+        it('returns null for an unknown chronicle id', () => {
+            expect(selectTooltipContentFor('chronicle-entry', 'whatever', EMPTY_STATE)).toBeNull();
+        });
+    });
+
+    describe('kind: quest-objective (Phase 74 walkthrough — memoir Tick 2)', () => {
+        const ids = ['active', 'completed', 'failed'] as const;
+        it.each(ids)('returns content for quest status id %s', (id) => {
+            const content = selectTooltipContentFor('quest-objective', id, EMPTY_STATE);
+            expect(content).not.toBeNull();
+            expect(typeof content?.title).toBe('string');
+            expect(typeof content?.body).toBe('string');
+        });
+
+        it("'failed' renders as 'FORGOTTEN QUEST' in the title (UI naming convention)", () => {
+            const content = selectTooltipContentFor('quest-objective', 'failed', EMPTY_STATE);
+            expect(content?.title).toBe('FORGOTTEN QUEST');
+        });
+
+        it('returns null for an unknown quest-objective id', () => {
+            expect(selectTooltipContentFor('quest-objective', 'whatever', EMPTY_STATE)).toBeNull();
         });
     });
 

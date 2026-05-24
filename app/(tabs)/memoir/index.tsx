@@ -22,30 +22,42 @@ function resolveTint(key: MemoirViewModel['moralAlignment']['chip']['tintKey']):
 
 function QuestCard({ quest }: { quest: MemoirQuestRow }) {
     return (
-        <View
-            style={[
-                styles.questCard,
-                quest.status === 'completed' && styles.questCardCompleted,
-            ]}
-            testID={`memoir-quest-${quest.id}`}
+        // Phase 74 follow-up walkthrough — memoir Tick 2: wrap the
+        // whole card in a TooltipTarget pointing at the new
+        // kind:'quest-objective' content keyed by quest status.
+        // Tap explains what a quest in that state means.
+        <TooltipTarget
+            kind="quest-objective"
+            id={quest.status}
+            accessibilityLabel={`Explain ${quest.status} quest`}
+            accessibilityHint="tap to read description"
+            testID={`memoir-quest-${quest.id}-tooltip`}
         >
-            <Text style={styles.questName}>{quest.name}</Text>
-            {quest.description.length > 0 && (
-                <Text style={styles.questDescription}>{quest.description}</Text>
-            )}
-            {quest.objectives.length > 0 && (
-                <View style={styles.objectiveList}>
-                    {quest.objectives.map((o) => (
-                        <Text
-                            key={o.id}
-                            style={[styles.objectiveLine, o.done && styles.objectiveDone]}
-                        >
-                            {o.bullet} {o.text}
-                        </Text>
-                    ))}
-                </View>
-            )}
-        </View>
+            <View
+                style={[
+                    styles.questCard,
+                    quest.status === 'completed' && styles.questCardCompleted,
+                ]}
+                testID={`memoir-quest-${quest.id}`}
+            >
+                <Text style={styles.questName}>{quest.name}</Text>
+                {quest.description.length > 0 && (
+                    <Text style={styles.questDescription}>{quest.description}</Text>
+                )}
+                {quest.objectives.length > 0 && (
+                    <View style={styles.objectiveList}>
+                        {quest.objectives.map((o) => (
+                            <Text
+                                key={o.id}
+                                style={[styles.objectiveLine, o.done && styles.objectiveDone]}
+                            >
+                                {o.bullet} {o.text}
+                            </Text>
+                        ))}
+                    </View>
+                )}
+            </View>
+        </TooltipTarget>
     );
 }
 
@@ -98,14 +110,28 @@ export default function MemoirScreen() {
                         <Text style={styles.emptyLine}>{vm.emptyChronicle}</Text>
                     ) : (
                         vm.chronicle.map((entry) => (
-                            <View key={entry.id} style={styles.chronicleRow}>
-                                <Text style={styles.chronicleLabel}>
-                                    {entry.label}
-                                </Text>
-                                <Text style={styles.chronicleBody}>
-                                    {entry.body}
-                                </Text>
-                            </View>
+                            // Phase 74 follow-up walkthrough — memoir
+                            // Tick 2: wrap each chronicle row in a
+                            // TooltipTarget pointing at the new
+                            // kind:'chronicle-entry' content keyed by
+                            // engine event type.
+                            <TooltipTarget
+                                key={entry.id}
+                                kind="chronicle-entry"
+                                id={entry.kind}
+                                accessibilityLabel={`Explain ${entry.label} chronicle entry`}
+                                accessibilityHint="tap to read description"
+                                testID={`memoir-chronicle-${entry.id}-tooltip`}
+                            >
+                                <View style={styles.chronicleRow}>
+                                    <Text style={styles.chronicleLabel}>
+                                        {entry.label}
+                                    </Text>
+                                    <Text style={styles.chronicleBody}>
+                                        {entry.body}
+                                    </Text>
+                                </View>
+                            </TooltipTarget>
                         ))
                     )}
                 </View>

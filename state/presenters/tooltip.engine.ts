@@ -92,6 +92,56 @@ const STANCE_CHIP_CONTENT: Record<string, TooltipContent> = {
     },
 };
 
+// Phase 74 follow-up — memoir walkthrough Tick 2: chronicle +
+// quest-status content. Two branches authored in one go since both
+// surface on the memoir screen.
+//
+// Chronicle ids are the 4 engine event types the mapper recognises
+// (per `state/presenters/memoir.engine.ts::ChronicleEntry`).
+const CHRONICLE_CONTENT: Record<string, TooltipContent> = {
+    'combat:ended': {
+        title: 'COMBAT · ENDED',
+        body: 'a fight resolved one way or another. the body records the outcome — victory, parley, defeat — and the foe who delivered it.',
+        footnote: 'engine: combat:ended',
+    },
+    'character:levelup': {
+        title: 'ASCENT',
+        body: 'enough experience accumulated to cross a level threshold; you levelled up and gained stat-allocation points.',
+        footnote: 'engine: character:levelup',
+    },
+    'world:moved': {
+        title: 'STEP TAKEN',
+        body: 'you walked from one node to another on the map. the chronicle keeps the latest passage so the route is not forgotten.',
+        footnote: 'engine: world:moved',
+    },
+    'dialogue:applied': {
+        title: 'WORDS EXCHANGED',
+        body: 'a dialogue choice landed and its consequence applied — flag set, alignment shifted, item given, threshold crossed.',
+        footnote: 'engine: dialogue:applied',
+    },
+};
+
+// Quest-status ids — interpreted as the 3 status buckets the
+// memoir screen groups quests under, not per-objective text
+// (objectives are already self-describing).
+const QUEST_OBJECTIVE_CONTENT: Record<string, TooltipContent> = {
+    active: {
+        title: 'ACTIVE QUEST',
+        body: 'a thread you are currently pulling on. complete each objective to advance; consequences may carry forward into the world.',
+        footnote: 'progress lives in player.quests',
+    },
+    completed: {
+        title: 'COMPLETED QUEST',
+        body: 'every objective met. the quest stays on the page as a record of what was done; rewards have already applied.',
+        footnote: 'no further objectives',
+    },
+    failed: {
+        title: 'FORGOTTEN QUEST',
+        body: 'a thread you let slip — the window for it closed, or you chose against it. it lingers here as memoir, not as work.',
+        footnote: 'cannot be resumed',
+    },
+};
+
 // Phase 74 follow-up — exploration walkthrough Tick 1: map-node
 // content. Keys match the 7 NodeType variants emitted by the
 // exploration presenter (`encounter | treasure | boss | quest |
@@ -397,6 +447,12 @@ export function selectTooltipContentFor(
     }
     if (kind === 'map-node') {
         return MAP_NODE_CONTENT[id] ?? null;
+    }
+    if (kind === 'chronicle-entry') {
+        return CHRONICLE_CONTENT[id] ?? null;
+    }
+    if (kind === 'quest-objective') {
+        return QUEST_OBJECTIVE_CONTENT[id] ?? null;
     }
     if (kind === 'effect') {
         if (!id) return null;

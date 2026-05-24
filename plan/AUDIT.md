@@ -102,20 +102,21 @@
 
 ## Pending
 
-### [4.5] Non-combat tooltip walkthrough — SELF surface (user-jot `9457378`) — partial (Tick 3 of N)
+### [4.5] Non-combat tooltip walkthrough — SELF surface (user-jot `9457378`) ✅ (CLOSED — 4 ticks)
 
 - filed: 2026-05-24 by /iterate (mirror #162)
-- partial: 2026-05-24 by /iterate Tick 1 (mirror #163), Tick 2 (mirror #164), Tick 3 (mirror #165; commit `<this-tick>`)
+- ticks: #163 (base+effects), #164 (alignment+skill), #165 (equipment slots), #166 (saves+tests)
 - category: external-critique / a11y
-- impact: 5 / ease: 7
-- inventory progress:
-  - **Base stat cards** — ✅ wired Tick 1.
-  - **Affliction / blessing rows** — ✅ wired Tick 1.
-  - **Alignment axis chips** — ✅ wired Tick 2.
-  - **Skill cards** — ✅ wired Tick 2 (forward-looking; `vm.skills` is `[]` today).
-  - **Equipment slot cells** — ✅ **wired Tick 3.** New `kind: 'slot'` content authored for 7 engine slot ids; `EquipmentSlotRow` gains `slotKey`; `<TooltipTarget kind="slot" id={s.slotKey}>` wraps each cell. 'accessory' renders as TRINKET in the title per chrome convention.
-  - **Saves & tests cells** — pending. Presenter `kind: 'derived'` in the union; lowest priority (saves are derived stats players don't directly act on).
-- next: Tick 4 (saves & tests, only remaining sub-item) closes this row. Then move to Inventory / Memoir / Exploration AUDIT rows. Saves content authoring is the smallest remaining SELF deliverable.
+- Resolved 2026-05-24 across 4 iterate ticks. All 6 SELF
+  sub-items now have tap-tooltip wiring backed by authored
+  presenter content. Final tick (this commit) added
+  `kind: 'derived'` content for 6 save/test ids
+  (`{body|mind|heart}-{save|test}`); `SaveOrTestRow` gained
+  `id`. The SELF surface is the first of the 4 walkthrough
+  rows to close in full; siblings (Inventory [4.0], Memoir
+  [3.5], Exploration [3.5]) remain pending.
+- next: pick the next surface row (Inventory is highest at
+  [4.0]).
 
 ### [4.0] Non-combat tooltip walkthrough — Inventory surface (user-jot `9457378`)
 

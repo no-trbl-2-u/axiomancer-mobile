@@ -359,6 +359,21 @@ describe('selectCombatViewModel: stance picker', () => {
         expect(mind?.advantage).toBe('dis');      // raw: mind < body
     });
 
+    it('resolves effect display names via engine lookup, not raw ids (Phase 82b audit [4.5])', () => {
+        mockFixedRng(0.5);
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
+        const combat = store.getState().combat!;
+        // Inject a known engine effect id onto the enemy.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        store.setState({ combat: { ...combat, enemy: { ...combat.enemy, effects: [{ effectId: 'tier1_body_attack', intensity: 1, remainingDuration: 2 }] } } } as any);
+        const vm = selectCombatViewModel(store.getState());
+        expect(vm.enemy.effects.length).toBe(1);
+        expect(vm.enemy.effects[0].name).not.toBe('tier1_body_attack');
+        expect(vm.enemy.effects[0].name.length).toBeGreaterThan(0);
+    });
+
     it('derives stance attack/skill/defense from player.derivedStats (engine deriveStats), not a constant', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const player = store.getState().player;

@@ -25,6 +25,7 @@
 import {
     FRIENDSHIP_COUNTER_MAX,
     determineAdvantage,
+    lookupEffect,
     resolveEffectiveAdvantage,
     type ActiveEffect,
     type Advantage,
@@ -633,10 +634,11 @@ function classifyEffect(rawEffect: unknown): CombatEffectDisplay {
                     ? eff.kind
                     : '';
     const id = idRaw.toLowerCase();
+    const engineDef = idRaw ? lookupEffect(idRaw) : null;
     const name: string =
         typeof eff.name === 'string' && eff.name.length > 0
             ? eff.name
-            : idRaw || 'EFFECT';
+            : engineDef?.name ?? (idRaw || 'EFFECT');
 
     const kind = inferEffectKind(id);
     const tint = inferEffectTint(eff, kind);

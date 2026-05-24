@@ -407,6 +407,65 @@ export function formatEffectStatEffect(
     return fallback;
 }
 
+/**
+ * Phase 74 follow-up — inventory walkthrough Tick 2: item-stat
+ * tooltip synthesizer. Engine stat keys follow a `<dimension><Verb>`
+ * pattern (`physicalAttack`, `mentalDefense`, etc.) or are bare
+ * stance ids (`heart`, `body`, `mind`) or `luck`. Rather than
+ * authoring 19 individual entries, this function parses the key
+ * into dimension + verb and synthesizes consistent content.
+ *
+ * Returns `null` for unknown / malformed keys so the chip stays
+ * silent (preserves Tick A's defensive contract).
+ */
+const VERB_DESCRIPTIONS: Record<string, string> = {
+    Attack: 'active offense in this dimension. higher means more damage on a successful hit.',
+    Skill: 'active skill power in this dimension. higher means skills land harder.',
+    Defense: 'passive defense in this dimension. higher absorbs more damage.',
+    Save: 'passive resistance roll. higher resists more effects.',
+    Test: 'active check modifier. higher passes more checks.',
+};
+
+const DIMENSION_TO_STANCE: Record<string, string> = {
+    physical: 'BODY',
+    mental: 'MIND',
+    emotional: 'HEART',
+};
+
+function camelSplit(key: string): string {
+    return key.replace(/([A-Z])/g, ' $1').toLowerCase().trim();
+}
+
+function synthesizeItemStatContent(id: string): TooltipContent | null {
+    if (!id) return null;
+    // Bare stance / aggregate stats — keep the existing kind:'stat'
+    // copy where it overlaps (HEART/BODY/MIND); otherwise inline.
+    if (id === 'heart' || id === 'body' || id === 'mind') {
+        return STAT_CONTENT[id.toUpperCase()] ?? null;
+    }
+    if (id === 'luck') {
+        return {
+            title: 'LUCK',
+            body: 'the average of your three base stats. nudges close calls; not directly trainable.',
+            footnote: 'avg(heart, body, mind)',
+            accent: 'neutral',
+        };
+    }
+    // Match `<dimension><Verb>` (e.g. `physicalAttack`).
+    const m = /^(physical|mental|emotional)([A-Z][a-z]+)$/.exec(id);
+    if (!m) return null;
+    const [, dimension, verb] = m;
+    const body = VERB_DESCRIPTIONS[verb];
+    if (!body) return null;
+    const stance = DIMENSION_TO_STANCE[dimension];
+    return {
+        title: camelSplit(id).toUpperCase(),
+        body,
+        footnote: `scales with ${stance}`,
+        accent: accentForStat(id),
+    };
+}
+
 /** Derive the accent for an effect from its primary stat target. */
 function accentForEffect(payload: EffectPayloadLike | undefined): TooltipAccent {
     if (!payload) return 'neutral';
@@ -453,6 +512,9 @@ export function selectTooltipContentFor(
     }
     if (kind === 'quest-objective') {
         return QUEST_OBJECTIVE_CONTENT[id] ?? null;
+    }
+    if (kind === 'item-stat') {
+        return synthesizeItemStatContent(id);
     }
     if (kind === 'effect') {
         if (!id) return null;

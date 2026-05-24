@@ -58,10 +58,52 @@ describe('selectTooltipContentFor', () => {
         const unwiredKinds: TooltipKind[] = [
             'affliction',
             'blessing',
-            'item-stat',
         ];
         it.each(unwiredKinds)('returns null for kind: %s with any id', (kind) => {
             expect(selectTooltipContentFor(kind, 'anything', EMPTY_STATE)).toBeNull();
+        });
+    });
+
+    describe('kind: item-stat (Phase 74 walkthrough — inventory Tick 2)', () => {
+        it('synthesizes content for a physical* stat → BODY scaling', () => {
+            const content = selectTooltipContentFor('item-stat', 'physicalAttack', EMPTY_STATE);
+            expect(content?.title).toBe('PHYSICAL ATTACK');
+            expect(content?.body).toContain('active offense');
+            expect(content?.footnote).toBe('scales with BODY');
+            expect(content?.accent).toBe('body');
+        });
+
+        it('synthesizes content for a mental* stat → MIND scaling', () => {
+            const content = selectTooltipContentFor('item-stat', 'mentalDefense', EMPTY_STATE);
+            expect(content?.title).toBe('MENTAL DEFENSE');
+            expect(content?.body).toContain('passive defense');
+            expect(content?.footnote).toBe('scales with MIND');
+            expect(content?.accent).toBe('mind');
+        });
+
+        it('synthesizes content for an emotional* stat → HEART scaling', () => {
+            const content = selectTooltipContentFor('item-stat', 'emotionalSave', EMPTY_STATE);
+            expect(content?.title).toBe('EMOTIONAL SAVE');
+            expect(content?.body).toContain('resistance');
+            expect(content?.footnote).toBe('scales with HEART');
+            expect(content?.accent).toBe('heart');
+        });
+
+        it('returns the kind:"stat" content for bare stance ids (overlap)', () => {
+            const content = selectTooltipContentFor('item-stat', 'heart', EMPTY_STATE);
+            expect(content?.title).toBe('HEART');
+        });
+
+        it('returns dedicated luck content', () => {
+            const content = selectTooltipContentFor('item-stat', 'luck', EMPTY_STATE);
+            expect(content?.title).toBe('LUCK');
+            expect(content?.footnote).toContain('avg');
+        });
+
+        it('returns null for unknown / malformed item-stat ids', () => {
+            expect(selectTooltipContentFor('item-stat', 'whateverGarbage', EMPTY_STATE)).toBeNull();
+            expect(selectTooltipContentFor('item-stat', 'physicalNonsense', EMPTY_STATE)).toBeNull();
+            expect(selectTooltipContentFor('item-stat', '', EMPTY_STATE)).toBeNull();
         });
     });
 

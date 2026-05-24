@@ -633,22 +633,37 @@ function ItemCard({ item, expanded, onTap, onUseOrEquip, onDiscard }: ItemCardPr
                                     {item.replacePreview.deltas.map((d) => {
                                         const positive = d.delta > 0;
                                         return (
-                                            <View
+                                            // Phase 74 follow-up walkthrough —
+                                            // inventory Tick 2: wrap each
+                                            // NET delta chip in a
+                                            // TooltipTarget pointing at the
+                                            // kind:'item-stat' synthesizer.
+                                            // Tap explains what the stat
+                                            // does.
+                                            <TooltipTarget
                                                 key={d.stat}
-                                                style={[
-                                                    styles.replaceDeltaChip,
-                                                    positive ? styles.replaceDeltaChipPos : styles.replaceDeltaChipNeg,
-                                                ]}
+                                                kind="item-stat"
+                                                id={d.stat}
+                                                accessibilityLabel={`Explain ${d.stat}`}
+                                                accessibilityHint="tap to read description"
+                                                testID={`inventory-delta-${d.stat}`}
                                             >
-                                                <Text
+                                                <View
                                                     style={[
-                                                        styles.replaceDeltaChipText,
-                                                        positive ? styles.replaceDeltaChipTextPos : styles.replaceDeltaChipTextNeg,
+                                                        styles.replaceDeltaChip,
+                                                        positive ? styles.replaceDeltaChipPos : styles.replaceDeltaChipNeg,
                                                     ]}
                                                 >
-                                                    {positive ? '+' : ''}{d.delta} {d.stat}
-                                                </Text>
-                                            </View>
+                                                    <Text
+                                                        style={[
+                                                            styles.replaceDeltaChipText,
+                                                            positive ? styles.replaceDeltaChipTextPos : styles.replaceDeltaChipTextNeg,
+                                                        ]}
+                                                    >
+                                                        {positive ? '+' : ''}{d.delta} {d.stat}
+                                                    </Text>
+                                                </View>
+                                            </TooltipTarget>
                                         );
                                     })}
                                 </View>

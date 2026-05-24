@@ -118,17 +118,21 @@
 - next: pick the next surface row (Inventory is highest at
   [4.0]).
 
-### [4.0] Non-combat tooltip walkthrough — Inventory surface (user-jot `9457378`) — partial (Tick 1 of 2)
+### [4.0] Non-combat tooltip walkthrough — Inventory surface (user-jot `9457378`) ✅ (CLOSED — 2 ticks)
 
 - filed: 2026-05-24 by /iterate (mirror #162)
-- partial: 2026-05-24 by /iterate Tick 1 (mirror #167; commit `<this-tick>`)
+- ticks: #167 (paperdoll + burden), #171 (item-stat synthesizer)
 - category: external-critique / a11y
-- impact: 4 / ease: 7
-- inventory progress:
-  - **PaperDoll equipment slots** — ✅ **wired Tick 1.** `SlotCard` gains `onLongPress` that fires `useTooltip().show({ kind: 'slot', id: slot.key })`. Content shared with the SELF surface (Tick 3 of the SELF row). Single-tap stays for slot-filter select per Phase 75 skill-row pattern.
-  - **Burden bar** — ✅ **wired Tick 1.** New `kind: 'burden'` content authored (single id `'burden'`); `<TooltipTarget kind="burden" id="burden">` wraps the StatBar.
-  - **Item-card stat lines** — pending. Presenter `kind: 'item-stat'` in the union; needs content authoring (one entry per engine stat key) + wrap on each item row.
-- next: Tick 2 (item-stat content + wrap) closes this row.
+- Resolved 2026-05-24 across 2 iterate ticks. All inventory
+  surface sub-items wired:
+  - PaperDoll slots → `kind:'slot'` (shared SELF Tick 3 content).
+  - Burden bar → new `kind:'burden'` branch (single id).
+  - Item-card stat lines → new `kind:'item-stat'` synthesizer
+    that parses engine stat keys (e.g. `physicalAttack`) into
+    dimension + verb and generates consistent content for all
+    ~19 engine stat ids. NET delta chips on replace-preview
+    wrapped with TooltipTarget; modal stat table deferred
+    (RN Modal portal complication for tooltip overlay).
 
 ### [3.5] Non-combat tooltip walkthrough — Memoir surface (user-jot `9457378`) ✅ (CLOSED — 2 ticks)
 

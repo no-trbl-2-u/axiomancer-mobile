@@ -58,13 +58,29 @@ describe('selectTooltipContentFor', () => {
         const unwiredKinds: TooltipKind[] = [
             'affliction',
             'blessing',
-            'burden',
             'item-stat',
             'chronicle-entry',
             'quest-objective',
         ];
         it.each(unwiredKinds)('returns null for kind: %s with any id', (kind) => {
             expect(selectTooltipContentFor(kind, 'anything', EMPTY_STATE)).toBeNull();
+        });
+    });
+
+    describe('kind: burden (Phase 74 walkthrough — inventory Tick 1)', () => {
+        it('returns content for id "burden"', () => {
+            const content = selectTooltipContentFor('burden', 'burden', EMPTY_STATE);
+            expect(content?.title).toBe('BURDEN');
+            expect(content?.body).toContain('weight');
+            expect(content?.footnote).toContain('shed');
+        });
+
+        it('returns null for an unknown burden id', () => {
+            expect(selectTooltipContentFor('burden', 'whatever', EMPTY_STATE)).toBeNull();
+        });
+
+        it('returns null for an empty burden id', () => {
+            expect(selectTooltipContentFor('burden', '', EMPTY_STATE)).toBeNull();
         });
     });
 

@@ -91,6 +91,16 @@ const STANCE_CHIP_CONTENT: Record<string, TooltipContent> = {
     },
 };
 
+// Phase 74 follow-up — inventory walkthrough Tick 1: burden bar
+// content. Single id ('burden') keys the inventory burden tooltip.
+const BURDEN_CONTENT: Record<string, TooltipContent> = {
+    burden: {
+        title: 'BURDEN',
+        body: 'the weight of what you carry, in stones. high burden slows you and saps endurance; over the cap, what you carry begins to wear on you.',
+        footnote: 'shed gear to lighten',
+    },
+};
+
 // Phase 74 follow-up walkthrough Tick 4 — saves & tests content.
 // Keys match the kebab-case ids on `SaveOrTestRow.id` (e.g.
 // `'body-save'`, `'mind-test'`). Each entry: title (existing
@@ -322,6 +332,9 @@ export function selectTooltipContentFor(
     }
     if (kind === 'derived') {
         return DERIVED_CONTENT[id] ?? null;
+    }
+    if (kind === 'burden') {
+        return BURDEN_CONTENT[id] ?? null;
     }
     if (kind === 'effect') {
         if (!id) return null;

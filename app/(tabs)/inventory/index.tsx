@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { AXM, FONTS } from '@/theme/axm';
@@ -6,6 +6,8 @@ import { ActionIcon } from '@/components/ActionIcon';
 import { ScreenBg } from '@/components/ScreenBg';
 import { SectionLabel } from '@/components/SectionLabel';
 import { StatBar } from '@/components/StatBar';
+import { TooltipTarget } from '@/components/tooltip/TooltipTarget';
+import { useTooltip } from '@/hooks/useTooltip';
 import { useGameActions, useGameState, useGameStore } from '@/state/GameStoreProvider';
 import {
     selectInventoryViewModel,
@@ -180,16 +182,25 @@ function SlotCard({
     selected: boolean;
     onPress: (key: EquipmentDockSlot['key'] | null) => void;
 }) {
+    // Phase 74 follow-up walkthrough Tick 1: long-press fires the
+    // kind:'slot' tooltip (content shared with the SELF surface).
+    // Single-tap stays for slot-filter select (existing behaviour),
+    // mirroring Phase 75 skill-row pattern.
+    const tooltip = useTooltip();
+    const slotRef = useRef<View | null>(null);
     if (slot === null) {
         return <View style={styles.dockSlotEmpty} />;
     }
     const filled = slot.item !== null;
     return (
         <TouchableOpacity
+            ref={slotRef}
             accessibilityRole="button"
             accessibilityLabel={`${slot.label} slot${filled && slot.item ? `, ${slot.item.name}` : ', empty'}`}
+            accessibilityHint="hold to read slot description"
             accessibilityState={{ selected }}
             onPress={() => onPress(selected ? null : slot.key)}
+            onLongPress={() => tooltip.show({ kind: 'slot', id: slot.key, anchorRef: slotRef })}
             style={[
                 styles.dockSlot,
                 filled ? styles.dockSlotFilled : styles.dockSlotBare,
@@ -376,7 +387,19 @@ export default function InventoryScreen() {
                     </View>
                 </View>
                 <View style={{ marginTop: 8 }}>
-                    <StatBar value={vm.burden} max={vm.burdenMax} color={AXM.rust} label="BURDEN · STONE" height={9} />
+                    {/* Phase 74 follow-up walkthrough — wrap the
+                        burden bar in a TooltipTarget pointing at
+                        the new kind:'burden' content. Tap explains
+                        what burden does + the over-cap consequence. */}
+                    <TooltipTarget
+                        kind="burden"
+                        id="burden"
+                        accessibilityLabel="Explain burden"
+                        accessibilityHint="tap to read description"
+                        testID="inventory-burden-tooltip-target"
+                    >
+                        <StatBar value={vm.burden} max={vm.burdenMax} color={AXM.rust} label="BURDEN · STONE" height={9} />
+                    </TooltipTarget>
                 </View>
             </View>
 

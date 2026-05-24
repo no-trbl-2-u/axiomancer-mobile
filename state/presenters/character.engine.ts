@@ -69,6 +69,13 @@ export interface DerivedStatRow {
 }
 
 export interface SaveOrTestRow {
+    /**
+     * Phase 74 follow-up walkthrough Tick 4 — kebab-case id used by
+     * the SELF tap-tooltip wrapper to look up `kind: 'derived'`
+     * content. One of: `'body-save' | 'mind-save' | 'heart-save' |
+     * 'body-test' | 'mind-test' | 'heart-test'`.
+     */
+    id: string;
     label: string;
     /** Already-formatted display string (e.g. `'14'` or `'+2'`). */
     value: string;
@@ -234,12 +241,12 @@ function buildSaves(player: Character): readonly SaveOrTestRow[] {
     const n = player.nonCombatStats;
     const sign = (v: number) => (v >= 0 ? `+${v}` : `${v}`);
     return [
-        { label: 'Body Save',  value: String(n.physicalSave) },
-        { label: 'Mind Save',  value: String(n.mentalSave) },
-        { label: 'Heart Save', value: String(n.emotionalSave) },
-        { label: 'Body Test',  value: sign(n.physicalTest) },
-        { label: 'Mind Test',  value: sign(n.mentalTest) },
-        { label: 'Heart Test', value: sign(n.emotionalTest) },
+        { id: 'body-save',  label: 'Body Save',  value: String(n.physicalSave) },
+        { id: 'mind-save',  label: 'Mind Save',  value: String(n.mentalSave) },
+        { id: 'heart-save', label: 'Heart Save', value: String(n.emotionalSave) },
+        { id: 'body-test',  label: 'Body Test',  value: sign(n.physicalTest) },
+        { id: 'mind-test',  label: 'Mind Test',  value: sign(n.mentalTest) },
+        { id: 'heart-test', label: 'Heart Test', value: sign(n.emotionalTest) },
     ];
 }
 

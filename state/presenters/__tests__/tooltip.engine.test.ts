@@ -56,7 +56,6 @@ describe('selectTooltipContentFor', () => {
 
     describe('null contract for unwired kinds (later ticks)', () => {
         const unwiredKinds: TooltipKind[] = [
-            'derived',
             'affliction',
             'blessing',
             'burden',
@@ -66,6 +65,37 @@ describe('selectTooltipContentFor', () => {
         ];
         it.each(unwiredKinds)('returns null for kind: %s with any id', (kind) => {
             expect(selectTooltipContentFor(kind, 'anything', EMPTY_STATE)).toBeNull();
+        });
+    });
+
+    describe('kind: derived (Phase 74 walkthrough Tick 4 — saves & tests)', () => {
+        const ids = [
+            'body-save', 'mind-save', 'heart-save',
+            'body-test', 'mind-test', 'heart-test',
+        ] as const;
+        it.each(ids)('returns content for derived id %s', (id) => {
+            const content = selectTooltipContentFor('derived', id, EMPTY_STATE);
+            expect(content).not.toBeNull();
+            expect(typeof content?.title).toBe('string');
+            expect(typeof content?.body).toBe('string');
+            expect(typeof content?.footnote).toBe('string');
+            expect(content?.footnote).toMatch(/scales with (BODY|MIND|HEART)/);
+        });
+
+        it('save body mentions "resistance" — tests do not', () => {
+            const save = selectTooltipContentFor('derived', 'body-save', EMPTY_STATE);
+            const test = selectTooltipContentFor('derived', 'body-test', EMPTY_STATE);
+            expect(save?.body).toContain('resistance');
+            expect(test?.body).not.toContain('resistance');
+            expect(test?.body).toContain('check');
+        });
+
+        it('returns null for an unknown derived id', () => {
+            expect(selectTooltipContentFor('derived', 'whatever', EMPTY_STATE)).toBeNull();
+        });
+
+        it('returns null for an empty derived id', () => {
+            expect(selectTooltipContentFor('derived', '', EMPTY_STATE)).toBeNull();
         });
     });
 

@@ -91,6 +91,45 @@ const STANCE_CHIP_CONTENT: Record<string, TooltipContent> = {
     },
 };
 
+// Phase 74 follow-up walkthrough Tick 4 — saves & tests content.
+// Keys match the kebab-case ids on `SaveOrTestRow.id` (e.g.
+// `'body-save'`, `'mind-test'`). Each entry: title (existing
+// chrome label), body explaining the mechanic + which stance
+// scales it. Six entries total — 3 saves (passive resistance)
+// + 3 tests (active difficulty check).
+const DERIVED_CONTENT: Record<string, TooltipContent> = {
+    'body-save': {
+        title: 'BODY SAVE',
+        body: 'passive resistance to physical strikes. roll target vs. attacker; higher save absorbs the hit.',
+        footnote: 'scales with BODY',
+    },
+    'mind-save': {
+        title: 'MIND SAVE',
+        body: 'passive resistance to mental coercion — illusion, charm, fear. high save means the trick does not land.',
+        footnote: 'scales with MIND',
+    },
+    'heart-save': {
+        title: 'HEART SAVE',
+        body: 'passive resistance to despair, grief, dread. the will to keep standing when the news is bad.',
+        footnote: 'scales with HEART',
+    },
+    'body-test': {
+        title: 'BODY TEST',
+        body: 'active check against a physical difficulty — force a door, hold a rope, endure a sprint.',
+        footnote: 'scales with BODY',
+    },
+    'mind-test': {
+        title: 'MIND TEST',
+        body: 'active check against a mental difficulty — recall, decipher, see through a deception.',
+        footnote: 'scales with MIND',
+    },
+    'heart-test': {
+        title: 'HEART TEST',
+        body: 'active check against an emotional difficulty — convince, console, hold a vow under pressure.',
+        footnote: 'scales with HEART',
+    },
+};
+
 // Phase 74 follow-up walkthrough Tick 3 — equipment slot content.
 // Keys match engine `EquipmentSlot` literals (`head | body | hands |
 // feet | weapon | armor | accessory`). SELF equipment cells pass
@@ -280,6 +319,9 @@ export function selectTooltipContentFor(
     }
     if (kind === 'slot') {
         return SLOT_CONTENT[id] ?? null;
+    }
+    if (kind === 'derived') {
+        return DERIVED_CONTENT[id] ?? null;
     }
     if (kind === 'effect') {
         if (!id) return null;

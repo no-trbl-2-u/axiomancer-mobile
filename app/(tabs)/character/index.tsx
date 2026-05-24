@@ -203,10 +203,24 @@ export default function CharacterScreen() {
         <SectionLabel size={10}>✠ SAVES &amp; TESTS</SectionLabel>
         <View style={styles.savesGrid}>
           {vm.saves.map((s) => (
-            <View key={s.label} style={styles.saveCell}>
-              <Text style={styles.saveKey}>{s.label}</Text>
-              <Text style={styles.saveVal}>{s.value}</Text>
-            </View>
+            // Phase 74 follow-up walkthrough Tick 4: wrap each
+            // save/test cell in a TooltipTarget pointing at the
+            // new kind:'derived' content (6 ids for the
+            // save/test x stance matrix). Closes the SELF
+            // walkthrough row.
+            <TooltipTarget
+              key={s.id}
+              kind="derived"
+              id={s.id}
+              accessibilityLabel={`Explain ${s.label}`}
+              accessibilityHint="tap to read description"
+              testID={`self-derived-${s.id}`}
+            >
+              <View style={styles.saveCell}>
+                <Text style={styles.saveKey}>{s.label}</Text>
+                <Text style={styles.saveVal}>{s.value}</Text>
+              </View>
+            </TooltipTarget>
           ))}
         </View>
       </View>

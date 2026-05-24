@@ -143,28 +143,18 @@
   - **Quest objective rows** — pending. Presenter `kind: 'quest-objective'` in the union; needs per-row content authoring.
 - next: Tick 2 (chronicle + quest) closes this row.
 
-### [3.5] Non-combat tooltip walkthrough — Exploration surface (user-jot `9457378`)
+### [3.5] Non-combat tooltip walkthrough — Exploration surface (user-jot `9457378`) ✅ (CLOSED — single tick)
 
 - filed: 2026-05-24 by /iterate (mirror #162)
+- closed: 2026-05-24 by /iterate Tick 1 (mirror #169; commit `<this-tick>`)
 - category: external-critique / a11y
-- impact: 4 (NodeMark icons are the primary affordance;
-  the player taps them to engage encounters but the
-  encounter type isn't surfaced until tap)
-- ease: 6
-- inventory:
-  - **NodeMark icons** (`exploration/index.tsx:309`) —
-    `<NodeMark kind={n.kind}>` per map node. Tooltip would
-    explain node type (combat / event / friend / boss /
-    treasure) at long-press (single-tap commits the move,
-    mirror of Phase 75 skill-row long-press pattern).
-    Presenter would need a new kind — `'map-node'` is NOT
-    in the current `TooltipKind` union, so this surface
-    requires an additive union entry plus content. Filed
-    as the walkthrough finding's escape-hatch entry per
-    candidate 5.5's "exploration sub-tick" note.
-- next: extends Phase 74 Tick C-E enumeration with a
-  fourth sub-tick for exploration; the candidate already
-  flags this as the walkthrough-discovered piece.
+- Resolved 2026-05-24 in one tick. New `'map-node'` entry
+  added to the `TooltipKind` union; `MAP_NODE_CONTENT`
+  authored for 7 NodeType ids (encounter / boss / treasure /
+  quest / rest / gather / current); per-node `TouchableOpacity`
+  extracted into `<MapNodeMarker>` with `onLongPress` firing
+  the tooltip (single-tap continues to commit movement, mirror
+  of Phase 75 skill-row pattern).
 
 ### [3.2] `bearings.md` engine-bump row doesn't warn against `pnpm install` — recurring trap (already cost 1 EAS build + PR #153) ✅ (drained `1b0c273`)
 

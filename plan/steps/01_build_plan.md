@@ -1566,18 +1566,17 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       bias). 1234/1234 verify green (+10 from 1224). Brief at
       `plan/phases/phase_75_combat_hud_tap_tooltips.md`.
 
-- [ ] Phase 76 — Engine narrative prose consumer (aftermath
-      panels). Promoted via /oversight 2026-05-23 (36th call)
-      from PHASE_CANDIDATES.md `[score 5.5]` row (engine 0.11.0
-      Phase 71 [ENGINE LANDED]). Drop the 3 `derive*Phrase`
-      placeholder helpers in
-      `state/presenters/aftermath.engine.ts`; presenter reads
-      per-foe `finalBlowLines` / `pactLines` / `causeLines`
-      from the engine snapshot directly. Retire placeholder
-      tests for per-tier variants; pin engine-sourced rendering.
-      Closes 3 Phase-70-follow-up rows (Tick A/B/C commit
-      bodies all flagged this gap). Brief to be drafted via
-      `/plan-a-phase phase 76`.
+- [x] Phase 76 — Engine narrative prose consumer (aftermath
+      panels). Shipped 2026-05-24 in commit `a393ece`. Aftermath
+      presenter (`state/presenters/aftermath.engine.ts`) now
+      reads per-foe `finalBlowLines` / `pactLines` / `causeLines`
+      from `combat.enemy` via the `AftermathData` snapshot (which
+      gained those optional fields). Engine lines win when
+      present; presenter falls back to the existing per-tier
+      generic phrase when absent (~13/16 enemies lack lines
+      today). Closes the 3 Phase-70-follow-up rows. 1244/1244
+      verify green (+10 from 1234). Brief at
+      `plan/phases/phase_76_engine_narrative_prose.md`.
 
 - [ ] Phase 77 — BEGIN AGAIN run-loop consumer. Promoted via
       /oversight 2026-05-23 (36th call) from PHASE_CANDIDATES.md

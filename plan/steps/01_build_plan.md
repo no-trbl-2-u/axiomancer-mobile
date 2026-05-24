@@ -1732,14 +1732,11 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       `'insufficient-resources'`; removed `mana`/`manaMax` from
       `SkillPickerSlice`. 1344/1344 verify green.
 
-- [ ] Phase 83 — Hex-literal `'#0a0807'` drain to
-      `AXM.silhouette` + aftermath panel token sweep. Promoted
-      via `/oversight` 2026-05-24 (39th call) from expand pass
-      42. 11 occurrences across 7 files (CombatDefeatPanel,
-      CombatVictoryPanel, CombatFriendshipPanel, LevelUpModal,
-      PixelEmblem, EncounterModalOverlay; skip ErrorBoundary).
-      Token already exists — pure grep+replace. See
-      PHASE_CANDIDATES.md `[score 4.0]` row.
+- [x] Phase 83 — Hex-literal `'#0a0807'` drain to
+      `AXM.silhouette`. Shipped in commit `a08a10f`. Replaced
+      10 occurrences across 6 files (LevelUpModal, aftermath
+      panels, PixelEmblem, EncounterModalOverlay). ErrorBoundary
+      skipped. 1345/1345 verify green.
 - [ ] Phase 84 — Inventory screen sub-component extraction.
       Promoted via `/oversight` 2026-05-24 (39th call) from
       expand pass 42. `app/(tabs)/inventory/index.tsx` at 1099

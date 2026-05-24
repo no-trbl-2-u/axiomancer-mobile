@@ -102,20 +102,20 @@
 
 ## Pending
 
-### [4.5] Non-combat tooltip walkthrough — SELF surface (user-jot `9457378`) — partial (Tick 2 of N)
+### [4.5] Non-combat tooltip walkthrough — SELF surface (user-jot `9457378`) — partial (Tick 3 of N)
 
 - filed: 2026-05-24 by /iterate (mirror #162)
-- partial: 2026-05-24 by /iterate Tick 1 (mirror #163), Tick 2 (mirror #164; commit `<this-tick>`)
+- partial: 2026-05-24 by /iterate Tick 1 (mirror #163), Tick 2 (mirror #164), Tick 3 (mirror #165; commit `<this-tick>`)
 - category: external-critique / a11y
 - impact: 5 / ease: 7
 - inventory progress:
   - **Base stat cards** — ✅ wired Tick 1.
   - **Affliction / blessing rows** — ✅ wired Tick 1.
-  - **Alignment axis chips** — ✅ **wired Tick 2.** New `kind: 'alignment'` content authored for `epistemology / outlook / scope`; `<TooltipTarget kind="alignment" id={axis.axisKey}>` wraps each chip.
-  - **Skill cards** — ✅ **wired Tick 2** (forward-looking — `vm.skills` is `[]` today). `CharacterSkillRow` gains `id` (engine skill id); `<TooltipTarget kind="skill" id={s.id}>` wraps each card; tap fires Phase-75-authored skill content.
-  - **Equipment slot cells** — pending. Presenter `kind: 'slot'` in the union; needs content + wrap.
-  - **Saves & tests cells** — pending. Presenter `kind: 'derived'` in the union; lowest priority.
-- next: Tick 3 (equipment slots + maybe saves). Then move to Inventory / Memoir / Exploration AUDIT rows.
+  - **Alignment axis chips** — ✅ wired Tick 2.
+  - **Skill cards** — ✅ wired Tick 2 (forward-looking; `vm.skills` is `[]` today).
+  - **Equipment slot cells** — ✅ **wired Tick 3.** New `kind: 'slot'` content authored for 7 engine slot ids; `EquipmentSlotRow` gains `slotKey`; `<TooltipTarget kind="slot" id={s.slotKey}>` wraps each cell. 'accessory' renders as TRINKET in the title per chrome convention.
+  - **Saves & tests cells** — pending. Presenter `kind: 'derived'` in the union; lowest priority (saves are derived stats players don't directly act on).
+- next: Tick 4 (saves & tests, only remaining sub-item) closes this row. Then move to Inventory / Memoir / Exploration AUDIT rows. Saves content authoring is the smallest remaining SELF deliverable.
 
 ### [4.0] Non-combat tooltip walkthrough — Inventory surface (user-jot `9457378`)
 

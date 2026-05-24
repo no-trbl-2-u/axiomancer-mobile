@@ -1661,15 +1661,12 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       from `@/components/tooltip/TooltipTarget`; cleaned up unused
       Pressable import. 1342/1342 verify green; no behavioural
       change.
-- [ ] Phase 80c — SELF derived ATK/SKL/DEF table tooltips
-      (Tick 5 — completes "all SELF numerics have tooltips"
-      coverage). Reuses the `kind:'item-stat'` synthesizer shipped
-      in Inventory Tick 2 (`cdee5aa`) — zero authoring cost. Scope:
-      add `id` field to `DerivedStatRow`, build 9 ids in presenter
-      (3 rows × 3 verbs), wrap each derived cell with
-      `<TooltipTarget kind="item-stat" id={cell.id}>`. Acceptance:
-      all 9 derived cells fire tooltips; verify gate green. See
-      PHASE_CANDIDATES.md `[score 4.0]` row.
+- [x] Phase 80c — SELF derived ATK/SKL/DEF table tooltips.
+      Shipped in commit `34dfc49`. Added attackId/skillId/defenseId
+      to DerivedStatRow; wrapped all 9 derived cells with
+      `<TooltipTarget kind="item-stat">` reusing the Inventory
+      Tick 2 synthesizer. +1 test pinning the 9 engine stat ids.
+      1343/1343 verify green (+1 from 1342).
 
 - [parent] Phase 81 — Engine reconciliation + cleanup cluster.
       Promoted via `/oversight` 2026-05-24 (38th call) from expand

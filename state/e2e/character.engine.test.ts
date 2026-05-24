@@ -147,6 +147,17 @@ describe('selectCharacterViewModel: shape contract', () => {
         }
     });
 
+    it('every derived row carries engine stat ids for tooltip wiring', () => {
+        const store = createGameStore(createMemoryAdapter());
+        const vm = selectCharacterViewModel(store.getState());
+        const ids = vm.derived.flatMap((r) => [r.attackId, r.skillId, r.defenseId]);
+        expect(ids).toEqual([
+            'physicalAttack', 'physicalSkill', 'physicalDefense',
+            'mentalAttack', 'mentalSkill', 'mentalDefense',
+            'emotionalAttack', 'emotionalSkill', 'emotionalDefense',
+        ]);
+    });
+
     it('exposes six saves/tests rows (3 saves, 3 tests)', () => {
         const store = createGameStore(createMemoryAdapter());
 

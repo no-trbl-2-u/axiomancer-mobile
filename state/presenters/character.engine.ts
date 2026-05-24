@@ -66,6 +66,9 @@ export interface DerivedStatRow {
     attack: number;
     skill: number;
     defense: number;
+    attackId: string;
+    skillId: string;
+    defenseId: string;
 }
 
 export interface SaveOrTestRow {
@@ -230,9 +233,9 @@ function buildDerived(player: Character): readonly DerivedStatRow[] {
     // derivedStats are guaranteed present after v1→v2 persistence migration
     const d = player.derivedStats;
     return [
-        { label: 'PHYSICAL', attack: d.physicalAttack, skill: d.physicalSkill, defense: d.physicalDefense },
-        { label: 'MENTAL',   attack: d.mentalAttack,   skill: d.mentalSkill,   defense: d.mentalDefense },
-        { label: 'EMOTIONAL',attack: d.emotionalAttack, skill: d.emotionalSkill, defense: d.emotionalDefense },
+        { label: 'PHYSICAL', attack: d.physicalAttack, skill: d.physicalSkill, defense: d.physicalDefense, attackId: 'physicalAttack', skillId: 'physicalSkill', defenseId: 'physicalDefense' },
+        { label: 'MENTAL',   attack: d.mentalAttack,   skill: d.mentalSkill,   defense: d.mentalDefense,   attackId: 'mentalAttack',   skillId: 'mentalSkill',   defenseId: 'mentalDefense' },
+        { label: 'EMOTIONAL',attack: d.emotionalAttack, skill: d.emotionalSkill, defense: d.emotionalDefense, attackId: 'emotionalAttack', skillId: 'emotionalSkill', defenseId: 'emotionalDefense' },
     ];
 }
 

@@ -5,9 +5,11 @@
 > plan ships well; this skill is how it *grows* well.
 >
 > **Posture-controlled.** Default is **bold** — the skill runs
-> on schedule and surfaces candidates. Set to **strict** in
-> `bearings.md` to make `/expand` a no-op (build plan grows only
-> via manual `/plan-a-phase` or `/oversight`).
+> on schedule and surfaces candidates. Set to **aggressive** for
+> looser thresholds + smell-driven candidates; **strict** to make
+> `/expand` a no-op; **autonomous** to skip the `/oversight` gate
+> entirely. All four read from `bearings.md` §"Plan expansion
+> posture".
 
 ## 1. Purpose
 
@@ -53,19 +55,38 @@ is not" path.
 - Mode: **bold** (default)
 ```
 
-Three settings:
+Four settings:
 
-- **bold** (default) — `/expand` runs at standard cadence
-  (rate-limited per §9). Candidates land in
-  `plan/PHASE_CANDIDATES.md`. `/oversight` promotes.
 - **strict** — `/expand` is a **no-op**. Print
   `"expand: strict posture — skipping"` and exit 0. The
   `/march` dispatcher skips the expand gate entirely.
+- **bold** (default) — `/expand` runs at standard cadence
+  (rate-limited per §9). Candidates land in
+  `plan/PHASE_CANDIDATES.md`. `/oversight` promotes. Signal
+  sources: §4 A–H. Score threshold ≥ 3.0. Cap 3 candidates/pass.
+- **aggressive** — `/expand` runs at a tighter cadence,
+  considers **smells** (§4 I) in addition to filed findings, and
+  files more candidates per pass. Same write target as bold
+  (`PHASE_CANDIDATES.md`); `/oversight` still promotes. Aggressive
+  changes only what `/expand` *proposes* — it does not bypass
+  oversight. Specifics:
+    - Score threshold lowered to **≥ 2.5**.
+    - Cap raised to **5 candidates/pass** (still capped — boldness
+      isn't flooding).
+    - Cascade-cadence gate (§ Step 0.5) releases at **≥ 8
+      commits** (down from 12).
+    - `/march` expand-gate (§9) releases at **≥ 12 commits** or
+      **≥ 24h** (down from 20 / 48h).
+    - "Smells" (§4 I) are accepted as primary signals — a smell
+      alone, with no AUDIT row backing it, may produce a
+      candidate. Signal-multiplicity bonus still applies when a
+      smell stacks with a filed finding.
 - **autonomous** — `/expand` writes candidates **directly to
   `plan/steps/01_build_plan.md`** as new pending phase rows.
   No `/oversight` review. Use only when the loop is deeply
   trusted and the spec is stable. **Document the choice in
-  `bearings.md` Hard Rules** so the user knows.
+  `bearings.md` Hard Rules** so the user knows. Autonomous
+  inherits all of aggressive's thresholds.
 
 If the bearings section is missing, default to **bold** and add
 the section in the same commit (`bearings: add expand posture
@@ -144,6 +165,63 @@ written:
 - Cross-cutting phases (polish, perf) sitting at the end with
   many sub-tasks accumulated — may warrant a split.
 
+### I. Smells (aggressive posture only)
+
+Soft, derived signals — patterns that suggest a problem without
+being formally filed. Read these only when posture is
+**aggressive** or **autonomous**. A smell with no corroborating
+finding can still produce a candidate at aggressive posture.
+
+Read in parallel where possible. Sources:
+
+- **Inline TODO / FIXME / HACK / XXX clusters.**
+  `grep -rEn "TODO|FIXME|HACK|XXX" app components state lib` —
+  3+ in one file, or 5+ across one folder, → propose a drain
+  phase named after the family. Each cluster cites the file
+  paths + line numbers.
+- **`as any` / `as unknown` cast clusters.**
+  `grep -rEn "as any|as unknown" state app components` — 5+ in
+  one file, or 10+ across a presenter-family, → propose a
+  typed-wrapper sweep (cf. Phase 69's setState wrapper drain).
+- **Hex-literal colour leakage** (project-specific via
+  `bearings.md`).
+  `grep -rEn "#[0-9a-fA-F]{6}" app components` — 5+ untouched
+  literals → propose a token-port phase. Cite the most-repeated
+  literal.
+- **Presenter / view-model bypass.** Bare `useState` in a
+  screen that has a presenter (violates `bearings.md` "Presenter
+  purity"). One occurrence is a fix; 3+ across screens is a
+  candidate.
+- **File-length outliers.** `wc -l` on `app/(tabs)/**/*.tsx`
+  and `components/**/*.tsx`. Files > ~600 lines or > 2× the
+  folder median → propose a sub-component extraction phase.
+  Don't recommend splitting code that's logically cohesive — a
+  long presenter map is fine; a long `tsx` with 4 unrelated
+  sections is not.
+- **Test:code ratio drops.** Compare test counts vs. source
+  counts per folder. Folder with high source LOC and ≤ 2 test
+  files → propose a coverage phase.
+- **Stale `[paused]` rows.** Build-plan phases marked `[paused]`
+  with no movement in > 14 days → propose either resuming or
+  formally retiring. Cite the row + last-touch date.
+- **Engine-bump cliffs.** `npm-mechanics` version bump landed
+  > 14 days ago without an integration phase consuming new
+  surfaces → propose a consumer phase. Cross-reference
+  `[needs-engine-release]` rows in AUDIT.md.
+- **Recent commit-shape regression.** 3+ commits in a row with
+  `fix:` prefix on the same surface — already in §G (commit
+  pattern), but smells widens this to "any 2+ retries within
+  the last 8 commits."
+- **Untouched routes / dead exports.** Routes in `app/` with no
+  imports in tests and no telemetry / nav references → propose
+  either wiring or deletion.
+
+When a smell becomes a candidate, the candidate body must list
+the *evidence* (file + line + count), not just the pattern name.
+The scorer should treat single-source smells more
+conservatively than multi-source clusters — single smells start
+at 2.5 unless they stack.
+
 ## 5. Scoring candidates
 
 Each candidate gets `expand_score` 0–10:
@@ -157,9 +235,13 @@ Each candidate gets `expand_score` 0–10:
 | Conflicts with `bearings.md` URL contract or non-goals | -3 |
 | Conflicts with `spec.md` non-goals (explicit "we don't do this") | -5 (drop unless score still > 3) |
 
-Top **3 candidates per pass** ship. Others get a one-line note
-under `## Considered (below threshold)` for the next pass to
-re-evaluate.
+Per-pass cap depends on posture:
+- **bold**: top **3 candidates** ship; threshold ≥ 3.0.
+- **aggressive / autonomous**: top **5 candidates** ship;
+  threshold ≥ 2.5. Smells (§4 I) count as primary signals.
+
+Others get a one-line note under `## Considered (below
+threshold)` for the next pass to re-evaluate.
 
 ## 6. The procedure
 
@@ -178,7 +260,8 @@ If this `/expand` invocation was a **cascade from `/iterate`** (the
 "no actionable iterate work" → `/expand` path in `iterate.md` §6
 failure mode 6), check the rate-limit window before proceeding:
 
-- Last expand pass was **< 12 commits ago**
+- Last expand pass was **< 12 commits ago** (bold posture) or
+  **< 8 commits ago** (aggressive / autonomous posture)
   → **exit 0 immediately with no commit**. Log to stdout:
   `expand: cascade-cadence gate (last pass <K> commits ago)
   — skip, no commit.`
@@ -242,8 +325,9 @@ For each top candidate, ask:
    candidate that requires schema migration of 100 records
    deserves to be phase-promoted but only by `/oversight`.
 
-After assessment, you should have **2–4 candidates**, not 3
-mechanically.
+After assessment, you should have **2–4 candidates** at bold
+posture, or **2–6 candidates** at aggressive / autonomous,
+not the cap mechanically.
 
 ### Step 4 — Write to `PHASE_CANDIDATES.md`
 
@@ -303,7 +387,8 @@ oversight will review and promote.
 ## 7. Hard rules
 
 1. **Never modify code.** Plan adjustments only.
-2. **Cap at 3 filed candidates per pass.** Boldness != flooding.
+2. **Cap at 3 filed candidates per pass (bold) / 5 per pass
+   (aggressive | autonomous).** Boldness != flooding.
 3. **Don't promote spec non-goals.** If spec.md says "no
    comments thread," don't propose a comments phase even if
    external signals demand it. Surface it as `[needs-user-call]`
@@ -337,10 +422,13 @@ oversight will review and promote.
 
 Conditions in `/march` Step (between critique and dispatch):
 
-1. Posture is **bold** or **autonomous** (not strict).
-2. Last expand pass was **at least 20 commits ago**, OR more
-   than **48 hours ago**, OR is "never" and at least 3 phases
-   have shipped.
+1. Posture is **bold**, **aggressive**, or **autonomous** (not
+   strict).
+2. Last expand pass was **at least 20 commits ago** (bold) or
+   **at least 12 commits ago** (aggressive / autonomous), OR
+   more than **48 hours ago** (bold) / **24 hours ago**
+   (aggressive / autonomous), OR is "never" and at least 3
+   phases have shipped.
 3. There's at least one signal worth examining
    (`pnpm` heuristic check: `wc -l plan/AUDIT.md` > some
    threshold, or `git log -p --since=...` shows spec/design
@@ -350,9 +438,10 @@ If all three: dispatch to `/expand`. If any fails: fall through
 to normal phase / data / iterate dispatch.
 
 `/iterate` also dispatches to `/expand` when its own audit
-produces no findings scoring ≥ 3.0 — instead of stopping per
-§6 of iterate, it writes "no actionable iterate work — handing
-to expand" and runs `/expand`.
+produces no findings scoring ≥ 3.0 (bold) or ≥ 2.5 (aggressive /
+autonomous) — instead of stopping per §6 of iterate, it writes
+"no actionable iterate work — handing to expand" and runs
+`/expand`.
 
 ## 10. Quick reference
 

@@ -196,12 +196,21 @@ Authoritative file: [`theme/axm.ts`](../theme/axm.ts).
 ## Plan expansion posture
 
 `/expand` reads accumulated signals (audit findings, critique
-findings, GH issues, spec drift, design landings, data growth)
-and proposes new phase candidates.
+findings, GH issues, spec drift, design landings, data growth,
+and — when posture is aggressive — code "smells") and proposes
+new phase candidates.
 
-- **Mode: bold** (default). `/expand` runs at standard cadence
-  and files candidates to `plan/PHASE_CANDIDATES.md`. `/oversight`
-  promotes them to the build plan.
+- **Mode: aggressive** (set via `/oversight` 2026-05-24, 37th
+  call). `/expand` runs at a tighter cadence (≥ 8-commit cascade
+  gate, ≥ 12-commit / 24h march gate), files up to 5 candidates
+  per pass at score ≥ 2.5, and accepts derived "smells"
+  (TODO/FIXME clusters, `as any` clusters, hex-literal leakage,
+  bare `useState` in presented screens, file-length outliers,
+  stale `[paused]` rows, engine-bump cliffs, etc.) as primary
+  signals — a smell alone, with no AUDIT row backing it, may
+  produce a candidate. `/oversight` still promotes; aggressive
+  changes only what `/expand` proposes, not what ships. See
+  `skills/expand.md` §3 + §4.I for the full definition.
 
 ## Decisions standing for the autonomous loop
 

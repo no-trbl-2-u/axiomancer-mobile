@@ -3,35 +3,25 @@
 > Latest findings from `/iterate audit`. Rewritten on each
 > audit pass. The Pending list at the bottom queues `/iterate`.
 
-> **Coordination directive (set via `/oversight` 2026-05-23,
-> 35th call):** a parallel Claude instance is editing the combat
-> modal surface — `app/(tabs)/combat.tsx`,
-> `components/event/EncounterModalOverlay.tsx`,
-> `state/presenters/combat.engine.ts`. /march MUST NOT promote
-> any of the three newly-unblocked PHASE_CANDIDATES candidates
-> ([5.5] narrative prose / [4.5] BEGIN AGAIN run-loop / [4.0]
-> codex card) until that WIP commits — all three mobile-side
-> consumers wire into the same surface. Bias next tick toward
-> **Phase 74 — Tap-tooltip primitive** (brief at
-> `plan/phases/phase_74_tap_tooltip_primitive.md`) which has
-> zero combat-modal overlap (Tick A only — primitive +
-> presenter + provider mount in `app/_layout.tsx`). Ticks B–E
-> stay deferred. Re-promote the engine-unblocked candidates
-> and Ticks B–E in a follow-up oversight call after parallel
-> Claude commits.
+> **Combat-modal-collision directive RESOLVED 2026-05-23 via
+> /oversight (36th call).** Parallel Claude shipped the combat
+> modal alignment (commit `02b75db`) and follow-up lockfile fix
+> (commit `a9c3959` via PR #153). The 4 engine-unblocked +
+> tooltip-Tick-B candidates have been promoted as Phases 75–78
+> (see `plan/steps/01_build_plan.md`). Phase 79 (skill / craft
+> functionality audit) added from a user observation in the same
+> call. Playtest directive (27th call) is no longer collision-
+> blocked — the next `/oversight` call should re-evaluate
+> firing it.
 >
-> Playtest directive carried forward from the 27th call: when
-> the user next invokes `/oversight`, schedule a live-drive
-> playtest tick — Claude uses the Playwright MCP workflow from
-> `setup/04_claude_playtest.md` to drive a full encounter
-> (exploration tap → modal mount → stance commit → action
-> commit → resolve → continue or exit) against the user's
-> running `pnpm web` instance. **The user wanted this
-> scheduled for an oversight call, not autonomously fired** —
-> so /march should NOT spontaneously launch a playtest tick in
-> the meantime. (Deferred this call to avoid the combat-modal
-> collision — playtest walks through the surface parallel
-> Claude is editing.)
+> **Bias: combat-modal-audit (set via /oversight 2026-05-23,
+> 36th call).** When the `[score 6.5]` combat-modal mechanics-
+> vs-UI audit ships (via `/iterate audit` or as a promoted phase),
+> its filed DRIFT rows get **1.5× weighting** in `/iterate`'s
+> scoring until the cluster drains. Phase 79 (skill / craft
+> audit) shares the surface and its findings count toward the
+> same cluster. Mirrors the prior event-surface (closed
+> 2026-05-16) + memoir-surface (closed 2026-05-23) bias pattern.
 
 > **Memoir-surface bias closed 2026-05-23 via /oversight (35th
 > call).** Original 4-MED cluster (set 2026-05-16) has largely

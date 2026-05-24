@@ -1547,13 +1547,82 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       presenter with stat content for HEART/BODY/MIND + root
       provider mount + withAllProviders extension). 1224/1224
       verify green (+28 from 1196). Brief at
-      `plan/phases/phase_74_tap_tooltip_primitive.md`.
-      Per-surface wiring (Ticks B–E: combat HUD / SELF /
-      inventory / memoir) ships as follow-up sub-phases once
-      their briefs land. Tick A scoped deliberately small to
-      avoid the combat-modal surface parallel Claude was
-      editing — that work has since shipped (commit `02b75db`)
-      so Ticks B–E are unblocked for the next /march cycle.
+      `plan/phases/phase_74_tap_tooltip_primitive.md`. Ticks
+      B–E promoted as separate phases via /oversight 2026-05-23
+      (36th call); Tick B → Phase 75 below.
+
+- [ ] Phase 75 — Combat HUD tap-tooltips (Phase 74 Tick B).
+      Promoted via /oversight 2026-05-23 (36th call). Wire
+      `<TapTooltip>` to combat HUD surfaces: buff/debuff icons
+      in HUD strips, stance ADV/DIS chips, skill picker rows.
+      Content sourced from engine
+      `effectsLibrary.lookupEffect(id).description` (read inside
+      `selectTooltipContentFor` `kind: 'effect'` branch — that
+      branch currently returns `null` per the Phase 74 brief's
+      Decision 5; this phase fills it in). Brief to be drafted
+      via `/plan-a-phase phase 75`. See
+      `plan/phases/phase_74_tap_tooltip_primitive.md` §6
+      Follow-ups for proposed scope.
+
+- [ ] Phase 76 — Engine narrative prose consumer (aftermath
+      panels). Promoted via /oversight 2026-05-23 (36th call)
+      from PHASE_CANDIDATES.md `[score 5.5]` row (engine 0.11.0
+      Phase 71 [ENGINE LANDED]). Drop the 3 `derive*Phrase`
+      placeholder helpers in
+      `state/presenters/aftermath.engine.ts`; presenter reads
+      per-foe `finalBlowLines` / `pactLines` / `causeLines`
+      from the engine snapshot directly. Retire placeholder
+      tests for per-tier variants; pin engine-sourced rendering.
+      Closes 3 Phase-70-follow-up rows (Tick A/B/C commit
+      bodies all flagged this gap). Brief to be drafted via
+      `/plan-a-phase phase 76`.
+
+- [ ] Phase 77 — BEGIN AGAIN run-loop consumer. Promoted via
+      /oversight 2026-05-23 (36th call) from PHASE_CANDIDATES.md
+      `[score 4.5]` row (engine 0.11.0 Phase 72 [ENGINE LANDED]).
+      Rewire `<CombatDefeatPanel>`'s BEGIN AGAIN button to
+      dispatch `store.resetRun({ keepCharacter: true })` (new
+      engine primitive). Drop the mobile band-aid in
+      `components/event/EncounterModalOverlay.tsx`'s
+      `onBeginAgain` callback (the `store.setState({ player:
+      { health: maxHealth } })` patch + `resetRunStats()` shim).
+      Run-stats counter folds into the engine reducer per the
+      engine's `RESET_RUN` action. Brief to be drafted via
+      `/plan-a-phase phase 77`.
+
+- [ ] Phase 78 — Codex / journal-entry consumer (friendship
+      panel). Promoted via /oversight 2026-05-23 (36th call)
+      from PHASE_CANDIDATES.md `[score 4.0]` row (engine 0.11.0
+      Phase 73 [ENGINE LANDED]). Wire
+      `<CombatFriendshipPanel>`'s long-dormant "A NEW ENTRY"
+      card to read engine's
+      `CombatEndReport.friendshipReward.codexEntryUnlocked`
+      (id + title; body recovered via `Enemy.journalEntry`
+      lookup at render time). Card mounts only when the unlock
+      is non-null (mirror of the Phase 69 `alignmentShift`
+      surfacing pattern). Optional Tick B: MEMOIR tab gets a
+      new section listing all unlocked codex entries from
+      `state.codex.unlockedEntries`. Brief to be drafted via
+      `/plan-a-phase phase 78`.
+
+- [ ] Phase 79 — Skill / craft functionality audit. Promoted
+      via /oversight 2026-05-23 (36th call) from user
+      observation: "Skills in the UI don't appear to have any
+      effect? Audit the skill's (or 'craft's') functionality."
+      Investigation phase. Reproduce in `pnpm web`; trace skill
+      selection (combat phase `craft`) through the engine's
+      `executeSkill` → `applyDamage`/`applyEffect` path; verify
+      the combat VM surfaces skill effects to `ResolvePanel`
+      + the combat log. Likely root-causes to check: (a) the
+      combat-modal rewrite (`02b75db`) changed the SkillPhase
+      shape — presenter may not be threading `executeSkill`
+      result to the resolve VM; (b) skill picker dispatching
+      wrong action shape after the rewrite; (c) the existing
+      `[2.0]` AUDIT row — `state/mocks/combat.skills.fixture.ts`
+      still mocks skills instead of reading engine selectors
+      (engine Spec 04 shipped but the mobile mock never
+      migrated). File fixes as sub-ticks per finding. Brief to
+      be drafted via `/plan-a-phase phase 79`.
 
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped
       2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —

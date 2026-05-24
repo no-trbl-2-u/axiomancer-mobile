@@ -491,7 +491,7 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#0a0807',
+        backgroundColor: AXM.silhouette,
         position: 'relative',
     },
     commitBtnGhost: {
@@ -572,7 +572,7 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#0a0807',
+        backgroundColor: AXM.silhouette,
         borderWidth: 2,
         borderColor: AXM.parchment,
     },

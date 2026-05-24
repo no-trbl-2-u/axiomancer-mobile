@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     beginAgain: {
         flex: 1.4,
         paddingVertical: 12,
-        backgroundColor: '#0a0807',
+        backgroundColor: AXM.silhouette,
         borderWidth: 2,
         borderColor: AXM.parchment,
         alignItems: 'center',

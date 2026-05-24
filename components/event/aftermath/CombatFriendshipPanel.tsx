@@ -161,7 +161,7 @@ function BookGlyph() {
         <Svg width={28} height={34} viewBox="0 0 28 34">
             <SvgPath
                 d="M4 3 L24 3 L24 31 L4 31 Z"
-                fill="#0a0807"
+                fill={AXM.silhouette}
                 stroke={AXM.rust}
                 strokeWidth="1.4"
             />
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
         marginTop: 14,
         borderWidth: 1,
         borderColor: AXM.ash,
-        backgroundColor: '#0a0807',
+        backgroundColor: AXM.silhouette,
     },
     rewardDivider: {
         width: 1,
@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
     spacer: { flex: 1, minHeight: 8 },
     partAsFriends: {
         paddingVertical: 12,
-        backgroundColor: '#0a0807',
+        backgroundColor: AXM.silhouette,
         borderWidth: 2,
         borderColor: AXM.rust,
         alignItems: 'center',

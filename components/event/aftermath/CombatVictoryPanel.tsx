@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
         marginTop: 16,
         borderWidth: 1,
         borderColor: AXM.ash,
-        backgroundColor: '#0a0807',
+        backgroundColor: AXM.silhouette,
     },
     rewardDivider: {
         width: 1,
@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
     spacer: { flex: 1, minHeight: 8 },
     carryOn: {
         paddingVertical: 12,
-        backgroundColor: '#0a0807',
+        backgroundColor: AXM.silhouette,
         borderWidth: 2,
         borderColor: AXM.parchment,
         alignItems: 'center',

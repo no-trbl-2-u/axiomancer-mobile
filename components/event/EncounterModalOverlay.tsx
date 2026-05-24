@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
         // (`prototype.jsx:574`). Slightly warmer than AXM.bg so
         // the panel reads as a sealed parchment leaf rather
         // than the same flat near-black as the page behind it.
-        backgroundColor: '#0a0807',
+        backgroundColor: AXM.silhouette,
         // Phase 72 — border bumped 1px → 2px to match the design
         // bundle's PtEncounterFlow (`prototype.jsx:574`)
         // `border: 2px solid $accent`. The color itself comes

@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
         padding: 8,
         borderWidth: 1,
         borderColor: AXM.parchment,
-        backgroundColor: '#0a0807',
+        backgroundColor: AXM.silhouette,
         alignSelf: 'center',
     },
 });

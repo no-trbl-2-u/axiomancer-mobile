@@ -1638,24 +1638,29 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       80a–80c are the actual work units. Dispatch in listed order
       (80a → 80c); 80a unblocks future modal-tooltip needs and
       should ship first. Closes when 80c ships clean.
-- [ ] Phase 80a — Tooltip overlay portal (mount tooltips inside
-      RN `<Modal>` surfaces). Source: Inventory walkthrough Tick 2
-      commit `cdee5aa` deferred modal stat-table wiring on
-      TooltipProvider limitation. Scope: sibling `<TooltipProvider>`
-      inside each `<Modal>` (Option A from candidate body) — simple
-      isolated fix, tap-outside-dismiss may need per-modal wiring.
-      Acceptance: tooltips fire on Inventory item-modal stat rows +
-      LevelUpModal stat allocation rows; existing non-modal tooltips
-      unaffected; verify gate green. See PHASE_CANDIDATES.md
-      `[score 5.5]` row for full scope + alternatives B/C.
-- [ ] Phase 80b — TooltipTarget consolidation — drop the inline
-      duplicate in `app/(tabs)/combat.tsx`. Pure refactor (~30
-      lines of duplication). Combat-modal-audit bias from the 36th
-      call closed in this oversight; surface is now stable for
-      consolidation. Acceptance: combat.tsx imports
-      `TooltipTarget` from `@/components/tooltip/TooltipTarget`;
-      local declaration block removed; combat suite green. See
-      PHASE_CANDIDATES.md `[score 5.0]` row.
+- [x] Phase 80a — Tooltip overlay portal (mount tooltips inside
+      RN `<Modal>` surfaces). Shipped this commit. Scope landed
+      smaller than the brief anticipated: only the inventory item
+      modal uses RN `<Modal>` (CorruptSaveModal too, but no tooltip
+      consumers); LevelUpModal + EncounterModalOverlay are inline
+      overlays already covered by the root `<TooltipProvider>`.
+      Fix: wrap the inventory `<Modal>` contents with a sibling
+      `<TooltipProvider>` (Option A from the brief — isolated
+      provider per modal so the overlay paints inside the modal's
+      view tree). Added `id?: string` to `StatDelta` carrying the
+      engine stat key (`physicalAttack`, `physicalDefense`,
+      `mentalAttack`, `emotionalDefense`); inventory modal wraps
+      each stat row with `<TooltipTarget kind="item-stat" id={d.id}>`
+      reusing the Inventory Tick 2 synthesizer. +2 tests pin the
+      shape + view wiring (engine-key contract + 4 testIDs).
+      1342/1342 verify green (+2 from 1340).
+- [x] Phase 80b — TooltipTarget consolidation — drop the inline
+      duplicate in `app/(tabs)/combat.tsx`. Shipped in commit
+      `0889a9e`. Pure refactor: removed ~40-line local
+      TooltipTarget interface + function, replaced with import
+      from `@/components/tooltip/TooltipTarget`; cleaned up unused
+      Pressable import. 1342/1342 verify green; no behavioural
+      change.
 - [ ] Phase 80c — SELF derived ATK/SKL/DEF table tooltips
       (Tick 5 — completes "all SELF numerics have tooltips"
       coverage). Reuses the `kind:'item-stat'` synthesizer shipped

@@ -821,8 +821,12 @@ function buildSkillPicker(
     stance: StanceKey,
     mana: number,
     manaMax: number,
+    equippedSkills?: readonly string[],
 ): SkillPickerSlice {
-    const skills: SkillOption[] = COMBAT_SKILLS.map((s) => {
+    const pool = equippedSkills
+        ? COMBAT_SKILLS.filter((s) => equippedSkills.includes(s.id))
+        : COMBAT_SKILLS;
+    const skills: SkillOption[] = pool.map((s) => {
         const wrongStance = s.stance !== stance;
         const tooExpensive = s.manaCost > mana;
         let disabledReason: SkillOption['disabledReason'] = null;
@@ -1141,7 +1145,13 @@ export function selectCombatViewModel(
     // "wrong-stance" gating; default to `'heart'` for that computation
     // only — the VM's stance/skill UIs are separate surfaces and the
     // picker is invisible until the player commits a stance anyway.
-    const skillPicker = buildSkillPicker(previewStance ?? 'heart', player.mana, player.manaMax);
+    const globalPlayer = state.player ?? {};
+    const equipped: readonly string[] = Array.isArray(globalPlayer.equippedSkills)
+        ? globalPlayer.equippedSkills
+        : Array.isArray(playerEntity.equippedSkills)
+            ? playerEntity.equippedSkills
+            : [];
+    const skillPicker = buildSkillPicker(previewStance ?? 'heart', player.mana, player.manaMax, equipped.length > 0 ? equipped : undefined);
 
     const phaseIndex: number = phase === 'ended' ? -1 : PHASE_ORDER.indexOf(phase);
     const friendshipCounter = Number(c.friendshipCounter ?? 0);

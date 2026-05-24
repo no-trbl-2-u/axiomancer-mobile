@@ -447,7 +447,22 @@ describe('selectCombatViewModel: skill picker', () => {
         const vm = selectCombatViewModel(store.getState(), { selectedStance: 'heart' });
         expect(vm.skillPicker.availableCount).toBeGreaterThanOrEqual(0);
         expect(vm.skillPicker.availableCount).toBeLessThanOrEqual(vm.skillPicker.totalCount);
-        expect(vm.skillPicker.totalCount).toBe(COMBAT_SKILLS.length);
+        expect(vm.skillPicker.totalCount).toBeLessThanOrEqual(COMBAT_SKILLS.length);
+        expect(vm.skillPicker.totalCount).toBeGreaterThan(0);
+    });
+
+    it('only shows skills the player has equipped (Phase 82a)', () => {
+        mockFixedRng(0.5);
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const equipped = COMBAT_SKILLS.slice(0, 3).map((s) => s.id);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        store.setState({ player: { ...store.getState().player, equippedSkills: equipped } } as any);
+        store.getState().startCombat(makeEnemy());
+        const vm = selectCombatViewModel(store.getState(), { selectedStance: 'heart' });
+        expect(vm.skillPicker.totalCount).toBe(equipped.length);
+        for (const s of vm.skillPicker.skills) {
+            expect(equipped).toContain(s.id);
+        }
     });
 });
 

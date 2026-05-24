@@ -4,13 +4,13 @@
 > audit pass. The Pending list at the bottom queues `/iterate`.
 
 > **Playtest directive FIRED 2026-05-24 via /oversight (37th
-> call).** The next `/march` tick should invoke `/critique`
-> (live-drive playtest against the running app) before the next
-> `/iterate` or `/ship-a-phase`. Walkthrough cluster closed
-> (4 surfaces ✅), tooltip work is paused on the Phase 80 cluster
-> below, and the loop has been bias-free since the combat-modal
-> bias closed — a fresh-eyes pass is the highest-signal next
-> action. After /critique fires once, remove this directive.
+> call; REAFFIRMED 38th call).** The next `/march` tick should
+> invoke `/critique` (live-drive playtest against the running
+> app) before the next `/iterate` or `/ship-a-phase`. The 38th
+> call promoted Phase 81 (engine reconciliation + cleanup) and
+> Phase 82 (skill picker follow-ups), but neither ships until
+> /critique fires first. After /critique fires once, remove
+> this directive.
 >
 > **Combat-modal-audit bias CLOSED 2026-05-24 via /oversight
 > (37th call).** Pass 40 noted "the bias has served its purpose;

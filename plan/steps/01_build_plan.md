@@ -1666,6 +1666,91 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       all 9 derived cells fire tooltips; verify gate green. See
       PHASE_CANDIDATES.md `[score 4.0]` row.
 
+- [parent] Phase 81 — Engine reconciliation + cleanup cluster.
+      Promoted via `/oversight` 2026-05-24 (38th call) from expand
+      pass 41's three candidates. Tracks the cluster; sub-phases
+      81a–81c are the actual work. Dispatch in listed order
+      (81a → 81c); 81a is the highest-impact unblock and has a
+      design-call gate between Tick A and Tick B. Closes when
+      81c ships clean.
+- [ ] Phase 81a — Engine MapDefinition reconciliation (resolves
+      AUDIT `[4.0]` + `[3.0]` `[needs-engine-release]` rows).
+      Engine 0.11.0 widened `fv-*.connectedNodes` to a branching
+      22+ node graph — wider than the mobile layout fixture's
+      10-node graph. Scope:
+      - Tick A — produce `docs/engine-map-reconciliation-2026-05-24.md`
+        diffing mobile fixture vs engine MapDefinition (which nodes,
+        which edges, which collide). Stop and `/oversight` for the
+        direction call.
+      - Tick B (after oversight) — either (a) extend mobile fixture
+        to match engine + ship OPEN-set migration
+        (`availableNodes` → `discoveredNodes`); or (b) drop the
+        mobile fixture and derive layout from engine `location` /
+        `connectedNodes` directly. Whichever direction lands also
+        ships the original AUDIT `[3.0]` exploration presenter
+        migration.
+      Acceptance: AUDIT `[4.0]` + `[3.0]` rows flip to ✅; engine
+      becomes the documented source of truth for fishing-village
+      connectivity; exploration suite green. See PHASE_CANDIDATES.md
+      `[score 7.0]` row.
+- [ ] Phase 81b — Hex-literal `'#0a0a0a'` + `'#06050a'` cluster
+      drain to AXM tokens. Smell-driven (no AUDIT row); third
+      such drain after `#100d0a` → `AXM.panelBg` and `#0a0807`
+      → `AXM.silhouette`. Scope:
+      - Add `AXM.cardBg = '#0a0a0a'` + `AXM.deepBg = '#06050a'`
+        (or rename per existing convention) to
+        `components/tokens.tsx`.
+      - Sweep all production hex-literal occurrences via grep +
+        Edit. Skip `components/ErrorBoundary.tsx:470` (pre-token
+        fallback for error boundary itself).
+      - Verify gate green; no behavioural change.
+      Acceptance: `grep -rE "'#0a0a0a'" app components` returns 0
+      production hits; AXM token export complete; verify gate
+      green. See PHASE_CANDIDATES.md `[score 5.0]` row.
+- [ ] Phase 81c — `app/(tabs)/combat.tsx` sub-component
+      extraction. Smell-driven; 1520-line file is 3.4× folder
+      median. Sequences **after** Phase 80b (TooltipTarget
+      consolidation) to avoid merge conflicts on the inline
+      TooltipTarget removal line. Scope:
+      - Tick A — extract `PhaseBottom` to
+        `components/combat/PhaseBottom.tsx` + styles.
+      - Tick B — extract stance-cards block to
+        `components/combat/StanceCard.tsx`.
+      - Tick C (optional) — extract `LogBox` / `AdvBadge` chrome.
+      Acceptance: combat.tsx under ~1000 lines; combat suite
+      green; no behavioural change. See PHASE_CANDIDATES.md
+      `[score 4.0]` row.
+
+- [parent] Phase 82 — Phase 79 audit follow-ups (skill picker +
+      per-resource enablement). Promoted via `/oversight`
+      2026-05-24 (38th call). Closes the two findings filed by
+      Phase 79 (`1053ef8`) that weren't shipped inline: (A) the
+      engine silently blocks every pick on `not-equipped` and
+      (B) mobile flat-sum `manaCost` diverges from engine
+      per-resource `canUseSkill`. Dispatch 82a → 82b.
+- [ ] Phase 82a — Skill picker filters by `player.equippedSkills`.
+      Resolves Phase 79 finding A. Without it, every non-equipped
+      pick costs the player a round. Scope: extend combat presenter
+      to derive `availableSkills` as the intersection of the
+      player's skill list and `player.equippedSkills`; picker
+      consumes the filtered list. Acceptance: only equipped skills
+      appear in the picker; Phase 79's `'blocked'` log entries
+      stop firing in normal play. See PHASE_CANDIDATES.md `[score
+      7.5]` row.
+- [ ] Phase 82b — Mobile skill enablement reads engine
+      `combatResources` per-type. Resolves Phase 79 finding B.
+      Mobile flat-sum `manaCost = body + mind + heart + fallacy +
+      paradox` diverges from engine `canUseSkill` which checks
+      each resource pool independently. Sequences after 82a so
+      the picker shows only equippable skills before adding the
+      per-resource gate. Scope: drop the `combatMana` flat slice
+      in favour of engine `combat.combatResources`; presenter
+      reads per-resource pools; picker enabled iff each per-type
+      cost ≤ corresponding resource. Acceptance: skills that the
+      engine would refuse on `insufficient-resources` are
+      visually disabled in the picker; flat-sum logic removed.
+      See PHASE_CANDIDATES.md `[score 6.5]` row.
+
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped
       2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —
       phase-aware top + bottom `SEALED` chain bars (`SEALED · AT

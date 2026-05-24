@@ -10,8 +10,13 @@
 
 ## Pending
 
-### [score 7.0] Engine MapDefinition reconciliation — `[needs-engine-release]` resolved by 0.11.0
+### [score 7.0] Engine MapDefinition reconciliation — `[needs-engine-release]` resolved by 0.11.0 [PROMOTED → Phase 81a via /oversight 38th call]
 
+- promoted: 2026-05-24 via `/oversight` (38th call) as **Phase 81a**
+  (engine-+-cleanup cluster parent Phase 81). Tick A diffs mobile
+  fixture vs engine; tick B follows after a /oversight design call
+  on direction (mobile widens to match engine, or engine becomes
+  the layout source).
 - proposed: 2026-05-24, expand pass 41 (first aggressive-posture pass)
 - source signals:
   - **AUDIT `[4.0]` + `[3.0]` `[needs-engine-release]` rows**
@@ -57,8 +62,9 @@
 - estimated phases: 1 (with /oversight gate between Tick A and
   Tick B).
 
-### [score 5.0] Hex-literal `'#0a0a0a'` + `'#06050a'` cluster drain — extend AXM token coverage
+### [score 5.0] Hex-literal `'#0a0a0a'` + `'#06050a'` cluster drain — extend AXM token coverage [PROMOTED → Phase 81b via /oversight 38th call]
 
+- promoted: 2026-05-24 via `/oversight` (38th call) as **Phase 81b**.
 - proposed: 2026-05-24, expand pass 41 (smell §4 I)
 - source signals:
   - **Smell §4 I — hex-literal colour leakage.** `grep -rE
@@ -105,8 +111,11 @@
   is a single literal → token swap.
 - estimated phases: 1.
 
-### [score 4.0] `app/(tabs)/combat.tsx` file-length outlier — sub-component extraction
+### [score 4.0] `app/(tabs)/combat.tsx` file-length outlier — sub-component extraction [PROMOTED → Phase 81c via /oversight 38th call]
 
+- promoted: 2026-05-24 via `/oversight` (38th call) as **Phase 81c**.
+  Sequences after Phase 80b (TooltipTarget consolidation) to avoid
+  merge conflicts.
 - proposed: 2026-05-24, expand pass 41 (smell §4 I — single
   source, baseline 2.5 + cheap +2 - uncertain scope -0.5)
 - source signals:
@@ -347,8 +356,12 @@
 - conflicts: none. Combat-modal-audit bias (36th /oversight
   directive) doesn't apply — these are non-combat surfaces.
 
-### [score 7.5] Phase 79a — Skill picker filters by `player.equippedSkills`
+### [score 7.5] Phase 79a — Skill picker filters by `player.equippedSkills` [PROMOTED → Phase 82a via /oversight 38th call]
 
+- promoted: 2026-05-24 via `/oversight` (38th call) as **Phase 82a**
+  (skill / mana reconciliation cluster parent Phase 82). The number
+  is held to keep Phase 79's filing label visible; Phase 82 wraps
+  the actual ship work.
 - proposed: 2026-05-24, Phase 79 audit
 - source signals:
   - **Phase 79 audit finding A** — engine silently blocks every
@@ -370,8 +383,11 @@
     surface (Phase 79c candidate, post-79a).
 - conflicts: none.
 
-### [score 6.5] Phase 79b — Mobile skill enablement reads engine `combatResources` per-type
+### [score 6.5] Phase 79b — Mobile skill enablement reads engine `combatResources` per-type [PROMOTED → Phase 82b via /oversight 38th call]
 
+- promoted: 2026-05-24 via `/oversight` (38th call) as **Phase 82b**.
+  Sequences after 82a (equippedSkills filter) so picker shows only
+  equippable skills before adding the per-resource gate.
 - proposed: 2026-05-24, Phase 79 audit
 - source signals:
   - **Phase 79 audit finding B** — mobile `manaCost = body +

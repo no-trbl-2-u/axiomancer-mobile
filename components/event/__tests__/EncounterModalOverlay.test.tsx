@@ -631,7 +631,6 @@ describe('EncounterModalOverlay: combat → aftermath swap (defeat)', () => {
                         remainingDuration: 2,
                         appliedAt: 1,
                         tier: 1,
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     } as any,
                 ],
             },

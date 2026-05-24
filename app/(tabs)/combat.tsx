@@ -25,7 +25,6 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    Pressable,
     ScrollView,
     StyleSheet,
     Text,
@@ -65,7 +64,7 @@ import { DifficultyBadge } from '@/components/DifficultyBadge';
 import { ActionIcon } from '@/components/ActionIcon';
 import { Splatter } from '@/components/Splatter';
 import { useTooltip } from '@/hooks/useTooltip';
-import type { TooltipKind } from '@/state/presenters/tooltip.engine';
+import { TooltipTarget } from '@/components/tooltip/TooltipTarget';
 
 // ---------------------------------------------------------------------------
 // Local UI state (Q2: stance preview lives here until the user commits)
@@ -87,49 +86,6 @@ const LOG_SEVERITY_COLOR: Record<CombatLogEntryDisplay['severity'], string> = {
     friendship: AXM.rust,
     system: AXM.bone,
 };
-
-// ---------------------------------------------------------------------------
-// Tap-tooltip wrapper (Phase 75) — additive tap target around any
-// HUD element that should explain itself on tap. Renders a Pressable
-// that holds its own measure ref and forwards `show({ kind, id })`
-// on tap. Empty `id` short-circuits — useful for fixture-built
-// effects that have no engine id.
-// ---------------------------------------------------------------------------
-interface TooltipTargetProps {
-    kind: TooltipKind;
-    id: string;
-    children: React.ReactNode;
-    accessibilityLabel?: string;
-    accessibilityHint?: string;
-    testID?: string;
-}
-
-function TooltipTarget({
-    kind,
-    id,
-    children,
-    accessibilityLabel,
-    accessibilityHint,
-    testID,
-}: TooltipTargetProps) {
-    const tooltip = useTooltip();
-    const ref = useRef<View | null>(null);
-    return (
-        <Pressable
-            ref={ref}
-            onPress={() => {
-                if (!id) return;
-                tooltip.show({ kind, id, anchorRef: ref });
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={accessibilityLabel}
-            accessibilityHint={accessibilityHint}
-            testID={testID}
-        >
-            {children}
-        </Pressable>
-    );
-}
 
 // ---------------------------------------------------------------------------
 // Screen

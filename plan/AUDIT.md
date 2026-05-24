@@ -54,19 +54,16 @@
 
 ## Top 5 findings (scored) — 2026-05-13 (stale; archived below)
 
-### [3.8] Drain 8 lint warnings (unused imports + stale eslint-disable) — picked
+### [3.8] Drain 8 lint warnings (unused imports + stale eslint-disable) ✅ (drained over multiple ticks, last drained `<this-tick>`)
 
 - issue: #11
 - category: tests (quality / verify-gate noise)
-- impact: 4 (warnings are non-fatal but mask real signal; the
-  audit log explicitly tracks the count "7 pre-existing" → now
-  8, and unchecked warnings drift upward)
-- ease: 9.5 (every warning is an import-list trim or a one-line
-  delete; mechanical, no behaviour change)
-- next: edit `app/(tabs)/character/index.tsx`,
-  `app/(tabs)/event.tsx`, `app/_layout.tsx`,
-  `components/ActionIcon.tsx`, `components/BodyDiagram.tsx`,
-  `components/NodeMark.tsx`; run `npm run verify`; commit
+- Resolved 2026-05-24. The 8-warning backlog drained
+  progressively through subsequent lint sweeps (combat-modal
+  cleanup `24e3ec4`, others). Final lone warning — an
+  unused `eslint-disable-next-line @typescript-eslint/no-explicit-any`
+  introduced by the Phase 77 BEGIN-AGAIN test `7ce2e44` —
+  removed this tick. `pnpm lint` now reports 0 problems.
 
 ### [3.0] Migrate `Consumable.effectId` from string parsing to structured `healAmount: number` ✅
 

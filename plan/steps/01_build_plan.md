@@ -1594,20 +1594,23 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       1245/1245 verify green (+1). Brief at
       `plan/phases/phase_77_begin_again_run_loop.md`.
 
-- [ ] Phase 78 — Codex / journal-entry consumer (friendship
-      panel). Promoted via /oversight 2026-05-23 (36th call)
-      from PHASE_CANDIDATES.md `[score 4.0]` row (engine 0.11.0
-      Phase 73 [ENGINE LANDED]). Wire
-      `<CombatFriendshipPanel>`'s long-dormant "A NEW ENTRY"
-      card to read engine's
-      `CombatEndReport.friendshipReward.codexEntryUnlocked`
-      (id + title; body recovered via `Enemy.journalEntry`
-      lookup at render time). Card mounts only when the unlock
-      is non-null (mirror of the Phase 69 `alignmentShift`
-      surfacing pattern). Optional Tick B: MEMOIR tab gets a
-      new section listing all unlocked codex entries from
-      `state.codex.unlockedEntries`. Brief to be drafted via
-      `/plan-a-phase phase 78`.
+- [x] Phase 78 — Codex / journal-entry consumer (friendship
+      panel). Shipped 2026-05-24 in commit `2cd8d53`.
+      `actions.endCombat` widens to return the engine
+      `CombatEndReport` (was void). Parley snapshot in
+      `app/(tabs)/combat.tsx` reads
+      `report.friendshipReward.codexEntryUnlocked` + the live
+      `combat.enemy.journalEntry.body` to populate the
+      `AftermathData.journalEntry` field; `<CombatFriendshipPanel>`'s
+      long-dormant "A NEW ENTRY" card renders unchanged when
+      populated. Engine's `state.codex.unlockedEntries`
+      dedupe is the only gate — repeat friendships with the
+      same foe collapse the section silently. New
+      `derivePreview` helper truncates engine body to
+      first-sentence ≤120-char fragment. Optional Tick B
+      (MEMOIR tab list of unlocked entries) deferred per brief
+      §6 Follow-ups. 1255/1255 verify green (+10 from 1245).
+      Brief at `plan/phases/phase_78_codex_unlock_consumer.md`.
 
 - [ ] Phase 79 — Skill / craft functionality audit. Promoted
       via /oversight 2026-05-23 (36th call) from user

@@ -73,6 +73,26 @@
 - suggested_fix: [user has not specified — iterate to determine]
 - source: user
 
+### [MED] /combat — Tighten Phase 75 tooltip content (name + stat effect, colour-coded)
+- pass: user-jot (commit `6415787`)
+- viewport: unspecified
+- auth_state: anonymous
+- category: visual
+- observation: For the combat HUD tap-tooltips, make sure the explanation is concise (name, and stat effect. No description, no explanation. Just Name, and the effect it has on the stats. Try to color coordinate both the effect and the tooltip to which stat it effects
+- evidence: user-spotted at 2026-05-24T03:55:00Z (follow-up to Phase 75 ship `de3bb7b`)
+- suggested_fix: [user has not specified — iterate to determine. Likely: drop engine `description` body, derive a short payload-formatted line (e.g. `+1 physical attack · 2 rnd`) from `Effect.payload.statModifiers`/`damageOverTime`/`regeneration`; tint the tooltip border/title to the affected stat colour (heart=blood, body=parchment-on-iron, mind=sulfur, neutral=ash). Touches `selectTooltipContentFor('effect')` + a new payload-summary helper + `TapTooltip` accent-prop wiring.]
+- source: user
+
+### [MED] general — Tooltip walkthrough across non-combat surfaces (inventory, SELF, exploration, memoir)
+- pass: user-jot (commit `6415787`)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: Make sure to add tooltips to other things, outside of combat as well. Do a walkthrough and see if there are any icons that don't have explanations for them.
+- evidence: user-spotted at 2026-05-24T03:55:00Z (follow-up to Phase 75 ship `de3bb7b`)
+- suggested_fix: [user has not specified — iterate to determine. The Phase 74 brief already lists Ticks C-E covering this: Tick C = SELF (stats/derived/alignment/affliction/blessing), Tick D = inventory (slot labels/item stats/burden), Tick E = memoir (chronicle entries/quest objectives). Promote Ticks C-E to standalone phases via /oversight; do a walkthrough pass to catch icons not covered by the Tick C-E enumeration (exploration map glyphs, codex toggle, friendship meter, mind-mark counter, etc.).]
+- source: user
+
 ## Done
 
 ### [MED] general — Tap-tooltip phase ✅ (PROMOTED → PHASE_CANDIDATES.md candidate)

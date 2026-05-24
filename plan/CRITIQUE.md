@@ -63,16 +63,6 @@
 - suggested_fix: [waiting on design — the prompt file `design/levelup-modal-prompt.txt` landed 2026-05-22 specifying both surfaces (SELF-header `ASCEND` strip + full-screen LevelUpModal). User confirmed via /oversight 2026-05-22 (32nd call) that the design is in progress at <https://claude.ai/design/p/019e0f5a-a0f0-753b-be1e-8939e6011384>. The actual handoff bundle hasn't been generated yet — the 2026-05-22 bundle at `design/handoff-2026-05-22/` covers aftermath modals only. Once the levelup bundle lands (likely `design/handoff-<date>/project/screens/levelup.jsx`), this row promotes to its own phase. Until then it stays Pending so the next /oversight sees it.]
 - source: user
 
-### [MED] /self — Level Up button gating + stat-allocation lifecycle
-- pass: user-jot (commit `b96ea05`)
-- viewport: unspecified
-- auth_state: anonymous
-- category: observation
-- observation: Once a player has enough experience, the level up button should be available to press and trigger a "level up". Once they level up, drain the experience and show the stat allocation button. Once the player has no available stats to apply, remove the stat allocation button
-- evidence: user-spotted at 2026-05-24T03:50:03Z
-- suggested_fix: [user has not specified — iterate to determine]
-- source: user
-
 ### [MED] general — Tooltip walkthrough across non-combat surfaces (inventory, SELF, exploration, memoir)
 - pass: user-jot (commit `6415787`)
 - viewport: unspecified
@@ -84,6 +74,17 @@
 - source: user
 
 ## Done
+
+### [MED] /self — Level Up button gating + stat-allocation lifecycle ✅
+- pass: user-jot (commit `b96ea05`); addressed at commit `<this-tick>` via /iterate.
+- issue: #161
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: Once a player has enough experience, the level up button should be available to press and trigger a "level up". Once they level up, drain the experience and show the stat allocation button. Once the player has no available stats to apply, remove the stat allocation button
+- evidence: user-spotted at 2026-05-24T03:50:03Z
+- resolution: Wired the full level-up lifecycle. CharacterViewModel gains `levelUpReady: boolean` (`experience >= experienceToNextLevel`). New `actions.levelUp()` wrapper forwards to the engine `levelUp` action. New `<LevelReadyStrip>` component (sibling to AscendStrip — same sulfur-banded chrome, "✠ ASCEND READY" copy, chevron-up glyph instead of lock-seal) mounts on the SELF screen when `levelUpReady && pendingPoints === 0`; tap dispatches `actions.levelUp()`, engine drains XP into pending stat points, AscendStrip takes over next render. AscendStrip auto-dismisses when `pendingPoints === 0` (existing Phase 73 behaviour — completes the cycle). 8 new pins (4 presenter + 4 component); 1293/1293 verify green.
+- source: user
 
 ### [MED] /combat — Tighten Phase 75 tooltip content (name + stat effect, colour-coded) ✅
 - pass: user-jot (commit `6415787`); addressed at commit `<this-tick>` via /iterate.

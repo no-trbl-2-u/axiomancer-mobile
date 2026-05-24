@@ -1578,18 +1578,21 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       verify green (+10 from 1234). Brief at
       `plan/phases/phase_76_engine_narrative_prose.md`.
 
-- [ ] Phase 77 — BEGIN AGAIN run-loop consumer. Promoted via
-      /oversight 2026-05-23 (36th call) from PHASE_CANDIDATES.md
-      `[score 4.5]` row (engine 0.11.0 Phase 72 [ENGINE LANDED]).
-      Rewire `<CombatDefeatPanel>`'s BEGIN AGAIN button to
-      dispatch `store.resetRun({ keepCharacter: true })` (new
-      engine primitive). Drop the mobile band-aid in
-      `components/event/EncounterModalOverlay.tsx`'s
-      `onBeginAgain` callback (the `store.setState({ player:
-      { health: maxHealth } })` patch + `resetRunStats()` shim).
-      Run-stats counter folds into the engine reducer per the
-      engine's `RESET_RUN` action. Brief to be drafted via
-      `/plan-a-phase phase 77`.
+- [x] Phase 77 — BEGIN AGAIN run-loop consumer. Shipped
+      2026-05-24 in commit `7ce2e44`. `EncounterModalOverlay
+      .handleBeginAgain` now dispatches `actions.resetRun({
+      keepCharacter: true })` (new wrapper in `state/actions.ts`
+      forwarding to engine GameStore `resetRun` primitive,
+      Phase 72 [ENGINE LANDED]). Atomic engine reset: new
+      `runId`, full-heal, clears effects, regenerates world/
+      quests/flags. Drops the Phase 70 Tick C raw
+      `store.setState({ player: { health: maxHealth }})`
+      band-aid. Mobile-only `resetRunStats()` stays alongside —
+      `encountersFaced` / `deepestNodeId` live on combat-mode
+      provider (engine doesn't track yet). New hermetic pin
+      asserts runId rotates + health refills + effects clear.
+      1245/1245 verify green (+1). Brief at
+      `plan/phases/phase_77_begin_again_run_loop.md`.
 
 - [ ] Phase 78 — Codex / journal-entry consumer (friendship
       panel). Promoted via /oversight 2026-05-23 (36th call)

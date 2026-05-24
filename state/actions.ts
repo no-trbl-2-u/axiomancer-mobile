@@ -378,7 +378,14 @@ interface ResolutionSummary {
     message: string;
 }
 
-function summarizeRoundEvents(
+/**
+ * Phase 79 — exported for hermetic testing. The combat
+ * presenter calls this helper internally; the export lets
+ * `state/e2e/combat.skill-events.engine.test.ts` exercise
+ * each skill-event kind with a synthetic event array
+ * without spinning up the full engine resolver.
+ */
+export function summarizeRoundEvents(
     events: readonly RoundEvent[],
     playerStance: Stance,
     enemyStance: Stance,
@@ -447,7 +454,67 @@ function summarizeRoundEvents(
                 text: `Skill bites — ${ev.amount} damage.`,
             });
             crit = true;
+        } else if (ev.phase === 'skill' && ev.kind === 'heal') {
+            const who = ev.target === 'self' ? 'You' : 'Foe';
+            logLines.push({
+                severity: 'heal',
+                text: `Skill mends — ${who.toLowerCase()} recover ${ev.amount}.`,
+            });
+        } else if (ev.phase === 'skill' && ev.kind === 'effect-applied') {
+            const effectName = ev.effect.name ?? ev.effect.id ?? 'effect';
+            const target = ev.appliedTo === 'self' ? 'you' : 'foe';
+            logLines.push({
+                severity: 'effect',
+                text: `Skill binds — ${effectName} on ${target}.`,
+            });
+        } else if (ev.phase === 'skill' && ev.kind === 'effect-resisted') {
+            const effectName = ev.effect.name ?? ev.effect.id ?? 'effect';
+            const target = ev.appliedTo === 'self' ? 'You' : 'Foe';
+            logLines.push({
+                severity: 'effect',
+                text: `Skill falters — ${target} resists ${effectName}.`,
+            });
+        } else if (ev.phase === 'skill' && ev.kind === 'effect-rebounded') {
+            const effectName = ev.effect.name ?? ev.effect.id ?? 'effect';
+            logLines.push({
+                severity: 'effect',
+                text: `Skill rebounds — ${effectName} falls back on you.`,
+            });
+        } else if (ev.phase === 'skill' && ev.kind === 'buff-stripped') {
+            const effectName = ev.effect?.name ?? 'a buff';
+            const target = ev.target === 'self' ? 'You' : 'Foe';
+            logLines.push({
+                severity: 'effect',
+                text: `Skill scours — ${target} loses ${effectName}.`,
+            });
+        } else if (ev.phase === 'skill' && ev.kind === 'buff-converted') {
+            logLines.push({
+                severity: 'effect',
+                text: ev.message,
+            });
+        } else if (ev.phase === 'skill' && ev.kind === 'synergy-fired') {
+            damageDealtToEnemy += Math.max(0, ev.bonusDamage);
+            logLines.push({
+                severity: 'crit',
+                text: `Skill resonates — +${ev.bonusDamage} damage from synergy.`,
+            });
+            crit = true;
+        } else if (ev.phase === 'skill' && ev.kind === 'blocked') {
+            // Phase 79 fix — surface the engine's silent block to the
+            // player. Without this, A skill failing leaves the user
+            // staring at "nothing happened" with no diagnostic.
+            const reasonProse =
+                ev.reason === 'unknown-skill' ? 'the skill is not in your repertoire.'
+                : ev.reason === 'not-equipped' ? 'you have not equipped that skill.'
+                : 'you lack the resources to cast it.';
+            logLines.push({
+                severity: 'system',
+                text: `Skill fails — ${reasonProse}`,
+            });
         }
+        // Intentionally suppressed (presenter-noise, no player-visible
+        // affordance yet): phase:'skill' kinds 'resources-spent',
+        // 'philosophical-generated'.
     }
 
     let outcome: ResolutionSummary['outcome'] = 'miss';

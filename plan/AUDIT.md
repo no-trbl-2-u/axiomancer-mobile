@@ -90,16 +90,14 @@
   `[needs-user-call]` Phase 6 row below)
 - next: defer — same blocker as Phase 6
 
-### [2.0] `state/mocks/combat.skills.fixture.ts` still mocks skills (engine Spec 04)
+### [2.0] `state/mocks/combat.skills.fixture.ts` still mocks skills (engine Spec 04) ✅ (STALE — closed under Phase 79)
 
 - category: refactor / data
-- impact: 5 (combat surface reads mocked skills; engine Spec 04
-  shipped but the mobile mock was never migrated to engine
-  selectors — drift risk)
-- ease: 4 (need to wire engine skill selectors into the combat
-  presenter and delete the fixture)
-- next: future tick — sized like a small refactor, not a
-  one-tick fix
+- Resolved 2026-05-24 during Phase 79 audit. The fixture file
+  was deleted in Phase 16 when the engine `skillLibrary`
+  adapter (`state/selectors/combat-skills.ts`) shipped; the
+  AUDIT row was stale. Verified by `grep` — no remaining
+  references to `combat.skills.fixture.ts` in the tree.
 
 ### [needs-user-call] Phase 6 (Spec 08 — Event screen wiring) — RESOLVED ✅
 

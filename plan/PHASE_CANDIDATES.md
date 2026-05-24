@@ -9,6 +9,55 @@
 
 ## Pending
 
+### [score 7.5] Phase 79a — Skill picker filters by `player.equippedSkills`
+
+- proposed: 2026-05-24, Phase 79 audit
+- source signals:
+  - **Phase 79 audit finding A** — engine silently blocks every
+    pick because the player has no equipped skills (`scenario.js:
+    38` emits `kind: 'blocked', reason: 'not-equipped'`). The
+    Phase 79 fix surfaces the block to the user, but the bug
+    itself remains until the picker filters out skills the
+    engine will refuse.
+- rationale: high-impact single-tick fix. Without it, every
+  non-equipped pick costs the player a round of combat. With
+  the Phase 79 block-event logging now live, the bug is
+  observable and the fix is straightforward.
+- proposed scope: 1 phase, 1 tick.
+  - Filter `COMBAT_SKILLS` in `state/selectors/combat-skills.ts`
+    by `player.equippedSkills` membership. Presenter consumes
+    the filtered list. Empty-state copy when nothing's equipped:
+    "no skills equipped — visit the skill book."
+  - Out of scope: equip-management UI. That's a separate
+    surface (Phase 79c candidate, post-79a).
+- conflicts: none.
+
+### [score 6.5] Phase 79b — Mobile skill enablement reads engine `combatResources` per-type
+
+- proposed: 2026-05-24, Phase 79 audit
+- source signals:
+  - **Phase 79 audit finding B** — mobile `manaCost = body +
+    mind + heart + fallacy + paradox` is a flat sum; engine
+    `canUseSkill` checks per-resource pools. Picker shows skills
+    as castable that the engine refuses on
+    `insufficient-resources`.
+- rationale: aligns the mobile resource model with the engine.
+  Today the `combatMana` slice is a flat number the presenter
+  reads; engine reads `combat.combatResources: { body, mind,
+  heart, fallacy, paradox }`. The mobile presenter should
+  consume the engine slice directly.
+- proposed scope: 1 phase, 1 tick.
+  - Replace `vm.player.mana` flat read with per-resource read
+    from `combat.combatResources`.
+  - Replace `s.manaCost ≤ mana` enablement check with
+    per-resource availability check matching engine
+    `canUseSkill`.
+  - Show per-resource cost breakdown on the picker row instead
+    of the flat sum.
+  - Drop `combatMana` mobile slice once nothing reads it.
+- conflicts: should land after Phase 79a so the picker shows
+  only equippable skills first.
+
 ### [score 6.5] Mechanics-vs-UI audit on the 2026-05-23 combat-modal rewrite
 
 - proposed: 2026-05-23, expand pass 38

@@ -247,6 +247,16 @@ export interface AppActions {
      * without round-tripping through the store selector.
      */
     allocateStatPoint: (stat: 'heart' | 'body' | 'mind') => number;
+    /**
+     * Phase 77 — engine run-reset (`RESET_RUN` action). Atomic:
+     * regenerates `runId`, full-heals the player, clears active
+     * effects, regenerates world / quests / flags. With
+     * `keepCharacter: true` the player slice survives the reset
+     * (only health + effects refresh); with `keepCharacter: false`
+     * a brand-new game state is built. Wraps the engine GameStore
+     * method exposed on `GameStore = GameState & GameActions`.
+     */
+    resetRun: (opts: { keepCharacter: boolean }) => void;
     save: () => void;
     /**
      * Run `resolveMapEvent(state)` on the current node, cache the
@@ -680,6 +690,17 @@ export function createAppActions(store: AppStore): AppActions {
             };
             engineStore.allocateStatPoint?.(stat);
             return store.getState().player?.availableStatPoints ?? 0;
+        },
+        resetRun: (opts) => {
+            // Phase 77 — engine `resetRun` (Phase 72 [ENGINE LANDED]).
+            // Same cast pattern as `allocateStatPoint`: the method is
+            // attached to the zustand store directly, not the engine
+            // selectors. Return value (the fresh GameState) is unused
+            // here — the store already reflects the new state.
+            const engineStore = store.getState() as unknown as {
+                resetRun?: (o: { keepCharacter: boolean }) => unknown;
+            };
+            engineStore.resetRun?.(opts);
         },
         save: () => store.getState().save(),
         resolveCurrentMapEvent: () => resolveCurrentMapEventAction(store),

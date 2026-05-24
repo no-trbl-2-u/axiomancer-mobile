@@ -47,7 +47,7 @@ import { ActionIcon } from '@/components/ActionIcon';
 import { AXM, FONTS } from '@/theme/axm';
 import { useAesthetic } from '@/state/aesthetic-mode';
 import { useCombatMode } from '@/state/combat-mode';
-import { useGameState, useGameStore } from '@/state/GameStoreProvider';
+import { useGameActions, useGameState } from '@/state/GameStoreProvider';
 import { selectAftermathViewModel } from '@/state/presenters/aftermath.engine';
 import {
     selectEncounterSealChrome,
@@ -115,24 +115,20 @@ export function EncounterModalOverlay({
         }
     }, [mode, lastOutcome, aftermathData]);
 
-    // Phase 70 Tick C — BEGIN AGAIN restarts the run. Full-heal the
-    // player + reset the run-stats counters + dismiss. Engine-level
-    // "new game" / fresh-seed restart is a follow-up; this is the
-    // minimum meaningful "start over" hook.
-    const store = useGameStore();
+    // Phase 77 — BEGIN AGAIN dispatches the engine's `resetRun({
+    // keepCharacter: true })` primitive (Phase 72 [ENGINE LANDED]):
+    // atomically regenerates `runId`, full-heals the player, clears
+    // active effects, regenerates world / quests / flags. The
+    // mobile-only `resetRunStats()` shim still runs alongside —
+    // `encountersFaced` / `deepestNodeId` live on the combat-mode
+    // provider (engine doesn't track run-level counters yet).
+    // `dismissAftermath()` tears down the modal session.
+    const actions = useGameActions();
     const handleBeginAgain = useCallback(() => {
-        const state = store.getState();
-        if (state.player !== undefined) {
-            store.setState({
-                player: {
-                    ...state.player,
-                    health: state.player.maxHealth,
-                } as never,
-            });
-        }
+        actions.resetRun({ keepCharacter: true });
         resetRunStats();
         dismissAftermath();
-    }, [store, resetRunStats, dismissAftermath]);
+    }, [actions, resetRunStats, dismissAftermath]);
 
     const aftermathVm = selectAftermathViewModel(aftermathData);
 

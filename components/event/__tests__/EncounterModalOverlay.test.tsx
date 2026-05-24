@@ -610,6 +610,80 @@ describe('EncounterModalOverlay: combat → aftermath swap (defeat)', () => {
         fireEvent.press(tree.getByTestId('combat-defeat-panel-begin-again'));
         expect(tree.queryByTestId('combat-defeat-panel')).toBeNull();
     });
+
+    // Phase 77 — BEGIN AGAIN now dispatches the engine's resetRun
+    // primitive instead of patching player.health directly. Assert
+    // the post-state reflects an actual engine reset (new runId,
+    // full health, cleared effects).
+    it('BEGIN AGAIN dispatches engine resetRun (new runId, full health, cleared effects)', () => {
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        // Seed a dirty player state so the engine reset has something
+        // to actually clear: half health + a synthetic active effect.
+        const initial = store.getState();
+        store.setState({
+            player: {
+                ...initial.player,
+                health: Math.max(1, Math.floor(initial.player.maxHealth / 2)),
+                effects: [
+                    {
+                        effectId: 'tier1_body_attack',
+                        intensity: 1,
+                        remainingDuration: 2,
+                        appliedAt: 1,
+                        tier: 1,
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    } as any,
+                ],
+            },
+        });
+        const beforeRunId = store.getState().runId;
+        const fullHealth = store.getState().player.maxHealth;
+        expect(store.getState().player.health).toBeLessThan(fullHealth);
+        expect(store.getState().player.effects).toHaveLength(1);
+
+        function DefeatTrigger() {
+            const { exitCombatWith } = useCombatMode();
+            React.useEffect(() => {
+                exitCombatWith('defeat', {
+                    variant: 'defeat',
+                    enemy: {
+                        name: 'Hierophant',
+                        description: 'A figure long since gnawed.',
+                        level: 7,
+                    },
+                    characterName: 'Worm-Eaten Pilgrim',
+                    finalBlow: { skillName: 'AXE-FALL', damage: 28, descriptor: 'cleaves the rib' },
+                    runSummary: { roundsEndured: 4, encountersFaced: 12, deepestNodeId: 'iii.b' },
+                });
+            }, [exitCombatWith]);
+            return null;
+        }
+
+        const tree = render(
+            <AestheticModeProvider initialMode="canonical" skipHydration>
+                <CombatModeProvider>
+                    <GameStoreProvider store={store}>
+                        <EncounterModalOverlay
+                            vm={makeCombatPreludeVm()}
+                            onFight={() => {}}
+                            onFlee={() => {}}
+                        />
+                        <DefeatTrigger />
+                    </GameStoreProvider>
+                </CombatModeProvider>
+            </AestheticModeProvider>,
+        );
+
+        fireEvent.press(tree.getByTestId('encounter-modal-fight'));
+        expect(tree.queryByTestId('combat-defeat-panel')).not.toBeNull();
+
+        fireEvent.press(tree.getByTestId('combat-defeat-panel-begin-again'));
+
+        const after = store.getState();
+        expect(after.runId).not.toBe(beforeRunId);
+        expect(after.player.health).toBe(fullHealth);
+        expect(after.player.effects).toHaveLength(0);
+    });
 });
 
 // ---------------------------------------------------------------------------

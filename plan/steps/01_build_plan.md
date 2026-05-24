@@ -1724,19 +1724,14 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       (global character), falls back to combat entity, then no
       filter. +1 test pinning the contract. 1344/1344 verify green
       (+1 from 1343).
-- [ ] Phase 82b — Mobile skill enablement reads engine
-      `combatResources` per-type. Resolves Phase 79 finding B.
-      Mobile flat-sum `manaCost = body + mind + heart + fallacy +
-      paradox` diverges from engine `canUseSkill` which checks
-      each resource pool independently. Sequences after 82a so
-      the picker shows only equippable skills before adding the
-      per-resource gate. Scope: drop the `combatMana` flat slice
-      in favour of engine `combat.combatResources`; presenter
-      reads per-resource pools; picker enabled iff each per-type
-      cost ≤ corresponding resource. Acceptance: skills that the
-      engine would refuse on `insufficient-resources` are
-      visually disabled in the picker; flat-sum logic removed.
-      See PHASE_CANDIDATES.md `[score 6.5]` row.
+- [x] Phase 82b — Mobile skill enablement reads engine
+      `combatResources` per-type. Shipped in commit `6a4c5ab`.
+      Skill picker now checks each resource type independently
+      via `canAffordSkill(cost, pool)` against
+      `combat.combatResources`; added `resourceCost` to
+      `CombatSkill` adapter; renamed disabledReason to
+      `'insufficient-resources'`; removed `mana`/`manaMax` from
+      `SkillPickerSlice`. 1344/1344 verify green.
 
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped
       2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —

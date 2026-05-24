@@ -35,13 +35,39 @@ export type CombatOutcome = 'victory' | 'defeat' | 'flee' | 'parley';
 export type AftermathData =
     | {
           variant: 'victory';
-          enemy: { name: string; description: string; level: number };
+          enemy: {
+              name: string;
+              description: string;
+              level: number;
+              /**
+               * Phase 76 — per-foe chronicle lines from the engine
+               * (`axiomancer-mechanics` 0.11.0). All optional; the
+               * aftermath presenter falls back to the generic
+               * per-tier phrase when the field is absent.
+               */
+              finalBlowLines?: { brutal: string; quiet: string; ironic: string };
+              pactLines?: { quiet: string; setDown: string; heavy: string };
+              causeLines?: { brutal: string; broken: string; quiet: string };
+          };
           finalBlow: { skillName: string | null; damage: number; descriptor: string | null } | null;
           xpReward: number | null;
       }
     | {
           variant: 'parley';
-          enemy: { name: string; description: string; level: number };
+          enemy: {
+              name: string;
+              description: string;
+              level: number;
+              /**
+               * Phase 76 — per-foe chronicle lines from the engine
+               * (`axiomancer-mechanics` 0.11.0). All optional; the
+               * aftermath presenter falls back to the generic
+               * per-tier phrase when the field is absent.
+               */
+              finalBlowLines?: { brutal: string; quiet: string; ironic: string };
+              pactLines?: { quiet: string; setDown: string; heavy: string };
+              causeLines?: { brutal: string; broken: string; quiet: string };
+          };
           xpReward: number | null;
           /**
            * Optional journal entry unlocked by the pact. Engine doesn't
@@ -55,7 +81,20 @@ export type AftermathData =
     | {
           variant: 'defeat';
           /** The killer — the foe that delivered the final blow. */
-          enemy: { name: string; description: string; level: number };
+          enemy: {
+              name: string;
+              description: string;
+              level: number;
+              /**
+               * Phase 76 — per-foe chronicle lines from the engine
+               * (`axiomancer-mechanics` 0.11.0). All optional; the
+               * aftermath presenter falls back to the generic
+               * per-tier phrase when the field is absent.
+               */
+              finalBlowLines?: { brutal: string; quiet: string; ironic: string };
+              pactLines?: { quiet: string; setDown: string; heavy: string };
+              causeLines?: { brutal: string; broken: string; quiet: string };
+          };
           /** Character name snapshot (the fallen pilgrim). Uppercased
            *  by the presenter; raw form here. */
           characterName: string;

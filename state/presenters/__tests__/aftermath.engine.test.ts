@@ -293,3 +293,117 @@ describe('selectAftermathViewModel: defeat branch', () => {
         expect(vm?.kind === 'defeat' && vm.runSummary.deepestNodeId).toBeNull();
     });
 });
+
+// ---------------------------------------------------------------------------
+// Phase 76 — engine narrative prose consumer
+// ---------------------------------------------------------------------------
+
+describe('selectAftermathViewModel: engine narrative lines (Phase 76)', () => {
+    const FINAL_BLOW_LINES = {
+        brutal: 'the gull falls mid-cry. the list ends on a half-syllable.',
+        quiet: 'it folds its wings and lands once, gently, before it stops.',
+        ironic: 'a slight it had not catalogued yet, delivered by the listener.',
+    };
+    const PACT_LINES = {
+        quiet: 'for a long moment, neither speaks the slights remembered.',
+        setDown: 'it settles on the rail beside you. the catalogue is closed.',
+        heavy: 'the list goes on inside it. you are listed too. it lands anyway.',
+    };
+    const CAUSE_LINES = {
+        brutal: 'the list resolves in your name. you go down to the next item on it.',
+        broken: 'the slights accumulate. eventually you are one of them.',
+        quiet: 'it catalogues a last grievance and you do not stand up from it.',
+    };
+
+    it('victory: prefers engine finalBlowLines.brutal for damage >= 20', () => {
+        const vm = selectAftermathViewModel({
+            ...VICTORY_SNAPSHOT,
+            enemy: { ...VICTORY_SNAPSHOT.enemy, finalBlowLines: FINAL_BLOW_LINES },
+        });
+        expect(vm?.kind === 'victory' && vm.finalBlowPhrase).toBe(FINAL_BLOW_LINES.brutal);
+    });
+
+    it('victory: prefers engine finalBlowLines.quiet for damage in [10, 20)', () => {
+        const vm = selectAftermathViewModel({
+            ...VICTORY_SNAPSHOT,
+            finalBlow: { skillName: 'STRIKE', damage: 12, descriptor: 'd' },
+            enemy: { ...VICTORY_SNAPSHOT.enemy, finalBlowLines: FINAL_BLOW_LINES },
+        });
+        expect(vm?.kind === 'victory' && vm.finalBlowPhrase).toBe(FINAL_BLOW_LINES.quiet);
+    });
+
+    it('victory: prefers engine finalBlowLines.ironic for damage < 10', () => {
+        const vm = selectAftermathViewModel({
+            ...VICTORY_SNAPSHOT,
+            finalBlow: { skillName: 'STRIKE', damage: 5, descriptor: 'd' },
+            enemy: { ...VICTORY_SNAPSHOT.enemy, finalBlowLines: FINAL_BLOW_LINES },
+        });
+        expect(vm?.kind === 'victory' && vm.finalBlowPhrase).toBe(FINAL_BLOW_LINES.ironic);
+    });
+
+    it('parley: prefers engine pactLines.quiet for level <= 2', () => {
+        const vm = selectAftermathViewModel({
+            ...PARLEY_SNAPSHOT_MID,
+            enemy: { ...PARLEY_SNAPSHOT_MID.enemy, level: 1, pactLines: PACT_LINES },
+        });
+        expect(vm?.kind === 'parley' && vm.pactPhrase).toBe(PACT_LINES.quiet);
+    });
+
+    it('parley: prefers engine pactLines.setDown for level 3-5', () => {
+        const vm = selectAftermathViewModel({
+            ...PARLEY_SNAPSHOT_MID,
+            enemy: { ...PARLEY_SNAPSHOT_MID.enemy, pactLines: PACT_LINES },
+        });
+        expect(vm?.kind === 'parley' && vm.pactPhrase).toBe(PACT_LINES.setDown);
+    });
+
+    it('parley: prefers engine pactLines.heavy for level > 5', () => {
+        const vm = selectAftermathViewModel({
+            ...PARLEY_SNAPSHOT_MID,
+            enemy: { ...PARLEY_SNAPSHOT_MID.enemy, level: 8, pactLines: PACT_LINES },
+        });
+        expect(vm?.kind === 'parley' && vm.pactPhrase).toBe(PACT_LINES.heavy);
+    });
+
+    it('defeat: prefers engine causeLines.brutal for damage >= 20', () => {
+        const vm = selectAftermathViewModel({
+            ...DEFEAT_SNAPSHOT,
+            enemy: { ...DEFEAT_SNAPSHOT.enemy, causeLines: CAUSE_LINES },
+        });
+        expect(vm?.kind === 'defeat' && vm.causePhrase).toBe(CAUSE_LINES.brutal);
+    });
+
+    it('defeat: prefers engine causeLines.broken for damage in [10, 20)', () => {
+        const vm = selectAftermathViewModel({
+            ...DEFEAT_SNAPSHOT,
+            finalBlow: { skillName: 'STRIKE', damage: 12, descriptor: null },
+            enemy: { ...DEFEAT_SNAPSHOT.enemy, causeLines: CAUSE_LINES },
+        });
+        expect(vm?.kind === 'defeat' && vm.causePhrase).toBe(CAUSE_LINES.broken);
+    });
+
+    it('defeat: prefers engine causeLines.quiet for damage < 10', () => {
+        const vm = selectAftermathViewModel({
+            ...DEFEAT_SNAPSHOT,
+            finalBlow: { skillName: 'STRIKE', damage: 4, descriptor: null },
+            enemy: { ...DEFEAT_SNAPSHOT.enemy, causeLines: CAUSE_LINES },
+        });
+        expect(vm?.kind === 'defeat' && vm.causePhrase).toBe(CAUSE_LINES.quiet);
+    });
+
+    it('falls back to the generic phrase when the engine field is absent', () => {
+        // Sanity — re-pin a single fallback per branch to confirm the
+        // null-engine-line path keeps the panel rendering.
+        const victory = selectAftermathViewModel(VICTORY_SNAPSHOT);
+        expect(victory?.kind === 'victory' && victory.finalBlowPhrase)
+            .toContain('went down face-first');
+
+        const parley = selectAftermathViewModel(PARLEY_SNAPSHOT_MID);
+        expect(parley?.kind === 'parley' && parley.pactPhrase)
+            .toContain('set down the bell');
+
+        const defeat = selectAftermathViewModel(DEFEAT_SNAPSHOT);
+        expect(defeat?.kind === 'defeat' && defeat.causePhrase)
+            .toContain('laid down where it stood');
+    });
+});

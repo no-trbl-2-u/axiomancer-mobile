@@ -303,6 +303,10 @@ export function CombatPanel() {
                           name: combat.enemy.name,
                           description: combat.enemy.description,
                           level: combat.enemy.level,
+                          // Phase 76 — thread engine narrative lines
+                          // through. Optional; the presenter falls back
+                          // to a generic per-tier phrase when absent.
+                          pactLines: combat.enemy.pactLines,
                       },
                       xpReward: combat.enemy.xpReward ?? null,
                       // Engine doesn't yet expose per-foe codex
@@ -336,6 +340,8 @@ export function CombatPanel() {
                           name: combat.enemy.name,
                           description: combat.enemy.description,
                           level: combat.enemy.level,
+                          // Phase 76 — engine narrative lines (optional).
+                          finalBlowLines: combat.enemy.finalBlowLines,
                       },
                       finalBlow: buildFinalBlowSnapshot(combat),
                       xpReward: combat.enemy.xpReward ?? null,
@@ -360,6 +366,8 @@ export function CombatPanel() {
                           name: combat.enemy.name,
                           description: combat.enemy.description,
                           level: combat.enemy.level,
+                          // Phase 76 — engine narrative lines (optional).
+                          causeLines: combat.enemy.causeLines,
                       },
                       characterName: combat.player.name,
                       // Damage figure here is what the enemy dealt

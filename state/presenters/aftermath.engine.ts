@@ -246,70 +246,88 @@ function deriveFinalBlow(
 }
 
 /**
- * Pick a chronicle-flavour final-blow phrase keyed off the damage
- * tier. Three variants from the bundle's tone reference — terse,
- * past-tense, concrete nouns. The damage tier is the only signal
- * we have at presenter time; richer signals (enemy archetype,
- * stance triangle, philosophical alignment) would require engine
- * integration and are out of scope for Tick A.
+ * Phase 76 — tier-key extraction helpers shared by the three
+ * narrative selectors. Engine line keys differ per kind
+ * (`brutal | quiet | ironic` for victory; `brutal | broken | quiet`
+ * for defeat; `quiet | setDown | heavy` for parley), so each kind
+ * passes its own key set in.
+ */
+function damageTier3<K extends string>(damage: number, high: K, mid: K, low: K): K {
+    if (damage >= 20) return high;
+    if (damage >= 10) return mid;
+    return low;
+}
+
+function levelTier3<K extends string>(level: number, low: K, mid: K, high: K): K {
+    if (level <= 2) return low;
+    if (level <= 5) return mid;
+    return high;
+}
+
+/**
+ * Pick a chronicle-flavour final-blow phrase. Prefers per-foe
+ * lines from the engine (`Enemy.finalBlowLines`); falls back to a
+ * presenter-local per-tier phrase when the foe has no engine
+ * lines authored yet.
  */
 function deriveFinalBlowPhrase(
     data: Extract<AftermathData, { variant: 'victory' }>,
 ): string {
     const damage = data.finalBlow?.damage ?? 0;
-    if (damage >= 20) {
-        // Brutal — the foe goes down hard.
+    const tier = damageTier3(damage, 'brutal', 'quiet', 'ironic');
+    const engineLine = data.enemy.finalBlowLines?.[tier];
+    if (engineLine !== undefined) return engineLine;
+    if (tier === 'brutal') {
         return `and the ${data.enemy.name.toLowerCase()} went down face-first into its own teeth.`;
     }
-    if (damage >= 10) {
-        // Quiet — the foe falls in a measured way.
+    if (tier === 'quiet') {
         return `it folded into itself, twice, the way a wet rag folds.`;
     }
-    // Ironic — the foe falls almost by accident.
     return `it set the bell down, slow. the bell did not ring. the wet ground took the rest.`;
 }
 
 /**
- * Pick a chronicle cause-of-death paragraph keyed off the damage
- * tier of the killing blow. Three variants from the bundle's tone
- * reference — brutal / quiet / ironic — rendered as a marginal note
- * in a medieval death-book. The panel applies the `axm-dropcap`
- * first-letter rule.
+ * Pick a chronicle cause-of-death paragraph. Prefers per-foe
+ * lines from the engine (`Enemy.causeLines`); falls back to a
+ * presenter-local per-tier phrase when absent.
+ *
+ * Engine tier names diverge from the victory branch — the
+ * mid-damage key is `'broken'`, not `'quiet'`. The presenter
+ * does not normalize; each kind uses its own key set.
  */
 function deriveCausePhrase(
     data: Extract<AftermathData, { variant: 'defeat' }>,
 ): string {
     const damage = data.finalBlow?.damage ?? 0;
+    const tier = damageTier3(damage, 'brutal', 'broken', 'quiet');
+    const engineLine = data.enemy.causeLines?.[tier];
+    if (engineLine !== undefined) return engineLine;
     const killerName = data.enemy.name;
-    if (damage >= 20) {
+    if (tier === 'brutal') {
         return `And so the pilgrim laid down where it stood, while the ${killerName.toLowerCase()}'s blade learned its ribs by name. The journey had been short. The journey had been kept.`;
     }
-    if (damage >= 10) {
+    if (tier === 'broken') {
         return `It came in pieces. First the breath, then the legs, then a long silence that did not break. The ${killerName.toLowerCase()} looked once, then looked away.`;
     }
     return `Not a great wound; a steady one. The pilgrim sat down to rest, and did not stand up. The page closed without ceremony.`;
 }
 
 /**
- * Pick a chronicle pact phrase keyed off enemy level. Coarse
- * heuristic — lower-level foes yield quietly, higher-level foes
- * give up a thing of theirs (a bell, a sigil, a held breath). Three
- * variants from the bundle's tone reference, all third-person past,
- * concrete nouns. Engine-side per-foe pact lines are a Phase 70
- * follow-up if the writers want to author them.
+ * Pick a chronicle pact phrase. Prefers per-foe lines from the
+ * engine (`Enemy.pactLines`); falls back to a presenter-local
+ * per-tier phrase keyed off enemy level when absent.
  */
 function derivePactPhrase(
     data: Extract<AftermathData, { variant: 'parley' }>,
 ): string {
-    const level = data.enemy.level;
-    if (level <= 2) {
-        // Quiet yield — the foe simply stops.
+    const tier = levelTier3(data.enemy.level, 'quiet', 'setDown', 'heavy');
+    const engineLine = data.enemy.pactLines?.[tier];
+    if (engineLine !== undefined) return engineLine;
+    if (tier === 'quiet') {
         return `it stopped, then lowered its long face against the wet ground.`;
     }
-    if (level <= 5) {
-        // The foe sets a thing down (the bundle's exemplar phrase).
+    if (tier === 'setDown') {
         return `it set down the bell, slow, and laid its long face against the wet ground.`;
     }
-    // Heavy yield — the foe gives up a held thing.
     return `it held out the bell, mouth-down, so it would not sound. then it knelt.`;
 }

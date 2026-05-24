@@ -9,8 +9,10 @@
 
 ## Pending
 
-### [score 5.5] Tooltip overlay portal — wire tooltips inside RN `<Modal>` surfaces
+### [score 5.5] Tooltip overlay portal — wire tooltips inside RN `<Modal>` surfaces [PROMOTED → Phase 80a via /oversight 37th call]
 
+- promoted: 2026-05-24 via `/oversight` (37th call) as **Phase 80a**
+  (tooltip-cluster parent Phase 80). Full original body below.
 - proposed: 2026-05-24, expand pass 40 (cascade from iterate)
 - source signals:
   - **Inventory walkthrough Tick 2 commit `cdee5aa`** explicitly
@@ -43,8 +45,9 @@
 - conflicts: none. Additive. Existing tooltips outside modals
   unaffected.
 
-### [score 5.0] TooltipTarget consolidation — drop the inline duplicate in `app/(tabs)/combat.tsx`
+### [score 5.0] TooltipTarget consolidation — drop the inline duplicate in `app/(tabs)/combat.tsx` [PROMOTED → Phase 80b via /oversight 37th call]
 
+- promoted: 2026-05-24 via `/oversight` (37th call) as **Phase 80b**.
 - proposed: 2026-05-24, expand pass 40 (cascade from iterate)
 - source signals:
   - **Phase 75 commit `de3bb7b`** inlined a local `TooltipTarget`
@@ -74,8 +77,9 @@
   /oversight call has served its purpose (combat-modal rewrite
   has been stable for ~30 commits).
 
-### [score 4.0] SELF derived ATK/SKL/DEF table tooltips (Tick 5 — beyond original walkthrough enumeration)
+### [score 4.0] SELF derived ATK/SKL/DEF table tooltips (Tick 5 — beyond original walkthrough enumeration) [PROMOTED → Phase 80c via /oversight 37th call]
 
+- promoted: 2026-05-24 via `/oversight` (37th call) as **Phase 80c**.
 - proposed: 2026-05-24, expand pass 40 (cascade from iterate)
 - source signals:
   - **AUDIT `[4.5]` SELF walkthrough** closed all 6 originally-

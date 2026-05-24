@@ -1631,6 +1631,41 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       green (+14 from 1255). Brief at
       `plan/phases/phase_79_skill_craft_audit.md`.
 
+- [parent] Phase 80 — Tooltip cluster (modal portal +
+      consolidation + SELF derived table). Promoted via
+      `/oversight` 2026-05-24 (37th call) from `expand pass 40`'s
+      three pending candidates. Tracks the meta-feature; sub-phases
+      80a–80c are the actual work units. Dispatch in listed order
+      (80a → 80c); 80a unblocks future modal-tooltip needs and
+      should ship first. Closes when 80c ships clean.
+- [ ] Phase 80a — Tooltip overlay portal (mount tooltips inside
+      RN `<Modal>` surfaces). Source: Inventory walkthrough Tick 2
+      commit `cdee5aa` deferred modal stat-table wiring on
+      TooltipProvider limitation. Scope: sibling `<TooltipProvider>`
+      inside each `<Modal>` (Option A from candidate body) — simple
+      isolated fix, tap-outside-dismiss may need per-modal wiring.
+      Acceptance: tooltips fire on Inventory item-modal stat rows +
+      LevelUpModal stat allocation rows; existing non-modal tooltips
+      unaffected; verify gate green. See PHASE_CANDIDATES.md
+      `[score 5.5]` row for full scope + alternatives B/C.
+- [ ] Phase 80b — TooltipTarget consolidation — drop the inline
+      duplicate in `app/(tabs)/combat.tsx`. Pure refactor (~30
+      lines of duplication). Combat-modal-audit bias from the 36th
+      call closed in this oversight; surface is now stable for
+      consolidation. Acceptance: combat.tsx imports
+      `TooltipTarget` from `@/components/tooltip/TooltipTarget`;
+      local declaration block removed; combat suite green. See
+      PHASE_CANDIDATES.md `[score 5.0]` row.
+- [ ] Phase 80c — SELF derived ATK/SKL/DEF table tooltips
+      (Tick 5 — completes "all SELF numerics have tooltips"
+      coverage). Reuses the `kind:'item-stat'` synthesizer shipped
+      in Inventory Tick 2 (`cdee5aa`) — zero authoring cost. Scope:
+      add `id` field to `DerivedStatRow`, build 9 ids in presenter
+      (3 rows × 3 verbs), wrap each derived cell with
+      `<TooltipTarget kind="item-stat" id={cell.id}>`. Acceptance:
+      all 9 derived cells fire tooltips; verify gate green. See
+      PHASE_CANDIDATES.md `[score 4.0]` row.
+
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped
       2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —
       phase-aware top + bottom `SEALED` chain bars (`SEALED · AT

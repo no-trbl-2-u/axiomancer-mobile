@@ -3,25 +3,37 @@
 > Latest findings from `/iterate audit`. Rewritten on each
 > audit pass. The Pending list at the bottom queues `/iterate`.
 
-> **Combat-modal-collision directive RESOLVED 2026-05-23 via
-> /oversight (36th call).** Parallel Claude shipped the combat
-> modal alignment (commit `02b75db`) and follow-up lockfile fix
-> (commit `a9c3959` via PR #153). The 4 engine-unblocked +
-> tooltip-Tick-B candidates have been promoted as Phases 75–78
-> (see `plan/steps/01_build_plan.md`). Phase 79 (skill / craft
-> functionality audit) added from a user observation in the same
-> call. Playtest directive (27th call) is no longer collision-
-> blocked — the next `/oversight` call should re-evaluate
-> firing it.
+> **Playtest directive FIRED 2026-05-24 via /oversight (37th
+> call).** The next `/march` tick should invoke `/critique`
+> (live-drive playtest against the running app) before the next
+> `/iterate` or `/ship-a-phase`. Walkthrough cluster closed
+> (4 surfaces ✅), tooltip work is paused on the Phase 80 cluster
+> below, and the loop has been bias-free since the combat-modal
+> bias closed — a fresh-eyes pass is the highest-signal next
+> action. After /critique fires once, remove this directive.
 >
-> **Bias: combat-modal-audit (set via /oversight 2026-05-23,
-> 36th call).** When the `[score 6.5]` combat-modal mechanics-
-> vs-UI audit ships (via `/iterate audit` or as a promoted phase),
-> its filed DRIFT rows get **1.5× weighting** in `/iterate`'s
-> scoring until the cluster drains. Phase 79 (skill / craft
-> audit) shares the surface and its findings count toward the
-> same cluster. Mirrors the prior event-surface (closed
-> 2026-05-16) + memoir-surface (closed 2026-05-23) bias pattern.
+> **Combat-modal-audit bias CLOSED 2026-05-24 via /oversight
+> (37th call).** Pass 40 noted "the bias has served its purpose;
+> ~30 commits of stability since the rewrite." `/iterate`
+> resumes natural HIGH-first ordering. Combat-modal-collision
+> directive (36th call) had already been resolved — Phases
+> 75–79 all shipped. Mirrors how the event-surface (16th call)
+> and memoir-surface (35th call) biases were closed once their
+> clusters drained.
+>
+> <details>
+> <summary>Historical combat-modal-audit bias (2026-05-23 → 2026-05-24)</summary>
+>
+> Bias: combat-modal-audit (set via /oversight 2026-05-23, 36th
+> call). When the `[score 6.5]` combat-modal mechanics-vs-UI
+> audit ships (via `/iterate audit` or as a promoted phase),
+> its filed DRIFT rows got **1.5× weighting** in `/iterate`'s
+> scoring until the cluster drained. Phase 79 (skill / craft
+> audit) shared the surface. Mirrors the prior event-surface
+> (closed 2026-05-16) + memoir-surface (closed 2026-05-23) bias
+> pattern.
+>
+> </details>
 
 > **Memoir-surface bias closed 2026-05-23 via /oversight (35th
 > call).** Original 4-MED cluster (set 2026-05-16) has largely

@@ -88,6 +88,13 @@ export interface CombatLocalUi {
 export interface CombatEffectDisplay {
     /** Stable id (icon + colour key for the chip). */
     kind: string;
+    /**
+     * Raw engine `effectId` (e.g. `'tier1_body_attack'`).
+     * Empty string when the source effect has no engine id —
+     * callers (Phase 75 tooltip wiring) treat empty as "no
+     * tooltip lookup possible".
+     */
+    effectId: string;
     /** Display name. */
     name: string;
     /** Remaining duration in rounds; `null` for indefinite. */
@@ -645,6 +652,7 @@ function classifyEffect(rawEffect: unknown): CombatEffectDisplay {
 
     return {
         kind,
+        effectId: idRaw,
         name,
         duration:
             duration !== null && isFinite(duration) ? Math.max(0, duration) : null,

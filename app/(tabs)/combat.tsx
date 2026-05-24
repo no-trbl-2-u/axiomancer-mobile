@@ -23,8 +23,9 @@
  * a round.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+    Pressable,
     ScrollView,
     StyleSheet,
     Text,
@@ -63,6 +64,8 @@ import { MindMark } from '@/components/MindMark';
 import { DifficultyBadge } from '@/components/DifficultyBadge';
 import { ActionIcon } from '@/components/ActionIcon';
 import { Splatter } from '@/components/Splatter';
+import { useTooltip } from '@/hooks/useTooltip';
+import type { TooltipKind } from '@/state/presenters/tooltip.engine';
 
 // ---------------------------------------------------------------------------
 // Local UI state (Q2: stance preview lives here until the user commits)
@@ -84,6 +87,49 @@ const LOG_SEVERITY_COLOR: Record<CombatLogEntryDisplay['severity'], string> = {
     friendship: AXM.rust,
     system: AXM.bone,
 };
+
+// ---------------------------------------------------------------------------
+// Tap-tooltip wrapper (Phase 75) — additive tap target around any
+// HUD element that should explain itself on tap. Renders a Pressable
+// that holds its own measure ref and forwards `show({ kind, id })`
+// on tap. Empty `id` short-circuits — useful for fixture-built
+// effects that have no engine id.
+// ---------------------------------------------------------------------------
+interface TooltipTargetProps {
+    kind: TooltipKind;
+    id: string;
+    children: React.ReactNode;
+    accessibilityLabel?: string;
+    accessibilityHint?: string;
+    testID?: string;
+}
+
+function TooltipTarget({
+    kind,
+    id,
+    children,
+    accessibilityLabel,
+    accessibilityHint,
+    testID,
+}: TooltipTargetProps) {
+    const tooltip = useTooltip();
+    const ref = useRef<View | null>(null);
+    return (
+        <Pressable
+            ref={ref}
+            onPress={() => {
+                if (!id) return;
+                tooltip.show({ kind, id, anchorRef: ref });
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={accessibilityLabel}
+            accessibilityHint={accessibilityHint}
+            testID={testID}
+        >
+            {children}
+        </Pressable>
+    );
+}
 
 // ---------------------------------------------------------------------------
 // Screen
@@ -510,14 +556,22 @@ function EnemyPanel({ vm }: { vm: CombatViewModel }) {
                     {vm.enemy.effects.length > 0 && (
                         <View style={styles.effectsRow}>
                             {vm.enemy.effects.map((e, i) => (
-                                <EffectChip
+                                <TooltipTarget
                                     key={`${e.kind}-${i}`}
-                                    effect={{
-                                        ...e,
-                                        tint: e.tint ?? undefined,
-                                        duration: e.duration ?? undefined,
-                                    }}
-                                />
+                                    kind="effect"
+                                    id={e.effectId}
+                                    accessibilityLabel={`Effect ${e.name}`}
+                                    accessibilityHint="tap to read description"
+                                    testID={`combat-enemy-effect-${i}`}
+                                >
+                                    <EffectChip
+                                        effect={{
+                                            ...e,
+                                            tint: e.tint ?? undefined,
+                                            duration: e.duration ?? undefined,
+                                        }}
+                                    />
+                                </TooltipTarget>
                             ))}
                         </View>
                     )}
@@ -608,10 +662,18 @@ function PlayerHud({ vm }: { vm: CombatViewModel }) {
                         <View style={{ flex: 1 }} />
                         <View style={styles.playerEffects}>
                             {vm.player.effects.map((e, i) => (
-                                <EffectChip
+                                <TooltipTarget
                                     key={`${e.kind}-${i}`}
-                                    effect={{ ...e, tint: e.tint ?? undefined, duration: e.duration ?? undefined }}
-                                />
+                                    kind="effect"
+                                    id={e.effectId}
+                                    accessibilityLabel={`Effect ${e.name}`}
+                                    accessibilityHint="tap to read description"
+                                    testID={`combat-player-effect-${i}`}
+                                >
+                                    <EffectChip
+                                        effect={{ ...e, tint: e.tint ?? undefined, duration: e.duration ?? undefined }}
+                                    />
+                                </TooltipTarget>
                             ))}
                         </View>
                     </View>
@@ -840,11 +902,19 @@ function StancePhase({
                     >
                         <View style={[stance_styles.card, { borderColor: isSel ? AXM.sulfur : accent, backgroundColor: isSel ? '#1a1410' : '#0a0a0a' }]}>
                             {(isAdv || isDis) && (
-                                <View style={[stance_styles.advBadge, { borderColor: isAdv ? AXM.sulfur : AXM.blood }]}>
-                                    <Text style={[stance_styles.advText, { color: isAdv ? AXM.sulfur : AXM.blood }]}>
-                                        {isAdv ? 'ADV' : 'DIS'}
-                                    </Text>
-                                </View>
+                                <TooltipTarget
+                                    kind="stance-chip"
+                                    id={isAdv ? 'adv' : 'dis'}
+                                    accessibilityLabel={isAdv ? 'Advantage' : 'Disadvantage'}
+                                    accessibilityHint="tap to explain"
+                                    testID={`combat-stance-${opt.key}-advdis`}
+                                >
+                                    <View style={[stance_styles.advBadge, { borderColor: isAdv ? AXM.sulfur : AXM.blood }]}>
+                                        <Text style={[stance_styles.advText, { color: isAdv ? AXM.sulfur : AXM.blood }]}>
+                                            {isAdv ? 'ADV' : 'DIS'}
+                                        </Text>
+                                    </View>
+                                </TooltipTarget>
                             )}
                             {/* Phase-62 bug-sweep 2026-05-21: pointerEvents='none'
                                 so the SVG can't consume taps that should reach
@@ -1053,26 +1123,7 @@ function SkillPhase({
     return (
         <View style={skill_styles.list}>
             {available.map((s) => (
-                <TouchableOpacity
-                    key={s.id}
-                    onPress={() => onPick(s)}
-                    style={skill_styles.row}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Skill ${s.name}`}
-                >
-                    <StanceGlyph kind={s.stance} size={24} color={AXM.parchment} />
-                    <View style={skill_styles.rowText}>
-                        <Text style={skill_styles.skillName} numberOfLines={1}>{s.name}</Text>
-                        <Text style={skill_styles.skillDesc} numberOfLines={2}>
-                            {s.description}
-                        </Text>
-                    </View>
-                    <View style={skill_styles.rowCostCol}>
-                        <Text style={skill_styles.costValue}>
-                            {toRomanLower(s.manaCost, '·')}
-                        </Text>
-                    </View>
-                </TouchableOpacity>
+                <SkillRow key={s.id} skill={s} onPick={onPick} />
             ))}
             {available.length === 0 && (
                 <Text style={skill_styles.emptyHint}>none open · stance bound.</Text>
@@ -1080,6 +1131,41 @@ function SkillPhase({
             <Text style={skill_styles.availHint}>
                 {availableCount} of {totalCount} open · stance bound.
             </Text>
+        </View>
+    );
+}
+
+function SkillRow({ skill: s, onPick }: { skill: SkillOption; onPick: (s: SkillOption) => void }) {
+    // Phase 75 — single-tap commits the skill (locked Phase 73
+    // behaviour); long-press fires the tap-tooltip with the full
+    // engine description. Long-press is the natural mobile pattern
+    // when tap is already reserved for an action.
+    const tooltip = useTooltip();
+    const ref = useRef<View | null>(null);
+    return (
+        <View ref={ref}>
+            <TouchableOpacity
+                onPress={() => onPick(s)}
+                onLongPress={() => tooltip.show({ kind: 'skill', id: s.id, anchorRef: ref })}
+                style={skill_styles.row}
+                accessibilityRole="button"
+                accessibilityLabel={`Skill ${s.name}`}
+                accessibilityHint="hold to read full description"
+                testID={`combat-skill-row-${s.id}`}
+            >
+                <StanceGlyph kind={s.stance} size={24} color={AXM.parchment} />
+                <View style={skill_styles.rowText}>
+                    <Text style={skill_styles.skillName} numberOfLines={1}>{s.name}</Text>
+                    <Text style={skill_styles.skillDesc} numberOfLines={2}>
+                        {s.description}
+                    </Text>
+                </View>
+                <View style={skill_styles.rowCostCol}>
+                    <Text style={skill_styles.costValue}>
+                        {toRomanLower(s.manaCost, '·')}
+                    </Text>
+                </View>
+            </TouchableOpacity>
         </View>
     );
 }

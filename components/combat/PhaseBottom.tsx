@@ -9,7 +9,6 @@ import * as Haptics from 'expo-haptics';
 
 import { AXM, FONTS } from '@/theme/axm';
 import { useTooltip } from '@/hooks/useTooltip';
-import { TooltipTarget } from '@/components/tooltip/TooltipTarget';
 import { SectionLabel } from '@/components/SectionLabel';
 import { StanceGlyph } from '@/components/StanceGlyph';
 import { ActionIcon } from '@/components/ActionIcon';
@@ -187,53 +186,45 @@ function PhaseStack({
     );
 }
 
-function StancePhase({
-    options,
-    selected,
+function StanceCard({
+    opt,
+    isSel,
     onPick,
-    a11yLabels,
+    a11yLabel,
 }: {
-    options: readonly StanceOption[];
-    selected: StanceKey | null;
+    opt: StanceOption;
+    isSel: boolean;
     onPick: (s: StanceKey) => void;
-    a11yLabels: { stanceHeart: string; stanceBody: string; stanceMind: string };
+    a11yLabel: string;
 }) {
+    const isAdv = opt.advantage === 'adv';
+    const isDis = opt.advantage === 'dis';
+    const accent = isAdv ? AXM.sulfur : isDis ? AXM.blood : AXM.parchment;
+    const tooltip = useTooltip();
+    const ref = useRef<View | null>(null);
     return (
-        <View style={stance_styles.row}>
-            {options.map((opt) => {
-                const isAdv = opt.advantage === 'adv';
-                const isDis = opt.advantage === 'dis';
-                const isSel = selected === opt.key;
-                const accent = isAdv ? AXM.sulfur : isDis ? AXM.blood : AXM.parchment;
-                return (
-                    <TouchableOpacity
-                        key={opt.key}
-                        onPress={() => onPick(opt.key)}
-                        style={stance_styles.cardTouch}
-                        accessibilityRole="button"
-                        accessibilityLabel={
-                            opt.key === 'heart' ? a11yLabels.stanceHeart :
-                            opt.key === 'body' ? a11yLabels.stanceBody :
-                            a11yLabels.stanceMind
-                        }
-                        accessibilityState={{ selected: isSel }}
-                    >
-                        <View style={[stance_styles.card, { borderColor: isSel ? AXM.sulfur : accent, backgroundColor: isSel ? '#1a1410' : AXM.bg }]}>
-                            {(isAdv || isDis) && (
-                                <TooltipTarget
-                                    kind="stance-chip"
-                                    id={opt.key}
-                                    accessibilityLabel={`Explain ${isAdv ? 'advantage' : 'disadvantage'} on ${opt.label}`}
-                                    accessibilityHint="tap to read description"
-                                    testID={`combat-stance-${opt.key}-advdis`}
-                                >
-                                    <View style={[stance_styles.advBadge, { borderColor: isAdv ? AXM.sulfur : AXM.blood }]}>
-                                        <Text style={[stance_styles.advText, { color: isAdv ? AXM.sulfur : AXM.blood }]}>
-                                            {isAdv ? 'ADV' : 'DIS'}
-                                        </Text>
-                                    </View>
-                                </TooltipTarget>
-                            )}
+        <View ref={ref}>
+            <TouchableOpacity
+                onPress={() => onPick(opt.key)}
+                onLongPress={(isAdv || isDis) ? () => tooltip.show({ kind: 'stance-chip', id: opt.key, anchorRef: ref }) : undefined}
+                style={stance_styles.cardTouch}
+                accessibilityRole="button"
+                accessibilityLabel={a11yLabel}
+                accessibilityHint={(isAdv || isDis) ? 'hold to read advantage description' : undefined}
+                accessibilityState={{ selected: isSel }}
+            >
+                <View style={[stance_styles.card, { borderColor: isSel ? AXM.sulfur : accent, backgroundColor: isSel ? '#1a1410' : AXM.bg }]}>
+                    {(isAdv || isDis) && (
+                        <View
+                            style={[stance_styles.advBadge, { borderColor: isAdv ? AXM.sulfur : AXM.blood }]}
+                            accessibilityLabel={`${isAdv ? 'Advantage' : 'Disadvantage'} on ${opt.label}`}
+                            testID={`combat-stance-${opt.key}-advdis`}
+                        >
+                            <Text style={[stance_styles.advText, { color: isAdv ? AXM.sulfur : AXM.blood }]}>
+                                {isAdv ? 'ADV' : 'DIS'}
+                            </Text>
+                        </View>
+                    )}
                             <View style={stance_styles.glyphWrap} pointerEvents="none">
                                 <StanceGlyph kind={opt.key} size={36} color={accent} />
                             </View>
@@ -255,8 +246,36 @@ function StancePhase({
                             </View>
                         </View>
                     </TouchableOpacity>
-                );
-            })}
+                </View>
+    );
+}
+
+function StancePhase({
+    options,
+    selected,
+    onPick,
+    a11yLabels,
+}: {
+    options: readonly StanceOption[];
+    selected: StanceKey | null;
+    onPick: (s: StanceKey) => void;
+    a11yLabels: { stanceHeart: string; stanceBody: string; stanceMind: string };
+}) {
+    return (
+        <View style={stance_styles.row}>
+            {options.map((opt) => (
+                <StanceCard
+                    key={opt.key}
+                    opt={opt}
+                    isSel={selected === opt.key}
+                    onPick={onPick}
+                    a11yLabel={
+                        opt.key === 'heart' ? a11yLabels.stanceHeart :
+                        opt.key === 'body' ? a11yLabels.stanceBody :
+                        a11yLabels.stanceMind
+                    }
+                />
+            ))}
         </View>
     );
 }

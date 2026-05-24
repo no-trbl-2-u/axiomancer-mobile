@@ -151,7 +151,7 @@
   conditional on whether tap-handling needs to bubble up).
 - source: live-drive playtest 2026-05-24 (37th-call directive fire)
 
-### [4.5] Effect chips expose raw engine ids as a11y labels (NEW — playtest 2026-05-24)
+### [4.5] Effect chips expose raw engine ids as a11y labels (NEW — playtest 2026-05-24) ✅
 
 - category: voice / a11y (user-visible text leakage)
 - impact: 5 (screen readers announce "Effect tier1_heart_attack" /

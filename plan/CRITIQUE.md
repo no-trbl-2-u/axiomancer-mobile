@@ -63,6 +63,16 @@
 - suggested_fix: [waiting on design — the prompt file `design/levelup-modal-prompt.txt` landed 2026-05-22 specifying both surfaces (SELF-header `ASCEND` strip + full-screen LevelUpModal). User confirmed via /oversight 2026-05-22 (32nd call) that the design is in progress at <https://claude.ai/design/p/019e0f5a-a0f0-753b-be1e-8939e6011384>. The actual handoff bundle hasn't been generated yet — the 2026-05-22 bundle at `design/handoff-2026-05-22/` covers aftermath modals only. Once the levelup bundle lands (likely `design/handoff-<date>/project/screens/levelup.jsx`), this row promotes to its own phase. Until then it stays Pending so the next /oversight sees it.]
 - source: user
 
+### [MED] /self — Level Up button gating + stat-allocation lifecycle
+- pass: user-jot (commit `b96ea05`)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: Once a player has enough experience, the level up button should be available to press and trigger a "level up". Once they level up, drain the experience and show the stat allocation button. Once the player has no available stats to apply, remove the stat allocation button
+- evidence: user-spotted at 2026-05-24T03:50:03Z
+- suggested_fix: [user has not specified — iterate to determine]
+- source: user
+
 ## Done
 
 ### [MED] general — Tap-tooltip phase ✅ (PROMOTED → PHASE_CANDIDATES.md candidate)

@@ -3,14 +3,17 @@
 > Latest findings from `/iterate audit`. Rewritten on each
 > audit pass. The Pending list at the bottom queues `/iterate`.
 
-> **Playtest directive FIRED 2026-05-24 via /oversight (37th
-> call; REAFFIRMED 38th call).** The next `/march` tick should
-> invoke `/critique` (live-drive playtest against the running
-> app) before the next `/iterate` or `/ship-a-phase`. The 38th
-> call promoted Phase 81 (engine reconciliation + cleanup) and
-> Phase 82 (skill picker follow-ups), but neither ships until
-> /critique fires first. After /critique fires once, remove
-> this directive.
+> **Playtest directive CLOSED 2026-05-24 — playtest fired against
+> http://localhost:8082.** User started `pnpm web` and `/playtest`
+> ran the canonical walk (Hovel → Crossing → Hanged Wood →
+> TIDEPOOL CRAB encounter → BODY stance → ATTACK → NEXT ROUND).
+> Two findings filed in the Pending section below: `[8.0]`
+> nested `<button>` DOM violation in stance picker (HIGH —
+> console errors), `[4.5]` effect chips expose raw engine ids
+> as a11y labels. The 37th-call directive's blocker is cleared.
+> Phase 80a + Phase 81 + Phase 82 can now ship; recommend
+> draining the two new findings via /iterate before promoting
+> further phases so the cluster doesn't grow.
 >
 > **Combat-modal-audit bias CLOSED 2026-05-24 via /oversight
 > (37th call).** Pass 40 noted "the bias has served its purpose;
@@ -113,6 +116,67 @@
 - Resolved 2026-05-15 — Phase 6 shipped. See Done section for details.
 
 ## Pending
+
+### [8.0] Nested `<button>` DOM hierarchy violation in stance picker (NEW — playtest 2026-05-24)
+
+- category: bug (a11y / web hydration)
+- impact: 8 (two console errors per stance-picker mount on web; breaks
+  hydration semantics; nested `<button>` is invalid HTML and screen
+  readers will read both ancestor + child as buttons, double-announcing.
+  Native mobile may suppress the error but the DOM-tree intent is still
+  wrong)
+- ease: 6 (likely a flat refactor of the ADV/DIS badge from `Pressable`
+  → `View` + accessibility props; or extract the badge above the
+  stance card rather than nesting inside it)
+- observed: live-drive playtest 2026-05-24 against http://localhost:8082.
+  - Console fired 2 errors on `NEXT ROUND` advance into Round 2:
+    "In HTML, %s cannot be a descendant of <%s>." and
+    "<%s> cannot contain a nested %s."
+  - The nested `<button>` is the ADV/DIS badge (testID
+    `combat-stance-body-advdis`, `combat-stance-mind-advdis`)
+    rendered inside the stance-card `<Pressable>` (testID
+    `combat-stance-body`, `combat-stance-mind`).
+  - HEART stance has no nested button (neutral matchup against
+    crab's STANDS) so the violation only surfaces when at least
+    one of BODY / MIND draws an ADV or DIS badge.
+  - Walked: Hovel → Crossing (gather) → Hanged Wood (encounter
+    TIDEPOOL CRAB level 1 / 20 hp) → FIGHT → BODY stance → ATTACK
+    → NEXT ROUND. The errors fired at the NEXT ROUND click; Round
+    2's stance picker is what re-mounts the nested buttons.
+- next: file as /iterate fix or promote as a sub-phase under
+  Phase 81 (combat-modal-area cluster). Likely scope: replace the
+  `<Pressable>` wrapping ADV/DIS in `StancePhase` with a `<View
+  accessibilityLabel="…">` and route any tap-tooltip behaviour
+  through `<TooltipTarget>` (which is already a `<Pressable>` but
+  conditional on whether tap-handling needs to bubble up).
+- source: live-drive playtest 2026-05-24 (37th-call directive fire)
+
+### [4.5] Effect chips expose raw engine ids as a11y labels (NEW — playtest 2026-05-24)
+
+- category: voice / a11y (user-visible text leakage)
+- impact: 5 (screen readers announce "Effect tier1_heart_attack" /
+  "Effect tier1_body_attack" — raw engine ids in user-facing
+  speech surface. Battle log already renders the same effects
+  as human-readable names ("Ad Baculum", "Fleeting Kindness");
+  the effect-chip a11y label should derive from the same source)
+- ease: 7 (one presenter join — map effect id → display name via
+  the same lookup the battle log uses, then thread through the
+  chip's `accessibilityLabel`)
+- observed: live-drive playtest 2026-05-24 against http://localhost:8082.
+  - Enemy panel showed chip with a11y label `"Effect tier1_heart_attack"`
+    next to a "1" badge.
+  - Player panel showed chip with a11y label `"Effect tier1_body_attack"`
+    next to a "1" badge.
+  - Same round's battle log rendered the human-readable counterparts:
+    "You apply Ad Baculum." / "Foe apply Fleeting Kindness."
+  - Walked: same encounter as the [8.0] row above; chips
+    appeared at Round 1 IV·LET resolution.
+- next: file as /iterate fix. Touchpoint is the effect-chip view
+  in `components/event/EncounterModalOverlay.tsx` or
+  `app/(tabs)/combat.tsx` (TBD — locate the `tier1_*` template
+  string at file). Engine likely exposes `effect.displayName`
+  or similar; if not, mirror the battle-log mapping.
+- source: live-drive playtest 2026-05-24 (37th-call directive fire)
 
 ### [4.5] Non-combat tooltip walkthrough — SELF surface (user-jot `9457378`) ✅ (CLOSED — 4 ticks)
 

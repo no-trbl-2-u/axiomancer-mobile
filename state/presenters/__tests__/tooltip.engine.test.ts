@@ -11,7 +11,12 @@
 import { describe, expect, it } from '@jest/globals';
 import { skillLibrary } from 'axiomancer-mechanics';
 
-import { selectTooltipContentFor, type TooltipKind } from '@/state/presenters/tooltip.engine';
+import {
+    accentForStat,
+    formatEffectStatEffect,
+    selectTooltipContentFor,
+    type TooltipKind,
+} from '@/state/presenters/tooltip.engine';
 import type { AppStoreState } from '@/state/store';
 
 const EMPTY_STATE = {} as AppStoreState;
@@ -90,16 +95,22 @@ describe('selectTooltipContentFor', () => {
         });
     });
 
-    describe('kind: effect (Phase 75)', () => {
-        it('returns engine-sourced name + description for a known effectId', () => {
+    describe('kind: effect (Phase 75 + tighten 2026-05-24)', () => {
+        it('returns engine-sourced name + payload-derived stat-effect body for a known effectId', () => {
             const content = selectTooltipContentFor('effect', 'tier1_body_attack', EMPTY_STATE);
             expect(content).not.toBeNull();
             // Title is the engine effect name uppercased.
             expect(content?.title).toBe('AD BACULUM');
-            // Body is the verbatim engine description.
-            expect(content?.body).toMatch(/argument doesn't need words/);
-            // Tier-1 effect → "tier i" footnote.
-            expect(content?.footnote).toBe('tier i');
+            // Body is the formatted stat-effect line — not the engine
+            // description (which Phase 75 originally surfaced but the
+            // user-jot follow-up asked to drop in favour of the
+            // payload-derived line).
+            expect(content?.body).toBe('+1 physical attack');
+            // Body-target effect → 'body' accent (rust tint).
+            expect(content?.accent).toBe('body');
+            // Footnote dropped under the tighten — the body now
+            // carries the stat info.
+            expect(content?.footnote).toBeUndefined();
         });
 
         it('returns null for an unknown effectId', () => {
@@ -131,5 +142,137 @@ describe('selectTooltipContentFor', () => {
         it('returns null for an empty skill id', () => {
             expect(selectTooltipContentFor('skill', '', EMPTY_STATE)).toBeNull();
         });
+    });
+
+    describe('skill kind threads stance accent', () => {
+        it('skill on body stance returns body accent', () => {
+            const { skillLibrary } = require('axiomancer-mechanics');
+            const bodySkill = skillLibrary.find((s: { philosophicalAspect: string }) => s.philosophicalAspect === 'body');
+            if (!bodySkill) {
+                // No body-stance skill in library; skip without
+                // failing — the contract is still pinned by stat
+                // tests below.
+                return;
+            }
+            const content = selectTooltipContentFor('skill', bodySkill.id, EMPTY_STATE);
+            expect(content?.accent).toBe('body');
+        });
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Helpers (Phase 75 follow-up — payload formatter + accent mapper)
+// ---------------------------------------------------------------------------
+
+describe('accentForStat', () => {
+    it('maps physical* → body', () => {
+        expect(accentForStat('physicalAttack')).toBe('body');
+        expect(accentForStat('physicalDefense')).toBe('body');
+        expect(accentForStat('body')).toBe('body');
+    });
+
+    it('maps mental* → mind', () => {
+        expect(accentForStat('mentalSkill')).toBe('mind');
+        expect(accentForStat('mind')).toBe('mind');
+    });
+
+    it('maps emotional* → heart', () => {
+        expect(accentForStat('emotionalAttack')).toBe('heart');
+        expect(accentForStat('heart')).toBe('heart');
+    });
+
+    it('maps unknown / luck → neutral', () => {
+        expect(accentForStat('luck')).toBe('neutral');
+        expect(accentForStat('whatever')).toBe('neutral');
+    });
+});
+
+describe('formatEffectStatEffect', () => {
+    it('formats a single positive stat modifier', () => {
+        expect(
+            formatEffectStatEffect(
+                { statModifiers: [{ stat: 'physicalAttack', value: 1 }] },
+                'fallback',
+            ),
+        ).toBe('+1 physical attack');
+    });
+
+    it('formats a negative stat modifier', () => {
+        expect(
+            formatEffectStatEffect(
+                { statModifiers: [{ stat: 'mentalDefense', value: -2 }] },
+                'fallback',
+            ),
+        ).toBe('-2 mental defense');
+    });
+
+    it('formats a multiplier modifier with × notation', () => {
+        expect(
+            formatEffectStatEffect(
+                { statModifiers: [{ stat: 'emotionalAttack', value: 2, isMultiplier: true }] },
+                'fallback',
+            ),
+        ).toBe('×2 emotional attack');
+    });
+
+    it('annotates additional modifiers as "+N more"', () => {
+        expect(
+            formatEffectStatEffect(
+                {
+                    statModifiers: [
+                        { stat: 'physicalAttack', value: 1 },
+                        { stat: 'physicalDefense', value: 1 },
+                    ],
+                },
+                'fallback',
+            ),
+        ).toBe('+1 physical attack (+1 more)');
+    });
+
+    it('formats regeneration as "+N hp / round"', () => {
+        expect(
+            formatEffectStatEffect({ regeneration: { healthPerRound: 2 } }, 'fallback'),
+        ).toBe('+2 hp / round');
+    });
+
+    it('formats damage-over-time as "-N hp / round"', () => {
+        expect(
+            formatEffectStatEffect(
+                { damageOverTime: { damagePerRound: 3, damageType: 'physicalAttack' } },
+                'fallback',
+            ),
+        ).toBe('-3 hp / round');
+    });
+
+    it('formats actionRestriction skipTurn', () => {
+        expect(formatEffectStatEffect({ actionRestriction: { skipTurn: true } }, 'fallback'))
+            .toBe('skip turn');
+    });
+
+    it('formats actionRestriction forcedStance', () => {
+        expect(
+            formatEffectStatEffect(
+                { actionRestriction: { forcedStance: 'body' } },
+                'fallback',
+            ),
+        ).toBe('forced body stance');
+    });
+
+    it('formats advantageModifier grant', () => {
+        expect(
+            formatEffectStatEffect(
+                { advantageModifier: { grantAdvantage: ['body'] } },
+                'fallback',
+            ),
+        ).toBe('advantage on body');
+    });
+
+    it('formats rollModifier when statModifiers is empty', () => {
+        expect(formatEffectStatEffect({ rollModifier: 2 }, 'fallback')).toBe('+2 to rolls');
+    });
+
+    it('falls back to the description string when no payload field is present', () => {
+        expect(formatEffectStatEffect(undefined, 'description fallback')).toBe('description fallback');
+        expect(formatEffectStatEffect({}, 'description fallback')).toBe('description fallback');
     });
 });

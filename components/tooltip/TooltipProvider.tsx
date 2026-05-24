@@ -36,7 +36,11 @@ import React, {
 } from 'react';
 import { Dimensions, Pressable, StyleSheet, View } from 'react-native';
 
-import { selectTooltipContentFor, type TooltipKind } from '@/state/presenters/tooltip.engine';
+import {
+    selectTooltipContentFor,
+    type TooltipAccent,
+    type TooltipKind,
+} from '@/state/presenters/tooltip.engine';
 import { useGameStore } from '@/state/GameStoreProvider';
 
 import { TapTooltip } from './TapTooltip';
@@ -77,6 +81,7 @@ interface ActiveTooltip {
     title: string;
     body: string;
     footnote?: string;
+    accent?: TooltipAccent;
     left: number;
     top: number;
     anchorKey: string;
@@ -187,6 +192,7 @@ export function TooltipProvider({ children, windowSize }: TooltipProviderProps) 
                     title: content.title,
                     body: content.body,
                     footnote: content.footnote,
+                    accent: content.accent,
                     left,
                     top,
                     anchorKey,
@@ -224,6 +230,7 @@ export function TooltipProvider({ children, windowSize }: TooltipProviderProps) 
                         title={active.title}
                         body={active.body}
                         footnote={active.footnote}
+                        accent={active.accent}
                         left={active.left}
                         top={active.top}
                     />

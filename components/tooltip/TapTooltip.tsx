@@ -9,14 +9,19 @@
  * - Torn-edge panel (dashed 1px ash border on panel-bg) with
  *   12pt gothic uppercase title, lowercase chronicle body in
  *   IM Fell English, optional mono footnote for engine numbers.
- * - Max-width 280px; body wraps. No animation in Tick A
- *   (static mount matches a11y-default-static stance).
+ * - Max-width 280px; body wraps. Static mount (no animation).
+ *
+ * Phase 75 follow-up (user-jot 2026-05-24): optional `accent`
+ * prop tints title + border to the stance/stat the content is
+ * about (heart/body/mind). `'neutral'` (default) keeps the
+ * Tick A sulfur title + ash border.
  */
 
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { AXM, FONTS } from '@/theme/axm';
+import type { TooltipAccent } from '@/state/presenters/tooltip.engine';
 
 export interface TapTooltipProps {
     title: string;
@@ -29,13 +34,42 @@ export interface TapTooltipProps {
      */
     left: number;
     top: number;
+    /** Stat/stance accent for title + border tint. */
+    accent?: TooltipAccent;
     testID?: string;
 }
 
-export function TapTooltip({ title, body, footnote, left, top, testID }: TapTooltipProps) {
+const ACCENT_COLORS: Record<TooltipAccent, string> = {
+    heart: AXM.blood,
+    body: AXM.rust,
+    mind: AXM.sulfur,
+    neutral: AXM.sulfur,
+};
+
+const ACCENT_BORDER_COLORS: Record<TooltipAccent, string> = {
+    heart: AXM.blood,
+    body: AXM.rust,
+    mind: AXM.sulfur,
+    neutral: AXM.ash,
+};
+
+export function TapTooltip({
+    title,
+    body,
+    footnote,
+    left,
+    top,
+    accent = 'neutral',
+    testID,
+}: TapTooltipProps) {
+    const titleColor = ACCENT_COLORS[accent];
+    const borderColor = ACCENT_BORDER_COLORS[accent];
     return (
-        <View style={[styles.root, { left, top }]} testID={testID ?? 'tap-tooltip'}>
-            <Text style={styles.title} testID="tap-tooltip-title">
+        <View
+            style={[styles.root, { left, top, borderColor }]}
+            testID={testID ?? 'tap-tooltip'}
+        >
+            <Text style={[styles.title, { color: titleColor }]} testID="tap-tooltip-title">
                 {title}
             </Text>
             <Text style={styles.body} testID="tap-tooltip-body">
@@ -58,14 +92,12 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         borderWidth: 1,
         borderStyle: 'dashed',
-        borderColor: AXM.ash,
         backgroundColor: AXM.panelBg,
     },
     title: {
         fontFamily: FONTS.gothic,
         fontSize: 12,
         letterSpacing: 1.5,
-        color: AXM.sulfur,
         marginBottom: 4,
     },
     body: {

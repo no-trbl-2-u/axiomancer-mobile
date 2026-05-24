@@ -118,30 +118,17 @@
 - next: pick the next surface row (Inventory is highest at
   [4.0]).
 
-### [4.0] Non-combat tooltip walkthrough — Inventory surface (user-jot `9457378`)
+### [4.0] Non-combat tooltip walkthrough — Inventory surface (user-jot `9457378`) — partial (Tick 1 of 2)
 
 - filed: 2026-05-24 by /iterate (mirror #162)
+- partial: 2026-05-24 by /iterate Tick 1 (mirror #167; commit `<this-tick>`)
 - category: external-critique / a11y
-- impact: 4 (slot labels + burden are the unexplained
-  affordances; item-card stat lines are partly
-  self-explanatory)
-- ease: 7
-- inventory:
-  - **PaperDoll equipment slots**
-    (`inventory/index.tsx:188-216`) — `<TouchableOpacity>`
-    per slot wrapping `<ItemGlyph category="equipment">`.
-    Tooltip would explain slot name + worn-item details.
-    Presenter `kind: 'slot'` (shared with SELF).
-  - **Burden bar** (`inventory/index.tsx:379`) —
-    `<StatBar label="BURDEN · STONE">`. Tooltip would
-    explain burden mechanic + threshold consequences.
-    Presenter `kind: 'burden'` already in the union.
-  - **Item-card stat lines** (per-item rows in the
-    category sections) — would explain each stat's
-    contribution. Presenter `kind: 'item-stat'` already in
-    the union, not authored.
-- next: same — Phase 74 Tick D in the multi-phase
-  candidate.
+- impact: 4 / ease: 7
+- inventory progress:
+  - **PaperDoll equipment slots** — ✅ **wired Tick 1.** `SlotCard` gains `onLongPress` that fires `useTooltip().show({ kind: 'slot', id: slot.key })`. Content shared with the SELF surface (Tick 3 of the SELF row). Single-tap stays for slot-filter select per Phase 75 skill-row pattern.
+  - **Burden bar** — ✅ **wired Tick 1.** New `kind: 'burden'` content authored (single id `'burden'`); `<TooltipTarget kind="burden" id="burden">` wraps the StatBar.
+  - **Item-card stat lines** — pending. Presenter `kind: 'item-stat'` in the union; needs content authoring (one entry per engine stat key) + wrap on each item row.
+- next: Tick 2 (item-stat content + wrap) closes this row.
 
 ### [3.5] Non-combat tooltip walkthrough — Memoir surface (user-jot `9457378`)
 

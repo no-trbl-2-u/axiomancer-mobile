@@ -1677,24 +1677,23 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       81c ships clean.
 - [ ] Phase 81a — Engine MapDefinition reconciliation (resolves
       AUDIT `[4.0]` + `[3.0]` `[needs-engine-release]` rows).
-      Engine 0.11.0 widened `fv-*.connectedNodes` to a branching
-      22+ node graph — wider than the mobile layout fixture's
-      10-node graph. Scope:
-      - Tick A — produce `docs/engine-map-reconciliation-2026-05-24.md`
-        diffing mobile fixture vs engine MapDefinition (which nodes,
-        which edges, which collide). Stop and `/oversight` for the
-        direction call.
-      - Tick B (after oversight) — either (a) extend mobile fixture
-        to match engine + ship OPEN-set migration
-        (`availableNodes` → `discoveredNodes`); or (b) drop the
-        mobile fixture and derive layout from engine `location` /
-        `connectedNodes` directly. Whichever direction lands also
-        ships the original AUDIT `[3.0]` exploration presenter
-        migration.
+      Engine source has 25-node branching graph; published 0.11.0
+      still has 10-node linear. Tick A reconciliation doc shipped
+      (`040a7f2`). **Direction: Option A** (set via /oversight
+      39th call, 2026-05-24): align mobile spine to engine source
+      + add 15 new nodes (fv-11..fv-25). Mobile loses cross-spine
+      shortcuts but gains 3 districts (harbor, inland, cliff).
+      Scope:
+      - Tick A — DONE (`040a7f2`). Reconciliation doc at
+        `docs/engine-map-reconciliation-2026-05-24.md`.
+      - Tick B — **blocked on engine publish** (0.12.0). Once the
+        25-node graph lands in the published dist: (1) replace
+        mobile fixture's cross-spine edges with engine's linear
+        spine edges; (2) add 15 new NodeLayout entries with
+        authored positions/labels/types/descriptions; (3) ship
+        OPEN-set migration (`availableNodes` → `discoveredNodes`).
       Acceptance: AUDIT `[4.0]` + `[3.0]` rows flip to ✅; engine
-      becomes the documented source of truth for fishing-village
-      connectivity; exploration suite green. See PHASE_CANDIDATES.md
-      `[score 7.0]` row.
+      is documented source of truth; exploration suite green.
 - [x] Phase 81b — Hex-literal `'#0a0a0a'` + `'#06050a'` cluster
       drain to AXM tokens. Shipped in commit `c0bbb33`. Swept
       17 style-property `'#0a0a0a'` → `AXM.bg` + 6 `'#06050a'`
@@ -1732,6 +1731,24 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       `CombatSkill` adapter; renamed disabledReason to
       `'insufficient-resources'`; removed `mana`/`manaMax` from
       `SkillPickerSlice`. 1344/1344 verify green.
+
+- [ ] Phase 83 — Hex-literal `'#0a0807'` drain to
+      `AXM.silhouette` + aftermath panel token sweep. Promoted
+      via `/oversight` 2026-05-24 (39th call) from expand pass
+      42. 11 occurrences across 7 files (CombatDefeatPanel,
+      CombatVictoryPanel, CombatFriendshipPanel, LevelUpModal,
+      PixelEmblem, EncounterModalOverlay; skip ErrorBoundary).
+      Token already exists — pure grep+replace. See
+      PHASE_CANDIDATES.md `[score 4.0]` row.
+- [ ] Phase 84 — Inventory screen sub-component extraction.
+      Promoted via `/oversight` 2026-05-24 (39th call) from
+      expand pass 42. `app/(tabs)/inventory/index.tsx` at 1099
+      lines (repo's longest screen file). Same pattern as Phase
+      81c (combat extraction 1476→786). Likely targets: item
+      detail view, category grid, equipment dock, modal overlay.
+      Acceptance: inventory/index.tsx under ~700 lines; inventory
+      suite green; no behavioural change. See
+      PHASE_CANDIDATES.md `[score 3.0]` row.
 
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped
       2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —

@@ -54,6 +54,7 @@ import {
     type CombatAction,
     type CombatPhase,
     type CombatState,
+    type GameStore,
     type Consumable,
     type DialogueChoice,
     type DialogueTree,
@@ -83,6 +84,15 @@ import { EMPTY_EVENT_SLICE, type AppStore } from './store';
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
+
+/**
+ * Phase 78 — `CombatEndReport` is not re-exported from the engine
+ * package root (only via `axiomancer-mechanics/Game`, which the
+ * package `exports` field doesn't expose). Derive the type from
+ * the GameStore.endCombat signature so the alias tracks engine
+ * changes without a deep import.
+ */
+export type CombatEndReport = ReturnType<GameStore['endCombat']>;
 
 export type CombatActionKey = 'attack' | 'defend' | 'skill' | 'item';
 
@@ -161,7 +171,13 @@ export interface ResolveRoundResult {
 
 export interface AppActions {
     startCombat: (enemy: Enemy) => void;
-    endCombat: () => void;
+    /**
+     * Phase 78 — returns the engine `CombatEndReport` (was `void`).
+     * Callers that need post-combat metadata (codex unlock, alignment
+     * shift, narrative) read it off the return value; legacy callers
+     * that ignore the return value remain compatible.
+     */
+    endCombat: () => CombatEndReport | null;
     setCombatPhase: (phase: CombatPhase) => void;
     /** Sets the player's committed stance for the round. */
     setPlayerStance: (stance: Stance) => void;
@@ -503,10 +519,15 @@ export function createAppActions(store: AppStore): AppActions {
             }
         },
         endCombat: () => {
-            store.getState().endCombat();
-            // Phase 60d — clear mana slice when combat exits so the
-            // next encounter starts fresh.
+            // Phase 78 — surface the engine `CombatEndReport` so
+            // callers can read post-combat metadata (codex unlock,
+            // alignment shift, narrative). Engine returns a stub
+            // 'flee' report when called outside combat; we still
+            // forward it. Mana slice clears after the engine call
+            // so the next encounter starts fresh (Phase 60d).
+            const report = store.getState().endCombat();
             clearCombatMana(store);
+            return report ?? null;
         },
         setCombatPhase: (phase) => {
             const { combat, updateCombat } = store.getState();

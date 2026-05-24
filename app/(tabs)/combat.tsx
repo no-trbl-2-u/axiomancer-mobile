@@ -201,6 +201,23 @@ type CombatStateLike = {
     }[];
 };
 
+/**
+ * Phase 78 — derive a short preview line from a codex entry body.
+ * Takes the first sentence (split on the first period), truncates
+ * to ≤120 chars at a word boundary, strips the trailing period.
+ * The aftermath panel appends `'…'` itself.
+ */
+export function derivePreview(body: string): string {
+    const trimmed = body.trim();
+    if (trimmed.length === 0) return '';
+    const firstPeriod = trimmed.indexOf('.');
+    const firstSentence =
+        firstPeriod > 0 ? trimmed.slice(0, firstPeriod) : trimmed;
+    if (firstSentence.length <= 120) return firstSentence;
+    const cutoff = firstSentence.lastIndexOf(' ', 120);
+    return cutoff > 0 ? firstSentence.slice(0, cutoff) : firstSentence.slice(0, 120);
+}
+
 export function CombatPanel() {
     const router = useRouter();
     const {
@@ -293,9 +310,25 @@ export function CombatPanel() {
         // parley fight ends when the friendship counter hits the cap even
         // if the enemy hasn't dropped. Player HP <= 0 is the defeat branch.
         if (vm.friendshipCounter >= vm.friendshipCounterMax) {
-            // Phase 70 Tick B — same snapshot pattern as victory; the
-            // CombatFriendshipPanel reads the snapshot from
-            // combat-mode after actions.endCombat() clears the slice.
+            // Phase 78 — capture combat.enemy.journalEntry BEFORE
+            // actions.endCombat() clears the slice. The engine
+            // report tells us which entry unlocked (by id+title);
+            // the body comes from the live enemy's journalEntry
+            // field. The engine guards against re-unlocking entries
+            // already in state.codex.unlockedEntries — repeat
+            // friendships with the same foe report no unlock and
+            // the snapshot stays journalEntry: null.
+            const enemyJournalEntry = combat?.enemy.journalEntry ?? null;
+            const report = actions.endCombat();
+            const codexUnlocked = report?.friendshipReward?.codexEntryUnlocked ?? null;
+            const journalEntrySnapshot =
+                codexUnlocked && enemyJournalEntry
+                    ? {
+                          bookName: 'CODEX',
+                          entryTitle: codexUnlocked.title.toUpperCase(),
+                          preview: derivePreview(enemyJournalEntry.body),
+                      }
+                    : null;
             const parleySnapshot = combat !== null
                 ? {
                       variant: 'parley' as const,
@@ -309,13 +342,9 @@ export function CombatPanel() {
                           pactLines: combat.enemy.pactLines,
                       },
                       xpReward: combat.enemy.xpReward ?? null,
-                      // Engine doesn't yet expose per-foe codex
-                      // entries; the panel collapses the journal
-                      // section when this is null.
-                      journalEntry: null,
+                      journalEntry: journalEntrySnapshot,
                   }
                 : undefined;
-            actions.endCombat();
             exitCombatWith('parley', parleySnapshot);
             if (!inEncounterModal) {
                 finalizeCombatExit();

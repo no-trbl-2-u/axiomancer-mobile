@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-05-24 at commit 849f184
-> Pass count: 41
+> Last pass: 2026-05-24 at commit 153ea54
+> Pass count: 42
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -9,6 +9,48 @@
 > `/oversight`. See `skills/expand.md` for the contract.
 
 ## Pending
+
+### [score 4.0] Hex-literal `'#0a0807'` drain to `AXM.silhouette` + aftermath panel token sweep
+
+- proposed: 2026-05-24, expand pass 42 (smell §4 I, cascade from /iterate)
+- source signals:
+  - **Smell §4 I — hex-literal colour leakage (continuation).**
+    Phase 81b drained `#0a0a0a` → `AXM.bg` and `#06050a` →
+    `AXM.deepBg`. 11 remaining occurrences of `#0a0807` across
+    aftermath panels, EncounterModalOverlay, LevelUpModal,
+    PixelEmblem, and ErrorBoundary map directly to the existing
+    `AXM.silhouette` token (value `'#0a0807'`).
+  - Files: CombatDefeatPanel (1), CombatVictoryPanel (2),
+    CombatFriendshipPanel (3), LevelUpModal (2),
+    PixelEmblem (1), EncounterModalOverlay (1),
+    ErrorBoundary (1 — skip per existing policy).
+  - **Historical precedent** — Phase 81b shipped the same pattern
+    successfully in one tick (25 occurrences, 8 files).
+- rationale: mechanical grep+replace. Token already exists;
+  no new tokens needed. Skip ErrorBoundary (pre-token fallback).
+- proposed scope: 1 phase, 1 tick. Same pattern as Phase 81b.
+- estimated phases: 1
+- conflicts: none
+
+### [score 3.0] Inventory screen sub-component extraction (1099 lines)
+
+- proposed: 2026-05-24, expand pass 42 (smell §4 I, cascade from /iterate)
+- source signals:
+  - **Smell §4 I — file-length outlier.**
+    `app/(tabs)/inventory/index.tsx` at 1099 lines is the repo's
+    longest screen file (combat was 1476 before Phase 81c extracted
+    it to 786). Inventory is 1.6x the next file (combat at 786)
+    and 3x the tab-screen median (~356).
+  - **Precedent** — Phase 81c successfully extracted 8 components +
+    6 style sheets from combat.tsx in one tick.
+  - Likely extraction targets: item-detail expanded view, category
+    grid section, equipment dock panel, modal overlay.
+- rationale: same smell pattern as Phase 81c (combat extraction).
+  Inventory has 4+ visually distinct sections that could be
+  separate component files.
+- proposed scope: 1 phase, 2-3 ticks.
+- estimated phases: 1
+- conflicts: none
 
 ### [score 7.0] Engine MapDefinition reconciliation — `[needs-engine-release]` resolved by 0.11.0 [PROMOTED → Phase 81a via /oversight 38th call]
 

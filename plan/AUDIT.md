@@ -102,51 +102,20 @@
 
 ## Pending
 
-### [4.5] Non-combat tooltip walkthrough — SELF surface (user-jot `9457378`)
+### [4.5] Non-combat tooltip walkthrough — SELF surface (user-jot `9457378`) — partial (Tick 1 of N)
 
 - filed: 2026-05-24 by /iterate (mirror #162)
+- partial: 2026-05-24 by /iterate Tick 1 (mirror #163; commit `<this-tick>`)
 - category: external-critique / a11y
-- impact: 5 (covers 4 distinct icon families on the
-  highest-visited screen; player can't tell what stat /
-  effect / equipment slot means without leaving the screen)
-- ease: 7 (presenter branches `'derived' / 'alignment' /
-  'affliction' / 'blessing'` already typed in
-  `state/presenters/tooltip.engine.ts` `TooltipKind` union;
-  only content + tap-target wires needed)
-- inventory (icons / glyphs that should fire `useTooltip`):
-  - **Base stat cards** (`character/index.tsx:136-144`) — 3×
-    `<StanceGlyph kind={r.stanceKey}>` for HEART / BODY /
-    MIND. Tooltip kind already authored (Phase 74 Tick A
-    `kind: 'stat'`). Just wrap glyph in `<TooltipTarget kind="stat" id={r.stanceKey.toUpperCase()}>`.
-  - **Affliction / blessing rows**
-    (`character/index.tsx:205-228`) — `<EffectGlyph kind={e.kind}>`
-    per row. Effect tooltip presenter branch already shipped
-    in Phase 75; need to thread `effect.effectId` through
-    `CharacterEffectRow` (mirror of the Phase 75
-    `CombatEffectDisplay.effectId` add) and wrap the glyph.
-  - **Skill cards** (`character/index.tsx:265-275`) —
-    `<StanceGlyph kind={s.stanceKey}>` per skill. Skill
-    presenter branch shipped in Phase 75; needs id thread on
-    `CharacterSkillRow` (currently uses `name` as key, no id
-    exposed). Tooltip target wraps the whole card.
-  - **Equipment slot cells**
-    (`character/index.tsx:238-244`) — slot names are text
-    labels; tooltip would explain each slot's role + worn
-    item details. Presenter `kind: 'slot'` already in the
-    union, not yet authored.
-  - **Alignment axis chips**
-    (`character/index.tsx:188-194`) — 3× chips
-    (epistemology / ethics / metaphysics buckets). Tooltip
-    would explain each axis dimension. Presenter
-    `kind: 'alignment'` in the union, not authored.
-  - **Saves & tests cells** (`character/index.tsx:175-179`)
-    — 6 cells. Presenter `kind: 'derived'` in the union;
-    not authored. Lower priority than the others — saves
-    are derived stats players don't directly act on.
-- next: promote PHASE_CANDIDATES.md row `[score 5.5] Tooltip
-  walkthrough — non-combat surfaces (Phase 74 Ticks C-E
-  redux)` via /oversight; the SELF surface is the natural
-  Tick C deliverable.
+- impact: 5 / ease: 7
+- inventory progress:
+  - **Base stat cards** — ✅ **wired Tick 1.** `<TooltipTarget kind="stat" id={r.stanceKey.toUpperCase()}>` wraps each card; tap fires the Phase-74-Tick-A authored HEART/BODY/MIND content.
+  - **Affliction / blessing rows** — ✅ **wired Tick 1.** `CharacterEffectRow` gains `effectId` (mirror of Phase 75 `CombatEffectDisplay.effectId`); `<TooltipTarget kind="effect" id={e.effectId}>` wraps each row; tap fires the Phase-75 payload-formatted stat-effect line.
+  - **Skill cards** — pending. Needs `id` exposed on `CharacterSkillRow` (currently keys by `name`) then `<TooltipTarget kind="skill" id={s.id}>` wrap.
+  - **Equipment slot cells** — pending. Presenter `kind: 'slot'` already in the union; needs content + wrap.
+  - **Alignment axis chips** — pending. Presenter `kind: 'alignment'` in the union; needs content + wrap.
+  - **Saves & tests cells** — pending. Presenter `kind: 'derived'` in the union; lowest priority.
+- next: continue Tick 2 (skill cards + equipment slots, each cheap) in a future /iterate pass; Tick 3 (alignment + saves) when their presenter content authoring is in scope. Or promote PHASE_CANDIDATES.md row `[score 5.5] Tooltip walkthrough — non-combat surfaces` for parallel surface coverage.
 
 ### [4.0] Non-combat tooltip walkthrough — Inventory surface (user-jot `9457378`)
 

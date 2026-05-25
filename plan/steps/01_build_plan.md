@@ -1763,9 +1763,11 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       visibility toggles) + devOverrides.hud slice + combat HUD
       presenter integration. 38 new tests. DevMenu coverage
       complete.
-- [ ] Phase 88 — LevelUpModal derived-preview ribbon. Promoted
-      via `/oversight` 2026-05-24 (40th call). Needs engine
-      `previewAllocation` helper. See PHASE_CANDIDATES.md
+- [x] Phase 88 — LevelUpModal derived-preview ribbon. Promoted
+      via `/oversight` 2026-05-24 (40th call). Shipped in commit
+      `d2355a8` — DerivedPreviewRibbon component + local
+      previewAllocation helper. ATK/SKL/DEF grid with real-time
+      preview.
       `[score 4.0]` row.
 - [ ] Phase 89 — Combat log-entry shape audit + regression pin
       for boss-skill killing-blow crash. Promoted via `/oversight`

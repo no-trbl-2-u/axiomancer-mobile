@@ -1737,6 +1737,30 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       10 occurrences across 6 files (LevelUpModal, aftermath
       panels, PixelEmblem, EncounterModalOverlay). ErrorBoundary
       skipped. 1345/1345 verify green.
+- [ ] Phase 85 — Mechanics-vs-UI audit on the combat-modal
+      rewrite (2026-05-23). Promoted via `/oversight` 2026-05-24
+      (40th call). Audit the combat surface inside
+      `EncounterModalOverlay` against the engine's combat reducer.
+      See PHASE_CANDIDATES.md `[score 6.5]` row.
+- [ ] Phase 86 — Aftermath rendering inside the encounter modal.
+      Promoted via `/oversight` 2026-05-24 (40th call). Wire
+      aftermath panels (victory, defeat, friendship) to render
+      inside the encounter modal overlay instead of requiring a
+      route transition. See PHASE_CANDIDATES.md `[score 6.0]`
+      row (originally Phase 66 candidate).
+- [ ] Phase 87 — DEV-mode coverage expansion. Promoted via
+      `/oversight` 2026-05-24 (40th call). One debug affordance
+      per ported mechanic (XP, mana, alignment, effects, event
+      triggers, dialogue, quest state, friendship, currency, HUD
+      overrides). See PHASE_CANDIDATES.md `[score 6.0]` row.
+- [ ] Phase 88 — LevelUpModal derived-preview ribbon. Promoted
+      via `/oversight` 2026-05-24 (40th call). Needs engine
+      `previewAllocation` helper. See PHASE_CANDIDATES.md
+      `[score 4.0]` row.
+- [ ] Phase 89 — Combat log-entry shape audit + regression pin
+      for boss-skill killing-blow crash. Promoted via `/oversight`
+      2026-05-24 (40th call). See PHASE_CANDIDATES.md
+      `[score 3.5]` row.
 - [x] Phase 84 — Inventory screen sub-component extraction.
       Shipped in commit `41f8368`. Extracted ItemCard, ItemGlyph,
       groupByCategory, CATEGORY_ORDER + 19 styles to

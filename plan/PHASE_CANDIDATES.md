@@ -454,7 +454,7 @@
 - conflicts: should land after Phase 79a so the picker shows
   only equippable skills first.
 
-### [score 6.5] Mechanics-vs-UI audit on the 2026-05-23 combat-modal rewrite
+### [score 6.5] Mechanics-vs-UI audit on the 2026-05-23 combat-modal rewrite [PROMOTED -> Phase 85 via /oversight 40th call]
 
 - proposed: 2026-05-23, expand pass 38
 - source signals:
@@ -467,7 +467,7 @@
 - estimated phases: 1.
 - conflicts: none. The combat modal rewrite has shipped + landed clean; audit is read-only of code that's now stable.
 
-### [score 4.0] LevelUpModal derived-preview ribbon — needs engine `previewAllocation` helper
+### [score 4.0] LevelUpModal derived-preview ribbon — needs engine [PROMOTED -> Phase 88 via /oversight 40th call] — needs engine `previewAllocation` helper
 
 - proposed: 2026-05-23, expand pass 37
 - source signals:
@@ -504,7 +504,7 @@
   pass-36 engine asks if a single engine PR carries multiple
   follow-ups.
 
-### [score 3.5] Combat log-entry shape audit + regression pin for boss-skill killing-blow crash
+### [score 3.5] Combat log-entry shape audit + regression pin for boss-skill killing-blow crash [PROMOTED -> Phase 89 via /oversight 40th call]
 
 - proposed: 2026-05-23, expand pass 37
 - source signals:
@@ -816,7 +816,7 @@
 <details>
 <summary>[promoted 2026-05-21 → status Phase 64] [score 7.5] Multi-screen integration test harness (preserved for traceability)</summary>
 
-### [score 7.5] Phase 64 — Multi-screen integration test harness
+### [score 7.5] Phase 64 — Multi-screen integration test harness [CLOSED — already shipped as Phase 64]
 
 - proposed: 2026-05-21, expand pass 33
 - source signals:
@@ -856,7 +856,7 @@
 See `01_build_plan.md` Phase 64 row for the live brief.
 </details>
 
-### [score 6.0] Phase 66 — Aftermath rendering inside the modal
+### [score 6.0] Phase 66 — Aftermath rendering inside the modal [PROMOTED -> Phase 86 via /oversight 40th call]
 
 > **Renumbered 2026-05-21 oversight 25th call** from Phase 65
 > → Phase 66. Phase 65 is now the combat regression cluster
@@ -996,7 +996,7 @@ See `01_build_plan.md` Phase 64 row for the live brief.
 <details>
 <summary>[promoted 2026-05-20 → status Phase 61 parent + 61a–61f] [score 6.0] DEV-mode coverage expansion (preserved for traceability)</summary>
 
-### [score 6.0] DEV-mode coverage expansion — one debug affordance per ported mechanic
+### [score 6.0] DEV-mode coverage expansion — one debug affordance per ported mechanic [PROMOTED -> Phase 87 via /oversight 40th call]
 
 - proposed: 2026-05-20, filed inline from `/iterate` after user-jot `7821f13`
 - source signals:
@@ -1105,7 +1105,7 @@ promoted as Phase 61 parent + 61a–61f. See `01_build_plan.md`
 > (shipped `261a238`). Other candidate numbers (18–25) stay
 > as filed.
 
-### [score 5.5] Phase 20 — Drain `combat.skills.fixture.ts` (engine Spec 04b consumer)
+### [score 5.5] Phase 20 — Drain [CLOSED — already shipped as Phase 16] `combat.skills.fixture.ts` (engine Spec 04b consumer)
 
 - block: II (engine-release-gated)
 - source: cross-repo versioning audit (integrated 2026-05-15), closes audit gap G
@@ -1117,7 +1117,7 @@ promoted as Phase 61 parent + 61a–61f. See `01_build_plan.md`
 - conflicts: same work as Status block Phase 16. Resolve by
   treating this as a pointer, not a fresh row.
 
-### [score 6.0] Phase 21 — Engine-driven skill resolution (`executeSkill` wiring)
+### [score 6.0] Phase 21 — Engine-driven skill resolution [CLOSED — already shipped as Phase 21] (`executeSkill` wiring)
 
 - block: II (engine-release-gated, depends on 20)
 - source: cross-repo versioning audit (integrated 2026-05-15), closes audit gap H

@@ -10,7 +10,7 @@
 
 ## Pending
 
-### [score 3.0] Nested button accessibility fix in stance picker
+### [score 3.0] Nested button accessibility fix in stance picker [PROMOTED → Phase 90 via /oversight 41st call]
 - proposed: 2026-05-25, expand pass 43
 - source signals:
   - **AUDIT.md [8.0] nested button DOM hierarchy violation.** Impact 8 (console errors on web, breaks hydration semantics, screen readers double-announce), ease 6. Too big for one /iterate fix.

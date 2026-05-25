@@ -1135,10 +1135,10 @@ scope. User selected the parent-with-sub-ticks shape (Phase 61
 mold). Each sub-phase adds one Debug* row inside the existing
 DevMenu (Phase 61a wrapper); none change production surfaces.
 
-- [parent] Phase 62 — DEV-mode follow-up affordances. Tracks
-      the meta-feature; sub-phases 62a–62e are the actual work
-      units. Closes when 62e ships clean (or when the user
-      signals "62 complete" via `/oversight`).
+- [x] Phase 62 — DEV-mode follow-up affordances. Closed via
+      `/oversight` 2026-05-25 (41st call). Sub-phases 62a–62c
+      shipped; 62d–62e paused indefinitely (user re-prioritized
+      Phase 63+). Parent closes.
 - [x] Phase 62a — Dialogue tree jump. Shipped `b5f681e` —
       `feat(spec62a): dev-menu dialogue tree jump`. New
       `<DebugDialogueJump>` row with two static trees (OMEN /
@@ -1631,13 +1631,11 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       green (+14 from 1255). Brief at
       `plan/phases/phase_79_skill_craft_audit.md`.
 
-- [parent] Phase 80 — Tooltip cluster (modal portal +
-      consolidation + SELF derived table). Promoted via
-      `/oversight` 2026-05-24 (37th call) from `expand pass 40`'s
-      three pending candidates. Tracks the meta-feature; sub-phases
-      80a–80c are the actual work units. Dispatch in listed order
-      (80a → 80c); 80a unblocks future modal-tooltip needs and
-      should ship first. Closes when 80c ships clean.
+- [x] Phase 80 — Tooltip cluster (modal portal + consolidation
+      + SELF derived table). Closed via `/oversight` 2026-05-25
+      (41st call). All three sub-phases shipped: 80a (tooltip
+      portal), 80b (TooltipTarget consolidation), 80c (SELF
+      derived tooltips).
 - [x] Phase 80a — Tooltip overlay portal (mount tooltips inside
       RN `<Modal>` surfaces). Shipped this commit. Scope landed
       smaller than the brief anticipated: only the inventory item
@@ -1668,13 +1666,11 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       Tick 2 synthesizer. +1 test pinning the 9 engine stat ids.
       1343/1343 verify green (+1 from 1342).
 
-- [parent] Phase 81 — Engine reconciliation + cleanup cluster.
-      Promoted via `/oversight` 2026-05-24 (38th call) from expand
-      pass 41's three candidates. Tracks the cluster; sub-phases
-      81a–81c are the actual work. Dispatch in listed order
-      (81a → 81c); 81a is the highest-impact unblock and has a
-      design-call gate between Tick A and Tick B. Closes when
-      81c ships clean.
+- [x] Phase 81 — Engine reconciliation + cleanup cluster.
+      Closed via `/oversight` 2026-05-25 (41st call). All three
+      sub-phases shipped: 81a (MapDefinition reconciliation,
+      Tick B engine-blocked), 81b (hex-literal drain), 81c
+      (combat.tsx extraction).
 - [x] Phase 81a — Engine MapDefinition reconciliation (resolves
       AUDIT `[4.0]` + `[3.0]` `[needs-engine-release]` rows).
       Engine source has 25-node branching graph; published 0.11.0
@@ -1711,13 +1707,10 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       target). Combined all three ticks into one since the
       components form a cohesive tree. 1343/1343 verify green.
 
-- [parent] Phase 82 — Phase 79 audit follow-ups (skill picker +
-      per-resource enablement). Promoted via `/oversight`
-      2026-05-24 (38th call). Closes the two findings filed by
-      Phase 79 (`1053ef8`) that weren't shipped inline: (A) the
-      engine silently blocks every pick on `not-equipped` and
-      (B) mobile flat-sum `manaCost` diverges from engine
-      per-resource `canUseSkill`. Dispatch 82a → 82b.
+- [x] Phase 82 — Phase 79 audit follow-ups (skill picker +
+      per-resource enablement). Closed via `/oversight` 2026-05-25
+      (41st call). Both sub-phases shipped: 82a (equippedSkills
+      filter), 82b (per-resource enablement).
 - [x] Phase 82a — Skill picker filters by `player.equippedSkills`.
       Shipped in commit `2aeda82`. buildSkillPicker now accepts
       optional equippedSkills filter; reads from state.player
@@ -1782,6 +1775,16 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       `components/inventory/ItemCard.tsx`. inventory/index.tsx
       dropped from 1099 to 703 lines (36% reduction).
       1345/1345 verify green.
+
+- [ ] Phase 90 — Nested button accessibility fix in stance
+      picker. Promoted via `/oversight` 2026-05-25 (41st call)
+      from PHASE_CANDIDATES `[score 3.0]` / AUDIT `[8.0]`.
+      Refactor ADV/DIS badge from `Pressable` to `View` +
+      accessibility props to eliminate the nested `<button>`
+      DOM violation. Console errors on web; breaks hydration
+      semantics; screen readers double-announce. Single tick.
+      Commit: `fix(spec90): nested button a11y fix in stance
+      picker`.
 
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped
       2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —

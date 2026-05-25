@@ -82,11 +82,13 @@
 - fix: Created comprehensive hermetic test coverage for BossIllustration (7 test cases) and EncounterIllustration (8 test cases) components. Tests cover accessibility attributes, SVG element structure, and visual element organization. PlaceholderIllustration already had existing test coverage. All tests follow project patterns and pass verification.
 - source: audit/iterate
 
-### [6.4] Console statements left in production code
+### [6.4] Console statements left in production code ✅
+- issue: #194
 - category: performance / tech-debt
 - impact: 8 (app/_layout.tsx contains console.warn statements that will execute in production builds. DebugFriendship.tsx has console.warn in user-facing code path)
 - ease: 8 (remove or gate console statements behind __DEV__ checks. Simple code cleanup)
-- next: Remove or properly gate console statements in production code paths
+- addressed: 2026-05-25 via commit `c4f37b8`
+- fix: Gated all console.warn statements behind __DEV__ checks in app/_layout.tsx (persistence error logging) and components/DebugFriendship.tsx (debug warnings). Console statements now only execute in development builds, preventing production logs from exposing debug information.
 - source: audit/iterate
 
 ### [5.6] No web metadata for SEO and social sharing

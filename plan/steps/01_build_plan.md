@@ -1675,7 +1675,7 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       (81a → 81c); 81a is the highest-impact unblock and has a
       design-call gate between Tick A and Tick B. Closes when
       81c ships clean.
-- [ ] Phase 81a — Engine MapDefinition reconciliation (resolves
+- [x] Phase 81a — Engine MapDefinition reconciliation (resolves
       AUDIT `[4.0]` + `[3.0]` `[needs-engine-release]` rows).
       Engine source has 25-node branching graph; published 0.11.0
       still has 10-node linear. Tick A reconciliation doc shipped
@@ -1694,6 +1694,7 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
         OPEN-set migration (`availableNodes` → `discoveredNodes`).
       Acceptance: AUDIT `[4.0]` + `[3.0]` rows flip to ✅; engine
       is documented source of truth; exploration suite green.
+      `[DONE - mobile side complete in commit f764a46]`.
 - [x] Phase 81b — Hex-literal `'#0a0a0a'` + `'#06050a'` cluster
       drain to AXM tokens. Shipped in commit `c0bbb33`. Swept
       17 style-property `'#0a0a0a'` → `AXM.bg` + 6 `'#06050a'`

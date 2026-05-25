@@ -123,6 +123,16 @@
 - suggested_fix: [user has not specified — iterate to determine]
 - source: user
 
+### [HIGH] /combat — Combat UX unintuitive, numbers and icons lack meaning, needs design overhaul
+- pass: user-jot (commit `dde93f4`)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: From a less "mechanical" perspective and more of a UX perspective, the combat modal may not provide as intuitive an experience as possible. I see numbers and icons, but I don't know what they mean. We need a design overhaul.
+- evidence: user-spotted at 2026-05-25
+- suggested_fix: [needs design — user flagged this as a UX overhaul, not a code fix]
+- source: user
+
 ### [HIGH] general — Combat encounters stop triggering after first encounter until refresh
 - pass: user-jot (commit `b12f1e9`)
 - viewport: unspecified

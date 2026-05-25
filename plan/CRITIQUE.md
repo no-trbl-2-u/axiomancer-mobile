@@ -72,6 +72,7 @@
 - evidence: user-spotted at 2026-05-25
 - suggested_fix: [user has not specified — iterate to determine]
 - source: user
+- playtest: see PLAYTEST_REPORT.md [F13] (nested button HTML violation in item cards)
 
 ### [HIGH] general — Equipment has no effect on player stats
 - pass: user-jot (commit `b12f1e9`)
@@ -92,6 +93,7 @@
 - evidence: user-spotted at 2026-05-25
 - suggested_fix: [user has not specified — iterate to determine]
 - source: user
+- playtest: see PLAYTEST_REPORT.md [F08] (Explain buttons on SELF produce no visible output)
 
 ### [MED] /combat — Space heart/body/mind buttons evenly in combat modal
 - pass: user-jot (commit `b12f1e9`)
@@ -102,6 +104,7 @@
 - evidence: user-spotted at 2026-05-25
 - suggested_fix: [user has not specified — iterate to determine]
 - source: user
+- playtest: see PLAYTEST_REPORT.md [F07] (Mind stance card clipped at right edge)
 
 ### [MED] /self — Stat allocation cross-effects not reflected in actual character stats
 - pass: user-jot (commit `b12f1e9`)
@@ -132,6 +135,7 @@
 - evidence: user-spotted at 2026-05-25
 - suggested_fix: [needs design — user flagged this as a UX overhaul, not a code fix]
 - source: user
+- playtest: confirmed by PLAYTEST_REPORT.md [F02] (encounter jargon), [F04] (battle log ability names), [F05] (LET phase numbers), [F06] (CRUCIBLE symbols)
 
 
 ## Done

@@ -1776,7 +1776,7 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       dropped from 1099 to 703 lines (36% reduction).
       1345/1345 verify green.
 
-- [ ] Phase 90 — Nested button accessibility fix in stance
+- [x] Phase 90 — Nested button accessibility fix in stance
       picker. Promoted via `/oversight` 2026-05-25 (41st call)
       from PHASE_CANDIDATES `[score 3.0]` / AUDIT `[8.0]`.
       Refactor ADV/DIS badge from `Pressable` to `View` +
@@ -1784,7 +1784,7 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       DOM violation. Console errors on web; breaks hydration
       semantics; screen readers double-announce. Single tick.
       Commit: `fix(spec90): nested button a11y fix in stance
-      picker`.
+      picker` `[fead194]`.
 
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped
       2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —

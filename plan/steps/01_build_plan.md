@@ -1753,11 +1753,16 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       EncounterModalOverlay when `mode === 'aftermath'`. Tests
       confirm victory/parley/defeat panels swap correctly. See
       `05d85e7`, `8baf37a`, `a6b1665`.
-- [ ] Phase 87 — DEV-mode coverage expansion. Promoted via
+- [x] Phase 87 — DEV-mode coverage expansion. Promoted via
       `/oversight` 2026-05-24 (40th call). One debug affordance
       per ported mechanic (XP, mana, alignment, effects, event
       triggers, dialogue, quest state, friendship, currency, HUD
       overrides). See PHASE_CANDIDATES.md `[score 6.0]` row.
+      Shipped `cffbc9b` — DebugCurrencyControl (50/500S grants + 
+      BROKE reset) + DebugHudOverrides (mana/effects/stance
+      visibility toggles) + devOverrides.hud slice + combat HUD
+      presenter integration. 38 new tests. DevMenu coverage
+      complete.
 - [ ] Phase 88 — LevelUpModal derived-preview ribbon. Promoted
       via `/oversight` 2026-05-24 (40th call). Needs engine
       `previewAllocation` helper. See PHASE_CANDIDATES.md

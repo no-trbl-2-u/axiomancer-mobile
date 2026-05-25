@@ -1743,12 +1743,16 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       (40th call). Audit the combat surface inside
       `EncounterModalOverlay` against the engine's combat reducer.
       See PHASE_CANDIDATES.md `[score 6.5]` row. See commit `408600f`.
-- [ ] Phase 86 — Aftermath rendering inside the encounter modal.
+- [x] Phase 86 — Aftermath rendering inside the encounter modal.
       Promoted via `/oversight` 2026-05-24 (40th call). Wire
       aftermath panels (victory, defeat, friendship) to render
       inside the encounter modal overlay instead of requiring a
       route transition. See PHASE_CANDIDATES.md `[score 6.0]`
-      row (originally Phase 66 candidate).
+      row (originally Phase 66 candidate). **Already implemented
+      in Phase 70** — aftermath panels are rendering inside
+      EncounterModalOverlay when `mode === 'aftermath'`. Tests
+      confirm victory/parley/defeat panels swap correctly. See
+      `05d85e7`, `8baf37a`, `a6b1665`.
 - [ ] Phase 87 — DEV-mode coverage expansion. Promoted via
       `/oversight` 2026-05-24 (40th call). One debug affordance
       per ported mechanic (XP, mana, alignment, effects, event

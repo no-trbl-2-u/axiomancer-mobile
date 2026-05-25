@@ -150,6 +150,7 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           allowed_tools: "Bash,Read,Edit,Write,Glob,Grep,Agent,TodoWrite,WebFetch,WebSearch"
           timeout_minutes: '60'
+          claude_args: "--dangerously-skip-permissions"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}

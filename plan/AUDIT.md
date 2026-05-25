@@ -65,12 +65,14 @@
 
 ## Top 5 findings (scored)
 
-### [3.2] TooltipTarget component missing test coverage
+### [3.2] TooltipTarget component missing test coverage ✅
 - category: tests
 - impact: 4 (shared tooltip primitive used across multiple surfaces, no test coverage means regressions could go unnoticed)
 - ease: 8 (straightforward component test following established patterns)
 - issue: #189
-- next: create `components/tooltip/__tests__/TooltipTarget.test.tsx` with hermetic test coverage for the component's rendering and interaction behavior
+- addressed: 2026-05-25 via commit `75be942`
+- fix: created `components/tooltip/__tests__/TooltipTarget.test.tsx` with comprehensive hermetic test coverage. Tests all rendering branches, interaction handlers (onPress with show/hide tooltip calls), accessibility props, empty ID short-circuit behavior, ref handling, and integration with all TooltipKind values. 8 test cases covering the shared tooltip primitive's behavior.
+- source: /iterate audit 2026-05-25
 
 ### [2.5] Three console deprecation warnings from web bundle (LOW)
 - category: tests / tech-debt

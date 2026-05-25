@@ -5,7 +5,14 @@ import { AXM } from '@/theme/axm';
 
 export function BossIllustration() {
     return (
-        <Svg viewBox="0 0 374 360" width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
+        <Svg 
+            viewBox="0 0 374 360" 
+            width="100%" 
+            height="100%" 
+            style={StyleSheet.absoluteFillObject}
+            accessibilityLabel="Boss encounter illustration showing a crowned figure with glowing eyes and ornate robes on a throne"
+            accessibilityRole="image"
+        >
             <Path d="M40 20 L 40 200 L 100 80 L 187 30 L 274 80 L 334 200 L 334 20 Z"
                 fill="#06050a" stroke={AXM.parchment} strokeWidth={1.5} />
             <Path d="M120 80 L 187 50 L 254 80" stroke={AXM.blood} strokeWidth={1.5} fill="none" />

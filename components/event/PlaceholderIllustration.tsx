@@ -12,8 +12,30 @@ import type { EventArtSlug } from '@/state/presenters/event-assets';
  * placeholders, but their slugs come from the engine."
  */
 export function PlaceholderIllustration({ slug }: { slug: EventArtSlug }) {
+    const getAccessibilityLabel = (slug: EventArtSlug): string => {
+        const labels: Record<EventArtSlug, string> = {
+            'rest': 'Rest location illustration showing a tent with campfire',
+            'gathering': 'Gathering spot illustration showing multiple resource nodes',
+            'loot-cache': 'Loot cache illustration showing a treasure chest',
+            'interaction-generic': 'Generic interaction illustration showing a figure with speech elements', 
+            'village': 'Village illustration showing multiple buildings',
+            'cutscene': 'Cutscene illustration showing narrative elements with circular focus',
+            'hazard': 'Hazard illustration showing warning symbols and danger markers',
+            'encounter': 'Combat encounter illustration showing a creature among twisted trees and ground debris',
+            'boss': 'Boss encounter illustration showing a crowned figure with glowing eyes and ornate robes on a throne'
+        };
+        return labels[slug] || `Event illustration for ${slug}`;
+    };
+
     return (
-        <Svg viewBox="0 0 374 320" width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
+        <Svg 
+            viewBox="0 0 374 320" 
+            width="100%" 
+            height="100%" 
+            style={StyleSheet.absoluteFillObject}
+            accessibilityLabel={getAccessibilityLabel(slug)}
+            accessibilityRole="image"
+        >
             <G stroke={AXM.bone} strokeWidth={0.5} opacity={0.3}>
                 {Array.from({ length: 60 }).map((_, i) => (
                     <Line key={i} x1={i * 7} y1={200 + (i % 4) * 3} x2={i * 7 + 10} y2={200 + (i % 4) * 3} />

@@ -5,7 +5,14 @@ import { AXM } from '@/theme/axm';
 
 export function EncounterIllustration() {
     return (
-        <Svg viewBox="0 0 374 320" width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
+        <Svg 
+            viewBox="0 0 374 320" 
+            width="100%" 
+            height="100%" 
+            style={StyleSheet.absoluteFillObject}
+            accessibilityLabel="Combat encounter illustration showing a creature among twisted trees and ground debris"
+            accessibilityRole="image"
+        >
             <Line x1={0} y1={200} x2={374} y2={200} stroke={AXM.bone} strokeWidth={0.5} opacity={0.4} />
             {[40, 100, 280, 340].map((x, i) => (
                 <G key={i}>

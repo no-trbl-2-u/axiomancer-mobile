@@ -209,7 +209,7 @@ function StanceCard({
                 onLongPress={(isAdv || isDis) ? () => tooltip.show({ kind: 'stance-chip', id: opt.key, anchorRef: ref }) : undefined}
                 style={stance_styles.cardTouch}
                 accessibilityRole="button"
-                accessibilityLabel={a11yLabel}
+                accessibilityLabel={`${a11yLabel}${(isAdv || isDis) ? ` with ${isAdv ? 'advantage' : 'disadvantage'}` : ''}`}
                 accessibilityHint={(isAdv || isDis) ? 'hold to read advantage description' : undefined}
                 accessibilityState={{ selected: isSel }}
             >
@@ -217,7 +217,6 @@ function StanceCard({
                     {(isAdv || isDis) && (
                         <View
                             style={[stance_styles.advBadge, { borderColor: isAdv ? AXM.sulfur : AXM.blood }]}
-                            accessibilityLabel={`${isAdv ? 'Advantage' : 'Disadvantage'} on ${opt.label}`}
                             testID={`combat-stance-${opt.key}-advdis`}
                         >
                             <Text style={[stance_styles.advText, { color: isAdv ? AXM.sulfur : AXM.blood }]}>

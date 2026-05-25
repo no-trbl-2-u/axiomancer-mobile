@@ -34,6 +34,8 @@ import {
     determineAdvantage,
     determineCombatEnd,
     determineEnemyAction,
+    equipItem as engineEquipItem,
+    unequipItem as engineUnequipItem,
     getDialogueNode,
     getTemplatesBySlot,
     getMapDefinition,
@@ -890,6 +892,9 @@ function equipItemAction(store: AppStore, itemId: string): void {
     const target = inventory.find((i: Item) => i.id === itemId);
     if (!target || !isEquipment(target)) return;
 
+    // EQUIPMENT STATS FIX: Call engine's equipItem to apply stat bonuses
+    const updatedPlayer = engineEquipItem(state.player, target as Equipment);
+
     const targetSlot = (target as Equipment).slot;
 
     // Build the reordered inventory:
@@ -909,7 +914,7 @@ function equipItemAction(store: AppStore, itemId: string): void {
     }
     const next: Item[] = [target, ...slotPeers, ...nonSlot];
 
-    store.setState({ player: { ...state.player, inventory: next } });
+    store.setState({ player: { ...updatedPlayer, inventory: next } });
 }
 
 function unequipItemAction(store: AppStore, itemId: string): void {
@@ -936,6 +941,9 @@ function unequipItemAction(store: AppStore, itemId: string): void {
     ).length;
     if (slotPeerCount <= 1) return;
 
+    // EQUIPMENT STATS FIX: Call engine's unequipItem to remove stat bonuses
+    const updatedPlayer = engineUnequipItem(state.player, targetSlot);
+
     // Rebuild inventory:
     //   1. All non-target, non-slot items in their original order.
     //   2. All slot peers (except target) in their original order
@@ -955,7 +963,7 @@ function unequipItemAction(store: AppStore, itemId: string): void {
     }
     const next: Item[] = [...nonSlot, ...slotPeersExceptTarget, target];
 
-    store.setState({ player: { ...state.player, inventory: next } });
+    store.setState({ player: { ...updatedPlayer, inventory: next } });
 }
 
 function dropItemAction(store: AppStore, itemId: string): void {

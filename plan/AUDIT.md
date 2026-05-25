@@ -74,11 +74,12 @@
 - fix: Added accessibilityLabel and accessibilityRole="image" props to all three SVG illustration components. BossIllustration and EncounterIllustration have specific descriptive labels, PlaceholderIllustration has dynamic labels based on event type slug covering all EventArtSlug variants (rest, gathering, loot-cache, interaction-generic, village, cutscene, hazard, encounter, boss).
 - source: audit/iterate
 
-### [7.2] Missing test coverage for core illustration components
+### [7.2] Missing test coverage for core illustration components ✅
 - category: tests
 - impact: 8 (BossIllustration, EncounterIllustration, and PlaceholderIllustration have no test files despite being critical visual components. Only 68 out of 572 TSX files have accessibility labels - significant coverage gap)
 - ease: 9 (create component tests following existing patterns in components/__tests__/ directory. Test rendering and prop handling)
-- next: Create test files for illustration components following existing test patterns
+- addressed: 2026-05-25 via commit `3a7a7e0`
+- fix: Created comprehensive hermetic test coverage for BossIllustration (7 test cases) and EncounterIllustration (8 test cases) components. Tests cover accessibility attributes, SVG element structure, and visual element organization. PlaceholderIllustration already had existing test coverage. All tests follow project patterns and pass verification.
 - source: audit/iterate
 
 ### [6.4] Console statements left in production code

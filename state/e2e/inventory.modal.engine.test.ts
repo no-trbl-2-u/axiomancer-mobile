@@ -227,6 +227,25 @@ describe('selectItemModalViewModel: equipment preview (Q5)', () => {
             expect(typeof delta.delta).toBe('number');
         }
     });
+
+    // Phase 80a — equipment stat-delta rows carry an `id` engine-stat
+    // key so the inventory item modal's TooltipTarget wrap can fire a
+    // `kind:'item-stat'` synthesizer tooltip on tap. Pin the four
+    // currently-emitted keys so a future rename in the engine surfaces
+    // here as a test failure (and not as silently-broken tooltips).
+    it('equipment stat deltas carry engine stat-key ids for tooltip wiring (Phase 80a)', () => {
+        const store = makeStore([blade]);
+
+        const vm = selectItemModalViewModel(store.getState(), 'long-blade')!;
+
+        const ids = vm.statDeltas.map((d) => d.id);
+        expect(ids).toEqual([
+            'physicalAttack',
+            'physicalDefense',
+            'mentalAttack',
+            'emotionalDefense',
+        ]);
+    });
 });
 
 describe('selectItemModalViewModel: invariants', () => {

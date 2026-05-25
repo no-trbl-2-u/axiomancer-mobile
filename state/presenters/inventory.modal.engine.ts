@@ -45,6 +45,14 @@ export interface StatDelta {
     before: number;
     after: number;
     delta: number;
+    /**
+     * Engine stat key (e.g. `'physicalAttack'`, `'mentalDefense'`).
+     * Consumed by the inventory item-modal's TooltipTarget wrap
+     * (Phase 80a) to fire a `kind:'item-stat'` synthesizer tooltip
+     * on tap. Optional so callers building deltas without a stat
+     * binding can omit it; the view falls back to a plain row.
+     */
+    id?: string;
 }
 
 export interface ItemModalViewModel {
@@ -155,10 +163,10 @@ function buildEquipmentModal(player: Character, item: Item): ItemModalViewModel 
     const before: DerivedStats = player.derivedStats;
     const after: DerivedStats = before;
     const statDeltas: StatDelta[] = [
-        delta('PHYS ATK', before.physicalAttack, after.physicalAttack),
-        delta('PHYS DEF', before.physicalDefense, after.physicalDefense),
-        delta('MENT ATK', before.mentalAttack, after.mentalAttack),
-        delta('EMOT DEF', before.emotionalDefense, after.emotionalDefense),
+        delta('PHYS ATK', before.physicalAttack, after.physicalAttack, 'physicalAttack'),
+        delta('PHYS DEF', before.physicalDefense, after.physicalDefense, 'physicalDefense'),
+        delta('MENT ATK', before.mentalAttack, after.mentalAttack, 'mentalAttack'),
+        delta('EMOT DEF', before.emotionalDefense, after.emotionalDefense, 'emotionalDefense'),
     ];
 
     // User-jot 2026-05-22 (oversight 29th): equipment needs an
@@ -237,7 +245,9 @@ function buildEquipmentModal(player: Character, item: Item): ItemModalViewModel 
     });
 }
 
-function delta(label: string, before: number, after: number): StatDelta {
-    return { label, before, after, delta: after - before };
+function delta(label: string, before: number, after: number, id?: string): StatDelta {
+    return id !== undefined
+        ? { label, before, after, delta: after - before, id }
+        : { label, before, after, delta: after - before };
 }
 

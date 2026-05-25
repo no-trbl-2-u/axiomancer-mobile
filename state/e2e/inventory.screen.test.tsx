@@ -113,3 +113,30 @@ describe('inventory screen: use modal', () => {
         expect(after.health).toBeGreaterThan(5);
     });
 });
+
+// Phase 80a — Tooltip overlay portal. The inventory item modal
+// renders inside RN <Modal>, which mounts outside the React tree
+// — so the root TooltipProvider's overlay can't paint above the
+// modal chrome. The fix wraps the modal contents in a sibling
+// <TooltipProvider> and adds <TooltipTarget kind="item-stat"
+// id=<engine-stat-key>> around each delta row. These tests pin
+// the wiring contract: the rows render with their testIDs, and
+// the modal renders without throwing.
+describe('inventory screen: item-modal stat tooltips (Phase 80a)', () => {
+    it('renders TooltipTarget-wrapped stat rows for an equipment modal', () => {
+        const store = makeStore([sword]);
+
+        const tree = render(withProviders(store));
+
+        // Press the item row to expand, then EQUIP to open the modal.
+        fireEvent.press(tree.getByTestId('item-long-blade'));
+        fireEvent.press(tree.getByTestId('use-long-blade'));
+
+        // The equipment modal's 4 stat rows each carry a testID
+        // `inv-modal-stat-<engine-key>` driven by `StatDelta.id`.
+        expect(tree.getByTestId('inv-modal-stat-physicalAttack')).toBeTruthy();
+        expect(tree.getByTestId('inv-modal-stat-physicalDefense')).toBeTruthy();
+        expect(tree.getByTestId('inv-modal-stat-mentalAttack')).toBeTruthy();
+        expect(tree.getByTestId('inv-modal-stat-emotionalDefense')).toBeTruthy();
+    });
+});

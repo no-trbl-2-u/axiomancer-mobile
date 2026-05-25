@@ -1738,11 +1738,11 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       10 occurrences across 6 files (LevelUpModal, aftermath
       panels, PixelEmblem, EncounterModalOverlay). ErrorBoundary
       skipped. 1345/1345 verify green.
-- [ ] Phase 85 — Mechanics-vs-UI audit on the combat-modal
+- [x] Phase 85 — Mechanics-vs-UI audit on the combat-modal
       rewrite (2026-05-23). Promoted via `/oversight` 2026-05-24
       (40th call). Audit the combat surface inside
       `EncounterModalOverlay` against the engine's combat reducer.
-      See PHASE_CANDIDATES.md `[score 6.5]` row.
+      See PHASE_CANDIDATES.md `[score 6.5]` row. See commit `408600f`.
 - [ ] Phase 86 — Aftermath rendering inside the encounter modal.
       Promoted via `/oversight` 2026-05-24 (40th call). Wire
       aftermath panels (victory, defeat, friendship) to render

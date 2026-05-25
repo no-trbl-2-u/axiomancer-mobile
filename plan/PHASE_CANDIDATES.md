@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-05-24 at commit 153ea54
-> Pass count: 42
+> Last pass: 2026-05-25 at commit 02cdc02
+> Pass count: 43
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -9,6 +9,16 @@
 > `/oversight`. See `skills/expand.md` for the contract.
 
 ## Pending
+
+### [score 3.0] Nested button accessibility fix in stance picker
+- proposed: 2026-05-25, expand pass 43
+- source signals:
+  - **AUDIT.md [8.0] nested button DOM hierarchy violation.** Impact 8 (console errors on web, breaks hydration semantics, screen readers double-announce), ease 6. Too big for one /iterate fix.
+  - Observed during live-drive playtest 2026-05-24: ADV/DIS badges render as nested `<button>` inside stance-card `<Pressable>`, violating HTML hierarchy.
+- rationale: High-impact A11y issue affecting web hydration and screen readers. Clear scope with established fix path.
+- proposed scope: 1 phase. Refactor ADV/DIS badge from `Pressable` → `View` + accessibility props, or extract badge above stance card.
+- estimated phases: 1
+- conflicts: none
 
 ### [score 4.0] Hex-literal `'#0a0807'` drain to `AXM.silhouette` + aftermath panel token sweep [PROMOTED → Phase 83 via /oversight 39th call]
 

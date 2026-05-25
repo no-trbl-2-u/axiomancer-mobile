@@ -34,6 +34,8 @@ function toDisplay(e: ActiveEffect): ActiveEffectDisplay {
  *   (Phase 60d — lifted from Character). When the slice is null
  *   (no active combat or fresh store), the bar shows as full
  *   (1.0) rather than empty.
+ * - Dev overrides (Phase 87) can force empty states for testing
+ *   branches that would otherwise require specific game state.
  */
 export function selectCombatHudViewModel(state: AppStoreState): CombatHudViewModel {
     const player = state.combat?.player ?? state.player;
@@ -47,14 +49,23 @@ export function selectCombatHudViewModel(state: AppStoreState): CombatHudViewMod
     // without going through createAppStore. Both cases land at "full"
     // bar (1.0) — only an explicit zero-current with a positive max
     // counts as "empty".
-    const mana = state.combatMana ?? null;
+    // Phase 87 — dev override can force mana hidden (null) for testing.
+    const hudOverrides = state.devOverrides?.hud ?? {
+        hideMana: false,
+        hideEffects: false,
+        hideStance: false,
+    };
+    
+    const mana = hudOverrides.hideMana ? null : (state.combatMana ?? null);
     const manaPercent: number = mana === null
         ? 1
         : mana.max > 0
             ? clamp(mana.current / mana.max, 0, 1)
             : 0;
 
-    const effects = player.effects
+    // Phase 87 — dev override can force effects empty for testing.
+    const rawEffects = hudOverrides.hideEffects ? [] : player.effects;
+    const effects = rawEffects
         .slice(0, MAX_EFFECTS_SHOWN)
         .map(toDisplay);
 

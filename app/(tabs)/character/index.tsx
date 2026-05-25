@@ -9,11 +9,13 @@ import { LevelUpModal } from '@/components/levelup/LevelUpModal';
 import { DebugChaosToggle } from '@/components/DebugChaosToggle';
 import { DebugCombatButton } from '@/components/DebugCombatButton';
 import { DebugAlignmentShift } from '@/components/DebugAlignmentShift';
+import { DebugCurrencyControl } from '@/components/DebugCurrencyControl';
 import { DebugDialogueJump } from '@/components/DebugDialogueJump';
 import { DebugEffectApply } from '@/components/DebugEffectApply';
 import { DebugQuestState } from '@/components/DebugQuestState';
 import { DebugEventKindForce } from '@/components/DebugEventKindForce';
 import { DebugFriendship } from '@/components/DebugFriendship';
+import { DebugHudOverrides } from '@/components/DebugHudOverrides';
 import { DebugManaControl } from '@/components/DebugManaControl';
 import { DebugMapResetButton } from '@/components/DebugMapResetButton';
 import { DebugPresetPicker } from '@/components/DebugPresetPicker';
@@ -389,12 +391,14 @@ export default function CharacterScreen() {
         <DebugPresetPicker />
         <DebugXpGrant />
         <DebugManaControl />
+        <DebugCurrencyControl />
         <DebugAlignmentShift />
         <DebugEffectApply />
         <DebugEventKindForce />
         <DebugDialogueJump />
         <DebugQuestState />
         <DebugFriendship />
+        <DebugHudOverrides />
       </DevMenu>
     </ScreenBg>
   );

@@ -62,11 +62,25 @@ export interface CombatManaState {
     max: number;
 }
 
+/**
+ * Dev-only overrides slice (Phase 87). Stores forced states for testing
+ * empty-state branches and edge cases. Not persisted — resets on app restart.
+ */
+export interface DevOverridesSlice {
+    hud: {
+        hideMana: boolean;
+        hideEffects: boolean;
+        hideStance: boolean;
+    };
+}
+
 export type AppStoreState = GameStore & {
     event: MobileEventSlice;
     notifications: MobileNotificationsSlice;
     /** Phase 60d — mobile-only combat mana, lifted from Character. `null` outside combat. */
     combatMana: CombatManaState | null;
+    /** Phase 87 — dev-only overrides for testing empty-state branches. */
+    devOverrides: DevOverridesSlice;
     /**
      * Mobile-private ring buffer of recent engine events. Populated by
      * the emitter wired in `createAppStore`. Capacity 20, newest-first.
@@ -97,6 +111,18 @@ export const EMPTY_EVENT_SLICE: MobileEventSlice = Object.freeze({
 export const DEFAULT_NOTIFICATIONS_SLICE: MobileNotificationsSlice = Object.freeze({
     levelUpAcknowledged: true,
     toast: Object.freeze({ text: null, id: 0 }),
+});
+
+/**
+ * Default dev overrides slice (Phase 87). All override flags start as
+ * `false` — normal HUD behavior until dev explicitly toggles them.
+ */
+export const DEFAULT_DEV_OVERRIDES_SLICE: DevOverridesSlice = Object.freeze({
+    hud: Object.freeze({
+        hideMana: false,
+        hideEffects: false,
+        hideStance: false,
+    }),
 });
 
 /** Ring-buffer capacity for `_recentEvents`. Small enough not to bloat memory or save payloads. */
@@ -159,6 +185,7 @@ export function createAppStore(options: CreateAppStoreOptions = {}): AppStore {
         event: EMPTY_EVENT_SLICE,
         notifications: DEFAULT_NOTIFICATIONS_SLICE,
         combatMana: null,
+        devOverrides: DEFAULT_DEV_OVERRIDES_SLICE,
         _recentEvents: [],
     });
 

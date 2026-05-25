@@ -57,7 +57,9 @@ export default function RootLayout() {
         // the user. Phase 53 wires the user-facing CorruptSaveModal; the
         // console.warn stays as a dev breadcrumb so the failure shows up
         // in Metro logs alongside the modal mount.
-        console.warn('[persistence] preload failed; surfacing modal', err);
+        if (__DEV__) {
+          console.warn('[persistence] preload failed; surfacing modal', err);
+        }
         if (!cancelled) setCorruptSave(true);
       })
       .finally(() => {
@@ -72,7 +74,9 @@ export default function RootLayout() {
     // Clear the corrupt slot + drop the modal. The provider boots a fresh
     // `createNewGameState` because the persistence cache is now null.
     persistenceAdapter.clear().catch((err: unknown) => {
-      console.warn('[persistence] clear failed after corrupt-save confirm', err);
+      if (__DEV__) {
+        console.warn('[persistence] clear failed after corrupt-save confirm', err);
+      }
     });
     setCorruptSave(false);
   }, []);

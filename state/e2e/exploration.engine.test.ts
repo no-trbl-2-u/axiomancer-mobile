@@ -109,7 +109,7 @@ describe('selectExplorationViewModel: engine reads', () => {
 
         const vm = selectExplorationViewModel(store.getState());
 
-        expect(vm.options.map((o) => o.nodeId)).toEqual(['fv-2']);
+        expect(vm.options.map((o) => o.nodeId).sort()).toEqual(['fv-2', 'fv-11'].sort());
         expect(vm.options[0].description.length).toBeGreaterThan(0);
     });
 
@@ -117,17 +117,17 @@ describe('selectExplorationViewModel: engine reads', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
-        // Walk to fv-2 so fv-3 (encounter) and fv-4 (treasure) become available.
+        // Walk to fv-2 so fv-3 (encounter) and fv-12 (rest) become available.
         actions.moveTo('fv-2');
 
         const vm = selectExplorationViewModel(store.getState());
         const fv3 = vm.nodes.find((n) => n.id === 'fv-3')!;
-        const fv4 = vm.nodes.find((n) => n.id === 'fv-4')!;
+        const fv12 = vm.nodes.find((n) => n.id === 'fv-12')!;
 
         expect(fv3.kind).toBe('available');
         expect(fv3.triggersCombat).toBe(true);
-        expect(fv4.kind).toBe('available');
-        expect(fv4.triggersCombat).toBe(false);
+        expect(fv12.kind).toBe('available');
+        expect(fv12.triggersCombat).toBe(false);
     });
 
     it('encounter step-card icon is "sword", NOT "flee" — exploration-audit [3.5] DRIFT fix', () => {
@@ -168,10 +168,10 @@ describe('moveTo action: happy path', () => {
         expect(vm.currentNodeId).toBe('fv-2');
         const byId = Object.fromEntries(vm.nodes.map((n) => [n.id, n]));
         expect(byId['fv-2'].kind).toBe('current');
-        // fv-3 and fv-4 are the layout-declared neighbours of fv-2 and
+        // fv-3 and fv-12 are the layout-declared neighbours of fv-2 and
         // should now be reachable.
         expect(byId['fv-3'].kind).toBe('available');
-        expect(byId['fv-4'].kind).toBe('available');
+        expect(byId['fv-12'].kind).toBe('available');
     });
 
     it('refreshes the options drawer with the new available nodes after a move', () => {
@@ -182,7 +182,7 @@ describe('moveTo action: happy path', () => {
 
         const vm = selectExplorationViewModel(store.getState());
         const optionIds = vm.options.map((o) => o.nodeId).sort();
-        expect(optionIds).toEqual(['fv-3', 'fv-4']);
+        expect(optionIds).toEqual(['fv-11', 'fv-12', 'fv-3'].sort());
     });
 });
 
@@ -291,18 +291,19 @@ describe('exploration lifecycle: multi-step navigation', () => {
         const actions = createAppActions(store);
 
         actions.moveTo('fv-2');
-        actions.moveTo('fv-4');
+        actions.moveTo('fv-3');
 
         const completed = store.getState().world.currentMap.completedNodes;
-        expect(completed).toEqual(expect.arrayContaining(['fv-2', 'fv-4']));
+        expect(completed).toEqual(expect.arrayContaining(['fv-2', 'fv-3']));
 
         const vm = selectExplorationViewModel(store.getState());
         const byId = Object.fromEntries(vm.nodes.map((n) => [n.id, n]));
         expect(byId['fv-2'].kind).toBe('completed');
-        expect(byId['fv-4'].kind).toBe('current');
-        // fv-5 and fv-6 are downstream of fv-4 per the layout fixture.
-        expect(byId['fv-5'].kind).toBe('available');
-        expect(byId['fv-6'].kind).toBe('available');
+        expect(byId['fv-3'].kind).toBe('current');
+        // fv-4, fv-13 and fv-16 are downstream of fv-3 per the layout fixture.
+        expect(byId['fv-4'].kind).toBe('available');
+        expect(byId['fv-13'].kind).toBe('available');
+        expect(byId['fv-16'].kind).toBe('available');
     });
 
     it('a move does not implicitly call adapter.save (Spec 09 hook)', () => {

@@ -74,13 +74,16 @@
 - source: user
 - playtest: see PLAYTEST_REPORT.md [F13] (nested button HTML violation in item cards)
 
-### [HIGH] general — Equipment has no effect on player stats
+### [HIGH] general — Equipment has no effect on player stats ✅
 - pass: user-jot (commit `b12f1e9`)
+- issue: #192
 - viewport: unspecified
 - auth_state: anonymous
 - category: observation
 - observation: Equipment still doesn't appear to have an effect on the player's stats. This is a big one.
 - evidence: user-spotted at 2026-05-25
+- addressed: 2026-05-25 via commit `71a0b6d`
+- fix: Mobile app's equipItemAction and unequipItemAction now call engine's equipItem/unequipItem functions which apply/remove equipment stat bonuses and recalculate derived stats. Previously only reordered inventory for visual display without applying actual stat modifiers. Added imports for engineEquipItem and engineUnequipItem from axiomancer-mechanics. Equipment stats now properly affect character sheet derived stats and combat calculations.
 - suggested_fix: [user has not specified — iterate to determine]
 - source: user
 

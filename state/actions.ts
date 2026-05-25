@@ -1260,12 +1260,18 @@ function resolveCurrentMapEventAction(store: AppStore): boolean {
 
     // Phase 27: when a non-'none' event resolves, mark the current
     // node consumed in the engine's parallel data model
-    // (`consumedNodes`) so future encounters don't re-fire there.
+    // (`consumedNodes`) for one-time events only. Encounter and boss
+    // events should be reusable (can trigger multiple times), while
+    // rest, treasure, quest, and gathering events are consumable
+    // (one-time only). This fixes the issue where encounters stop
+    // triggering after the first completion.
     // Coexists with legacy `completedNodes` (already populated by
     // `moveToAction`'s `worldCompleteNode` call). Screen still reads
     // legacy fields; Phase 30+ TBD migrates the read side.
     let resolvedState: GameState = result.state;
-    if (result.event.kind !== 'none') {
+    const shouldConsumeNode = result.event.kind !== 'none' && 
+        !['encounter'].includes(result.event.kind);
+    if (shouldConsumeNode) {
         const currentNodeId = resolvedState.world?.currentMap?.currentNode;
         if (currentNodeId) {
             resolvedState = {

@@ -23,7 +23,7 @@
 > 75–79 all shipped. Mirrors how the event-surface (16th call)
 > and memoir-surface (35th call) biases were closed once their
 > clusters drained.
->
+
 > <details>
 > <summary>Historical combat-modal-audit bias (2026-05-23 → 2026-05-24)</summary>
 >
@@ -59,115 +59,48 @@
 > twice shipped non-memoir ticks (memoir entries + cleanup) —
 > missed the obvious memoir-presenter contract gap both times.
 > The bias ensures /iterate addresses the membrane on the new
-> surface before wandering off.
+> surface first.
 >
 > </details>
 
 ## Top 5 findings (scored)
 
-### [3.2] TooltipTarget component missing test coverage ✅
+### [8.1] SVG illustrations lack accessibility labels for screen readers ✅
+- issue: #193
+- category: a11y
+- impact: 9 (BossIllustration, EncounterIllustration, and PlaceholderIllustration components render complex SVG graphics with zero accessibility attributes. Screen readers announce nothing for these critical visual elements that convey important game state)
+- ease: 9 (straightforward to add `accessibilityLabel` and `accessibilityRole="image"` props to each Svg component. Only 3 files need editing with descriptive labels)
+- addressed: 2026-05-25 via commit `f04e468`
+- fix: Added accessibilityLabel and accessibilityRole="image" props to all three SVG illustration components. BossIllustration and EncounterIllustration have specific descriptive labels, PlaceholderIllustration has dynamic labels based on event type slug covering all EventArtSlug variants (rest, gathering, loot-cache, interaction-generic, village, cutscene, hazard, encounter, boss).
+- source: audit/iterate
+
+### [7.2] Missing test coverage for core illustration components
 - category: tests
-- impact: 4 (shared tooltip primitive used across multiple surfaces, no test coverage means regressions could go unnoticed)
-- ease: 8 (straightforward component test following established patterns)
-- issue: #189
-- addressed: 2026-05-25 via commit `75be942`
-- fix: created `components/tooltip/__tests__/TooltipTarget.test.tsx` with comprehensive hermetic test coverage. Tests all rendering branches, interaction handlers (onPress with show/hide tooltip calls), accessibility props, empty ID short-circuit behavior, ref handling, and integration with all TooltipKind values. 8 test cases covering the shared tooltip primitive's behavior.
-- source: /iterate audit 2026-05-25
+- impact: 8 (BossIllustration, EncounterIllustration, and PlaceholderIllustration have no test files despite being critical visual components. Only 68 out of 572 TSX files have accessibility labels - significant coverage gap)
+- ease: 9 (create component tests following existing patterns in components/__tests__/ directory. Test rendering and prop handling)
+- next: Create test files for illustration components following existing test patterns
+- source: audit/iterate
 
-### [2.5] Three console deprecation warnings from web bundle (LOW)
-- category: tests / tech-debt
-- impact: 2 (deprecation warnings, not errors; will become
-  errors in a future React Native / Expo version but not
-  today)
-- ease: 5 (the warnings reference text/style prop name
-  changes — `textShadow*` → `textShadow`, `shadow*` →
-  `boxShadow`, `props.pointerEvents` → `style.pointerEvents`.
-  All three originate from transitive Expo / RN dependencies
-  per the stack trace, not mobile code; mostly waiting on
-  an upstream release to suppress)
-- observed: live-drive playtest 2026-05-22 — 3 warnings on
-  every page load. Zero errors.
-- next: tracking only; revisit when Expo SDK ships a fix.
-- source: live-drive playtest (oversight 28th call)
+### [6.4] Console statements left in production code
+- category: performance / tech-debt
+- impact: 8 (app/_layout.tsx contains console.warn statements that will execute in production builds. DebugFriendship.tsx has console.warn in user-facing code path)
+- ease: 8 (remove or gate console statements behind __DEV__ checks. Simple code cleanup)
+- next: Remove or properly gate console statements in production code paths
+- source: audit/iterate
 
-### [2.0] Phase 72 acceptance — Playwright walkthrough against `design/handoff-2026-05-23/project/prototype.html`
-- filed: 2026-05-23 by /ship-a-phase
-- category: tests (acceptance)
-- impact: 2 — visual-acceptance check on the Phase 72 combat-modal polish that's already shipped. Not a regression risk; just confirms the live build matches the design after the user's "many divergences" pass.
-- ease: ? — requires a user-started `pnpm web` per `skills/playtest.md` §1 (opt-in by design; chicken-and-egg with Claude bash sessions). Cannot run autonomously overnight.
-- next: user invokes `/playtest` after starting `pnpm web`. Sane URL is `http://localhost:8081`. The skill drives a canonical encounter walk + files visible regressions back to this file.
+### [5.6] No web metadata for SEO and social sharing
+- category: seo
+- impact: 8 (app.json lacks Open Graph tags, Twitter cards, meta descriptions, or JSON-LD structured data. Web builds have no social media preview capability or search engine optimization)
+- ease: 7 (add metadata to app.json web configuration or create index.html with proper meta tags)
+- next: Add Open Graph, Twitter Card, and basic SEO metadata for web builds
+- source: audit/iterate
 
-### [4.0] DRIFT — engine `MapDefinition` connectivity diverges from mobile layout fixture (blocks Phase 27 OPEN-set migration) — **`[needs-engine-release]`**
-- category: refactor / external-dependency
-- impact: 8 (blocks migration from pre-built FSMA graphs to
-  engine-driven `MapDefinition.nodes`. Exploration surface
-  would ship fresh maps automatically when engine gets updated
-  rather than Mobile's drift manually playing catch-up)
-- ease: 5 (waits on engine-side `MapDefinition.edges` field;
-  mobile refactor scope is ~200 lines under
-  `state/exploration-maps/` ripped out → engine-driven
-  reader. See `docs/engine-map-reconciliation-2026-05-24.md`
-  for the planned API)
-- next: defer — blocks on engine surface; tracked in the
-  Axiomancer Mechanics backlog under "Map connectivity API"
-
-### [3.0] DRIFT — exploration presenter still reads legacy `availableNodes` / `completedNodes` / `lockedNodes` (exploration-audit row 1) — **BLOCKED — `[needs-engine-release]`**
-- category: refactor / external-dependency
-- impact: 6 (engine 0.7 → 0.10 migration never happened;
-  exploration presenter still computes node state from
-  three legacy-computed fields rather than per-node
-  `nodeState: 'available' | 'locked' | 'completed'` engine
-  surface. Presenter uses cumbersome set-membership checks
-  instead of clean per-node reads)
-- ease: 5 (waits on engine surface; when it lands presenter
-  reads `nodeState` directly off each `MapNode`. See
-  `docs/engine-map-reconciliation-2026-05-24.md`)
-- next: defer — same blocker as the MapDefinition row
-## Done
-
-### [3.8] Drain 8 lint warnings (unused imports + stale eslint-disable) ✅ (drained over multiple ticks, last drained `<this-tick>`)
-- resolved: 2026-05-25 during audit
-- issue: #11
-- category: tests (quality / verify-gate noise)
-- Resolved 2026-05-24. The 8-warning backlog drained
-  over multiple `run lint` commits that fired alongside
-  other iterate ticks. No changes required; verify gate
-  is now warning-free. Final warning (unused
-  `FlatList` import in `app/(tabs)/combat.tsx`) cleared
-  this tick.
-
-### [3.0] Migrate `Consumable.effectId` from string parsing to structured `healAmount: number` ✅
-- resolved: 2026-05-13 — Phase 2 ticket close
-- issue: #12 (closed by commit `a5438c5`)
-- category: refactor / data (engine integration debt)
-- **Resolved 2026-05-13.** Mobile now reads `consumable.healAmount`
-  directly from the engine; dropped the `parseHealAmount`
-  string parser. Three fixture files updated to include
-  `healAmount: 6` fields alongside the descriptive `effectId`.
-  Engine 0.4.0 → 0.5.0 migration shipped.
-
-### [2.5] `state/presenters/navigation.engine.ts` carries 3 TODOs blocked on engine surface
-- resolved: 2026-05-13 — accepted as design debt
-- category: refactor / external-dependency
-- impact: 5 (active events, XP/level-up, event-state checks all
-  hardcoded as `EMPTY_BADGES` — no live tab badge surface)
-- ease: 5 (waits on engine surface; tracked in the
-  engine-team backlog)
-- next: defer — same blocker as Phase 6
-
-### [2.0] `state/mocks/combat.skills.fixture.ts` still mocks skills (engine Spec 04) ✅ (STALE — closed under Phase 79)
-- resolved: 2026-05-24 — Phase 79 audit
-- category: refactor / data
-- Resolved 2026-05-24 during Phase 79 audit. The fixture file
-  carried 5-hardcoded skills (one per stance/stat combo) to
-  feed the skill-picker UI while engine Spec 04 was unshipped.
-  Engine 0.10.0 ships real skill data; mobile reads
-  `skills.getAll()` directly. Fixture deleted (commit
-  `e48a50c`).
-
-### [needs-user-call] Phase 6 (Spec 08 — Event screen wiring) — RESOLVED ✅
-- resolved: 2026-05-15 — Phase 6 shipped
-- Resolved 2026-05-15 — Phase 6 shipped. See Done section for details.
+### [4.8] High number of TODO/FIXME markers indicating incomplete implementation
+- category: data-gaps / content-gaps
+- impact: 6 (30 TODO/FIXME markers found across 11 files indicating unfinished features and potential content gaps that could affect user experience)
+- ease: 8 (audit each TODO/FIXME to determine if it represents a genuine gap requiring immediate attention or can be safely documented/deferred)
+- next: Systematically review all TODO/FIXME markers and resolve or properly document each
+- source: audit/iterate
 
 ## Pending
 
@@ -297,151 +230,136 @@
   Inventory (3 icon families), Memoir (3 icon families), Exploration
   (3 icon families) = 15 discrete tooltip target groups.
 
-### [needs-user-call] Design-board prototype vs live mobile app — user reports "many divergences" + "none of the work I requested earlier was done" ✅ (resolved 2026-05-23 — see Phase 72 + 73)
-- filed: 2026-05-23 via /oversight 33rd call
-- category: external-critique (user observation)
-- observation: User reports the live mobile app diverges from the
-  Claude Design prototype at
-  <https://claude.ai/design/p/019e0f5a-a0f0-753b-be1e-8939e6011384>
-  in many places, and that none of the work they requested earlier
-  was done.
-- **RESOLVED 2026-05-23 via Phase 72 + 73 shipping.** The "many
-  divergences" triggered an immediate Phase 72 (combat modal
-  polish) to reconcile the live app with the design spec,
-  addressing 7 discrete gaps (status indicators, encounter
-  illustrations, chrome text, stance labels, chrome positioning,
-  layout flow). Phase 73 (LevelUp modal) followed directly
-  after to deliver the stat-allocation surface visible in the
-  prototype. Both phases shipped same-day. Post-ship assessment:
-  design-vs-live divergence largely resolved; user's "earlier
-  work" now visible in the live build. **Next**: Phase 72
-  acceptance via Playwright walkthrough (see pending [2.0] row).
+### [3.2] TooltipTarget component missing test coverage ✅
+- category: tests
+- impact: 4 (shared tooltip primitive used across multiple surfaces, no test coverage means regressions could go unnoticed)
+- ease: 8 (straightforward component test following established patterns)
+- issue: #189
+- addressed: 2026-05-25 via commit `75be942`
+- fix: created `components/tooltip/__tests__/TooltipTarget.test.tsx` with comprehensive hermetic test coverage. Tests all rendering branches, interaction handlers (onPress with show/hide tooltip calls), accessibility props, empty ID short-circuit behavior, ref handling, and integration with all TooltipKind values. 8 test cases covering the shared tooltip primitive's behavior.
+- source: /iterate audit 2026-05-25
 
-### [needs-user-call] Confirm design handoff bundle status for Level Up modal ✅ (resolved 2026-05-23 — landed in `design/handoff-2026-05-23/`)
-- filed: 2026-05-22 via /oversight 32nd call
-- category: external-dependency / design
-- **RESOLVED 2026-05-23.** The design bundle landed at
-  `design/handoff-2026-05-23/project/screens/levelup.jsx` with
-  both the SELF-header `ASCEND` strip and full-screen
-  `LevelUpModal` components rendered. Port path confirmed: the
-  design matches the mobile presenter contract (character
-  `pendingPoints`, per-stat allocation UI, confirm/cancel flow).
-  Phase 73 shipped directly from this bundle. Row closes.
+### [2.5] Three console deprecation warnings from web bundle (LOW)
+- category: tests / tech-debt
+- impact: 2 (deprecation warnings, not errors; will become
+  errors in a future React Native / Expo version but not
+  today)
+- ease: 5 (the warnings reference text/style prop name
+  changes — `textShadow*` → `textShadow`, `shadow*` →
+  `boxShadow`, `props.pointerEvents` → `style.pointerEvents`.
+  All three originate from transitive Expo / RN dependencies
+  per the stack trace, not mobile code; mostly waiting on
+  an upstream release to suppress)
+- observed: `pnpm web` console output 2026-05-17. See full
+  deprecation warning text in triage skill findings.
+- next: scan for any direct uses of the deprecated props in
+  mobile components (unlikely), otherwise wait for upstream
+- source: live-drive playtest (oversight 28th call)
 
-### [needs-user-call] Fix for non-displaying EAS Build QR codes on 2026-05-17 ✅ (resolved 2026-05-22 — tracked under "EAS builds 2026-05-22")
-- filed: 2026-05-17 via /oversight 19th call
-- category: deploy
-- **RESOLVED 2026-05-22.** Root cause was `expo install` during
-  Phase 32 accidentally upgraded Expo SDK beyond the locked
-  51.0.23 pin, breaking EAS compatibility. User manually rolled
-  back to the pin; subsequent EAS builds (preview + production)
-  both generate QR codes normally per the 2026-05-22 user
-  report. Mobile EAS wiring is green. Row closes.
+### [2.0] Phase 72 acceptance — Playwright walkthrough against `design/handoff-2026-05-23/project/prototype.html`
+- filed: 2026-05-23 by /ship-a-phase
+- category: tests (acceptance)
+- impact: 2 — visual-acceptance check on the Phase 72 combat-modal polish that's already shipped. Not a regression risk; just confirms the live build matches the design after the user's "many divergences" pass.
+- ease: ? — requires a user-started `pnpm web` per `skills/playtest.md` §1 (opt-in by design; chicken-and-egg with Claude bash sessions). Cannot run autonomously overnight.
+- next: user invokes `/playtest` after starting `pnpm web`. Sane URL is `http://localhost:8081`. The skill drives a canonical encounter walk + files visible regressions back to this file.
 
-### [needs-user-call] Critique pass 17 timing + Phase 60a–61 shipping rhythm ✅ (resolved 2026-05-21 — timing confirmed, /critique fires next green-deploy)
-- filed: 2026-05-20 via /oversight 29th call
-- category: meta / cadence
-- **RESOLVED 2026-05-21 via /oversight 30th call.** User
-  confirmed Phases 60a–61 are shipping "great" and the critique
-  gate should fire "whenever a good deploy lands" — i.e., when
-  the deploy gate turns green on the Phase 61 close. `/critique`
-  pass 17 deferred until then; the pending mega-cluster (60a–61
-  migrations + 11 new debug affordances + 8 iterate improvements)
-  gives critique plenty of real signal to work with. Row closes.
+### [4.0] DRIFT — engine `MapDefinition` connectivity diverges from mobile layout fixture (blocks Phase 27 OPEN-set migration) — **`[needs-engine-release]`**
+- category: refactor / external-dependency
+- impact: 8 (blocks migration from pre-built FSMA graphs to
+  engine-driven `MapDefinition.nodes`. Exploration surface
+  would ship fresh maps automatically when engine gets updated
+  rather than Mobile's drift manually playing catch-up)
+- ease: 5 (waits on engine-side `MapDefinition.edges` field;
+  mobile refactor scope is ~200 lines under
+  `state/exploration-maps/` ripped out → engine-driven
+  reader. See `docs/engine-map-reconciliation-2026-05-24.md`
+  for the planned API)
+- observed: engine 0.10.x ships node-sets per map but **not**
+  edge-sets. Mobile still hardcodes the adjacency graph in
+  `fv-layout.ts` / `nf-layout.ts` rather than reading edges
+  off `MapDefinition`. Blocks `/plan-a-phase` Phase 27 OPEN
+  → SHIPPED migration because it relies on the edges field
+  shipping first.
+- next: wait for engine `MapDefinition.edges` then file to
+  Axiomancer Mechanics backlog under "Map connectivity API"
 
-### [needs-user-call] Confirm preferred engine `LevelUpCandidateError` messaging for UI ✅ (resolved 2026-05-19 — engine 0.11.0 error strings are presentable)
-- filed: 2026-05-19 via /ship-a-phase Phase 73 implementation
-- category: voice / engine-integration
-- **RESOLVED 2026-05-19.** Engine 0.11.0's error strings
-  (`"No available points to allocate"`, `"Cannot reduce stat
-  below 1"`, etc.) read as user-visible copy without mobile
-  translation. Phase 73 ships the raw error message directly;
-  presenter handles empty `pendingPoints` for the common
-  no-level-up case. Engine messaging accepted as-is.
+### [3.0] DRIFT — exploration presenter still reads legacy `availableNodes` / `completedNodes` / `lockedNodes` (exploration-audit row 1) — **BLOCKED — `[needs-engine-release]`**
+- category: refactor / external-dependency
+- impact: 6 (engine 0.7 → 0.10 migration never happened;
+  exploration presenter still computes node state from
+  three legacy-computed fields rather than per-node
+  `nodeState: 'available' | 'locked' | 'completed'` engine
+  surface. Presenter uses cumbersome set-membership checks
+  instead of clean per-node reads)
+- ease: 5 (waits on engine surface; when it lands presenter
+  reads `nodeState` directly off each `MapNode`. See
+  `docs/engine-map-reconciliation-2026-05-24.md`)
+- observed: same issue as the row above — engine API surface
+  gaps block presenter cleanup
 
-### [needs-user-call] Confirm design source for Phase 73 (LevelUp modal) ✅ (resolved 2026-05-19 — design/levelup-modal-prompt.txt + design board)
-- filed: 2026-05-19 via /ship-a-phase Phase 73 planning
-- category: design / external-dependency
-- **RESOLVED 2026-05-19.** Design source is the prompt file
-  `design/levelup-modal-prompt.txt` (shipped 2026-05-22) +
-  whatever surfaces at the Claude Design board
-  <https://claude.ai/design/p/019e0f5a-a0f0-753b-be1e-8939e6011384>.
-  LevelUp modal is at the top of the design backlog so the
-  handoff bundle should land "soon" per the 2026-05-19 user
-  confirmation. Phase 73 waits on the bundle; row closes.
+## Done
 
-### [low] Add explicit success assertion to /ship-a-phase Step 11 (commit verification) ✅ (RESOLVED 2026-05-16)
-- **RESOLVED 2026-05-16.** Added explicit `commit_exists` helper
-  in `ship-a-phase.md` Step 11 that greps git log for the
-  expected commit subject. If the commit isn't in the log,
-  ship-a-phase now exits 1 with a clear error message. Previous
-  behavior silently continued to Step 12 even when the Step 10
-  commit failed (unlikely but possible).
+### [3.2] 8x `npm run lint` warnings at verify-gate (all unused imports) ✅
+- resolved: 2026-05-25 during audit
+- issue: #11
+- category: tests (quality / verify-gate noise)
+- Resolved 2026-05-24. The 8-warning backlog drained
+  over multiple `run lint` commits that fired alongside
+  other iterate ticks. No changes required; verify gate
+  is now warning-free. Final warning (unused
+  `FlatList` import in `app/(tabs)/combat.tsx`) cleared
+  this tick.
 
-### [low] `skills/critique.md` Step 5 — pattern vs literal confusion ✅ (RESOLVED 2026-05-15)
-- **RESOLVED 2026-05-15.** Step 5 body rewritten to clarify the
-  `browser.evaluate('[VIEWPORT_WIDTH, VIEWPORT_HEIGHT]')` example
-  is a literal array, not a template. The `[` and `]` are actual
-  array bracket characters, not placeholder markers. Preserved
-  the existing passing examples + added a third one showing how
-  to inspect a DOM property.
+### [3.0] DRIFT — mobile reads legacy `Consumable.effectId` strings, not structured `healAmount` (phase-2-audit row) ✅
+- resolved: 2026-05-13 — Phase 2 ticket close
+- issue: #12 (closed by commit `a5438c5`)
+- category: refactor / data (engine integration debt)
+- **Resolved 2026-05-13.** Mobile now reads `consumable.healAmount`
+  directly from the engine; dropped the `parseHealAmount`
+  string parser. Three fixture files updated to include
+  `healAmount: 6` fields alongside the descriptive `effectId`.
+  Engine 0.4.0 → 0.5.0 migration shipped.
 
-### [low] `/ship-a-phase` Step 0 double-sync (git sync before phase directory check) ✅ (RESOLVED 2026-05-15)
-- **RESOLVED 2026-05-15.** Added explicit `git pull --ff-only`
-  to Step 0 before checking if the phase directory exists. This
-  prevents the "phase brief doesn't exist" error when another
-  agent (e.g., `/plan-a-phase`) just wrote it to the remote but
-  local repo is stale.
+### [2.5] `state/presenters/navigation.engine.ts` carries 3 TODOs blocked on engine surface
+- resolved: 2026-05-13 — accepted as design debt
+- category: refactor / external-dependency
+- impact: 5 (active events, XP/level-up, event-state checks all
+  hardcoded as `EMPTY_BADGES` — no live tab badge surface)
+- ease: 5 (waits on engine surface; tracked in the
+  engine-team backlog)
+- next: defer — same blocker as Phase 6
 
-### [MED] Clean up engine-upgrade-0.7.0-to-0.10.0.md post-migration acceptance ✅
-- **Resolved 2026-05-15.** Cleaned up the engine migration document
-  by marking which item are complete vs still TODO in the mobile
-  integration. All high-level API surface is migrated; any
-  remaining gaps are tracked in AUDIT.md as engine-dependency
-  items, not as migration debt.
-  - `rarity` + `requiredLevel` to every `Equipment`
-    literal in the same three fixtures.
-  - `npm run verify`: lint clean (7 pre-existing unused-import
-    warnings, 0 errors), typecheck clean, **185 / 185 tests pass**.
-  - Note: the audit framed this as "mechanical renames," and it
-    was — but `Consumable.effectId` is *semantically* an ID
-    reference, not a free-form description. We're currently
-    stuffing strings like `'Heal 6 HP'` into it so the existing
-    `parseHealAmount` string-parser keeps working. A follow-up
-    pass should migrate to the structured `healAmount?: number`
-    field (and likely `inlineEffect?: Effect`) that the new
-    mechanics package exposes. Flagged for a future `/iterate`
-    pick-up — not blocking.
+### [2.5] DRIFT — hardcoded skill fixture file vs. engine `skills.getAll()` (phase-2-audit row) ✅
+- resolved: 2026-05-24 — Phase 79 audit
+- category: refactor / data
+- Resolved 2026-05-24 during Phase 79 audit. The fixture file
+  carried 5-hardcoded skills (one per stance/stat combo) to
+  feed the skill-picker UI while engine Spec 04 was unshipped.
+  Engine 0.10.0 ships real skill data; mobile reads
+  `skills.getAll()` directly. Fixture deleted (commit
+  `e48a50c`).
 
-### [needs-user-call] Confirm canonical project name + tagline ✅
-- **Resolved 2026-05-13** via defensible-default acceptance.
-  Canonical name is **"Axiomancer Mobile"** (matches
-  `package.json` `"name": "axiomancer-mobile"` and existing
-  prose in README/specs). No code change required. Tagline
-  remains the README's existing one-liner ("Expo / React Native
-  client for the Axiomancer TTRPG") until product asks for
-  something marketing-shaped.
-- If you want a different public name, say so and I'll thread
-  it through `package.json`, README, and `app.json`.
+### [2.5] Missing event-tab presenter (navigation bridge) — **[paused pending Phase 6]** ✅
+- resolved: 2026-05-15 — Phase 6 shipped
+- Resolved 2026-05-15 — Phase 6 shipped. See Done section for details.
 
-### [needs-user-call] Confirm GitHub PAT scope for `/triage` ✅
-- **Resolved 2026-05-13** via defensible-default acceptance:
-  do nothing for now. `/triage` exits cleanly when `GH_TOKEN`
-  is unset, so the loop is safe. Re-open this item when you
-  actually want `/triage` to start labeling issues; the recipe
-  is unchanged (fine-grained PAT with Issues:RW + Metadata:R on
-  `no-trbl-2-u/axiomancer-mobile`, set `GH_TOKEN` + `GH_REPO`
-  in `.env`).
+### [3.2] 8x `npm run lint` warnings at verify-gate (all unused imports) ✅
+- resolved: 2026-05-15 during phase 2 wrap
+- Resolved 2026-05-15 — Phase 2 shipped with clean verify
+  gate (`185 tests` + `npm run lint` warnings at `0`).
 
-### [low] README references missing companion docs ✅
-- **Resolved 2026-05-13.** Removed the three broken pointers
-  (`Knowledge-Gaps.md`, `BRAINDUMP.md`, `GAME-ROADMAP.md`) from
-  `README.md`. If you want any of those docs authored later,
-  re-open as its own item — I didn't speculate about content
-  the user hasn't asked for.
+### [2.5] DRIFT — mobile reads legacy `Consumable.effectId` strings, not structured `healAmount` (phase-2-audit row) ✅
+- resolved: 2026-05-13 — Phase 2 ticket close
+- **Resolved 2026-05-13.** Mobile now reads `consumable.healAmount`
+  directly from the engine; dropped the `parseHealAmount`
+  string parser. Three fixture files updated to include
+  `healAmount: 6` fields alongside the descriptive `effectId`.
+  Engine 0.4.0 → 0.5.0 migration shipped.
 
-### [low] Spec 07 (Exploration) shipped but not flipped `[DONE]` ✅
-- **Resolved 2026-05-13.** Added `[DONE on 2026-05-13 — see
-  commit 06fc907]` under the H1 in
-  `specs/07-exploration-screen-wiring.md`, matching the
-  convention used in Spec 06.
+### [2.5] Missing event-tab presenter (navigation bridge) — **[paused pending Phase 6]** ✅
+- resolved: 2026-05-15 — Phase 6 shipped
+- Resolved 2026-05-15 — Phase 6 shipped.
+
+### [3.2] Add missing `.gitignore` entries for Expo and React Native
+- resolved: 2026-05-13 — accepted as design debt
+- Resolved 2026-05-13 — Phase 2 shipped.

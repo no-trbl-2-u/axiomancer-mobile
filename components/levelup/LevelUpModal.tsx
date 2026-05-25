@@ -21,9 +21,11 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { SectionLabel } from '@/components/SectionLabel';
 import { StanceGlyph } from '@/components/StanceGlyph';
+import { DerivedPreviewRibbon } from '@/components/levelup/DerivedPreviewRibbon';
 import { AXM, FONTS } from '@/theme/axm';
 import { toRomanLower } from '@/state/presenters/roman';
 import { STANCES } from '@/state/presenters/stances';
+import { calculateDerivedPreview } from '@/state/presenters/levelup.engine';
 
 export type LevelStance = 'heart' | 'body' | 'mind';
 
@@ -34,6 +36,12 @@ export interface LevelUpModalProps {
     totalPoints: number;
     /** Base-stat values BEFORE the allocation session. */
     current: { heart: number; body: number; mind: number };
+    /** Current derived stats for preview baseline (Phase 88) */
+    currentDerived?: {
+        heart: { attack: number; skill: number; defense: number };
+        body: { attack: number; skill: number; defense: number };
+        mind: { attack: number; skill: number; defense: number };
+    };
     /**
      * Called once per allocation; the parent dispatches the engine
      * action. The modal manages local `spent` state until COMMIT.
@@ -62,6 +70,7 @@ export function LevelUpModal({
     toLevel,
     totalPoints,
     current,
+    currentDerived,
     onCommit,
     onCancel,
 }: LevelUpModalProps) {
@@ -113,6 +122,22 @@ export function LevelUpModal({
     }, [fullyAllocated, onCommit, spent]);
 
     const flavor = useMemo(() => pickFlavor(toLevel), [toLevel]);
+
+    // Phase 88: Derived stats preview calculation
+    const derivedPreview = useMemo(() => {
+        if (!currentDerived) {
+            // Fallback: no preview if derived stats not provided
+            return currentDerived;
+        }
+        
+        try {
+            return calculateDerivedPreview(current, spent);
+        } catch (error) {
+            // Error fallback: show current stats without preview
+            console.warn('Derived stats preview calculation failed:', error);
+            return currentDerived;
+        }
+    }, [current, currentDerived, spent]);
 
     return (
         <View style={styles.root} testID="levelup-modal">
@@ -179,6 +204,15 @@ export function LevelUpModal({
                         />
                     ))}
                 </View>
+
+                {/* Phase 88: Derived stats preview ribbon */}
+                {currentDerived && derivedPreview && (
+                    <DerivedPreviewRibbon
+                        current={currentDerived}
+                        preview={derivedPreview}
+                        hasAllocations={sumSpent > 0}
+                    />
+                )}
 
                 {/* Reset link */}
                 <View style={styles.resetRow}>

@@ -142,6 +142,20 @@ export default function CharacterScreen() {
             const mind = vm.base.find((r) => r.stanceKey === 'mind')?.value ?? 0;
             return { heart, body, mind };
           })()}
+          currentDerived={(() => {
+            // Phase 88: Map derived stats to modal format
+            const physical = vm.derived.find((r) => r.label === 'PHYSICAL');
+            const mental = vm.derived.find((r) => r.label === 'MENTAL');
+            const emotional = vm.derived.find((r) => r.label === 'EMOTIONAL');
+            
+            if (!physical || !mental || !emotional) return undefined;
+            
+            return {
+              heart: { attack: emotional.attack, skill: emotional.skill, defense: emotional.defense },
+              body: { attack: physical.attack, skill: physical.skill, defense: physical.defense },
+              mind: { attack: mental.attack, skill: mental.skill, defense: mental.defense },
+            };
+          })()}
           onCommit={onCommitAllocation}
           onCancel={onCloseLevelUp}
         />

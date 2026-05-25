@@ -1737,15 +1737,12 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       10 occurrences across 6 files (LevelUpModal, aftermath
       panels, PixelEmblem, EncounterModalOverlay). ErrorBoundary
       skipped. 1345/1345 verify green.
-- [ ] Phase 84 — Inventory screen sub-component extraction.
-      Promoted via `/oversight` 2026-05-24 (39th call) from
-      expand pass 42. `app/(tabs)/inventory/index.tsx` at 1099
-      lines (repo's longest screen file). Same pattern as Phase
-      81c (combat extraction 1476→786). Likely targets: item
-      detail view, category grid, equipment dock, modal overlay.
-      Acceptance: inventory/index.tsx under ~700 lines; inventory
-      suite green; no behavioural change. See
-      PHASE_CANDIDATES.md `[score 3.0]` row.
+- [x] Phase 84 — Inventory screen sub-component extraction.
+      Shipped in commit `41f8368`. Extracted ItemCard, ItemGlyph,
+      groupByCategory, CATEGORY_ORDER + 19 styles to
+      `components/inventory/ItemCard.tsx`. inventory/index.tsx
+      dropped from 1099 to 703 lines (36% reduction).
+      1345/1345 verify green.
 
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped
       2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —

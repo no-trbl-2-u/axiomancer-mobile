@@ -117,6 +117,15 @@
 
 ## Pending
 
+### [4.8] ItemCard component missing test coverage ✅
+- issue: #188
+- category: tests
+- impact: 6 (substantial inventory component with complex rendering logic, accessibility features, touch handling, and various states that should be tested to prevent regressions)
+- ease: 8 (straightforward to write tests for the component's rendering and prop behavior using existing test patterns)
+- addressed: 2026-05-25 via commit `a6fb915`
+- fix: created `components/inventory/__tests__/ItemCard.test.tsx` with comprehensive hermetic test coverage following project patterns. Tests all rendering branches (basic/expanded states, equipment/consumable/material/quest categories), interaction handlers (onTap, onUseOrEquip, onDiscard), accessibility props, utility functions (groupByCategory), and constants (CATEGORY_ORDER). 485 lines of test coverage for 348-line component.
+- source: /iterate audit 2026-05-25
+
 ### [8.0] Nested `<button>` DOM hierarchy violation in stance picker (NEW — playtest 2026-05-24) ✅
 - issue: #187
 

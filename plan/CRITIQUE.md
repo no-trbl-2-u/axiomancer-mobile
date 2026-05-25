@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-05-19 at commit 56725ae
-> Pass count: 16
+> Last pass: 2026-05-25 at commit c7a1c9c
+> Pass count: 17
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -140,6 +140,59 @@
 - source: user
 - playtest: confirmed by PLAYTEST_REPORT.md [F02] (encounter jargon), [F04] (battle log ability names), [F05] (LET phase numbers), [F06] (CRUCIBLE symbols)
 
+### [HIGH] README.md — Critical mismatch between test promise and actual state blocks new contributors
+- pass: 17 (commit c7a1c9c)
+- viewport: desktop
+- category: comprehension
+- observation: README.md promises 'npm test' runs Jest but AGENTS.md reveals no test runner is installed yet, creating false expectations for new contributors
+- evidence: README.md line 41: 'npm test' with note 'Not wired yet' vs AGENTS.md line 31: 'No test runner is installed yet'
+- suggested fix: Move the test setup caveat to a prominent warning box in README.md before the Quick start section
+- source: browser
+
+### [MED] general — Dual agent instruction files create navigation confusion
+- pass: 17 (commit c7a1c9c)
+- viewport: desktop
+- category: navigation
+- observation: Both AGENTS.md and agents.md exist with overlapping content but different purposes, confusing new maintainers about which is authoritative
+- evidence: AGENTS.md is pre-nexus orientation, agents.md is nexus rule book
+- suggested fix: Add clear disambiguation notice in AGENTS.md header directing to agents.md for current instructions
+- source: browser
+
+### [MED] /specs/README.md — Spec dependency chain creates false work-ready impression
+- pass: 17 (commit c7a1c9c)
+- viewport: desktop
+- category: comprehension
+- observation: Specs 02-12 listed as available but line 66 states 'Spec 01 is a hard prerequisite' creating false impression work can begin
+- evidence: Specs table suggests readiness but dependency blocks everything until test harness exists
+- suggested fix: Mark specs 02-12 with [BLOCKED BY SPEC 01] prefix until test harness exists
+- source: browser
+
+### [MED] /docs/testing.md — Critical testing documentation references nonexistent files
+- pass: 17 (commit c7a1c9c)
+- viewport: desktop
+- category: navigation
+- observation: Lines 133-138 reference state/e2e/combat-hud.engine.test.ts and state/e2e/combat.engine.test.ts as canonical examples but files don't exist yet
+- evidence: References to future test files break documentation flow for maintainers trying to understand patterns
+- suggested fix: Replace references to future test files with placeholder text or axiomancer-mechanics examples until Spec 01 ships
+- source: browser
+
+### [MED] general — Voice guidance scattered across multiple files without hierarchy
+- pass: 17 (commit c7a1c9c)
+- viewport: desktop
+- category: voice
+- observation: Voice guidance appears in plan/bearings.md and theme/axm.ts with different detail levels and no cross-references
+- evidence: Multiple sources of voice guidance with no clear canonical source
+- suggested fix: Consolidate voice guidance in single source file and reference from others with 'See [file] for full voice guidelines'
+- source: browser
+
+### [LOW] /README.md — Architecture diagram shows idealized future vs current mock state
+- pass: 17 (commit c7a1c9c)
+- viewport: desktop
+- category: comprehension
+- observation: Architecture diagram shows clean presenter architecture but current state uses useState mocks per AGENTS.md
+- evidence: README lines 127-150 show target architecture but AGENTS.md line 42 reveals 'Hard-coded mock data lives in screens'
+- suggested fix: Add 'Target Architecture' header to diagram section and note current migration state
+- source: browser
 
 ## Done
 

@@ -133,18 +133,19 @@
 - suggested_fix: [needs design — user flagged this as a UX overhaul, not a code fix]
 - source: user
 
-### [HIGH] general — Combat encounters stop triggering after first encounter until refresh
-- pass: user-jot (commit `b12f1e9`)
+
+## Done
+
+### [HIGH] general — Combat encounters stop triggering after first encounter until refresh ✅
+- pass: user-jot (commit `b12f1e9`); addressed at commit `46adcac` via /iterate.
+- issue: [mirror-failed: 2026-05-25T14:30:00Z]
 - viewport: unspecified
 - auth_state: anonymous
 - category: observation
 - observation: Once the player completes 1 single combat encounter, subsequent combat encounters do not trigger until I refresh the game. That is not good.
 - evidence: user-spotted at 2026-05-25
-- suggested_fix: [user has not specified — iterate to determine]
+- resolution: Fixed encounter node consumption bug in `state/actions.ts:resolveCurrentMapEventAction`. Root cause: encounter nodes were incorrectly being marked as "consumed" after resolving, preventing subsequent encounters. Modified logic to only consume nodes for one-time events (rest, treasure, quest, gathering) while keeping encounter nodes reusable. Encounter nodes can now trigger multiple encounters on repeated visits.
 - source: user
-
-## Done
-
 ### [MED] general — Tooltip walkthrough across non-combat surfaces (inventory, SELF, exploration, memoir) ✅
 - pass: user-jot (commit `6415787`); walkthrough delivered at commit `<this-tick>` via /iterate.
 - issue: #162

@@ -113,6 +113,16 @@
 - suggested_fix: [needs-user-call — user wants to discuss before implementation]
 - source: user
 
+### [MED] /exploration — Only show node labels for unvisited, available nodes
+- pass: user-jot (commit `3c9c534`)
+- viewport: unspecified
+- auth_state: anonymous
+- category: visual
+- observation: In the map, there are a lot of labels for each node. We should only display a label to a node if the player has not ventured there yet and is available as a choice.
+- evidence: user-spotted at 2026-05-25
+- suggested_fix: [user has not specified — iterate to determine]
+- source: user
+
 ### [HIGH] general — Combat encounters stop triggering after first encounter until refresh
 - pass: user-jot (commit `b12f1e9`)
 - viewport: unspecified

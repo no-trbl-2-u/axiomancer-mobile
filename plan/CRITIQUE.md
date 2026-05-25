@@ -63,6 +63,66 @@
 - suggested_fix: [waiting on design — the prompt file `design/levelup-modal-prompt.txt` landed 2026-05-22 specifying both surfaces (SELF-header `ASCEND` strip + full-screen LevelUpModal). User confirmed via /oversight 2026-05-22 (32nd call) that the design is in progress at <https://claude.ai/design/p/019e0f5a-a0f0-753b-be1e-8939e6011384>. The actual handoff bundle hasn't been generated yet — the 2026-05-22 bundle at `design/handoff-2026-05-22/` covers aftermath modals only. Once the levelup bundle lands (likely `design/handoff-<date>/project/screens/levelup.jsx`), this row promotes to its own phase. Until then it stays Pending so the next /oversight sees it.]
 - source: user
 
+### [MED] /inventory — Satchel equipment tap should open modal directly, skip intermediate step
+- pass: user-jot (commit `b12f1e9`)
+- viewport: unspecified
+- auth_state: anonymous
+- category: navigation
+- observation: There's an HTML warning when I click a piece of equipment in Satchel. Let's change this so that when I click a piece of equipment, it goes right to the modal. Within the modal, I can cancel, equip, or discard. Skip the inbetween step.
+- evidence: user-spotted at 2026-05-25
+- suggested_fix: [user has not specified — iterate to determine]
+- source: user
+
+### [HIGH] general — Equipment has no effect on player stats
+- pass: user-jot (commit `b12f1e9`)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: Equipment still doesn't appear to have an effect on the player's stats. This is a big one.
+- evidence: user-spotted at 2026-05-25
+- suggested_fix: [user has not specified — iterate to determine]
+- source: user
+
+### [MED] general — Verify all tooltip content is 100% accurate
+- pass: user-jot (commit `b12f1e9`)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: The tooltips look great. Let's make sure all the information provided in the tooltips are 100% accurate.
+- evidence: user-spotted at 2026-05-25
+- suggested_fix: [user has not specified — iterate to determine]
+- source: user
+
+### [MED] /combat — Space heart/body/mind buttons evenly in combat modal
+- pass: user-jot (commit `b12f1e9`)
+- viewport: unspecified
+- auth_state: anonymous
+- category: visual
+- observation: In the combat modal, let's space the heart/body/mind buttons evenly instead of listing from the left.
+- evidence: user-spotted at 2026-05-25
+- suggested_fix: [user has not specified — iterate to determine]
+- source: user
+
+### [MED] /self — Stat allocation cross-effects not reflected in actual character stats
+- pass: user-jot (commit `b12f1e9`)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: The stat allocation says when I level up a given stat, it effects the other ones (ie. adding mind effects heart). I like that idea, however, it is not reflected in the characters actual stats. This one needs my final call, but it's something we need to talk about.
+- evidence: user-spotted at 2026-05-25
+- suggested_fix: [needs-user-call — user wants to discuss before implementation]
+- source: user
+
+### [HIGH] general — Combat encounters stop triggering after first encounter until refresh
+- pass: user-jot (commit `b12f1e9`)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: Once the player completes 1 single combat encounter, subsequent combat encounters do not trigger until I refresh the game. That is not good.
+- evidence: user-spotted at 2026-05-25
+- suggested_fix: [user has not specified — iterate to determine]
+- source: user
+
 ## Done
 
 ### [MED] general — Tooltip walkthrough across non-combat surfaces (inventory, SELF, exploration, memoir) ✅

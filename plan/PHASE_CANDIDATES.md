@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-05-25 at commit 02cdc02
-> Pass count: 43
+> Last pass: 2026-05-25 at commit 989ce01
+> Pass count: 44
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -1082,6 +1082,58 @@ See `01_build_plan.md` Phase 64 row for the live brief.
 promoted as Phase 61 parent + 61a–61f. See `01_build_plan.md`
 "DEV-mode coverage expansion" section.
 </details>
+
+### [score 8.5] Combat UI/UX Design Overhaul Phase
+- proposed: 2026-05-25, expand pass 44
+- source signals:
+  - **CRITIQUE.md [HIGH] combat UX unintuitive.** User feedback: "I see numbers and icons, but I don't know what they mean. We need a design overhaul." Confirmed by playtest findings F02-F06 (encounter jargon, battle log ability names, LET phase numbers, CRUCIBLE symbols).
+  - **User source bump** (+0.5) — direct user observation of UX friction.
+  - **Playtest confirmation** — Multiple findings validate the UX confusion pattern.
+- rationale: Critical user experience barrier. Multiple independent signals point to same fundamental UX problem. High impact on player comprehension and engagement.
+- proposed scope: 1 design phase. Requires design handoff process via claude.ai/design, then implementation phase for the overhaul.
+- estimated phases: 2 (design + implementation)
+- conflicts: none with spec. Aligns with improving player experience.
+
+### [score 7.5] Documentation Accuracy Phase — README test promise fix
+- proposed: 2026-05-25, expand pass 44
+- source signals:
+  - **CRITIQUE.md [HIGH] README test promise mismatch.** Blocks new contributors: README promises 'npm test' runs Jest but AGENTS.md reveals no test runner installed yet.
+  - **User source bump** (+0.5) — external critique finding affecting contributor onboarding.
+  - **Signal multiplicity** (+1) — documentation coherence issue affecting maintainer experience.
+- rationale: High-impact blocker for new contributors. Clear scope with straightforward fix path.
+- proposed scope: 1 phase, 1 tick. Move test setup caveat to prominent warning box in README.md before Quick start section. Update documentation cross-references.
+- estimated phases: 1
+- conflicts: none. Improves contributor experience.
+
+### [score 7.0] Large Component Extraction Phase — Combat + EncounterModal refactoring
+- proposed: 2026-05-25, expand pass 44
+- source signals:
+  - **File-length outliers** (smell §4 I): combat.tsx (786 lines), EncounterModalOverlay.tsx (721 lines) — both >2× folder median.
+  - **Fix commit pattern** — Recent fixes on combat surface suggest maintenance burden from large files.
+  - **Signal multiplicity** (+1) — Technical debt affecting maintainability.
+- rationale: Large components create maintenance friction. Clear extraction opportunities exist.
+- proposed scope: 1 phase, 2-3 ticks. Extract sub-components from combat.tsx and EncounterModalOverlay.tsx. Maintain existing test coverage.
+- estimated phases: 1
+- conflicts: none. Standard refactoring for maintainability.
+
+### [score 4.5] Type Safety Improvement Phase — 'as any' cast drain
+- proposed: 2026-05-25, expand pass 44
+- source signals:
+  - **Cast clusters** (smell §4 I): 10+ 'as any' occurrences across test files, particularly in combat.skill-events.engine.test.ts and event.screen.test.tsx.
+  - **Technical debt** pattern affecting type safety.
+- rationale: Type casts bypass TypeScript safety. Moderate impact on code reliability.
+- proposed scope: 1 phase, 2 ticks. Replace 'as any' casts with proper typing, particularly in test mocks and engine interfaces.
+- estimated phases: 1
+- conflicts: none. Improves type safety.
+
+### [score 3.0] Stale Phase Resolution — Paused phases cleanup
+- proposed: 2026-05-25, expand pass 44
+- source signals:
+  - **Stale paused rows** (smell §4 I): Phase 62d (Currency grant) and Phase 62e (Combat-HUD overrides) marked [paused] with no movement >14 days.
+- rationale: Administrative cleanup. Clear decision needed on paused work.
+- proposed scope: 1 administrative tick. Review paused phases, either resume or formally retire with rationale.
+- estimated phases: 1 (administrative)
+- conflicts: none. Plan hygiene.
 
 
 ## Considered (below threshold)

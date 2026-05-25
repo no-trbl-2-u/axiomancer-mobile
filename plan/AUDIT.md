@@ -118,6 +118,7 @@
 ## Pending
 
 ### [8.0] Nested `<button>` DOM hierarchy violation in stance picker (NEW — playtest 2026-05-24) ✅
+- issue: #187
 
 - category: bug (a11y / web hydration)
 - impact: 8 (two console errors per stance-picker mount on web; breaks

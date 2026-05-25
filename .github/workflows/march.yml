@@ -1,11 +1,15 @@
 name: march
 
-# Manually fire the autonomous-beast loop: one tick of `/march`, which
-# dispatches to triage / critique / ship-a-phase / expand / iterate.
+# Autonomous-beast loop: one tick of `/march`, which dispatches to
+# triage / critique / ship-a-phase / expand / iterate.
 #
-# Trigger: Actions tab → "march" → Run workflow. Pick the branch you want
-# the tick to commit against. The skill follows its normal contract — it
-# may push commits, open / close GitHub issues, and run the verify gate.
+# Triggers:
+#   • Schedule — every 30 minutes. An idle-gate job checks for recent
+#     activity first; if nothing has happened (no bot commits, no human
+#     commits, no new/updated issues) the run exits early and burns
+#     only ~15 seconds of Actions time.
+#   • Manual — Actions tab → "march" → Run workflow. Always runs,
+#     bypassing the idle gate.
 #
 # Required secrets (Settings → Secrets and variables → Actions):
 #   CLAUDE_CODE_OAUTH_TOKEN — OAuth token from `claude setup-token`,
@@ -16,6 +20,8 @@ name: march
 # operations. No PAT needed unless you want cross-repo behaviour.
 
 on:
+  schedule:
+    - cron: '*/30 * * * *'
   workflow_dispatch:
     inputs:
       args:
@@ -27,6 +33,7 @@ permissions:
   contents: write        # git push commits the loop produces
   issues: write          # /triage + phase-mirror issue ops
   pull-requests: write   # /critique / /iterate may open PRs
+  actions: read          # idle gate reads workflow run history
   id-token: write        # for Anthropic's auth proxy
 
 concurrency:
@@ -34,7 +41,66 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # ── Idle gate (scheduled runs only) ──────────────────────────────
+  # Skips the heavy march job when there's been no activity.
+  # Manual dispatches bypass this entirely.
+  idle-gate:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    timeout-minutes: 2
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for recent activity
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LOOKBACK="3 hours ago"
+
+          # 1. Bot commits in the lookback window → march is productive
+          BOT=$(git log --oneline --after="$LOOKBACK" \
+                --author="axiomancer-march" | wc -l)
+
+          # 2. Human commits → new work for march to pick up
+          HUMAN=$(git log --oneline --after="$LOOKBACK" \
+                  --invert-grep --author="axiomancer-march" | wc -l)
+
+          # 3. Issues created/updated recently → triage work
+          CUTOFF=$(date -u -d "$LOOKBACK" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null \
+                || date -u -v-3H +%Y-%m-%dT%H:%M:%SZ)
+          ISSUES=$(gh issue list --state open --limit 5 \
+                   --search "updated:>=$CUTOFF" \
+                   --json number -q 'length' 2>/dev/null || echo "0")
+
+          echo "bot=$BOT  human=$HUMAN  issues=$ISSUES"
+
+          if [ "$BOT" -gt 0 ] || [ "$HUMAN" -gt 0 ] || [ "$ISSUES" -gt 0 ]; then
+            echo "Activity detected — proceeding."
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::No bot commits, human commits, or updated issues in the last 3 hours. March is idle — skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  # ── Main march job ───────────────────────────────────────────────
   march:
+    needs: [idle-gate]
+    # Run when:
+    #   • idle-gate was skipped (manual dispatch) → always run
+    #   • idle-gate passed and said "don't skip" → run
+    # Don't run when:
+    #   • idle-gate said "skip" → idle, save minutes
+    #   • idle-gate failed or was cancelled → something is wrong
+    if: |
+      !cancelled() &&
+      (needs.idle-gate.result == 'skipped' ||
+       (needs.idle-gate.result == 'success' && needs.idle-gate.outputs.skip != 'true'))
     runs-on: ubuntu-latest
     timeout-minutes: 90
 
@@ -67,9 +133,6 @@ jobs:
           DEPLOY_PROVIDER: ${{ secrets.DEPLOY_PROVIDER }}
           FULL_NAME: ${{ secrets.FULL_NAME }}
         run: |
-          # The nexus skills read GH_TOKEN / GH_REPO from a local .env via
-          # `awk -F=`. Provision a CI-scoped copy so /triage and the phase
-          # mirror (scripts/loop-issue.mjs) work out of the box.
           umask 077
           cat > .env <<EOF
           GH_TOKEN=${GH_TOKEN}
@@ -85,10 +148,6 @@ jobs:
         with:
           prompt: "/march ${{ github.event.inputs.args }}"
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # The loop needs to: read everything, edit files, run npm / gh /
-          # git, and dispatch sub-agents. Bash is the broadest hammer it
-          # leans on — keep the allowlist permissive in CI since the
-          # workflow itself is the trust boundary.
           allowed_tools: "Bash,Read,Edit,Write,Glob,Grep,Agent,TodoWrite,WebFetch,WebSearch"
           timeout_minutes: '60'
         env:

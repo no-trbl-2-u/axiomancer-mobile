@@ -1769,9 +1769,12 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       previewAllocation helper. ATK/SKL/DEF grid with real-time
       preview.
       `[score 4.0]` row.
-- [ ] Phase 89 — Combat log-entry shape audit + regression pin
+- [x] Phase 89 — Combat log-entry shape audit + regression pin
       for boss-skill killing-blow crash. Promoted via `/oversight`
-      2026-05-24 (40th call). See PHASE_CANDIDATES.md
+      2026-05-24 (40th call). Shipped in commit `51ec064` —
+      aftermath-snapshot regression test + engine type contract
+      divergence documentation. Confirms defensive optional chaining
+      patterns from hotfix 043d607.
       `[score 3.5]` row.
 - [x] Phase 84 — Inventory screen sub-component extraction.
       Shipped in commit `41f8368`. Extracted ItemCard, ItemGlyph,

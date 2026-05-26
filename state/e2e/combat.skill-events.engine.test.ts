@@ -21,8 +21,8 @@ function ev(e: Partial<RoundEvent> & { phase: string; kind: string }): RoundEven
     return e as any;
 }
 
-function summarize(events: RoundEvent[]) {
-    return summarizeRoundEvents(events, 'body', 'body', 0);
+function summarize(events: RoundEvent[], playerAction?: any) {
+    return summarizeRoundEvents(events, 'body', 'body', 0, playerAction);
 }
 
 describe('summarizeRoundEvents: skill-phase event coverage (Phase 79)', () => {
@@ -192,6 +192,103 @@ describe('summarizeRoundEvents: skill-phase event coverage (Phase 79)', () => {
                 }),
             ]);
             expect(logLines).toHaveLength(0);
+        });
+    });
+
+    describe('Phase 91: Two-line battle log format', () => {
+        it('renders player choice line followed by effect line for stance-effects applied to player', () => {
+            const { logLines } = summarize(
+                [
+                    ev({
+                        phase: 'stance-effects',
+                        kind: 'applied',
+                        actor: 'player',
+                        effect: { name: 'Fleeting Kindness', id: 'tier1_heart_attack' } as any,
+                    }),
+                ],
+                'attack' // playerAction
+            );
+
+            expect(logLines).toHaveLength(2);
+            expect(logLines[0].severity).toBe('info');
+            expect(logLines[0].text).toBe('You chose ATTACK (Body stance).');
+            expect(logLines[1].severity).toBe('effect');
+            expect(logLines[1].text).toBe('Applied: Fleeting Kindness.');
+        });
+
+        it('F04 regression: connects HEART stance + ATTACK action to named effect', () => {
+            const { logLines } = summarizeRoundEvents(
+                [
+                    ev({
+                        phase: 'stance-effects',
+                        kind: 'applied',
+                        actor: 'player',
+                        effect: { name: 'Fleeting Kindness', id: 'tier1_heart_attack' } as any,
+                    }),
+                ],
+                'heart', // playerStance
+                'mind',  // enemyStance
+                0,       // friendshipDelta
+                'attack' // playerAction
+            );
+
+            expect(logLines).toHaveLength(2);
+            expect(logLines[0].text).toBe('You chose ATTACK (Heart stance).');
+            expect(logLines[1].text).toBe('Applied: Fleeting Kindness.');
+        });
+
+        it('handles different stance and action combinations', () => {
+            const { logLines } = summarizeRoundEvents(
+                [
+                    ev({
+                        phase: 'stance-effects',
+                        kind: 'applied',
+                        actor: 'player',
+                        effect: { name: 'Ad Baculum', id: 'tier1_body_attack' } as any,
+                    }),
+                ],
+                'body',   // playerStance
+                'heart',  // enemyStance  
+                0,        // friendshipDelta
+                'attack'  // playerAction
+            );
+
+            expect(logLines).toHaveLength(2);
+            expect(logLines[0].text).toBe('You chose ATTACK (Body stance).');
+            expect(logLines[1].text).toBe('Applied: Ad Baculum.');
+        });
+
+        it('maintains backwards compatibility for enemy effects', () => {
+            const { logLines } = summarize(
+                [
+                    ev({
+                        phase: 'stance-effects',
+                        kind: 'applied',
+                        actor: 'enemy',
+                        effect: { name: 'Poison', id: 'poison' } as any,
+                    }),
+                ],
+                'attack' // playerAction
+            );
+
+            expect(logLines).toHaveLength(1);
+            expect(logLines[0].severity).toBe('effect');
+            expect(logLines[0].text).toBe('Foe apply Poison.');
+        });
+
+        it('maintains backwards compatibility when playerAction is not provided', () => {
+            const { logLines } = summarize([
+                ev({
+                    phase: 'stance-effects',
+                    kind: 'applied',
+                    actor: 'player',
+                    effect: { name: 'Fleeting Kindness', id: 'tier1_heart_attack' } as any,
+                }),
+            ]);
+
+            expect(logLines).toHaveLength(1);
+            expect(logLines[0].severity).toBe('effect');
+            expect(logLines[0].text).toBe('You apply Fleeting Kindness.');
         });
     });
 });

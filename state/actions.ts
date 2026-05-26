@@ -401,6 +401,7 @@ export function summarizeRoundEvents(
     playerStance: Stance,
     enemyStance: Stance,
     friendshipDelta: number,
+    playerAction?: Action,
 ): { summary: ResolutionSummary; logLines: { severity: LogSeverityKey; text: string }[] } {
     const logLines: { severity: LogSeverityKey; text: string }[] = [];
     let playerRoll = 0;
@@ -436,10 +437,32 @@ export function summarizeRoundEvents(
             }
         } else if (ev.phase === 'stance-effects' && ev.kind === 'applied') {
             const effectName = ev.effect.name ?? ev.effect.id ?? 'effect';
-            logLines.push({
-                severity: 'effect',
-                text: `${ev.actor === 'player' ? 'You' : 'Foe'} apply ${effectName}.`,
-            });
+            
+            // Phase 91: Two-line battle log format
+            if (ev.actor === 'player' && playerAction) {
+                // Generate player choice line
+                const stanceLabel = playerStance === 'heart' ? 'Heart' : 
+                                   playerStance === 'body' ? 'Body' : 'Mind';
+                const actionLabel = playerAction.toUpperCase();
+                
+                // First line: player choice
+                logLines.push({
+                    severity: 'info',
+                    text: `You chose ${actionLabel} (${stanceLabel} stance).`,
+                });
+                
+                // Second line: applied effect
+                logLines.push({
+                    severity: 'effect',
+                    text: `Applied: ${effectName}.`,
+                });
+            } else {
+                // Keep existing format for enemy effects or when playerAction is unknown
+                logLines.push({
+                    severity: 'effect',
+                    text: `${ev.actor === 'player' ? 'You' : 'Foe'} apply ${effectName}.`,
+                });
+            }
         } else if (ev.phase === 'round-start' && ev.kind === 'dot') {
             const who = ev.actor === 'player' ? 'You' : 'Foe';
             logLines.push({
@@ -706,6 +729,7 @@ export function createAppActions(store: AppStore): AppActions {
                 playerStance,
                 enemyStance,
                 friendshipDelta,
+                playerAction,
             );
 
             // Stash the enemy's revealed stance so the next stance

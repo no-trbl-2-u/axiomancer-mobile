@@ -128,9 +128,8 @@ describe('inventory screen: item-modal stat tooltips (Phase 80a)', () => {
 
         const tree = render(withProviders(store));
 
-        // Press the item row to expand, then EQUIP to open the modal.
+        // Press the item row to open the modal directly (equipment bypass).
         fireEvent.press(tree.getByTestId('item-long-blade'));
-        fireEvent.press(tree.getByTestId('use-long-blade'));
 
         // The equipment modal's 4 stat rows each carry a testID
         // `inv-modal-stat-<engine-key>` driven by `StatDelta.id`.

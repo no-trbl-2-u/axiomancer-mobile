@@ -353,9 +353,15 @@ export default function InventoryScreen() {
                                         key={it.id}
                                         item={it}
                                         expanded={expandedItemId === it.id}
-                                        onTap={() =>
-                                            setExpandedItemId(expandedItemId === it.id ? null : it.id)
-                                        }
+                                        onTap={() => {
+                                            // For equipment, go directly to modal instead of expanding
+                                            if (it.category === 'equipment' && it.canUse) {
+                                                setModalItemId(it.id);
+                                            } else {
+                                                // For other items, expand to show details first
+                                                setExpandedItemId(expandedItemId === it.id ? null : it.id);
+                                            }
+                                        }}
                                         onUseOrEquip={() => setModalItemId(it.id)}
                                         onDiscard={() => onDiscard(it.id)}
                                     />

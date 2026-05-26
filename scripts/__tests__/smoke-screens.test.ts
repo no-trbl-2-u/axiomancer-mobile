@@ -38,6 +38,39 @@ describe('smoke-screens helpers', () => {
         return ratio > threshold
     }
 
+    type StaticPathCandidate = {
+        requestedPath: string
+        exists: boolean
+        isDirectory: boolean
+    }
+
+    function resolveStaticExportPath(_pathname: string, candidates: StaticPathCandidate[]): string {
+        const exact = candidates[0]
+        const directoryIndex = candidates[1]
+        const htmlGuess = candidates[2]
+        const fallbackIndex = candidates[3]
+
+        if (exact?.exists && !exact.isDirectory) return exact.requestedPath
+        if (exact?.exists && exact.isDirectory && directoryIndex?.exists && !directoryIndex.isDirectory) {
+            return directoryIndex.requestedPath
+        }
+        if (htmlGuess?.exists && !htmlGuess.isDirectory) return htmlGuess.requestedPath
+        return fallbackIndex.requestedPath
+    }
+
+    describe('resolveStaticExportPath', () => {
+        test('serves index.html for extensionless directory routes', () => {
+            const resolved = resolveStaticExportPath('/character', [
+                { requestedPath: '/export/character', exists: true, isDirectory: true },
+                { requestedPath: '/export/character/index.html', exists: true, isDirectory: false },
+                { requestedPath: '/export/character.html', exists: false, isDirectory: false },
+                { requestedPath: '/export/index.html', exists: true, isDirectory: false },
+            ])
+
+            expect(resolved).toBe('/export/character/index.html')
+        })
+    })
+
     type SmokeResult = {
         bootError?: string
         matched: unknown[]

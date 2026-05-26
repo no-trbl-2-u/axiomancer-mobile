@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-05-25 at commit 989ce01
-> Pass count: 44
+> Last pass: 2026-05-26 at commit bcc9d1f
+> Pass count: 45
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -2008,3 +2008,54 @@ exploration `moveToAction` migration to engine `revealAdjacent` /
   `specs/08-event-screen-wiring.md`. No new signal in
   pass 2 (mechanics version unchanged, spec questions
   unanswered). Not a phase candidate; user action required.
+
+### [score 5.0] Level-up modal design port from handoff-2026-05-23
+- proposed: 2026-05-26, expand pass 45
+- source signals:
+  - **Design landing E** — `design/handoff-2026-05-23/project/screens/levelup.jsx` is new surface not yet ported to mobile
+  - **Critique finding alignment** — [MED] Level Up button already promoted to Phase 73 but needs modal implementation to complete user flow
+  - **Recent design activity** — handoff dated within 7 days, fresh design signal
+- rationale: Design handoff exists and is ready for port, user need validated via existing critique finding and Phase 73 implementation. Completes the level-up user flow that currently has button but no modal.
+- proposed scope: 1 phase. Port levelup.jsx design to LevelUpModal component, wire to existing AscendStrip trigger from Phase 73.
+- estimated phases: 1
+- conflicts: none
+
+### [score 4.5] Combat screen sub-component extraction (786 lines → modular structure)
+- proposed: 2026-05-26, expand pass 45
+- source signals:
+  - **Smell §4 I — file-length outlier.** `app/(tabs)/combat.tsx` at 786 lines significantly exceeds ~400-500 line median for tab screens, well over the ~600 line threshold.
+  - **Recent commit-pattern signal** — Multiple `fix:` commits touching combat surface in recent history, indicating high-churn area that would benefit from modular structure.
+  - **Critique finding alignment** — [HIGH] combat UX overhaul need suggests surface complexity warrants better organization.
+- rationale: File exceeds project norms and shows high churn pattern. Combat complexity justifies sub-component extraction for maintainability.
+- proposed scope: 1 phase. Extract PhaseStack, ActionPicker, SkillPicker, and ResolvePanel into separate components under components/combat/ directory.
+- estimated phases: 1
+- conflicts: none
+
+### [score 3.5] `as any` cast audit and type boundary cleanup
+- proposed: 2026-05-26, expand pass 45
+- source signals:
+  - **Smell §4 I — `as any` cast clusters.** 130+ occurrences across state/, components/, and app/ directories. Pattern concentrated in test files (80+ casts), state boundaries (20+ casts), and presenter layers (20+ casts).
+- rationale: Excessive type casting indicates systematic type system gaps. While test casts are often acceptable, concentration in state and presenter layers suggests type boundary issues that could lead to runtime errors.
+- proposed scope: 1 phase. Audit all `as any`/`as unknown` casts, replace with proper typing where possible, document justified boundary casts with comments explaining necessity.
+- estimated phases: 1
+- conflicts: none
+
+### [score 3.0] TODO/FIXME systematic drain (30 markers across 11 files)
+- proposed: 2026-05-26, expand pass 45
+- source signals:
+  - **Audit finding A** — [4.8] High number of TODO/FIXME markers indicating incomplete implementation. Impact 6 (content gaps affecting user experience), ease 8.
+  - **Too big for single fix** — 30 markers distributed across 11 files suggests systematic review needed rather than ad-hoc fixing.
+- rationale: 30 TODO/FIXME markers across 11 files indicates systematic technical debt that could affect user experience. Current audit finding notes it as incomplete implementation requiring attention.
+- proposed scope: 1 phase. Systematically review each TODO/FIXME marker, resolve or properly document with issue tracking for future phases.
+- estimated phases: 1
+- conflicts: none
+
+### [score 2.8] Audit-fixing pattern formalization
+- proposed: 2026-05-26, expand pass 45
+- source signals:
+  - **Commit pattern G** — 5+ consecutive audit-fixing commits (`fix:` prefix) in recent history addressing individual audit findings
+  - **Pattern observation** — Recent development mode shows audit-driven fixes rather than batched systematic improvements
+- rationale: Recent pattern of consecutive individual audit fixes suggests opportunity for more systematic audit process rather than ad-hoc fixing as findings emerge.
+- proposed scope: 1 phase. Establish audit-fixing workflow documentation, batch remaining audit items into systematic phases for more efficient resolution.
+- estimated phases: 1
+- conflicts: none

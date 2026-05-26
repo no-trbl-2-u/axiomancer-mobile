@@ -63,16 +63,6 @@
 - suggested_fix: [waiting on design — the prompt file `design/levelup-modal-prompt.txt` landed 2026-05-22 specifying both surfaces (SELF-header `ASCEND` strip + full-screen LevelUpModal). User confirmed via /oversight 2026-05-22 (32nd call) that the design is in progress at <https://claude.ai/design/p/019e0f5a-a0f0-753b-be1e-8939e6011384>. The actual handoff bundle hasn't been generated yet — the 2026-05-22 bundle at `design/handoff-2026-05-22/` covers aftermath modals only. Once the levelup bundle lands (likely `design/handoff-<date>/project/screens/levelup.jsx`), this row promotes to its own phase. Until then it stays Pending so the next /oversight sees it.]
 - source: user
 
-### [MED] /inventory — Satchel equipment tap should open modal directly, skip intermediate step
-- pass: user-jot (commit `b12f1e9`)
-- viewport: unspecified
-- auth_state: anonymous
-- category: navigation
-- observation: There's an HTML warning when I click a piece of equipment in Satchel. Let's change this so that when I click a piece of equipment, it goes right to the modal. Within the modal, I can cancel, equip, or discard. Skip the inbetween step.
-- evidence: user-spotted at 2026-05-25
-- suggested_fix: [user has not specified — iterate to determine]
-- source: user
-- playtest: see PLAYTEST_REPORT.md [F13] (nested button HTML violation in item cards)
 
 ### [HIGH] general — Equipment has no effect on player stats ✅
 - pass: user-jot (commit `b12f1e9`)
@@ -243,6 +233,20 @@
 - source: deep-playtest [F12]
 
 ## Done
+
+### [MED] /inventory — Satchel equipment tap should open modal directly, skip intermediate step ✅
+- pass: user-jot (commit `b12f1e9`)
+- issue: #198
+- viewport: unspecified
+- auth_state: anonymous
+- category: navigation
+- observation: There's an HTML warning when I click a piece of equipment in Satchel. Let's change this so that when I click a piece of equipment, it goes right to the modal. Within the modal, I can cancel, equip, or discard. Skip the inbetween step.
+- evidence: user-spotted at 2026-05-25
+- addressed: 2026-05-26 via commit `43fd331`
+- fix: Equipment items now open modal directly on tap instead of requiring intermediate expansion step. Non-equipment items still expand to show details first. This addresses the HTML warning from nested button structure and improves UX by reducing clicks for equipment interactions. Updated corresponding test to reflect new direct-to-modal behavior.
+- suggested_fix: [user has not specified — iterate to determine]
+- source: user
+- playtest: see PLAYTEST_REPORT.md [F13] (nested button HTML violation in item cards)
 
 ### [HIGH] general — Combat encounters stop triggering after first encounter until refresh ✅
 - pass: user-jot (commit `b12f1e9`); addressed at commit `46adcac` via /iterate.

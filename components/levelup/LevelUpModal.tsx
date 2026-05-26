@@ -134,7 +134,9 @@ export function LevelUpModal({
             return calculateDerivedPreview(current, spent);
         } catch (error) {
             // Error fallback: show current stats without preview
-            console.warn('Derived stats preview calculation failed:', error);
+            if (__DEV__) {
+                console.warn('Derived stats preview calculation failed:', error);
+            }
             return currentDerived;
         }
     }, [current, currentDerived, spent]);

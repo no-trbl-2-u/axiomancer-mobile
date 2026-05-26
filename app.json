@@ -24,7 +24,25 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "title": "Axiomancer Mobile - Gothic TTRPG",
+      "description": "The official mobile client for the Axiomancer tabletop RPG. Explore gothic realms, engage in tactical combat, and uncover dark mysteries in this atmospheric role-playing experience.",
+      "lang": "en",
+      "themeColor": "#0a0a0a",
+      "backgroundColor": "#0a0a0a",
+      "openGraph": {
+        "type": "website",
+        "title": "Axiomancer Mobile - Gothic TTRPG",
+        "description": "The official mobile client for the Axiomancer tabletop RPG. Explore gothic realms, engage in tactical combat, and uncover dark mysteries in this atmospheric role-playing experience.",
+        "image": "./assets/images/icon.png",
+        "siteName": "Axiomancer Mobile"
+      },
+      "twitter": {
+        "card": "summary_large_image",
+        "title": "Axiomancer Mobile - Gothic TTRPG", 
+        "description": "The official mobile client for the Axiomancer tabletop RPG. Explore gothic realms, engage in tactical combat, and uncover dark mysteries in this atmospheric role-playing experience.",
+        "image": "./assets/images/icon.png"
+      }
     },
     "plugins": [
       "expo-router",

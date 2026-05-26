@@ -53,6 +53,26 @@
 
 ## Pending
 
+### [HIGH] general — Equipment has no visible effect on character stats
+- pass: user-jot (commit `5e6cd5e`)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: I still don't understand why equipment has no effect on stats? Either update the UI to show the change in stats that occur on changing equipment, or call it out in the next oversight that I need to create a gh issue for the engine if it's missing there.
+- evidence: user-spotted at 2026-05-26
+- suggested_fix: [user has not specified — iterate to determine]
+- source: user
+
+### [MED] general — Tooltip mentions "mana" which is incorrect for Mind
+- pass: user-jot (commit `5e6cd5e`)
+- viewport: unspecified
+- auth_state: anonymous
+- category: voice
+- observation: The tooltip mentions "mana" which is incorrect. Mind does more than that.
+- evidence: user-spotted at 2026-05-26
+- suggested_fix: [user has not specified — iterate to determine]
+- source: user
+
 ### [MED] /self — Level Up button at top of SELF screen + stat-allocation modal ✅ (PROMOTED → Phase 73 via /oversight 33rd call, design bundle landed `design/handoff-2026-05-23/`)
 - pass: user-jot (commit `3de163f`)
 - viewport: unspecified

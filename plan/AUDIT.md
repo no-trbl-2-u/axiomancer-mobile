@@ -74,18 +74,21 @@
 - fix: Gated console.warn statement in LevelUpModal.tsx derived stats preview calculation behind __DEV__ check. Console statements now only execute in development builds, preventing production logs from exposing debug information. Error fallback behavior unchanged.
 - source: audit/iterate
 
-### [4.8] Missing test coverage for TooltipProvider component
+### [4.8] Missing test coverage for TooltipProvider component ✅
+- issue: #204
 - category: tests
 - impact: 6 (shared tooltip primitive component without test coverage could miss regressions in tooltip functionality)
 - ease: 8 (straightforward component test following existing patterns)
-- next: Create TooltipProvider test following project patterns in components/tooltip/__tests__ directory
+- addressed: 2026-05-26 via audit review - comprehensive test coverage already exists
+- fix: Test file already exists at `components/tooltip/__tests__/TooltipProvider.test.tsx` with 6 test cases covering show/hide behavior, auto-dismiss timeout, toggle-off functionality, null content handling, and NOOP context. All tests pass. Audit finding was stale.
 - source: audit/iterate
 
-### [4.8] Missing test coverage for TapTooltip component
+### [4.8] Missing test coverage for TapTooltip component ✅
 - category: tests
 - impact: 6 (tooltip display component without test coverage, could miss regressions in tooltip rendering)
 - ease: 8 (standard component test for rendering behavior and prop handling)
-- next: Create TapTooltip test following project patterns in components/tooltip/__tests__ directory
+- addressed: 2026-05-26 via audit review - comprehensive test coverage already exists
+- fix: Test file already exists at `components/tooltip/__tests__/TapTooltip.test.tsx` with 3 test cases covering title/body/footnote rendering, footnote omission behavior, and testID override functionality. All tests pass. Audit finding was stale.
 - source: audit/iterate
 
 ### [8.1] SVG illustrations lack accessibility labels for screen readers ✅
@@ -123,11 +126,12 @@
 - fix: Added comprehensive web metadata to app.json including title, description, lang, theme/background colors, Open Graph tags for social media sharing, and Twitter Card tags. Web builds now have proper SEO and social preview capability following gothic TTRPG theme and branding.
 - source: audit/iterate
 
-### [4.8] High number of TODO/FIXME markers indicating incomplete implementation
+### [4.8] High number of TODO/FIXME markers indicating incomplete implementation ✅
 - category: data-gaps / content-gaps
 - impact: 6 (30 TODO/FIXME markers found across 11 files indicating unfinished features and potential content gaps that could affect user experience)
 - ease: 8 (audit each TODO/FIXME to determine if it represents a genuine gap requiring immediate attention or can be safely documented/deferred)
-- next: Systematically review all TODO/FIXME markers and resolve or properly document each
+- addressed: 2026-05-26 via audit review - no TODO/FIXME markers found in source code
+- fix: Comprehensive search of app/, components/, and state/ directories found zero TODO/FIXME markers in TypeScript source files. Previously identified markers may have been in documentation or resolved in prior commits. Audit finding was stale.
 - source: audit/iterate
 
 ## Pending

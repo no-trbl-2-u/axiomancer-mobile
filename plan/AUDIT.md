@@ -1,4 +1,4 @@
-# Site audit — 2026-05-25
+# Site audit — 2026-05-26
 
 > Latest findings from `/iterate audit`. Rewritten on each
 > audit pass. The Pending list at the bottom queues `/iterate`.
@@ -64,6 +64,29 @@
 > </details>
 
 ## Top 5 findings (scored)
+
+### [7.2] Console warning statement not gated behind __DEV__ in LevelUpModal ✅
+- issue: #197
+- category: performance / tech-debt
+- impact: 8 (console.warn statement executes in production builds, leaking debug information to users and potentially exposing internal error handling)
+- ease: 9 (simple __DEV__ guard can be added around the console.warn statement)
+- addressed: 2026-05-26 via commit `0569380`
+- fix: Gated console.warn statement in LevelUpModal.tsx derived stats preview calculation behind __DEV__ check. Console statements now only execute in development builds, preventing production logs from exposing debug information. Error fallback behavior unchanged.
+- source: audit/iterate
+
+### [4.8] Missing test coverage for TooltipProvider component
+- category: tests
+- impact: 6 (shared tooltip primitive component without test coverage could miss regressions in tooltip functionality)
+- ease: 8 (straightforward component test following existing patterns)
+- next: Create TooltipProvider test following project patterns in components/tooltip/__tests__ directory
+- source: audit/iterate
+
+### [4.8] Missing test coverage for TapTooltip component
+- category: tests
+- impact: 6 (tooltip display component without test coverage, could miss regressions in tooltip rendering)
+- ease: 8 (standard component test for rendering behavior and prop handling)
+- next: Create TapTooltip test following project patterns in components/tooltip/__tests__ directory
+- source: audit/iterate
 
 ### [8.1] SVG illustrations lack accessibility labels for screen readers ✅
 - issue: #193

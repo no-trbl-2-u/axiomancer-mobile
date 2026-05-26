@@ -106,7 +106,15 @@
 - category: observation
 - observation: The stat allocation says when I level up a given stat, it effects the other ones (ie. adding mind effects heart). I like that idea, however, it is not reflected in the characters actual stats. This one needs my final call, but it's something we need to talk about.
 - evidence: user-spotted at 2026-05-25
-- suggested_fix: [needs-user-call — user wants to discuss before implementation]
+- resolution: User call made via /oversight 2026-05-26 (42nd call).
+  Decision: **keep cross-effects**, but engine-authoritative.
+  Three actions: (1) engine issue filed requesting
+  `previewStatAllocation` API, (2) mobile's local approximation
+  (`lib/previewAllocation.ts` + `DerivedPreviewRibbon`) to be
+  removed so players don't see inaccurate coefficients,
+  (3) phase candidate filed for re-wiring when engine ships.
+  See PHASE_CANDIDATES.md `[score 5.0] Cross-stat effects on
+  level-up`.
 - source: user
 
 ### [MED] /exploration — Only show node labels for unvisited, available nodes

@@ -10,6 +10,35 @@
 
 ## Pending
 
+### [score 5.0] Cross-stat effects on level-up — engine-driven derived stats preview `[needs-engine-release]`
+- proposed: 2026-05-26, oversight 42nd call
+- source signals:
+  - **CRITIQUE [MED] stat allocation cross-effects not reflected
+    in actual character stats.** User confirmed cross-effects are
+    intended and should be real, but must come from the engine
+    (not mobile's local approximation).
+  - **Engine issue filed** against `axiomancer-mechanics` requesting
+    a `previewStatAllocation(baseStats, allocation)` API that
+    returns the exact derived stats the engine would produce.
+  - **Mobile removal** of `lib/previewAllocation.ts` and the
+    `DerivedPreviewRibbon` component ships as a prerequisite
+    cleanup (oversight 42nd call, separate commit) so the local
+    approximation doesn't mislead players until the engine ships.
+- rationale: the current mobile-side `previewAllocation` function
+  uses guessed coefficients (`body * 1.2 + heart * 0.5`, etc.)
+  that don't match the engine's actual formula. User wants the
+  cross-effects to be real but engine-authoritative, not
+  mobile-approximated. Engine must ship the API first; mobile
+  then wires it.
+- proposed scope: 1 phase, gated on engine `previewStatAllocation`.
+  - Wire engine's `previewStatAllocation` into `levelup.engine.ts`.
+  - Restore `DerivedPreviewRibbon` (or equivalent) reading real
+    engine data.
+  - Pin hermetic test asserting preview matches engine output.
+- estimated phases: 1
+- conflicts: `[needs-engine-release]` — gated on engine shipping
+  a `previewStatAllocation` or equivalent API. See engine issue.
+
 ### [score 3.0] Nested button accessibility fix in stance picker [PROMOTED → Phase 90 via /oversight 41st call]
 - proposed: 2026-05-25, expand pass 43
 - source signals:
@@ -61,146 +90,6 @@
 - proposed scope: 1 phase, 2-3 ticks.
 - estimated phases: 1
 - conflicts: none
-
-### [score 7.0] Engine MapDefinition reconciliation — `[needs-engine-release]` resolved by 0.11.0 [PROMOTED → Phase 81a via /oversight 38th call]
-
-- promoted: 2026-05-24 via `/oversight` (38th call) as **Phase 81a**
-  (engine-+-cleanup cluster parent Phase 81). Tick A diffs mobile
-  fixture vs engine; tick B follows after a /oversight design call
-  on direction (mobile widens to match engine, or engine becomes
-  the layout source).
-- proposed: 2026-05-24, expand pass 41 (first aggressive-posture pass)
-- source signals:
-  - **AUDIT `[4.0]` + `[3.0]` `[needs-engine-release]` rows**
-    (`plan/AUDIT.md` ~585 + ~597) — both have been BLOCKED on engine
-    `MapDefinition` for `fishing-village` declaring a strictly
-    linear chain (`fv-2.connectedNodes = ['fv-3']` etc.). The 30th
-    oversight call (2026-05-22) settled the resolution path:
-    engine widens to match mobile's branching graph.
-  - **Engine 0.11.0 bump landed 18h ago** (commit `f2239a8`).
-    Direct inspection of `node_modules/axiomancer-mechanics/dist/
-    World/Continents/Coastal-Village/maps.js`:
-    - `fv-1.connectedNodes = ['fv-2', 'fv-11']` (was `['fv-2']`)
-    - `fv-2.connectedNodes = ['fv-3', 'fv-12']` (was `['fv-3']`)
-    - `fv-3.connectedNodes = ['fv-4', 'fv-13', 'fv-16']`
-    - …continuing for ~22+ nodes with branching
-    The engine has widened — but **further than the mobile
-    fixture declares** (mobile only has 10 nodes fv-1…fv-10 in
-    a partial-branching shape).
-  - **Smell §4 I — engine-bump cliff partially-consumed.** 0.11.0
-    landed; aftermath / BEGIN AGAIN / codex consumers shipped
-    (Phases 76-78). The map-widening surface (Phase 27 / OPEN-set
-    migration) has not.
-- rationale: highest-impact unblock available. Phase 27 OPEN-set
-  migration has been blocked since 2026-05-22; the 30th oversight
-  call's resolution path is now actionable. Mobile fixture is
-  narrower than engine now (the opposite of the original drift)
-  — this is a richer problem than the AUDIT row anticipated and
-  may need a design choice via /oversight.
-- proposed scope: 1 phase, 1-2 ticks.
-  - Tick A — diff mobile fixture vs. engine MapDefinition for
-    fishing-village; produce a reconciliation table (which nodes
-    + edges exist in each).
-  - Tick B — either (a) extend mobile fixture to match engine's
-    22+ node graph and ship the OPEN-set migration (`availableNodes`
-    → `discoveredNodes`) per the original [3.0] design; or (b)
-    accept the engine as truth, drop the mobile fixture, and
-    derive visual layout from engine `location` field directly.
-    Decision belongs to /oversight.
-- conflicts: needs-user-call — fixture-vs-engine reconciliation
-  shape is a design call. The 30th oversight settled "engine
-  widens"; the 41st (or whichever) needs to settle "does mobile
-  layout match engine, or does engine become the layout source?".
-- estimated phases: 1 (with /oversight gate between Tick A and
-  Tick B).
-
-### [score 5.0] Hex-literal `'#0a0a0a'` + `'#06050a'` cluster drain — extend AXM token coverage [PROMOTED → Phase 81b via /oversight 38th call]
-
-- promoted: 2026-05-24 via `/oversight` (38th call) as **Phase 81b**.
-- proposed: 2026-05-24, expand pass 41 (smell §4 I)
-- source signals:
-  - **Smell §4 I — hex-literal colour leakage.** `grep -rE
-    "'#[0-9a-fA-F]{6}'" app components` (excluding tests) returns
-    **85 hits** in production. Top repeated literals:
-    - `'#0a0a0a'` (~30+ occurrences) — near-black panel fill
-    - `'#06050a'` (~6 occurrences) — deeper near-black
-    - `'#1a1814'` (~4 occurrences) — ash-tinted dark
-    - `'#1a0a0a'`, `'#3a3530'` — scattered
-  - **Distribution** — `app/(tabs)/combat.tsx` (~10+),
-    `app/(tabs)/inventory/index.tsx` (~6),
-    `app/event/index.tsx` (~4),
-    `app/(tabs)/character/index.tsx` (~2),
-    `components/StanceGlyph.tsx` (~2),
-    `components/NodeMark.tsx` (~4),
-    `components/StatBar.tsx` (~1),
-    `components/ErrorBoundary.tsx` (~1).
-  - **Historical precedent** — two prior token-drain rows shipped
-    successfully:
-    - AUDIT `[MED] sweep — 8× hex literal '#100d0a' → AXM.panelBg`
-      (closed via Phase 32 catch-up sweep)
-    - AUDIT `[MED] /app/(tabs)/inventory/index.tsx PaperDoll —
-      10× "#0a0807" → AXM.silhouette` (closed Phase 33+)
-    This is the third such cluster. Pattern is well-understood;
-    the new literals just need a token.
-  - **bearings.md decision** — "Hard-coded fixtures are debt"
-    extends naturally to hard-coded colours; the AXM token
-    system is the documented vehicle.
-- rationale: pure cleanup smell. The literal `'#0a0a0a'` is
-  semantically a near-black panel-or-card fill and likely deserves
-  a `AXM.cardBg` (or sibling) token alongside the existing
-  `AXM.panelBg` + `AXM.silhouette`. 30+ occurrences means future
-  palette tweaks today require a global find-replace; with the
-  token, one edit propagates.
-- proposed scope: 1 phase, 1 tick.
-  - Add `AXM.cardBg = '#0a0a0a'` + `AXM.deepBg = '#06050a'` (or
-    rename per existing token convention) to `components/tokens.tsx`.
-  - Sweep all production occurrences via grep + Edit. Skip
-    `components/ErrorBoundary.tsx:470` (intentional pre-token
-    fallback for the error boundary itself).
-  - Verify gate green; no behavioural change expected (literals
-    are byte-identical pre/post).
-- conflicts: none. Additive. May touch ~30 files but each touch
-  is a single literal → token swap.
-- estimated phases: 1.
-
-### [score 4.0] `app/(tabs)/combat.tsx` file-length outlier — sub-component extraction [PROMOTED → Phase 81c via /oversight 38th call]
-
-- promoted: 2026-05-24 via `/oversight` (38th call) as **Phase 81c**.
-  Sequences after Phase 80b (TooltipTarget consolidation) to avoid
-  merge conflicts.
-- proposed: 2026-05-24, expand pass 41 (smell §4 I — single
-  source, baseline 2.5 + cheap +2 - uncertain scope -0.5)
-- source signals:
-  - **Smell §4 I — file-length outlier.** `wc -l app/(tabs)/
-    combat.tsx` = **1520 lines**. Folder median (across the 6
-    `(tabs)/**/*.tsx` screens) is ~448 lines. Combat is **3.4×
-    median**, the next-largest sibling (`inventory/index.tsx`)
-    is at 1082 lines (2.4× median).
-  - **Existing extraction trajectory** — Phase 80b (just promoted)
-    drains ~30 of those 1520 lines (TooltipTarget inline copy).
-    The bulk remains: `PhaseBottom` (~200 lines), `ChainBarFixed`,
-    `Rivet`, `logBox` / `advBadge` styles + sub-renders, and the
-    stance-cards block.
-  - **Historical precedent** — Phase 63a (`Extract combat UI
-    from (tabs)/combat.tsx`) was the prior extraction phase and
-    shipped clean (`24eaa1e`). The file has grown ~400 lines
-    since.
-- rationale: large `.tsx` files concentrate review surface and
-  slow editor / TypeScript responsiveness. Phase 80b is the
-  appetizer; a Phase ~81 with 2-3 sub-component extractions
-  (PhaseBottom → `components/combat/PhaseBottom.tsx`, stance-cards
-  block → `components/combat/StanceCard.tsx`, …) would bring
-  combat.tsx back under ~1000 lines.
-- proposed scope: 1 phase, 2-3 ticks.
-  - Tick A — extract `PhaseBottom` component + styles.
-  - Tick B — extract `StanceCard` + sub-card components.
-  - Tick C (optional) — extract `LogBox` / `AdvBadge` chrome.
-  - Each tick is pure mechanical refactor; combat suite acts as
-    the contract.
-- conflicts: should sequence **after** Phase 80b ships (avoids
-  merge conflict on the TooltipTarget removal line). Otherwise
-  none.
-- estimated phases: 1 (with 2-3 sub-ticks).
 
 ### [score 5.5] Tooltip overlay portal — wire tooltips inside RN `<Modal>` surfaces [PROMOTED → Phase 80a via /oversight 37th call]
 
@@ -1317,6 +1206,42 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted 2026-05-24 → status Phase 90, shipped] [score 3.0] Nested button accessibility fix in stance picker
+
+- promoted via `/oversight` 2026-05-25 (41st call). Shipped as
+  Phase 90. Moved from Pending to Promoted via oversight 42nd
+  call (2026-05-26) — stale PROMOTED tag in Pending cleaned up.
+
+### [promoted 2026-05-24 → status Phase 83, shipped] [score 4.0] Hex-literal `'#0a0807'` drain to `AXM.silhouette`
+
+- promoted via `/oversight` 2026-05-24 (39th call). Shipped as
+  Phase 83. Moved from Pending to Promoted via oversight 42nd
+  call (2026-05-26).
+
+### [promoted 2026-05-24 → status Phase 84, shipped] [score 3.0] Inventory screen sub-component extraction
+
+- promoted via `/oversight` 2026-05-24 (39th call). Shipped as
+  Phase 84. Moved from Pending to Promoted via oversight 42nd
+  call (2026-05-26).
+
+### [promoted 2026-05-24 → status Phase 81a, shipped] [score 7.0] Engine MapDefinition reconciliation
+
+- promoted via `/oversight` 2026-05-24 (38th call). Shipped as
+  Phase 81a. Moved from Pending to Promoted via oversight 42nd
+  call (2026-05-26).
+
+### [promoted 2026-05-24 → status Phase 81b, shipped] [score 5.0] Hex-literal `'#0a0a0a'` + `'#06050a'` cluster drain
+
+- promoted via `/oversight` 2026-05-24 (38th call). Shipped as
+  Phase 81b. Moved from Pending to Promoted via oversight 42nd
+  call (2026-05-26).
+
+### [promoted 2026-05-24 → status Phase 81c, shipped] [score 4.0] combat.tsx sub-component extraction
+
+- promoted via `/oversight` 2026-05-24 (38th call). Shipped as
+  Phase 81c. Moved from Pending to Promoted via oversight 42nd
+  call (2026-05-26).
 
 ### [promoted 2026-05-21 → status Phase 64] [score 7.5] Phase 64 — Multi-screen integration test harness
 

@@ -1675,11 +1675,25 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       (81a → 81c); 81a is the highest-impact unblock and has a
       design-call gate between Tick A and Tick B. Closes when
       81c ships clean.
-- [ ] Phase 81a — Engine MapDefinition reconciliation (resolves
+- [ ] Phase 83 — Hex-literal `'#0a0807'` drain to `AXM.silhouette`
+      + aftermath panel token sweep. Promoted via `/oversight`
+      2026-05-26 after T deferred Phase 81a's map-source direction
+      call in favor of a smaller cleanup phase. Scope: replace the
+      remaining production `'#0a0807'` style literals with the
+      existing `AXM.silhouette` token across aftermath panels,
+      EncounterModalOverlay, LevelUpModal, and PixelEmblem; skip
+      ErrorBoundary per fallback-token policy. Acceptance: no
+      production `'#0a0807'` literals remain outside the explicit
+      token definition / approved fallback; verify gate green. See
+      PHASE_CANDIDATES.md `[score 4.0]` row.
+- [deferred] Phase 81a — Engine MapDefinition reconciliation (resolves
       AUDIT `[4.0]` + `[3.0]` `[needs-engine-release]` rows).
-      Engine 0.11.0 widened `fv-*.connectedNodes` to a branching
-      22+ node graph — wider than the mobile layout fixture's
-      10-node graph. Scope:
+      Deferred via `/oversight` 2026-05-26: T picked "defer Phase
+      81a and promote a smaller cleanup phase" after Tick A's
+      reconciliation doc surfaced a map-source truth decision
+      (mobile shortcuts vs engine-linear spine vs source edit). Keep
+      `docs/engine-map-reconciliation-2026-05-24.md` as the artifact
+      to resume from. Original scope:
       - Tick A — produce `docs/engine-map-reconciliation-2026-05-24.md`
         diffing mobile fixture vs engine MapDefinition (which nodes,
         which edges, which collide). Stop and `/oversight` for the

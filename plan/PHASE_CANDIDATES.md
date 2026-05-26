@@ -10,8 +10,9 @@
 
 ## Pending
 
-### [score 4.0] Hex-literal `'#0a0807'` drain to `AXM.silhouette` + aftermath panel token sweep
+### [score 4.0] Hex-literal `'#0a0807'` drain to `AXM.silhouette` + aftermath panel token sweep [PROMOTED → Phase 83 via /oversight 2026-05-26]
 
+- promoted: 2026-05-26 via `/oversight`; T deferred Phase 81a's map-source direction call and chose a smaller cleanup phase.
 - proposed: 2026-05-24, expand pass 42 (smell §4 I, cascade from /iterate)
 - source signals:
   - **Smell §4 I — hex-literal colour leakage (continuation).**

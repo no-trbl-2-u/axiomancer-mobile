@@ -140,12 +140,15 @@
 - source: user
 - playtest: confirmed by PLAYTEST_REPORT.md [F02] (encounter jargon), [F04] (battle log ability names), [F05] (LET phase numbers), [F06] (CRUCIBLE symbols)
 
-### [HIGH] README.md — Critical mismatch between test promise and actual state blocks new contributors
+### [HIGH] README.md — Critical mismatch between test promise and actual state blocks new contributors ✅
 - pass: 17 (commit c7a1c9c)
+- issue: #196
 - viewport: desktop
 - category: comprehension
 - observation: README.md promises 'npm test' runs Jest but AGENTS.md reveals no test runner is installed yet, creating false expectations for new contributors
 - evidence: README.md line 41: 'npm test' with note 'Not wired yet' vs AGENTS.md line 31: 'No test runner is installed yet'
+- addressed: 2026-05-26 via commit 56e25f2
+- fix: Added prominent warning box before Quick start section explaining that npm test requires Spec 01 setup first. Removed misleading caveat from Scripts table. New contributors now have clear expectations about testing setup requirements.
 - suggested fix: Move the test setup caveat to a prominent warning box in README.md before the Quick start section
 - source: browser
 

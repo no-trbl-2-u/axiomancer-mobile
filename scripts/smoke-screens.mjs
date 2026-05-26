@@ -156,6 +156,29 @@ const MIME = {
     '.ttf': 'font/ttf',
 }
 
+export function resolveStaticExportPath(_pathname, candidates) {
+    const exact = candidates[0]
+    const directoryIndex = candidates[1]
+    const htmlGuess = candidates[2]
+    const fallbackIndex = candidates[3]
+
+    if (exact?.exists && !exact.isDirectory) return exact.requestedPath
+    if (exact?.exists && exact.isDirectory && directoryIndex?.exists && !directoryIndex.isDirectory) {
+        return directoryIndex.requestedPath
+    }
+    if (htmlGuess?.exists && !htmlGuess.isDirectory) return htmlGuess.requestedPath
+    return fallbackIndex.requestedPath
+}
+
+async function fileCandidate(requestedPath) {
+    try {
+        const info = await stat(requestedPath)
+        return { requestedPath, exists: true, isDirectory: info.isDirectory() }
+    } catch {
+        return { requestedPath, exists: false, isDirectory: false }
+    }
+}
+
 function startStaticServer(rootDir) {
     return new Promise((resolveServer, rejectServer) => {
         const server = createServer(async (req, res) => {
@@ -170,11 +193,13 @@ function startStaticServer(rootDir) {
                     return res.end('forbidden')
                 }
 
-                if (!existsSync(filePath)) {
-                    const htmlGuess = join(rootDir, pathname + '.html')
-                    if (existsSync(htmlGuess)) filePath = htmlGuess
-                    else filePath = join(rootDir, 'index.html')
-                }
+                const candidates = [
+                    await fileCandidate(filePath),
+                    await fileCandidate(join(filePath, 'index.html')),
+                    await fileCandidate(join(rootDir, pathname + '.html')),
+                    await fileCandidate(join(rootDir, 'index.html')),
+                ]
+                filePath = resolveStaticExportPath(pathname, candidates)
 
                 const data = await readFile(filePath)
                 const mime = MIME[extname(filePath).toLowerCase()] ?? 'application/octet-stream'

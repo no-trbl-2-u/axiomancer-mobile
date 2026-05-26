@@ -1786,7 +1786,7 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       Commit: `fix(spec90): nested button a11y fix in stance
       picker` `[fead194]`.
 
-- [ ] Phase 91 — Battle log two-line format. Promoted via
+- [x] Phase 91 — Battle log two-line format. Promoted via
       `/oversight` 2026-05-26 from PHASE_CANDIDATES `[score 5.5]`
       after the build-plan queue emptied. Scope: connect player
       input to combat output by rendering two-line log entries,
@@ -1795,6 +1795,7 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       preserve existing combat resolution semantics. Acceptance:
       battle log shows both choice and applied effect for stance +
       action outcomes, regression coverage pins F04, verify gate
+      `[DONE — see commit 9a88819]`.
       green. See `plan/phases/phase_91_battle_log_two_line_format.md`.
 
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped

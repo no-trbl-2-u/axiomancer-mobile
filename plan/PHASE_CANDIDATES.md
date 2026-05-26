@@ -682,7 +682,8 @@
   authoring on the Enemy / Encounter shape; coordination with
   whoever does the writer pass.
 
-### [score 5.5] Battle log two-line format (playtest 2026-05-25 [F04])
+### [score 5.5] Battle log two-line format (playtest 2026-05-25 [F04]) [PROMOTED → Phase 91 via /oversight 2026-05-26]
+- promoted: 2026-05-26 via `/oversight`; T chose the top candidate while the build-plan queue was empty.
 - source: deep-playtest
 - finding: [F04] -- battle log shows "You apply Fleeting Kindness" instead of connecting player choice (HEART stance + ATTACK) to the named effect
 - approach: two-line log entry -- "You chose ATTACK (Heart stance)" then "Applied: Fleeting Kindness." Connects player input to game output.

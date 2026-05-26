@@ -682,6 +682,49 @@
   authoring on the Enemy / Encounter shape; coordination with
   whoever does the writer pass.
 
+### [score 5.5] Battle log two-line format (playtest 2026-05-25 [F04])
+- source: deep-playtest
+- finding: [F04] -- battle log shows "You apply Fleeting Kindness" instead of connecting player choice (HEART stance + ATTACK) to the named effect
+- approach: two-line log entry -- "You chose ATTACK (Heart stance)" then "Applied: Fleeting Kindness." Connects player input to game output.
+- severity: high
+- score: 2.5 base + 1.5 (user-confirmed, high severity) + 1.0 (cheap, presenter-only change) + 0.5 (playtest-source) = 5.5
+
+### [score 5.0] Flee narrative feedback + morale surface (playtest 2026-05-25 [F03])
+- source: deep-playtest
+- finding: [F03] -- fleeing an encounter gives zero feedback; morale cost is invisible (no UI surface anywhere)
+- approach: code side -- add a narrative beat after fleeing (prose style matching death/victory text) + expose morale value on exploration card or SELF tab. Design side -- morale bar visual in DESIGN_SPEC.md.
+- severity: high
+- score: 2.5 base + 1.5 (user-confirmed, high severity) + 0.5 (playtest-source) + 0.5 (feedback-missing, directly impacts player trust) = 5.0
+
+### [score 4.5] Death screen presenter fixes (playtest 2026-05-25 [F09, F10])
+- source: deep-playtest
+- finding: [F09] "encounters survived: i" when the player died in that encounter + [F10] "deepest node: fv-14" exposes internal ID instead of "Tide Pool"
+- approach: fix encounter-survived counter logic (dying in encounter = 0 survived) + resolve node ID to human-readable name via map layout lookup. Both are presenter changes.
+- severity: medium
+- score: 2.5 base + 1.0 (inconsistency undermines trust) + 0.5 (playtest-source) + 0.5 (cheap, two-line presenter fix) = 4.5
+
+### [score 4.0] Sealed node tap feedback (playtest 2026-05-25 [F11])
+- source: deep-playtest
+- finding: [F11] -- sealed map nodes have cursor:pointer and look tappable but produce no response on tap
+- approach: tapping a sealed node shows a brief toast or tooltip ("This path is sealed. Reach it from an adjacent open node.").
+- severity: low
+- score: 2.5 base + 0.5 (playtest-source) + 0.5 (cheap) + 0.5 (feedback-missing) = 4.0
+
+### [score 4.0] Disabled ITEM button tooltip in combat (playtest 2026-05-25 [F12])
+- source: deep-playtest
+- finding: [F12] -- ITEM action ("USE A CONSUMABLE") always greyed out with no explanation, even with Healing Potion in inventory
+- approach: tapping the disabled ITEM button shows a tooltip explaining why (e.g. "No consumable items available" or "Combat items not yet implemented").
+- severity: low
+- score: 2.5 base + 0.5 (playtest-source) + 0.5 (cheap) + 0.5 (confusion, player expects usability) = 4.0
+
+### [score 3.5] Stance card layout shrink-to-fit (playtest 2026-05-25 [F07])
+- source: deep-playtest
+- finding: [F07] -- Mind stance card clipped at right edge; stats and "BEATS HEART - WEAK BOD" text truncate
+- approach: reduce card width or font size so all three stance cards fit within the combat modal viewport. Already linked to CRITIQUE.md [MED] about spacing.
+- severity: medium
+- score: 2.5 base + 0.5 (playtest-source) + 0.5 (visual, confirmed by playtest) = 3.5
+- critique-xref: CRITIQUE.md [MED] Space heart/body/mind buttons evenly
+
 ## Considered (below threshold)
 
 - **[score 3.5] Persist run-stats counters across app reload** —

@@ -15,7 +15,7 @@ The death screen was one of the finest moments in the session. "The pilgrim sat 
 
 ## Findings
 
-### [F01] No title screen or onboarding
+### [x] [F01] No title screen or onboarding
 - severity: high
 - type: flow-gap
 - location: app entry
@@ -24,8 +24,9 @@ The death screen was one of the finest moments in the session. "The pilgrim sat 
 - expected: A first-time player expects some orientation -- even a single sentence like "You are a Pilgrim. Explore the Wilds."
 - screenshot: The initial load showed the WILDS tab map with player info, node graph, and travel options, but no introductory content.
 - impact: New players have no context for the game's vocabulary (PILGRIM, VITAE, LEAGUES, TRODDEN/OPEN/SHUT) or goals. The learning curve starts vertical.
+- resolved: design-spec -- title card before map
 
-### [F02] Combat jargon on encounter modal is unexplained
+### [x] [F02] Combat jargon on encounter modal is unexplained
 - severity: high
 - type: confusion
 - location: encounter modal (FIGHT/FLEE buttons)
@@ -35,8 +36,9 @@ The death screen was one of the finest moments in the session. "The pilgrim sat 
 - screenshot: The encounter modal showed WET HOUND with two action buttons containing dense Roman numeral jargon.
 - impact: Players cannot make informed FIGHT vs FLEE decisions when they do not understand the information presented.
 - critique-xref: see CRITIQUE.md [HIGH] Combat UX unintuitive
+- resolved: design-spec -- tooltip decode layer on encounter jargon
 
-### [F03] FLEE gives no visible feedback or morale indication
+### [x] [F03] FLEE gives no visible feedback or morale indication
 - severity: high
 - type: feedback-missing
 - location: encounter modal / exploration map
@@ -45,8 +47,9 @@ The death screen was one of the finest moments in the session. "The pilgrim sat 
 - expected: Some feedback after fleeing: a brief message ("You fled. Morale -2."), and morale visible on the character sheet or HUD.
 - screenshot: After fleeing, the map looked identical to before except the ENCOUNTER label was gone from the node.
 - impact: A core game mechanic (morale) appears to have no UI surface at all, making the flee cost invisible.
+- resolved: both -- flee narrative (code) + morale bar on exploration/SELF (design)
 
-### [F04] Battle log action does not match player's choice
+### [x] [F04] Battle log action does not match player's choice
 - severity: high
 - type: confusion
 - location: combat modal, battle log
@@ -56,8 +59,9 @@ The death screen was one of the finest moments in the session. "The pilgrim sat 
 - screenshot: The battle log showed "You apply Fleeting Kindness. Foe apply Fleeting Kindness. Foe strikes -- you take 0 damage." after I chose Heart/Attack.
 - impact: Players cannot learn the combat system when the feedback uses unexplained terminology that does not map to their inputs.
 - critique-xref: see CRITIQUE.md [HIGH] Combat UX unintuitive
+- resolved: phase-candidate -- two-line battle log (action line + effect line)
 
-### [F05] LET phase numbers are opaque
+### [x] [F05] LET phase numbers are opaque
 - severity: medium
 - type: confusion
 - location: combat modal, IV - LET phase
@@ -67,8 +71,9 @@ The death screen was one of the finest moments in the session. "The pilgrim sat 
 - screenshot: The LET phase showed large numbers (-2 vs 16) side by side with flavor text but no explanation of what the numbers mean.
 - impact: The climactic moment of each combat round is presented with numbers that tell no story to uninstructed players.
 - critique-xref: see CRITIQUE.md [HIGH] Combat UX unintuitive
+- resolved: intended
 
-### [F06] CRUCIBLE symbols are unexplained
+### [x] [F06] CRUCIBLE symbols are unexplained
 - severity: medium
 - type: confusion
 - location: combat modal, II - DO phase
@@ -78,8 +83,9 @@ The death screen was one of the finest moments in the session. "The pilgrim sat 
 - screenshot: Five cryptic circle-variant symbols with numbers appeared above the action buttons in the DO phase.
 - impact: A potentially interesting resource mechanic is invisible to players who cannot decode the symbols.
 - critique-xref: see CRITIQUE.md [HIGH] Combat UX unintuitive
+- resolved: design-spec -- tap-tooltips on each crucible glyph
 
-### [F07] Mind stance card clipped at right edge
+### [x] [F07] Mind stance card clipped at right edge
 - severity: medium
 - type: visual
 - location: combat modal, I - STAND phase
@@ -89,8 +95,9 @@ The death screen was one of the finest moments in the session. "The pilgrim sat 
 - screenshot: The stance selection showed three cards side by side, with the rightmost (Mind) having its stats and text cut off at the screen edge.
 - impact: Players cannot compare all three stance options equally when one is partially hidden.
 - critique-xref: see CRITIQUE.md [MED] Space heart/body/mind buttons evenly
+- resolved: phase-candidate -- shrink stance cards to fit viewport
 
-### [F08] "Explain" buttons on SELF tab produce no visible output
+### [x] [F08] "Explain" buttons on SELF tab produce no visible output
 - severity: medium
 - type: feedback-missing
 - location: SELF tab (character screen)
@@ -100,8 +107,9 @@ The death screen was one of the finest moments in the session. "The pilgrim sat 
 - screenshot: The SELF tab looked identical before and after tapping the HEART stat explain button.
 - impact: The character sheet is dense with unexplained stats; the explain mechanism that would help new players appears non-functional.
 - critique-xref: see CRITIQUE.md [MED] Verify all tooltip content is 100% accurate
+- resolved: phase-candidate -- wire Explain buttons to existing TapTooltip system
 
-### [F09] "encounters survived: i" on death screen when the player died in the encounter
+### [x] [F09] "encounters survived: i" on death screen when the player died in the encounter
 - severity: medium
 - type: inconsistency
 - location: death/defeat screen, LEDGER section
@@ -110,8 +118,9 @@ The death screen was one of the finest moments in the session. "The pilgrim sat 
 - expected: Either "encounters survived: 0" or a different metric like "encounters entered: 1."
 - screenshot: The death screen LEDGER showed "rounds endured: iii, encounters survived: i, deepest node: fv-14."
 - impact: Minor confusion but undermines trust in the game's internal accounting.
+- resolved: phase-candidate -- fix encounter counter logic + resolve node ID to name
 
-### [F10] Deepest node shows internal ID instead of human-readable name
+### [x] [F10] Deepest node shows internal ID instead of human-readable name
 - severity: low
 - type: confusion
 - location: death/defeat screen, LEDGER section
@@ -120,8 +129,9 @@ The death screen was one of the finest moments in the session. "The pilgrim sat 
 - expected: "deepest node: Tide Pool" or similar human-readable label.
 - screenshot: The death screen showed "deepest node: fv-14" in the LEDGER section.
 - impact: Breaks immersion on the death screen by exposing internal data.
+- resolved: phase-candidate -- bundled with F09 presenter fix
 
-### [F11] Tapping sealed map nodes gives no feedback
+### [x] [F11] Tapping sealed map nodes gives no feedback
 - severity: low
 - type: feedback-missing
 - location: WILDS tab, node graph
@@ -130,8 +140,9 @@ The death screen was one of the finest moments in the session. "The pilgrim sat 
 - expected: Either nodes should not look tappable when sealed, or tapping should show a brief message like "This path is sealed. Reach it from an adjacent open node."
 - screenshot: The map was unchanged after tapping the sealed Black Cairn node.
 - impact: Players who try to tap sealed nodes get no guidance on how to reach them.
+- resolved: phase-candidate -- tap shows "path sealed" toast
 
-### [F12] ITEM action in combat is always disabled with no explanation
+### [x] [F12] ITEM action in combat is always disabled with no explanation
 - severity: low
 - type: confusion
 - location: combat modal, II - DO phase
@@ -140,8 +151,9 @@ The death screen was one of the finest moments in the session. "The pilgrim sat 
 - expected: Either the Healing Potion should be usable in combat, or there should be a reason shown for why ITEM is unavailable (e.g., "No combat items" or "Items unlocked at level 2").
 - screenshot: The DO phase showed ATTACK, DEFEND, SKILL as clickable but ITEM was greyed out and unresponsive.
 - impact: Players with healing items may feel frustrated that they cannot use them when most needed.
+- resolved: phase-candidate -- tooltip on disabled ITEM button explaining unavailability
 
-### [F13] Nested button HTML violation in inventory item cards
+### [x] [F13] Nested button HTML violation in inventory item cards
 - severity: low
 - type: bug
 - location: SATCHEL tab, item detail view
@@ -151,6 +163,7 @@ The death screen was one of the finest moments in the session. "The pilgrim sat 
 - screenshot: No visual manifestation, but the console showed the nested button error with full component stack trace pointing to ItemCard containing USE/DISCARD buttons.
 - impact: Screen readers and assistive technology may not function correctly. May cause hydration mismatches.
 - critique-xref: see CRITIQUE.md [MED] Satchel equipment tap should open modal directly
+- resolved: phase-candidate -- bundled with Satchel equipment tap redesign (CRITIQUE row)
 
 ## Delight Log
 

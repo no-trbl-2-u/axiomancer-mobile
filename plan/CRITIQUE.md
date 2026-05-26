@@ -194,6 +194,51 @@
 - suggested fix: Add 'Target Architecture' header to diagram section and note current migration state
 - source: browser
 
+### [HIGH] general — No title screen or onboarding for new players
+- pass: deep-playtest (2026-05-25, commit d560e8c)
+- viewport: mobile (414x896)
+- auth_state: anonymous
+- category: comprehension
+- observation: Game loads directly to WILDS map with no title screen, tutorial, or orientation. New players have zero context for vocabulary (PILGRIM, VITAE, LEAGUES) or goals.
+- suggested_fix: Title card before first WILDS load, setting tone + minimal vocabulary. Design-routed to DESIGN_SPEC.md.
+- source: deep-playtest [F01]
+
+### [HIGH] /encounter — FLEE gives no feedback, morale has no UI surface
+- pass: deep-playtest (2026-05-25, commit d560e8c)
+- viewport: mobile (414x896)
+- auth_state: anonymous
+- category: observation
+- observation: After fleeing, encounter modal closes silently. Cost says "-ii morale" but morale is not displayed anywhere. No confirmation, no animation, no indication cost was paid.
+- suggested_fix: Flee narrative beat (prose style) + morale bar on exploration card or SELF tab. Both-routed: code (narrative) + design (morale bar in DESIGN_SPEC.md).
+- source: deep-playtest [F03]
+
+### [MED] /death — Death screen LEDGER shows wrong encounter count + internal node ID
+- pass: deep-playtest (2026-05-25, commit d560e8c)
+- viewport: mobile (414x896)
+- auth_state: anonymous
+- category: observation
+- observation: LEDGER shows "encounters survived: i" despite dying in the encounter (should be 0). Also shows "deepest node: fv-14" instead of human-readable "Tide Pool."
+- suggested_fix: Fix encounter counter logic + resolve node ID to name via map layout lookup. Phase candidate filed.
+- source: deep-playtest [F09, F10]
+
+### [LOW] /exploration — Sealed map nodes give no tap feedback
+- pass: deep-playtest (2026-05-25, commit d560e8c)
+- viewport: mobile (414x896)
+- auth_state: anonymous
+- category: observation
+- observation: Sealed nodes rendered as tappable buttons (cursor:pointer) but produce no visual response on tap. No tooltip, no message.
+- suggested_fix: Tap shows "path sealed" toast. Phase candidate filed.
+- source: deep-playtest [F11]
+
+### [LOW] /combat — ITEM action always disabled with no explanation
+- pass: deep-playtest (2026-05-25, commit d560e8c)
+- viewport: mobile (414x896)
+- auth_state: anonymous
+- category: observation
+- observation: ITEM button ("USE A CONSUMABLE") greyed out even with Healing Potion in inventory. No tooltip or message explaining why.
+- suggested_fix: Tooltip on disabled ITEM button. Phase candidate filed.
+- source: deep-playtest [F12]
+
 ## Done
 
 ### [HIGH] general — Combat encounters stop triggering after first encounter until refresh ✅

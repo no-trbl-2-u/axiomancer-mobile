@@ -91,11 +91,13 @@
 - fix: Gated all console.warn statements behind __DEV__ checks in app/_layout.tsx (persistence error logging) and components/DebugFriendship.tsx (debug warnings). Console statements now only execute in development builds, preventing production logs from exposing debug information.
 - source: audit/iterate
 
-### [5.6] No web metadata for SEO and social sharing
+### [5.6] No web metadata for SEO and social sharing ✅
+- issue: #195
 - category: seo
 - impact: 8 (app.json lacks Open Graph tags, Twitter cards, meta descriptions, or JSON-LD structured data. Web builds have no social media preview capability or search engine optimization)
 - ease: 7 (add metadata to app.json web configuration or create index.html with proper meta tags)
-- next: Add Open Graph, Twitter Card, and basic SEO metadata for web builds
+- addressed: 2026-05-26 via commit `48e5520`
+- fix: Added comprehensive web metadata to app.json including title, description, lang, theme/background colors, Open Graph tags for social media sharing, and Twitter Card tags. Web builds now have proper SEO and social preview capability following gothic TTRPG theme and branding.
 - source: audit/iterate
 
 ### [4.8] High number of TODO/FIXME markers indicating incomplete implementation

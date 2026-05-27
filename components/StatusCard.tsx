@@ -51,9 +51,22 @@ export function StatusCard(props: StatusCardProps = {}) {
           </SectionLabel>
         </View>
       </View>
-      <View style={styles.barsRow}>
-        <View style={styles.bar}>
-          <StatBar value={hp} max={hpMax} color={AXM.blood} label="HP" height={9} />
+      <View style={styles.barsCol}>
+        <StatBar value={hp} max={hpMax} color={AXM.blood} label="VITAE" height={8} />
+        <View style={styles.moraleRow}>
+          <View style={styles.moraleHeader}>
+            <View style={styles.moraleLabelRow}>
+              <Text style={styles.moraleLabel}>MORALE</Text>
+              <Text style={styles.moraleGloss}>· RESOLVE TO WALK</Text>
+            </View>
+            <Text style={styles.moraleValue}>
+              vii<Text style={{ color: AXM.bone }}> / x</Text>
+            </Text>
+          </View>
+          <View style={styles.moraleTrack}>
+            <View style={[styles.moraleFill, { width: '70%' }]} />
+            <View style={styles.moraleBreakTic} />
+          </View>
         </View>
       </View>
     </View>
@@ -99,12 +112,59 @@ const styles = StyleSheet.create({
     color: AXM.parchment,
     letterSpacing: 1,
   },
-  barsRow: {
-    flexDirection: 'row',
-    gap: 8,
+  barsCol: {
     marginTop: 6,
+    gap: 6,
   },
-  bar: {
-    flex: 1,
+  moraleRow: {},
+  moraleHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    marginBottom: 2,
+  },
+  moraleLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  moraleLabel: {
+    fontFamily: FONTS.sans,
+    fontSize: 9,
+    color: AXM.sulfur,
+    letterSpacing: 1.5,
+  },
+  moraleGloss: {
+    fontFamily: FONTS.mono,
+    fontSize: 7,
+    color: AXM.bone,
+    letterSpacing: 1,
+  },
+  moraleValue: {
+    fontFamily: FONTS.mono,
+    fontSize: 9,
+    color: AXM.parchment,
+  },
+  moraleTrack: {
+    position: 'relative' as const,
+    height: 8,
+    backgroundColor: '#000',
+    borderWidth: 1,
+    borderColor: AXM.ash,
+  },
+  moraleFill: {
+    position: 'absolute' as const,
+    top: 1,
+    bottom: 1,
+    left: 1,
+    backgroundColor: AXM.sulfur,
+  },
+  moraleBreakTic: {
+    position: 'absolute' as const,
+    top: -2,
+    bottom: -2,
+    left: '20%',
+    width: 1,
+    backgroundColor: AXM.blood,
   },
 });

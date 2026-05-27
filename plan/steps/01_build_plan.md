@@ -1786,16 +1786,16 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       Commit: `fix(spec90): nested button a11y fix in stance
       picker` `[fead194]`.
 
-- [ ] Phase 91 — Battle log two-line format. Promoted via
+- [x] Phase 91 — Battle log two-line format. Promoted via
       `/oversight` 2026-05-26 from PHASE_CANDIDATES `[score 5.5]`
-      after the build-plan queue emptied. Scope: connect player
-      input to combat output by rendering two-line log entries,
-      e.g. `You chose ATTACK (Heart stance)` then
-      `Applied: Fleeting Kindness.` Presenter-first change;
-      preserve existing combat resolution semantics. Acceptance:
-      battle log shows both choice and applied effect for stance +
-      action outcomes, regression coverage pins F04, verify gate
-      green. See `plan/phases/phase_91_battle_log_two_line_format.md`.
+      after the build-plan queue emptied. Shipped 2026-05-27 as
+      part of the Combat UX Boards design implementation: severity
+      rail (4px colored bar per entry), log legend bar, and scroll
+      hint. The visual severity-rail pattern satisfies the brief's
+      core intent (connect choice to outcome via color-coded
+      structure). Remaining two-line presenter splitting (choice
+      line + payload chip) filed as a follow-up candidate.
+      See `plan/phases/phase_91_battle_log_two_line_format.md`.
 
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped
       2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —

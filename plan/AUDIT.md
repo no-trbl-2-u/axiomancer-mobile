@@ -132,6 +132,23 @@
 
 ## Pending
 
+### [3.5] Morale bars render hardcoded placeholder values (needs engine backing)
+- category: data / engine-contract
+- impact: 4 (morale bar visible on WILDS StatusCard + SELF Pools section
+  with hardcoded 7/10 values and a placeholder BREAK threshold at 20%.
+  Players see a non-functional resource meter. Once the engine ships a
+  morale system, the bars need wiring to real state.)
+- ease: 7 (when engine surfaces `player.morale` / `player.moraleMax`,
+  the StatusCard and character screen read directly from `useGameState`;
+  the visual scaffolding is already in place)
+- observed: Combat UX Boards design implementation 2026-05-27. P6
+  morale bars shipped as visual scaffolding per design spec. Ledger
+  data (sources/sinks) is also placeholder copy.
+- next: file as `[needs-engine-release]` until the engine ships morale.
+  When it does, one /iterate tick wires `useGameState((s) => s.player.morale)`
+  into `StatusCard.tsx` and `character/index.tsx`.
+- source: /oversight 2026-05-27, Combat UX Boards design handoff
+
 ### [4.8] ItemCard component missing test coverage ✅
 - issue: #188
 - category: tests

@@ -189,6 +189,58 @@ export default function CharacterScreen() {
         </View>
       </View>
 
+      {/* Pools — VITAE + MORALE (Problem 6 design) */}
+      <View style={styles.section}>
+        <SectionLabel size={10}>✠ POOLS</SectionLabel>
+        <View style={styles.poolsCard}>
+          {[
+            { label: 'VITAE', value: player?.health ?? 0, max: player?.maxHealth ?? 1, color: AXM.blood, gloss: 'flesh holds' },
+            { label: 'MORALE', value: 7, max: 10, color: AXM.sulfur, gloss: 'resolve to walk', isNew: true, breakAt: 2 },
+          ].map((pool) => (
+            <View key={pool.label} style={styles.poolRow}>
+              <View style={styles.poolHeader}>
+                <View style={styles.poolLabelRow}>
+                  <Text style={[styles.poolLabel, { color: pool.color }]}>{pool.label}</Text>
+                  {'isNew' in pool && pool.isNew && <Text style={styles.poolNewBadge}>NEW</Text>}
+                  <Text style={styles.poolGloss}>· {pool.gloss}</Text>
+                </View>
+                <Text style={styles.poolValue}>{pool.value}<Text style={{ color: AXM.bone }}> / {pool.max}</Text></Text>
+              </View>
+              <View style={styles.poolTrack}>
+                <View style={[styles.poolFill, { width: `${(pool.value / pool.max) * 100}%`, backgroundColor: pool.color }]} />
+                {'breakAt' in pool && pool.breakAt != null && (
+                  <View style={[styles.poolBreakTic, { left: `${(pool.breakAt / pool.max) * 100}%` }]} />
+                )}
+              </View>
+            </View>
+          ))}
+        </View>
+        <View style={styles.moraleLedger}>
+          <SectionLabel size={9} color={AXM.sulfur}>MORALE · LEDGER</SectionLabel>
+          <View style={styles.ledgerGrid}>
+            {[
+              { v: '+i', l: 'every victory', c: AXM.sulfur },
+              { v: '+ii', l: 'good rest at inn', c: AXM.sulfur },
+              { v: '+i', l: 'mercy granted', c: AXM.sulfur },
+              { v: '−ii', l: 'flee combat', c: AXM.blood },
+              { v: '−i', l: 'ally falls', c: AXM.blood },
+              { v: '−i', l: 'no rest in iii nights', c: AXM.blood },
+            ].map((r, i) => (
+              <View key={i} style={styles.ledgerRow}>
+                <Text style={[styles.ledgerValue, { color: r.c }]}>{r.v}</Text>
+                <Text style={styles.ledgerDesc}>{r.l}</Text>
+              </View>
+            ))}
+          </View>
+          <View style={styles.ledgerDivider} />
+          <Text style={styles.ledgerLore}>
+            {"At "}
+            <Text style={{ color: AXM.blood }}>ii or below</Text>
+            {" the road begins to lie. Maps shift. Nodes whisper wrong names."}
+          </Text>
+        </View>
+      </View>
+
       {/* Derived Stats */}
       <View style={styles.section} accessible accessibilityLabel={vm.a11y.derivedStats}>
         <SectionLabel size={10}>✠ DERIVED</SectionLabel>
@@ -469,4 +521,22 @@ const styles = StyleSheet.create({
   skillCard: { width: '48%', borderWidth: 2, padding: 4, paddingHorizontal: 6, backgroundColor: AXM.bg, flexDirection: 'row', alignItems: 'center', gap: 6 },
   skillName: { fontFamily: FONTS.gothic, fontSize: 12, color: AXM.parchment, lineHeight: 14 },
   skillCat: { fontFamily: FONTS.mono, fontSize: 8, letterSpacing: 1 },
+  poolsCard: { marginTop: 4, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, padding: 10, paddingHorizontal: 12, gap: 6 },
+  poolRow: {},
+  poolHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 2 },
+  poolLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  poolLabel: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1.6 },
+  poolNewBadge: { fontFamily: FONTS.mono, fontSize: 7, color: AXM.bg, backgroundColor: AXM.sulfur, paddingHorizontal: 4, letterSpacing: 1, overflow: 'hidden' },
+  poolGloss: { fontFamily: FONTS.serifItalic, fontSize: 10, color: AXM.bone },
+  poolValue: { fontFamily: FONTS.mono, fontSize: 10, color: AXM.parchment },
+  poolTrack: { position: 'relative' as const, height: 8, backgroundColor: '#000', borderWidth: 1, borderColor: AXM.ash },
+  poolFill: { position: 'absolute' as const, top: 1, bottom: 1, left: 1 },
+  poolBreakTic: { position: 'absolute' as const, top: -2, bottom: -2, width: 1, backgroundColor: AXM.blood },
+  moraleLedger: { marginTop: 8, backgroundColor: AXM.deepBg, borderWidth: 1, borderColor: AXM.ash, padding: 10, paddingHorizontal: 12 },
+  ledgerGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 6 },
+  ledgerRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6, width: '48%' },
+  ledgerValue: { fontFamily: FONTS.mono, fontSize: 12, width: 22, textAlign: 'right' },
+  ledgerDesc: { fontFamily: FONTS.serif, fontSize: 11, color: AXM.parchment },
+  ledgerDivider: { height: 1, borderTopWidth: 1, borderTopColor: AXM.ash, borderStyle: 'dashed', marginTop: 8, marginBottom: 6 },
+  ledgerLore: { fontFamily: FONTS.serifItalic, fontSize: 11, color: AXM.bone, lineHeight: 14 },
 });

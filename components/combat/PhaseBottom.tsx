@@ -229,18 +229,29 @@ function StanceCard({
                             </View>
                             <Text style={[stance_styles.stanceName, { color: accent }]}>{opt.label}</Text>
                             <Text style={stance_styles.stanceGloss}>{opt.gloss}</Text>
-                            <Text style={stance_styles.stanceMeta}>BEATS {opt.counters} · WEAK {opt.weakTo}</Text>
+                            <View style={stance_styles.triangleMeta}>
+                                <View style={stance_styles.metaLine}>
+                                    <Text style={stance_styles.metaVerb}>BEATS</Text>
+                                    <StanceGlyph kind={opt.counters.toLowerCase() as StanceKey} size={9} color={AXM.sulfur} />
+                                    <Text style={[stance_styles.metaTarget, { color: AXM.sulfur }]}>{opt.counters.slice(0, 3)}</Text>
+                                </View>
+                                <View style={stance_styles.metaLine}>
+                                    <Text style={stance_styles.metaVerb}>WEAK</Text>
+                                    <StanceGlyph kind={opt.weakTo.toLowerCase() as StanceKey} size={9} color={AXM.blood} />
+                                    <Text style={[stance_styles.metaTarget, { color: AXM.blood }]}>{opt.weakTo.slice(0, 3)}</Text>
+                                </View>
+                            </View>
                             <View style={stance_styles.divider} />
                             <View style={stance_styles.statRow}>
-                                <Text style={stance_styles.statKey}>ATTACK</Text>
+                                <Text style={stance_styles.statKey}>ATK</Text>
                                 <Text style={[stance_styles.statVal, { color: accent }]}>{opt.derived.attack}</Text>
                             </View>
                             <View style={stance_styles.statRow}>
-                                <Text style={stance_styles.statKey}>SKILL</Text>
+                                <Text style={stance_styles.statKey}>SKL</Text>
                                 <Text style={[stance_styles.statVal, { color: accent }]}>{opt.derived.skill}</Text>
                             </View>
                             <View style={stance_styles.statRow}>
-                                <Text style={stance_styles.statKey}>DEFENSE</Text>
+                                <Text style={stance_styles.statKey}>DEF</Text>
                                 <Text style={[stance_styles.statVal, { color: accent }]}>{opt.derived.defense}</Text>
                             </View>
                         </View>
@@ -334,27 +345,36 @@ function ActionPhase({
 }
 
 function CrucibleStrip() {
-    const pool: readonly { key: string; glyph: string; count: number; color: string }[] = [
-        { key: 'body', glyph: '◐', count: 2, color: AXM.blood },
-        { key: 'mind', glyph: '◒', count: 1, color: AXM.rust },
-        { key: 'heart', glyph: '◑', count: 2, color: AXM.bone },
-        { key: 'fallacy', glyph: '◓', count: 1, color: AXM.parchment },
-        { key: 'paradox', glyph: '◉', count: 1, color: AXM.sulfur },
+    const pool: readonly { key: string; glyph: string; short: string; count: number; color: string }[] = [
+        { key: 'body', glyph: '◐', short: 'BOD', count: 2, color: AXM.blood },
+        { key: 'heart', glyph: '◑', short: 'HRT', count: 2, color: AXM.sulfur },
+        { key: 'mind', glyph: '◒', short: 'MND', count: 1, color: AXM.rust },
+        { key: 'fallacy', glyph: '◓', short: 'FAL', count: 1, color: AXM.bone },
+        { key: 'paradox', glyph: '◉', short: 'PRX', count: 1, color: AXM.parchment },
     ];
     return (
         <View style={crucible_strip_styles.row} testID="combat-crucible-strip">
-            <Text style={crucible_strip_styles.eyebrow}>CRUCIBLE</Text>
+            <View style={crucible_strip_styles.labelCol}>
+                <Text style={crucible_strip_styles.eyebrow}>CRUCIBLE</Text>
+                <Text style={crucible_strip_styles.subLabel}>SKILL FUEL</Text>
+            </View>
             <View style={crucible_strip_styles.tokens}>
-                {pool.map((t) => (
-                    <View key={t.key} style={crucible_strip_styles.tokenCol}>
-                        <Text style={[crucible_strip_styles.tokenGlyph, { color: t.count > 0 ? t.color : AXM.ash }]}>
-                            {t.glyph}
-                        </Text>
-                        <Text style={[crucible_strip_styles.tokenCount, { color: t.count > 0 ? AXM.parchment : AXM.bone }]}>
-                            {t.count}
-                        </Text>
-                    </View>
-                ))}
+                {pool.map((t) => {
+                    const depleted = t.count <= 0;
+                    return (
+                        <View key={t.key} style={crucible_strip_styles.tokenCol}>
+                            <Text style={[crucible_strip_styles.tokenGlyph, { color: depleted ? AXM.ash : t.color }]}>
+                                {t.glyph}
+                            </Text>
+                            <Text style={[crucible_strip_styles.tokenShort, { color: depleted ? AXM.ash : t.color }]}>
+                                {t.short}
+                            </Text>
+                            <Text style={[crucible_strip_styles.tokenCount, { color: depleted ? AXM.ash : AXM.parchment }]}>
+                                {t.count}
+                            </Text>
+                        </View>
+                    );
+                })}
             </View>
         </View>
     );
@@ -418,6 +438,19 @@ function SkillRow({ skill: s, onPick }: { skill: SkillOption; onPick: (s: SkillO
     );
 }
 
+function RollBar({ value, max, color, label }: { value: number; max: number; color: string; label: string }) {
+    const pct = Math.min(1, Math.max(0, value / max));
+    return (
+        <View style={resolve_styles.rollBarRow}>
+            <Text style={[resolve_styles.rollBarValue, { color }]}>{value}</Text>
+            <View style={resolve_styles.rollBarTrack}>
+                <View style={[resolve_styles.rollBarFill, { width: `${pct * 100}%`, backgroundColor: color }]} />
+            </View>
+            <Text style={resolve_styles.rollBarLabel}>{label}</Text>
+        </View>
+    );
+}
+
 function ResolvePanel({
     resolve,
     canContinue,
@@ -435,6 +468,7 @@ function ResolvePanel({
                 : AXM.parchment;
     const isFriend = resolve.outcome === 'friendship';
     const isCrit = resolve.outcome === 'crit';
+    const max = Math.max(resolve.playerRoll, resolve.enemyRoll, 20) + 4;
 
     useEffect(() => {
         if (isCrit) {
@@ -446,28 +480,34 @@ function ResolvePanel({
 
     return (
         <View style={resolve_styles.wrap}>
-            <View style={resolve_styles.vsGrid}>
-                <View style={resolve_styles.vsCol}>
-                    <Text style={resolve_styles.vsEyebrow}>YOU</Text>
-                    <Text style={[resolve_styles.vsRoll, { color: advColor }]}>
-                        {resolve.playerRoll}
-                    </Text>
-                    <Text style={resolve_styles.vsVerb}>{resolve.header.toLowerCase()}</Text>
+            <View style={resolve_styles.scaleBox}>
+                <View style={resolve_styles.scaleHeader}>
+                    <View>
+                        <Text style={[resolve_styles.scaleEyebrow, { color: AXM.sulfur }]}>YOU · {resolve.playerStance.toUpperCase()}</Text>
+                        <Text style={resolve_styles.scaleSubLabel}>ATTACK ROLL</Text>
+                    </View>
+                    <View style={{ alignItems: 'center' }}>
+                        <Text style={[resolve_styles.scaleEyebrow, { color: AXM.bone }]}>VS</Text>
+                    </View>
+                    <View style={{ alignItems: 'flex-end' }}>
+                        <Text style={[resolve_styles.scaleEyebrow, { color: AXM.blood }]}>FOE · {resolve.enemyStance.toUpperCase()}</Text>
+                        <Text style={resolve_styles.scaleSubLabel}>FOE DEFENSE</Text>
+                    </View>
                 </View>
-                <View style={resolve_styles.vsDivider}>
-                    <Text style={resolve_styles.vsDividerRule}>{'━━'}</Text>
-                    <Text style={resolve_styles.vsLabel}>VS</Text>
-                    <Text style={resolve_styles.vsDividerRule}>{'━━'}</Text>
-                </View>
-                <View style={resolve_styles.vsCol}>
-                    <Text style={resolve_styles.vsEyebrow}>FOE</Text>
-                    <Text style={resolve_styles.vsRoll}>{resolve.enemyRoll}</Text>
-                    <Text style={resolve_styles.vsVerb}>{resolve.message.toLowerCase()}</Text>
-                </View>
+                <RollBar value={resolve.playerRoll} max={max} color={AXM.sulfur} label="YOU" />
+                <RollBar value={resolve.enemyRoll} max={max} color={AXM.blood} label="FOE" />
+                <Text style={resolve_styles.verdictText}>{resolve.header.toLowerCase()}</Text>
             </View>
             {isCrit && (
                 <Text style={resolve_styles.critFlag}>CRIT — DOUBLE</Text>
             )}
+            <View style={resolve_styles.ripplesBox}>
+                <Text style={resolve_styles.ripplesEyebrow}>RIPPLES</Text>
+                <View style={resolve_styles.rippleRow}>
+                    <Text style={[resolve_styles.rippleValue, { color: advColor }]}>{resolve.primaryText}</Text>
+                    <Text style={resolve_styles.rippleDesc}>{resolve.message}</Text>
+                </View>
+            </View>
             <TouchableOpacity
                 onPress={canContinue ? onContinue : onLeave}
                 style={[resolve_styles.letBtn, { borderColor: isFriend ? AXM.rust : AXM.sulfur }]}
@@ -532,12 +572,15 @@ const stance_styles = StyleSheet.create({
     advText: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1 },
     glyphWrap: { alignItems: 'center', marginTop: 4, marginBottom: 2 },
     stanceName: { textAlign: 'center', fontFamily: FONTS.gothic, fontSize: 17, letterSpacing: 1 },
-    stanceGloss: { textAlign: 'center', fontFamily: FONTS.serifItalic, fontSize: 9, color: AXM.bone, marginTop: 1, marginBottom: 2 },
-    stanceMeta: { textAlign: 'center', fontFamily: FONTS.mono, fontSize: 7, color: AXM.bone, letterSpacing: 0.5, marginBottom: 4 },
-    divider: { borderTopWidth: 1, borderTopColor: AXM.ash, marginBottom: 3 },
-    statRow: { flexDirection: 'row', justifyContent: 'space-between', lineHeight: 14 },
-    statKey: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone },
-    statVal: { fontFamily: FONTS.gothic, fontSize: 12 },
+    stanceGloss: { textAlign: 'center', fontFamily: FONTS.serifItalic, fontSize: 9, color: AXM.bone, marginTop: -2, marginBottom: 2 },
+    triangleMeta: { alignItems: 'center', marginTop: 5, marginBottom: 4, gap: 1 },
+    metaLine: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+    metaVerb: { fontFamily: FONTS.mono, fontSize: 7, color: AXM.bone, letterSpacing: 1 },
+    metaTarget: { fontFamily: FONTS.mono, fontSize: 8, letterSpacing: 1 },
+    divider: { borderTopWidth: 1, borderTopColor: AXM.ash, marginBottom: 4 },
+    statRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
+    statKey: { fontFamily: FONTS.mono, fontSize: 8.5, color: AXM.bone, letterSpacing: 1 },
+    statVal: { fontFamily: FONTS.gothic, fontSize: 13 },
 });
 
 const action_styles = StyleSheet.create({
@@ -555,7 +598,7 @@ const crucible_strip_styles = StyleSheet.create({
     row: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
+        gap: 6,
         padding: 6,
         paddingHorizontal: 8,
         borderWidth: 1,
@@ -563,11 +606,20 @@ const crucible_strip_styles = StyleSheet.create({
         backgroundColor: AXM.deepBg,
         marginBottom: 8,
     },
+    labelCol: {
+        gap: 0,
+    },
     eyebrow: {
         fontFamily: FONTS.sans,
         fontSize: 9,
         color: AXM.bone,
         letterSpacing: 2,
+    },
+    subLabel: {
+        fontFamily: FONTS.mono,
+        fontSize: 7,
+        color: AXM.ash,
+        letterSpacing: 1,
     },
     tokens: {
         flex: 1,
@@ -578,14 +630,23 @@ const crucible_strip_styles = StyleSheet.create({
     tokenCol: {
         flexDirection: 'column',
         alignItems: 'center',
+        paddingHorizontal: 4,
+        paddingVertical: 2,
+        gap: 1,
     },
     tokenGlyph: {
         fontFamily: FONTS.gothic,
-        fontSize: 14,
+        fontSize: 16,
+    },
+    tokenShort: {
+        fontFamily: FONTS.sans,
+        fontSize: 8.5,
+        letterSpacing: 1.2,
     },
     tokenCount: {
-        fontFamily: FONTS.mono,
-        fontSize: 9,
+        fontFamily: FONTS.gothic,
+        fontSize: 13,
+        lineHeight: 14,
     },
 });
 
@@ -612,15 +673,22 @@ const skill_styles = StyleSheet.create({
 
 const resolve_styles = StyleSheet.create({
     wrap: { flexDirection: 'column', gap: 10 },
-    vsGrid: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, gap: 8 },
-    vsCol: { flex: 1, alignItems: 'center' },
-    vsDivider: { alignItems: 'center', gap: 2 },
-    vsDividerRule: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone },
-    vsLabel: { fontFamily: FONTS.sans, fontSize: 9, color: AXM.sulfur, letterSpacing: 1.4 },
-    vsEyebrow: { fontFamily: FONTS.sans, fontSize: 9, color: AXM.bone, letterSpacing: 1.4 },
-    vsRoll: { fontFamily: FONTS.mono, fontSize: 26, color: AXM.parchment, marginTop: 2, lineHeight: 28 },
-    vsVerb: { fontFamily: FONTS.serifItalic, fontSize: 11, color: AXM.parchment, marginTop: 2 },
+    scaleBox: { backgroundColor: AXM.deepBg, borderWidth: 1, borderColor: AXM.ash, padding: 10, paddingBottom: 12 },
+    scaleHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
+    scaleEyebrow: { fontFamily: FONTS.sans, fontSize: 9, letterSpacing: 1.4 },
+    scaleSubLabel: { fontFamily: FONTS.mono, fontSize: 8.5, color: AXM.bone, letterSpacing: 0.6, marginTop: 1 },
+    rollBarRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },
+    rollBarValue: { fontFamily: FONTS.gothic, fontSize: 22, width: 32, textAlign: 'right' },
+    rollBarTrack: { flex: 1, height: 12, backgroundColor: '#000', borderWidth: 1, borderColor: AXM.ash, position: 'relative', overflow: 'hidden' },
+    rollBarFill: { position: 'absolute', top: 1, bottom: 1, left: 1 },
+    rollBarLabel: { fontFamily: FONTS.mono, fontSize: 8, color: AXM.bone, letterSpacing: 1, width: 24 },
+    verdictText: { textAlign: 'center', fontFamily: FONTS.serifItalic, fontSize: 14, color: AXM.parchment, marginTop: 10 },
     critFlag: { textAlign: 'center', fontFamily: FONTS.sans, fontSize: 10, color: AXM.sulfur, letterSpacing: 2 },
+    ripplesBox: { backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, padding: 7, paddingHorizontal: 9 },
+    ripplesEyebrow: { fontFamily: FONTS.sans, fontSize: 9, color: AXM.blood, letterSpacing: 2, marginBottom: 3 },
+    rippleRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
+    rippleValue: { fontFamily: FONTS.gothic, fontSize: 16 },
+    rippleDesc: { fontFamily: FONTS.serif, fontSize: 11.5, color: AXM.parchment, flex: 1 },
     letBtn: { paddingVertical: 12, alignItems: 'center', borderWidth: 1, backgroundColor: AXM.bg },
-    letText: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 2 },
+    letText: { fontFamily: FONTS.sans, fontSize: 13, letterSpacing: 3 },
 });

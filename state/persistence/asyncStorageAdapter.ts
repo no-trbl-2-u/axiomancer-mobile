@@ -131,6 +131,8 @@ export function createAsyncStorageAdapter(
 }
 
 function defaultOnError(err: unknown): void {
-    // eslint-disable-next-line no-console
-    console.warn('[asyncStorageAdapter] save failed:', err);
+    if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.warn('[asyncStorageAdapter] save failed:', err);
+    }
 }

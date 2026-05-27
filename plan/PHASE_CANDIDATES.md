@@ -579,28 +579,32 @@
 - severity: high
 - score: 2.5 base + 1.5 (user-confirmed, high severity) + 1.0 (cheap, presenter-only change) + 0.5 (playtest-source) = 5.5
 
-### [score 5.0] Flee narrative feedback + morale surface (playtest 2026-05-25 [F03])
+### [score 5.0] Flee narrative feedback + morale surface (playtest 2026-05-25 [F03]) [PROMOTED → Phase 92 via /oversight 2026-05-27]
+- promoted: 2026-05-27 via `/oversight` (42nd call). Code-only: narrative beat + morale exposure on exploration/SELF. Morale bar visual deferred to design handoff.
 - source: deep-playtest
 - finding: [F03] -- fleeing an encounter gives zero feedback; morale cost is invisible (no UI surface anywhere)
 - approach: code side -- add a narrative beat after fleeing (prose style matching death/victory text) + expose morale value on exploration card or SELF tab. Design side -- morale bar visual in DESIGN_SPEC.md.
 - severity: high
 - score: 2.5 base + 1.5 (user-confirmed, high severity) + 0.5 (playtest-source) + 0.5 (feedback-missing, directly impacts player trust) = 5.0
 
-### [score 4.5] Death screen presenter fixes (playtest 2026-05-25 [F09, F10])
+### [score 4.5] Death screen presenter fixes (playtest 2026-05-25 [F09, F10]) [PROMOTED → Phase 93 via /oversight 2026-05-27]
+- promoted: 2026-05-27 via `/oversight` (42nd call). Presenter-only fixes.
 - source: deep-playtest
 - finding: [F09] "encounters survived: i" when the player died in that encounter + [F10] "deepest node: fv-14" exposes internal ID instead of "Tide Pool"
 - approach: fix encounter-survived counter logic (dying in encounter = 0 survived) + resolve node ID to human-readable name via map layout lookup. Both are presenter changes.
 - severity: medium
 - score: 2.5 base + 1.0 (inconsistency undermines trust) + 0.5 (playtest-source) + 0.5 (cheap, two-line presenter fix) = 4.5
 
-### [score 4.0] Sealed node tap feedback (playtest 2026-05-25 [F11])
+### [score 4.0] Sealed node tap feedback (playtest 2026-05-25 [F11]) [PROMOTED → Phase 94 via /oversight 2026-05-27]
+- promoted: 2026-05-27 via `/oversight` (42nd call).
 - source: deep-playtest
 - finding: [F11] -- sealed map nodes have cursor:pointer and look tappable but produce no response on tap
 - approach: tapping a sealed node shows a brief toast or tooltip ("This path is sealed. Reach it from an adjacent open node.").
 - severity: low
 - score: 2.5 base + 0.5 (playtest-source) + 0.5 (cheap) + 0.5 (feedback-missing) = 4.0
 
-### [score 4.0] Disabled ITEM button tooltip in combat (playtest 2026-05-25 [F12])
+### [score 4.0] Disabled ITEM button tooltip in combat (playtest 2026-05-25 [F12]) [PROMOTED → Phase 95 via /oversight 2026-05-27]
+- promoted: 2026-05-27 via `/oversight` (42nd call). Non-visual combat fix (tooltip on disabled button, not layout/chrome).
 - source: deep-playtest
 - finding: [F12] -- ITEM action ("USE A CONSUMABLE") always greyed out with no explanation, even with Healing Potion in inventory
 - approach: tapping the disabled ITEM button shows a tooltip explaining why (e.g. "No consumable items available" or "Combat items not yet implemented").

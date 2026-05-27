@@ -1797,6 +1797,29 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       action outcomes, regression coverage pins F04, verify gate
       `[DONE — see commit 9a88819]`.
       green. See `plan/phases/phase_91_battle_log_two_line_format.md`.
+- [ ] Phase 92 — Flee narrative feedback + morale surface.
+      Promoted via `/oversight` 2026-05-27 (42nd call) from
+      PHASE_CANDIDATES `[score 5.0]`. Scope: add narrative beat
+      after fleeing (prose style matching death/victory text) +
+      expose morale value on exploration card or SELF tab. Morale
+      bar visual design deferred to combat UX design handoff.
+      Playtest source: F03.
+- [ ] Phase 93 — Death screen presenter fixes. Promoted via
+      `/oversight` 2026-05-27 (42nd call) from PHASE_CANDIDATES
+      `[score 4.5]`. Scope: fix encounter-survived counter (dying
+      = 0 survived, not 1) + resolve deepest node ID to human-
+      readable name via map layout lookup. Both presenter changes.
+      Playtest source: F09, F10.
+- [ ] Phase 94 — Sealed node tap feedback. Promoted via
+      `/oversight` 2026-05-27 (42nd call) from PHASE_CANDIDATES
+      `[score 4.0]`. Scope: tapping a sealed map node shows a
+      brief toast ("This path is sealed."). Playtest source: F11.
+- [ ] Phase 95 — Disabled ITEM button tooltip in combat. Promoted
+      via `/oversight` 2026-05-27 (42nd call) from PHASE_CANDIDATES
+      `[score 4.0]`. Scope: tapping the disabled ITEM action button
+      shows a tooltip explaining unavailability. Non-visual combat
+      fix (allowed under combat-surface design gate). Playtest
+      source: F12.
 
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped
       2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —

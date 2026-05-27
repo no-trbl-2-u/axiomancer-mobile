@@ -3,6 +3,18 @@
 > Latest findings from `/iterate audit`. Rewritten on each
 > audit pass. The Pending list at the bottom queues `/iterate`.
 
+> **Combat-surface design gate (set via /oversight 2026-05-27,
+> 42nd call).** Combat UI layout/chrome changes are frozen until
+> the combat UX design handoff from Claude Design lands and ships.
+> Non-visual combat fixes (presenter data accuracy, tooltips on
+> existing surfaces, log format) are allowed. This avoids rework
+> on surfaces the design handoff will reshape.
+>
+> **Cross-stat level-up effects deferred (set via /oversight
+> 2026-05-27, 42nd call).** The [5.0] cross-stat effects candidate
+> needs engine `previewAllocation()` helper. Deferred until engine
+> release. Do not approximate client-side.
+>
 > **Playtest directive CLOSED 2026-05-24 — playtest fired against
 > http://localhost:8082.** User started `pnpm web` and `/playtest`
 > ran the canonical walk (Hovel → Crossing → Hanged Wood →

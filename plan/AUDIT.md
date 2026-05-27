@@ -1,4 +1,4 @@
-# Site audit — 2026-05-26
+# Site audit — 2026-05-27
 
 > Latest findings from `/iterate audit`. Rewritten on each
 > audit pass. The Pending list at the bottom queues `/iterate`.
@@ -76,6 +76,15 @@
 > </details>
 
 ## Top 5 findings (scored)
+
+### [8.0] FLEE feedback and morale visibility missing (HIGH external critique) ✅
+- issue: via CRITIQUE.md finding [HIGH] /encounter — FLEE gives no feedback, morale has no UI surface
+- category: external-critique
+- impact: 8 (HIGH priority deep-playtest finding - fleeing encounters gave no feedback and morale cost was invisible to players)
+- ease: 10 (Phase 92 implementation already complete with tests)
+- addressed: 2026-05-27 via march iterate review - Phase 92 already implemented
+- fix: Verified existing Phase 92 implementation provides both requirements: narrative feedback after fleeing via toast message "you fled the encounter. the path bends away.\n\nmorale -2" in actions.ts, and morale value visible on SELF tab as "willpower" via character presenter. Test coverage exists in flee-action.engine.test.ts. Marked CRITIQUE.md finding as addressed.
+- source: external-critique (deep-playtest F03)
 
 ### [7.2] Console warning statement not gated behind __DEV__ in LevelUpModal ✅
 - issue: #197

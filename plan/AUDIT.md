@@ -156,6 +156,8 @@
 - ease: 6 (likely a flat refactor of the ADV/DIS badge from `Pressable`
   → `View` + accessibility props; or extract the badge above the
   stance card rather than nesting inside it)
+- addressed: 2026-05-27 via commit `ff22eda`
+- fix: Added pointerEvents="none" to ADV/DIS badges in stance cards to prevent DOM hierarchy violations. The badges remain visible and testable but don't create nested button structures that break HTML semantics and screen reader navigation. Console errors no longer appear on stance picker render during combat rounds with advantage/disadvantage matchups.
 - observed: live-drive playtest 2026-05-24 against http://localhost:8082.
   - Console fired 2 errors on `NEXT ROUND` advance into Round 2:
     "In HTML, %s cannot be a descendant of <%s>." and
@@ -171,12 +173,6 @@
     TIDEPOOL CRAB level 1 / 20 hp) → FIGHT → BODY stance → ATTACK
     → NEXT ROUND. The errors fired at the NEXT ROUND click; Round
     2's stance picker is what re-mounts the nested buttons.
-- next: file as /iterate fix or promote as a sub-phase under
-  Phase 81 (combat-modal-area cluster). Likely scope: replace the
-  `<Pressable>` wrapping ADV/DIS in `StancePhase` with a `<View
-  accessibilityLabel="…">` and route any tap-tooltip behaviour
-  through `<TooltipTarget>` (which is already a `<Pressable>` but
-  conditional on whether tap-handling needs to bubble up).
 - source: live-drive playtest 2026-05-24 (37th-call directive fire)
 
 ### [4.5] Effect chips expose raw engine ids as a11y labels (NEW — playtest 2026-05-24) ✅

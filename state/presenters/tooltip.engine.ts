@@ -74,8 +74,8 @@ const STAT_CONTENT: Record<string, TooltipContent> = {
     },
     MIND: {
         title: 'MIND',
-        body: 'the discipline of attention. governs mana, skill cost recovery, and mind-stance damage curves.',
-        footnote: '+1 mana per mind point',
+        body: 'the discipline of attention. governs focus, skill cost recovery, and mind-stance damage curves.',
+        footnote: '+1 focus per mind point',
         accent: 'mind',
     },
 };

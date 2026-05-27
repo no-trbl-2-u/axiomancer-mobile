@@ -42,7 +42,7 @@ describe('selectTooltipContentFor', () => {
             const content = selectTooltipContentFor('stat', 'MIND', EMPTY_STATE);
             expect(content?.title).toBe('MIND');
             expect(content?.body).toContain('discipline of attention');
-            expect(content?.footnote).toContain('mana');
+            expect(content?.footnote).toContain('focus');
         });
 
         it('returns null for an unknown stat id', () => {

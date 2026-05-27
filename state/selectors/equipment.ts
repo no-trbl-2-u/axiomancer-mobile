@@ -122,5 +122,7 @@ export function templateToEquipment(template: EquipmentTemplate): Equipment {
         quantity: 1,
         rarity: 'common',
         modifiers: [],
+        // EQUIPMENT STATS FIX: Map engine's baseStatModifiers to mobile's expected statModifiers
+        statModifiers: template.baseStatModifiers ?? [],
     } as unknown as Equipment;
 }

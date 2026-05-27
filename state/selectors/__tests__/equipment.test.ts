@@ -139,19 +139,19 @@ describe('templateToEquipment', () => {
         expect((eqResult as any).modifiers).toEqual([]);
     });
 
-    it('preserves additional fields from the template via spread', () => {
+    it('maps baseStatModifiers to statModifiers for mobile compatibility', () => {
         const template = {
             id: 'cloth-wrap',
             name: 'Cloth Wrap',
             description: 'A torn cloth wrap.',
             slot: 'body',
-            statModifiers: [{ stat: 'physicalDefense', value: 1, isMultiplier: false }],
+            baseStatModifiers: [{ stat: 'physicalDefense', value: 1 }],
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any;
         const eqResult = templateToEquipment(template);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((eqResult as any).statModifiers).toEqual([
-            { stat: 'physicalDefense', value: 1, isMultiplier: false },
+            { stat: 'physicalDefense', value: 1 },
         ]);
     });
 });

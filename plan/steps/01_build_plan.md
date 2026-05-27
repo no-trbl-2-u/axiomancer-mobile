@@ -1804,12 +1804,12 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       expose morale value on exploration card or SELF tab. Morale
       bar visual design deferred to combat UX design handoff.
       Playtest source: F03.
-- [ ] Phase 93 — Death screen presenter fixes. Promoted via
+- [x] Phase 93 — Death screen presenter fixes. Promoted via
       `/oversight` 2026-05-27 (42nd call) from PHASE_CANDIDATES
       `[score 4.5]`. Scope: fix encounter-survived counter (dying
       = 0 survived, not 1) + resolve deepest node ID to human-
       readable name via map layout lookup. Both presenter changes.
-      Playtest source: F09, F10.
+      Playtest source: F09, F10. Shipped `ccd2438`.
 - [ ] Phase 94 — Sealed node tap feedback. Promoted via
       `/oversight` 2026-05-27 (42nd call) from PHASE_CANDIDATES
       `[score 4.0]`. Scope: tapping a sealed map node shows a

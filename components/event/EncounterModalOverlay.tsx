@@ -208,7 +208,9 @@ export function EncounterModalOverlay({
     // Phase 45 subtitles — italic cost/consequence chrome under each
     // button label (the design's prototype.jsx:481-489 pattern).
     const fightSubtitle = fightChoice?.subtitle ?? null;
+    const fightDecode = fightChoice?.decode ?? null;
     const fleeSubtitle = fleeChoice?.subtitle ?? null;
+    const fleeDecode = fleeChoice?.decode ?? null;
     return (
         <View
             style={styles.overlay}
@@ -332,10 +334,17 @@ export function EncounterModalOverlay({
                             >
                                 <ActionIcon kind="sword" size={20} color={AXM.blood} />
                                 <View style={{ flex: 1 }}>
-                                    <Text style={[styles.choiceLabel, { color: AXM.blood }]}>FIGHT</Text>
-                                    {fightSubtitle !== null && (
-                                        <Text style={styles.choiceSubtitle} testID="encounter-modal-fight-subtitle">
-                                            {fightSubtitle}
+                                    <View style={styles.choiceLabelRow}>
+                                        <Text style={[styles.choiceLabel, { color: AXM.blood }]}>FIGHT</Text>
+                                        {fightSubtitle !== null && (
+                                            <Text style={styles.choiceSubtitle} testID="encounter-modal-fight-subtitle">
+                                                {fightSubtitle}
+                                            </Text>
+                                        )}
+                                    </View>
+                                    {fightDecode !== null && (
+                                        <Text style={styles.choiceDecode} testID="encounter-modal-fight-decode">
+                                            {fightDecode}
                                         </Text>
                                     )}
                                 </View>
@@ -355,10 +364,17 @@ export function EncounterModalOverlay({
                             >
                                 <ActionIcon kind="flee" size={20} color={AXM.bone} />
                                 <View style={{ flex: 1 }}>
-                                    <Text style={[styles.choiceLabel, { color: AXM.bone }]}>FLEE</Text>
-                                    {fleeSubtitle !== null && (
-                                        <Text style={styles.choiceSubtitle} testID="encounter-modal-flee-subtitle">
-                                            {fleeSubtitle}
+                                    <View style={styles.choiceLabelRow}>
+                                        <Text style={[styles.choiceLabel, { color: AXM.bone }]}>FLEE</Text>
+                                        {fleeSubtitle !== null && (
+                                            <Text style={styles.choiceSubtitle} testID="encounter-modal-flee-subtitle">
+                                                {fleeSubtitle}
+                                            </Text>
+                                        )}
+                                    </View>
+                                    {fleeDecode !== null && (
+                                        <Text style={styles.choiceDecode} testID="encounter-modal-flee-decode">
+                                            {fleeDecode}
                                         </Text>
                                     )}
                                     {!fleeEnabled && fleeSubtitle === null && (
@@ -663,16 +679,27 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 10,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
+        paddingHorizontal: 10,
+        paddingVertical: 9,
         backgroundColor: AXM.bg,
-        borderWidth: 1,
-        borderLeftWidth: 3,
+        borderWidth: 2,
+    },
+    choiceLabelRow: {
+        flexDirection: 'row',
+        alignItems: 'baseline',
+        gap: 6,
     },
     choiceLabel: {
-        fontFamily: FONTS.sans,
-        fontSize: 12,
-        letterSpacing: 2,
+        fontFamily: FONTS.gothic,
+        fontSize: 18,
+        letterSpacing: 1.5,
+    },
+    choiceDecode: {
+        fontFamily: FONTS.mono,
+        fontSize: 8.5,
+        color: AXM.parchment,
+        letterSpacing: 0.3,
+        marginTop: 3,
     },
     choiceSub: {
         fontFamily: FONTS.serifItalic,
@@ -686,10 +713,10 @@ const styles = StyleSheet.create({
     // hint (chain-bar-shaped chrome); the subtitle is per-choice
     // cost/consequence preview.
     choiceSubtitle: {
-        fontFamily: FONTS.serifItalic,
-        fontSize: 11,
+        fontFamily: FONTS.mono,
+        fontSize: 8,
         color: AXM.bone,
-        marginTop: 2,
+        letterSpacing: 1.4,
     },
     // Phase 63b — combat-mode ScrollView wrap. The panel has a
     // bounded height (top: 56, bottom: 84); CombatPanel renders

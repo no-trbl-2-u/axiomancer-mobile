@@ -45,7 +45,7 @@ function makePreludeVm(overrides: Partial<EventViewModel> = {}): EventViewModel 
                 iconKey: 'sword',
                 accentKey: 'blood',
                 enabled: true,
-                subtitle: null,
+                subtitle: null, decode: null,
             },
             {
                 id: 'flee',
@@ -55,7 +55,7 @@ function makePreludeVm(overrides: Partial<EventViewModel> = {}): EventViewModel 
                 iconKey: 'flee',
                 accentKey: 'bone',
                 enabled: true,
-                subtitle: null,
+                subtitle: null, decode: null,
             },
         ],
         lore: null,

@@ -88,6 +88,14 @@ export interface EventChoice {
      * pure chrome.
      */
     subtitle: string | null;
+    /**
+     * Plain-language decode of the lore subtitle, rendered beneath
+     * the ritual-register subtitle in parchment mono. Translates
+     * Roman numerals and jargon into readable game terms so new
+     * players can parse the cost without memorizing the notation.
+     * `null` when no decode should render.
+     */
+    decode: string | null;
 }
 
 /**
@@ -379,6 +387,7 @@ function composeCombatPrelude(encounter: Encounter, isBoss: boolean): Omit<Event
             accentKey: 'blood',
             enabled: true,
             subtitle: fightSubtitle,
+            decode: `Lv ${enemy.level} foe · ${enemy.health} HP · advantage not yet scouted`,
         },
         {
             id: 'flee',
@@ -389,6 +398,7 @@ function composeCombatPrelude(encounter: Encounter, isBoss: boolean): Omit<Event
             accentKey: 'bone',
             enabled: !isBoss,
             subtitle: fleeSubtitle,
+            decode: isBoss ? null : 'Give up this node · spend 2 Morale',
         },
     ];
     let subtitle: string;
@@ -447,6 +457,7 @@ function composeNpcDialogue(
         accentKey: 'parchment',
         enabled: true,
         subtitle: null,
+        decode: null,
     }));
     const text = (node.text ?? '') as string;
     return {
@@ -508,6 +519,7 @@ function composeNarrative(resolved: ResolvedEvent): Omit<EventViewModel, 'prelud
                         accentKey: 'parchment',
                         enabled: true,
                         subtitle: null,
+                        decode: null,
                     },
                 ],
                 lore: null,
@@ -580,6 +592,7 @@ function composeItemBag(
                 accentKey: 'sulfur',
                 enabled: true,
                 subtitle: null,
+                decode: null,
             },
         ],
         lore: null,
@@ -611,6 +624,7 @@ function composeInteraction(npcName: string, body: string, artSlug: EventArtSlug
                 accentKey: 'parchment',
                 enabled: true,
                 subtitle: null,
+                decode: null,
             },
         ],
         lore: null,
@@ -653,6 +667,7 @@ function composeVillage(
                 accentKey: 'bone',
                 enabled: true,
                 subtitle: null,
+                decode: null,
             },
         ],
         lore: null,
@@ -680,6 +695,7 @@ function composeCutscene(body: string, artSlug: EventArtSlug): Omit<EventViewMod
                 accentKey: 'sulfur',
                 enabled: true,
                 subtitle: null,
+                decode: null,
             },
         ],
         lore: null,
@@ -728,6 +744,7 @@ function composeHazard(
                 accentKey: 'blood',
                 enabled: true,
                 subtitle: null,
+                decode: null,
             },
         ],
         lore: null,

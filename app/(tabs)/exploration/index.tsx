@@ -167,10 +167,10 @@ export default function ExplorationScreen() {
         // file): tapping a locked or completed node surfaces a brief
         // toast acknowledging the no-op, then auto-dismisses. Previous
         // behavior returned silently — players couldn't tell whether
-        // the tap registered. Toast copy in lowercase ritual register
-        // per bearings line 184.
+        // the tap registered. Sealed node message updated to match
+        // Phase 94 specification.
         if (node.kind === 'locked') {
-            setNodeTip('this way is sealed');
+            setNodeTip('This path is sealed.');
             return;
         }
         if (node.kind === 'completed') {

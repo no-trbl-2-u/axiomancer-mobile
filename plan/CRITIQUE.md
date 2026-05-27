@@ -53,6 +53,16 @@
 
 ## Pending
 
+### [MED] general — update mechanics engine to version 0.13.0
+- pass: user-jot (commit `2673c5e`)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: update mechanics to version 0.13.0
+- evidence: user-spotted at 2026-05-27T12:45:45Z
+- suggested_fix: [user has not specified — iterate to determine]
+- source: user
+
 ### [HIGH] general — Equipment has no visible effect on character stats ✅
 - pass: user-jot (commit `5e6cd5e`)
 - viewport: unspecified

@@ -24,6 +24,7 @@
  */
 
 import type { AftermathData } from '@/state/combat-mode';
+import { getMapLayout } from '@/state/exploration-maps';
 
 /**
  * Loot tile rendered in the spoils list. Tick A keeps this shape
@@ -149,6 +150,26 @@ export type AftermathViewModel =
  * pre-Phase-70 and stays silent now — the seal dismisses without
  * an aftermath render).
  */
+/**
+ * Resolve a node ID to human-readable name via map layout lookup.
+ * Fallback to the original node ID if map layout or node lookup fails.
+ * 
+ * Phase 93 — fix F10 playtest finding where "deepest node: fv-14"
+ * shows internal ID instead of "Tide Pool".
+ */
+function resolveNodeIdToHumanName(nodeId: string | null, mapId: string | null): string {
+    if (nodeId === null) return '·';
+    if (mapId === null) return nodeId; // fallback to ID
+
+    const layout = getMapLayout(mapId);
+    if (layout === null) return nodeId; // fallback to ID
+
+    const node = layout.nodes.find(n => n.id === nodeId);
+    if (node === undefined) return nodeId; // fallback to ID
+
+    return node.label;
+}
+
 export function selectAftermathViewModel(
     data: AftermathData | null,
 ): AftermathViewModel | null {
@@ -201,8 +222,11 @@ export function selectAftermathViewModel(
         causePhrase: deriveCausePhrase(data),
         runSummary: {
             rounds: data.runSummary.roundsEndured,
-            encountersFaced: data.runSummary.encountersFaced,
-            deepestNodeId: data.runSummary.deepestNodeId,
+            // Phase 93 — fix F09: when player died, they survived 0 encounters, not 1.
+            // Guard against negative values for edge cases.
+            encountersFaced: Math.max(0, data.runSummary.encountersFaced - 1),
+            // Phase 93 — fix F10: resolve node ID to human-readable name.
+            deepestNodeId: resolveNodeIdToHumanName(data.runSummary.deepestNodeId, data.runSummary.currentMapId),
         },
     };
 }

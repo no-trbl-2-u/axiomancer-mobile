@@ -115,6 +115,7 @@ export type AftermathData =
               roundsEndured: number;
               encountersFaced: number;
               deepestNodeId: string | null;
+              currentMapId: string | null;
           };
       };
 

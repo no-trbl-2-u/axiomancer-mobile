@@ -224,7 +224,8 @@ const DEFEAT_SNAPSHOT: Extract<AftermathData, { variant: 'defeat' }> = {
     runSummary: {
         roundsEndured: 4,
         encountersFaced: 12,
-        deepestNodeId: 'iii.b',
+        deepestNodeId: 'fv-14',
+        currentMapId: 'fishing-village',
     },
 };
 
@@ -276,21 +277,91 @@ describe('selectAftermathViewModel: defeat branch', () => {
         expect(vm?.kind === 'defeat' && vm.causePhrase).toContain('steady one');
     });
 
-    it('threads the run-summary trio through verbatim', () => {
+    it('threads the run-summary with Phase 93 fixes', () => {
         const vm = selectAftermathViewModel(DEFEAT_SNAPSHOT);
         expect(vm?.kind === 'defeat' && vm.runSummary).toEqual({
             rounds: 4,
-            encountersFaced: 12,
-            deepestNodeId: 'iii.b',
+            encountersFaced: 11, // Phase 93: 12 - 1 = 11 (when died, survived 0 encounters)
+            deepestNodeId: 'Tide Pool', // Phase 93: resolved from fv-14 via map layout
         });
     });
 
     it('preserves a null deepestNodeId for the "died on first node" branch', () => {
         const vm = selectAftermathViewModel({
             ...DEFEAT_SNAPSHOT,
-            runSummary: { roundsEndured: 1, encountersFaced: 1, deepestNodeId: null },
+            runSummary: { roundsEndured: 1, encountersFaced: 1, deepestNodeId: null, currentMapId: 'fishing-village' },
         });
-        expect(vm?.kind === 'defeat' && vm.runSummary.deepestNodeId).toBeNull();
+        expect(vm?.kind === 'defeat' && vm.runSummary.deepestNodeId).toBe('·');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 93 — death screen presenter fixes (F09 + F10 regression coverage)
+// ---------------------------------------------------------------------------
+
+describe('selectAftermathViewModel: Phase 93 fixes', () => {
+    it('F09: encounter survived counter shows 0 when player died in first encounter', () => {
+        const vm = selectAftermathViewModel({
+            ...DEFEAT_SNAPSHOT,
+            runSummary: { ...DEFEAT_SNAPSHOT.runSummary, encountersFaced: 1 },
+        });
+        expect(vm?.kind === 'defeat' && vm.runSummary.encountersFaced).toBe(0);
+    });
+
+    it('F09: encounter survived counter is encountersFaced - 1 for multi-encounter deaths', () => {
+        const vm = selectAftermathViewModel({
+            ...DEFEAT_SNAPSHOT,
+            runSummary: { ...DEFEAT_SNAPSHOT.runSummary, encountersFaced: 5 },
+        });
+        expect(vm?.kind === 'defeat' && vm.runSummary.encountersFaced).toBe(4);
+    });
+
+    it('F09: guards against negative encounter counts in edge cases', () => {
+        const vm = selectAftermathViewModel({
+            ...DEFEAT_SNAPSHOT,
+            runSummary: { ...DEFEAT_SNAPSHOT.runSummary, encountersFaced: 0 },
+        });
+        expect(vm?.kind === 'defeat' && vm.runSummary.encountersFaced).toBe(0);
+    });
+
+    it('F10: resolves node ID to human-readable name via map layout', () => {
+        const vm = selectAftermathViewModel({
+            ...DEFEAT_SNAPSHOT,
+            runSummary: { ...DEFEAT_SNAPSHOT.runSummary, deepestNodeId: 'fv-1', currentMapId: 'fishing-village' },
+        });
+        expect(vm?.kind === 'defeat' && vm.runSummary.deepestNodeId).toBe('Hovel');
+    });
+
+    it('F10: falls back to node ID when map layout is missing', () => {
+        const vm = selectAftermathViewModel({
+            ...DEFEAT_SNAPSHOT,
+            runSummary: { ...DEFEAT_SNAPSHOT.runSummary, deepestNodeId: 'unknown-node', currentMapId: 'missing-map' },
+        });
+        expect(vm?.kind === 'defeat' && vm.runSummary.deepestNodeId).toBe('unknown-node');
+    });
+
+    it('F10: falls back to node ID when current map is null', () => {
+        const vm = selectAftermathViewModel({
+            ...DEFEAT_SNAPSHOT,
+            runSummary: { ...DEFEAT_SNAPSHOT.runSummary, deepestNodeId: 'fv-1', currentMapId: null },
+        });
+        expect(vm?.kind === 'defeat' && vm.runSummary.deepestNodeId).toBe('fv-1');
+    });
+
+    it('F10: falls back to node ID when node is not found in map layout', () => {
+        const vm = selectAftermathViewModel({
+            ...DEFEAT_SNAPSHOT,
+            runSummary: { ...DEFEAT_SNAPSHOT.runSummary, deepestNodeId: 'non-existent-node', currentMapId: 'fishing-village' },
+        });
+        expect(vm?.kind === 'defeat' && vm.runSummary.deepestNodeId).toBe('non-existent-node');
+    });
+
+    it('F10: shows "·" when deepest node ID is null', () => {
+        const vm = selectAftermathViewModel({
+            ...DEFEAT_SNAPSHOT,
+            runSummary: { ...DEFEAT_SNAPSHOT.runSummary, deepestNodeId: null, currentMapId: 'fishing-village' },
+        });
+        expect(vm?.kind === 'defeat' && vm.runSummary.deepestNodeId).toBe('·');
     });
 });
 

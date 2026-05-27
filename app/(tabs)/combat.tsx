@@ -173,6 +173,7 @@ export function CombatPanel() {
     } = useCombatMode();
     const { mode: aesthetic } = useAesthetic();
     const combat = useGameState((s) => s.combat);
+    const currentMapId = useGameState((s) => s.world?.currentMap?.name ?? null);
     // Phase 65 Tick B — no default starting stance. `null` until the
     // player taps a stance card; the picker shows no card pre-highlighted
     // on combat entry. Was previously `'heart'`, which surfaced as a
@@ -373,6 +374,7 @@ export function CombatPanel() {
                           roundsEndured: combat.round,
                           encountersFaced,
                           deepestNodeId,
+                          currentMapId,
                       },
                   }
                 : undefined;
@@ -392,6 +394,7 @@ export function CombatPanel() {
         inEncounterModal,
         encountersFaced,
         deepestNodeId,
+        currentMapId,
         vm.enemy.hp,
         vm.player.hp,
         vm.friendshipCounter,

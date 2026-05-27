@@ -12,12 +12,6 @@ screen show in the `choosing_stance` phase", read this repo.
 
 ---
 
-> **⚠️ Testing Setup Required**
->
-> This project does not have Jest or any test runner installed yet. The `npm test` command listed below will not work until you complete **Spec 01** (`specs/01-test-harness-setup.md`) first, which installs `jest-expo` + `@testing-library/react-native` and sets up the hermetic test harness.
->
-> Until then, use `npx tsc --noEmit` for static analysis validation.
-
 ## Quick start
 
 ```bash

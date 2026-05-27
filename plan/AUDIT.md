@@ -1,5 +1,59 @@
 # Site audit — 2026-05-27
 
+## Top 5 findings (scored)
+
+### [9.0] README.md promises Jest not installed but 1530 tests pass successfully
+- category: content-gaps
+- impact: 10
+- ease: 9
+- next: remove the "Testing Setup Required" warning box from README.md lines 15-19
+- source: audit
+- observation: README.md lines 15-19 contain a warning box stating "This project does not have Jest or any test runner installed yet" but running `npm test` successfully executes 1530 tests across 121 test suites. This creates false expectations for new contributors.
+- evidence: Warning box says "The `npm test` command listed below will not work until you complete Spec 01" but `npm test` passes with full test suite
+- suggested_fix: Remove the obsolete warning box from README.md since the test harness is fully operational
+
+### [6.3] Console statements in production code paths need dev guards  
+- category: perf
+- impact: 9
+- ease: 7
+- next: add __DEV__ checks around console.error in ErrorBoundary.tsx, console.warn in asyncStorageAdapter.ts and combat.engine.ts
+- source: audit
+- observation: Found 3 console statements without __DEV__ guards that will execute in production builds
+- evidence: ErrorBoundary.tsx line 67 console.error, asyncStorageAdapter.ts line 118 console.warn, combat.engine.ts console.warn for stance triangle drift
+- suggested_fix: wrap console statements with if (__DEV__) checks to prevent production logging
+
+### [5.6] Missing alt text on exploration map node buttons
+- category: a11y
+- impact: 8
+- ease: 7
+- next: add descriptive accessibilityLabel to map node buttons in exploration screen
+- source: audit
+- observation: Map nodes in exploration screen render as pressable elements but lack accessibilityLabel attributes
+- evidence: exploration screen has tappable map nodes without proper screen reader support
+- suggested_fix: add accessibilityLabel with descriptive text like "Node available", "Node completed", "Node locked" based on node state
+
+### [4.8] Large icon files could impact bundle size
+- category: perf  
+- impact: 6
+- ease: 8
+- next: optimize large PNG files in assets/images directory, especially iOS marketing icon and store assets
+- source: audit
+- observation: Found several icon files ranging from 22KB to 53KB which are larger than necessary for mobile apps
+- evidence: iOS marketing icon is 53KB, several store icons are 22-29KB each
+- suggested_fix: run image optimization on large icon files to reduce bundle size while maintaining visual quality
+
+### [4.0] Missing sitemap.xml for web build SEO
+- category: seo
+- impact: 8
+- ease: 5
+- next: add sitemap.xml generation for web builds listing available routes
+- source: audit  
+- observation: app.json has good OpenGraph and Twitter metadata but no sitemap.xml for web builds
+- evidence: web configuration in app.json lacks sitemap reference
+- suggested_fix: add sitemap.xml file listing the main routes (/, /combat, /character, /exploration, /inventory, /memoir)
+
+## Historical findings
+
 > Latest findings from `/iterate audit`. Rewritten on each
 > audit pass. The Pending list at the bottom queues `/iterate`.
 

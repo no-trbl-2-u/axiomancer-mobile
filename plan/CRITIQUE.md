@@ -53,7 +53,7 @@
 
 ## Pending
 
-### [HIGH] general — Equipment has no visible effect on character stats
+### [HIGH] general — Equipment has no visible effect on character stats ✅
 - pass: user-jot (commit `5e6cd5e`)
 - viewport: unspecified
 - auth_state: anonymous
@@ -62,6 +62,8 @@
 - evidence: user-spotted at 2026-05-26
 - suggested_fix: [user has not specified — iterate to determine]
 - source: user
+- addressed: 2026-05-26 via commit `be1469d`
+- fix: Equipment items were not showing their stat effects because the templateToEquipment function was not mapping the engine's baseStatModifiers to the mobile app's expected statModifiers field. Fixed by adding statModifiers mapping in state/selectors/equipment.ts line 126. This affects all equipment sources: debug seed, populate all items, and treasure loot. Equipment stats like +2 Body or +1 Physical Defense now properly appear in character sheet derived stats and affect combat calculations.
 
 ### [MED] general — Tooltip mentions "mana" which is incorrect for Mind
 - pass: user-jot (commit `5e6cd5e`)

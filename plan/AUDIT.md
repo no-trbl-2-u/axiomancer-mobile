@@ -136,6 +136,15 @@
 
 ## Pending
 
+### [6.3] Equipment modal preview shows no stat changes instead of real equipment effects ✅
+- issue: #206
+- category: external-critique
+- impact: 9 (equipment preview modal showed 'No stat change — engine modifiers pending' instead of actual stat differences, preventing users from making informed equipment decisions)
+- ease: 7 (engine integration work to simulate equipment changes in modal presenter)
+- addressed: 2026-05-27 via commit `4f6031f`
+- fix: Fixed equipment preview modal to display actual stat changes instead of showing placeholder message. Modal now correctly simulates equipping/unequipping items using engineEquipItem/engineUnequipItem to show real stat deltas (+2 Physical Attack, etc.). Updated state/presenters/inventory.modal.engine.ts to calculate proper before/after stats and removed outdated 'engine modifiers pending' messaging.
+- source: external-critique (HIGH finding from user-jot critique pass)
+
 ### [4.8] ItemCard component missing test coverage ✅
 - issue: #188
 - category: tests

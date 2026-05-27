@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-05-27 at commit 83b5fb8
-> Pass count: 46
+> Last pass: 2026-05-27 at commit 55555a5
+> Pass count: 47
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -2032,3 +2032,43 @@ exploration `moveToAction` migration to engine `revealAdjacent` /
 - proposed scope: 1 phase. Establish audit-fixing workflow documentation, batch remaining audit items into systematic phases for more efficient resolution.
 - estimated phases: 1
 - conflicts: none
+
+### [score 4.0] Screen state presenter migration — combat, inventory, character useState cleanup
+- proposed: 2026-05-27, expand pass 47
+- source signals:
+  - **Presenter bypass smell** — 10+ bare `useState` calls across combat.tsx (3 instances), inventory/index.tsx (5 instances), character/index.tsx (2 instances)
+  - **Bearings contract violation** — "Presenter purity" rule states screens should consume view-models, not hold local state
+- rationale: Multiple screens violate the presenter architecture by using bare useState instead of engine-backed presenters. This makes testing harder and breaks the established contract where presenters are pure `(state) → ViewModel` functions.
+- proposed scope: 1 phase. Migrate selectedStance/toast state from combat.tsx, activeTab/expandedItemId/modalItemId/selectedSlot state from inventory/index.tsx, and levelUpOpen state from character/index.tsx to their respective presenters.
+- estimated phases: 1
+- conflicts: none
+
+### [score 3.5] Hex literal color token migration — systematic theme compliance
+- proposed: 2026-05-27, expand pass 47
+- source signals:
+  - **Hex literal leakage smell** — 50+ hardcoded hex colors (#0a0a0a, #06050a, #171410, etc.) across app/ and components/ directories
+  - **Theme contract violation** — bearings.md specifies "no hex literals in components" and mandates AXM token usage
+- rationale: Widespread hex literal usage violates the established theme token contract and makes color consistency maintenance difficult. Colors like #0a0a0a appear 20+ times and should use AXM.bg or similar tokens.
+- proposed scope: 1 phase. Systematic replacement of hardcoded hex values with appropriate AXM theme tokens (bg, parchment, blood, sulfur, rust, bone, ash). Focus on most frequent violators first.
+- estimated phases: 1
+- conflicts: none
+
+### [score 3.2] Type-safe state casting cleanup — reduce as any technical debt
+- proposed: 2026-05-27, expand pass 47
+- source signals:
+  - **As any cast cluster smell** — 80+ `as any` and `as unknown` casts concentrated in state/ directory, particularly in selectors, migrations, and test files
+  - **Type safety degradation** — Multiple casts mask potential type errors and reduce maintainability
+- rationale: High concentration of type casts suggests systematic type boundary issues that could hide bugs. Many casts appear to work around engine/mobile type mismatches rather than solving them properly.
+- proposed scope: 1 phase. Review and replace `as any` casts in non-test files with proper typing, starting with state/actions.ts, state/presenters/, and state/selectors/. Test files may retain casts for fixture setup.
+- estimated phases: 1
+- conflicts: none
+
+### [score 2.8] Large file decomposition audit — combat, inventory, exploration screens
+- proposed: 2026-05-27, expand pass 47
+- source signals:
+  - **File length outlier smell** — 3 screen files exceed 600 lines: combat.tsx (789), inventory/index.tsx (706), exploration/index.tsx (685)
+  - **Maintainability concern** — Large screens with multiple responsibilities harder to review and modify
+- rationale: Screen files approaching 800 lines suggest opportunities for sub-component extraction. Combat screen particularly complex with stance selection, action picking, and battle log rendering.
+- proposed scope: 1-2 phases. Extract logical sub-components from large screens, starting with combat stance picker and inventory modal sections.
+- estimated phases: 2
+- conflicts: Combat screen changes limited by combat-surface design gate until design handoff lands

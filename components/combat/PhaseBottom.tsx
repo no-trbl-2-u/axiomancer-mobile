@@ -12,6 +12,7 @@ import { useTooltip } from '@/hooks/useTooltip';
 import { SectionLabel } from '@/components/SectionLabel';
 import { StanceGlyph } from '@/components/StanceGlyph';
 import { ActionIcon } from '@/components/ActionIcon';
+import { TooltipTarget } from '@/components/tooltip/TooltipTarget';
 import { toRomanLower } from '@/state/presenters/roman';
 import type {
     ActionOption,
@@ -299,6 +300,32 @@ function ActionPhase({
             <View style={action_styles.grid}>
                 {options.map((opt) => {
                     const accent = ACCENT_BY_KIND[opt.accentKind];
+                    
+                    // Phase 95: Handle disabled ITEM button with tooltip
+                    if (!opt.enabled && opt.key === 'item') {
+                        return (
+                            <TooltipTarget
+                                key={opt.key}
+                                kind="disabled-action"
+                                id={opt.key}
+                                accessibilityLabel={`${opt.label} unavailable`}
+                                accessibilityHint="Tap for more information"
+                                testID={`combat-action-${opt.key}-disabled-tooltip`}
+                            >
+                                <View style={[action_styles.cardTouch, { opacity: 0.45 }]}>
+                                    <View style={[action_styles.card, { borderColor: accent }]}>
+                                        <ActionIcon kind={opt.iconKind} size={32} color={accent} />
+                                        <View style={action_styles.textCol}>
+                                            <Text style={action_styles.label}>{opt.label}</Text>
+                                            <Text style={action_styles.hint}>{opt.hint}</Text>
+                                        </View>
+                                    </View>
+                                </View>
+                            </TooltipTarget>
+                        );
+                    }
+
+                    // Regular enabled actions (or other disabled actions without tooltips)
                     return (
                         <TouchableOpacity
                             key={opt.key}

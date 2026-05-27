@@ -39,7 +39,8 @@ export type TooltipKind =
     | 'item-stat'
     | 'chronicle-entry'
     | 'quest-objective'
-    | 'map-node';
+    | 'map-node'
+    | 'disabled-action';
 
 /**
  * Stat-stance accent for tooltip tinting (Phase 75 follow-up,
@@ -89,6 +90,17 @@ const STANCE_CHIP_CONTENT: Record<string, TooltipContent> = {
         title: 'DISADVANTAGE',
         body: 'roll twice, keep the lower value.',
         footnote: 'your stance falls to theirs',
+    },
+};
+
+// Phase 95 — disabled action button tooltips. Keys match ActionKey
+// values from the combat presenter (`item` initially, extensible
+// for other disabled actions if needed later).
+const DISABLED_ACTION_CONTENT: Record<string, TooltipContent> = {
+    item: {
+        title: 'ITEM UNAVAILABLE',
+        body: 'no usable items in inventory.',
+        accent: 'neutral',
     },
 };
 
@@ -545,6 +557,9 @@ export function selectTooltipContentFor(
             footnote: `cost ${skill.manaCost} · stance ${skill.stance.toUpperCase()}`,
             accent: accentForStat(skill.stance),
         };
+    }
+    if (kind === 'disabled-action') {
+        return DISABLED_ACTION_CONTENT[id] ?? null;
     }
     // All other kinds: no content authored yet — return null so
     // the caller can render nothing without crashing.

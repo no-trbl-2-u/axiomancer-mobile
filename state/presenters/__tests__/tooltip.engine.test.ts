@@ -356,6 +356,24 @@ describe('selectTooltipContentFor', () => {
             expect(content?.accent).toBe('body');
         });
     });
+
+    describe('kind: disabled-action (Phase 95)', () => {
+        it('returns content for item action', () => {
+            const content = selectTooltipContentFor('disabled-action', 'item', EMPTY_STATE);
+            expect(content).not.toBeNull();
+            expect(content?.title).toBe('ITEM UNAVAILABLE');
+            expect(content?.body).toBe('no usable items in inventory.');
+            expect(content?.accent).toBe('neutral');
+        });
+
+        it('returns null for unknown disabled action id', () => {
+            expect(selectTooltipContentFor('disabled-action', 'attack', EMPTY_STATE)).toBeNull();
+        });
+
+        it('returns null for empty disabled action id', () => {
+            expect(selectTooltipContentFor('disabled-action', '', EMPTY_STATE)).toBeNull();
+        });
+    });
 });
 
 // ---------------------------------------------------------------------------

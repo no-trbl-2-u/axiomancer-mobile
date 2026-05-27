@@ -1815,12 +1815,13 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       `[score 4.0]`. Scope: tapping a sealed map node shows a
       brief toast ("This path is sealed."). Playtest source: F11.
       Shipped `ece582f`.
-- [ ] Phase 95 — Disabled ITEM button tooltip in combat. Promoted
+- [x] Phase 95 — Disabled ITEM button tooltip in combat. Promoted
       via `/oversight` 2026-05-27 (42nd call) from PHASE_CANDIDATES
       `[score 4.0]`. Scope: tapping the disabled ITEM action button
       shows a tooltip explaining unavailability. Non-visual combat
       fix (allowed under combat-surface design gate). Playtest
       source: F12.
+      Shipped `d198039`.
 
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped
       2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —

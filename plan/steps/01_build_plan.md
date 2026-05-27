@@ -1810,10 +1810,11 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       = 0 survived, not 1) + resolve deepest node ID to human-
       readable name via map layout lookup. Both presenter changes.
       Playtest source: F09, F10. Shipped `ccd2438`.
-- [ ] Phase 94 — Sealed node tap feedback. Promoted via
+- [x] Phase 94 — Sealed node tap feedback. Promoted via
       `/oversight` 2026-05-27 (42nd call) from PHASE_CANDIDATES
       `[score 4.0]`. Scope: tapping a sealed map node shows a
       brief toast ("This path is sealed."). Playtest source: F11.
+      Shipped `ece582f`.
 - [ ] Phase 95 — Disabled ITEM button tooltip in combat. Promoted
       via `/oversight` 2026-05-27 (42nd call) from PHASE_CANDIDATES
       `[score 4.0]`. Scope: tapping the disabled ITEM action button

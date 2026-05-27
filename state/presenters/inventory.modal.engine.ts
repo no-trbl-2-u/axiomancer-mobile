@@ -8,6 +8,8 @@
 
 import {
     deriveStats,
+    equipItem as engineEquipItem,
+    unequipItem as engineUnequipItem,
     isConsumable,
     isEquipment,
     type Character,
@@ -156,12 +158,27 @@ function buildEquipmentModal(player: Character, item: Item): ItemModalViewModel 
     const isAlreadyEquipped = selectIsEquippedFirstOfSlot(player.inventory, eq);
     const replacing = isAlreadyEquipped ? null : selectFindEquippedInSlot(player.inventory, eq);
 
-    // Equipment in this engine snapshot carries no stat modifiers, so
-    // the deltas are all 0 today. The contract stabilises the UI ahead
-    // of engine Spec ~05 shipping real modifiers.
+    // Calculate actual stat changes by simulating equipment application.
     // derivedStats are guaranteed present after v1→v2 persistence migration
     const before: DerivedStats = player.derivedStats;
-    const after: DerivedStats = before;
+    
+    // Simulate the stat changes this equipment would cause
+    let after: DerivedStats;
+    if (isAlreadyEquipped) {
+        // If already equipped, simulate unequipping to show what we'd lose
+        if (replacing) {
+            // There's a replacement item that would become equipped
+            const tempPlayer = engineUnequipItem(player, eq.slot);
+            after = tempPlayer.derivedStats;
+        } else {
+            // No replacement, just show current stats (no change)
+            after = before;
+        }
+    } else {
+        // Not equipped, simulate equipping to show what we'd gain
+        const equippedPlayer = engineEquipItem(player, eq);
+        after = equippedPlayer.derivedStats;
+    }
     const statDeltas: StatDelta[] = [
         delta('PHYS ATK', before.physicalAttack, after.physicalAttack, 'physicalAttack'),
         delta('PHYS DEF', before.physicalDefense, after.physicalDefense, 'physicalDefense'),
@@ -227,7 +244,7 @@ function buildEquipmentModal(player: Character, item: Item): ItemModalViewModel 
                 : 'Worn now.'
             : isAlreadyEquipped
               ? 'Worn now.'
-              : 'No stat change — engine modifiers pending.',
+              : `${eq.slot.charAt(0).toUpperCase() + eq.slot.slice(1)} slot.`,
     ];
 
     return freezeViewModel({

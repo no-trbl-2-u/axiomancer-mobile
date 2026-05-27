@@ -228,7 +228,7 @@
 - suggested_fix: Title card before first WILDS load, setting tone + minimal vocabulary. Design-routed to DESIGN_SPEC.md.
 - source: deep-playtest [F01]
 
-### [HIGH] /encounter — FLEE gives no feedback, morale has no UI surface
+### [HIGH] /encounter — FLEE gives no feedback, morale has no UI surface ✅
 - pass: deep-playtest (2026-05-25, commit d560e8c)
 - viewport: mobile (414x896)
 - auth_state: anonymous
@@ -236,6 +236,8 @@
 - observation: After fleeing, encounter modal closes silently. Cost says "-ii morale" but morale is not displayed anywhere. No confirmation, no animation, no indication cost was paid.
 - suggested_fix: Flee narrative beat (prose style) + morale bar on exploration card or SELF tab. Both-routed: code (narrative) + design (morale bar in DESIGN_SPEC.md).
 - source: deep-playtest [F03]
+- addressed: 2026-05-27 via Phase 92 implementation
+- fix: Added narrative feedback after fleeing encounters via toast message "you fled the encounter. the path bends away.\n\nmorale -2" in actions.ts lines 1392-1393. Exposed morale value on SELF tab via character presenter moralMeter mapping (line 358) displayed as "willpower" value. Both parts of the F03 finding are now resolved with test coverage in flee-action.engine.test.ts.
 
 ### [MED] /death — Death screen LEDGER shows wrong encounter count + internal node ID
 - pass: deep-playtest (2026-05-25, commit d560e8c)

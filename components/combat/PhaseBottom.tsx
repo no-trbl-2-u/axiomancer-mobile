@@ -218,6 +218,7 @@ function StanceCard({
                         <View
                             style={[stance_styles.advBadge, { borderColor: isAdv ? AXM.sulfur : AXM.blood }]}
                             testID={`combat-stance-${opt.key}-advdis`}
+                            pointerEvents="none"
                         >
                             <Text style={[stance_styles.advText, { color: isAdv ? AXM.sulfur : AXM.blood }]}>
                                 {isAdv ? 'ADV' : 'DIS'}

@@ -2,7 +2,7 @@
 
 ## Top 5 findings (scored)
 
-### [9.0] README.md promises Jest not installed but 1530 tests pass successfully
+### [9.0] README.md promises Jest not installed but 1530 tests pass successfully ✅
 - category: content-gaps
 - impact: 10
 - ease: 9
@@ -11,6 +11,8 @@
 - observation: README.md lines 15-19 contain a warning box stating "This project does not have Jest or any test runner installed yet" but running `npm test` successfully executes 1530 tests across 121 test suites. This creates false expectations for new contributors.
 - evidence: Warning box says "The `npm test` command listed below will not work until you complete Spec 01" but `npm test` passes with full test suite
 - suggested_fix: Remove the obsolete warning box from README.md since the test harness is fully operational
+- addressed: 2026-05-27 via commit `bb828b5`
+- fix: Removed the obsolete warning box from README.md lines 15-19. The test harness is fully operational with 1530 passing tests across 121 test suites. New contributors can now run `npm test` without confusion.
 
 ### [6.3] Console statements in production code paths need dev guards  
 - category: perf

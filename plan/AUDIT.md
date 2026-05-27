@@ -14,7 +14,7 @@
 - addressed: 2026-05-27 via commit `bb828b5`
 - fix: Removed the obsolete warning box from README.md lines 15-19. The test harness is fully operational with 1530 passing tests across 121 test suites. New contributors can now run `npm test` without confusion.
 
-### [6.3] Console statements in production code paths need dev guards  
+### [6.3] Console statements in production code paths need dev guards ✅
 - category: perf
 - impact: 9
 - ease: 7
@@ -23,6 +23,8 @@
 - observation: Found 3 console statements without __DEV__ guards that will execute in production builds
 - evidence: ErrorBoundary.tsx line 67 console.error, asyncStorageAdapter.ts line 118 console.warn, combat.engine.ts console.warn for stance triangle drift
 - suggested_fix: wrap console statements with if (__DEV__) checks to prevent production logging
+- addressed: 2026-05-27 via commit `e94efa3`
+- fix: Added __DEV__ guards around console.error in ErrorBoundary.tsx and console.warn in asyncStorageAdapter.ts. Combat.engine.ts console.warn was already properly gated. Console statements now only execute in development builds, preventing production logs from exposing debug information.
 
 ### [5.6] Missing alt text on exploration map node buttons
 - category: a11y

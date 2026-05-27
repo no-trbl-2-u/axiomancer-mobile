@@ -26,15 +26,18 @@
 - addressed: 2026-05-27 via commit `e94efa3`
 - fix: Added __DEV__ guards around console.error in ErrorBoundary.tsx and console.warn in asyncStorageAdapter.ts. Combat.engine.ts console.warn was already properly gated. Console statements now only execute in development builds, preventing production logs from exposing debug information.
 
-### [5.6] Missing alt text on exploration map node buttons
+### [5.6] Missing alt text on exploration map node buttons ✅
 - category: a11y
 - impact: 8
 - ease: 7
 - next: add descriptive accessibilityLabel to map node buttons in exploration screen
 - source: audit
-- observation: Map nodes in exploration screen render as pressable elements but lack accessibilityLabel attributes
+- observation: Map nodes in exploration screen render as pressible elements but lack accessibilityLabel attributes
 - evidence: exploration screen has tappable map nodes without proper screen reader support
 - suggested_fix: add accessibilityLabel with descriptive text like "Node available", "Node completed", "Node locked" based on node state
+- addressed: already implemented at commit `3f33d72`
+- fix: Accessibility labels are already properly implemented. Map nodes have descriptive accessibilityLabel with node state descriptions ("sealed", "walked", "here", "open"). Travel options also have proper accessibility labels. Issue #213 filed erroneously due to stale audit finding.
+- issue: #213
 
 ### [4.8] Large icon files could impact bundle size
 - category: perf  

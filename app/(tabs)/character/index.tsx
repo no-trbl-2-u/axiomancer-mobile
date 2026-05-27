@@ -274,6 +274,15 @@ export default function CharacterScreen() {
         </View>
       </View>
 
+      {/* Phase 92 — Morale */}
+      <View style={styles.section}>
+        <SectionLabel size={10}>✠ MORALE</SectionLabel>
+        <View style={styles.moraleRow}>
+          <Text style={styles.moraleValue}>{vm.morale}</Text>
+          <Text style={styles.moraleLabel}>willpower</Text>
+        </View>
+      </View>
+
       {/* Afflictions & Blessings */}
       <View style={styles.section} accessible accessibilityLabel={vm.a11y.effects}>
         <SectionLabel size={10}>✠ AFFLICTIONS &amp; BLESSINGS</SectionLabel>
@@ -452,6 +461,9 @@ const styles = StyleSheet.create({
   alignmentAxisChip: { flex: 1, borderWidth: 1, borderColor: AXM.ash, borderStyle: 'dashed', paddingVertical: 3, paddingHorizontal: 5 },
   alignmentAxisLabel: { fontFamily: FONTS.mono, fontSize: 8, letterSpacing: 1, color: AXM.bone },
   alignmentAxisBucket: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.parchment, marginTop: 1 },
+  moraleRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8, marginTop: 4 },
+  moraleValue: { fontFamily: FONTS.gothic, fontSize: 18, color: AXM.parchment },
+  moraleLabel: { fontFamily: FONTS.serif, fontSize: 11, color: AXM.bone, letterSpacing: 1 },
   effectsList: { marginTop: 4, gap: 4 },
   emptyLabel: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.ash, letterSpacing: 1, textTransform: 'uppercase' },
   effectRow: { flexDirection: 'row', gap: 8, alignItems: 'center', borderWidth: 1, padding: 5, paddingHorizontal: 7 },

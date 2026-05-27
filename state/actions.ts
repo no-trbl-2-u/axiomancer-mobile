@@ -1381,6 +1381,20 @@ function pickEventChoiceAction(store: AppStore, choiceId: string): void {
             // dispatched.
             if (!processed.isBoss) {
                 store.getState().shiftMoralMeter(-2);
+                // Phase 92 — flee narrative feedback. Display prose-style
+                // narrative after successful flee action matching existing
+                // lowercase ritual register patterns. Combined with morale
+                // cost feedback as requested in deep-playtest F03.
+                const prev = store.getState().notifications;
+                store.setState({
+                    notifications: {
+                        levelUpAcknowledged: prev?.levelUpAcknowledged ?? true,
+                        toast: {
+                            text: 'you fled the encounter. the path bends away.\n\nmorale -2',
+                            id: (prev?.toast?.id ?? 0) + 1,
+                        },
+                    },
+                });
             }
             clearEventSlice(store);
             return;

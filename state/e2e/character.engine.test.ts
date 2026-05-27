@@ -58,6 +58,7 @@ describe('selectCharacterViewModel: shape contract', () => {
         expect(Array.isArray(vm.effects)).toBe(true);
         expect(Array.isArray(vm.equipment)).toBe(true);
         expect(Array.isArray(vm.skills)).toBe(true);
+        expect(typeof vm.morale).toBe('number');
     });
 
     it('threads availableStatPoints onto vm.pendingPoints (Phase 73)', () => {
@@ -606,5 +607,24 @@ describe('selectCharacterViewModel: alignment slice', () => {
             expect(vm.a11y.alignment.toLowerCase()).toContain(axis.label.toLowerCase());
             expect(vm.a11y.alignment).toContain(axis.bucket);
         }
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Morale (Phase 92)
+// ---------------------------------------------------------------------------
+
+describe('selectCharacterViewModel: morale', () => {
+    it('threads state.moralMeter onto vm.morale', () => {
+        const store = createGameStore(createMemoryAdapter());
+        // Fresh game starts with default morale from engine
+        const fresh = selectCharacterViewModel(store.getState());
+        const expectedFresh = store.getState().moralMeter;
+        expect(fresh.morale).toBe(expectedFresh);
+
+        // Modify morale and verify VM reflects the change
+        store.setState({ moralMeter: -5 });
+        const modified = selectCharacterViewModel(store.getState());
+        expect(modified.morale).toBe(-5);
     });
 });

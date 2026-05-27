@@ -180,6 +180,13 @@ export interface CharacterViewModel {
      * a fresh game (the engine's `defaultAlignment()` seed).
      */
     alignment: AlignmentSlice;
+    /**
+     * Phase 92 — morale meter value. Sourced from `state.moralMeter`
+     * (engine alignment/personality state). Displays current morale
+     * level affected by flee actions and other moral choices. Makes
+     * the flee cost visible per deep-playtest F03 feedback.
+     */
+    morale: number;
     /** Accessibility labels for character screen elements. */
     a11y: {
         characterName: string;
@@ -348,6 +355,7 @@ export function selectCharacterViewModel(state: GameStore): CharacterViewModel {
         equipment: buildEquipment(player),
         skills: [],
         alignment,
+        morale: state.moralMeter,
         a11y: {
             characterName: `Character name: ${player.name}`,
             level: `Level ${player.level}`,

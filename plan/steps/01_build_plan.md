@@ -1797,7 +1797,7 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       action outcomes, regression coverage pins F04, verify gate
       `[DONE — see commit 9a88819]`.
       green. See `plan/phases/phase_91_battle_log_two_line_format.md`.
-- [ ] Phase 92 — Flee narrative feedback + morale surface.
+- [x] Phase 92 — Flee narrative feedback + morale surface.
       Promoted via `/oversight` 2026-05-27 (42nd call) from
       PHASE_CANDIDATES `[score 5.0]`. Scope: add narrative beat
       after fleeing (prose style matching death/victory text) +

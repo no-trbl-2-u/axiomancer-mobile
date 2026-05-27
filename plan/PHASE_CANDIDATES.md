@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-05-26 at commit bcc9d1f
-> Pass count: 45
+> Last pass: 2026-05-27 at commit 83b5fb8
+> Pass count: 46
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -1943,6 +1943,49 @@ exploration `moveToAction` migration to engine `revealAdjacent` /
   - **Recent design activity** — handoff dated within 7 days, fresh design signal
 - rationale: Design handoff exists and is ready for port, user need validated via existing critique finding and Phase 73 implementation. Completes the level-up user flow that currently has button but no modal.
 - proposed scope: 1 phase. Port levelup.jsx design to LevelUpModal component, wire to existing AscendStrip trigger from Phase 73.
+- estimated phases: 1
+- conflicts: none
+
+### [score 4.2] Design integration — Level-up modal from handoff-2026-05-23
+- proposed: 2026-05-27, expand pass 46
+- source signals:
+  - **Design landing**: `design/handoff-2026-05-23/levelup.html` + `screens/levelup.jsx` shipped
+  - **Critique finding**: MED level-up button request (already promoted → Phase 73)
+  - **Commit pattern**: level-up related commits in recent history
+- rationale: Fresh design export landed but no corresponding phase exists to integrate it. LevelUpModal exists in mobile but may need design-fidelity updates.
+- proposed scope: 1-phase design port from handoff bundle to mobile LevelUpModal component
+- estimated phases: 1
+- conflicts: none
+
+### [score 3.8] Combat UX clarity overhaul  
+- proposed: 2026-05-27, expand pass 46
+- source signals:
+  - **Critique finding**: [HIGH] Combat UX unintuitive, numbers lack meaning, needs design overhaul
+  - **Design landing**: `design/combat-ux-overhaul-prompt.md` exists
+  - **Playtest evidence**: Multiple F-prefixed findings in PLAYTEST_REPORT.md referenced
+- rationale: User flagged combat as confusing from UX perspective, design prompt file exists, multiple playtest findings support this
+- proposed scope: Combat comprehension phase - better labeling, icons, number meaning
+- estimated phases: 1-2 (depending on design scope) 
+- conflicts: none
+
+### [score 3.5] Tooltip accuracy audit across surfaces
+- proposed: 2026-05-27, expand pass 46  
+- source signals:
+  - **Critique finding**: [MED] Verify all tooltip content is 100% accurate
+  - **Critique finding**: [MED] Tooltip mentions "mana" which is incorrect for Mind
+  - **Recent tooltip infrastructure**: 11 iterate ticks completed
+- rationale: User specifically requested tooltip accuracy verification after tooltip rollout completed
+- proposed scope: 1-phase audit of all tooltip content for accuracy and voice consistency
+- estimated phases: 1
+- conflicts: none
+
+### [score 2.8] Equipment stat visibility polish
+- proposed: 2026-05-27, expand pass 46
+- source signals:
+  - **Critique findings**: Equipment stat effects resolved but visibility could be clearer
+  - **Recent equipment bug fixes**: in commit history 
+- rationale: Equipment stat effects now work but UX clarity could be improved
+- proposed scope: Polish equipment stat display and feedback
 - estimated phases: 1
 - conflicts: none
 

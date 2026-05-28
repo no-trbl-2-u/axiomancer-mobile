@@ -22,6 +22,13 @@ describe('selectOnboardingViewModel', () => {
     expect(vm.showTitleScreen).toBe(true);
   });
 
+  it('returns a stable reference for unchanged fresh-player state', () => {
+    const first = selectOnboardingViewModel(store.getState());
+    const second = selectOnboardingViewModel(store.getState());
+
+    expect(second).toBe(first);
+  });
+
   it('hides title screen for leveled player even at starting location', () => {
     const state = store.getState();
     

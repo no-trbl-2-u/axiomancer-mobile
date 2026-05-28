@@ -501,19 +501,6 @@ export function summarizeRoundEvents(
                 severity: 'effect',
                 text: `Skill binds — ${effectName} on ${target}.`,
             });
-        } else if (ev.phase === 'skill' && ev.kind === 'effect-resisted') {
-            const effectName = ev.effect.name ?? ev.effect.id ?? 'effect';
-            const target = ev.appliedTo === 'self' ? 'You' : 'Foe';
-            logLines.push({
-                severity: 'effect',
-                text: `Skill falters — ${target} resists ${effectName}.`,
-            });
-        } else if (ev.phase === 'skill' && ev.kind === 'effect-rebounded') {
-            const effectName = ev.effect.name ?? ev.effect.id ?? 'effect';
-            logLines.push({
-                severity: 'effect',
-                text: `Skill rebounds — ${effectName} falls back on you.`,
-            });
         } else if (ev.phase === 'skill' && ev.kind === 'buff-stripped') {
             const effectName = ev.effect?.name ?? 'a buff';
             const target = ev.target === 'self' ? 'You' : 'Foe';

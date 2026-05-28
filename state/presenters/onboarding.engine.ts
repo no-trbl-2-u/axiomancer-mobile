@@ -15,6 +15,16 @@ export interface OnboardingViewModel {
   isNewPlayer: boolean;
 }
 
+const FRESH_ONBOARDING_VM: OnboardingViewModel = Object.freeze({
+  showTitleScreen: true,
+  isNewPlayer: true,
+});
+
+const SETTLED_ONBOARDING_VM: OnboardingViewModel = Object.freeze({
+  showTitleScreen: false,
+  isNewPlayer: false,
+});
+
 export function selectOnboardingViewModel(state: AppStoreState): OnboardingViewModel {
   const player = state.player;
   const world = state.world;
@@ -34,8 +44,5 @@ export function selectOnboardingViewModel(state: AppStoreState): OnboardingViewM
   // (we could add a flag to track this, but for now just use the heuristic)
   const showTitleScreen = isNewPlayer;
   
-  return {
-    showTitleScreen,
-    isNewPlayer,
-  };
+  return showTitleScreen && isNewPlayer ? FRESH_ONBOARDING_VM : SETTLED_ONBOARDING_VM;
 }

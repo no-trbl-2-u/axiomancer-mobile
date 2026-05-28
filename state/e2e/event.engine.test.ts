@@ -61,7 +61,9 @@ function makeEncounterResult(opts: { isBoss?: boolean } = {}): ResolveMapEventRe
         id: 'cairn-rot',
         name: 'Cairn-rot',
         level: 3,
+        baseStats: { heart: 2, body: 3, mind: 1 },
         health: 24,
+        maxHealth: 24,
     } as never;
     // Phase 60b — engine's canonical Encounter shape is
     // `{ enemies, origin }`. Pre-60b fixtures used `{enemy}`;

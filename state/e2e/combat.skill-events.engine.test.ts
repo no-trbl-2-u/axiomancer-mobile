@@ -55,35 +55,6 @@ describe('summarizeRoundEvents: skill-phase event coverage (Phase 79)', () => {
         expect(logLines.some((l) => l.text.includes('Skill binds') && l.text.includes('Ad Baculum'))).toBe(true);
     });
 
-    it('logs effect-resisted as "Skill falters"', () => {
-        const { logLines } = summarize([
-            ev({
-                phase: 'skill',
-                kind: 'effect-resisted',
-                skillId: 'x',
-                appliedTo: 'enemy',
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                effect: { id: 'tier1_body_attack', name: 'Ad Baculum' } as any,
-                message: 'm',
-            }),
-        ]);
-        expect(logLines.some((l) => l.text.includes('Skill falters') && l.text.includes('resists'))).toBe(true);
-    });
-
-    it('logs effect-rebounded as "Skill rebounds"', () => {
-        const { logLines } = summarize([
-            ev({
-                phase: 'skill',
-                kind: 'effect-rebounded',
-                skillId: 'x',
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                effect: { id: 'tier1_body_attack', name: 'Ad Baculum' } as any,
-                message: 'm',
-            }),
-        ]);
-        expect(logLines.some((l) => l.text.includes('Skill rebounds') && l.text.includes('Ad Baculum'))).toBe(true);
-    });
-
     it('logs buff-stripped as "Skill scours"', () => {
         const { logLines } = summarize([
             ev({

@@ -220,7 +220,7 @@
 - suggested fix: Add 'Target Architecture' header to diagram section and note current migration state
 - source: browser
 
-### [HIGH] general — No title screen or onboarding for new players
+### [HIGH] general — No title screen or onboarding for new players ✅
 - pass: deep-playtest (2026-05-25, commit d560e8c)
 - viewport: mobile (414x896)
 - auth_state: anonymous
@@ -228,6 +228,8 @@
 - observation: Game loads directly to WILDS map with no title screen, tutorial, or orientation. New players have zero context for vocabulary (PILGRIM, VITAE, LEAGUES) or goals.
 - suggested_fix: Title card before first WILDS load, setting tone + minimal vocabulary. Design-routed to DESIGN_SPEC.md.
 - source: deep-playtest [F01]
+- addressed: 2026-05-28 via commit `785ae6e`
+- fix: Added TitleScreen component that appears for new players (level 1, at fv-1, minimal progress). Gothic-themed welcome experience with AXIOMANCER branding, flavor text explaining world setting (PILGRIM, VITAE, LEAGUES), and BEGIN JOURNEY button. Includes onboarding presenter to detect new vs returning players and modifies index route to show title conditionally. Comprehensive test coverage for both components.
 
 ### [HIGH] /encounter — FLEE gives no feedback, morale has no UI surface ✅
 - pass: deep-playtest (2026-05-25, commit d560e8c)

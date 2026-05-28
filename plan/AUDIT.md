@@ -31,7 +31,7 @@
 - addressed: 2026-05-28 via commit `341e2a9`
 - fix: Added justifyContent: 'space-between' to stance button row layout in combat modal. Buttons now distribute evenly across available width instead of being left-aligned, resolving mind stance card clipping issue.
 
-### [6.8] Show node labels only for unvisited, available nodes (user-jot critique finding)
+### [6.8] Show node labels only for unvisited, available nodes (user-jot critique finding) ✅
 - category: external-critique  
 - impact: 6
 - ease: 8
@@ -40,6 +40,9 @@
 - observation: Map shows labels for all nodes, but should only display labels for nodes the player hasn't visited yet and are available as choices. User spotted during testing at 2026-05-25.
 - evidence: User-jot finding in plan/CRITIQUE.md "Only show node labels for unvisited, available nodes"
 - suggested_fix: Update exploration presenter to conditionally render node labels based on node state (unvisited + available only)
+- issue: #219
+- addressed: 2026-05-28 via commit `2c66e78`
+- fix: Node labels now display conditionally - only for nodes with kind 'available' (unvisited + accessible). Wrapped label rendering in conditional check in MapNodeMarker component. Current, completed, and locked nodes show no label, reducing visual clutter and focusing attention on actionable choices.
 
 ### [4.5] Combat UX unintuitive, numbers and icons lack meaning (user-jot critique finding)
 - category: external-critique

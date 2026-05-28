@@ -52,7 +52,7 @@
 - addressed: 2026-05-28 via commit `291be7e`
 - fix: Optimized 6 largest icon files using pngquant (quality 80-95%): AppIcon~ios-marketing.png (53K → 6.3K, 88% reduction), icon-512.png (29K → 6.6K, 77% reduction), icon-512-maskable.png (22K → 3.5K, 84% reduction), play_store_512.png (22K → 3.5K, 84% reduction), ic_launcher.png xxxhdpi (24K → 5.8K, 76% reduction), ic_launcher_foreground.png xxxhdpi (24K → 5.4K, 78% reduction). Total bundle size reduction: ~120KB across marketing and store assets while maintaining visual quality.
 
-### [4.0] Missing sitemap.xml for web build SEO
+### [4.0] Missing sitemap.xml for web build SEO ✅
 - category: seo
 - impact: 8
 - ease: 5
@@ -61,6 +61,8 @@
 - observation: app.json has good OpenGraph and Twitter metadata but no sitemap.xml for web builds
 - evidence: web configuration in app.json lacks sitemap reference
 - suggested_fix: add sitemap.xml file listing the main routes (/, /combat, /character, /exploration, /inventory, /memoir)
+- addressed: 2026-05-28 via commit `2388276`
+- fix: Created public/sitemap.xml with all main expo-router routes following sitemap.org standards. Added proper XML structure with priority hierarchy (root 1.0, main game screens 0.8, event screen 0.6) and comprehensive test coverage. Public directory follows Expo convention for static web assets, improving SEO and discoverability for web builds.
 
 ## Historical findings
 

@@ -432,11 +432,13 @@ function MapNodeMarker({
             ]}
         >
             <NodeMark kind={n.kind} size={36} />
-            <View style={[styles.nodeLabel, { opacity: dim ? 0.4 : 1 }]}>
-                <Text style={[styles.nodeLabelText, { color: dim ? AXM.ash : AXM.parchment }]}>
-                    {n.label}
-                </Text>
-            </View>
+            {n.kind === 'available' && (
+                <View style={[styles.nodeLabel, { opacity: dim ? 0.4 : 1 }]}>
+                    <Text style={[styles.nodeLabelText, { color: dim ? AXM.ash : AXM.parchment }]}>
+                        {n.label}
+                    </Text>
+                </View>
+            )}
             {n.kind === 'available' && (
                 <View style={[styles.nodeTypeBadge, { backgroundColor: ev.c }]}>
                     <Text style={styles.nodeTypeBadgeText}>{ev.label}</Text>

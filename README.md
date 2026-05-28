@@ -174,6 +174,12 @@ assisted development. Pick up the loop here:
   — the operator's manual.
 - **Writing tests?** [`docs/testing.md`](./docs/testing.md) — hermetic
   e2e standard. Every implementation must land with at least one.
+- **Touching combat UX?** [`docs/early-combat-ux.md`](./docs/early-combat-ux.md)
+  — Tobin's first-region readability doctrine.
+- **Generating or judging art?** [`docs/art-direction.md`](./docs/art-direction.md),
+  [`docs/asset-formats.md`](./docs/asset-formats.md), and
+  [`SVG_ASSET_SPEC.md`](./SVG_ASSET_SPEC.md) — Toadvine's visual doctrine,
+  approved formats, Telegram review bundle, and placeholder swap contract.
 
 ## Hermetic E2E testing
 

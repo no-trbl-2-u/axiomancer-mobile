@@ -39,7 +39,7 @@
 - fix: Accessibility labels are already properly implemented. Map nodes have descriptive accessibilityLabel with node state descriptions ("sealed", "walked", "here", "open"). Travel options also have proper accessibility labels. Issue #213 filed erroneously due to stale audit finding.
 - issue: #213
 
-### [4.8] Large icon files could impact bundle size
+### [4.8] Large icon files could impact bundle size ✅
 - category: perf  
 - impact: 6
 - ease: 8
@@ -48,6 +48,9 @@
 - observation: Found several icon files ranging from 22KB to 53KB which are larger than necessary for mobile apps
 - evidence: iOS marketing icon is 53KB, several store icons are 22-29KB each
 - suggested_fix: run image optimization on large icon files to reduce bundle size while maintaining visual quality
+- issue: #215
+- addressed: 2026-05-28 via commit `291be7e`
+- fix: Optimized 6 largest icon files using pngquant (quality 80-95%): AppIcon~ios-marketing.png (53K → 6.3K, 88% reduction), icon-512.png (29K → 6.6K, 77% reduction), icon-512-maskable.png (22K → 3.5K, 84% reduction), play_store_512.png (22K → 3.5K, 84% reduction), ic_launcher.png xxxhdpi (24K → 5.8K, 76% reduction), ic_launcher_foreground.png xxxhdpi (24K → 5.4K, 78% reduction). Total bundle size reduction: ~120KB across marketing and store assets while maintaining visual quality.
 
 ### [4.0] Missing sitemap.xml for web build SEO
 - category: seo

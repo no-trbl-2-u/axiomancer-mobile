@@ -18,7 +18,7 @@
 - addressed: 2026-05-28 via commit `375c371`
 - fix: Fixed mana→focus terminology inconsistency. Skill tooltips now show "focus cost" instead of "mana cost", combat action help updated from "costs mana" to "costs focus", and debug text standardized. All user-facing tooltip terminology now aligns with MIND stat's "focus" description.
 
-### [7.5] Space heart/body/mind buttons evenly in combat modal (user-jot critique finding) 
+### [7.5] Space heart/body/mind buttons evenly in combat modal (user-jot critique finding) ✅
 - category: external-critique
 - impact: 5
 - ease: 9
@@ -27,6 +27,9 @@
 - observation: In the combat modal, heart/body/mind buttons should be spaced evenly instead of listing from the left. User spotted during testing at 2026-05-25.
 - evidence: User-jot finding in plan/CRITIQUE.md "Space heart/body/mind buttons evenly in combat modal" + playtest finding [F07] (Mind stance card clipped at right edge)
 - suggested_fix: Update combat modal CSS/styling to distribute stance buttons evenly across available width
+- issue: #218
+- addressed: 2026-05-28 via commit `341e2a9`
+- fix: Added justifyContent: 'space-between' to stance button row layout in combat modal. Buttons now distribute evenly across available width instead of being left-aligned, resolving mind stance card clipping issue.
 
 ### [6.8] Show node labels only for unvisited, available nodes (user-jot critique finding)
 - category: external-critique  

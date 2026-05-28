@@ -5,7 +5,7 @@
 
 ## Top 5 findings (scored)
 
-### [8.1] Verify all tooltip content is 100% accurate (user-jot critique finding)
+### [8.1] Verify all tooltip content is 100% accurate (user-jot critique finding) ✅
 - category: external-critique
 - impact: 9
 - ease: 9  
@@ -14,6 +14,9 @@
 - observation: The tooltips look great but need verification that all information provided is 100% accurate. User spotted during testing at 2026-05-25.
 - evidence: User-jot finding in plan/CRITIQUE.md "Verify all tooltip content is 100% accurate"
 - suggested_fix: Systematically audit all tooltip content across SELF, Inventory, Memoir, Exploration and Combat surfaces to ensure accuracy
+- issue: #217
+- addressed: 2026-05-28 via commit `375c371`
+- fix: Fixed mana→focus terminology inconsistency. Skill tooltips now show "focus cost" instead of "mana cost", combat action help updated from "costs mana" to "costs focus", and debug text standardized. All user-facing tooltip terminology now aligns with MIND stat's "focus" description.
 
 ### [7.5] Space heart/body/mind buttons evenly in combat modal (user-jot critique finding) 
 - category: external-critique

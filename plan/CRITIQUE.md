@@ -102,7 +102,7 @@
 - suggested_fix: [user has not specified — iterate to determine]
 - source: user
 
-### [MED] general — Verify all tooltip content is 100% accurate
+### [MED] general — Verify all tooltip content is 100% accurate ✅
 - pass: user-jot (commit `b12f1e9`)
 - viewport: unspecified
 - auth_state: anonymous
@@ -112,6 +112,9 @@
 - suggested_fix: [user has not specified — iterate to determine]
 - source: user
 - playtest: see PLAYTEST_REPORT.md [F08] (Explain buttons on SELF produce no visible output)
+- issue: #217
+- addressed: 2026-05-28 via commit `375c371`
+- fix: Fixed mana→focus terminology inconsistency across tooltip system. Skill tooltips, combat action help text, and debug strings now consistently use "focus" terminology matching MIND stat description rather than "mana".
 
 ### [MED] /combat — Space heart/body/mind buttons evenly in combat modal
 - pass: user-jot (commit `b12f1e9`)

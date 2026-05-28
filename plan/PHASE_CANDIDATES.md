@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-05-27 at commit 55555a5
-> Pass count: 47
+> Last pass: 2026-05-28 at commit 94998c5
+> Pass count: 48
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -2072,3 +2072,44 @@ exploration `moveToAction` migration to engine `revealAdjacent` /
 - proposed scope: 1-2 phases. Extract logical sub-components from large screens, starting with combat stance picker and inventory modal sections.
 - estimated phases: 2
 - conflicts: Combat screen changes limited by combat-surface design gate until design handoff lands
+
+### [score 8.0] Level-up modal implementation — stat allocation interface
+- proposed: 2026-05-28, expand pass 48
+- source signals:
+  - **Design handoff landed** — design/handoff-2026-05-23/project/screens/levelup.jsx completed with stat allocation interface and ASCEND button flow
+  - **CRITIQUE Pending** — "Level Up button at top of SELF screen + stat-allocation modal" waiting on design handoff
+  - **Fresh design assets** — HTML + JSX implementation ready for mobile integration
+- rationale: High-priority UX gap now unblocked by complete design deliverable. Level-up flow is core progression mechanic currently missing proper interface.
+- proposed scope: 1 phase. Integrate levelup.jsx design into mobile modal, wire stat allocation to engine, implement ASCEND flow with confirmation.
+- estimated phases: 1
+- conflicts: none
+
+### [score 5.0] Color token extraction — eliminate hex literal leakage  
+- proposed: 2026-05-28, expand pass 48
+- source signals:
+  - **Hex literal color leakage smell** — 7 hardcoded hex colors across app/ and components/ (#5a8a3a, #06050a, #3a3530, #1a1814, #16130d, #1a0a0a)
+  - **Design consistency** — Hardcoded colors bypass design token system
+- rationale: Color leakage creates maintenance debt and inconsistent theming. Extracting to tokens improves design system compliance.
+- proposed scope: 1 phase. Extract hardcoded colors to design tokens, update affected components to use token references.
+- estimated phases: 1
+- conflicts: none
+
+### [score 4.5] Presenter purity enforcement — eliminate useState bypasses
+- proposed: 2026-05-28, expand pass 48
+- source signals:
+  - **useState bypass smell** — 5 screen components using useState despite having presenter engines (Combat: 2 instances, Inventory: 4 instances, Character: 1 instance, Exploration: 1 instance)
+  - **bearings.md violation** — Direct state management violates "Presenter purity" architectural principle
+- rationale: useState usage in screen components with presenters creates inconsistent state management patterns and bypasses engine-driven architecture.
+- proposed scope: 1 phase. Migrate local useState calls to presenter engines, ensure all screen state flows through view models.
+- estimated phases: 1
+- conflicts: none
+
+### [score 3.0] Type-cast reduction sweep — improve type safety boundaries
+- proposed: 2026-05-28, expand pass 48
+- source signals:
+  - **Cast cluster smell** — 80+ `as any` and `as unknown` casts concentrated in state/ directory
+  - **Type safety degradation** — Particularly heavy in state/actions.ts, state/selectors/equipment.ts, and test boundaries
+- rationale: High cast density masks type errors and reduces maintainability. Most casts appear to work around engine/mobile type boundary issues.
+- proposed scope: 1-2 phases. Replace non-test `as any` casts with proper typed interfaces, focusing on state layer boundaries.
+- estimated phases: 2
+- conflicts: none

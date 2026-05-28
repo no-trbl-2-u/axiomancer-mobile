@@ -11,6 +11,10 @@ presenter at [`state/presenters/combat.engine.ts`](../state/presenters/combat.en
 The screen reads one frozen view-model and dispatches engine actions
 through [`state/actions.ts`](../state/actions.ts).
 
+For first-region combat comprehension, read
+[`early-combat-ux.md`](./early-combat-ux.md) before changing stance cards,
+resolve summaries, battle-log priority, enemy panels, or tutorial copy.
+
 ## Data flow
 
 ```text

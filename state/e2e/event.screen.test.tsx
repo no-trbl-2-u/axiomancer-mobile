@@ -52,7 +52,9 @@ function encounter(isBoss = false): ResolveMapEventResult {
         id: 'cairn-rot',
         name: 'Cairn-rot',
         level: 3,
+        baseStats: { heart: 2, body: 3, mind: 1 },
         health: 24,
+        maxHealth: 24,
     } as never;
     return {
         state: undefined as never,

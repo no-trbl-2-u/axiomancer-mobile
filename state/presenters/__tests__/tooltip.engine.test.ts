@@ -330,7 +330,7 @@ describe('selectTooltipContentFor', () => {
             // getCombatSkillById uppercases the name.
             expect(content?.title).toBe(first.name.toUpperCase());
             expect(content?.body).toBe(first.description);
-            expect(content?.footnote).toMatch(/^cost \d+ · stance (HEART|BODY|MIND)$/);
+            expect(content?.footnote).toMatch(/^focus cost \d+ · stance (HEART|BODY|MIND)$/);
         });
 
         it('returns null for an unknown skill id', () => {

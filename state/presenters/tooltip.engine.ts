@@ -554,7 +554,7 @@ export function selectTooltipContentFor(
         return {
             title: skill.name,
             body: skill.description,
-            footnote: `cost ${skill.manaCost} · stance ${skill.stance.toUpperCase()}`,
+            footnote: `focus cost ${skill.manaCost} · stance ${skill.stance.toUpperCase()}`,
             accent: accentForStat(skill.stance),
         };
     }

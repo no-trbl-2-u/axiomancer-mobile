@@ -37,7 +37,7 @@ export interface CombatSkill {
     category: SkillCategoryKey;
     /** Stance the skill is locked to. */
     stance: StanceKey;
-    /** Mana cost — sum of all resource pools (kept for display). */
+    /** Focus cost — sum of all resource pools (kept for display). */
     manaCost: number;
     /** Per-resource cost from the engine. */
     resourceCost: ResourceCost;

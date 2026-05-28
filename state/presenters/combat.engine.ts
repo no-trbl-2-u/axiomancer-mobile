@@ -1008,7 +1008,7 @@ function buildCombatA11y(
         ? `${enemy.name} has ${enemy.hp} of ${enemy.hpMax} health`
         : 'No enemy';
     const playerHpText = `You have ${player.hp} of ${player.hpMax} health`;
-    const playerManaText = `You have ${player.mana} of ${player.manaMax} mana`;
+    const playerManaText = `You have ${player.mana} of ${player.manaMax} focus`;
     const phaseText = phase === 'ended' 
         ? 'Combat has ended' 
         : `Combat phase: ${PHASE_LABELS[phase]}`;
@@ -1022,7 +1022,7 @@ function buildCombatA11y(
         stanceMind: 'Choose Mind stance, beats Heart, weak to Body',
         actionAttack: 'Attack with equipped weapon',
         actionDefend: 'Defend to reduce next harm',
-        actionSkill: 'Use a skill that costs mana',
+        actionSkill: 'Use a skill that costs focus',
         actionItem: 'Use an item from inventory',
         playerHp: playerHpText,
         playerMana: playerManaText,

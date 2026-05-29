@@ -242,6 +242,16 @@
 - suggested_fix: [user has not specified — iterate to determine]
 - source: user
 
+### [MED] general — Add title screen with start/new/continue/settings
+- pass: user-jot (commit `d76d284`)
+- viewport: unspecified
+- auth_state: anonymous
+- category: navigation
+- observation: we need a Title screen with click to start, then New game, continue, and settings
+- evidence: user-spotted at 2026-05-29T21:28:07Z
+- suggested_fix: [user has not specified — iterate to determine]
+- source: user
+
 ## Done
 
 ### [MED] /inventory — Satchel equipment tap should open modal directly, skip intermediate step ✅

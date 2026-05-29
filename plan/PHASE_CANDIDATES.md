@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-05-28 at commit 94998c5
-> Pass count: 48
+> Last pass: 2026-05-29 at commit 866ed3b
+> Pass count: 49
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -2112,4 +2112,32 @@ exploration `moveToAction` migration to engine `revealAdjacent` /
 - rationale: High cast density masks type errors and reduces maintainability. Most casts appear to work around engine/mobile type boundary issues.
 - proposed scope: 1-2 phases. Replace non-test `as any` casts with proper typed interfaces, focusing on state layer boundaries.
 - estimated phases: 2
+- conflicts: none
+
+### [score 4.5] Combat tab sub-component extraction — reduce file size outlier
+- proposed: 2026-05-29, expand pass 49
+- source signals:
+  - **File length outlier smell** — `app/(tabs)/combat.tsx` at 809 lines exceeds ~600 line threshold and is substantially larger than other files (next largest: 748 lines)
+- rationale: Single component handling phase management, skill selection, targeting, and resolution creates maintenance burden. Breaking into focused sub-components improves readability and follows established patterns.
+- proposed scope: 1 phase. Extract phase management, skill picker, target selection, and combat resolution into separate components while maintaining existing API.
+- estimated phases: 1
+- conflicts: none
+
+### [score 4.5] Presenter type safety improvements — reduce cast clusters
+- proposed: 2026-05-29, expand pass 49
+- source signals:
+  - **Type cast cluster smell** — 10+ `as any`/`as unknown` casts across presenter files, particularly concentrated in `combat.engine.ts` with multiple unsafe casts
+- rationale: Similar to shipped Phase 69 (store setState typed wrapper), this targeted improvement addresses type safety debt in presenter layer. Current casts mask potential runtime errors.
+- proposed scope: 1 phase. Add typed wrapper utilities for common presenter patterns, similar to Phase 69's setState wrapper approach.
+- estimated phases: 1
+- conflicts: none
+
+### [score 3.5] Combat UX design overhaul — address high-impact usability finding
+- proposed: 2026-05-29, expand pass 49
+- source signals:
+  - **High-impact audit finding** — [4.5] Combat UX unintuitive (impact 9, ease 3) with user feedback about unclear numbers and icons
+  - **Multiple playtest findings** — [F02] encounter jargon, [F04] battle log ability names, [F05] LET phase numbers, [F06] CRUCIBLE symbols
+- rationale: High-impact user feedback backed by systematic playtest findings indicates fundamental UX issues requiring design phase rather than code fixes.
+- proposed scope: Multi-phase effort starting with design phase to clarify combat iconography, terminology, and information hierarchy.
+- estimated phases: 3
 - conflicts: none

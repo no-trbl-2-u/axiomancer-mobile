@@ -1,4 +1,4 @@
-# Site audit — 2026-05-28
+# Site audit — 2026-05-29
 
 > Bias: combat-modal-audit (set via /oversight 2026-05-23, 36th
   call — multiplies combat / modal / legend scoring by ×1.5)
@@ -83,6 +83,19 @@
 - observation: Visual-acceptance check needed on Phase 72 combat-modal polish that's already shipped. Requires user-started pnpm web.
 - evidence: Filed by /ship-a-phase for design validation against design/handoff-2026-05-23/project/prototype.html
 - suggested_fix: Cannot run autonomously - requires user to start web server then invoke /playtest
+
+### [5.6] SVG icons missing accessibility labels ✅
+- category: a11y
+- impact: 8
+- ease: 7
+- next: add accessibilityRole and accessibilityLabel props to SVG components
+- source: audit
+- observation: Many SVG icons in ActionIcon.tsx, EffectGlyph.tsx, NodeMark.tsx, and tab icons lack accessibility attributes. Screen readers cannot interpret decorative/functional icons.
+- evidence: Files like components/ActionIcon.tsx have inline SVG elements with no accessibility props
+- suggested_fix: Add accessibilityRole="image" and descriptive accessibilityLabel props to all decorative SVGs, or accessibilityRole="none" for purely decorative elements
+- issue: #223
+- addressed: 2026-05-29 via commit `a19e33b`
+- fix: Added accessibilityRole="image" and descriptive accessibilityLabel props to all SVG icons across ActionIcon.tsx, EffectGlyph.tsx, NodeMark.tsx, and TabIcon components. Screen readers now receive meaningful descriptions for all decorative and functional SVG elements, improving accessibility for visually impaired users.
 
 ### [4.0] Engine MapDefinition connectivity diverges from mobile layout (needs-engine-release)
 - category: external-dependency

@@ -178,12 +178,15 @@
 - suggested fix: Move the test setup caveat to a prominent warning box in README.md before the Quick start section
 - source: browser
 
-### [MED] general — Dual agent instruction files create navigation confusion
+### [MED] general — Dual agent instruction files create navigation confusion ✅
 - pass: 17 (commit c7a1c9c)
+- issue: #222
 - viewport: desktop
 - category: navigation
 - observation: Both AGENTS.md and agents.md exist with overlapping content but different purposes, confusing new maintainers about which is authoritative
 - evidence: AGENTS.md is pre-nexus orientation, agents.md is nexus rule book
+- addressed: 2026-05-29 via commit `b6d81ef`
+- fix: Added clear disambiguation notice at the top of AGENTS.md directing maintainers to agents.md for current autonomous loop instructions. New maintainers now have clear guidance about which file is authoritative for nexus operations.
 - suggested fix: Add clear disambiguation notice in AGENTS.md header directing to agents.md for current instructions
 - source: browser
 

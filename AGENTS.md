@@ -1,5 +1,7 @@
 # AGENTS.md
 
+> **Note:** This is the pre-nexus orientation file. For current autonomous loop instructions, see [`agents.md`](./agents.md) (the nexus rule book).
+
 ## Cursor Cloud / Claude Code specific instructions
 
 ### Project overview

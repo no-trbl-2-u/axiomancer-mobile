@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-05-26 at commit bcc9d1f
-> Pass count: 45
+> Last pass: 2026-05-29 at commit 6ae5757
+> Pass count: 46
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -9,6 +9,62 @@
 > `/oversight`. See `skills/expand.md` for the contract.
 
 ## Pending
+
+### [score 5.5] `/combat` route consumes engine encounter store — drop the dev fixture (Hermes playtest F03)
+
+- proposed: 2026-05-29, expand pass 46
+- source signals:
+  - **Hermes playtest [F03] — encounter-to-combat continuity mismatch (HIGH severity).** `plan/PLAYTEST_REPORT.md`: WILDS encounter showed `TIDEPOOL CRAB` (level 1, 20 HP); direct `/combat` route showed `CARRION HIEROPHANT` (165/165 Vitae). Same store, two different enemies. The `/combat` route is reading a dev fixture instead of `state.event.pending`.
+  - **Smell §4 I — untouched route divergence.** The `/combat` direct route appears to be a dev affordance that survived past its usefulness; once Phase 92 lands a proper encounter shell, `/combat` should either consume the engine store or be DEV-only.
+- rationale: Direct `/combat` route is a fixture trap. Today it's reachable in production and shows a fake enemy. Players hitting it via deep-link or browser-back from combat see the wrong fight; QA agents (Kid playtest) cannot use it as a reliable inspection lens. Either wire `/combat` to read `state.event.pending` like the encounter modal does, or gate behind `__DEV__` and document the fixture in `docs/early-combat-ux.md`.
+- proposed scope: 1 phase, 1 tick. Two viable shapes — (a) thread engine store through `/combat` (presenter passes the active encounter VM; route renders only when an active encounter exists, otherwise navigates back to WILDS) OR (b) gate the route behind `__DEV__` with a banner-bar that names it as a fixture. /oversight picks.
+- estimated phases: 1
+- conflicts: none
+
+### [score 5.0] Explanation buttons render readable tooltip content — SELF + MEMOIR (Hermes playtest F04)
+
+- proposed: 2026-05-29, expand pass 46
+- source signals:
+  - **Hermes playtest [F04] — explanation buttons do not visibly teach (MED severity).** `plan/PLAYTEST_REPORT.md`: tapping `Explain HEART stat` (SELF) and `Explain moral alignment` (MEMOIR) produces overlay/focus artifacts in snapshots but no readable content.
+  - **CRITIQUE.md [MED] /self "Verify all tooltip content is 100% accurate"** — overlapping signal; user filed a tooltip-content concern that the playtest now corroborates is *empty*, not just inaccurate.
+  - **AUDIT.md [4.8] Missing test coverage for TooltipProvider component** + **[4.8] TapTooltip tests** — same surface; tests would catch the empty-content regression.
+- rationale: The tooltip primitive (Phase 74) shipped, the per-surface walkthrough (Phases 75/80a/80b/80c) shipped, but the playtest evidence says at least HEART-stat + moral-alignment tooltips are mounting empty. Either the content map is missing entries for these IDs, or the portal layer isn't rendering body text on those surfaces. Audit + fix + a hermetic test per tooltip ID.
+- proposed scope: 1 phase, 1–2 ticks. Tick A: enumerate every `TapTooltip target=...` instance in `app/` + `components/`, cross-reference against the content registry, list missing entries. Tick B: ship missing copy + hermetic tests that fail-loud when a target has no content.
+- estimated phases: 1
+- conflicts: none
+
+### [score 4.5] WILDS `Travel to <node>` card behavior parity with map-node taps (Hermes playtest F01)
+
+- proposed: 2026-05-29, expand pass 46
+- source signals:
+  - **Hermes playtest [F01] — WILDS travel card appears dead (HIGH severity).** `plan/PLAYTEST_REPORT.md`: `Travel to Crossing, II leagues away` card produced no state change on tap; the `Crossing, open` map-node tap moved the player. Two affordances, two outcomes, one ground-truth — the player learns to distrust the explicit CTA.
+  - **CRITIQUE.md [MED] /exploration "Only show node labels for unvisited, available nodes"** — overlapping surface; an unrelated label-visibility concern but same view layer.
+- rationale: Both the explorer card and the map node should call the same `moveToNode` action handler. Today they don't, or the card binding is stale. Concrete handler audit + fix + hermetic e2e ("card tap and node tap produce identical state mutations").
+- proposed scope: 1 phase, 1 tick. Audit `app/(tabs)/exploration/index.tsx` (and any extracted `TravelCard` / `StepCard` sub-components); ensure both surfaces dispatch the same action; add a hermetic case in `state/e2e/exploration.engine.test.ts` pinning the parity.
+- estimated phases: 1
+- conflicts: none
+
+### [score 4.0] SATCHEL item tap should open inspect surface, not return to WILDS (Hermes playtest F05)
+
+- proposed: 2026-05-29, expand pass 46
+- source signals:
+  - **Hermes playtest [F05] — SATCHEL Healing Potion tap unexpectedly returns to WILDS (MED severity).** `plan/PLAYTEST_REPORT.md`: tapping `Healing Potion` in SATCHEL navigated the player back to the WILDS map view instead of opening an item-detail / use modal.
+- rationale: Direct routing regression. SATCHEL is now a 706-line file that already underwent equipment-tap expansion fixes (Phase 14 + commit `43fd331` "equipment tap opens modal directly, skips expansion"); the consumable-tap path is broken in a different way (it pushes a route instead of mounting an inline modal). Fix and pin with a hermetic test.
+- proposed scope: 1 phase, 1 tick. Audit the consumable-tap handler in `app/(tabs)/inventory/index.tsx`; remove the WILDS-routing side effect; route to the existing item modal or a new ConsumableModal if the affordance doesn't exist yet. +1 hermetic test pinning "consumable tap does not change route".
+- estimated phases: 1
+- conflicts: none
+
+### [score 4.0] Retreat copy + mechanic alignment audit — flee semantics consistency (Hermes playtest F06)
+
+- proposed: 2026-05-29, expand pass 46
+- source signals:
+  - **Hermes playtest [F06] — retreat copy mechanically inconsistent (MED severity).** `plan/PLAYTEST_REPORT.md`: pre-combat encounter modal says `forfeit the path · -ii morale`; in-combat action phase says `flee like a craven (luck save)`. Two different cost surfaces — morale vs luck-save — for one player verb.
+  - **Phase 95 just promoted (FLEE feedback + morale UI)** — Phase 95 will fix the *no feedback* part of flee but doesn't address whether the copy is *truthful*. Adjacent surface, distinct fix.
+  - **`docs/early-combat-ux.md`** ships a "do not ask for stronger numbers until rules are legible" doctrine; flee semantics are a doctrine target.
+- rationale: Two truths can't both be right. Either the engine's flee resolves with a luck save (in which case the modal lies about morale cost), or it deducts morale (in which case the combat-phase copy is the lie). Audit the engine's flee handler in `axiomancer-mechanics`, write down truth, align both surfaces. Bundles with Phase 95 if the user opts to.
+- proposed scope: 1 phase, 1 tick. Engine-truth audit + copy alignment + hermetic test pinning the resolved-truth so the next engine bump doesn't drift again.
+- estimated phases: 1
+- conflicts: bundles cleanly with Phase 95 (FLEE feedback) — the user may want to merge.
 
 ### [score 3.0] Nested button accessibility fix in stance picker [PROMOTED → Phase 90 via /oversight 41st call]
 - proposed: 2026-05-25, expand pass 43

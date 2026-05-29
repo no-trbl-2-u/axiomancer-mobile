@@ -41,34 +41,34 @@ function TabIcon({ kind, color, size }: { kind: string; color: string; size: num
   switch (kind) {
     case 'eye':
       return (
-        <Svg viewBox="0 0 32 32" width={size} height={size} fill="none">
+        <Svg viewBox="0 0 32 32" width={size} height={size} fill="none" accessibilityRole="image" accessibilityLabel="Exploration tab">
           <Path d="M2 16 C 8 6 24 6 30 16 C 24 26 8 26 2 16 Z" fill={color} fillOpacity={0.1} stroke={color} strokeWidth={2} />
           <Circle cx={16} cy={16} r={5} fill={color} />
         </Svg>
       );
     case 'sword':
       return (
-        <Svg viewBox="0 0 32 32" width={size} height={size} fill="none">
+        <Svg viewBox="0 0 32 32" width={size} height={size} fill="none" accessibilityRole="image" accessibilityLabel="Combat tab">
           <Path d="M22 4 L28 4 L28 10 L13 25 L10 28 L4 28 L4 22 L7 19 Z" fill={color} fillOpacity={0.15} stroke={color} strokeWidth={2} strokeLinejoin="round" />
         </Svg>
       );
     case 'crown':
       return (
-        <Svg viewBox="0 0 32 32" width={size} height={size} fill="none">
+        <Svg viewBox="0 0 32 32" width={size} height={size} fill="none" accessibilityRole="image" accessibilityLabel="Character tab">
           <Path d="M3 10 L8 22 H24 L29 10 L23 14 L16 6 L9 14 Z" fill={color} fillOpacity={0.18} stroke={color} strokeWidth={2} strokeLinejoin="round" />
           <Path d="M3 26 H29" stroke={color} strokeWidth={2} />
         </Svg>
       );
     case 'bag':
       return (
-        <Svg viewBox="0 0 32 32" width={size} height={size} fill="none">
+        <Svg viewBox="0 0 32 32" width={size} height={size} fill="none" accessibilityRole="image" accessibilityLabel="Inventory tab">
           <Path d="M8 10 H24 L26 28 H6 Z" fill={color} fillOpacity={0.15} stroke={color} strokeWidth={2} strokeLinejoin="round" />
           <Path d="M11 10 V7 A5 5 0 0 1 21 7 V10" stroke={color} strokeWidth={2} />
         </Svg>
       );
     case 'scroll':
       return (
-        <Svg viewBox="0 0 32 32" width={size} height={size} fill="none">
+        <Svg viewBox="0 0 32 32" width={size} height={size} fill="none" accessibilityRole="image" accessibilityLabel="Event tab">
           <Path d="M6 6 H26 V22 C26 25 24 27 21 27 H8 C5 27 3 25 3 22 V9 C3 7 5 5 6 6 Z" fill={color} fillOpacity={0.12} stroke={color} strokeWidth={2} strokeLinejoin="round" />
           <Path d="M10 12 H22 M 10 16 H22 M 10 20 H18" stroke={color} strokeWidth={2} />
         </Svg>

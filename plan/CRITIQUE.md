@@ -232,6 +232,16 @@
 - suggested_fix: Tooltip on disabled ITEM button. Phase candidate filed.
 - source: deep-playtest [F12]
 
+### [HIGH] /march — Fix issue with only one combat encounter triggering
+- pass: user-jot (commit `d875cea`)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: Fix issue with only one combat encounter triggering
+- evidence: user-spotted at 2026-05-29T17:55:46Z
+- suggested_fix: [user has not specified — iterate to determine]
+- source: user
+
 ## Done
 
 ### [MED] /inventory — Satchel equipment tap should open modal directly, skip intermediate step ✅

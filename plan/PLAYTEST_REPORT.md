@@ -32,7 +32,7 @@
 - Combat modal Item action is visually broken: it renders as a tall vertical column and distorts the modal instead of matching the other action buttons.
 - Remaining map nodes produced no useful interaction during the manual playthrough; after the viable early path, the map felt inert.
 - Dev Menu evidence confirms the app already has useful test levers for future canonical lanes: Seed, Populate all items, mock Combat, Map reset, Chaos/per-node types, Apprentice/Wanderer/Sage presets, XP grant/level-up, Mana drain/fill, Currency grant/broke, and Alignment axis shifts.
-- SELF layout evidence shows narrow-card wrapping defects: Saves & Tests labels split awkwardly (`He / art / Save`) and Worn & Wielded equipment labels break words vertically (`Lea / ther / Cap`, `Clo / th / Wra / p`, `Iro / n / Bla / de`).
+- SELF layout evidence shows narrow-card wrapping defects: Saves & Tests labels split awkwardly (`He / art / Save`) and Worn & Wielded equipment labels break words vertically (`Lea / ther / Cap`, `Clo / th / Wra / p`, `Iro / n / Bla / de`). The SELF tab should not require scrolling; it should fit as a single-screen character dashboard.
 
 ### Screenshot evidence
 

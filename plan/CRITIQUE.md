@@ -282,6 +282,16 @@
 - suggested_fix: widen or reflow SELF stat/equipment cards, prevent intra-word wrapping, and prefer abbreviation/ellipsis only where the full label is available elsewhere.
 - source: user
 
+### [HIGH] /self — SELF tab should fit without scrolling
+- pass: user-playthrough (commit `5437dda`)
+- viewport: mobile screenshot
+- auth_state: anonymous
+- category: visual
+- observation: The SELF tab should not need to scroll; everything should fit on the screen.
+- evidence: user playthrough note at 2026-05-29T22:00:58Z; current SELF screenshots require vertical scrolling to reach the Dev Menu and show dense sections below the fold.
+- suggested_fix: redesign SELF as a single-screen dashboard: compress or tab/accordion secondary sections, prioritize core stats/equipment/status, and keep Dev Menu out of the normal player layout or behind a compact developer affordance.
+- source: user
+
 ## Done
 
 ### [MED] /inventory — Satchel equipment tap should open modal directly, skip intermediate step ✅

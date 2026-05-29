@@ -119,7 +119,7 @@
 - suggested_fix: [user has not specified — iterate to determine]
 - source: user
 
-### [HIGH] /combat — Combat UX unintuitive, numbers and icons lack meaning, needs design overhaul
+### [HIGH] /combat — Combat UX unintuitive, numbers and icons lack meaning, needs design overhaul [PROMOTED → Phase 93 via /oversight 42nd call 2026-05-29]
 - pass: user-jot (commit `dde93f4`)
 - viewport: unspecified
 - auth_state: anonymous
@@ -187,7 +187,7 @@
 - suggested fix: Add 'Target Architecture' header to diagram section and note current migration state
 - source: browser
 
-### [HIGH] general — No title screen or onboarding for new players
+### [HIGH] general — No title screen or onboarding for new players [PROMOTED → Phase 94 via /oversight 42nd call 2026-05-29]
 - pass: deep-playtest (2026-05-25, commit d560e8c)
 - viewport: mobile (414x896)
 - auth_state: anonymous
@@ -196,7 +196,7 @@
 - suggested_fix: Title card before first WILDS load, setting tone + minimal vocabulary. Design-routed to DESIGN_SPEC.md.
 - source: deep-playtest [F01]
 
-### [HIGH] /encounter — FLEE gives no feedback, morale has no UI surface
+### [HIGH] /encounter — FLEE gives no feedback, morale has no UI surface [PROMOTED → Phase 95 via /oversight 42nd call 2026-05-29]
 - pass: deep-playtest (2026-05-25, commit d560e8c)
 - viewport: mobile (414x896)
 - auth_state: anonymous
@@ -205,7 +205,7 @@
 - suggested_fix: Flee narrative beat (prose style) + morale bar on exploration card or SELF tab. Both-routed: code (narrative) + design (morale bar in DESIGN_SPEC.md).
 - source: deep-playtest [F03]
 
-### [MED] /death — Death screen LEDGER shows wrong encounter count + internal node ID
+### [MED] /death — Death screen LEDGER shows wrong encounter count + internal node ID [PROMOTED → Phase 96 via /oversight 42nd call 2026-05-29]
 - pass: deep-playtest (2026-05-25, commit d560e8c)
 - viewport: mobile (414x896)
 - auth_state: anonymous

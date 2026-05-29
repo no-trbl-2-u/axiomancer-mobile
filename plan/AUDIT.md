@@ -3,6 +3,19 @@
 > Latest findings from `/iterate audit`. Rewritten on each
 > audit pass. The Pending list at the bottom queues `/iterate`.
 
+> **Multi-screen-integration bias (set via /oversight 2026-05-29,
+> 42nd call).** `/iterate` ships multi-screen Jest integration
+> tests against the full provider tree (1–3 per tick) until the
+> most-important flows are pinned. Resolves Option B of the
+> NEEDS_HUMAN_ATTENTION testing-gap row. Target flows: encounter
+> node → FIGHT → modal-stays-mounted; stance pick advances
+> PhaseStack; ATTACK resolves round and appends a log entry;
+> tab-bar `display: none` while encounter modal active.
+> Companion to Phase 97 (Playwright flow scripts, Option A) —
+> overlapping coverage is fine; Jest catches logical-tree
+> regressions cheaply, Playwright catches real-runtime ones.
+> Closes once a multi-screen suite (≥ 3 flows) lands.
+
 > **Playtest directive CLOSED 2026-05-24 — playtest fired against
 > http://localhost:8082.** User started `pnpm web` and `/playtest`
 > ran the canonical walk (Hovel → Crossing → Hanged Wood →

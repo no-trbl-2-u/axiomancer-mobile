@@ -14,7 +14,26 @@
 
 ## Open
 
-### [tooling] Bridge the hermetic-e2e testing gap
+_(Empty.)_
+
+## Done
+
+### [tooling] Bridge the hermetic-e2e testing gap [RESOLVED 2026-05-29 via /oversight 42nd call — Option A + Option B]
+
+**Resolution:** User picked **both** Option A and Option B.
+- Option A → promoted as **Phase 97** (Playwright multi-screen flow
+  scripts under `scripts/flows/`). See
+  `plan/steps/01_build_plan.md` Phase 97 row.
+- Option B → set as a standing iterate bias in `plan/AUDIT.md`:
+  `/iterate` ships multi-screen Jest integration tests (1–3 per
+  tick) against the full provider tree until the most-important
+  flows are pinned. No phase needed.
+
+Original brief preserved below for historical context.
+
+---
+
+### [tooling] Bridge the hermetic-e2e testing gap (original, 2026-05-21)
 
 **Filed:** 2026-05-21 (during Phase 63 modal-encounter sweep)
 
@@ -117,7 +136,3 @@ the project scale justifies it.
 above (or explicitly defers). Resolution moves the row to
 `## Done` with the date + the choice made + the resulting
 phase / iterate stream.
-
-## Done
-
-_(Empty.)_

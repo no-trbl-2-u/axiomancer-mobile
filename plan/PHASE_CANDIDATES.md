@@ -690,14 +690,14 @@
 - severity: high
 - score: 2.5 base + 1.5 (user-confirmed, high severity) + 1.0 (cheap, presenter-only change) + 0.5 (playtest-source) = 5.5
 
-### [score 5.0] Flee narrative feedback + morale surface (playtest 2026-05-25 [F03])
+### [score 5.0] Flee narrative feedback + morale surface (playtest 2026-05-25 [F03]) [PROMOTED → Phase 95 via /oversight 42nd call 2026-05-29]
 - source: deep-playtest
 - finding: [F03] -- fleeing an encounter gives zero feedback; morale cost is invisible (no UI surface anywhere)
 - approach: code side -- add a narrative beat after fleeing (prose style matching death/victory text) + expose morale value on exploration card or SELF tab. Design side -- morale bar visual in DESIGN_SPEC.md.
 - severity: high
 - score: 2.5 base + 1.5 (user-confirmed, high severity) + 0.5 (playtest-source) + 0.5 (feedback-missing, directly impacts player trust) = 5.0
 
-### [score 4.5] Death screen presenter fixes (playtest 2026-05-25 [F09, F10])
+### [score 4.5] Death screen presenter fixes (playtest 2026-05-25 [F09, F10]) [PROMOTED → Phase 96 via /oversight 42nd call 2026-05-29]
 - source: deep-playtest
 - finding: [F09] "encounters survived: i" when the player died in that encounter + [F10] "deepest node: fv-14" exposes internal ID instead of "Tide Pool"
 - approach: fix encounter-survived counter logic (dying in encounter = 0 survived) + resolve node ID to human-readable name via map layout lookup. Both are presenter changes.
@@ -1127,7 +1127,7 @@ promoted as Phase 61 parent + 61a–61f. See `01_build_plan.md`
 "DEV-mode coverage expansion" section.
 </details>
 
-### [score 8.5] Combat UI/UX Design Overhaul Phase
+### [score 8.5] Combat UI/UX Design Overhaul Phase [PROMOTED → Phase 93 via /oversight 42nd call 2026-05-29]
 - proposed: 2026-05-25, expand pass 44
 - source signals:
   - **CRITIQUE.md [HIGH] combat UX unintuitive.** User feedback: "I see numbers and icons, but I don't know what they mean. We need a design overhaul." Confirmed by playtest findings F02-F06 (encounter jargon, battle log ability names, LET phase numbers, CRUCIBLE symbols).

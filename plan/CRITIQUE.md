@@ -258,8 +258,28 @@
 - auth_state: anonymous
 - category: visual
 - observation: The Item option in the combat modal is tall, gross, and breaks the entire modal layout instead of matching Attack/Defend/Skill.
-- evidence: user screenshot received 2026-05-29T21:55:12Z
+- evidence: user screenshot received 2026-05-29T21:55:12Z; see `test-artifacts/reference-screenshots/2026-05-29-manual-playthrough/05-combat-actions-item-broken.jpg`
 - suggested_fix: render Item with the same action-card dimensions/variant as the other combat actions, disabled or hidden when no usable items exist.
+- source: user
+
+### [HIGH] /wilds — Remaining map nodes do nothing
+- pass: user-playthrough (commit `651c9eb`)
+- viewport: mobile screenshot
+- auth_state: anonymous
+- category: navigation
+- observation: The remaining map nodes do nothing after the first playthrough path; exploration feels inert once the available early interactions are exhausted.
+- evidence: user playthrough note at 2026-05-29T21:59:55Z; see `test-artifacts/reference-screenshots/2026-05-29-manual-playthrough/03-wilds-map.jpg`
+- suggested_fix: audit map-node enabled/disabled state, per-node event kind routing, completion flags, and feedback for unavailable nodes; nodes should either act or explain why they cannot.
+- source: user
+
+### [MED] /self — SELF narrow cards wrap labels into unreadable columns
+- pass: user-playthrough (commit `651c9eb`)
+- viewport: mobile screenshot
+- auth_state: anonymous
+- category: visual
+- observation: Saves/tests and equipment cards wrap words vertically, e.g. Heart Save splits as `He / art / Save` and equipment names split into fragments like `Lea / ther / Cap`.
+- evidence: user screenshot received 2026-05-29T21:59:55Z; see `test-artifacts/reference-screenshots/2026-05-29-manual-playthrough/09-self-layout-dev-menu-closed.jpg`
+- suggested_fix: widen or reflow SELF stat/equipment cards, prevent intra-word wrapping, and prefer abbreviation/ellipsis only where the full label is available elsewhere.
 - source: user
 
 ## Done

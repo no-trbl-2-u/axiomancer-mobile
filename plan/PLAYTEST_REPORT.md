@@ -30,6 +30,24 @@
 - Skills should not fail because they are not "equipped." Once learned, a skill should be available to the player; combat should show only skills usable at that moment.
 - Token resources used to cast skills are not accumulating, so skill-casting evidence is currently invalid.
 - Combat modal Item action is visually broken: it renders as a tall vertical column and distorts the modal instead of matching the other action buttons.
+- Remaining map nodes produced no useful interaction during the manual playthrough; after the viable early path, the map felt inert.
+- Dev Menu evidence confirms the app already has useful test levers for future canonical lanes: Seed, Populate all items, mock Combat, Map reset, Chaos/per-node types, Apprentice/Wanderer/Sage presets, XP grant/level-up, Mana drain/fill, Currency grant/broke, and Alignment axis shifts.
+- SELF layout evidence shows narrow-card wrapping defects: Saves & Tests labels split awkwardly (`He / art / Save`) and Worn & Wielded equipment labels break words vertically (`Lea / ther / Cap`, `Clo / th / Wra / p`, `Iro / n / Bla / de`).
+
+### Screenshot evidence
+
+Stored under `test-artifacts/reference-screenshots/2026-05-29-manual-playthrough/`:
+
+1. `01-combat-item-layout-broken.jpg`
+2. `02-title-or-opening.jpg`
+3. `03-wilds-map.jpg`
+4. `04-encounter-or-combat-prelude.jpg`
+5. `05-combat-actions-item-broken.jpg`
+6. `06-combat-resolution-difficulty.jpg`
+7. `07-self-levelup-state.jpg`
+8. `08-levelup-modal-preview.jpg`
+9. `09-self-layout-dev-menu-closed.jpg`
+10. `10-dev-menu-open.jpg`
 
 ## Session narrative
 

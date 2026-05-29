@@ -19,6 +19,18 @@
 - Console showed no runtime errors, only three deprecation warnings: `textShadow*`, `shadow*`, and `props.pointerEvents`.
 - The mechanics harness corroborates a separate balance concern: `late-game-coastal-tyrant` has 24% timeout rate; pure friendship policy built counter 36 but never resolved because the HP gate remained unmet.
 
+## Manual T playthrough addendum — 2026-05-29
+
+- Combat recurrence is victory-path-specific: losing the fight and restarting allows another fight to trigger, but both friendship victory and regular victory suppress later combat encounters.
+- The first-playthrough difficulty is far too punishing. Current opening evidence includes a level 1 player facing a level 2 Wet Hound with 60 HP, and combat output capable of dropping the player to 0/10 Vitae in one exchange.
+- The game has many mechanics but lacks an ordered progression ladder. Level 1 starts at 5/5/5 stats, Dev Menu level-ups are available, but enemies scaling with the player makes the curve feel rough rather than teachable.
+- Canonical test lanes requested:
+  - Start-game lane: level 1 player against easy enemies, for onboarding and early balance.
+  - Endgame lane: max level, max stats, all items and all skills unlocked, for late-system coverage.
+- Skills should not fail because they are not "equipped." Once learned, a skill should be available to the player; combat should show only skills usable at that moment.
+- Token resources used to cast skills are not accumulating, so skill-casting evidence is currently invalid.
+- Combat modal Item action is visually broken: it renders as a tall vertical column and distorts the modal instead of matching the other action buttons.
+
 ## Session narrative
 
 The Kid entered the WILDS with no ceremony and saw a clear first shape: Fishing Village, level 1 pilgrim, 10/10 HP, twenty-five nodes, twenty-two sealed, and open routes to Crossing and Dock. The map had atmosphere and the tab shell had intent. Yet the first plainly worded travel affordance did not move him. The smaller node did. That is a bad lesson to teach a new player: the obvious thing is false, the hidden thing is true.

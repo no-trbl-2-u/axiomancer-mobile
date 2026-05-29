@@ -252,6 +252,16 @@
 - suggested_fix: [user has not specified — iterate to determine]
 - source: user
 
+### [HIGH] /combat — Item action button breaks combat modal layout
+- pass: user-playthrough (commit `f3e8dfa`)
+- viewport: mobile screenshot
+- auth_state: anonymous
+- category: visual
+- observation: The Item option in the combat modal is tall, gross, and breaks the entire modal layout instead of matching Attack/Defend/Skill.
+- evidence: user screenshot received 2026-05-29T21:55:12Z
+- suggested_fix: render Item with the same action-card dimensions/variant as the other combat actions, disabled or hidden when no usable items exist.
+- source: user
+
 ## Done
 
 ### [MED] /inventory — Satchel equipment tap should open modal directly, skip intermediate step ✅

@@ -54,6 +54,8 @@ commit that ships the phase.
 
 **Next up (autonomous loop's queue):**
 
+- [ ] Phase 92 — Temporary encounter-shell modal for non-combat Event types. User-direct promotion on 2026-05-29: create a minimal modal skeleton for Event encounters aside from combat so traversal/playtest evidence sees a real shell instead of an absence. This is scaffolding only; final per-type minigames remain out of scope. See `plan/phases/phase_92_temporary_encounter_shell_modal.md` and `docs/temporary-encounter-shells.md`.
+
 - [x] Phase 1 — Adopt nexus methodology. Shipped in commit
       `a703908` ("chore: adopt nexus methodology"); closed out
       in this commit.

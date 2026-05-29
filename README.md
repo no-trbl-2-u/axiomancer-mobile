@@ -176,6 +176,8 @@ assisted development. Pick up the loop here:
   e2e standard. Every implementation must land with at least one.
 - **Touching combat UX?** [`docs/early-combat-ux.md`](./docs/early-combat-ux.md)
   — Tobin's first-region readability doctrine.
+- **Touching non-combat Event encounter shells?** [`docs/temporary-encounter-shells.md`](./docs/temporary-encounter-shells.md)
+  — temporary scaffolding doctrine until per-type Event minigames ship.
 - **Generating or judging art?** [`docs/art-direction.md`](./docs/art-direction.md),
   [`docs/asset-formats.md`](./docs/asset-formats.md), and
   [`SVG_ASSET_SPEC.md`](./SVG_ASSET_SPEC.md) — Toadvine's visual doctrine,

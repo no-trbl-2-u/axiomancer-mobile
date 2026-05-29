@@ -116,6 +116,13 @@ Open `plan/steps/01_build_plan.md`. If any `[ ]` row in the
 - Execute its procedure end-to-end.
 - Return.
 
+User-direct phase note: Phase 92 (`Temporary encounter-shell modal for
+non-combat Event types`) is valid delivery work, not `/expand` fodder.
+When it is the first pending row, ship it before further critique/iterate
+work. Its shells are scaffolding only; read
+`docs/temporary-encounter-shells.md` and do not design final Event-type
+minigames inside that phase.
+
 #### 3b. Pending data?
 
 Open `data/BACKLOG.md`. If any `[ ]` row exists (and project

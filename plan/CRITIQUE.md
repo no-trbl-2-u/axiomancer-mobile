@@ -62,6 +62,56 @@
      README test-promise ✅, README arch diagram → bumped the
      existing pass-17 row). 4 new findings filed below. -->
 
+### [HIGH] /combat — Combat cannot be re-triggered after a victory (only after a loss)
+- pass: user-jot (commit ff2b8ae)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: Combat bug spotted in manual playtest: (1) Lose the fight and restart — you CAN trigger a new fight. (2) Friendship victory — you CANNOT trigger another combat encounter. (3) Regular victory — you still CANNOT trigger another combat encounter. So the encounter loop only re-arms on defeat, not on either victory path.
+- evidence: user-spotted at 2026-05-30T13:57:17Z (manual playtest)
+- suggested_fix: [user has not specified — iterate to determine] likely the node/encounter consumed-state is not reset (or is reset only on defeat) after friendship/regular victory; check resolveCurrentMapEvent / markNodeConsumed + combat-end handling.
+- source: user
+
+### [HIGH] /combat — Token resource system (skill-cast currency) never accumulates
+- pass: user-jot (commit ff2b8ae)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: The token resource system (what's used to cast skills) is not working at all — tokens are not accumulating whatsoever. Without them, skills cannot be cast.
+- evidence: user-spotted at 2026-05-30T13:57:17Z (manual playtest)
+- suggested_fix: [user has not specified — iterate to determine] verify the engine combatResources accrual per round is read/propagated to the mobile combat presenter (state/presenters/combat.engine.ts) rather than displayed as a static value; may be an engine vs mobile boundary issue.
+- source: user
+
+### [HIGH] /combat — Learned skills blocked as "not equipped"; combat should show only currently-usable skills
+- pass: user-jot (commit ff2b8ae)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: Skills are failing because they are not "equipped." Intended behavior: once a skill is learned it should be available, and in combat only the skills that can actually be used at that moment should be shown.
+- evidence: user-spotted at 2026-05-30T13:57:17Z (manual playtest)
+- suggested_fix: [user has not specified — iterate to determine] drop the equipped-gate for learned skills; filter the in-combat skill list to those castable right now (affordable tokens + valid stance/target). Relates to Phase 82a equippedSkills filter — may need a product re-decision.
+- source: user
+
+### [MED] /combat — Difficulty too hard; enemies scale with the player, no progression order
+- pass: user-jot (commit ff2b8ae)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: The game's difficulty is WAY too hard, and the mechanics have no order. Start at level 1 with 5 in each stat; even using the Dev Menu to level up manually, enemies just level up with the user. User likes the difficulty scaling in principle but it's rough — needs a real start-to-endgame progression curve, not flat rubber-banding.
+- evidence: user-spotted at 2026-05-30T13:57:17Z (manual playtest)
+- suggested_fix: [user has not specified — iterate to determine] likely an engine-side difficulty/scaling concern (enemy level derivation); mobile may only surface it. Needs a balance pass and probably a design/spec decision before code.
+- source: user
+
+### [MED] /dev — Add two seeded test playthroughs (level-1-easy + max-level endgame) to Dev Menu
+- pass: user-jot (commit ff2b8ae)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: Testing strategy request — provide two reproducible playthroughs to test the game across its range: (a) a fresh level-1 run against easy enemies (start-of-game testing), and (b) a max-level run with max stats and all items + skills unlocked (endgame testing). Today everything starts at level 1 / 5-each with enemies that scale to the player, so neither extreme is easy to exercise.
+- evidence: user-spotted at 2026-05-30T13:57:17Z (manual playtest)
+- suggested_fix: [user has not specified — iterate to determine] add two Dev Menu seed presets ("start seed" and "endgame seed") that initialize the engine state to those two fixtures; pair with the difficulty finding above.
+- source: user
+
 ### [HIGH] /plan/bearings.md — Hard rule 10 says verify gate is RED and "the loop CANNOT autonomously commit" — stale, blocks/misleads
 - pass: 18 (commit fd525e3)
 - viewport: n/a (repo-proxy)

@@ -1,7 +1,9 @@
 # Site audit — 2026-05-29
 
-> Bias: combat-modal-audit (set via /oversight 2026-05-23, 36th
-  call — multiplies combat / modal / legend scoring by ×1.5)
+> Bias: none (cleared via /oversight 2026-05-30 — the
+  combat-modal-audit bias set 2026-05-23 is retired now that
+  Phases 80/85/90/91/95 have shipped; /iterate scores balanced
+  again).
 
 ## Top 5 findings (scored)
 

@@ -1823,6 +1823,22 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       source: F12.
       Shipped `d198039`.
 
+- [ ] Phase 96 — Combat UX legibility overhaul (design-first).
+      Promoted via `/oversight` 2026-05-30 (43rd call) from
+      PHASE_CANDIDATES `[score 3.5]` (the highest-impact open
+      audit lever: [4.5] Combat UX unintuitive, impact 9 /
+      ease 3). Lifts the combat-surface design gate for this
+      track. Tick A is a DESIGN pass — no shipped-code edits:
+      produce a combat-UX design brief clarifying iconography,
+      terminology, and information hierarchy for the unclear
+      numbers / icons players flagged. Source findings: AUDIT
+      [4.5] + playtests [F02] encounter jargon, [F04] battle-log
+      ability names, [F05] LET phase numbers, [F06] CRUCIBLE
+      symbols. Estimated 3 sub-phases (96a design → 96b/96c
+      implementation); split 96b/96c out once the design brief
+      lands. Code work is gated on the design brief — do not
+      ship combat-surface UI changes ahead of it.
+
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped
       2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —
       phase-aware top + bottom `SEALED` chain bars (`SEALED · AT

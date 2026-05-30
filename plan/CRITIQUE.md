@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-05-25 at commit c7a1c9c
-> Pass count: 17
+> Last pass: 2026-05-30 at commit fd525e3
+> Pass count: 18
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -53,6 +53,54 @@
 
 ## Pending
 
+<!-- Pass 18 (2026-05-30, commit fd525e3): repo-proxy pass —
+     Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
+     critique reads docs/specs/artifacts as the "fresh maintainer"
+     proxy. Reader walked README, AGENTS.md, docs/testing*.md,
+     docs/combat.md, plan/bearings.md, specs/00. 3 of its 8
+     findings were dropped as dup/addressed (dual-agent-files ✅,
+     README test-promise ✅, README arch diagram → bumped the
+     existing pass-17 row). 4 new findings filed below. -->
+
+### [HIGH] /plan/bearings.md — Hard rule 10 says verify gate is RED and "the loop CANNOT autonomously commit" — stale, blocks/misleads
+- pass: 18 (commit fd525e3)
+- viewport: n/a (repo-proxy)
+- auth_state: anonymous
+- category: drift
+- observation: bearings.md Hard rule 10 declares the verify gate "currently RED on a pre-existing typecheck failure" from an `axiomancer-mechanics` `Consumable.effect → effectId` rename, and concludes "Until Phase 2 (engine-API-drift fix) ships the migration, the loop CANNOT autonomously commit — manual `/ship-a-phase` only, at intervention spectrum level 0." This is the single most damaging stale claim in the orientation doc: Phase 2 shipped long ago, the engine is now pinned 0.11.0, and the loop has autonomously committed 90+ phases since with verify green. A fresh maintainer (or the loop reading its own bearings) is told it must not commit.
+- evidence: plan/bearings.md:269-278 "10. **The verify gate is currently RED** ... the loop CANNOT autonomously commit — manual `/ship-a-phase` only" vs package.json pin `axiomancer-mechanics: 0.11.0` and the shipped Phase 2 / 90+ later phases in plan/steps/01_build_plan.md.
+- suggested fix: Delete Hard rule 10 (or mark it RESOLVED with the fixing commit and the current green verify count); the live verify status belongs in one place, not contradicted across the doc.
+- source: file-read (repo-proxy)
+
+### [MED] /docs/testing.md — PR self-check tells newcomers to put tests under `app/<route>/e2e/`, contradicting the doc's own `state/e2e/` mandate
+- pass: 18 (commit fd525e3)
+- viewport: n/a (repo-proxy)
+- auth_state: anonymous
+- category: consistency
+- observation: docs/testing.md is the canonical hermetic-test standard. Its File-conventions section says "NEVER put non-route files inside `app/`" (line 87) and mandates `state/e2e/<feature>.engine.test.ts` (line 100) — which is where all real tests live. But the same doc's PR self-check checkbox (line 198) tells contributors to add "at least one new test under `app/<route>/e2e/`". A newcomer following the checklist places their first test under `app/`, which trips the route-tree guard test. AGENTS.md:82-83 echoes the same wrong path.
+- evidence: docs/testing.md:198 "[ ] At least one new (or modified) test under `app/<route>/e2e/`" vs docs/testing.md:87 "NEVER put non-route files inside `app/`" and :100 "`state/e2e/<feature>.engine.test.ts`"; actual tests in `state/e2e/`, `state/persistence/e2e/`, `state/presenters/__tests__/`.
+- suggested fix: Change docs/testing.md:198 (and the AGENTS.md:82-83 echo) to `state/e2e/`.
+- source: file-read (repo-proxy)
+
+### [MED] /docs/testing-guide.md — unfilled QA-template skeleton: omits Memoir tab, placeholder contacts, name-collides with docs/testing.md
+- pass: 18 (commit fd525e3)
+- viewport: n/a (repo-proxy)
+- auth_state: anonymous
+- category: comprehension
+- observation: docs/testing-guide.md reads as a copied generic mobile-QA template that was never filled in, and it sits one keystroke from docs/testing.md (the real hermetic-test standard) so a maintainer can't tell which is authoritative. It lists the tabs as "Combat, Character, Inventory, Exploration, Event" — omitting Memoir, which ships as a tab — and carries dead placeholders: "[internal testing email]", "[development team contact]", "[List any known issues...]", "#mobile-testing Slack channel".
+- evidence: docs/testing-guide.md:7 tab list omits Memoir; :59 "Email: [internal testing email]"; :85 "[List any known issues that are planned for future fixes]"; :101 "Technical Issues: [development team contact]".
+- suggested fix: Add a top banner clarifying this is the manual TestFlight/Play QA checklist (vs docs/testing.md = the hermetic-test standard), add the Memoir tab, and remove or fill the placeholder contact stubs.
+- source: file-read (repo-proxy)
+
+### [LOW] /plan/bearings.md — Stack table pins engine `^0.4.x` while the rest of the file + package.json pin exact `0.11.0`
+- pass: 18 (commit fd525e3)
+- viewport: n/a (repo-proxy)
+- auth_state: anonymous
+- category: consistency
+- observation: The "Stack (locked — do not re-litigate)" table pins the engine at `^0.4.x`, but the External-services row (line 79) and package.json both pin it exact at `0.11.0`. A stale cell inside the table that's explicitly labelled "locked — do not re-litigate" undercuts trust in the table.
+- evidence: plan/bearings.md:62 "Engine | `axiomancer-mechanics` npm package (pinned ^0.4.x)" vs :79 "Pinned **exact** (e.g. `0.11.0`)" and package.json "axiomancer-mechanics": "0.11.0".
+- suggested fix: Update the Stack-table cell to the exact current pin (`0.11.0`) so it agrees with line 79 and the lockfile.
+- source: file-read (repo-proxy)
 
 ### [HIGH] general — Equipment has no visible effect on character stats ✅
 - pass: user-jot (commit `5e6cd5e`)
@@ -217,14 +265,14 @@
 - suggested fix: Consolidate voice guidance in single source file and reference from others with 'See [file] for full voice guidelines'
 - source: browser
 
-### [LOW] /README.md — Architecture diagram shows idealized future vs current mock state
-- pass: 17 (commit c7a1c9c)
+### [MED] /README.md — Architecture diagram + layout drifted behind the code (presenters moved, screens wired)
+- pass: 17 (commit c7a1c9c); severity bumped + reframed pass 18 (commit fd525e3)
 - viewport: desktop
-- category: comprehension
-- observation: Architecture diagram shows clean presenter architecture but current state uses useState mocks per AGENTS.md
-- evidence: README lines 127-150 show target architecture but AGENTS.md line 42 reveals 'Hard-coded mock data lives in screens'
-- suggested fix: Add 'Target Architecture' header to diagram section and note current migration state
-- source: browser
+- category: drift
+- observation: The drift has inverted since pass 17. The diagram/layout now lags BEHIND the code, not ahead of it. README:135 places presenters at `app/<route>/*.engine.ts`, but they actually live in `state/presenters/*.engine.ts` (20 engines) — a maintainer who greps `app/(tabs)/combat.engine.ts` finds nothing. README:103-107 still labels every screen `(placeholder UI)`, but the screens shipped long ago, and the layout omits the Memoir tab entirely.
+- evidence: README.md:135 "Presenters | app/<route>/*.engine.ts" vs `state/presenters/*.engine.ts`; README.md:103-107 "(placeholder UI)" ×5; Memoir tab absent from the layout block though `app/(tabs)/memoir/` ships.
+- suggested fix: Redraw the layout/diagram to point presenters at `state/presenters/`, drop the `(placeholder UI)` labels, and add the Memoir tab.
+- source: file-read (repo-proxy)
 
 ### [HIGH] general — No title screen or onboarding for new players ✅
 - pass: deep-playtest (2026-05-25, commit d560e8c)

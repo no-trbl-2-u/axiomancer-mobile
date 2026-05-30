@@ -10,6 +10,10 @@
 
 ## Pending
 
+> Housekeeping: 22 resolved entries (promoted/drained) were moved
+> to ## Promoted / ## Drained via /oversight 2026-05-30 (43rd
+> call). Only genuinely-live candidates remain below.
+
 ### [score 5.0] Cross-stat effects on level-up — engine-driven derived stats preview `[needs-engine-release]`
 - proposed: 2026-05-26, oversight 42nd call
 - source signals:
@@ -38,578 +42,6 @@
 - estimated phases: 1
 - conflicts: `[needs-engine-release]` — gated on engine shipping
   a `previewStatAllocation` or equivalent API. See engine issue.
-
-### [score 3.0] Nested button accessibility fix in stance picker [PROMOTED → Phase 90 via /oversight 41st call]
-- proposed: 2026-05-25, expand pass 43
-- source signals:
-  - **AUDIT.md [8.0] nested button DOM hierarchy violation.** Impact 8 (console errors on web, breaks hydration semantics, screen readers double-announce), ease 6. Too big for one /iterate fix.
-  - Observed during live-drive playtest 2026-05-24: ADV/DIS badges render as nested `<button>` inside stance-card `<Pressable>`, violating HTML hierarchy.
-- rationale: High-impact A11y issue affecting web hydration and screen readers. Clear scope with established fix path.
-- proposed scope: 1 phase. Refactor ADV/DIS badge from `Pressable` → `View` + accessibility props, or extract badge above stance card.
-- estimated phases: 1
-- conflicts: none
-
-### [score 4.0] Hex-literal `'#0a0807'` drain to `AXM.silhouette` + aftermath panel token sweep [PROMOTED → Phase 83 via /oversight 39th call]
-
-- proposed: 2026-05-24, expand pass 42 (smell §4 I, cascade from /iterate)
-- source signals:
-  - **Smell §4 I — hex-literal colour leakage (continuation).**
-    Phase 81b drained `#0a0a0a` → `AXM.bg` and `#06050a` →
-    `AXM.deepBg`. 11 remaining occurrences of `#0a0807` across
-    aftermath panels, EncounterModalOverlay, LevelUpModal,
-    PixelEmblem, and ErrorBoundary map directly to the existing
-    `AXM.silhouette` token (value `'#0a0807'`).
-  - Files: CombatDefeatPanel (1), CombatVictoryPanel (2),
-    CombatFriendshipPanel (3), LevelUpModal (2),
-    PixelEmblem (1), EncounterModalOverlay (1),
-    ErrorBoundary (1 — skip per existing policy).
-  - **Historical precedent** — Phase 81b shipped the same pattern
-    successfully in one tick (25 occurrences, 8 files).
-- rationale: mechanical grep+replace. Token already exists;
-  no new tokens needed. Skip ErrorBoundary (pre-token fallback).
-- proposed scope: 1 phase, 1 tick. Same pattern as Phase 81b.
-- estimated phases: 1
-- conflicts: none
-
-### [score 3.0] Inventory screen sub-component extraction (1099 lines) [PROMOTED → Phase 84 via /oversight 39th call]
-
-- proposed: 2026-05-24, expand pass 42 (smell §4 I, cascade from /iterate)
-- source signals:
-  - **Smell §4 I — file-length outlier.**
-    `app/(tabs)/inventory/index.tsx` at 1099 lines is the repo's
-    longest screen file (combat was 1476 before Phase 81c extracted
-    it to 786). Inventory is 1.6x the next file (combat at 786)
-    and 3x the tab-screen median (~356).
-  - **Precedent** — Phase 81c successfully extracted 8 components +
-    6 style sheets from combat.tsx in one tick.
-  - Likely extraction targets: item-detail expanded view, category
-    grid section, equipment dock panel, modal overlay.
-- rationale: same smell pattern as Phase 81c (combat extraction).
-  Inventory has 4+ visually distinct sections that could be
-  separate component files.
-- proposed scope: 1 phase, 2-3 ticks.
-- estimated phases: 1
-- conflicts: none
-
-### [score 5.5] Tooltip overlay portal — wire tooltips inside RN `<Modal>` surfaces [PROMOTED → Phase 80a via /oversight 37th call]
-
-- promoted: 2026-05-24 via `/oversight` (37th call) as **Phase 80a**
-  (tooltip-cluster parent Phase 80). Full original body below.
-- proposed: 2026-05-24, expand pass 40 (cascade from iterate)
-- source signals:
-  - **Inventory walkthrough Tick 2 commit `cdee5aa`** explicitly
-    deferred the modal stat-table wiring: "RN's `<Modal>` portal
-    renders outside the React tree; the TooltipProvider overlay
-    would mount behind the modal. Revisit when tooltip z-index
-    work ships."
-  - **General TooltipProvider limitation** — any current or future
-    surface that mounts inside RN's `<Modal>` (LevelUpModal,
-    inventory item modal, future confirm dialogs) cannot fire
-    tooltips today.
-- rationale: the tap-tooltip system shipped extensively this
-  session (4 walkthrough rows closed, ~70 unique ids, 13+
-  TooltipKind branches). The one consistent gap is modal-mounted
-  surfaces. Solving it once unlocks all current + future modal
-  tooltip needs.
-- proposed scope: 1 phase, 1 tick.
-  - Option A — mount a sibling `<TooltipProvider>` inside each
-    `<Modal>`. Simple, isolated; tooltips inside the modal show
-    above modal chrome. Downside: separate provider instance per
-    modal means tap-outside-tooltip dismissal may need wiring per
-    modal. Probably acceptable.
-  - Option B — refactor the provider to use a globally-routed
-    overlay (e.g. via a portal library or `react-native-portalize`)
-    so tooltips always render above all modals. More disruptive;
-    needs a new dependency.
-  - Option C — keep one provider but render the overlay via a
-    higher-Z portal that RN guarantees stays above Modal. RN
-    doesn't expose a stable primitive for this.
-- conflicts: none. Additive. Existing tooltips outside modals
-  unaffected.
-
-### [score 5.0] TooltipTarget consolidation — drop the inline duplicate in `app/(tabs)/combat.tsx` [PROMOTED → Phase 80b via /oversight 37th call]
-
-- promoted: 2026-05-24 via `/oversight` (37th call) as **Phase 80b**.
-- proposed: 2026-05-24, expand pass 40 (cascade from iterate)
-- source signals:
-  - **Phase 75 commit `de3bb7b`** inlined a local `TooltipTarget`
-    inside `app/(tabs)/combat.tsx` (lines ~107-130).
-  - **Walkthrough Tick 1 commit `8a84b3c`** extracted a shared
-    `<TooltipTarget>` to `components/tooltip/TooltipTarget.tsx`
-    but explicitly left the combat copy in place: "The combat
-    copy still uses its local definition to avoid touching the
-    combat-modal surface mid-audit (the 36th /oversight call's
-    combat-modal-audit bias)."
-  - **All 4 walkthrough rows closed** — SELF / Inventory /
-    Memoir / Exploration all use the shared component. Combat is
-    the lone holdout. The audit bias has served its purpose; the
-    consolidation no longer racing against unstable WIP.
-- rationale: pure refactor. Removes ~30 lines of duplication;
-  no behaviour change; combat tooltip tests still pass against
-  the same external contract. Standard refactor risk is low —
-  the inline component is byte-identical to the shared one
-  modulo the testID default.
-- proposed scope: 1 phase, 1 tick.
-  - Replace inline `TooltipTarget` declaration in
-    `app/(tabs)/combat.tsx` with `import { TooltipTarget } from
-    '@/components/tooltip/TooltipTarget'`.
-  - Drop the local declaration block.
-  - Run combat suite to confirm no regressions.
-- conflicts: none. Combat-modal-audit bias from the 36th
-  /oversight call has served its purpose (combat-modal rewrite
-  has been stable for ~30 commits).
-
-### [score 4.0] SELF derived ATK/SKL/DEF table tooltips (Tick 5 — beyond original walkthrough enumeration) [PROMOTED → Phase 80c via /oversight 37th call]
-
-- promoted: 2026-05-24 via `/oversight` (37th call) as **Phase 80c**.
-- proposed: 2026-05-24, expand pass 40 (cascade from iterate)
-- source signals:
-  - **AUDIT `[4.5]` SELF walkthrough** closed all 6 originally-
-    enumerated sub-items, but the Derived block (PHYSICAL /
-    MENTAL / EMOTIONAL × ATK / SKL / DEF — 9 cells) was not in
-    the original enumeration and remains unwired.
-  - **Inventory Tick 2 item-stat synthesizer** authored content
-    for all 9 of those derived cells via the synthesizer; the
-    content exists, only the wraps are missing.
-- rationale: completes the "all SELF numerics have tooltips"
-  surface coverage. Reuses kind:'item-stat' content (zero
-  authoring cost). The derived block is the largest
-  unfamiliar-jargon zone on SELF — "PHYSICAL · SKL · 4" means
-  little without an explainer.
-- proposed scope: 1 phase, 1 tick.
-  - Add `id` field to `DerivedStatRow` (engine stat key like
-    'physicalAttack').
-  - Build the 9 ids in the presenter (3 rows × 3 verbs).
-  - Wrap each derived cell with `<TooltipTarget kind="item-stat"
-    id={cell.id}>` (or use a new `'derived'` sub-id if you
-    prefer clean namespacing — `'item-stat'` reuses the existing
-    synthesizer).
-- conflicts: none. Additive.
-
-### [score 7.0] Level-up button gating + stat-allocation lifecycle on SELF screen ✅ (DRAINED via /iterate `0e95212`+`fb2d5a0`)
-
-- drained: 2026-05-24 via /iterate (mirror #161). LevelReadyStrip + actions.levelUp + CharacterViewModel.levelUpReady all shipped end-to-end. Inventory closed across pass 40.
-- proposed: 2026-05-24, expand pass 39
-- source signals:
-  - **User-jot `f25292a`** in `plan/CRITIQUE.md` (`[MED] /self`):
-    "Once a player has enough experience, the level up button
-    should be available to press and trigger a 'level up'. Once
-    they level up, drain the experience and show the stat
-    allocation button. Once the player has no available stats
-    to apply, remove the stat allocation button."
-  - **Phase 73 context** — LevelUpModal shipped (`030e2a1`) and
-    the engine `levelUp` action exists, but the trigger button
-    on the SELF screen and the visibility lifecycle of the
-    stat-allocation surface are not yet wired. The user is
-    flagging the connective tissue between an engine-ready
-    feature and an observable workflow.
-- rationale: high-impact single-tick fix. The engine primitives
-  (`levelUp`, `allocateStatPoint`) exist and the modal exists.
-  Phase wires three visibility conditions: (a) Level Up button
-  appears when `player.experience >= experienceToNextLevel`;
-  (b) tap triggers engine `levelUp` then mounts the stat
-  allocation modal; (c) modal closes (or stat-allocation card
-  collapses) when `availableStatPoints === 0`. Strong user
-  signal (+0.5 source bump, recent jot urgency).
-- proposed scope: 1 phase, 1 tick.
-  - SELF presenter exposes `levelUpReady: boolean` (engine
-    `experience >= experienceToNextLevel`) + `pendingStatPoints:
-    number`.
-  - SELF header gains a Level Up button gated on `levelUpReady`.
-    Tap dispatches `actions.levelUp()` then opens the existing
-    LevelUpModal.
-  - Modal allocates points via `actions.allocateStatPoint(stat)`
-    (already wired in Phase 73); auto-dismisses when
-    `availableStatPoints === 0`.
-- conflicts: none. Engine surface is stable; no breaking
-  changes to LevelUpModal contract.
-
-### [score 6.0] Phase 75 follow-up — tooltip copy tightening + stat-colour coordination ✅ (DRAINED via /iterate `a165668`+`5f87b1a`)
-
-- drained: 2026-05-24 via /iterate (mirror #160). formatEffectStatEffect helper + accentForStat + TapTooltip.accent prop all shipped; engine description dropped from effect tooltip body.
-- proposed: 2026-05-24, expand pass 39
-- source signals:
-  - **User-jot `9457378`** in `plan/CRITIQUE.md` (`[MED] /combat`):
-    "make sure the explanation is concise (name, and stat effect.
-    No description, no explanation. Just Name, and the effect it
-    has on the stats. Try to color coordinate both the effect
-    and the tooltip to which stat it effects."
-  - **Phase 75 ship `de3bb7b`** — wired engine `description`
-    body verbatim into tooltips; user feedback is to drop the
-    descriptive prose for a terse payload-derived stat-effect
-    line + colour tint to the affected stat.
-- rationale: direct user feedback on a just-shipped feature.
-  The engine's `EffectPayload` (statModifiers, damageOverTime,
-  regeneration, etc.) carries the data needed to format a
-  concise per-effect line. Colour-coordination maps onto the
-  existing stance palette (heart=blood, body=parchment-on-iron,
-  mind=sulfur).
-- proposed scope: 1 phase, 1 tick.
-  - New presenter helper that formats `Effect.payload` into a
-    short stat-effect string (e.g. `+1 physical attack · 2 rnd`).
-  - `selectTooltipContentFor('effect', ...)` returns title +
-    formatted body (no engine description) + accent colour
-    derived from the primary affected stat.
-  - `TapTooltip` gains an optional `accent` prop for the
-    title / border tint.
-- conflicts: none. Phase 75 contracts the engine reads stay
-  the same; the change is presenter-internal + a small
-  primitive-prop add.
-
-### [score 5.5] Tooltip walkthrough — non-combat surfaces (SELF / inventory / memoir / exploration) ✅ (DRAINED via /iterate — 9 ticks closing 4 walkthrough AUDIT rows)
-
-- drained: 2026-05-24 via /iterate across mirrors #163-#171. All 4 walkthrough AUDIT rows closed (SELF [4.5], Inventory [4.0], Memoir [3.5], Exploration [3.5]). 14+ icon families wired across 4 surfaces; 7 new TooltipKind branches authored ('alignment', 'slot', 'derived', 'burden', 'map-node', 'chronicle-entry', 'quest-objective'); item-stat synthesizer covers ~19 engine stat ids. The candidate's full multi-phase scope shipped inline as iterate work rather than splitting into separate phases.
-- proposed: 2026-05-24, expand pass 39
-- source signals:
-  - **User-jot `9457378`** in `plan/CRITIQUE.md` (`[MED]
-    general`): "Make sure to add tooltips to other things,
-    outside of combat as well. Do a walkthrough and see if
-    there are any icons that don't have explanations for them."
-  - **Phase 74 brief §6 Follow-ups** already enumerated:
-    Tick C (SELF — derived cells, alignment cube, afflictions,
-    blessings), Tick D (inventory — slot labels, item-card
-    stat lines, burden bar), Tick E (memoir — chronicle entry
-    types, quest objectives). User's "walkthrough" ask is the
-    same surface area as the deferred Ticks C-E.
-- rationale: dovetails the user's walkthrough ask with the
-  already-scoped Phase 74 follow-ups. Each surface is a small
-  wiring sweep keyed off existing TapTooltip primitive +
-  presenter branches. Engine reads for SELF stats are
-  already in the presenter (Tick A authored). Inventory slot
-  labels + item stats need engine equipment lookup. Memoir
-  needs chronicle / quest selectors.
-- proposed scope: 3 phases (per-surface ticks), or 1 parent
-  phase with 4 sub-ticks (SELF / inventory / memoir /
-  exploration). `/oversight` to decide the slicing.
-  - Sub-tick SELF — presenter branches for `derived`,
-    `alignment`, `affliction`, `blessing`; wire SELF screen
-    tap targets.
-  - Sub-tick inventory — presenter branches for `slot`,
-    `item-stat`, `burden`; wire inventory screen tap targets.
-  - Sub-tick memoir — presenter branches for
-    `chronicle-entry`, `quest-objective`; wire memoir screen
-    tap targets.
-  - Sub-tick exploration (walkthrough finding) — map node
-    glyphs, codex toggle, mind-mark counter, friendship
-    meter. Per the user's walkthrough request, this is
-    where the "missing-tooltip inventory" pass surfaces
-    icons that don't fit the Tick C-E enumeration.
-- conflicts: none. Combat-modal-audit bias (36th /oversight
-  directive) doesn't apply — these are non-combat surfaces.
-
-### [score 7.5] Phase 79a — Skill picker filters by `player.equippedSkills` [PROMOTED → Phase 82a via /oversight 38th call]
-
-- promoted: 2026-05-24 via `/oversight` (38th call) as **Phase 82a**
-  (skill / mana reconciliation cluster parent Phase 82). The number
-  is held to keep Phase 79's filing label visible; Phase 82 wraps
-  the actual ship work.
-- proposed: 2026-05-24, Phase 79 audit
-- source signals:
-  - **Phase 79 audit finding A** — engine silently blocks every
-    pick because the player has no equipped skills (`scenario.js:
-    38` emits `kind: 'blocked', reason: 'not-equipped'`). The
-    Phase 79 fix surfaces the block to the user, but the bug
-    itself remains until the picker filters out skills the
-    engine will refuse.
-- rationale: high-impact single-tick fix. Without it, every
-  non-equipped pick costs the player a round of combat. With
-  the Phase 79 block-event logging now live, the bug is
-  observable and the fix is straightforward.
-- proposed scope: 1 phase, 1 tick.
-  - Filter `COMBAT_SKILLS` in `state/selectors/combat-skills.ts`
-    by `player.equippedSkills` membership. Presenter consumes
-    the filtered list. Empty-state copy when nothing's equipped:
-    "no skills equipped — visit the skill book."
-  - Out of scope: equip-management UI. That's a separate
-    surface (Phase 79c candidate, post-79a).
-- conflicts: none.
-
-### [score 6.5] Phase 79b — Mobile skill enablement reads engine `combatResources` per-type [PROMOTED → Phase 82b via /oversight 38th call]
-
-- promoted: 2026-05-24 via `/oversight` (38th call) as **Phase 82b**.
-  Sequences after 82a (equippedSkills filter) so picker shows only
-  equippable skills before adding the per-resource gate.
-- proposed: 2026-05-24, Phase 79 audit
-- source signals:
-  - **Phase 79 audit finding B** — mobile `manaCost = body +
-    mind + heart + fallacy + paradox` is a flat sum; engine
-    `canUseSkill` checks per-resource pools. Picker shows skills
-    as castable that the engine refuses on
-    `insufficient-resources`.
-- rationale: aligns the mobile resource model with the engine.
-  Today the `combatMana` slice is a flat number the presenter
-  reads; engine reads `combat.combatResources: { body, mind,
-  heart, fallacy, paradox }`. The mobile presenter should
-  consume the engine slice directly.
-- proposed scope: 1 phase, 1 tick.
-  - Replace `vm.player.mana` flat read with per-resource read
-    from `combat.combatResources`.
-  - Replace `s.manaCost ≤ mana` enablement check with
-    per-resource availability check matching engine
-    `canUseSkill`.
-  - Show per-resource cost breakdown on the picker row instead
-    of the flat sum.
-  - Drop `combatMana` mobile slice once nothing reads it.
-- conflicts: should land after Phase 79a so the picker shows
-  only equippable skills first.
-
-### [score 6.5] Mechanics-vs-UI audit on the 2026-05-23 combat-modal rewrite [PROMOTED -> Phase 85 via /oversight 40th call]
-
-- proposed: 2026-05-23, expand pass 38
-- source signals:
-  - **Parallel-Claude commit `02b75db` (`feat(combat): align combat modal to 2026-05-23 design handoff`)** — 391-line rewrite of `app/(tabs)/combat.tsx` + 252-line rewrite of `components/event/EncounterModalOverlay.tsx`. New components: `PhaseBottom` (combat sub-panel), `ChainBarFixed` (the new chain bar), `Rivet` (corner chrome). No new unit tests added; the existing integration suites (`EncounterModalOverlay.test.tsx`, `CombatPanel.test.tsx`) implicitly exercise them but don't pin their individual contracts.
-  - **§A audit-pattern signal** — the 6-surface mechanics-vs-UI audit cycle (combat ✅ Phase 65, event ✅, exploration ✅, inventory ✅, character ✅ Phase 68a, memoir ✅ Phase 68b) collectively surfaced 19 DRIFT rows + 25 ALIGNED + 27 MOBILE-ONLY across 73 decisions. Yield ratio ~26% drift per surface. The combat-modal rewrite is effectively a new surface — same engine bindings, fresh chrome — and warrants the same template treatment.
-  - **§G commit-pattern signal** — `24e3ec4` (lint drain) already surfaced 2 mechanical drifts (unused `accent` + dead `ChainBar` function) post-rewrite. Those are the cheap ones the eye catches at lint time; deeper presenter-vs-engine drifts (e.g. stale prop names, cast leakage, missing skill-cost reads from `executeSkill`) are the audit's bread-and-butter.
-- rationale: the audit-series template is proven (19 drift rows shipped as iterate fixes; cluster-bias mechanic worked). Combat modal is the most engine-bound mobile surface and just got rewritten — exactly the conditions where presenter-vs-engine drift accumulates fastest. One phase, one tick; output is a `docs/mechanics-ui-audit-2026-05-23-combat-modal.md` decision table + filed DRIFT iterate rows.
-- proposed scope: 1 phase, 1 tick.
-  - Tick A — audit `state/presenters/combat.engine.ts` + `app/(tabs)/combat.tsx` + `components/event/EncounterModalOverlay.tsx` against the engine's `Combat` / `CombatState` / `executeSkill` / `applyDamage` surface. Use the prior 6 audit docs as a template (decision table → ALIGNED / DRIFT / MOBILE-ONLY verdicts → drift sub-rows filed to AUDIT.md). Expected yield: 4-6 drift rows.
-- estimated phases: 1.
-- conflicts: none. The combat modal rewrite has shipped + landed clean; audit is read-only of code that's now stable.
-
-### [score 4.0] LevelUpModal derived-preview ribbon — needs engine [PROMOTED -> Phase 88 via /oversight 40th call] — needs engine `previewAllocation` helper
-
-- proposed: 2026-05-23, expand pass 37
-- source signals:
-  - **Phase 73 commit body (`030e2a1`)** — "Engine derived-stats
-    preview NOT yet on the VM. The brief's derived-preview ribbon
-    (ATK/SKL/DEF deltas) is one feature the modal doesn't currently
-    render — the engine doesn't expose a `previewAllocation({ ... })`
-    helper that mobile can consume, and approximating client-side
-    risks drift from the engine's actual derivation. Filed as a
-    follow-up."
-  - **Phase 73 brief §4 risk row** — flagged this gap pre-ship.
-  - **Design bundle**
-    (`design/handoff-2026-05-23/project/screens/levelup.jsx:260-271`,
-    chat5 brief §5) — calls the derived-preview ribbon "the entire
-    payoff of the design" because it lets the player see "what
-    HEART +1 actually does without leaving the modal." Shipping
-    LevelUpModal without it weakens the design intent.
-- rationale: the modal already ships and works (1193/1193 verify
-  green), but the "what does HEART +1 actually do" feedback loop
-  is absent — players allocate blind. Engine-side `previewAllocation`
-  is a small helper; mobile consumes it for the StanceRow's right-
-  column ribbon. Lifts the design's centerpiece into the live UI.
-- proposed scope: 1 phase, 2 ticks.
-  - Tick A — Engine: new `previewAllocation(state, { heart, body,
-    mind }): DerivedStats` pure helper + canonical pin. Engine
-    version bump.
-  - Tick B — Mobile: `selectCharacterViewModel` projects a
-    `derivedBefore` + `derivedAfter(spent)` shape onto the LevelUp
-    VM; modal renders the ATK/SKL/DEF ribbon with sulfur `+N`
-    deltas in the StanceRow right column.
-- estimated phases: 1.
-- conflicts: needs an `axiomancer-mechanics` release with the new
-  helper before mobile can migrate. Naturally bundles with the
-  pass-36 engine asks if a single engine PR carries multiple
-  follow-ups.
-
-### [score 3.5] Combat log-entry shape audit + regression pin for boss-skill killing-blow crash [PROMOTED -> Phase 89 via /oversight 40th call]
-
-- proposed: 2026-05-23, expand pass 37
-- source signals:
-  - **Hotfix `043d607`** — user-reported runtime crash on a
-    boss-skill killing blow: `Cannot read properties of undefined
-    (reading 'skillId')`. The engine's `BattleLogEntry` types
-    `enemyAction: CombatAction` as required, but in practice the
-    field can be undefined. Defensive optional-chain shipped; no
-    regression test.
-  - **Hotfix commit body** — explicit follow-up note: "Adding a
-    regression pin to the combat-mode test suite is deferred
-    until we can stand up a fixture that reproduces the boss-
-    skill killing-blow shape."
-  - **Engine type contract** — the mobile `CombatStateLike`
-    structural type was widened in the hotfix to mark
-    `playerAction?` / `damageToEnemy?` / `result?` optional,
-    contradicting the engine's nominal required fields. Either
-    the engine type is wrong (a real engine fix) or the engine's
-    runtime shape diverges from the type (a bug that should be
-    audited and fixed on the engine side).
-- rationale: the hotfix closed the user-facing crash, but the
-  contract divergence between engine type and engine runtime is
-  load-bearing for the new aftermath snapshot path (defeat panel
-  reads `combat.log[last].enemyAction`). A future engine release
-  could re-introduce the crash if the fields fall back to
-  required + no defaults. Pin the regression + audit the
-  engine's actual log-entry population to file an engine PR if
-  the contract should be honored.
-- proposed scope: 1 phase, 1-2 ticks.
-  - Tick A — Mobile: stand up a fixture that reproduces the
-    undefined-enemyAction log entry; pin the snapshot builder's
-    null-safety in a hermetic test under
-    `state/e2e/aftermath-snapshot.engine.test.ts`. Optionally
-    audit `state/actions.ts` resolveRound for places that also
-    consume log-entry fields without defensive guards.
-  - Tick B (optional) — Engine PR: if the audit confirms the
-    field can be undefined in production, file an engine PR to
-    either default-populate the field on log entry construction
-    OR loosen the engine type so the contract matches runtime.
-- estimated phases: 1.
-- conflicts: Tick A is mobile-only; Tick B needs coordination
-  with the engine repo.
-
-### [score 5.5] Engine-side narrative prose for aftermath panels (per-foe final-blow / pact / cause-of-death phrases) [ENGINE LANDED — 0.11.0 Phase 71] [PROMOTED → Phase 76 via /oversight 36th call]
-
-- proposed: 2026-05-22, expand pass 36
-- source signals:
-  - **Phase 70 Tick A commit body (`05d85e7`)** — "Engine-side
-    flavor generation is a Phase 70 follow-up if the writers
-    want to generate per-enemy lines." The mobile presenter
-    currently selects from a 3-variant table keyed off damage
-    tier; the result is the same line for every brutal-damage
-    kill, every quiet kill, etc.
-  - **Phase 70 Tick B commit body (`8baf37a`)** — same pattern:
-    "Engine-side per-foe pact lines are a Phase 70 follow-up if
-    the writers want to author them." 3 placeholders keyed off
-    enemy level.
-  - **Phase 70 Tick C commit body (`a6b1665`)** — same pattern:
-    "Engine-side per-foe death prose is a Phase 70 follow-up if
-    the writers want to author them." 3 placeholders keyed off
-    damage tier.
-  - **Phase 70 brief §5 risk row** — flagged the presenter-side
-    prose as "engine integration follow-up."
-- rationale: three independent signals on three consecutive
-  ticks all point at the same boundary violation — chronicle
-  voice is game content (per-foe character), but the mobile
-  presenter is currently authoring it via coarse heuristic
-  lookups. Engine-side authoring would let writers compose
-  per-foe lines tied to philosophical alignment, archetype,
-  etc., and the presenter would just thread the engine's
-  generated phrase through. Lifts the only place in the
-  aftermath panels where copy is generated at the view-tier
-  rather than read from a content surface.
-- proposed scope: 1-2 phases.
-  - Phase A — Engine API: per-foe `finalBlowLines: { brutal,
-    quiet, ironic }`, `pactLines: { quiet, set-down, heavy }`,
-    `causeLines: { brutal, broken, quiet }` on the Enemy /
-    Encounter type. Library-side authoring for the existing
-    enemies. Engine version bump.
-  - Phase B (optional) — Mobile migration: drop the three
-    `derive*Phrase` helpers in `state/presenters/aftermath.engine.ts`;
-    presenter reads from the engine snapshot. Retire the placeholder
-    tests for per-tier variants.
-- estimated phases: 1-2.
-- conflicts: needs an `axiomancer-mechanics` release containing
-  the new fields before mobile can migrate. Coordination with
-  the engine repo / a writer pass to author lines for existing
-  enemies.
-
-### [score 4.5] Engine-side run-loop semantics — BEGIN AGAIN beyond the full-heal placeholder [ENGINE LANDED — 0.11.0 Phase 72] [PROMOTED → Phase 77 via /oversight 36th call]
-
-- proposed: 2026-05-22, expand pass 36
-- source signals:
-  - **Phase 70 Tick C commit body (`a6b1665`)** — "BEGIN AGAIN
-    = full-heal + reset run-stats + dismiss. The engine doesn't
-    yet have a 'new game' / 'respawn at last hearth' action, so
-    the minimum meaningful restart is restoring HP to max so
-    the player isn't immediately dead on the next encounter.
-    Engine-side respawn-with-fresh-seed is queued as a
-    follow-up."
-  - **Phase 70 brief §5 risk row** — flagged BEGIN AGAIN as
-    "potentially destructive" with no engine action behind it;
-    deferred a confirmation flow until engine supports a real
-    new-run. The full-heal patch is a band-aid; a player who
-    dies mid-encounter and taps BEGIN AGAIN lands back in the
-    same world state minus their HP loss — no narrative reset,
-    no progression rollback, no new-game-plus mechanics.
-- rationale: defeat is the most important game-over moment;
-  the current restart UX is "you're full-HP again, please don't
-  notice you're still in the same fight's aftermath." Engine
-  needs at minimum a `resetRun({ keepCharacter: bool })` API
-  that clears combat state, restores HP / mana / combat
-  resources, and resets the world position to a starting node.
-  Once that's in place, BEGIN AGAIN becomes a real restart and
-  the defeat panel's "let the page close" becomes a real
-  abandon-run path (clears the save).
-- proposed scope: 1 phase, 2 ticks.
-  - Tick A — Engine API: `resetRun()` action + `runId` field
-    on save data + a "starting hearth" concept (return-to-here
-    on death). Engine version bump.
-  - Tick B — Mobile: `<CombatDefeatPanel>`'s BEGIN AGAIN
-    rewires to the engine action; the legacy
-    `store.setState({ player: { ...health: maxHealth } })`
-    patch is dropped from `EncounterModalOverlay.tsx`. The
-    `resetRunStats()` shim call is folded into the engine
-    action's reducer instead of the modal's callback.
-- estimated phases: 1.
-- conflicts: needs the engine release. The current band-aid
-  has shipped; not urgent but locks in a UX placeholder that's
-  arguably worse than the previously-silent defeat path
-  (because it implies a restart actually happened).
-
-### [score 4.0] Engine-side codex / journal-entry surface on parley outcomes [ENGINE LANDED — 0.11.0 Phase 73] [PROMOTED → Phase 78 via /oversight 36th call]
-
-- proposed: 2026-05-22, expand pass 36
-- source signals:
-  - **Phase 70 Tick B commit body (`8baf37a`)** — "Journal-entry
-    field exposed in the VM type but null in current snapshots
-    (engine doesn't surface per-foe codex entries yet — engine
-    integration is a follow-up)." The `<CombatFriendshipPanel>`
-    renders an optional "✎ A NEW ENTRY" card (book glyph + book
-    name + entry title + 2-line preview) but it never mounts
-    today.
-  - **Phase 70 brief §5 risk row** — same gap.
-- rationale: the friendship panel's centerpiece (the pixel
-  emblem) carries the diegetic "this is from the old friend
-  codex" framing. The journal-entry card is the natural
-  follow-up signal — "you've unlocked a chronicle entry on
-  this foe." Without it, the panel's "made friends, learned
-  nothing about them" reading is hollow. Engine needs:
-  - A `Codex` slice tracking unlocked entries.
-  - Per-foe `journalEntry: { bookName, entryTitle, preview, body }`
-    metadata.
-  - A `unlockCodexEntry(foeId)` action triggered on parley.
-- proposed scope: 1 phase, 2 ticks.
-  - Tick A — Engine: Codex slice + per-foe metadata authoring
-    for existing enemies.
-  - Tick B — Mobile: combat-mode parley snapshot populates
-    `journalEntry` from the engine's just-unlocked entry. The
-    MEMOIR tab gets a new section listing all unlocked codex
-    entries (low-effort consumer of the same surface).
-- estimated phases: 1.
-- conflicts: needs the engine release. Naturally bundles with
-  the [5.5] flavor-prose candidate above — both are content
-  authoring on the Enemy / Encounter shape; coordination with
-  whoever does the writer pass.
-
-### [score 5.5] Battle log two-line format (playtest 2026-05-25 [F04]) [PROMOTED → Phase 91 via /oversight 2026-05-26]
-- promoted: 2026-05-26 via `/oversight`; T chose the top candidate while the build-plan queue was empty.
-- source: deep-playtest
-- finding: [F04] -- battle log shows "You apply Fleeting Kindness" instead of connecting player choice (HEART stance + ATTACK) to the named effect
-- approach: two-line log entry -- "You chose ATTACK (Heart stance)" then "Applied: Fleeting Kindness." Connects player input to game output.
-- severity: high
-- score: 2.5 base + 1.5 (user-confirmed, high severity) + 1.0 (cheap, presenter-only change) + 0.5 (playtest-source) = 5.5
-
-### [score 5.0] Flee narrative feedback + morale surface (playtest 2026-05-25 [F03]) [PROMOTED → Phase 92 via /oversight 2026-05-27]
-- promoted: 2026-05-27 via `/oversight` (42nd call). Code-only: narrative beat + morale exposure on exploration/SELF. Morale bar visual deferred to design handoff.
-- source: deep-playtest
-- finding: [F03] -- fleeing an encounter gives zero feedback; morale cost is invisible (no UI surface anywhere)
-- approach: code side -- add a narrative beat after fleeing (prose style matching death/victory text) + expose morale value on exploration card or SELF tab. Design side -- morale bar visual in DESIGN_SPEC.md.
-- severity: high
-- score: 2.5 base + 1.5 (user-confirmed, high severity) + 0.5 (playtest-source) + 0.5 (feedback-missing, directly impacts player trust) = 5.0
-
-### [score 4.5] Death screen presenter fixes (playtest 2026-05-25 [F09, F10]) [PROMOTED → Phase 93 via /oversight 2026-05-27]
-- promoted: 2026-05-27 via `/oversight` (42nd call). Presenter-only fixes.
-- source: deep-playtest
-- finding: [F09] "encounters survived: i" when the player died in that encounter + [F10] "deepest node: fv-14" exposes internal ID instead of "Tide Pool"
-- approach: fix encounter-survived counter logic (dying in encounter = 0 survived) + resolve node ID to human-readable name via map layout lookup. Both are presenter changes.
-- severity: medium
-- score: 2.5 base + 1.0 (inconsistency undermines trust) + 0.5 (playtest-source) + 0.5 (cheap, two-line presenter fix) = 4.5
-
-### [score 4.0] Sealed node tap feedback (playtest 2026-05-25 [F11]) [PROMOTED → Phase 94 via /oversight 2026-05-27]
-- promoted: 2026-05-27 via `/oversight` (42nd call).
-- source: deep-playtest
-- finding: [F11] -- sealed map nodes have cursor:pointer and look tappable but produce no response on tap
-- approach: tapping a sealed node shows a brief toast or tooltip ("This path is sealed. Reach it from an adjacent open node.").
-- severity: low
-- score: 2.5 base + 0.5 (playtest-source) + 0.5 (cheap) + 0.5 (feedback-missing) = 4.0
-
-### [score 4.0] Disabled ITEM button tooltip in combat (playtest 2026-05-25 [F12]) [PROMOTED → Phase 95 via /oversight 2026-05-27]
-- promoted: 2026-05-27 via `/oversight` (42nd call). Non-visual combat fix (tooltip on disabled button, not layout/chrome).
-- source: deep-playtest
-- finding: [F12] -- ITEM action ("USE A CONSUMABLE") always greyed out with no explanation, even with Healing Potion in inventory
-- approach: tapping the disabled ITEM button shows a tooltip explaining why (e.g. "No consumable items available" or "Combat items not yet implemented").
-- severity: low
-- score: 2.5 base + 0.5 (playtest-source) + 0.5 (cheap) + 0.5 (confusion, player expects usability) = 4.0
 
 ### [score 3.5] Stance card layout shrink-to-fit (playtest 2026-05-25 [F07])
 - source: deep-playtest
@@ -1147,6 +579,18 @@ promoted as Phase 61 parent + 61a–61f. See `01_build_plan.md`
 
 ## Drained via /iterate
 
+### [drained via /iterate `0e95212`+`fb2d5a0`] [score 7.0] Level-up button gating + stat-allocation lifecycle on SELF screen
+
+- moved from Pending to ## Drained via `/oversight` 2026-05-30 (43rd call); drained via /iterate (`0e95212`+`fb2d5a0`).
+
+### [drained via /iterate `a165668`+`5f87b1a`] [score 6.0] Phase 75 follow-up — tooltip copy tightening + stat-colour coordination
+
+- moved from Pending to ## Drained via `/oversight` 2026-05-30 (43rd call); drained via /iterate (`a165668`+`5f87b1a`).
+
+### [drained via /iterate 9 ticks closing 4 walkthrough AUDIT rows] [score 5.5] Tooltip walkthrough — non-combat surfaces (SELF / inventory / memoir / exploration)
+
+- moved from Pending to ## Drained via `/oversight` 2026-05-30 (43rd call); drained via /iterate (9 ticks closing 4 walkthrough AUDIT rows).
+
 ### [drained 2026-05-15 → Status block Phase 6] [score 8.5] Phase 18 — Event screen wiring against `processNode` + `applyDialogue`
 
 This candidate was filed as the audit-shaped breakdown of the
@@ -1210,6 +654,81 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted → status Phase 80a, shipped] [score 5.5] Tooltip overlay portal — wire tooltips inside RN <Modal> surfaces
+
+- moved from Pending to ## Promoted via `/oversight` 2026-05-30 (43rd call); shipped as Phase 80a. Full ship record in `plan/steps/01_build_plan.md` Status block.
+
+### [promoted → status Phase 80b, shipped] [score 5.0] TooltipTarget consolidation — drop the inline duplicate in app/(tabs)/combat.tsx
+
+- moved from Pending to ## Promoted via `/oversight` 2026-05-30 (43rd call); shipped as Phase 80b. Full ship record in `plan/steps/01_build_plan.md` Status block.
+
+### [promoted → status Phase 80c, shipped] [score 4.0] SELF derived ATK/SKL/DEF table tooltips
+
+- moved from Pending to ## Promoted via `/oversight` 2026-05-30 (43rd call); shipped as Phase 80c. Full ship record in `plan/steps/01_build_plan.md` Status block.
+
+### [promoted → status Phase 82a, shipped] [score 7.5] Phase 79a — Skill picker filters by player.equippedSkills
+
+- moved from Pending to ## Promoted via `/oversight` 2026-05-30 (43rd call); shipped as Phase 82a. Full ship record in `plan/steps/01_build_plan.md` Status block.
+
+### [promoted → status Phase 82b, shipped] [score 6.5] Phase 79b — Mobile skill enablement reads engine combatResources per-type
+
+- moved from Pending to ## Promoted via `/oversight` 2026-05-30 (43rd call); shipped as Phase 82b. Full ship record in `plan/steps/01_build_plan.md` Status block.
+
+### [promoted → status Phase 85, shipped] [score 6.5] Mechanics-vs-UI audit on the 2026-05-23 combat-modal rewrite
+
+- moved from Pending to ## Promoted via `/oversight` 2026-05-30 (43rd call); shipped as Phase 85. Full ship record in `plan/steps/01_build_plan.md` Status block.
+
+### [promoted → status Phase 88, shipped] [score 4.0] LevelUpModal derived-preview ribbon
+
+- moved from Pending to ## Promoted via `/oversight` 2026-05-30 (43rd call); shipped as Phase 88. Full ship record in `plan/steps/01_build_plan.md` Status block.
+
+### [promoted → status Phase 89, shipped] [score 3.5] Combat log-entry shape audit + regression pin for boss-skill killing-blow crash
+
+- moved from Pending to ## Promoted via `/oversight` 2026-05-30 (43rd call); shipped as Phase 89. Full ship record in `plan/steps/01_build_plan.md` Status block.
+
+### [promoted → status Phase 76, shipped] [score 5.5] Engine-side narrative prose for aftermath panels
+
+- moved from Pending to ## Promoted via `/oversight` 2026-05-30 (43rd call); shipped as Phase 76. Full ship record in `plan/steps/01_build_plan.md` Status block.
+
+### [promoted → status Phase 77, shipped] [score 4.5] Engine-side run-loop semantics — BEGIN AGAIN beyond the full-heal placeholder
+
+- moved from Pending to ## Promoted via `/oversight` 2026-05-30 (43rd call); shipped as Phase 77. Full ship record in `plan/steps/01_build_plan.md` Status block.
+
+### [promoted → status Phase 78, shipped] [score 4.0] Engine-side codex / journal-entry surface on parley outcomes
+
+- moved from Pending to ## Promoted via `/oversight` 2026-05-30 (43rd call); shipped as Phase 78. Full ship record in `plan/steps/01_build_plan.md` Status block.
+
+### [promoted → status Phase 91, shipped] [score 5.5] Battle log two-line format (playtest 2026-05-25 [F04])
+
+- moved from Pending to ## Promoted via `/oversight` 2026-05-30 (43rd call); shipped as Phase 91. Full ship record in `plan/steps/01_build_plan.md` Status block.
+
+### [promoted → status Phase 92, shipped] [score 5.0] Flee narrative feedback + morale surface (playtest 2026-05-25 [F03])
+
+- moved from Pending to ## Promoted via `/oversight` 2026-05-30 (43rd call); shipped as Phase 92. Full ship record in `plan/steps/01_build_plan.md` Status block.
+
+### [promoted → status Phase 93, shipped] [score 4.5] Death screen presenter fixes (playtest 2026-05-25 [F09, F10])
+
+- moved from Pending to ## Promoted via `/oversight` 2026-05-30 (43rd call); shipped as Phase 93. Full ship record in `plan/steps/01_build_plan.md` Status block.
+
+### [promoted → status Phase 94, shipped] [score 4.0] Sealed node tap feedback (playtest 2026-05-25 [F11])
+
+- moved from Pending to ## Promoted via `/oversight` 2026-05-30 (43rd call); shipped as Phase 94. Full ship record in `plan/steps/01_build_plan.md` Status block.
+
+### [promoted → status Phase 95, shipped] [score 4.0] Disabled ITEM button tooltip in combat (playtest 2026-05-25 [F12])
+
+- moved from Pending to ## Promoted via `/oversight` 2026-05-30 (43rd call); shipped as Phase 95. Full ship record in `plan/steps/01_build_plan.md` Status block.
+
+### [promoted 2026-05-30 → status Phase 96, pending] [score 3.5] Combat UX design overhaul
+
+- promoted via `/oversight` 2026-05-30 (43rd call) from
+  Considered (below threshold). Despite the low candidate score,
+  this is the single highest-impact open lever — it carries AUDIT
+  [4.5] (impact 9, ease 3) plus playtest findings F02/F04/F05/F06.
+  Design-gated, so it could not be promoted autonomously; the
+  user lifted the gate in this oversight pass. Assigned Phase 96,
+  design-first (96a design brief → 96b/96c implementation, split
+  after the brief lands).
 
 ### [promoted 2026-05-24 → status Phase 90, shipped] [score 3.0] Nested button accessibility fix in stance picker
 
@@ -2132,12 +1651,6 @@ exploration `moveToAction` migration to engine `revealAdjacent` /
 - estimated phases: 1
 - conflicts: none
 
-### [score 3.5] Combat UX design overhaul — address high-impact usability finding
-- proposed: 2026-05-29, expand pass 49
-- source signals:
-  - **High-impact audit finding** — [4.5] Combat UX unintuitive (impact 9, ease 3) with user feedback about unclear numbers and icons
-  - **Multiple playtest findings** — [F02] encounter jargon, [F04] battle log ability names, [F05] LET phase numbers, [F06] CRUCIBLE symbols
-- rationale: High-impact user feedback backed by systematic playtest findings indicates fundamental UX issues requiring design phase rather than code fixes.
-- proposed scope: Multi-phase effort starting with design phase to clarify combat iconography, terminology, and information hierarchy.
-- estimated phases: 3
-- conflicts: none
+<!-- [score 3.5] Combat UX design overhaul — PROMOTED → Phase 96
+     via /oversight 2026-05-30 (43rd call); entry moved to
+     ## Promoted. -->

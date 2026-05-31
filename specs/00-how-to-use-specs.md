@@ -44,11 +44,11 @@ The AI's loop:
 1. Re-reads the spec.
 2. Confirms every question in section 4 has an answer (asks if any are
    `> Your answer:` blank).
-3. Creates a feature branch `cursor/spec-NN-short-name-<suffix>`.
+3. Works directly on `main` after fetching and pulling `origin/main`. Does not create a feature branch unless T explicitly asks for branch-based work.
 4. Works through the **Proposed approach** as a series of commits.
 5. Updates the **Acceptance checklist** as it ticks boxes.
-6. Opens a PR linking the spec.
-7. Marks the spec `[DONE on YYYY-MM-DD — see PR #N]` at the top.
+6. Pushes `main` directly unless T explicitly asked for a PR.
+7. Marks the spec `[DONE on YYYY-MM-DD]` at the top unless T explicitly asked for a PR.
 
 If the AI hits an unanswered sub-question that wasn't in section 4 at
 the start, it adds the question to section 4 (with a note explaining

@@ -97,6 +97,8 @@ fonts, no real timers, no animations) + deterministic
    questions** before writing code. Answers are a deliverable; the spec
    is the source of truth.
 3. Once answered, work through the spec's "Proposed approach" as
-   discrete commits on a feature branch.
+   discrete commits directly on `main`. Do not create a feature branch
+   unless T explicitly asks for branch-based work.
 4. Tick the spec's acceptance checklist as you go; mark it
-   `[DONE on YYYY-MM-DD — see PR #N]` at the top when finished.
+   `[DONE on YYYY-MM-DD]` at the top when finished unless T explicitly
+   asks for a PR.

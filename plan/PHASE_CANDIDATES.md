@@ -688,6 +688,10 @@ warranted a full phase promotion:
 
 ## Promoted
 
+### [promoted → status Phase 99] [score 5.6] Glanton Nexus state reconciliation guardrail
+
+- moved from T direct approval to ## Promoted via Hermes oversight 2026-06-01, assigned Phase 99. Runs before new UI polish because stale Nexus state can cause workers to march under old orders. Scope: audit central ledger vs mobile-local Nexus state, document source-of-truth hierarchy, add `/oversight` decision-sync checklist, add `/march` state-sanity preflight, and patch obvious stale rows discovered during the phase. Brief lives in `plan/steps/01_build_plan.md` Status block.
+
 ### [promoted → status Phase 97] [score 7.5] Combat token accumulation system fix
 
 - moved from Pending to ## Promoted via `/oversight` 2026-06-01 (51st call), assigned Phase 97. Per the oversight scope decision, Phase 97 *bundles* two sibling HIGH user-bugs from the same playtest (#226/#227) that were not yet candidates: combat-cannot-re-trigger-after-victory and learned-skills-blocked-as-not-equipped. All three are engine↔presenter boundary bugs and ship as one "combat correctness" phase. Brief lives in `plan/steps/01_build_plan.md` Status block.

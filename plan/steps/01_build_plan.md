@@ -1859,14 +1859,32 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       Reference #226/#227 in the commit body. Non-visual combat
       logic fixes (allowed under the combat-surface design gate).
 
-- [ ] Phase 98 — Combat terminology implementation (Phase 96
-      follow-up). Promoted via `/oversight` 2026-06-01 (51st call)
-      from PHASE_CANDIDATES `[score 6.0]`. Runs after Phase 97 —
-      mechanics first, legibility layer second. Implements the
-      iconography / terminology / information-hierarchy changes from
-      the Phase 96 design-first brief, closing AUDIT [4.5] (combat
-      UX unintuitive) and playtests [F02]/[F04]/[F05]/[F06]. Code
-      work is unblocked by the Phase 96 design brief.
+- [x] Phase 98 — Combat terminology implementation (Phase 96
+      follow-up). Shipped in commit `b6593df` (`feat: combat
+      terminology clarity — phase 98`) after brief commit `8bd99e7`.
+      Implements the iconography / terminology / information-hierarchy
+      changes from the Phase 96 design-first brief, closing AUDIT [4.5]
+      and playtests [F02]/[F04]/[F05]/[F06].
+
+- [ ] Phase 99 — Glanton Nexus state reconciliation guardrail per T
+      approval 2026-06-01. **Runs before new UI polish phases.** The
+      autonomous workspace is colliding with Hermes/T decisions: memory,
+      central ledger, `/march`, `/oversight`, build plans, critique/audit
+      logs, and phase candidates drift out of sync. Unit 1 — state audit:
+      compare central `~/Workspace/SOMBERSOFT_COMMAND_LEDGER.md`, mobile
+      build plan/candidates/critique/audit, repo-local Nexus skills
+      (`march`, `oversight`, `iterate`, `expand`, `jot`, `ship-a-phase`),
+      and latest settled T decisions. Unit 2 — source-of-truth law:
+      document hierarchy (T latest explicit decision → central ledger →
+      active build plan → phase candidates → critique/audit → historical
+      reports) in repo-local Nexus docs/skills. Unit 3 — guardrails: add
+      `/oversight` decision-sync checklist and `/march` state-sanity
+      preflight so stale Pending rows, deferred candidates, and
+      shipped-but-undrained critique findings are surfaced before workers
+      act. Unit 4 — evidence: record a reconciliation report and patch any
+      obvious stale rows found during the phase. Brief:
+      `plan/phases/phase_99_glanton_nexus_state_reconciliation_guardrail.md`.
+      Score 8 × 7 / 10 = 5.6.
 
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped
       2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —

@@ -1839,6 +1839,35 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       lands. Code work is gated on the design brief — do not
       ship combat-surface UI changes ahead of it.
 
+- [ ] Phase 97 — Combat correctness (token accrual + re-trigger +
+      skill-equip). Promoted via `/oversight` 2026-06-01 (51st call)
+      from PHASE_CANDIDATES `[score 7.5]` "Combat token accumulation
+      fix", bundling two sibling HIGH user-bugs from the same
+      playtest (#226/#227) per the oversight scope decision. Three
+      user-spotted blocking bugs, all on the engine↔presenter
+      boundary, ship as one phase:
+      (a) Token resource system never accumulates — tokens are
+      displayed as a static value instead of reading the engine's
+      per-round `combatResources` accrual; without them no skill can
+      be cast (AUDIT [user-issue #227], CRITIQUE [HIGH], issue #227).
+      (b) Combat cannot be re-triggered after a victory (only after a
+      loss) — CRITIQUE [HIGH].
+      (c) Learned skills blocked as "not equipped"; combat should
+      surface only currently-usable skills — CRITIQUE [HIGH].
+      Verify each fix reads engine state rather than a local
+      placeholder; engine logic stays in `axiomancer-mechanics`.
+      Reference #226/#227 in the commit body. Non-visual combat
+      logic fixes (allowed under the combat-surface design gate).
+
+- [ ] Phase 98 — Combat terminology implementation (Phase 96
+      follow-up). Promoted via `/oversight` 2026-06-01 (51st call)
+      from PHASE_CANDIDATES `[score 6.0]`. Runs after Phase 97 —
+      mechanics first, legibility layer second. Implements the
+      iconography / terminology / information-hierarchy changes from
+      the Phase 96 design-first brief, closing AUDIT [4.5] (combat
+      UX unintuitive) and playtests [F02]/[F04]/[F05]/[F06]. Code
+      work is unblocked by the Phase 96 design brief.
+
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped
       2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —
       phase-aware top + bottom `SEALED` chain bars (`SEALED · AT

@@ -56,7 +56,7 @@
 - evidence: User-jot finding + confirmed by PLAYTEST_REPORT.md findings [F02] (encounter jargon), [F04] (battle log ability names), [F05] (LET phase numbers), [F06] (CRUCIBLE symbols)
 - suggested_fix: Needs design phase for complete combat UX overhaul
 
-### [3.5] Morale bars render hardcoded placeholder values (needs engine backing)
+### [3.5] Morale bars render hardcoded placeholder values (needs engine backing) ✅
 - category: data
 - impact: 4
 - ease: 7
@@ -65,6 +65,8 @@
 - observation: Morale bar visible on WILDS StatusCard + SELF Pools section with hardcoded 7/10 values and placeholder BREAK threshold at 20%. Players see non-functional resource meter.
 - evidence: Combat UX Boards design implementation 2026-05-27. Visual scaffolding shipped per design spec but not backed by engine data.
 - suggested_fix: Once engine surfaces player.morale/player.moraleMax, wire StatusCard and character screen to read from useGameState
+- addressed: 2026-06-01 via commit `958a2b7`
+- fix: Wired morale displays to real engine state.moralMeter. StatusCard and character screen now read actual morale values, mapping engine range (-100 to +100) to display scale (1-10) with proper Roman numeral formatting and dynamic fill percentages. Preserves design break threshold at 20%. All existing tests pass.
 
 ### [2.5] Three console deprecation warnings from web bundle (LOW)
 - category: tests

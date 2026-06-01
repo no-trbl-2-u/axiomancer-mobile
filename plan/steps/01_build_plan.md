@@ -1866,8 +1866,8 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       changes from the Phase 96 design-first brief, closing AUDIT [4.5]
       and playtests [F02]/[F04]/[F05]/[F06].
 
-- [ ] Phase 99 — Glanton Nexus state reconciliation guardrail per T
-      approval 2026-06-01. **Runs before new UI polish phases.** The
+- [x] Phase 99 — Glanton Nexus state reconciliation guardrail per T
+      approval 2026-06-01 `[DONE — see commit 798f289]`. **Runs before new UI polish phases.** The
       autonomous workspace is colliding with Hermes/T decisions: memory,
       central ledger, `/march`, `/oversight`, build plans, critique/audit
       logs, and phase candidates drift out of sync. Unit 1 — state audit:

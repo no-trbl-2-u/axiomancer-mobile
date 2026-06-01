@@ -62,7 +62,7 @@
      README test-promise ✅, README arch diagram → bumped the
      existing pass-17 row). 4 new findings filed below. -->
 
-### [HIGH] /combat — Combat cannot be re-triggered after a victory (only after a loss)
+### [HIGH] /combat — Combat cannot be re-triggered after a victory (only after a loss) ✅
 - pass: user-jot (commit ff2b8ae)
 - viewport: unspecified
 - auth_state: anonymous
@@ -71,6 +71,9 @@
 - evidence: user-spotted at 2026-05-30T13:57:17Z (manual playtest)
 - suggested_fix: [user has not specified — iterate to determine] likely the node/encounter consumed-state is not reset (or is reset only on defeat) after friendship/regular victory; check resolveCurrentMapEvent / markNodeConsumed + combat-end handling.
 - source: user
+- issue: #232
+- addressed: 2026-06-01 via commit `2396dd0`
+- fix: Fixed encounter node consumption in moveToAction. Root cause: encounter nodes were being marked as completed on visit, preventing repeat encounters. Modified logic to check node type (encounter/boss) and only complete/consume non-encounter nodes. Updated test to expect correct behavior. Encounter nodes now remain reusable after both victory paths.
 
 ### [HIGH] /combat — Token resource system (skill-cast currency) never accumulates
 - pass: user-jot (commit ff2b8ae)

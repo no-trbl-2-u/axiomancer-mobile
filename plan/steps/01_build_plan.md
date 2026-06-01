@@ -1839,7 +1839,7 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       lands. Code work is gated on the design brief — do not
       ship combat-surface UI changes ahead of it.
 
-- [ ] Phase 97 — Combat correctness (token accrual + re-trigger +
+- [x] Phase 97 — Combat correctness (token accrual + re-trigger +
       skill-equip). Promoted via `/oversight` 2026-06-01 (51st call)
       from PHASE_CANDIDATES `[score 7.5]` "Combat token accumulation
       fix", bundling two sibling HIGH user-bugs from the same

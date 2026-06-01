@@ -3,6 +3,10 @@
 > **Outer dispatcher.** Reads project state and delegates to one
 > of the shipping skills. Designed for `/loop`. The
 > autonomous-beast entry point.
+>
+> **State hierarchy:** Before dispatch, respects source-of-truth
+> hierarchy in `docs/source-of-truth-hierarchy.md`. Stops if
+> contradictions detected between decision layers.
 
 ## 1. Purpose
 
@@ -53,6 +57,37 @@ git pull --ff-only
 ```
 
 If divergence, stop per §5.
+
+### Step 0.5 — State-sanity preflight
+
+Check for obvious stale command state before dispatch:
+
+```bash
+# Check for [deferred] rows that shouldn't be selected
+deferred_count=$(grep -c "\[deferred\]" plan/steps/01_build_plan.md 2>/dev/null || echo 0)
+if [ "$deferred_count" -gt 0 ]; then
+  echo "WARNING: Found $deferred_count [deferred] rows in build plan"
+  grep "\[deferred\]" plan/steps/01_build_plan.md
+fi
+
+# Check for shipped-but-still-pending phase rows
+grep -n "\[x\].*Phase [0-9]" plan/steps/01_build_plan.md | while read line; do
+  phase_num=$(echo "$line" | grep -o "Phase [0-9]\+" | grep -o "[0-9]\+")
+  if grep -q "\[ \].*Phase $phase_num" plan/steps/01_build_plan.md; then
+    echo "ERROR: Phase $phase_num marked both shipped and pending"
+    exit 1
+  fi
+done
+```
+
+State checks (stop if any fail):
+
+- `[deferred]` rows must not be in next-phase selection
+- Top pending phase must not contradict newer decisions
+- Shipped-but-still-pending phase rows block dispatch until reconciled
+- Major critique rows already addressed by shipped phases surface as ledger drift
+
+If state drift detected, stop per §5 and request `/oversight`.
 
 ### Step 1 — Triage gate (cheapest check)
 

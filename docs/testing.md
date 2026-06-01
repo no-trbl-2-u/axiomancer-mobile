@@ -195,7 +195,7 @@ describe('CombatScreen render', () => {
 
 Before opening a PR, confirm:
 
-- [ ] At least one new (or modified) test under `app/<route>/e2e/`
+- [ ] At least one new (or modified) test under `state/e2e/`
       covers the change.
 - [ ] The new test runs green via `npm test` — no flakes when run
       twice.

@@ -7,6 +7,10 @@
 > Every other skill is autonomous; this one is the exception.
 > It exists because the user sometimes walks away from the loop,
 > comes back, and needs to course-correct.
+>
+> **State hierarchy:** Decisions made here update subordinate layers
+> per `docs/source-of-truth-hierarchy.md`. Decision-sync checklist
+> ensures consistency before returning to `/march`.
 
 ## 1. Purpose
 
@@ -221,6 +225,21 @@ git push origin main
 If only adjustment was "everything looks good" with no edits,
 **no empty commit**. Print "no adjustments — handing back to
 the loop" and exit.
+
+### Step 6.5 — Decision-sync checklist
+
+Before handing back to `/march`, verify state consistency per the
+source-of-truth hierarchy (`docs/source-of-truth-hierarchy.md`):
+
+- [ ] Newly deferred work marked everywhere it appears
+- [ ] Promoted candidates moved/annotated in all relevant files
+- [ ] Shipped phases drain or annotate matching critique/audit rows
+- [ ] Central-ledger doctrine mirrored into local operational files when needed
+- [ ] Build plan status matches recent shipping decisions
+- [ ] No contradictions between decision layers remain
+
+If any checklist item fails, resolve before Step 7 or surface for
+user attention.
 
 ### Step 7 — Confirm deploy
 

@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-05-29 at commit 866ed3b
-> Pass count: 49
+> Last pass: 2026-06-01 at commit d66c7bd
+> Pass count: 50
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -50,6 +50,61 @@
 - severity: medium
 - score: 2.5 base + 0.5 (playtest-source) + 0.5 (visual, confirmed by playtest) = 3.5
 - critique-xref: CRITIQUE.md [MED] Space heart/body/mind buttons evenly
+
+### [score 7.5] Combat token accumulation system fix
+- proposed: 2026-06-01T11:23:07+00:00, expand pass 50
+- source signals:
+  - AUDIT [user-issue #227] HIGH Token resource system never accumulates (impact 9, ease 6)
+  - CRITIQUE [HIGH] /combat — Token resource system never accumulates  
+  - GitHub issue #227 (user-spotted blocking bug at 2026-05-30T13:57:17Z)
+- rationale: Multiple independent signals point to complete failure of skill-casting currency system. User cannot cast skills at all, blocking core combat mechanics. Engine vs mobile presenter boundary issue likely.
+- proposed scope: 1 phase — verify engine combatResources accrual per round is properly read/propagated to mobile combat presenter rather than displayed as static value
+- estimated phases: 1
+- conflicts: none
+
+### [score 6.0] Combat terminology implementation — design-first phase follow-up
+- proposed: 2026-06-01T11:23:07+00:00, expand pass 50
+- source signals:
+  - Design landing: design/combat-ux-overhaul.md shipped 2026-06-01 (commit 939efd2)
+  - AUDIT [4.5] Combat UX unintuitive, numbers and icons lack meaning (impact 9, ease 3)
+  - CRITIQUE cluster: 3 HIGH findings all on /combat surface (jargon, technical names, phase numbers)
+- rationale: Fresh design doc provides implementation roadmap for combat UX legibility. Design-first phase 96 completed documentation; implementation phases needed for player-friendly terminology mapping.
+- proposed scope: 1 phase — update presenter constants with player-friendly terms per design/combat-ux-overhaul.md §1 terminology table, implement display name mapping for battle log
+- estimated phases: 1
+- conflicts: none
+
+### [score 4.5] App folder hermetic test coverage phase
+- proposed: 2026-06-01T11:23:07+00:00, expand pass 50  
+- source signals:
+  - Smell: app/ folder has 9 source files with 0 test files (severe test:code ratio drop)
+  - Multiple AUDIT findings reference untested presenter/screen behavior
+  - Testing standard exists in docs/testing.md but app/ routes not covered
+- rationale: App folder completely lacks hermetic test coverage while components/ maintains 50% ratio. Critical for presenter contract validation per bearings.md decisions.
+- proposed scope: 1 phase — add hermetic e2e tests for all 9 app/ routes following docs/testing.md standard
+- estimated phases: 1
+- conflicts: none
+
+### [score 3.5] Stale paused phases resolution (62d/62e cleanup)
+- proposed: 2026-06-01T11:23:07+00:00, expand pass 50
+- source signals:
+  - Smell: phases 62d/62e marked [paused] >14 days ago (last touched 2026-05-21)
+  - Build plan organizational debt — unclear if phases should resume or retire
+  - Plan/steps/01_build_plan.md shows stale decision context
+- rationale: Phases 62d (Currency grant debug control) and 62e (Combat-HUD spot overrides) paused during combat regression priority shift. Need explicit resolution.
+- proposed scope: 1 phase — evaluate current product context and either resume with updated scope or formally retire [skipped] with rationale
+- estimated phases: 1
+- conflicts: none
+
+### [score 3.0] Large file decomposition — combat.tsx split
+- proposed: 2026-06-01T11:23:07+00:00, expand pass 50
+- source signals:
+  - Smell: app/(tabs)/combat.tsx at 809 lines (>2× folder median, outlier)
+  - Code organization debt affects maintainability
+  - File length violates "5 small files over 1 dense file" principle in build plan
+- rationale: Combat screen monolith harder to maintain and test. Should decompose into focused sub-components per build plan style guardrails.
+- proposed scope: 1 phase — extract combat sub-components from main screen file while preserving presenter contract
+- estimated phases: 1
+- conflicts: none
 
 ## Considered (below threshold)
 

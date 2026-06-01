@@ -1033,18 +1033,27 @@ function moveToAction(store: AppStore, nodeId: string): MoveToResult {
         return { moved: false, currentNodeId, locked: isLocked };
     }
 
-    let nextWorld: WorldState = worldCompleteNode(world, nodeId);
-    // The engine reducer only *adds* to completedNodes; tidy up the
-    // available list so the same node can't be re-entered.
-    nextWorld = {
-        ...nextWorld,
-        currentMap: {
-            ...nextWorld.currentMap,
-            availableNodes: (nextWorld.currentMap.availableNodes as readonly string[]).filter(
-                (n: string) => n !== nodeId,
-            ),
-        },
-    };
+    // Check if this node is an encounter type that should remain reusable
+    const layout = getMapLayout(map.name);
+    const nodeLayout = layout?.nodes.find((n) => n.id === nodeId);
+    const isEncounterNode = nodeLayout && ['encounter', 'boss'].includes(nodeLayout.type);
+    
+    // Only complete/consume nodes that aren't encounters
+    let nextWorld: WorldState = world;
+    if (!isEncounterNode) {
+        nextWorld = worldCompleteNode(world, nodeId);
+        // The engine reducer only *adds* to completedNodes; tidy up the
+        // available list so the same node can't be re-entered.
+        nextWorld = {
+            ...nextWorld,
+            currentMap: {
+                ...nextWorld.currentMap,
+                availableNodes: (nextWorld.currentMap.availableNodes as readonly string[]).filter(
+                    (n: string) => n !== nodeId,
+                ),
+            },
+        };
+    }
 
     // Propagate unlocks for outbound edges declared in the layout fixture
     // (legacy `availableNodes` population — the screen reads this for
@@ -1052,9 +1061,8 @@ function moveToAction(store: AppStore, nodeId: string): MoveToResult {
     // the *visual* layout (positions + hand-drawn edges); the engine's
     // `MapDefinition` registry is the source of truth for the unlock
     // graph itself (Phase 27).
-    const layout = getMapLayout(map.name);
     if (layout !== null) {
-        const moved = layout.nodes.find((n) => n.id === nodeId);
+        const moved = nodeLayout;
         const connected = moved?.connectedNodes ?? [];
         for (const targetId of connected) {
             if (completed.includes(targetId)) continue;

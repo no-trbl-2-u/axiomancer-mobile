@@ -286,15 +286,17 @@ describe('changeMap action: map transition', () => {
 // ---------------------------------------------------------------------------
 
 describe('exploration lifecycle: multi-step navigation', () => {
-    it('navigating two nodes leaves both as completed in the engine state', () => {
+    it('navigating to gather then encounter nodes - gather completes, encounter remains reusable', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
-        actions.moveTo('fv-2');
-        actions.moveTo('fv-3');
+        actions.moveTo('fv-2'); // gather node - should be completed
+        actions.moveTo('fv-3'); // encounter node - should remain reusable
 
         const completed = store.getState().world.currentMap.completedNodes;
-        expect(completed).toEqual(expect.arrayContaining(['fv-2', 'fv-3']));
+        // fv-2 (gather) should be completed, fv-3 (encounter) should not be
+        expect(completed).toEqual(expect.arrayContaining(['fv-2']));
+        expect(completed).not.toContain('fv-3');
 
         const vm = selectExplorationViewModel(store.getState());
         const byId = Object.fromEntries(vm.nodes.map((n) => [n.id, n]));

@@ -7,11 +7,12 @@
 ## The law
 
 1. **T's latest explicit decision** — highest authority
-2. **Central SomberSoft ledger** (`~/Workspace/SOMBERSOFT_COMMAND_LEDGER.md`)  
-3. **Active build plan** (`plan/steps/01_build_plan.md`)
-4. **Phase candidates** (`plan/PHASE_CANDIDATES.md`)
-5. **Critique/audit logs** (`plan/CRITIQUE.md`, `plan/AUDIT.md`)
-6. **Historical reports** (archived findings, past decisions)
+2. **CDRs / ADRs** (`~/Workspace/decisions/`, `docs/adr/`)
+3. **Central SomberSoft ledger** (`~/Workspace/SOMBERSOFT_COMMAND_LEDGER.md`)
+4. **Active build plan** (`plan/steps/01_build_plan.md`)
+5. **Phase candidates** (`plan/PHASE_CANDIDATES.md`)
+6. **Critique/audit logs** (`plan/CRITIQUE.md`, `plan/AUDIT.md`)
+7. **Historical reports** (archived findings, past decisions)
 
 ## Worker obligations
 

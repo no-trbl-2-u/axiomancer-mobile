@@ -231,10 +231,11 @@ the loop" and exit.
 Before handing back to `/march`, verify state consistency per the
 source-of-truth hierarchy (`docs/source-of-truth-hierarchy.md`):
 
+- [ ] Newly durable decisions are recorded in CDR/ADR if they outlive the current phase
 - [ ] Newly deferred work marked everywhere it appears
 - [ ] Promoted candidates moved/annotated in all relevant files
 - [ ] Shipped phases drain or annotate matching critique/audit rows
-- [ ] Central-ledger doctrine mirrored into local operational files when needed
+- [ ] CDR/ADR or central-ledger doctrine mirrored into local operational files when needed
 - [ ] Build plan status matches recent shipping decisions
 - [ ] No contradictions between decision layers remain
 

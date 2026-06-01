@@ -17,6 +17,7 @@ import { toRomanLower } from '@/state/presenters/roman';
 import type {
     ActionOption,
     CombatViewModel,
+    CrucibleToken,
     ResolveSlice,
     SkillOption,
     StanceKey,
@@ -158,6 +159,7 @@ function PhaseStack({
                                         options={vm.actionPicker.options}
                                         fleeAvailable={vm.actionPicker.fleeAvailable}
                                         fleeHint={vm.actionPicker.fleeHint}
+                                        crucibleTokens={vm.crucibleTokens}
                                         onPick={onPickAction}
                                         onFlee={onFlee}
                                     />
@@ -296,18 +298,20 @@ function ActionPhase({
     options,
     fleeAvailable,
     fleeHint,
+    crucibleTokens,
     onPick,
     onFlee,
 }: {
     options: readonly ActionOption[];
     fleeAvailable: boolean;
     fleeHint: string;
+    crucibleTokens: readonly CrucibleToken[];
     onPick: (k: ActionOption['key']) => void;
     onFlee: () => void;
 }) {
     return (
         <View>
-            <CrucibleStrip />
+            <CrucibleStrip tokens={crucibleTokens} />
             <View style={action_styles.grid}>
                 {options.map((opt) => {
                     const accent = ACCENT_BY_KIND[opt.accentKind];
@@ -372,14 +376,7 @@ function ActionPhase({
     );
 }
 
-function CrucibleStrip() {
-    const pool: readonly { key: string; glyph: string; short: string; count: number; color: string }[] = [
-        { key: 'body', glyph: '◐', short: 'BOD', count: 2, color: AXM.blood },
-        { key: 'heart', glyph: '◑', short: 'HRT', count: 2, color: AXM.sulfur },
-        { key: 'mind', glyph: '◒', short: 'MND', count: 1, color: AXM.rust },
-        { key: 'fallacy', glyph: '◓', short: 'FAL', count: 1, color: AXM.bone },
-        { key: 'paradox', glyph: '◉', short: 'PRX', count: 1, color: AXM.parchment },
-    ];
+function CrucibleStrip({ tokens }: { tokens: readonly CrucibleToken[] }) {
     return (
         <View style={crucible_strip_styles.row} testID="combat-crucible-strip">
             <View style={crucible_strip_styles.labelCol}>
@@ -387,7 +384,7 @@ function CrucibleStrip() {
                 <Text style={crucible_strip_styles.subLabel}>SKILL FUEL</Text>
             </View>
             <View style={crucible_strip_styles.tokens}>
-                {pool.map((t) => {
+                {tokens.map((t) => {
                     const depleted = t.count <= 0;
                     return (
                         <View key={t.key} style={crucible_strip_styles.tokenCol}>

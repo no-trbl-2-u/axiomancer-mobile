@@ -186,8 +186,13 @@ export function CombatPanel() {
     useEffect(() => {
         if (combat === null) {
             actions.startCombat(createMockEncounterEnemy());
+        } else if (combat && vm.phase === 'ended' && vm.enemy.hp <= 0 && !vm.isInCombat) {
+            // Phase 97 — Fix re-trigger after victory. If combat state exists but
+            // VM shows combat ended with enemy defeated and not in combat anymore,
+            // force clear the combat state to allow re-trigger.
+            actions.endCombat();
         }
-    }, [combat, actions]);
+    }, [combat, actions, vm.phase, vm.enemy.hp, vm.isInCombat]);
 
     useEffect(() => {
         if (toast === null) return;

@@ -113,6 +113,13 @@ const createMockCombatVM = (actionOptions: ActionOption[]): CombatViewModel => (
         manaPercent: 1,
         effects: [],
     },
+    crucibleTokens: [
+        { key: 'body', glyph: '◐', short: 'BOD', count: 2, color: '#b53e3e' },
+        { key: 'heart', glyph: '◑', short: 'HRT', count: 1, color: '#e4b429' },
+        { key: 'mind', glyph: '◒', short: 'MND', count: 0, color: '#9d5a3c' },
+        { key: 'fallacy', glyph: '◓', short: 'FAL', count: 1, color: '#9a8d75' },
+        { key: 'paradox', glyph: '◉', short: 'PRX', count: 0, color: '#e4dcc6' },
+    ],
     loadingMessage: 'loading...',
 });
 

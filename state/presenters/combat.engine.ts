@@ -320,6 +320,19 @@ export interface PhaseStackEntry {
     visible: boolean;
 }
 
+export interface CrucibleToken {
+    /** Token type key (body, mind, heart, fallacy, paradox). */
+    key: string;
+    /** Token display glyph (◐, ◑, ◒, ◓, ◉). */
+    glyph: string;
+    /** Short display name (BOD, MND, HRT, FAL, PRX). */
+    short: string;
+    /** Current token count from engine state. */
+    count: number;
+    /** Display color for the token. */
+    color: string;
+}
+
 export interface CombatViewModel {
     /** True when the engine has an active `combat` slice. */
     isInCombat: boolean;
@@ -337,6 +350,8 @@ export interface CombatViewModel {
     friendshipCounter: number;
     /** Engine-defined ceiling for the friendship counter. */
     friendshipCounterMax: number;
+    /** Crucible tokens read from engine combat resources. */
+    crucibleTokens: readonly CrucibleToken[];
     stancePicker: StancePickerSlice;
     actionPicker: ActionPickerSlice;
     skillPicker: SkillPickerSlice;
@@ -824,6 +839,17 @@ interface ResourcePool {
 
 const EMPTY_POOL: ResourcePool = { body: 0, mind: 0, heart: 0, fallacy: 0, paradox: 0 };
 
+function buildCrucibleTokens(resources: ResourcePool): readonly CrucibleToken[] {
+    const { AXM } = require('@/theme/axm');
+    return [
+        { key: 'body', glyph: '◐', short: 'BOD', count: resources.body, color: AXM.blood },
+        { key: 'heart', glyph: '◑', short: 'HRT', count: resources.heart, color: AXM.sulfur },
+        { key: 'mind', glyph: '◒', short: 'MND', count: resources.mind, color: AXM.rust },
+        { key: 'fallacy', glyph: '◓', short: 'FAL', count: resources.fallacy, color: AXM.bone },
+        { key: 'paradox', glyph: '◉', short: 'PRX', count: resources.paradox, color: AXM.parchment },
+    ];
+}
+
 function canAffordSkill(cost: { body?: number; mind?: number; heart?: number; fallacy?: number; paradox?: number }, pool: ResourcePool): boolean {
     return (cost.body ?? 0) <= pool.body
         && (cost.mind ?? 0) <= pool.mind
@@ -1059,6 +1085,7 @@ export function selectCombatViewModel(
             player: EMPTY_PLAYER,
             friendshipCounter: 0,
             friendshipCounterMax: FRIENDSHIP_COUNTER_MAX,
+            crucibleTokens: buildCrucibleTokens(EMPTY_POOL),
             stancePicker,
             actionPicker: {
                 options: ACTION_DEFAULTS,
@@ -1163,17 +1190,13 @@ export function selectCombatViewModel(
         canConfirm: phase === 'choosing_stance',
     };
 
-    // The skill picker still needs a concrete stance for its internal
-    // "wrong-stance" gating; default to `'heart'` for that computation
-    // only — the VM's stance/skill UIs are separate surfaces and the
-    // picker is invisible until the player commits a stance anyway.
-    const globalPlayer = state.player ?? {};
-    const equipped: readonly string[] = Array.isArray(globalPlayer.equippedSkills)
-        ? globalPlayer.equippedSkills
-        : Array.isArray(playerEntity.equippedSkills)
-            ? playerEntity.equippedSkills
-            : [];
-    const skillPicker = buildSkillPicker(previewStance ?? 'heart', resources, equipped.length > 0 ? equipped : undefined);
+    // Phase 97 — Fix skill filtering per CRITIQUE [HIGH]. Drop the equipped-gate
+    // for learned skills; show all learned skills but filter only by usability
+    // (right stance + sufficient resources). Once a skill is learned it should
+    // be available in combat. The picker shows all COMBAT_SKILLS (treated as
+    // learned skills) and disables only those that are wrong stance or too
+    // expensive, not those that are "not equipped".
+    const skillPicker = buildSkillPicker(previewStance ?? 'heart', resources);
 
     const phaseIndex: number = phase === 'ended' ? -1 : PHASE_ORDER.indexOf(phase);
     const friendshipCounter = Number(c.friendshipCounter ?? 0);
@@ -1204,6 +1227,7 @@ export function selectCombatViewModel(
         player,
         friendshipCounter,
         friendshipCounterMax: FRIENDSHIP_COUNTER_MAX,
+        crucibleTokens: buildCrucibleTokens(resources),
         stancePicker,
         actionPicker: {
             options: ACTION_DEFAULTS,

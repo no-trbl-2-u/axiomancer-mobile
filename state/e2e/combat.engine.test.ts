@@ -468,18 +468,99 @@ describe('selectCombatViewModel: skill picker', () => {
         expect(vm.skillPicker.totalCount).toBeGreaterThan(0);
     });
 
-    it('only shows skills the player has equipped (Phase 82a)', () => {
+    it('shows all learned skills and filters by usability (Phase 97 fix)', () => {
         mockFixedRng(0.5);
         const store = createAppStore({ adapter: createMemoryAdapter() });
-        const equipped = COMBAT_SKILLS.slice(0, 3).map((s) => s.id);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        store.setState({ player: { ...store.getState().player, equippedSkills: equipped } } as any);
         store.getState().startCombat(makeEnemy());
         const vm = selectCombatViewModel(store.getState(), { selectedStance: 'heart' });
-        expect(vm.skillPicker.totalCount).toBe(equipped.length);
-        for (const s of vm.skillPicker.skills) {
-            expect(equipped).toContain(s.id);
+        
+        // Phase 97 fix — now shows all COMBAT_SKILLS (learned skills), not just equipped
+        expect(vm.skillPicker.totalCount).toBe(COMBAT_SKILLS.length);
+        
+        // All skills should be included
+        const skillIds = vm.skillPicker.skills.map(s => s.id);
+        for (const skill of COMBAT_SKILLS) {
+            expect(skillIds).toContain(skill.id);
         }
+        
+        // Skills should be filtered by usability (stance + resources)
+        const enabledSkills = vm.skillPicker.skills.filter(s => s.enabled);
+        const heartSkills = vm.skillPicker.skills.filter(s => s.stance === 'heart');
+        const disabledSkills = vm.skillPicker.skills.filter(s => !s.enabled);
+        
+        // Should have some disabled skills due to stance or resource constraints
+        expect(disabledSkills.length).toBeGreaterThan(0);
+        
+        // Check that disabled reasons are correctly set
+        for (const skill of disabledSkills) {
+            expect(['wrong-stance', 'insufficient-resources']).toContain(skill.disabledReason);
+        }
+        
+        // Heart stance is selected, so heart skills should have correct stance
+        expect(heartSkills.length).toBeGreaterThan(0);
+        for (const heartSkill of heartSkills) {
+            // Heart skills should not be disabled for wrong stance
+            if (heartSkill.disabledReason === 'wrong-stance') {
+                throw new Error(`Heart skill ${heartSkill.id} incorrectly marked as wrong stance`);
+            }
+        }
+    });
+
+    it('crucible tokens read from engine combat resources (Phase 97 fix)', () => {
+        mockFixedRng(0.5);
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        store.getState().startCombat(makeEnemy());
+        
+        // Mock engine combat resources
+        const combat = store.getState().combat!;
+        const mockResources = { body: 2, heart: 1, mind: 3, fallacy: 0, paradox: 1 };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (combat as any).combatResources = mockResources;
+        
+        const vm = selectCombatViewModel(store.getState());
+        
+        // Verify crucible tokens exist and read from engine resources
+        expect(vm.crucibleTokens).toBeDefined();
+        expect(vm.crucibleTokens.length).toBe(5);
+        
+        // Find each token and verify count matches mock resources
+        const bodyToken = vm.crucibleTokens.find(t => t.key === 'body');
+        const heartToken = vm.crucibleTokens.find(t => t.key === 'heart');
+        const mindToken = vm.crucibleTokens.find(t => t.key === 'mind');
+        const fallacyToken = vm.crucibleTokens.find(t => t.key === 'fallacy');
+        const paradoxToken = vm.crucibleTokens.find(t => t.key === 'paradox');
+        
+        expect(bodyToken?.count).toBe(2);
+        expect(heartToken?.count).toBe(1);
+        expect(mindToken?.count).toBe(3);
+        expect(fallacyToken?.count).toBe(0);
+        expect(paradoxToken?.count).toBe(1);
+        
+        // Verify token structure
+        expect(bodyToken?.glyph).toBe('◐');
+        expect(bodyToken?.short).toBe('BOD');
+        expect(typeof bodyToken?.color).toBe('string');
+    });
+
+    it('combat can be re-triggered after endCombat (Phase 97 fix)', () => {
+        mockFixedRng(0.5);
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        
+        // Start initial combat
+        store.getState().startCombat(makeEnemy());
+        expect(store.getState().combat).not.toBeNull();
+        
+        // End combat (simulates victory path calling endCombat)
+        actions.endCombat();
+        expect(store.getState().combat).toBeNull();
+        
+        // Should be able to start a new combat (this tests the re-trigger capability)
+        store.getState().startCombat(makeEnemy());
+        const vmAfterRestart = selectCombatViewModel(store.getState());
+        expect(vmAfterRestart.isInCombat).toBe(true);
+        expect(vmAfterRestart.phase).toBe('choosing_stance');
+        expect(vmAfterRestart.enemy.hp).toBeGreaterThan(0);
     });
 });
 

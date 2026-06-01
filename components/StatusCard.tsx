@@ -60,7 +60,7 @@ export function StatusCard(props: StatusCardProps = {}) {
         </View>
       </View>
       <View style={styles.barsCol}>
-        <StatBar value={hp} max={hpMax} color={AXM.blood} label="VITAE" height={8} />
+        <StatBar value={hp} max={hpMax} color={AXM.blood} label="HEALTH" height={8} />
         <View style={styles.moraleRow}>
           <View style={styles.moraleHeader}>
             <View style={styles.moraleLabelRow}>

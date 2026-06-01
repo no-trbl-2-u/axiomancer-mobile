@@ -81,7 +81,7 @@ describe('combat HUD tooltip targets (Phase 75)', () => {
         const screen = render(tree);
         const text = JSON.stringify(screen.toJSON());
         // The phase header at minimum must be visible.
-        expect(text).toContain('INVOKE A SKILL');
+        expect(text).toContain('Select Technique');
         // Any skill-row test target indicates the wiring is live.
         // We don't require N>0 — the presenter may filter all rows
         // out when fixture mana is short; in that case the empty

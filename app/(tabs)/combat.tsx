@@ -533,7 +533,7 @@ function EnemyPanel({ vm }: { vm: CombatViewModel }) {
                             value={vm.enemy.hp}
                             max={vm.enemy.hpMax}
                             color={AXM.blood}
-                            label="VITAE"
+                            label="HEALTH"
                             height={8}
                         />
                     </View>
@@ -641,9 +641,9 @@ function PlayerHud({ vm }: { vm: CombatViewModel }) {
     // 452-472`). Sits at the bottom of the seal as a "your turn"
     // footer: stance glyph on the left (sulfur when a stance is
     // committed, bone otherwise), then a column on the right with
-    // the VITAE bar across the top and the friendship meter +
+    // the HEALTH bar across the top and the friendship meter +
     // effect chips on the bottom row. Mana bar omitted per user-
-    // direct override (2026-05-23) — only VITAE is player-visible.
+    // direct override (2026-05-23) — only HEALTH is player-visible.
     const stance = vm.stancePicker.selected;
     return (
         <View style={styles.playerWrap}>
@@ -654,7 +654,7 @@ function PlayerHud({ vm }: { vm: CombatViewModel }) {
                     color={stance !== null ? AXM.sulfur : AXM.bone}
                 />
                 <View style={styles.playerCol}>
-                    <StatBar value={vm.player.hp} max={vm.player.hpMax} color={AXM.blood} label="VITAE" height={8} />
+                    <StatBar value={vm.player.hp} max={vm.player.hpMax} color={AXM.blood} label="HEALTH" height={8} />
                     <View style={styles.playerMetaRow}>
                         <FriendshipMeter
                             value={vm.friendshipCounter}

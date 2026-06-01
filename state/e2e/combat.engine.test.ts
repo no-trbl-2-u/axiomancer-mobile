@@ -78,7 +78,7 @@ describe('selectCombatViewModel: no combat', () => {
         expect(vm.actionPicker.fleeAvailable).toBe(true);
         expect(vm.skillPicker.skills).toHaveLength(COMBAT_SKILLS.length);
         expect(vm.log).toEqual([]);
-        expect(vm.phaseHeader).toContain('STANCE');
+        expect(vm.phaseHeader).toContain('Choose Your Guard');
     });
 
     it('exposes the composed HUD slice (hpPercent, manaPercent, effects)', () => {
@@ -1102,28 +1102,27 @@ describe('selectCombatViewModel: phaseStack contract (Tick C)', () => {
 // Lifted off the screen (was inline `isEnded ? '✠ DEPART' : '✠ NEXT ROUND'`
 // in `app/(tabs)/combat.tsx:761`) onto the VM per Hard Rule #8. Phase 72
 // refreshed the labels per the 2026-05-23 design handoff —
-// `screens-canonical.jsx::ResolvePane` uses `'LET IT FALL ━━━━━ ▸'`
-// for mid-fight rounds and `prototype.jsx::ResolvePaneLive` uses
-// `'LET IT FALL · IT IS DONE ▸'` for the terminal `phase === 'ended'`
+// Updated in Phase 98 to use `'COMMIT ━━━━━ ▸'` for mid-fight rounds  
+// and `'COMMIT · IT IS DONE ▸'` for the terminal `phase === 'ended'`
 // state.
 // ---------------------------------------------------------------------------
 
 describe('selectCombatViewModel: resolve.nextActionLabel', () => {
-    it('returns LET IT FALL on the no-combat fallback (idle store)', () => {
+    it('returns COMMIT on the no-combat fallback (idle store)', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const vm = selectCombatViewModel(store.getState());
 
-        expect(vm.resolve.nextActionLabel).toBe('LET IT FALL ━━━━━ ▸');
+        expect(vm.resolve.nextActionLabel).toBe('COMMIT ━━━━━ ▸');
     });
 
-    it('returns LET IT FALL while combat is still in a non-ended phase', () => {
+    it('returns COMMIT while combat is still in a non-ended phase', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
         actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
         const vm = selectCombatViewModel(store.getState());
 
         expect(vm.phase).not.toBe('ended');
-        expect(vm.resolve.nextActionLabel).toBe('LET IT FALL ━━━━━ ▸');
+        expect(vm.resolve.nextActionLabel).toBe('COMMIT ━━━━━ ▸');
     });
 
     it('flips to the IT IS DONE terminal variant when combat phase reaches ended', () => {
@@ -1134,7 +1133,7 @@ describe('selectCombatViewModel: resolve.nextActionLabel', () => {
         const vm = selectCombatViewModel(store.getState());
 
         expect(vm.phase).toBe('ended');
-        expect(vm.resolve.nextActionLabel).toBe('LET IT FALL · IT IS DONE ▸');
+        expect(vm.resolve.nextActionLabel).toBe('COMMIT · IT IS DONE ▸');
     });
 });
 

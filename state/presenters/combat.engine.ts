@@ -255,16 +255,12 @@ export interface ResolveSlice {
     nextActionLabel: string;
 }
 
-// Phase 72 port from 2026-05-23 design — `screens-canonical.jsx::ResolvePane`
-// renders the resolve-phase button as `'LET IT FALL ━━━━━ ▸'` (axm-caption,
-// sulfur border, sulfur text). The terminal-round variant uses the
-// `prototype.jsx::ResolvePaneLive` form `'LET IT FALL · IT IS DONE ▸'`
-// signalling the encounter is about to release. Pre-Phase-72 labels
-// (`'✠ NEXT ROUND'` / `'✠ DEPART'`) drained — the design intent is the
-// heavy-line "let it fall" phrasing that carries the gravity of
-// committing the round.
-const LET_IT_FALL_LABEL = 'LET IT FALL ━━━━━ ▸';
-const LET_IT_FALL_TERMINAL_LABEL = 'LET IT FALL · IT IS DONE ▸';
+// Phase 98 — Updated to player-friendly terminology per combat UX overhaul.
+// "LET IT FALL" becomes "COMMIT" to be more comprehensible to new players
+// while maintaining the gravity of committing the round. Terminal variant
+// uses "COMMIT · IT IS DONE" to signal the encounter is about to release.
+const COMMIT_LABEL = 'COMMIT ━━━━━ ▸';
+const COMMIT_TERMINAL_LABEL = 'COMMIT · IT IS DONE ▸';
 
 export interface CombatLogEntryDisplay {
     severity: LogSeverity;
@@ -423,10 +419,10 @@ const PHASE_ORDER: readonly CombatPhaseKey[] = [
 ];
 
 const PHASE_LABELS: Record<CombatPhaseKey, string> = {
-    choosing_stance: '✠ CHOOSE A STANCE',
-    choosing_action: '✠ DECLARE AN ACTION',
-    choosing_skill: '✠ INVOKE A SKILL',
-    resolving: '✠ FATE SETTLES',
+    choosing_stance: '✠ Choose Your Guard',
+    choosing_action: '✠ Your Move',
+    choosing_skill: '✠ Select Technique',
+    resolving: '✠ Strike Unfolds',
     ended: '✠ THE FIGHT IS OVER',
 };
 
@@ -981,8 +977,8 @@ function resolveSliceFromState(
     // variant so the player feels the weight of the closing blow.
     // Mid-fight rounds use the standard heavy-line label.
     const nextActionLabel = phaseRaw === 'ended'
-        ? LET_IT_FALL_TERMINAL_LABEL
-        : LET_IT_FALL_LABEL;
+        ? COMMIT_TERMINAL_LABEL
+        : COMMIT_LABEL;
     return {
         playerStance: pStance,
         enemyStance: eStance,

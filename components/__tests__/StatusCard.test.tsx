@@ -55,7 +55,7 @@ describe('StatusCard: store-driven defaults (no props)', () => {
         const hpMax = store.getState().player.maxHealth;
 
         const rendered = render(tree);
-        expect(rendered.queryByText('VITAE')).not.toBeNull();
+        expect(rendered.queryByText('HEALTH')).not.toBeNull();
         expect(rendered.queryByText(`${hp}/${hpMax}`)).not.toBeNull();
     });
 });
@@ -90,7 +90,7 @@ describe('StatusCard: explicit prop overrides', () => {
 describe('StatusCard: structural landmarks', () => {
     it('renders the HP bar label and no MP/MANA bar (Phase-62 bug-sweep)', () => {
         const tree = mount(<StatusCard />);
-        expect(tree.queryByText('VITAE')).not.toBeNull();
+        expect(tree.queryByText('HEALTH')).not.toBeNull();
         expect(tree.queryByText('MP')).toBeNull();
         expect(tree.queryByText('MANA')).toBeNull();
     });

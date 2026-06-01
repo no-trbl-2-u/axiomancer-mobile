@@ -380,7 +380,7 @@ function CrucibleStrip({ tokens }: { tokens: readonly CrucibleToken[] }) {
     return (
         <View style={crucible_strip_styles.row} testID="combat-crucible-strip">
             <View style={crucible_strip_styles.labelCol}>
-                <Text style={crucible_strip_styles.eyebrow}>CRUCIBLE</Text>
+                <Text style={crucible_strip_styles.eyebrow}>TECHNIQUES</Text>
                 <Text style={crucible_strip_styles.subLabel}>SKILL FUEL</Text>
             </View>
             <View style={crucible_strip_styles.tokens}>

@@ -194,7 +194,7 @@ export default function CharacterScreen() {
         <SectionLabel size={10}>✠ POOLS</SectionLabel>
         <View style={styles.poolsCard}>
           {[
-            { label: 'VITAE', value: player?.health ?? 0, max: player?.maxHealth ?? 1, color: AXM.blood, gloss: 'flesh holds' },
+            { label: 'HEALTH', value: player?.health ?? 0, max: player?.maxHealth ?? 1, color: AXM.blood, gloss: 'flesh holds' },
             { label: 'MORALE', value: Math.max(1, Math.min(10, Math.round((vm.morale + 100) / 20))), max: 10, color: AXM.sulfur, gloss: 'resolve to walk', isNew: true, breakAt: 2 },
           ].map((pool) => (
             <View key={pool.label} style={styles.poolRow}>

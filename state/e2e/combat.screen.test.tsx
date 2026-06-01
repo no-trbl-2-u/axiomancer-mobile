@@ -111,7 +111,7 @@ describe('CombatScreen: phase coverage', () => {
         seedPhase(store, 'choosing_stance');
         const tree = render(withProviders(store, <CombatScreen />));
         const text = JSON.stringify(tree.toJSON());
-        expect(text).toContain('CHOOSE A STANCE');
+        expect(text).toContain('Choose Your Guard');
     });
 
     it('renders the choosing_action phase header', () => {
@@ -119,7 +119,7 @@ describe('CombatScreen: phase coverage', () => {
         seedPhase(store, 'choosing_action');
         const tree = render(withProviders(store, <CombatScreen />));
         const text = JSON.stringify(tree.toJSON());
-        expect(text).toContain('DECLARE AN ACTION');
+        expect(text).toContain('Your Move');
     });
 
     it('renders the choosing_skill phase header', () => {
@@ -127,7 +127,7 @@ describe('CombatScreen: phase coverage', () => {
         seedPhase(store, 'choosing_skill');
         const tree = render(withProviders(store, <CombatScreen />));
         const text = JSON.stringify(tree.toJSON());
-        expect(text).toContain('INVOKE A SKILL');
+        expect(text).toContain('Select Technique');
     });
 
     it('renders the resolving phase header', () => {
@@ -135,7 +135,7 @@ describe('CombatScreen: phase coverage', () => {
         seedPhase(store, 'resolving');
         const tree = render(withProviders(store, <CombatScreen />));
         const text = JSON.stringify(tree.toJSON());
-        expect(text).toContain('FATE SETTLES');
+        expect(text).toContain('Strike Unfolds');
     });
 });
 

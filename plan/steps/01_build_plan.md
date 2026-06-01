@@ -1823,7 +1823,7 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       source: F12.
       Shipped `d198039`.
 
-- [ ] Phase 96 — Combat UX legibility overhaul (design-first).
+- [x] Phase 96 — Combat UX legibility overhaul (design-first) `939efd2`.
       Promoted via `/oversight` 2026-05-30 (43rd call) from
       PHASE_CANDIDATES `[score 3.5]` (the highest-impact open
       audit lever: [4.5] Combat UX unintuitive, impact 9 /

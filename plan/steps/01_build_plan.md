@@ -1932,6 +1932,37 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
         MOBILE-ONLY by design. No further mechanics-vs-UI
         audit phases expected until a new tab/surface ships.
 
+- [ ] Phase 100 — App folder hermetic test coverage. Promoted via
+      `/oversight` 2026-06-01 (44th call). `app/` folder has 9
+      source files with 0 test files — severe test:code ratio gap
+      vs `components/`. Add hermetic e2e tests for all app/ routes
+      following `docs/testing.md` standard. Brief to be drafted via
+      `/plan-a-phase phase 100`. Candidate score: 4.5.
+
+- [ ] Phase 101 — Stance card layout shrink-to-fit. Promoted via
+      `/oversight` 2026-06-01 (44th call). Playtest [F07]: Mind
+      stance card clipped at right edge; stats + "BEATS HEART -
+      WEAK BOD" text truncates. Reduce card width or font size so
+      all three stance cards fit within the combat modal viewport.
+      Brief to be drafted via `/plan-a-phase phase 101`.
+      Candidate score: 3.5.
+
+- [ ] Phase 102 — Stale paused phases resolution (62d/62e cleanup).
+      Promoted via `/oversight` 2026-06-01 (44th call). Phases 62d
+      (Currency grant debug control) and 62e (Combat-HUD spot
+      overrides) paused >14 days. Evaluate current product context;
+      either resume with updated scope or formally retire [skipped]
+      with rationale. Brief to be drafted via `/plan-a-phase
+      phase 102`. Candidate score: 3.5.
+
+- [ ] Phase 103 — Large file decomposition: combat.tsx split.
+      Promoted via `/oversight` 2026-06-01 (44th call).
+      `app/(tabs)/combat.tsx` at 809 lines violates the "5 small
+      files over 1 dense file" build-plan guardrail. Extract focused
+      sub-components while preserving presenter contract + tests.
+      Brief to be drafted via `/plan-a-phase phase 103`.
+      Candidate score: 3.0.
+
 > **`design-spec.md` cold-codex item (4)** is **not** in
 > phases 34–43. Per its own brief body it needs a fresh
 > `Phase 25 — Aesthetic toggle` candidate filed via

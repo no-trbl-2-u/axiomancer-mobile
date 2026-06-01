@@ -7,6 +7,18 @@
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
 > for the contract.
 >
+> **Next-pass directive (set via `/oversight` 2026-06-01, 44th
+> call):** Fire `/critique` pass 19 unconditionally as the FIRST
+> tick when `/march` resumes. Rationale: Phase 97/98 overhauled
+> combat terminology + iconography, Phase 99 patched Nexus
+> machinery — substantial new surface area since pass 18
+> (2026-05-30 at commit fd525e3) that warrants a fresh
+> external-observer pass before the loop drifts further.
+>
+> **Supersedes the 20th-call directive** (which targeted pass 17 —
+> passes 17 and 18 have since fired; this directive now targets
+> pass 19).
+>
 > **Critique directive cleared 2026-05-18:** the 2nd /oversight
 > call's "fire pass 14 unconditionally next tick" directive
 > never fired because the loop stopped being idle — user shipped

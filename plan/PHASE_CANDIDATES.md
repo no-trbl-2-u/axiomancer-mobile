@@ -12,7 +12,9 @@
 
 > Housekeeping: 22 resolved entries (promoted/drained) were moved
 > to ## Promoted / ## Drained via /oversight 2026-05-30 (43rd
-> call). Only genuinely-live candidates remain below.
+> call). 4 further candidates promoted to Phases 100-103 via
+> /oversight 2026-06-01 (44th call). Only genuinely-live candidates
+> remain below.
 
 ### [score 5.0] Cross-stat effects on level-up — engine-driven derived stats preview `[needs-engine-release]`
 - proposed: 2026-05-26, oversight 42nd call
@@ -42,47 +44,6 @@
 - estimated phases: 1
 - conflicts: `[needs-engine-release]` — gated on engine shipping
   a `previewStatAllocation` or equivalent API. See engine issue.
-
-### [score 3.5] Stance card layout shrink-to-fit (playtest 2026-05-25 [F07])
-- source: deep-playtest
-- finding: [F07] -- Mind stance card clipped at right edge; stats and "BEATS HEART - WEAK BOD" text truncate
-- approach: reduce card width or font size so all three stance cards fit within the combat modal viewport. Already linked to CRITIQUE.md [MED] about spacing.
-- severity: medium
-- score: 2.5 base + 0.5 (playtest-source) + 0.5 (visual, confirmed by playtest) = 3.5
-- critique-xref: CRITIQUE.md [MED] Space heart/body/mind buttons evenly
-
-### [score 4.5] App folder hermetic test coverage phase
-- proposed: 2026-06-01T11:23:07+00:00, expand pass 50  
-- source signals:
-  - Smell: app/ folder has 9 source files with 0 test files (severe test:code ratio drop)
-  - Multiple AUDIT findings reference untested presenter/screen behavior
-  - Testing standard exists in docs/testing.md but app/ routes not covered
-- rationale: App folder completely lacks hermetic test coverage while components/ maintains 50% ratio. Critical for presenter contract validation per bearings.md decisions.
-- proposed scope: 1 phase — add hermetic e2e tests for all 9 app/ routes following docs/testing.md standard
-- estimated phases: 1
-- conflicts: none
-
-### [score 3.5] Stale paused phases resolution (62d/62e cleanup)
-- proposed: 2026-06-01T11:23:07+00:00, expand pass 50
-- source signals:
-  - Smell: phases 62d/62e marked [paused] >14 days ago (last touched 2026-05-21)
-  - Build plan organizational debt — unclear if phases should resume or retire
-  - Plan/steps/01_build_plan.md shows stale decision context
-- rationale: Phases 62d (Currency grant debug control) and 62e (Combat-HUD spot overrides) paused during combat regression priority shift. Need explicit resolution.
-- proposed scope: 1 phase — evaluate current product context and either resume with updated scope or formally retire [skipped] with rationale
-- estimated phases: 1
-- conflicts: none
-
-### [score 3.0] Large file decomposition — combat.tsx split
-- proposed: 2026-06-01T11:23:07+00:00, expand pass 50
-- source signals:
-  - Smell: app/(tabs)/combat.tsx at 809 lines (>2× folder median, outlier)
-  - Code organization debt affects maintainability
-  - File length violates "5 small files over 1 dense file" principle in build plan
-- rationale: Combat screen monolith harder to maintain and test. Should decompose into focused sub-components per build plan style guardrails.
-- proposed scope: 1 phase — extract combat sub-components from main screen file while preserving presenter contract
-- estimated phases: 1
-- conflicts: none
 
 ## Considered (below threshold)
 
@@ -687,6 +648,18 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted → Phase 100] [score 4.5] App folder hermetic test coverage phase
+- moved from ## Pending to ## Promoted via `/oversight` 2026-06-01 (44th call), assigned Phase 100. `app/` folder has 9 source files with 0 test files; severe gap vs `components/` ratio. Add hermetic e2e tests for all app/ routes per `docs/testing.md`. Brief to be drafted via `/plan-a-phase phase 100`.
+
+### [promoted → Phase 101] [score 3.5] Stance card layout shrink-to-fit
+- moved from ## Pending to ## Promoted via `/oversight` 2026-06-01 (44th call), assigned Phase 101. Playtest [F07]: Mind stance card clipped at right edge. Brief to be drafted via `/plan-a-phase phase 101`.
+
+### [promoted → Phase 102] [score 3.5] Stale paused phases resolution (62d/62e cleanup)
+- moved from ## Pending to ## Promoted via `/oversight` 2026-06-01 (44th call), assigned Phase 102. Phases 62d/62e paused >14 days. Evaluate and either resume or [skipped]. Brief to be drafted via `/plan-a-phase phase 102`.
+
+### [promoted → Phase 103] [score 3.0] Large file decomposition — combat.tsx split
+- moved from ## Pending to ## Promoted via `/oversight` 2026-06-01 (44th call), assigned Phase 103. `app/(tabs)/combat.tsx` at 809 lines violates build-plan guardrail. Brief to be drafted via `/plan-a-phase phase 103`.
 
 ### [promoted → status Phase 99] [score 5.6] Glanton Nexus state reconciliation guardrail
 

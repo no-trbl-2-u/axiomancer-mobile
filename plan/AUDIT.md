@@ -111,6 +111,15 @@
 - evidence: Mobile still uses manual layout fixtures instead of engine-driven maps per docs/engine-map-reconciliation-2026-05-24.md
 - suggested_fix: Needs engine-side MapDefinition.edges field, then ~200 line refactor under state/exploration-maps/
 
+### [3.0] Combat UX design §2/§3 completeness gap (needs-verify)
+- category: tests
+- impact: 5
+- ease: 6
+- next: verify Phase 98 implementation covers §2 iconography + §3 information hierarchy from design/combat-ux-overhaul.md; if gaps remain, file a follow-up phase
+- source: oversight 44th call (2026-06-01)
+- observation: design/combat-ux-overhaul.md specifies 3 implementation phases (terminology, iconography, information hierarchy). Phase 98 shipped terminology + iconography per its brief. §3 information hierarchy and §5 layout recommendations were not explicitly scheduled or verified shipped. The design doc's "Phase 99: Combat Information Hierarchy" was superseded by the Nexus guardrail phase.
+- suggested_fix: /iterate should read §3/§5 of the design doc against current combat screen and confirm or file a gap phase.
+
 ### [user-issue #227] HIGH Token resource system never accumulates (blocks skill casting)
 - category: external-issue
 - impact: 9

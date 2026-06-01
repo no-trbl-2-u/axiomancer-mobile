@@ -112,7 +112,8 @@
 - suggested_fix: [user has not specified — iterate to determine] add two Dev Menu seed presets ("start seed" and "endgame seed") that initialize the engine state to those two fixtures; pair with the difficulty finding above.
 - source: user
 
-### [HIGH] /plan/bearings.md — Hard rule 10 says verify gate is RED and "the loop CANNOT autonomously commit" — stale, blocks/misleads
+### [HIGH] /plan/bearings.md — Hard rule 10 says verify gate is RED and "the loop CANNOT autonomously commit" — stale, blocks/misleads ✅
+- resolved: 2026-06-01 via /oversight (51st call). Rewrote bearings.md Hard rule 10 to state the verify gate is GREEN and the loop commits autonomously (Phase 2 migration shipped in 527f021; ~96 phases shipped since). Stale RED-gate hold removed.
 - pass: 18 (commit fd525e3)
 - viewport: n/a (repo-proxy)
 - auth_state: anonymous

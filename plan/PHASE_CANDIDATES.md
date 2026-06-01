@@ -51,28 +51,6 @@
 - score: 2.5 base + 0.5 (playtest-source) + 0.5 (visual, confirmed by playtest) = 3.5
 - critique-xref: CRITIQUE.md [MED] Space heart/body/mind buttons evenly
 
-### [score 7.5] Combat token accumulation system fix
-- proposed: 2026-06-01T11:23:07+00:00, expand pass 50
-- source signals:
-  - AUDIT [user-issue #227] HIGH Token resource system never accumulates (impact 9, ease 6)
-  - CRITIQUE [HIGH] /combat — Token resource system never accumulates  
-  - GitHub issue #227 (user-spotted blocking bug at 2026-05-30T13:57:17Z)
-- rationale: Multiple independent signals point to complete failure of skill-casting currency system. User cannot cast skills at all, blocking core combat mechanics. Engine vs mobile presenter boundary issue likely.
-- proposed scope: 1 phase — verify engine combatResources accrual per round is properly read/propagated to mobile combat presenter rather than displayed as static value
-- estimated phases: 1
-- conflicts: none
-
-### [score 6.0] Combat terminology implementation — design-first phase follow-up
-- proposed: 2026-06-01T11:23:07+00:00, expand pass 50
-- source signals:
-  - Design landing: design/combat-ux-overhaul.md shipped 2026-06-01 (commit 939efd2)
-  - AUDIT [4.5] Combat UX unintuitive, numbers and icons lack meaning (impact 9, ease 3)
-  - CRITIQUE cluster: 3 HIGH findings all on /combat surface (jargon, technical names, phase numbers)
-- rationale: Fresh design doc provides implementation roadmap for combat UX legibility. Design-first phase 96 completed documentation; implementation phases needed for player-friendly terminology mapping.
-- proposed scope: 1 phase — update presenter constants with player-friendly terms per design/combat-ux-overhaul.md §1 terminology table, implement display name mapping for battle log
-- estimated phases: 1
-- conflicts: none
-
 ### [score 4.5] App folder hermetic test coverage phase
 - proposed: 2026-06-01T11:23:07+00:00, expand pass 50  
 - source signals:
@@ -709,6 +687,14 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted → status Phase 97] [score 7.5] Combat token accumulation system fix
+
+- moved from Pending to ## Promoted via `/oversight` 2026-06-01 (51st call), assigned Phase 97. Per the oversight scope decision, Phase 97 *bundles* two sibling HIGH user-bugs from the same playtest (#226/#227) that were not yet candidates: combat-cannot-re-trigger-after-victory and learned-skills-blocked-as-not-equipped. All three are engine↔presenter boundary bugs and ship as one "combat correctness" phase. Brief lives in `plan/steps/01_build_plan.md` Status block.
+
+### [promoted → status Phase 98] [score 6.0] Combat terminology implementation — design-first phase follow-up
+
+- moved from Pending to ## Promoted via `/oversight` 2026-06-01 (51st call), assigned Phase 98. Runs after Phase 97 (mechanics first, legibility second). Implements the Phase 96 design brief; closes AUDIT [4.5]. Brief lives in `plan/steps/01_build_plan.md` Status block.
 
 ### [promoted → status Phase 80a, shipped] [score 5.5] Tooltip overlay portal — wire tooltips inside RN <Modal> surfaces
 

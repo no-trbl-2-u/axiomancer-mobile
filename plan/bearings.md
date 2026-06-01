@@ -266,16 +266,15 @@ echoes.)
 8. **No hardcoded copy in components.** Strings live in the
    presenter or a per-screen `<screen>.copy.ts` module.
 9. **Never commit secrets.**
-10. **The verify gate is currently RED** on a pre-existing
-    typecheck failure in `state/actions.ts` and
-    `state/e2e/inventory.*.test.ts` — the latest
-    `axiomancer-mechanics` bump renamed
-    `Consumable.effect → effectId` and added required fields
-    `rarity` + `requiredLevel` on `Equipment`. **Until Phase 2
-    (engine-API-drift fix) ships the migration, the loop
-    CANNOT autonomously commit** — manual `/ship-a-phase`
-    only, at intervention spectrum level 0. See `plan/AUDIT.md`
-    [HIGH] row.
+10. **The verify gate is GREEN; the loop commits autonomously.**
+    The Phase 2 engine-API-drift migration shipped in commit
+    `527f021` (gate restored to 185/185), and ~96 phases have
+    shipped autonomously since. The historical RED-gate hold —
+    a pre-existing typecheck failure from the
+    `Consumable.effect → effectId` rename plus required
+    `rarity`/`requiredLevel` on `Equipment` — is resolved and no
+    longer constrains the loop. (Corrected via `/oversight`
+    2026-06-01, 51st call, from a stale-doctrine critique finding.)
 
 ## Verify gate (hermetic, mandatory) + deploy gate
 

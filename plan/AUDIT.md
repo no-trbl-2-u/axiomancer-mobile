@@ -110,3 +110,13 @@
 - observation: Blocks migration from pre-built FSMA graphs to engine-driven MapDefinition.nodes. Exploration would get fresh maps automatically with engine updates.
 - evidence: Mobile still uses manual layout fixtures instead of engine-driven maps per docs/engine-map-reconciliation-2026-05-24.md
 - suggested_fix: Needs engine-side MapDefinition.edges field, then ~200 line refactor under state/exploration-maps/
+
+### [user-issue #227] HIGH Token resource system never accumulates (blocks skill casting)
+- category: external-issue
+- impact: 9
+- ease: 6
+- next: /iterate will pick up; reference #227 in commit body.
+- source: /critique pass 18 (user-jot finding)
+- observation: The token resource system (what's used to cast skills) is not working at all — tokens are not accumulating whatsoever. Without them, skills cannot be cast.
+- evidence: user-spotted at 2026-05-30T13:57:17Z (manual playtest)
+- suggested_fix: verify the engine combatResources accrual per round is read/propagated to the mobile combat presenter (state/presenters/combat.engine.ts) rather than displayed as a static value; may be an engine vs mobile boundary issue.

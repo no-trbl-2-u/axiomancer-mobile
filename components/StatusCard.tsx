@@ -32,11 +32,19 @@ export function StatusCard(props: StatusCardProps = {}) {
   const playerLevel = useGameState((s) => s.player?.level ?? 1);
   const playerHp = useGameState((s) => s.player?.health ?? 0);
   const playerHpMax = useGameState((s) => s.player?.maxHealth ?? 0);
+  const moralMeter = useGameState((s) => s.moralMeter ?? 0);
 
   const name = props.name ?? playerName;
   const level = props.level ?? playerLevel;
   const hp = props.hp ?? playerHp;
   const hpMax = props.hpMax ?? playerHpMax;
+
+  // Map moralMeter (-100 to +100) to display scale (1-10)
+  // 0 maps to ~5.5, with break threshold at 2 representing very low morale
+  const moraleDisplay = Math.max(1, Math.min(10, Math.round((moralMeter + 100) / 20)));
+  const moraleMax = 10;
+  const moraleFillPercent = (moraleDisplay / moraleMax) * 100;
+  const moraleBreakPercent = (2 / moraleMax) * 100; // Break threshold at 2/10
 
   return (
     <View style={styles.card}>
@@ -60,12 +68,12 @@ export function StatusCard(props: StatusCardProps = {}) {
               <Text style={styles.moraleGloss}>· RESOLVE TO WALK</Text>
             </View>
             <Text style={styles.moraleValue}>
-              vii<Text style={{ color: AXM.bone }}> / x</Text>
+              {['', 'i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix', 'x'][moraleDisplay] || 'x'}<Text style={{ color: AXM.bone }}> / x</Text>
             </Text>
           </View>
           <View style={styles.moraleTrack}>
-            <View style={[styles.moraleFill, { width: '70%' }]} />
-            <View style={styles.moraleBreakTic} />
+            <View style={[styles.moraleFill, { width: `${moraleFillPercent}%` }]} />
+            <View style={[styles.moraleBreakTic, { left: `${moraleBreakPercent}%` }]} />
           </View>
         </View>
       </View>
@@ -163,7 +171,6 @@ const styles = StyleSheet.create({
     position: 'absolute' as const,
     top: -2,
     bottom: -2,
-    left: '20%',
     width: 1,
     backgroundColor: AXM.blood,
   },

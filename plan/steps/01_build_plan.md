@@ -1894,7 +1894,7 @@ work. The engine-side "difficulty too hard / no progression curve"
 finding stays OPEN and `[needs-engine-release]` (mobile cannot fix
 engine balance); Phase 100 gives it a testable harness.**
 
-- [ ] Phase 100 — Dev-Menu seeded test playthroughs. Promoted via
+- [x] Phase 100 — Dev-Menu seeded test playthroughs. Promoted via
       `/oversight` 2026-06-02 from CRITIQUE [MED] /dev (user-jot,
       commit `ff2b8ae`). Add two Dev-Menu seed presets that
       initialize engine state to reproducible fixtures: (a) a fresh
@@ -1907,6 +1907,7 @@ engine balance); Phase 100 gives it a testable harness.**
       (CRITIQUE [MED] difficulty, `[needs-engine-release]`) is out of
       scope and stays open for an engine decision. Pin hermetic tests
       that each preset produces the expected seeded state. Score 4.0.
+      Shipped in commit 90a2abb.
 
 - [ ] Phase 101 — App-folder hermetic test coverage. Promoted via
       `/oversight` 2026-06-02 from PHASE_CANDIDATES `[score 4.5]`.

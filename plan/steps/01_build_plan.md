@@ -1909,13 +1909,14 @@ engine balance); Phase 100 gives it a testable harness.**
       that each preset produces the expected seeded state. Score 4.0.
       Shipped in commit 90a2abb.
 
-- [ ] Phase 101 — App-folder hermetic test coverage. Promoted via
+- [x] Phase 101 — App-folder hermetic test coverage. Promoted via
       `/oversight` 2026-06-02 from PHASE_CANDIDATES `[score 4.5]`.
       `app/` has 9 source files with 0 test files while `components/`
       holds ~50% ratio. Add hermetic e2e tests for the app/ routes
       following the `docs/testing.md` standard (tests live under
       `state/e2e/` per the doc's mandate, NOT under `app/`). Pure
       mobile, no engine dependency. Score 4.5.
+      Shipped in commit 9201f4f.
 
 - [ ] Phase 102 — `combat.tsx` decomposition. Promoted via
       `/oversight` 2026-06-02 from PHASE_CANDIDATES `[score 3.0]`.

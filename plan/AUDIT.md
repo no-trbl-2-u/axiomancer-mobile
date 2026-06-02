@@ -7,7 +7,7 @@
 
 ## Top 5 findings (scored)
 
-### [6.3] StanceGlyph.test.tsx misplaced in root components directory (violates test organization pattern)
+### [6.3] StanceGlyph.test.tsx misplaced in root components directory (violates test organization pattern) ✅
 - category: tests
 - impact: 7
 - ease: 9
@@ -16,6 +16,8 @@
 - observation: The file components/StanceGlyph.test.tsx is placed directly in the components root instead of the __tests__ subdirectory. This violates the project's testing organization pattern where all other component tests are properly organized under __tests__/ directories.
 - evidence: All 69 other component tests follow the pattern components/[category/]__tests__/ComponentName.test.tsx, while StanceGlyph.test.tsx sits at components/StanceGlyph.test.tsx
 - suggested_fix: Move components/StanceGlyph.test.tsx to components/__tests__/StanceGlyph.test.tsx to match project conventions
+- addressed: 2026-06-02 via commit `379182c`
+- fix: Moved components/StanceGlyph.test.tsx to components/__tests__/StanceGlyph.test.tsx and updated import path from './StanceGlyph' to '../StanceGlyph'. Test organization now matches project conventions with all component tests properly organized under __tests__/ directories.
 
 ### [5.4] Inline style objects cause unnecessary re-renders in exploration screen
 - category: perf

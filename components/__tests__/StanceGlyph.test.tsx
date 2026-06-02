@@ -9,7 +9,7 @@ import { afterEach, describe, it, expect, jest } from '@jest/globals';
 import { render } from '@testing-library/react-native';
 import React from 'react';
 
-import { GlyphHeart, GlyphBody, GlyphMind, StanceGlyph } from './StanceGlyph';
+import { GlyphHeart, GlyphBody, GlyphMind, StanceGlyph } from '../StanceGlyph';
 
 afterEach(() => {
     jest.restoreAllMocks();

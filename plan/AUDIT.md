@@ -1,11 +1,61 @@
-# Site audit — 2026-05-29
+# Site audit — 2026-06-02
 
 > Bias: none (cleared via /oversight 2026-05-30 — the
   combat-modal-audit bias set 2026-05-23 is retired now that
-  Phases 80/85/90/91/95 have shipped; /iterate scores balanced
+  Phases 80/85/90/95 have shipped; /iterate scores balanced
   again).
 
 ## Top 5 findings (scored)
+
+### [6.3] StanceGlyph.test.tsx misplaced in root components directory (violates test organization pattern)
+- category: tests
+- impact: 7
+- ease: 9
+- next: move StanceGlyph.test.tsx to components/__tests__/ directory
+- source: audit
+- observation: The file components/StanceGlyph.test.tsx is placed directly in the components root instead of the __tests__ subdirectory. This violates the project's testing organization pattern where all other component tests are properly organized under __tests__/ directories.
+- evidence: All 69 other component tests follow the pattern components/[category/]__tests__/ComponentName.test.tsx, while StanceGlyph.test.tsx sits at components/StanceGlyph.test.tsx
+- suggested_fix: Move components/StanceGlyph.test.tsx to components/__tests__/StanceGlyph.test.tsx to match project conventions
+
+### [5.4] Inline style objects cause unnecessary re-renders in exploration screen
+- category: perf
+- impact: 6
+- ease: 9
+- next: extract inline style objects to StyleSheet constants
+- source: audit
+- observation: The exploration screen uses inline style objects `style={{ color: AXM.bone }}` and `{ backgroundColor: '#16130d' }` which create new object references on every render, potentially causing performance issues.
+- evidence: Found in app/(tabs)/exploration/index.tsx lines with `style={{ color: AXM.bone }}` and `{ backgroundColor: '#16130d' }`
+- suggested_fix: Extract these inline styles to StyleSheet.create() constants to prevent object recreation on each render
+
+### [4.8] Magic number styling values in tab layout object spread
+- category: perf
+- impact: 6
+- ease: 8
+- next: refactor object spread to conditional StyleSheet reference
+- source: audit
+- observation: The tab layout uses object spread syntax `{ ...styles.tabBar, display: 'none' as const }` which creates new objects on every render when encounter modal is active.
+- evidence: Found in app/(tabs)/_layout.tsx with conditional object spreading for tab bar visibility
+- suggested_fix: Create separate StyleSheet constants for visible/hidden tab bar states instead of using object spread
+
+### [3.6] App directory components lack hermetic test coverage
+- category: tests
+- impact: 6
+- ease: 6
+- next: add hermetic test coverage for app route components
+- source: audit
+- observation: The 9 components in the app directory (route components) have 0 test files, while the standalone components directory has comprehensive test coverage (69/70 components tested).
+- evidence: app/ directory contains 9 .tsx files but 0 .test.tsx files; components/ directory has excellent coverage
+- suggested_fix: Add basic rendering and integration tests for key app route components, starting with high-traffic routes like combat.tsx and exploration/index.tsx
+
+### [2.5] Three console deprecation warnings from web bundle (LOW)
+- category: tests
+- impact: 2
+- ease: 5
+- next: wait for upstream fixes or implement workarounds
+- source: audit
+- observation: Deprecation warnings from transitive dependencies, not errors. Will become errors in future React Native/Expo version.
+- evidence: Warnings reference textShadow* → textShadow, shadow* → boxShadow, props.pointerEvents → style.pointerEvents prop changes
+- suggested_fix: Wait for upstream releases or implement prop name migration workarounds
 
 ### [8.1] Verify all tooltip content is 100% accurate (user-jot critique finding) ✅
 - category: external-critique
@@ -68,16 +118,6 @@
 - suggested_fix: Once engine surfaces player.morale/player.moraleMax, wire StatusCard and character screen to read from useGameState
 - addressed: 2026-06-01 via commit `958a2b7`
 - fix: Wired morale displays to real engine state.moralMeter. StatusCard and character screen now read actual morale values, mapping engine range (-100 to +100) to display scale (1-10) with proper Roman numeral formatting and dynamic fill percentages. Preserves design break threshold at 20%. All existing tests pass.
-
-### [2.5] Three console deprecation warnings from web bundle (LOW)
-- category: tests
-- impact: 2
-- ease: 5
-- next: wait for upstream fixes or implement workarounds
-- source: audit
-- observation: Deprecation warnings from transitive dependencies, not errors. Will become errors in future React Native/Expo version.
-- evidence: Warnings reference textShadow* → textShadow, shadow* → boxShadow, props.pointerEvents → style.pointerEvents prop changes
-- suggested_fix: Wait for upstream releases or implement prop name migration workarounds
 
 ### [2.0] Phase 72 acceptance — Playwright walkthrough against design prototype
 - category: tests

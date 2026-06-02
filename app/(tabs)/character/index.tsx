@@ -18,6 +18,7 @@ import { DebugFriendship } from '@/components/DebugFriendship';
 import { DebugHudOverrides } from '@/components/DebugHudOverrides';
 import { DebugManaControl } from '@/components/DebugManaControl';
 import { DebugMapResetButton } from '@/components/DebugMapResetButton';
+import { DebugPlaythroughPresets } from '@/components/DebugPlaythroughPresets';
 import { DebugPresetPicker } from '@/components/DebugPresetPicker';
 import { DebugPopulateAllItems } from '@/components/DebugPopulateAllItems';
 import { DebugSeedButton } from '@/components/DebugSeedButton';
@@ -464,6 +465,7 @@ export default function CharacterScreen() {
         <DebugMapResetButton />
         <DebugChaosToggle />
         <DebugPresetPicker />
+        <DebugPlaythroughPresets />
         <DebugXpGrant />
         <DebugManaControl />
         <DebugCurrencyControl />

@@ -14,6 +14,19 @@
 > to ## Promoted / ## Drained via /oversight 2026-05-30 (43rd
 > call). Only genuinely-live candidates remain below.
 
+### [score 5.0] Befriend mercy-choice modal `[needs-engine-release]`
+- proposed: 2026-06-02, T doctrine captured in company CDR-0005 and mobile ADR-0007
+- source signals:
+  - T's Befriend pitch: keep HP gate; Befriend is a starting heart-based skill requiring 5 heart tokens; successful Befriend opens a choice between sparing/befriending and exploiting the opening for a free guaranteed critical hit.
+  - Mobile obligation: present the engine-emitted mercy choice as a modal with alignment-flavored spare/befriend text later, and a clear exploit/free-critical option.
+- rationale: mobile must make the philosophical consequence legible without inventing mechanics locally. The modal is a presentation consumer of engine truth.
+- proposed scope: 1 phase after mechanics ships the state/action/report contract.
+  - Wire the mechanics mercy-choice state into the combat presenter.
+  - Add modal UI with two choices and consequence copy slots.
+  - Pin hermetic tests for modal visibility, choice dispatch, and accessibility labels.
+- estimated phases: 1
+- conflicts: `[needs-engine-release]` — gated on mechanics exposing Befriend skill and mercy-choice state.
+
 ### [score 5.0] Cross-stat effects on level-up — engine-driven derived stats preview `[needs-engine-release]`
 - proposed: 2026-05-26, oversight 42nd call
 - source signals:

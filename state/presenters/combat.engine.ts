@@ -329,6 +329,26 @@ export interface CrucibleToken {
     color: string;
 }
 
+export interface MercyChoiceSlice {
+    /** True when the mercy choice modal should be shown. */
+    isActive: boolean;
+    /** Enemy name for context in the modal. */
+    enemyName: string;
+    /** Spare/befriend choice display label. */
+    spareLabel: string;
+    /** Spare/befriend choice hint text. */
+    spareHint: string;
+    /** Exploit/critical choice display label. */
+    exploitLabel: string;
+    /** Exploit/critical choice hint text. */
+    exploitHint: string;
+    /** Accessibility labels for the choices. */
+    a11y: {
+        spare: string;
+        exploit: string;
+    };
+}
+
 export interface CombatViewModel {
     /** True when the engine has an active `combat` slice. */
     isInCombat: boolean;
@@ -352,6 +372,8 @@ export interface CombatViewModel {
     actionPicker: ActionPickerSlice;
     skillPicker: SkillPickerSlice;
     resolve: ResolveSlice;
+    /** Mercy choice modal state (Phase 103). */
+    mercyChoice: MercyChoiceSlice;
     /** Full battle log; render in a scroll view. */
     log: readonly CombatLogEntryDisplay[];
     /**
@@ -1019,6 +1041,41 @@ _devAssertTriangleMatchesEngine();
 
 declare const __DEV__: boolean | undefined;
 
+/**
+ * Phase 103 — Build mercy choice slice based on engine state.
+ * For now, simulates the mechanics by checking friendship threshold.
+ * When mechanics Phase 108 lands, this will read the engine's mercy
+ * choice state directly.
+ */
+function buildMercyChoiceSlice(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    combat: Record<string, any> | null,
+    enemyName: string,
+    friendshipCounter: number,
+): MercyChoiceSlice {
+    // Temporary mechanics simulation: mercy choice activates when
+    // friendship counter reaches max. Real implementation will read
+    // engine-emitted mercy choice state from Phase 108.
+    const isActive = combat !== null && 
+        friendshipCounter >= FRIENDSHIP_COUNTER_MAX &&
+        combat.phase !== 'ended';
+    
+    const cleanEnemyName = combat === null ? '' : (enemyName || 'ADVERSARY');
+    
+    return {
+        isActive,
+        enemyName: cleanEnemyName,
+        spareLabel: 'SPARE',
+        spareHint: `preserve ${cleanEnemyName.toLowerCase()} · path of mercy`,
+        exploitLabel: 'EXPLOIT',
+        exploitHint: 'seize the opening · guaranteed critical',
+        a11y: {
+            spare: `Spare ${cleanEnemyName}, choosing mercy and consequence`,
+            exploit: `Exploit the opening for a guaranteed critical attack against ${cleanEnemyName}`,
+        },
+    };
+}
+
 function buildCombatA11y(
     enemy: CombatEnemySummary,
     player: CombatPlayerSummary,
@@ -1092,6 +1149,7 @@ export function selectCombatViewModel(
             },
             skillPicker,
             resolve: resolveSliceFromState(null, null, null),
+            mercyChoice: buildMercyChoiceSlice(null, '', 0),
             log: [],
             logEmptyMessage: 'The air shivers. Combat begins.',
             loadingMessage: 'the field stirs.',
@@ -1238,6 +1296,7 @@ export function selectCombatViewModel(
             enemy.lastStance,
             c,
         ),
+        mercyChoice: buildMercyChoiceSlice(c, enemy.name, friendshipCounter),
         log,
         logEmptyMessage: 'The air shivers. Combat begins.',
         loadingMessage: 'the field stirs.',

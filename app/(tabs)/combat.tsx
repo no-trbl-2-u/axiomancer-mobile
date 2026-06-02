@@ -49,6 +49,7 @@ import { PhaseBottom } from '@/components/combat/PhaseBottom';
 import { CombatEnemyPanel } from '@/components/combat/CombatEnemyPanel';
 import { CombatLogDisplay } from '@/components/combat/CombatLogDisplay';
 import { CombatPlayerHud } from '@/components/combat/CombatPlayerHud';
+import { MercyChoiceModal } from '@/components/combat/MercyChoiceModal';
 
 // ---------------------------------------------------------------------------
 // Local UI state (Q2: stance preview lives here until the user commits)
@@ -203,6 +204,15 @@ export function CombatPanel() {
         if (!skill.enabled) return;
         actions.setPlayerAction('skill', skill.id);
         actions.resolveRound();
+    }, [actions]);
+
+    // Phase 103 — Mercy choice modal callbacks
+    const onMercySpare = useCallback(() => {
+        actions.spareMercyChoice();
+    }, [actions]);
+
+    const onMercyExploit = useCallback(() => {
+        actions.exploitMercyChoice();
     }, [actions]);
 
     // Phase 73 (user-direct 2026-05-23) — past phase rows are tappable
@@ -440,6 +450,12 @@ export function CombatPanel() {
                     <Text style={styles.toastText}>{toast}</Text>
                 </View>
             )}
+            {/* Phase 103 — Mercy choice modal */}
+            <MercyChoiceModal
+                mercyChoice={vm.mercyChoice}
+                onSpare={onMercySpare}
+                onExploit={onMercyExploit}
+            />
         </>
     );
 }

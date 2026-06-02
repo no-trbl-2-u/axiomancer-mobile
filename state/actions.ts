@@ -307,6 +307,10 @@ export interface AppActions {
     pickEventChoice: (choiceId: string) => void;
     /** Clear the pending event without dispatching any engine call. */
     dismissEvent: () => void;
+    /** Phase 103 — Choose spare/befriend path in mercy choice modal. */
+    spareMercyChoice: () => void;
+    /** Phase 103 — Choose exploit/critical path in mercy choice modal. */
+    exploitMercyChoice: () => void;
 }
 
 export interface UseItemResult {
@@ -827,6 +831,8 @@ export function createAppActions(store: AppStore): AppActions {
         resolveCurrentMapEvent: () => resolveCurrentMapEventAction(store),
         pickEventChoice: (choiceId) => pickEventChoiceAction(store, choiceId),
         dismissEvent: () => dismissEventAction(store),
+        spareMercyChoice: () => spareMercyChoiceAction(store),
+        exploitMercyChoice: () => exploitMercyChoiceAction(store),
     };
 }
 
@@ -1454,4 +1460,70 @@ function pickEventChoiceAction(store: AppStore, choiceId: string): void {
 
 function dismissEventAction(store: AppStore): void {
     clearEventSlice(store);
+}
+
+// ---------------------------------------------------------------------------
+// Mercy choice action implementations (Phase 103)
+// ---------------------------------------------------------------------------
+
+/**
+ * Phase 103 — Handle spare/befriend choice in mercy modal.
+ * When mechanics Phase 108 lands, this will dispatch the engine's
+ * befriend action. For now, simulates by ending combat with friendship
+ * outcome and clearing the mercy choice trigger.
+ */
+function spareMercyChoiceAction(store: AppStore): void {
+    const { combat } = store.getState();
+    if (!combat) return;
+
+    // Temporary simulation: end combat with friendship outcome
+    // Real implementation will dispatch engine mercy choice action
+    const endReport = store.getState().endCombat();
+    
+    // Log the mercy choice for battle log
+    const logEntry = { severity: 'friendship' as const, text: "You choose mercy. The heart's path is taken." };
+    const updatedCombat = combatAppendLog(combat, logEntry as any);
+    
+    store.setState({
+        combat: {
+            ...updatedCombat,
+            phase: 'ended' as CombatPhase,
+        }
+    });
+}
+
+/**
+ * Phase 103 — Handle exploit/critical choice in mercy modal.
+ * When mechanics Phase 108 lands, this will dispatch the engine's
+ * exploit action. For now, simulates by applying guaranteed critical
+ * damage and clearing the mercy choice trigger.
+ */
+function exploitMercyChoiceAction(store: AppStore): void {
+    const { combat } = store.getState();
+    if (!combat) return;
+
+    // Temporary simulation: apply guaranteed critical damage
+    // Real implementation will dispatch engine mercy choice action
+    const criticalDamage = 15; // Placeholder value
+    const updatedEnemy = {
+        ...combat.enemy,
+        health: Math.max(0, combat.enemy.health - criticalDamage),
+    };
+
+    const logEntry = { severity: 'crit' as const, text: "You exploit the opening. The critical strike lands true." };
+    const updatedCombat = combatAppendLog(combat, logEntry as any);
+    
+    store.setState({
+        combat: {
+            ...updatedCombat,
+            enemy: updatedEnemy,
+            // Reset friendship counter after exploitation
+            friendshipCounter: 0,
+        }
+    });
+
+    // Check if this killed the enemy
+    if (updatedEnemy.health <= 0) {
+        store.getState().endCombat();
+    }
 }

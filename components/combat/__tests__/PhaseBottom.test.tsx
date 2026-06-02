@@ -121,6 +121,18 @@ const createMockCombatVM = (actionOptions: ActionOption[]): CombatViewModel => (
         { key: 'paradox', glyph: '◉', short: 'PRX', count: 0, color: '#e4dcc6' },
     ],
     loadingMessage: 'loading...',
+    mercyChoice: {
+        isActive: false,
+        enemyName: 'TEST ENEMY',
+        spareLabel: 'SPARE',
+        spareHint: 'preserve test enemy · path of mercy',
+        exploitLabel: 'EXPLOIT',
+        exploitHint: 'seize the opening · guaranteed critical',
+        a11y: {
+            spare: 'Spare TEST ENEMY, choosing mercy and consequence',
+            exploit: 'Exploit the opening for a guaranteed critical attack against TEST ENEMY',
+        },
+    },
 });
 
 const mockActionOptions: ActionOption[] = [

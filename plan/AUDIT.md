@@ -46,7 +46,7 @@
 - addressed: 2026-05-28 via commit `2c66e78`
 - fix: Node labels now display conditionally - only for nodes with kind 'available' (unvisited + accessible). Wrapped label rendering in conditional check in MapNodeMarker component. Current, completed, and locked nodes show no label, reducing visual clutter and focusing attention on actionable choices.
 
-### [4.5] Combat UX unintuitive, numbers and icons lack meaning (user-jot critique finding)
+### [4.5] Combat UX unintuitive, numbers and icons lack meaning (user-jot critique finding) ✅
 - category: external-critique
 - impact: 9
 - ease: 3
@@ -55,6 +55,7 @@
 - observation: Combat modal provides poor UX with unclear numbers and icons. User sees symbols but doesn't understand meaning. Requires design overhaul not code fix.
 - evidence: User-jot finding + confirmed by PLAYTEST_REPORT.md findings [F02] (encounter jargon), [F04] (battle log ability names), [F05] (LET phase numbers), [F06] (CRUCIBLE symbols)
 - suggested_fix: Needs design phase for complete combat UX overhaul
+- addressed: design-first via Phase 96 (`939efd2`), implemented in Phase 98, commit `b6593df` (drained via /oversight 2026-06-02). Iconography / terminology / information-hierarchy changes shipped; closed playtests [F02]/[F04]/[F05]/[F06]. Mirrors CRITIQUE [HIGH] combat-UX row.
 
 ### [3.5] Morale bars render hardcoded placeholder values (needs engine backing) ✅
 - category: data
@@ -111,7 +112,7 @@
 - evidence: Mobile still uses manual layout fixtures instead of engine-driven maps per docs/engine-map-reconciliation-2026-05-24.md
 - suggested_fix: Needs engine-side MapDefinition.edges field, then ~200 line refactor under state/exploration-maps/
 
-### [user-issue #227] HIGH Token resource system never accumulates (blocks skill casting)
+### [user-issue #227] HIGH Token resource system never accumulates (blocks skill casting) ✅
 - category: external-issue
 - impact: 9
 - ease: 6
@@ -120,3 +121,4 @@
 - observation: The token resource system (what's used to cast skills) is not working at all — tokens are not accumulating whatsoever. Without them, skills cannot be cast.
 - evidence: user-spotted at 2026-05-30T13:57:17Z (manual playtest)
 - suggested_fix: verify the engine combatResources accrual per round is read/propagated to the mobile combat presenter (state/presenters/combat.engine.ts) rather than displayed as a static value; may be an engine vs mobile boundary issue.
+- addressed: 2026-06-01 via Phase 97(a), commit `8df2971` (drained via /oversight 2026-06-02). Token resource now reads the engine per-round `combatResources` accrual instead of a static placeholder; skills are castable. Mirrors CRITIQUE [HIGH] token row + issue #227.

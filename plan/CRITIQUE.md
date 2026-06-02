@@ -75,7 +75,7 @@
 - addressed: 2026-06-01 via commit `2396dd0`
 - fix: Fixed encounter node consumption in moveToAction. Root cause: encounter nodes were being marked as completed on visit, preventing repeat encounters. Modified logic to check node type (encounter/boss) and only complete/consume non-encounter nodes. Updated test to expect correct behavior. Encounter nodes now remain reusable after both victory paths.
 
-### [HIGH] /combat — Token resource system (skill-cast currency) never accumulates
+### [HIGH] /combat — Token resource system (skill-cast currency) never accumulates ✅
 - pass: user-jot (commit ff2b8ae)
 - viewport: unspecified
 - auth_state: anonymous
@@ -84,8 +84,9 @@
 - evidence: user-spotted at 2026-05-30T13:57:17Z (manual playtest)
 - suggested_fix: [user has not specified — iterate to determine] verify the engine combatResources accrual per round is read/propagated to the mobile combat presenter (state/presenters/combat.engine.ts) rather than displayed as a static value; may be an engine vs mobile boundary issue.
 - source: user
+- addressed: 2026-06-01 via Phase 97(a), commit `8df2971` (drained via /oversight 2026-06-02). Token resource now reads the engine's per-round `combatResources` accrual instead of a static placeholder. Mirrors AUDIT [user-issue #227] / issue #227.
 
-### [HIGH] /combat — Learned skills blocked as "not equipped"; combat should show only currently-usable skills
+### [HIGH] /combat — Learned skills blocked as "not equipped"; combat should show only currently-usable skills ✅
 - pass: user-jot (commit ff2b8ae)
 - viewport: unspecified
 - auth_state: anonymous
@@ -94,8 +95,9 @@
 - evidence: user-spotted at 2026-05-30T13:57:17Z (manual playtest)
 - suggested_fix: [user has not specified — iterate to determine] drop the equipped-gate for learned skills; filter the in-combat skill list to those castable right now (affordable tokens + valid stance/target). Relates to Phase 82a equippedSkills filter — may need a product re-decision.
 - source: user
+- addressed: 2026-06-01 via Phase 97(c), commit `8df2971` (drained via /oversight 2026-06-02). Learned skills no longer gated as "not equipped"; in-combat list surfaces currently-usable skills.
 
-### [MED] /combat — Difficulty too hard; enemies scale with the player, no progression order
+### [MED] /combat — Difficulty too hard; enemies scale with the player, no progression order `[needs-engine-release]`
 - pass: user-jot (commit ff2b8ae)
 - viewport: unspecified
 - auth_state: anonymous
@@ -104,8 +106,9 @@
 - evidence: user-spotted at 2026-05-30T13:57:17Z (manual playtest)
 - suggested_fix: [user has not specified — iterate to determine] likely an engine-side difficulty/scaling concern (enemy level derivation); mobile may only surface it. Needs a balance pass and probably a design/spec decision before code.
 - source: user
+- engine-gated: tagged `[needs-engine-release]` via /oversight 2026-06-02 (52nd call). Enemy level derivation / progression curve lives in `axiomancer-mechanics`; the mobile repo only surfaces it and cannot fix the balance here. Row stays OPEN so the next /oversight re-surfaces it for an engine-side decision.
 
-### [MED] /dev — Add two seeded test playthroughs (level-1-easy + max-level endgame) to Dev Menu
+### [MED] /dev — Add two seeded test playthroughs (level-1-easy + max-level endgame) to Dev Menu [PROMOTED → Phase 100 via /oversight 2026-06-02]
 - pass: user-jot (commit ff2b8ae)
 - viewport: unspecified
 - auth_state: anonymous
@@ -114,6 +117,7 @@
 - evidence: user-spotted at 2026-05-30T13:57:17Z (manual playtest)
 - suggested_fix: [user has not specified — iterate to determine] add two Dev Menu seed presets ("start seed" and "endgame seed") that initialize the engine state to those two fixtures; pair with the difficulty finding above.
 - source: user
+- promoted: Phase 100 via /oversight 2026-06-02 (52nd call). Mobile Dev-Menu seed-preset harness; pairs with the engine-gated difficulty finding above. See PHASE_CANDIDATES ## Promoted + build-plan Status block.
 
 ### [HIGH] /plan/bearings.md — Hard rule 10 says verify gate is RED and "the loop CANNOT autonomously commit" — stale, blocks/misleads ✅
 - resolved: 2026-06-01 via /oversight (51st call). Rewrote bearings.md Hard rule 10 to state the verify gate is GREEN and the loop commits autonomously (Phase 2 migration shipped in 527f021; ~96 phases shipped since). Stale RED-gate hold removed.
@@ -257,7 +261,7 @@
 - suggested_fix: [user has not specified — iterate to determine]
 - source: user
 
-### [HIGH] /combat — Combat UX unintuitive, numbers and icons lack meaning, needs design overhaul
+### [HIGH] /combat — Combat UX unintuitive, numbers and icons lack meaning, needs design overhaul ✅
 - pass: user-jot (commit `dde93f4`)
 - viewport: unspecified
 - auth_state: anonymous
@@ -267,6 +271,7 @@
 - suggested_fix: [needs design — user flagged this as a UX overhaul, not a code fix]
 - source: user
 - playtest: confirmed by PLAYTEST_REPORT.md [F02] (encounter jargon), [F04] (battle log ability names), [F05] (LET phase numbers), [F06] (CRUCIBLE symbols)
+- addressed: design-first via Phase 96 (`939efd2`) then implemented in Phase 98, commit `b6593df` (drained via /oversight 2026-06-02). Iconography / terminology / information-hierarchy overhaul closed AUDIT [4.5] and playtests [F02]/[F04]/[F05]/[F06].
 
 ### [HIGH] README.md — Critical mismatch between test promise and actual state blocks new contributors ✅
 - pass: 17 (commit c7a1c9c)

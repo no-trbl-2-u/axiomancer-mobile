@@ -19,7 +19,7 @@
 - addressed: 2026-06-02 via commit `379182c`
 - fix: Moved components/StanceGlyph.test.tsx to components/__tests__/StanceGlyph.test.tsx and updated import path from './StanceGlyph' to '../StanceGlyph'. Test organization now matches project conventions with all component tests properly organized under __tests__/ directories.
 
-### [5.4] Inline style objects cause unnecessary re-renders in exploration screen
+### [5.4] Inline style objects cause unnecessary re-renders in exploration screen ✅
 - category: perf
 - impact: 6
 - ease: 9
@@ -28,6 +28,9 @@
 - observation: The exploration screen uses inline style objects `style={{ color: AXM.bone }}` and `{ backgroundColor: '#16130d' }` which create new object references on every render, potentially causing performance issues.
 - evidence: Found in app/(tabs)/exploration/index.tsx lines with `style={{ color: AXM.bone }}` and `{ backgroundColor: '#16130d' }`
 - suggested_fix: Extract these inline styles to StyleSheet.create() constants to prevent object recreation on each render
+- issue: #238
+- addressed: 2026-06-02 via commit `9d140fc`
+- fix: Extracted inline style objects to StyleSheet constants. Created `styles.continentLabel` and `styles.graphBackground` to prevent object recreation on each render, improving performance.
 
 ### [4.8] Magic number styling values in tab layout object spread
 - category: perf

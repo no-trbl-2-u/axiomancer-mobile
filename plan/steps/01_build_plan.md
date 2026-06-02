@@ -1925,7 +1925,7 @@ engine balance); Phase 100 gives it a testable harness.**
       reduced from 814 → 477 lines. Presenter contract preserved, 
       verify gate green. Unit tests for all extracted components.
 
-- [ ] Phase 103 — Befriend mercy-choice modal `[blocked: needs mechanics Phase 108]`. Present the engine-emitted post-Befriend choice as a mobile modal: spare/befriend/preserve or exploit the opening for a free guaranteed critical attack. Mobile must not decide eligibility locally. Brief: `plan/phases/phase_103_befriend_mercy_choice_modal.md`.
+- [x] Phase 103 — Befriend mercy-choice modal. Present the engine-emitted post-Befriend choice as a mobile modal: spare/befriend/preserve or exploit the opening for a free guaranteed critical attack. Mobile must not decide eligibility locally. Brief: `plan/phases/phase_103_befriend_mercy_choice_modal.md`. Shipped in commit 8afb091.
 
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped
       2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —

@@ -19,6 +19,15 @@ When the mechanics engine emits a Befriend/mercy choice state, Mobile should pre
    - Grants a free guaranteed critical attack according to engine rules.
    - Must be presented as a consequential act, not a neutral attack button.
 
+## Anti-exploit consequences mobile must represent
+
+When mechanics exposes them, mobile should make these consequences legible:
+
+- exploiting an elite/miniboss Befriend opening prevents the region boss from gathering friendship counters;
+- sparing that elite/miniboss causes the region boss to start with `open-minded`;
+- `open-minded` may be a status effect whose only purpose is qualifying a future Befriend path;
+- befriending a boss can trade faction reputation, losing standing with one faction and gaining with another.
+
 ## Mobile obligations
 
 - Do not decide Befriend eligibility locally.

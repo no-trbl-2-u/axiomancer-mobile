@@ -13,7 +13,7 @@ engine: all game rules, state shape, and randomness live there. This repo
 owns screens, navigation, theming, fonts, SVG/asset placeholders, and the
 glue (selectors / presenters) that maps engine state to UI props.
 
-See [`README.md`](./README.md) for architecture docs.
+See [`README.md`](./README.md) for architecture docs. Read [`VISION.md`](./VISION.md) before major mobile UX, combat, mercy/friendship, alignment, or `/march` phase work.
 
 ### Key commands
 

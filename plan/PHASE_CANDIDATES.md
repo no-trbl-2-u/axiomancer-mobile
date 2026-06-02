@@ -51,17 +51,6 @@
 - score: 2.5 base + 0.5 (playtest-source) + 0.5 (visual, confirmed by playtest) = 3.5
 - critique-xref: CRITIQUE.md [MED] Space heart/body/mind buttons evenly
 
-### [score 4.5] App folder hermetic test coverage phase
-- proposed: 2026-06-01T11:23:07+00:00, expand pass 50  
-- source signals:
-  - Smell: app/ folder has 9 source files with 0 test files (severe test:code ratio drop)
-  - Multiple AUDIT findings reference untested presenter/screen behavior
-  - Testing standard exists in docs/testing.md but app/ routes not covered
-- rationale: App folder completely lacks hermetic test coverage while components/ maintains 50% ratio. Critical for presenter contract validation per bearings.md decisions.
-- proposed scope: 1 phase — add hermetic e2e tests for all 9 app/ routes following docs/testing.md standard
-- estimated phases: 1
-- conflicts: none
-
 ### [score 3.5] Stale paused phases resolution (62d/62e cleanup)
 - proposed: 2026-06-01T11:23:07+00:00, expand pass 50
 - source signals:
@@ -70,17 +59,6 @@
   - Plan/steps/01_build_plan.md shows stale decision context
 - rationale: Phases 62d (Currency grant debug control) and 62e (Combat-HUD spot overrides) paused during combat regression priority shift. Need explicit resolution.
 - proposed scope: 1 phase — evaluate current product context and either resume with updated scope or formally retire [skipped] with rationale
-- estimated phases: 1
-- conflicts: none
-
-### [score 3.0] Large file decomposition — combat.tsx split
-- proposed: 2026-06-01T11:23:07+00:00, expand pass 50
-- source signals:
-  - Smell: app/(tabs)/combat.tsx at 809 lines (>2× folder median, outlier)
-  - Code organization debt affects maintainability
-  - File length violates "5 small files over 1 dense file" principle in build plan
-- rationale: Combat screen monolith harder to maintain and test. Should decompose into focused sub-components per build plan style guardrails.
-- proposed scope: 1 phase — extract combat sub-components from main screen file while preserving presenter contract
 - estimated phases: 1
 - conflicts: none
 
@@ -687,6 +665,18 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted → status Phase 100] /dev — Seeded test playthroughs (level-1-easy + max-level endgame)
+
+- moved to ## Promoted via /oversight 2026-06-02 (52nd call), assigned Phase 100. Source: CRITIQUE [MED] /dev "Add two seeded test playthroughs" (user-jot, commit ff2b8ae). Mobile-doable Dev-Menu affordance to seed (a) a fresh level-1 run vs easy enemies and (b) a max-level/all-items/all-skills endgame run, so the difficulty/progression engine work (CRITIQUE [MED] difficulty, `[needs-engine-release]`) can actually be exercised at both extremes. Engine-side balance is out of mobile scope; this phase delivers the reproducible-state harness only. Brief lives in `plan/steps/01_build_plan.md` Status block.
+
+### [promoted → status Phase 101] [score 4.5] App folder hermetic test coverage phase
+
+- moved from ## Pending via /oversight 2026-06-02 (52nd call), assigned Phase 101. app/ folder has 9 source files with 0 test files; add hermetic e2e tests for all app/ routes following docs/testing.md standard. Pure mobile, no engine dependency. Brief lives in `plan/steps/01_build_plan.md` Status block.
+
+### [promoted → status Phase 102] [score 3.0] Large file decomposition — combat.tsx split
+
+- moved from ## Pending via /oversight 2026-06-02 (52nd call), assigned Phase 102. app/(tabs)/combat.tsx at 809 lines (>2× folder median); extract focused sub-components while preserving the presenter contract, per the "5 small files over 1 dense file" build-plan guardrail. Brief lives in `plan/steps/01_build_plan.md` Status block.
 
 ### [promoted → status Phase 99] [score 5.6] Glanton Nexus state reconciliation guardrail
 

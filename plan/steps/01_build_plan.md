@@ -1886,6 +1886,44 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       `plan/phases/phase_99_glanton_nexus_state_reconciliation_guardrail.md`.
       Score 8 × 7 / 10 = 5.6.
 
+**Queued via `/oversight` 2026-06-02 (52nd call) — build-plan queue
+was drained after Phase 99; these three refill it. The first two
+combat user-bugs and the combat-UX finding were already shipped by
+Phases 97/98 — their CRITIQUE/AUDIT rows are now drained, not new
+work. The engine-side "difficulty too hard / no progression curve"
+finding stays OPEN and `[needs-engine-release]` (mobile cannot fix
+engine balance); Phase 100 gives it a testable harness.**
+
+- [ ] Phase 100 — Dev-Menu seeded test playthroughs. Promoted via
+      `/oversight` 2026-06-02 from CRITIQUE [MED] /dev (user-jot,
+      commit `ff2b8ae`). Add two Dev-Menu seed presets that
+      initialize engine state to reproducible fixtures: (a) a fresh
+      level-1 run against easy enemies (start-of-game testing) and
+      (b) a max-level / all-items / all-skills endgame run (endgame
+      testing). Today everything starts at level 1 / 5-each with
+      enemies that rubber-band to the player, so neither extreme is
+      exercisable. Scope is the MOBILE Dev-Menu affordance + state
+      seeding only — engine-side balance / progression-curve work
+      (CRITIQUE [MED] difficulty, `[needs-engine-release]`) is out of
+      scope and stays open for an engine decision. Pin hermetic tests
+      that each preset produces the expected seeded state. Score 4.0.
+
+- [ ] Phase 101 — App-folder hermetic test coverage. Promoted via
+      `/oversight` 2026-06-02 from PHASE_CANDIDATES `[score 4.5]`.
+      `app/` has 9 source files with 0 test files while `components/`
+      holds ~50% ratio. Add hermetic e2e tests for the app/ routes
+      following the `docs/testing.md` standard (tests live under
+      `state/e2e/` per the doc's mandate, NOT under `app/`). Pure
+      mobile, no engine dependency. Score 4.5.
+
+- [ ] Phase 102 — `combat.tsx` decomposition. Promoted via
+      `/oversight` 2026-06-02 from PHASE_CANDIDATES `[score 3.0]`.
+      `app/(tabs)/combat.tsx` is 809 lines (>2× folder median).
+      Extract focused sub-components from the screen file while
+      preserving the presenter contract (no behaviour change,
+      verify stays green), per the "5 small files over 1 dense
+      file" build-plan guardrail. Score 3.0.
+
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped
       2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —
       phase-aware top + bottom `SEALED` chain bars (`SEALED · AT

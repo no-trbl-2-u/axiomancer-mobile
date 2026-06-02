@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-01 at commit d66c7bd
-> Pass count: 50
+> Last pass: 2026-06-02 at commit 0332e4a
+> Pass count: 51
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -1702,3 +1702,53 @@ exploration `moveToAction` migration to engine `revealAdjacent` /
 <!-- [score 3.5] Combat UX design overhaul — PROMOTED → Phase 96
      via /oversight 2026-05-30 (43rd call); entry moved to
      ## Promoted. -->
+
+### [score 4.2] App directory hermetic test coverage infrastructure
+- proposed: 2026-06-02, expand pass 51
+- source signals:
+  - **Test coverage disparity smell** — app/ directory contains 9 .tsx route components with 0 test files, while components/ directory has excellent coverage (69/70 components tested)
+  - **AUDIT finding [3.6]** — "App directory components lack hermetic test coverage" (impact: 6, ease: 6)
+- rationale: Critical infrastructure gap where route components have zero test coverage despite established test patterns. This violates the bearings.md "Tests alongside code" principle and creates a maintenance liability.
+- proposed scope: 1 phase. Add hermetic test coverage for app route components, starting with high-traffic routes like combat.tsx and exploration/index.tsx. Follow existing test-utils patterns.
+- estimated phases: 1
+- conflicts: none
+
+### [score 3.8] Type casting cleanup sweep — state presenter boundaries
+- proposed: 2026-06-02, expand pass 51
+- source signals:
+  - **Cast cluster smell** — 20+ `as any`/`as unknown` instances across state/ and app/ directories, concentrated in state/presenters/
+  - **Precedent pattern** — Phase 69 successfully cleaned up setState casting with typed wrappers
+- rationale: Type casting clusters mask potential runtime errors and reduce maintainability. Following Phase 69's pattern, targeted cleanup of presenter boundaries will improve type safety without breaking existing functionality.
+- proposed scope: 1 phase. Replace unsafe casts with typed wrapper utilities, similar to Phase 69's setState wrapper approach. Focus on state/presenters/ where density is highest.
+- estimated phases: 1
+- conflicts: none
+
+### [score 3.5] Color token migration — hex literal cleanup
+- proposed: 2026-06-02, expand pass 51
+- source signals:
+  - **Hex literal color leakage smell** — 10+ hardcoded hex colors across app/ and components/ (#16130d, #1a1814, #3a3530, #1a0a0a, #ff0000)
+  - **Bearings contract violation** — "Theme tokens: no hex literals in components" rule being bypassed
+- rationale: Color leakage creates maintenance debt and inconsistent theming. Hardcoded colors bypass the design token system established in theme/axm.ts.
+- proposed scope: 1 phase. Extract hardcoded colors to theme tokens or replace with existing tokens. Update affected components to use token references.
+- estimated phases: 1
+- conflicts: none
+
+### [score 3.2] Engine 0.13.0 integration phase — consumer features
+- proposed: 2026-06-02, expand pass 51
+- source signals:
+  - **Engine-bump cliff smell** — axiomancer-mechanics at 0.13.0 since 2026-05-23 (14+ days) without integration phase consuming new surfaces
+  - **Commit pattern signal** — Multiple engine-related commits indicating active engine work but no systematic integration
+- rationale: Engine bumps historically require integration phases to consume new API surfaces. The 14-day gap suggests potential new features in 0.13.0 that haven't been systematically evaluated for mobile integration.
+- proposed scope: 1 phase. Audit engine 0.13.0 changelog for new surfaces, implement integration for applicable features. Cross-reference against any [needs-engine-release] AUDIT rows.
+- estimated phases: 1
+- conflicts: none
+
+### [score 2.8] Combat component decomposition follow-up
+- proposed: 2026-06-02, expand pass 51
+- source signals:
+  - **File length outlier smell** — Multiple files approaching 700+ lines (combat.tsx: 493, character/index.tsx: 556, exploration/index.tsx: 687)
+  - **Recent decomposition precedent** — Phase 102 shipped combat.tsx decomposition, suggesting pattern may apply to other large files
+- rationale: Large files create maintenance burden and reduce readability. Phase 102's combat decomposition establishes a pattern that could benefit other oversized route components.
+- proposed scope: 1-2 phases. Extract sub-components from exploration/index.tsx and character/index.tsx following Phase 102's decomposition approach.
+- estimated phases: 2
+- conflicts: none

@@ -25,13 +25,11 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-    ScrollView,
     StyleSheet,
     Text,
     View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import Svg, { Path, Circle, Ellipse, Defs, RadialGradient, Stop } from 'react-native-svg';
 
 import { AXM, FONTS } from '@/theme/axm';
 import { useAesthetic } from '@/state/aesthetic-mode';
@@ -41,38 +39,20 @@ import { createMockEncounterEnemy } from '@/state/mocks/combat.mock';
 import {
     useCombatViewModel,
     type ActionOption,
-    type CombatLogEntryDisplay,
-    type CombatViewModel,
     type SkillOption,
     type StanceKey,
 } from '@/state/presenters/combat.engine';
 import { selectCodexStatusLine } from '@/state/presenters/combat.codex.engine';
 import { CodexStatusStrip } from '@/components/CodexStatusStrip';
 import { ScreenBg } from '@/components/ScreenBg';
-import { SectionLabel } from '@/components/SectionLabel';
-import { StatBar } from '@/components/StatBar';
-import { StanceGlyph } from '@/components/StanceGlyph';
-import { EffectChip } from '@/components/EffectChip';
-import { FriendshipMeter } from '@/components/FriendshipMeter';
-import { MindMark } from '@/components/MindMark';
-import { DifficultyBadge } from '@/components/DifficultyBadge';
-import { Splatter } from '@/components/Splatter';
 import { PhaseBottom } from '@/components/combat/PhaseBottom';
-import { TooltipTarget } from '@/components/tooltip/TooltipTarget';
+import { CombatEnemyPanel } from '@/components/combat/CombatEnemyPanel';
+import { CombatLogDisplay } from '@/components/combat/CombatLogDisplay';
+import { CombatPlayerHud } from '@/components/combat/CombatPlayerHud';
 
 // ---------------------------------------------------------------------------
 // Local UI state (Q2: stance preview lives here until the user commits)
 // ---------------------------------------------------------------------------
-
-const LOG_SEVERITY_COLOR: Record<CombatLogEntryDisplay['severity'], string> = {
-    info: AXM.parchment,
-    damage: AXM.blood,
-    crit: AXM.sulfur,
-    heal: '#5a8a3a',
-    effect: AXM.rust,
-    friendship: AXM.rust,
-    system: AXM.bone,
-};
 
 // ---------------------------------------------------------------------------
 // Screen
@@ -435,8 +415,8 @@ export function CombatPanel() {
             {aesthetic === 'codex' && (
                 <CodexStatusStrip line={selectCodexStatusLine(vm)} />
             )}
-            <EnemyPanel vm={vm} />
-            <BattleLog log={vm.log} round={vm.round} emptyMessage={vm.logEmptyMessage} />
+            <CombatEnemyPanel vm={vm} />
+            <CombatLogDisplay log={vm.log} round={vm.round} emptyMessage={vm.logEmptyMessage} />
             {/* Phase 73 — PlayerHud now renders AFTER the phase stack
               * to match the design's PtCombatBody order (`prototype.jsx:
               * 692-711`): enemy / round strip / phase stack (scrollable) /
@@ -454,7 +434,7 @@ export function CombatPanel() {
                 onContinue={onContinueRound}
                 onLeave={onLeaveCombat}
             />
-            <PlayerHud vm={vm} />
+            <CombatPlayerHud vm={vm} />
             {toast !== null && (
                 <View style={styles.toast} accessibilityLiveRegion="polite">
                     <Text style={styles.toastText}>{toast}</Text>
@@ -464,225 +444,8 @@ export function CombatPanel() {
     );
 }
 
-// ---------------------------------------------------------------------------
-// Enemy panel
-// ---------------------------------------------------------------------------
 
-function EnemyPanel({ vm }: { vm: CombatViewModel }) {
-    const lastStance: StanceKey = vm.enemy.lastStance ?? 'mind';
-    // Phase 72 — restructured to the design's left-portrait pattern
-    // (`design/handoff-2026-05-23/project/screens-canonical.jsx:213-243`).
-    // Three columns: 60×72 framed portrait left, info column middle (flex),
-    // STANDS-stance indicator right. Pre-Phase-72 the SVG was a 180×200
-    // off-bleed overlay on the right — the user-reported "cleaner placing
-    // of the enemy's image/svg" addressed.
-    return (
-        <View style={styles.enemyPanel}>
-            <Splatter
-                color={AXM.blood}
-                size={100}
-                seed={17}
-                style={{ position: 'absolute', top: -16, left: -16, opacity: 0.5 }}
-            />
-            <View style={styles.enemyRow}>
-                <View style={styles.enemyPortrait}>
-                    <Svg
-                        viewBox="0 0 200 200"
-                        width={58}
-                        height={70}
-                        // The detailed hooded silhouette renders smaller now;
-                        // the eye/mouth pixels become subtle marks rather than
-                        // the dominant chrome they were pre-Phase-72.
-                    >
-                        <Defs>
-                            <RadialGradient id="eg" cx="50%" cy="40%">
-                                <Stop offset="0%" stopColor={AXM.blood} stopOpacity={0.4} />
-                                <Stop offset="100%" stopColor={AXM.blood} stopOpacity={0} />
-                            </RadialGradient>
-                        </Defs>
-                        <Ellipse cx={100} cy={100} rx={90} ry={80} fill="url(#eg)" />
-                        <Path
-                            d="M100 30 C 60 30 40 70 50 130 L 30 200 L 170 200 L 150 130 C 160 70 140 30 100 30 Z"
-                            fill="#06050a"
-                            stroke={AXM.parchment}
-                            strokeWidth={1.5}
-                        />
-                        <Path
-                            d="M70 70 Q 100 50 130 70 L 130 110 Q 100 130 70 110 Z"
-                            fill="#000"
-                        />
-                        <Circle cx={85} cy={90} r={3.5} fill={AXM.blood} />
-                        <Circle cx={115} cy={90} r={3.5} fill={AXM.blood} />
-                    </Svg>
-                </View>
-                <View style={styles.enemyInfo}>
-                    <View style={styles.enemyTopRow}>
-                        <Text style={styles.enemyEyebrow}>WHAT WAITS</Text>
-                        <View style={{ flex: 1 }} />
-                        <DifficultyBadge tier={vm.enemy.tier || 'normal'} />
-                        <Text style={styles.roundText}>{vm.roundToken}</Text>
-                    </View>
-                    <Text style={styles.enemyName} numberOfLines={1}>{vm.enemy.name}</Text>
-                    {vm.enemy.flavor !== '' && (
-                        <Text style={styles.enemyFlavor} numberOfLines={1}>
-                            {`"…${vm.enemy.flavor}"`}
-                        </Text>
-                    )}
-                    <View style={{ marginTop: 6 }}>
-                        <StatBar
-                            value={vm.enemy.hp}
-                            max={vm.enemy.hpMax}
-                            color={AXM.blood}
-                            label="HEALTH"
-                            height={8}
-                        />
-                    </View>
-                    <View style={styles.enemyMetaRow}>
-                        <FriendshipMeter value={vm.friendshipCounter} max={vm.friendshipCounterMax} />
-                        <MindMark stacks={vm.enemy.mindMarks} />
-                    </View>
-                    {vm.enemy.effects.length > 0 && (
-                        <View style={styles.effectsRow}>
-                            {vm.enemy.effects.map((e, i) => (
-                                <TooltipTarget
-                                    key={`${e.kind}-${i}`}
-                                    kind="effect"
-                                    id={e.effectId}
-                                    accessibilityLabel={`Effect ${e.name}`}
-                                    accessibilityHint="tap to read description"
-                                    testID={`combat-enemy-effect-${i}`}
-                                >
-                                    <EffectChip
-                                        effect={{
-                                            ...e,
-                                            tint: e.tint ?? undefined,
-                                            duration: e.duration ?? undefined,
-                                        }}
-                                    />
-                                </TooltipTarget>
-                            ))}
-                        </View>
-                    )}
-                </View>
-                <View style={styles.enemyStanceCol}>
-                    <Text style={styles.enemyStanceLabel}>STANDS</Text>
-                    <StanceGlyph
-                        kind={lastStance}
-                        size={28}
-                        color={vm.enemy.lastStance === null ? AXM.bone : AXM.sulfur}
-                    />
-                </View>
-            </View>
-        </View>
-    );
-}
 
-// ---------------------------------------------------------------------------
-// Battle log (Q4: full scroll + colour per severity)
-// ---------------------------------------------------------------------------
-
-function BattleLog({
-    log,
-    round,
-    emptyMessage,
-}: {
-    log: readonly CombatLogEntryDisplay[];
-    round: number;
-    emptyMessage: string;
-}) {
-    return (
-        <View style={styles.logWrap}>
-            <View style={styles.logBox}>
-                <View style={styles.logHeader}>
-                    <SectionLabel size={8} color={AXM.bone}>{`⚜ BATTLE LOG · ROUND ${round}`}</SectionLabel>
-                    <Text style={styles.logScrollHint}>SCROLL ↑</Text>
-                </View>
-                {log.length === 0 ? (
-                    <Text style={[styles.logLine, { color: AXM.bone }]}>{emptyMessage}</Text>
-                ) : (
-                    <ScrollView
-                        style={styles.logScroll}
-                        contentContainerStyle={{ paddingBottom: 4 }}
-                        showsVerticalScrollIndicator={false}
-                        accessibilityLabel="Battle log"
-                    >
-                        {log.map((entry, i) => (
-                            <View key={i} style={styles.logEntry}>
-                                <View style={[styles.logRail, { backgroundColor: LOG_SEVERITY_COLOR[entry.severity] }]} />
-                                <Text
-                                    style={[styles.logLine, { color: LOG_SEVERITY_COLOR[entry.severity] }]}
-                                    accessibilityRole="text"
-                                >
-                                    {entry.text}
-                                </Text>
-                            </View>
-                        ))}
-                    </ScrollView>
-                )}
-            </View>
-            <View style={styles.logLegend}>
-                <Text style={styles.logLegendLabel}>LEGEND ·</Text>
-                <Text style={[styles.logLegendItem, { color: AXM.blood }]}>■ HARM</Text>
-                <Text style={[styles.logLegendItem, { color: AXM.sulfur }]}>■ CRIT</Text>
-                <Text style={[styles.logLegendItem, { color: '#5a8a3a' }]}>■ HEAL</Text>
-                <Text style={[styles.logLegendItem, { color: AXM.rust }]}>■ EFFECT</Text>
-                <Text style={[styles.logLegendItem, { color: AXM.bone }]}>■ INFO</Text>
-            </View>
-        </View>
-    );
-}
-
-// ---------------------------------------------------------------------------
-// Player HUD
-// ---------------------------------------------------------------------------
-
-function PlayerHud({ vm }: { vm: CombatViewModel }) {
-    // Phase 73 — port the design's PlayerHUDLive (`prototype.jsx:
-    // 452-472`). Sits at the bottom of the seal as a "your turn"
-    // footer: stance glyph on the left (sulfur when a stance is
-    // committed, bone otherwise), then a column on the right with
-    // the HEALTH bar across the top and the friendship meter +
-    // effect chips on the bottom row. Mana bar omitted per user-
-    // direct override (2026-05-23) — only HEALTH is player-visible.
-    const stance = vm.stancePicker.selected;
-    return (
-        <View style={styles.playerWrap}>
-            <View style={styles.playerInner}>
-                <StanceGlyph
-                    kind={stance ?? 'body'}
-                    size={26}
-                    color={stance !== null ? AXM.sulfur : AXM.bone}
-                />
-                <View style={styles.playerCol}>
-                    <StatBar value={vm.player.hp} max={vm.player.hpMax} color={AXM.blood} label="HEALTH" height={8} />
-                    <View style={styles.playerMetaRow}>
-                        <FriendshipMeter
-                            value={vm.friendshipCounter}
-                            max={vm.friendshipCounterMax}
-                        />
-                        <View style={{ flex: 1 }} />
-                        <View style={styles.playerEffects}>
-                            {vm.player.effects.map((e, i) => (
-                                <TooltipTarget
-                                    key={`${e.kind}-${i}`}
-                                    kind="effect"
-                                    id={e.effectId}
-                                    accessibilityLabel={`Effect ${e.name}`}
-                                    accessibilityHint="tap to read description"
-                                    testID={`combat-player-effect-${i}`}
-                                >
-                                    <EffectChip
-                                        effect={{ ...e, tint: e.tint ?? undefined, duration: e.duration ?? undefined }}
-                                    />
-                                </TooltipTarget>
-                            ))}
-                        </View>
-                    </View>
-                </View>
-            </View>
-        </View>
-    );
-}
 
 // ---------------------------------------------------------------------------
 // Sub-components extracted to components/combat/PhaseBottom.tsx
@@ -703,106 +466,6 @@ const styles = StyleSheet.create({
         color: AXM.bone,
         textTransform: 'uppercase',
     },
-    // Phase 72 — three-column EnemyPanel layout matching the design's
-    // PtCombatBody EnemyPanel (`screens-canonical.jsx:213-243`).
-    // Portrait left (60×72 framed), info middle (flex), stance indicator
-    // right. Pre-Phase-72 layout was an off-bleed right-aligned SVG with
-    // info absolute-positioned left — surface still rendered as the
-    // overlapped collage the user flagged for cleanup.
-    enemyPanel: {
-        position: 'relative',
-        padding: 10,
-        paddingHorizontal: 16,
-        backgroundColor: AXM.panelBg,
-        overflow: 'hidden',
-    },
-    enemyRow: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        gap: 12,
-    },
-    enemyPortrait: {
-        width: 60,
-        height: 72,
-        backgroundColor: AXM.deepBg,
-        borderWidth: 1,
-        borderColor: AXM.ash,
-        alignItems: 'center',
-        justifyContent: 'center',
-        // Subtle hatch via thin internal stripe — react-native doesn't
-        // ship the `axm-hatch` CSS class the design uses, but the
-        // bordered+deepBg backdrop carries the visual contract.
-    },
-    enemyInfo: { flex: 1, minWidth: 0 },
-    enemyEyebrow: {
-        fontFamily: FONTS.sans,
-        fontSize: 9,
-        letterSpacing: 1.8,
-        color: AXM.bone,
-    },
-    enemyTopRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        marginBottom: 2,
-    },
-    roundText: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone },
-    enemyName: {
-        fontFamily: FONTS.gothic,
-        fontSize: 20,
-        lineHeight: 22,
-        color: AXM.parchment,
-        marginTop: 2,
-    },
-    enemyFlavor: {
-        fontFamily: FONTS.serifItalic,
-        fontSize: 10,
-        color: AXM.bone,
-        marginTop: 2,
-    },
-    enemyMetaRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        marginTop: 5,
-    },
-    effectsRow: {
-        flexDirection: 'row',
-        gap: 4,
-        marginTop: 5,
-        flexWrap: 'wrap',
-    },
-    enemyStanceCol: {
-        alignItems: 'center',
-        gap: 4,
-        paddingTop: 2,
-    },
-    enemyStanceLabel: {
-        fontFamily: FONTS.sans,
-        fontSize: 9,
-        letterSpacing: 1.6,
-        color: AXM.bone,
-    },
-    logWrap: { padding: 6, paddingHorizontal: 10, paddingBottom: 0 },
-    logBox: { backgroundColor: AXM.deepBg, borderWidth: 1, borderColor: AXM.ash, borderStyle: 'dashed', padding: 5, paddingHorizontal: 8, height: 78, overflow: 'hidden' },
-    logHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-    logScrollHint: { fontFamily: FONTS.mono, fontSize: 8, color: AXM.ash, letterSpacing: 1 },
-    logScroll: { flex: 1, marginTop: 2 },
-    logEntry: { flexDirection: 'row', gap: 6, paddingVertical: 2 },
-    logRail: { width: 4, alignSelf: 'stretch', marginTop: 2, marginBottom: 2 },
-    logLine: { fontFamily: FONTS.serif, fontSize: 11, lineHeight: 14, flex: 1 },
-    logLegend: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4, paddingVertical: 5, paddingHorizontal: 8, borderWidth: 1, borderColor: AXM.ash, backgroundColor: 'rgba(0,0,0,0.4)' },
-    logLegendLabel: { fontFamily: FONTS.mono, fontSize: 8, color: AXM.bone, letterSpacing: 1 },
-    logLegendItem: { fontFamily: FONTS.mono, fontSize: 8, letterSpacing: 1 },
-    // Phase 73 — design's PlayerHUDLive frame (`prototype.jsx:454`).
-    // Sits at the bottom of the seal with a deepBg fill + 1px
-    // borderTop, padding 8x16. The stance glyph sits left, content
-    // column right.
-    playerWrap: { paddingHorizontal: 16, paddingVertical: 8, borderTopWidth: 1, borderTopColor: AXM.ash, backgroundColor: AXM.deepBg },
-    playerInner: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-    playerCol: { flex: 1, flexDirection: 'column', gap: 4 },
-    playerMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    playerEffects: { flexDirection: 'row', gap: 3 },
     toast: {
         position: 'absolute', bottom: 32, left: 24, right: 24,
         backgroundColor: AXM.panelBg,

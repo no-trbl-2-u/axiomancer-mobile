@@ -1918,13 +1918,12 @@ engine balance); Phase 100 gives it a testable harness.**
       mobile, no engine dependency. Score 4.5.
       Shipped in commit 9201f4f.
 
-- [ ] Phase 102 — `combat.tsx` decomposition. Promoted via
-      `/oversight` 2026-06-02 from PHASE_CANDIDATES `[score 3.0]`.
-      `app/(tabs)/combat.tsx` is 809 lines (>2× folder median).
-      Extract focused sub-components from the screen file while
-      preserving the presenter contract (no behaviour change,
-      verify stays green), per the "5 small files over 1 dense
-      file" build-plan guardrail. Score 3.0.
+- [x] Phase 102 — `combat.tsx` decomposition. Shipped 
+      2026-06-02 in commit `8d99560`. Extracted three focused 
+      components: CombatEnemyPanel (213 lines), CombatLogDisplay 
+      (87 lines), CombatPlayerHud (76 lines). Main combat.tsx 
+      reduced from 814 → 477 lines. Presenter contract preserved, 
+      verify gate green. Unit tests for all extracted components.
 
 - [x] Phase 71 — Encounter-seal chrome refresh. Shipped
       2026-05-22 in commit (`5568b1f`). Sibling to Phase 70 —

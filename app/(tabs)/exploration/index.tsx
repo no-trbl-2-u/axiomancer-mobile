@@ -234,7 +234,7 @@ export default function ExplorationScreen() {
             {/* Region Header */}
             <View style={styles.regionHeader}>
                 <View>
-                    <SectionLabel size={9} style={{ color: AXM.bone }}>{vm.continent}</SectionLabel>
+                    <SectionLabel size={9} style={styles.continentLabel}>{vm.continent}</SectionLabel>
                     <Text style={styles.regionTitle}>{vm.region}</Text>
                     <Text style={styles.regionSub}>{vm.regionProgress}</Text>
                 </View>
@@ -242,7 +242,7 @@ export default function ExplorationScreen() {
 
             {/* Node Graph */}
             <View style={styles.graphWrap}>
-                <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#16130d' }]} />
+                <View style={[StyleSheet.absoluteFillObject, styles.graphBackground]} />
                 <Splatter color={AXM.blood} size={170} seed={3} style={{ position: 'absolute', top: -10, right: -10, opacity: 0.35 }} />
                 <Splatter color={AXM.sulfur} size={130} seed={9} style={{ position: 'absolute', bottom: 30, left: -20, opacity: 0.18 }} />
 
@@ -683,5 +683,11 @@ const styles = StyleSheet.create({
         fontFamily: FONTS.serifItalic,
         fontSize: 12,
         color: AXM.parchment,
+    },
+    continentLabel: {
+        color: AXM.bone,
+    },
+    graphBackground: {
+        backgroundColor: '#16130d',
     },
 });

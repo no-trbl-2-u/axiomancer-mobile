@@ -124,7 +124,7 @@ export default function TabLayout() {
   // stays mounted across the combat-active boundary.
   const lockOtherTabs = inEncounterModal;
   const tabBarStyle = inEncounterModal
-    ? { ...styles.tabBar, display: 'none' as const }
+    ? styles.tabBarHidden
     : styles.tabBar;
 
   return (
@@ -239,6 +239,14 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     height: 60,
     paddingBottom: 8,
+  },
+  tabBarHidden: {
+    backgroundColor: AXM.panelBg,
+    borderTopColor: AXM.ash,
+    borderTopWidth: 1,
+    height: 60,
+    paddingBottom: 8,
+    display: 'none' as const,
   },
   tabLabel: {
     fontFamily: FONTS.sans,

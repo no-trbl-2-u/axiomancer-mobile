@@ -243,8 +243,8 @@ export default function ExplorationScreen() {
             {/* Node Graph */}
             <View style={styles.graphWrap}>
                 <View style={[StyleSheet.absoluteFillObject, styles.graphBackground]} />
-                <Splatter color={AXM.blood} size={170} seed={3} style={{ position: 'absolute', top: -10, right: -10, opacity: 0.35 }} />
-                <Splatter color={AXM.sulfur} size={130} seed={9} style={{ position: 'absolute', bottom: 30, left: -20, opacity: 0.18 }} />
+                <Splatter color={AXM.blood} size={170} seed={3} style={styles.bloodSplatter} />
+                <Splatter color={AXM.sulfur} size={130} seed={9} style={styles.sulfurSplatter} />
 
                 {/* Compass */}
                 <Text style={styles.compass}>N ↑ · scale: leagues</Text>
@@ -689,5 +689,17 @@ const styles = StyleSheet.create({
     },
     graphBackground: {
         backgroundColor: '#16130d',
+    },
+    bloodSplatter: {
+        position: 'absolute',
+        top: -10,
+        right: -10,
+        opacity: 0.35,
+    },
+    sulfurSplatter: {
+        position: 'absolute',
+        bottom: 30,
+        left: -20,
+        opacity: 0.18,
     },
 });

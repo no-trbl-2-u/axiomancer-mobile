@@ -1,4 +1,4 @@
-# Site audit — 2026-06-02
+# Site audit — 2026-06-03
 
 > Bias: none (cleared via /oversight 2026-05-30 — the
   combat-modal-audit bias set 2026-05-23 is retired now that
@@ -6,6 +6,110 @@
   again).
 
 ## Top 5 findings (scored)
+
+### [8.1] Inline style object creation in TokenChip components causes unnecessary re-renders ✅
+- category: performance
+- impact: 9
+- ease: 9
+- next: extract inline style objects to StyleSheet constants in tokens.tsx
+- source: audit
+- observation: The TokenChip component uses multiple inline style objects (`style={{ fontFamily: FONTS.gothic, fontSize: compact ? 13 : 16, ... }}`) that create new object references on every render, causing performance issues in combat where token chips update frequently.
+- evidence: components/tokens.tsx lines 124-141 and 189, 197
+- suggested_fix: Extract all inline style objects to conditional StyleSheet constants, using patterns like `compact ? styles.compactText : styles.regularText`
+- addressed: 2026-06-03 via commit `1988969`
+- fix: Extracted inline style objects to StyleSheet constants. Created compactCount/regularCount, shortLabel, freeCostLabel, costRow, and costPip styles to prevent object recreation on each render, improving performance in combat token displays.
+
+### [7.2] App directory components completely lack test coverage
+- category: tests
+- impact: 8
+- ease: 9
+- next: add hermetic test coverage for critical app route components
+- source: audit
+- observation: All 9 route components in the app directory have 0 test files, while components directory has comprehensive 69/69 coverage. This creates a testing gap for the main application routes.
+- evidence: 9 .tsx files in app/ directory with no corresponding test files
+- suggested_fix: Add basic rendering tests for app/(tabs)/combat.tsx, app/(tabs)/exploration/index.tsx, app/event/index.tsx, and app/(tabs)/character/index.tsx as highest priority routes
+
+### [6.3] Multiple inline styles in character screen cause object recreation
+- category: performance
+- impact: 7
+- ease: 9
+- next: extract inline style objects in character screen to StyleSheet constants
+- source: audit
+- observation: Character screen uses multiple inline style objects like `style={{ color: AXM.bone }}` and `style={{ color: AXM.blood }}` that recreate objects on every render.
+- evidence: app/(tabs)/character/index.tsx lines 208, 239
+- suggested_fix: Extract to StyleSheet constants like `styles.boneText` and `styles.bloodText` to prevent object recreation
+
+### [5.6] EffectGlyph fallback case uses inline style object
+- category: performance
+- impact: 7
+- ease: 8
+- next: extract fallback inline style to StyleSheet constant
+- source: audit
+- observation: The default case in EffectGlyph component creates an inline style object `style={{ width: size, height: size, backgroundColor: color }}` which recreates on every render when unknown effects are displayed.
+- evidence: components/EffectGlyph.tsx line 69
+- suggested_fix: Use StyleSheet.create with dynamic size via transform or create reusable placeholder component
+
+### [4.8] Combat PhaseBottom component uses inline style for header color
+- category: performance
+- impact: 6
+- ease: 8
+- next: extract inline style to StyleSheet constant in PhaseBottom.tsx
+- source: audit
+- observation: PhaseBottom component uses inline style `style={{ color: AXM.parchment }}` for SectionLabel that creates new object on every combat phase render.
+- evidence: components/combat/PhaseBottom.tsx line 53
+- suggested_fix: Extract to StyleSheet constant like `styles.phaseHeaderLabel`
+
+### [4.5] Multiple inline styles in Splatter positioning cause re-renders in exploration
+- category: performance
+- impact: 5
+- ease: 9
+- next: extract Splatter positioning styles to StyleSheet constants
+- source: audit
+- observation: Exploration screen uses inline style objects for Splatter positioning that recreate on every render affecting scroll performance.
+- evidence: app/(tabs)/exploration/index.tsx lines 246-247
+- suggested_fix: Extract position styles to StyleSheet constants like `styles.bloodSplatter` and `styles.sulfurSplatter`
+
+### [3.6] Missing SVG accessibility labels in ItemGlyph components
+- category: accessibility
+- impact: 6
+- ease: 6
+- next: add accessibilityRole and accessibilityLabel props to ItemGlyph SVGs
+- source: audit
+- observation: ItemGlyph component has multiple SVG elements with no accessibility attributes, making item types inaccessible to screen readers in inventory management.
+- evidence: components/inventory/ItemCard.tsx lines 36-90 (multiple SVG elements)
+- suggested_fix: Add accessibilityRole="image" and descriptive accessibilityLabel props to all SVG elements in ItemGlyph function
+
+### [3.2] Metro config Node.js version compatibility issue blocks web development
+- category: tests
+- impact: 8
+- ease: 4
+- next: update Metro/Expo dependencies or add Node.js version workaround
+- source: audit
+- observation: Web development server fails to start due to `configs.toReversed is not a function` error, indicating Node.js version compatibility issue with Metro bundler.
+- evidence: Error in /tmp/web_output.log line 7-8, failing at metro-config/src/loadConfig.js
+- suggested_fix: Update Node.js to version supporting `Array.prototype.toReversed()` or update Metro/Expo dependencies to support current Node version
+
+### [2.8] Inline styles in multiple app components cause layout recalculation
+- category: performance 
+- impact: 4
+- ease: 7
+- next: extract remaining inline styles in event and inventory screens
+- source: audit
+- observation: Event and inventory screens use various inline flex and margin styles that cause unnecessary object creation and layout recalculation.
+- evidence: app/event/index.tsx lines 96, 216, 258; app/(tabs)/inventory/index.tsx line 281
+- suggested_fix: Extract to StyleSheet constants for flex layouts and spacing
+
+### [2.4] Console.warn statements remain in production components
+- category: tests
+- impact: 3
+- ease: 8
+- next: replace console.warn with proper error handling or remove from production builds
+- source: audit
+- observation: Multiple components use console.warn for error handling that will appear in production builds, potentially exposing debug information.
+- evidence: components/DebugEffectApply.tsx line 64, DebugFriendship.tsx lines 36, 50
+- suggested_fix: Replace with proper error boundaries or conditional development-only logging
+
+## Previously addressed
 
 ### [6.3] StanceGlyph.test.tsx misplaced in root components directory (violates test organization pattern) ✅
 - category: tests
@@ -43,129 +147,3 @@
 - suggested_fix: Create separate StyleSheet constants for visible/hidden tab bar states instead of using object spread
 - addressed: 2026-06-03 via commit `1762590`
 - fix: Extracted inline tab bar style object to StyleSheet constants. Created `styles.tabBarHidden` to replace object spread pattern `{ ...styles.tabBar, display: 'none' }`. Prevents object recreation on each render when encounter modal state changes.
-
-### [3.6] App directory components lack hermetic test coverage
-- category: tests
-- impact: 6
-- ease: 6
-- next: add hermetic test coverage for app route components
-- source: audit
-- observation: The 9 components in the app directory (route components) have 0 test files, while the standalone components directory has comprehensive test coverage (69/70 components tested).
-- evidence: app/ directory contains 9 .tsx files but 0 .test.tsx files; components/ directory has excellent coverage
-- suggested_fix: Add basic rendering and integration tests for key app route components, starting with high-traffic routes like combat.tsx and exploration/index.tsx
-
-### [2.5] Three console deprecation warnings from web bundle (LOW)
-- category: tests
-- impact: 2
-- ease: 5
-- next: wait for upstream fixes or implement workarounds
-- source: audit
-- observation: Deprecation warnings from transitive dependencies, not errors. Will become errors in future React Native/Expo version.
-- evidence: Warnings reference textShadow* → textShadow, shadow* → boxShadow, props.pointerEvents → style.pointerEvents prop changes
-- suggested_fix: Wait for upstream releases or implement prop name migration workarounds
-
-### [8.1] Verify all tooltip content is 100% accurate (user-jot critique finding) ✅
-- category: external-critique
-- impact: 9
-- ease: 9  
-- next: audit all tooltip content for accuracy, fix any inaccuracies
-- source: user
-- observation: The tooltips look great but need verification that all information provided is 100% accurate. User spotted during testing at 2026-05-25.
-- evidence: User-jot finding in plan/CRITIQUE.md "Verify all tooltip content is 100% accurate"
-- suggested_fix: Systematically audit all tooltip content across SELF, Inventory, Memoir, Exploration and Combat surfaces to ensure accuracy
-- issue: #217
-- addressed: 2026-05-28 via commit `375c371`
-- fix: Fixed mana→focus terminology inconsistency. Skill tooltips now show "focus cost" instead of "mana cost", combat action help updated from "costs mana" to "costs focus", and debug text standardized. All user-facing tooltip terminology now aligns with MIND stat's "focus" description.
-
-### [7.5] Space heart/body/mind buttons evenly in combat modal (user-jot critique finding) ✅
-- category: external-critique
-- impact: 5
-- ease: 9
-- next: adjust button spacing in combat modal layout
-- source: user
-- observation: In the combat modal, heart/body/mind buttons should be spaced evenly instead of listing from the left. User spotted during testing at 2026-05-25.
-- evidence: User-jot finding in plan/CRITIQUE.md "Space heart/body/mind buttons evenly in combat modal" + playtest finding [F07] (Mind stance card clipped at right edge)
-- suggested_fix: Update combat modal CSS/styling to distribute stance buttons evenly across available width
-- issue: #218
-- addressed: 2026-05-28 via commit `341e2a9`
-- fix: Added justifyContent: 'space-between' to stance button row layout in combat modal. Buttons now distribute evenly across available width instead of being left-aligned, resolving mind stance card clipping issue.
-
-### [6.8] Show node labels only for unvisited, available nodes (user-jot critique finding) ✅
-- category: external-critique  
-- impact: 6
-- ease: 8
-- next: modify exploration map to conditionally show node labels based on state
-- source: user
-- observation: Map shows labels for all nodes, but should only display labels for nodes the player hasn't visited yet and are available as choices. User spotted during testing at 2026-05-25.
-- evidence: User-jot finding in plan/CRITIQUE.md "Only show node labels for unvisited, available nodes"
-- suggested_fix: Update exploration presenter to conditionally render node labels based on node state (unvisited + available only)
-- issue: #219
-- addressed: 2026-05-28 via commit `2c66e78`
-- fix: Node labels now display conditionally - only for nodes with kind 'available' (unvisited + accessible). Wrapped label rendering in conditional check in MapNodeMarker component. Current, completed, and locked nodes show no label, reducing visual clutter and focusing attention on actionable choices.
-
-### [4.5] Combat UX unintuitive, numbers and icons lack meaning (user-jot critique finding) ✅
-- category: external-critique
-- impact: 9
-- ease: 3
-- next: requires design overhaul - defer to phase planning
-- source: user  
-- observation: Combat modal provides poor UX with unclear numbers and icons. User sees symbols but doesn't understand meaning. Requires design overhaul not code fix.
-- evidence: User-jot finding + confirmed by PLAYTEST_REPORT.md findings [F02] (encounter jargon), [F04] (battle log ability names), [F05] (LET phase numbers), [F06] (CRUCIBLE symbols)
-- suggested_fix: Needs design phase for complete combat UX overhaul
-- addressed: design-first via Phase 96 (`939efd2`), implemented in Phase 98, commit `b6593df` (drained via /oversight 2026-06-02). Iconography / terminology / information-hierarchy changes shipped; closed playtests [F02]/[F04]/[F05]/[F06]. Mirrors CRITIQUE [HIGH] combat-UX row.
-
-### [3.5] Morale bars render hardcoded placeholder values (needs engine backing) ✅
-- category: data
-- impact: 4
-- ease: 7
-- next: wait for engine morale system then wire to real state
-- source: audit
-- observation: Morale bar visible on WILDS StatusCard + SELF Pools section with hardcoded 7/10 values and placeholder BREAK threshold at 20%. Players see non-functional resource meter.
-- evidence: Combat UX Boards design implementation 2026-05-27. Visual scaffolding shipped per design spec but not backed by engine data.
-- suggested_fix: Once engine surfaces player.morale/player.moraleMax, wire StatusCard and character screen to read from useGameState
-- addressed: 2026-06-01 via commit `958a2b7`
-- fix: Wired morale displays to real engine state.moralMeter. StatusCard and character screen now read actual morale values, mapping engine range (-100 to +100) to display scale (1-10) with proper Roman numeral formatting and dynamic fill percentages. Preserves design break threshold at 20%. All existing tests pass.
-
-### [2.0] Phase 72 acceptance — Playwright walkthrough against design prototype
-- category: tests
-- impact: 2 
-- ease: 0
-- next: user invokes /playtest after starting pnpm web
-- source: audit
-- observation: Visual-acceptance check needed on Phase 72 combat-modal polish that's already shipped. Requires user-started pnpm web.
-- evidence: Filed by /ship-a-phase for design validation against design/handoff-2026-05-23/project/prototype.html
-- suggested_fix: Cannot run autonomously - requires user to start web server then invoke /playtest
-
-### [5.6] SVG icons missing accessibility labels ✅
-- category: a11y
-- impact: 8
-- ease: 7
-- next: add accessibilityRole and accessibilityLabel props to SVG components
-- source: audit
-- observation: Many SVG icons in ActionIcon.tsx, EffectGlyph.tsx, NodeMark.tsx, and tab icons lack accessibility attributes. Screen readers cannot interpret decorative/functional icons.
-- evidence: Files like components/ActionIcon.tsx have inline SVG elements with no accessibility props
-- suggested_fix: Add accessibilityRole="image" and descriptive accessibilityLabel props to all decorative SVGs, or accessibilityRole="none" for purely decorative elements
-- issue: #223
-- addressed: 2026-05-29 via commit `a19e33b`
-- fix: Added accessibilityRole="image" and descriptive accessibilityLabel props to all SVG icons across ActionIcon.tsx, EffectGlyph.tsx, NodeMark.tsx, and TabIcon components. Screen readers now receive meaningful descriptions for all decorative and functional SVG elements, improving accessibility for visually impaired users.
-
-### [4.0] Engine MapDefinition connectivity diverges from mobile layout (needs-engine-release)
-- category: external-dependency
-- impact: 8
-- ease: 5  
-- next: wait for engine MapDefinition.edges field release
-- source: audit
-- observation: Blocks migration from pre-built FSMA graphs to engine-driven MapDefinition.nodes. Exploration would get fresh maps automatically with engine updates.
-- evidence: Mobile still uses manual layout fixtures instead of engine-driven maps per docs/engine-map-reconciliation-2026-05-24.md
-- suggested_fix: Needs engine-side MapDefinition.edges field, then ~200 line refactor under state/exploration-maps/
-
-### [user-issue #227] HIGH Token resource system never accumulates (blocks skill casting) ✅
-- category: external-issue
-- impact: 9
-- ease: 6
-- next: /iterate will pick up; reference #227 in commit body.
-- source: /critique pass 18 (user-jot finding)
-- observation: The token resource system (what's used to cast skills) is not working at all — tokens are not accumulating whatsoever. Without them, skills cannot be cast.
-- evidence: user-spotted at 2026-05-30T13:57:17Z (manual playtest)
-- suggested_fix: verify the engine combatResources accrual per round is read/propagated to the mobile combat presenter (state/presenters/combat.engine.ts) rather than displayed as a static value; may be an engine vs mobile boundary issue.
-- addressed: 2026-06-01 via Phase 97(a), commit `8df2971` (drained via /oversight 2026-06-02). Token resource now reads the engine per-round `combatResources` accrual instead of a static placeholder; skills are castable. Mirrors CRITIQUE [HIGH] token row + issue #227.

@@ -121,7 +121,7 @@
 - addressed: 2026-06-03 via commit `0c6266b`
 - fix: Added Node.js >=20.0.0 requirement to package.json engines field and .nvmrc file. Metro config in @expo/metro-config 54.0.15 requires Array.prototype.toReversed() which was introduced in Node.js 20. The CI workflow already uses Node.js 20, now local development environment is aligned with this requirement.
 
-### [4.8] Production console statements remain in components
+### [4.8] Production console statements remain in components ✅
 - category: tests
 - impact: 6
 - ease: 8
@@ -130,6 +130,9 @@
 - observation: Multiple components use console.warn for error handling that will appear in production builds, potentially exposing debug information and creating noise in production logs.
 - evidence: components/DebugFriendship.tsx lines 36, 50, components/DebugEffectApply.tsx line 64, app/_layout.tsx lines 61, 78, components/levelup/LevelUpModal.tsx line 138
 - suggested_fix: Replace with proper error boundaries, conditional __DEV__ logging, or remove entirely for production builds. Use patterns like `if (__DEV__) { console.warn(...) }` or proper error handling
+- issue: #245
+- addressed: 2026-06-03 via commit `d7e8ef4`
+- fix: Wrapped console.warn in DebugEffectApply with __DEV__ guard to prevent debug output in production builds. Other console statements in DebugFriendship, app/_layout, and LevelUpModal were already properly guarded with conditional development-only logging.
 
 ### [3.6] Test coverage imbalance between performance optimizations
 - category: tests

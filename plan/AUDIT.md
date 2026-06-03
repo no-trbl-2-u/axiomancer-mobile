@@ -44,7 +44,7 @@
 - addressed: 2026-06-03 via commit `6cb16fe`
 - fix: Extracted inline style objects to StyleSheet constants in character screen: { color: AXM.bone } → styles.boneText, { color: AXM.blood } → styles.bloodText, { flex: 1 } → styles.flexOne, { marginTop: 8 } → styles.marginTop8. Prevents object recreation on each render, improving performance in character screen updates.
 
-### [5.6] EffectGlyph fallback case uses inline style object
+### [5.6] EffectGlyph fallback case uses inline style object ✅
 - category: performance
 - impact: 7
 - ease: 8
@@ -53,6 +53,8 @@
 - observation: The default case in EffectGlyph component creates an inline style object `style={{ width: size, height: size, backgroundColor: color }}` which recreates on every render when unknown effects are displayed.
 - evidence: components/EffectGlyph.tsx line 69
 - suggested_fix: Use StyleSheet.create with dynamic size via transform or create reusable placeholder component
+- addressed: 2026-06-03 via commit `0e50870`
+- fix: Extracted inline style to memoized EffectPlaceholder component with useMemo to cache style array, preventing object recreation on each render. Improves performance when unknown effects are displayed in combat.
 
 ### [4.8] Combat PhaseBottom component uses inline style for header color
 - category: performance

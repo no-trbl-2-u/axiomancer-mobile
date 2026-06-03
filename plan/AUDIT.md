@@ -95,35 +95,58 @@
 - addressed: 2026-06-03 via commit `606c69e`
 - fix: Added accessibilityRole="image" and descriptive accessibilityLabel props to all SVG elements in ItemGlyph function. Screen readers now receive appropriate labels for equipment ("Accessory equipment icon"), consumable ("Consumable item icon"), material ("Material item icon"), quest ("Quest item icon"), and unknown item types.
 
-### [3.2] Metro config Node.js version compatibility issue blocks web development
+### [7.2] Multiple inline style objects cause unnecessary re-renders across components ✅
+- category: performance
+- impact: 8
+- ease: 9
+- next: extract remaining inline style objects to StyleSheet constants across multiple components
+- source: audit
+- observation: Multiple components still use inline style objects that create new object references on every render, causing performance issues. Found in FriendshipMeter line 16, StatusCard lines 57 and 71, PhaseBottom lines 514 and 517, inventory screen line 281, CombatEnemyPanel line 84, and event screen lines 96, 216, 258.
+- evidence: components/FriendshipMeter.tsx line 16, components/StatusCard.tsx lines 57, 71, components/combat/PhaseBottom.tsx lines 514, 517, app/(tabs)/inventory/index.tsx line 281, components/combat/CombatEnemyPanel.tsx line 84, app/event/index.tsx lines 96, 216, 258
+- suggested_fix: Extract all inline style objects to StyleSheet constants using patterns like `styles.boneText`, `styles.flexOne`, `styles.centerAlign`, `styles.marginTop8`, etc. to prevent object recreation
+- issue: #243
+- addressed: 2026-06-03 via commit `6b1c5c9`
+- fix: Extracted all inline style objects to StyleSheet constants across 6 components. Created friendLabel, levelSubtitle, moraleMax, centerAlign, rightAlign, burdenSection, healthBarSection, flexOne, and splatterPosition styles to prevent object recreation on each render, improving performance in combat and UI updates.
+
+### [6.4] Node.js version compatibility blocks web development workflow
 - category: tests
 - impact: 8
-- ease: 4
-- next: update Metro/Expo dependencies or add Node.js version workaround
+- ease: 8
+- next: update Metro/Expo dependencies or upgrade Node.js version to support Array.prototype.toReversed()
 - source: audit
-- observation: Web development server fails to start due to `configs.toReversed is not a function` error, indicating Node.js version compatibility issue with Metro bundler.
-- evidence: Error in /tmp/web_output.log line 7-8, failing at metro-config/src/loadConfig.js
-- suggested_fix: Update Node.js to version supporting `Array.prototype.toReversed()` or update Metro/Expo dependencies to support current Node version
+- observation: Web development server fails to start due to `configs.toReversed is not a function` error in Metro config loading, indicating Node.js 18.20.8 lacks support for newer Array methods required by current Metro version.
+- evidence: TypeError at metro-config/src/loadConfig.js:179:35 when running `npx expo start --web`
+- suggested_fix: Either upgrade Node.js to version 20+ which includes Array.prototype.toReversed() support, or downgrade Metro/Expo dependencies to versions compatible with Node.js 18
 
-### [2.8] Inline styles in multiple app components cause layout recalculation
-- category: performance 
+### [4.8] Production console statements remain in components
+- category: tests
+- impact: 6
+- ease: 8
+- next: replace console.warn statements with proper error handling or conditional development-only logging
+- source: audit
+- observation: Multiple components use console.warn for error handling that will appear in production builds, potentially exposing debug information and creating noise in production logs.
+- evidence: components/DebugFriendship.tsx lines 36, 50, components/DebugEffectApply.tsx line 64, app/_layout.tsx lines 61, 78, components/levelup/LevelUpModal.tsx line 138
+- suggested_fix: Replace with proper error boundaries, conditional __DEV__ logging, or remove entirely for production builds. Use patterns like `if (__DEV__) { console.warn(...) }` or proper error handling
+
+### [3.6] Test coverage imbalance between performance optimizations
+- category: tests
+- impact: 6
+- ease: 6
+- next: add performance regression tests for memoization and StyleSheet usage
+- source: audit
+- observation: While components have good test coverage, there's limited testing for performance optimizations like useMemo, useCallback, and React.memo usage. No specific tests verify that inline styles were properly extracted or that memoization prevents re-renders.
+- evidence: Only 88 useMemo/useCallback/React.memo occurrences across the codebase, with comprehensive component tests but no performance regression coverage
+- suggested_fix: Add specific tests that verify StyleSheet constants are used instead of inline objects, and tests that validate memoization effectiveness in preventing unnecessary re-renders
+
+### [2.8] Missing accessibility attributes on SVG elements in multiple components
+- category: accessibility
 - impact: 4
 - ease: 7
-- next: extract remaining inline styles in event and inventory screens
+- next: add accessibilityRole and accessibilityLabel to remaining SVG elements
 - source: audit
-- observation: Event and inventory screens use various inline flex and margin styles that cause unnecessary object creation and layout recalculation.
-- evidence: app/event/index.tsx lines 96, 216, 258; app/(tabs)/inventory/index.tsx line 281
-- suggested_fix: Extract to StyleSheet constants for flex layouts and spacing
-
-### [2.4] Console.warn statements remain in production components
-- category: tests
-- impact: 3
-- ease: 8
-- next: replace console.warn with proper error handling or remove from production builds
-- source: audit
-- observation: Multiple components use console.warn for error handling that will appear in production builds, potentially exposing debug information.
-- evidence: components/DebugEffectApply.tsx line 64, DebugFriendship.tsx lines 36, 50
-- suggested_fix: Replace with proper error boundaries or conditional development-only logging
+- observation: While ItemGlyph SVGs were addressed in finding [3.6], other components with SVG elements may still lack proper accessibility attributes for screen readers.
+- evidence: Found 82 files with accessibility attributes, but need systematic review of all SVG elements for complete coverage
+- suggested_fix: Audit all SVG elements across components and add appropriate accessibilityRole="image" and descriptive accessibilityLabel props for screen reader compatibility
 
 ## Previously addressed
 

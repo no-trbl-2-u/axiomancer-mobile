@@ -56,7 +56,7 @@
 - addressed: 2026-06-03 via commit `0e50870`
 - fix: Extracted inline style to memoized EffectPlaceholder component with useMemo to cache style array, preventing object recreation on each render. Improves performance when unknown effects are displayed in combat.
 
-### [4.8] Combat PhaseBottom component uses inline style for header color
+### [4.8] Combat PhaseBottom component uses inline style for header color ✅
 - category: performance
 - impact: 6
 - ease: 8
@@ -65,6 +65,9 @@
 - observation: PhaseBottom component uses inline style `style={{ color: AXM.parchment }}` for SectionLabel that creates new object on every combat phase render.
 - evidence: components/combat/PhaseBottom.tsx line 53
 - suggested_fix: Extract to StyleSheet constant like `styles.phaseHeaderLabel`
+- issue: #240
+- addressed: 2026-06-03 via commit `e050307`
+- fix: Extracted inline style object to StyleSheet constant phase_styles.phaseHeaderLabel, preventing object recreation on every combat phase render and improving performance.
 
 ### [4.5] Multiple inline styles in Splatter positioning cause re-renders in exploration
 - category: performance

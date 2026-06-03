@@ -15,7 +15,7 @@ export function XpChain({ value, max, links = 16 }: XpChainProps) {
     <View style={styles.row}>
       {Array.from({ length: links }).map((_, i) => (
         <View key={i} style={styles.linkWrap}>
-          <Svg viewBox="0 0 12 14" width="100%" height={14}>
+          <Svg viewBox="0 0 12 14" width="100%" height={14} accessibilityRole="image" accessibilityLabel={`Experience point ${i + 1} of ${links}, ${i < filled ? 'filled' : 'empty'}`}>
             <Ellipse cx={6} cy={7} rx={4} ry={6} fill="none"
               stroke={i < filled ? AXM.sulfur : AXM.ash} strokeWidth={1.5} />
             <Ellipse cx={6} cy={7} rx={2} ry={3} fill={i < filled ? AXM.sulfur : 'transparent'} />

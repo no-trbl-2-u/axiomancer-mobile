@@ -41,6 +41,8 @@ export function TornPanel({
           height={size.height}
           style={StyleSheet.absoluteFillObject}
           pointerEvents="none"
+          accessibilityRole="image"
+          accessibilityLabel="Decorative torn paper edge"
         >
           <Path
             d={`M 0 0 L ${size.width} 0 L ${size.width} ${size.height} L 0 ${size.height} Z ${tornEdgePath(size.width, size.height, jag, seed)}`}

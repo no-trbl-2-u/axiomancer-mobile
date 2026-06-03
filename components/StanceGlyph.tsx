@@ -32,16 +32,16 @@ const bodyXml = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
 </svg>`;
 
 export function GlyphHeart({ size = 40, color = AXM.parchment }: GlyphProps) {
-  return <SvgXml xml={heartXml} width={size} height={size} color={color} />;
+  return <SvgXml xml={heartXml} width={size} height={size} color={color} accessibilityRole="image" accessibilityLabel="Heart stance glyph" />;
 }
 
 export function GlyphBody({ size = 40, color = AXM.parchment }: GlyphProps) {
-  return <SvgXml xml={bodyXml} width={size} height={size} color={color} />;
+  return <SvgXml xml={bodyXml} width={size} height={size} color={color} accessibilityRole="image" accessibilityLabel="Body stance glyph" />;
 }
 
 export function GlyphMind({ size = 40, color = AXM.parchment, stroke = 2.4 }: GlyphProps) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 64 64" fill="none">
+    <Svg width={size} height={size} viewBox="0 0 64 64" fill="none" accessibilityRole="image" accessibilityLabel="Mind stance glyph">
       <Path
         d="M14 28 C 14 16, 22 8, 32 8 C 42 8, 50 16, 50 28 L 50 38 C 50 42, 48 44, 44 44 L 44 50 C 44 52, 42 54, 40 54 L 24 54 C 22 54, 20 52, 20 50 L 20 44 C 16 44, 14 42, 14 38 Z"
         fill={color} fillOpacity={0.18} stroke={color} strokeWidth={stroke} strokeLinejoin="round"

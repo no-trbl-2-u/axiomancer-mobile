@@ -9,7 +9,7 @@ export function BodyDiagram() {
   ];
 
   return (
-    <Svg viewBox="0 0 88 220" width={88} height={220}>
+    <Svg viewBox="0 0 88 220" width={88} height={220} accessibilityRole="image" accessibilityLabel="Character body diagram showing equipment slots">
       <Circle cx={44} cy={20} r={13} fill="none" stroke={AXM.parchment} strokeWidth={1.5} />
       <Path d="M30 36 L 58 36 L 60 100 L 28 100 Z" fill="none" stroke={AXM.parchment} strokeWidth={1.5} />
       <Path d="M30 38 L 18 80 L 22 110" fill="none" stroke={AXM.parchment} strokeWidth={1.5} />

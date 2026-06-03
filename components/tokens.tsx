@@ -36,7 +36,7 @@ export function TokenIcon({ kind, size = 16, color }: TokenIconProps) {
     switch (kind) {
         case 'body':
             return (
-                <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+                <Svg width={size} height={size} viewBox="0 0 16 16" fill="none" accessibilityRole="image" accessibilityLabel="Body token icon">
                     <Path
                         d="M3 7 C 3 5, 5 4, 7 4 L 12 4 C 13 4, 13.5 5, 13.5 6 L 13.5 10 C 13.5 12, 12 13, 10 13 L 6 13 C 4 13, 3 12, 3 10.5 Z"
                         fill={c} fillOpacity={0.25}
@@ -49,7 +49,7 @@ export function TokenIcon({ kind, size = 16, color }: TokenIconProps) {
             );
         case 'mind':
             return (
-                <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+                <Svg width={size} height={size} viewBox="0 0 16 16" fill="none" accessibilityRole="image" accessibilityLabel="Mind token icon">
                     <Path
                         d="M1.5 8 C 4 4, 12 4, 14.5 8 C 12 12, 4 12, 1.5 8 Z"
                         fill={c} fillOpacity={0.18} stroke={c} strokeWidth={1.3} strokeLinejoin="round"
@@ -60,7 +60,7 @@ export function TokenIcon({ kind, size = 16, color }: TokenIconProps) {
             );
         case 'heart':
             return (
-                <Svg width={size} height={size} viewBox="0 0 16 16">
+                <Svg width={size} height={size} viewBox="0 0 16 16" accessibilityRole="image" accessibilityLabel="Heart token icon">
                     <Path
                         d="M8 13.5 C 2.5 9.5, 1.5 6, 3 4 C 5 2, 7 3, 8 5 C 9 3, 11 2, 13 4 C 14.5 6, 13.5 9.5, 8 13.5 Z"
                         fill={c} stroke={c} strokeWidth={0.8} strokeLinejoin="round"
@@ -71,7 +71,7 @@ export function TokenIcon({ kind, size = 16, color }: TokenIconProps) {
             );
         case 'fallacy':
             return (
-                <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+                <Svg width={size} height={size} viewBox="0 0 16 16" fill="none" accessibilityRole="image" accessibilityLabel="Fallacy token icon">
                     <Circle cx={8} cy={8} r={6.5}
                         stroke={c} strokeWidth={1} strokeDasharray="1.5,1.2" fill="none" />
                     <Path d="M4 4 L 12 12 M 12 4 L 9 7 M 4 12 L 7 9"
@@ -80,7 +80,7 @@ export function TokenIcon({ kind, size = 16, color }: TokenIconProps) {
             );
         case 'paradox':
             return (
-                <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+                <Svg width={size} height={size} viewBox="0 0 16 16" fill="none" accessibilityRole="image" accessibilityLabel="Paradox token icon">
                     <Path
                         d="M3 8 C 3 6, 4.5 4.5, 6 4.5 C 7.5 4.5, 8 6, 8 8 C 8 10, 8.5 11.5, 10 11.5 C 11.5 11.5, 13 10, 13 8 C 13 6, 11.5 4.5, 10 4.5 C 8.5 4.5, 8 6, 8 8 C 8 10, 7.5 11.5, 6 11.5 C 4.5 11.5, 3 10, 3 8 Z"
                         stroke={c} strokeWidth={1.4} strokeLinecap="round" strokeLinejoin="round"

@@ -60,8 +60,9 @@ export function DebugEffectApply() {
         const combat = store.getState().combat;
         if (!combat || !combat.enemy) {
             // No active combat — dev-only escape hatch can't reach an enemy.
-             
-            console.warn('DebugEffectApply: no active combat enemy to debuff.');
+            if (__DEV__) {
+                console.warn('DebugEffectApply: no active combat enemy to debuff.');
+            }
             return;
         }
         const enemy = combat.enemy;

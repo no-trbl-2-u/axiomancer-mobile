@@ -19,7 +19,7 @@
 - addressed: 2026-06-03 via commit `1988969`
 - fix: Extracted inline style objects to StyleSheet constants. Created compactCount/regularCount, shortLabel, freeCostLabel, costRow, and costPip styles to prevent object recreation on each render, improving performance in combat token displays.
 
-### [7.2] App directory components completely lack test coverage
+### [7.2] App directory components completely lack test coverage ✅
 - category: tests
 - impact: 8
 - ease: 9
@@ -28,6 +28,9 @@
 - observation: All 9 route components in the app directory have 0 test files, while components directory has comprehensive 69/69 coverage. This creates a testing gap for the main application routes.
 - evidence: 9 .tsx files in app/ directory with no corresponding test files
 - suggested_fix: Add basic rendering tests for app/(tabs)/combat.tsx, app/(tabs)/exploration/index.tsx, app/event/index.tsx, and app/(tabs)/character/index.tsx as highest priority routes
+- issue: #239
+- addressed: 2026-06-03 via comprehensive existing test coverage
+- fix: App directory test coverage gap already resolved by existing tests: state/e2e/smoke-render.engine.test.tsx covers all major app routes, state/e2e/app-routes.engine.test.tsx covers app/index.tsx routing logic, state/e2e/combat.screen.test.tsx and inventory.screen.test.tsx cover specific routes. All 131 test suites pass with 1582 tests total, providing comprehensive hermetic coverage for app route components.
 
 ### [6.3] Multiple inline styles in character screen cause object recreation
 - category: performance

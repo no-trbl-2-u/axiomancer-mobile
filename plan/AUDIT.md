@@ -32,7 +32,7 @@
 - addressed: 2026-06-03 via comprehensive existing test coverage
 - fix: App directory test coverage gap already resolved by existing tests: state/e2e/smoke-render.engine.test.tsx covers all major app routes, state/e2e/app-routes.engine.test.tsx covers app/index.tsx routing logic, state/e2e/combat.screen.test.tsx and inventory.screen.test.tsx cover specific routes. All 131 test suites pass with 1582 tests total, providing comprehensive hermetic coverage for app route components.
 
-### [6.3] Multiple inline styles in character screen cause object recreation
+### [6.3] Multiple inline styles in character screen cause object recreation ✅
 - category: performance
 - impact: 7
 - ease: 9
@@ -41,6 +41,8 @@
 - observation: Character screen uses multiple inline style objects like `style={{ color: AXM.bone }}` and `style={{ color: AXM.blood }}` that recreate objects on every render.
 - evidence: app/(tabs)/character/index.tsx lines 208, 239
 - suggested_fix: Extract to StyleSheet constants like `styles.boneText` and `styles.bloodText` to prevent object recreation
+- addressed: 2026-06-03 via commit `6cb16fe`
+- fix: Extracted inline style objects to StyleSheet constants in character screen: { color: AXM.bone } → styles.boneText, { color: AXM.blood } → styles.bloodText, { flex: 1 } → styles.flexOne, { marginTop: 8 } → styles.marginTop8. Prevents object recreation on each render, improving performance in character screen updates.
 
 ### [5.6] EffectGlyph fallback case uses inline style object
 - category: performance

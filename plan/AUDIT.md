@@ -134,7 +134,7 @@
 - addressed: 2026-06-03 via commit `d7e8ef4`
 - fix: Wrapped console.warn in DebugEffectApply with __DEV__ guard to prevent debug output in production builds. Other console statements in DebugFriendship, app/_layout, and LevelUpModal were already properly guarded with conditional development-only logging.
 
-### [3.6] Test coverage imbalance between performance optimizations
+### [3.6] Test coverage imbalance between performance optimizations ✅
 - category: tests
 - impact: 6
 - ease: 6
@@ -143,6 +143,9 @@
 - observation: While components have good test coverage, there's limited testing for performance optimizations like useMemo, useCallback, and React.memo usage. No specific tests verify that inline styles were properly extracted or that memoization prevents re-renders.
 - evidence: Only 88 useMemo/useCallback/React.memo occurrences across the codebase, with comprehensive component tests but no performance regression coverage
 - suggested_fix: Add specific tests that verify StyleSheet constants are used instead of inline objects, and tests that validate memoization effectiveness in preventing unnecessary re-renders
+- issue: #246
+- addressed: 2026-06-03 via commit `2154ffc`
+- fix: Added comprehensive performance regression test suite (state/e2e/performance.regression.test.tsx) covering StyleSheet usage validation, React optimization hooks validation, performance anti-patterns documentation, and hook memoization patterns. Tests verify components use StyleSheet constants instead of inline objects, proper dependency arrays in useMemo/useCallback, and React.memo patterns to prevent unnecessary re-renders.
 
 ### [2.8] Missing accessibility attributes on SVG elements in multiple components
 - category: accessibility

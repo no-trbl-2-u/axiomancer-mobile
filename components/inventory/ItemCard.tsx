@@ -34,7 +34,14 @@ export function ItemGlyph({ category, sub }: { category: InventoryCategory; sub:
     }
     if (category === 'equipment' && sub === 'Accessory') {
         return (
-            <Svg width={28} height={28} viewBox="0 0 28 28" fill="none">
+            <Svg 
+                width={28} 
+                height={28} 
+                viewBox="0 0 28 28" 
+                fill="none"
+                accessibilityRole="image"
+                accessibilityLabel="Accessory equipment icon"
+            >
                 <Circle cx={14} cy={14} r={10} stroke={AXM.parchment} strokeWidth={1.5} fill="none" />
                 <Circle cx={14} cy={10} r={3.5} fill={AXM.sulfur} />
                 <Path d="M10 18 Q14 22 18 18" stroke={AXM.parchment} strokeWidth={1.2} fill="none" />
@@ -43,7 +50,14 @@ export function ItemGlyph({ category, sub }: { category: InventoryCategory; sub:
     }
     if (category === 'consumable') {
         return (
-            <Svg width={28} height={28} viewBox="0 0 28 28" fill="none">
+            <Svg 
+                width={28} 
+                height={28} 
+                viewBox="0 0 28 28" 
+                fill="none"
+                accessibilityRole="image"
+                accessibilityLabel="Consumable item icon"
+            >
                 <Path
                     d="M10 24 L10 10 Q10 5 14 4 Q18 5 18 10 L18 24 Z"
                     stroke={AXM.parchment}
@@ -57,7 +71,14 @@ export function ItemGlyph({ category, sub }: { category: InventoryCategory; sub:
     }
     if (category === 'material') {
         return (
-            <Svg width={28} height={28} viewBox="0 0 28 28" fill="none">
+            <Svg 
+                width={28} 
+                height={28} 
+                viewBox="0 0 28 28" 
+                fill="none"
+                accessibilityRole="image"
+                accessibilityLabel="Material item icon"
+            >
                 <Path
                     d="M14 4 L24 10 L24 20 L14 26 L4 20 L4 10 Z"
                     stroke={AXM.parchment}
@@ -70,7 +91,14 @@ export function ItemGlyph({ category, sub }: { category: InventoryCategory; sub:
     }
     if (category === 'quest') {
         return (
-            <Svg width={28} height={28} viewBox="0 0 28 28" fill="none">
+            <Svg 
+                width={28} 
+                height={28} 
+                viewBox="0 0 28 28" 
+                fill="none"
+                accessibilityRole="image"
+                accessibilityLabel="Quest item icon"
+            >
                 <Path
                     d="M6 22 L6 6 L22 6 L22 22 Z"
                     stroke={AXM.parchment}
@@ -83,7 +111,14 @@ export function ItemGlyph({ category, sub }: { category: InventoryCategory; sub:
         );
     }
     return (
-        <Svg width={28} height={28} viewBox="0 0 28 28" fill="none">
+        <Svg 
+            width={28} 
+            height={28} 
+            viewBox="0 0 28 28" 
+            fill="none"
+            accessibilityRole="image"
+            accessibilityLabel="Unknown item type icon"
+        >
             <Circle cx={14} cy={14} r={10} stroke={AXM.bone} strokeWidth={1} strokeDasharray="3,2" fill="none" />
             <Path d="M11 11 L17 17 M17 11 L11 17" stroke={AXM.bone} strokeWidth={1} />
         </Svg>

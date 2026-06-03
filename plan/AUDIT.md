@@ -32,7 +32,7 @@
 - addressed: 2026-06-02 via commit `9d140fc`
 - fix: Extracted inline style objects to StyleSheet constants. Created `styles.continentLabel` and `styles.graphBackground` to prevent object recreation on each render, improving performance.
 
-### [4.8] Magic number styling values in tab layout object spread
+### [4.8] Magic number styling values in tab layout object spread ✅
 - category: perf
 - impact: 6
 - ease: 8
@@ -41,6 +41,8 @@
 - observation: The tab layout uses object spread syntax `{ ...styles.tabBar, display: 'none' as const }` which creates new objects on every render when encounter modal is active.
 - evidence: Found in app/(tabs)/_layout.tsx with conditional object spreading for tab bar visibility
 - suggested_fix: Create separate StyleSheet constants for visible/hidden tab bar states instead of using object spread
+- addressed: 2026-06-03 via commit `1762590`
+- fix: Extracted inline tab bar style object to StyleSheet constants. Created `styles.tabBarHidden` to replace object spread pattern `{ ...styles.tabBar, display: 'none' }`. Prevents object recreation on each render when encounter modal state changes.
 
 ### [3.6] App directory components lack hermetic test coverage
 - category: tests

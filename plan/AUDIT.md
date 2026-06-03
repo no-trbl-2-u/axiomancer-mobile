@@ -147,7 +147,7 @@
 - addressed: 2026-06-03 via commit `2154ffc`
 - fix: Added comprehensive performance regression test suite (state/e2e/performance.regression.test.tsx) covering StyleSheet usage validation, React optimization hooks validation, performance anti-patterns documentation, and hook memoization patterns. Tests verify components use StyleSheet constants instead of inline objects, proper dependency arrays in useMemo/useCallback, and React.memo patterns to prevent unnecessary re-renders.
 
-### [2.8] Missing accessibility attributes on SVG elements in multiple components
+### [2.8] Missing accessibility attributes on SVG elements in multiple components ✅
 - category: accessibility
 - impact: 4
 - ease: 7
@@ -156,6 +156,8 @@
 - observation: While ItemGlyph SVGs were addressed in finding [3.6], other components with SVG elements may still lack proper accessibility attributes for screen readers.
 - evidence: Found 82 files with accessibility attributes, but need systematic review of all SVG elements for complete coverage
 - suggested_fix: Audit all SVG elements across components and add appropriate accessibilityRole="image" and descriptive accessibilityLabel props for screen reader compatibility
+- addressed: 2026-06-03 via commit `05a00dc`
+- fix: Added accessibilityRole="image" and descriptive accessibilityLabel props to all remaining SVG elements: StanceGlyph components (heart, body, mind stance glyphs), MindMark badge with dynamic label, TornPanel decorative edge, TokenIcon SVGs for all five token types, BodyDiagram equipment slots, and XpChain experience indicators. All SVGs now provide appropriate labels for screen readers, completing accessibility compliance across the application.
 
 ## Previously addressed
 

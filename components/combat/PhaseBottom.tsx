@@ -50,7 +50,7 @@ export function PhaseBottom({ vm, onPickStance, onPickAction, onPickSkill, onGoB
                     <View style={phase_styles.phaseIndexBox}>
                         <Text style={phase_styles.phaseIndex}>{Math.max(1, vm.phaseIndex + 1)}</Text>
                     </View>
-                    <SectionLabel size={11} style={{ color: AXM.parchment }}>{vm.phaseHeader}</SectionLabel>
+                    <SectionLabel size={11} style={phase_styles.phaseHeaderLabel}>{vm.phaseHeader}</SectionLabel>
                 </View>
                 <View style={phase_styles.phasePips}>
                     {vm.phaseOrder.map((_, i) => (
@@ -551,6 +551,7 @@ const phase_styles = StyleSheet.create({
     phaseSection: { padding: 8, paddingHorizontal: 10, paddingBottom: 14 },
     phaseHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
     phaseHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    phaseHeaderLabel: { color: AXM.parchment },
     phaseIndexBox: { width: 18, height: 18, backgroundColor: AXM.sulfur, alignItems: 'center', justifyContent: 'center' },
     phaseIndex: { fontFamily: FONTS.gothic, fontSize: 14, color: AXM.bg },
     phasePips: { flexDirection: 'row', gap: 3 },

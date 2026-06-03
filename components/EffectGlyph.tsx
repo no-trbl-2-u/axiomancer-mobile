@@ -1,5 +1,5 @@
-import React from 'react';
-import { View } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, StyleSheet } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { AXM } from '@/theme/axm';
 
@@ -66,6 +66,21 @@ export function EffectGlyph({ kind, size = 16, color = AXM.parchment }: EffectGl
         </Svg>
       );
     default:
-      return <View style={{ width: size, height: size, backgroundColor: color }} />;
+      return <EffectPlaceholder size={size} color={color} />;
   }
 }
+
+function EffectPlaceholder({ size, color }: { size: number; color: string }) {
+  const placeholderStyle = useMemo(
+    () => [styles.placeholderBase, { width: size, height: size, backgroundColor: color }],
+    [size, color]
+  );
+  
+  return <View style={placeholderStyle} />;
+}
+
+const styles = StyleSheet.create({
+  placeholderBase: {
+    // Base style for unknown effect type placeholder
+  },
+});

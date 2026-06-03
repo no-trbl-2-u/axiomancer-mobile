@@ -77,13 +77,30 @@ describe('EffectGlyph: default branch', () => {
         // The component's default-case returns the only View we render
         // for this kind; outer wrappers from testing-library don't show
         // up as plain `View` nodes here.
-        const styled = views.find(
-            (v) =>
-                (v.props.style as { width?: number; backgroundColor?: string })
-                    ?.backgroundColor === '#abcdef',
-        );
+        const styled = views.find((v) => {
+            const style = v.props.style;
+            if (Array.isArray(style)) {
+                // Handle style array case (from useMemo)
+                return style.some(s => s?.backgroundColor === '#abcdef');
+            }
+            return (style as { backgroundColor?: string })?.backgroundColor === '#abcdef';
+        });
         expect(styled).toBeDefined();
-        expect((styled?.props.style as { width: number }).width).toBe(24);
-        expect((styled?.props.style as { height: number }).height).toBe(24);
+        
+        // Extract style properties from array or direct object
+        const style = styled?.props.style;
+        let width, height;
+        if (Array.isArray(style)) {
+            // Find the style object with dimensions
+            const dimensionStyle = style.find(s => s?.width !== undefined);
+            width = dimensionStyle?.width;
+            height = dimensionStyle?.height;
+        } else {
+            width = (style as { width: number })?.width;
+            height = (style as { height: number })?.height;
+        }
+        
+        expect(width).toBe(24);
+        expect(height).toBe(24);
     });
 });

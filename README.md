@@ -174,6 +174,10 @@ assisted development. Pick up the loop here:
   — the operator's manual.
 - **Writing tests?** [`docs/testing.md`](./docs/testing.md) — hermetic
   e2e standard. Every implementation must land with at least one.
+- **Catching up to mechanics `0.14.0`?**
+  [`docs/mechanics-upgrade-0.14.0.md`](./docs/mechanics-upgrade-0.14.0.md)
+  — package bump, removed imports, Befriend modal, region/faction aftermath,
+  and presenter migration checklist.
 
 ## Hermetic E2E testing
 

@@ -121,23 +121,16 @@ export function TokenChip({ kind, count = 0, dim = false, glow = false, compact 
         >
             <TokenIcon kind={kind} size={compact ? 14 : 16} color={has ? t.color : AXM.bone} />
             <Text
-                style={{
-                    fontFamily: FONTS.gothic,
-                    fontSize: compact ? 13 : 16,
-                    lineHeight: compact ? 14 : 17,
-                    color: has ? t.color : AXM.bone,
-                    marginTop: 1,
-                }}
+                style={[
+                    compact ? styles.compactCount : styles.regularCount,
+                    { color: has ? t.color : AXM.bone }
+                ]}
             >{count}</Text>
             <Text
-                style={{
-                    fontFamily: FONTS.mono,
-                    fontSize: 6,
-                    letterSpacing: 1,
-                    color: has ? t.color : AXM.bone,
-                    opacity: 0.75,
-                    marginTop: 1,
-                }}
+                style={[
+                    styles.shortLabel,
+                    { color: has ? t.color : AXM.bone }
+                ]}
             >{t.short}</Text>
         </View>
     );
@@ -186,7 +179,7 @@ export interface TokenCostProps {
 export function TokenCost({ cost = {}, tokens = {}, size = 14, dense = false }: TokenCostProps) {
     const entries: TokenKey[] = TOKEN_KEYS.flatMap(k => Array.from({ length: cost[k] || 0 }, () => k));
     if (entries.length === 0) {
-        return <Text style={{ fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone, letterSpacing: 1 }}>FREE</Text>;
+        return <Text style={styles.freeCostLabel}>FREE</Text>;
     }
     const owed: TokenCounts = { body: 0, mind: 0, heart: 0, fallacy: 0, paradox: 0 };
     const lacks = entries.map(k => {
@@ -194,22 +187,24 @@ export function TokenCost({ cost = {}, tokens = {}, size = 14, dense = false }: 
         return (tokens[k] ?? 0) < owed[k];
     });
     return (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: dense ? 2 : 3 }}>
+        <View style={[styles.costRow, { gap: dense ? 2 : 3 }]}>
             {entries.map((k, i) => {
                 const c = TOKEN[k];
                 const missing = lacks[i];
                 return (
                     <View
                         key={i}
-                        style={{
-                            width: size, height: size,
-                            alignItems: 'center', justifyContent: 'center',
-                            backgroundColor: missing ? 'transparent' : c.bg,
-                            borderWidth: 1,
-                            borderStyle: missing ? 'dashed' : 'solid',
-                            borderColor: c.color,
-                            opacity: missing ? 0.45 : 1,
-                        }}
+                        style={[
+                            styles.costPip,
+                            {
+                                width: size, 
+                                height: size,
+                                backgroundColor: missing ? 'transparent' : c.bg,
+                                borderStyle: missing ? 'dashed' : 'solid',
+                                borderColor: c.color,
+                                opacity: missing ? 0.45 : 1,
+                            }
+                        ]}
                     >
                         <TokenIcon kind={k} size={size - 6} color={c.color} />
                     </View>
@@ -222,6 +217,40 @@ export function TokenCost({ cost = {}, tokens = {}, size = 14, dense = false }: 
 const styles = StyleSheet.create({
     chip: {
         position: 'relative',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+    },
+    compactCount: {
+        fontFamily: FONTS.gothic,
+        fontSize: 13,
+        lineHeight: 14,
+        marginTop: 1,
+    } satisfies TextStyle,
+    regularCount: {
+        fontFamily: FONTS.gothic,
+        fontSize: 16,
+        lineHeight: 17,
+        marginTop: 1,
+    } satisfies TextStyle,
+    shortLabel: {
+        fontFamily: FONTS.mono,
+        fontSize: 6,
+        letterSpacing: 1,
+        opacity: 0.75,
+        marginTop: 1,
+    } satisfies TextStyle,
+    freeCostLabel: {
+        fontFamily: FONTS.mono,
+        fontSize: 9,
+        color: AXM.bone,
+        letterSpacing: 1,
+    } satisfies TextStyle,
+    costRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    costPip: {
         alignItems: 'center',
         justifyContent: 'center',
         borderWidth: 1,

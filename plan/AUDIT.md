@@ -108,7 +108,7 @@
 - addressed: 2026-06-03 via commit `6b1c5c9`
 - fix: Extracted all inline style objects to StyleSheet constants across 6 components. Created friendLabel, levelSubtitle, moraleMax, centerAlign, rightAlign, burdenSection, healthBarSection, flexOne, and splatterPosition styles to prevent object recreation on each render, improving performance in combat and UI updates.
 
-### [6.4] Node.js version compatibility blocks web development workflow
+### [6.4] Node.js version compatibility blocks web development workflow ✅
 - category: tests
 - impact: 8
 - ease: 8
@@ -117,6 +117,9 @@
 - observation: Web development server fails to start due to `configs.toReversed is not a function` error in Metro config loading, indicating Node.js 18.20.8 lacks support for newer Array methods required by current Metro version.
 - evidence: TypeError at metro-config/src/loadConfig.js:179:35 when running `npx expo start --web`
 - suggested_fix: Either upgrade Node.js to version 20+ which includes Array.prototype.toReversed() support, or downgrade Metro/Expo dependencies to versions compatible with Node.js 18
+- issue: #244
+- addressed: 2026-06-03 via commit `0c6266b`
+- fix: Added Node.js >=20.0.0 requirement to package.json engines field and .nvmrc file. Metro config in @expo/metro-config 54.0.15 requires Array.prototype.toReversed() which was introduced in Node.js 20. The CI workflow already uses Node.js 20, now local development environment is aligned with this requirement.
 
 ### [4.8] Production console statements remain in components
 - category: tests

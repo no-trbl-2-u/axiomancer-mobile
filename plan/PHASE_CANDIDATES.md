@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-02 at commit 0332e4a
-> Pass count: 51
+> Last pass: 2026-06-03 at commit a87a33e
+> Pass count: 52
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -1751,4 +1751,59 @@ exploration `moveToAction` migration to engine `revealAdjacent` /
 - rationale: Large files create maintenance burden and reduce readability. Phase 102's combat decomposition establishes a pattern that could benefit other oversized route components.
 - proposed scope: 1-2 phases. Extract sub-components from exploration/index.tsx and character/index.tsx following Phase 102's decomposition approach.
 - estimated phases: 2
+- conflicts: none
+
+### [score 10.0] App directory test coverage phase
+- proposed: 2026-06-03, expand pass 52
+- source signals:
+  - **Audit finding [7.2]** — App directory components completely lack test coverage (impact 8, category: tests)
+  - **Test coverage gap smell** — 9 app route files with 0 dedicated tests vs components/ folder with 1:1 ratio
+  - **High-LOC untested files** — inventory/index.tsx (706 lines), exploration/index.tsx (693 lines), combat.tsx (493 lines) lack coverage
+- rationale: Critical testing infrastructure gap. App directory holds all route components with complex presenter integration but zero dedicated tests, while components directory has excellent 69:69 test coverage. This creates maintainability risk for high-traffic surfaces.
+- proposed scope: 1 phase. Establish hermetic testing pattern for app route components following existing state/e2e/ precedent. Focus on presenter integration and route-specific UI state management.
+- estimated phases: 1
+- conflicts: none
+
+### [score 8.0] Hex literal token migration systematic cleanup
+- proposed: 2026-06-03, expand pass 52
+- source signals:
+  - **Hex literal leakage smell** — 93 hex color literals across codebase
+  - **`#0a0a0a` pattern cluster** — 26 instances of hardcoded background color that should use `AXM.bg` token
+  - **Key violating files** — EncounterModalOverlay.tsx (5), BossIllustration.tsx (5), AscendStrip.tsx (4), NodeMark.tsx (4)
+- rationale: Systematic violation of theme token discipline. The `#0a0a0a` pattern represents direct violation of established `AXM.bg` token from theme/axm.ts. This undermines theme consistency and makes future design changes fragile.
+- proposed scope: 1 phase. Systematic replacement of hex literals with proper theme tokens, focusing on the 26 `#0a0a0a` instances first, then other common patterns like `#06050a` and `#0a0807`.
+- estimated phases: 1
+- conflicts: none
+
+### [score 8.0] Performance inline styles systematic cleanup
+- proposed: 2026-06-03, expand pass 52
+- source signals:
+  - **Audit findings cluster** — 5 performance category findings all addressing inline style object creation: [6.3], [5.6], [4.8], [4.5], [2.8]
+  - **Recent pattern** — 3 consecutive "perf: extract inline style objects" commits since last expand pass
+  - **Systematic issue** — Inline styles causing unnecessary re-renders across multiple surfaces
+- rationale: Performance debt pattern requires systematic approach rather than piecemeal fixes. Current audit shows 5 separate findings for same root cause across different components, indicating broader architectural issue with style object creation.
+- proposed scope: 1 phase. Systematic extraction of inline style objects to StyleSheet constants following pattern established in recent commits. Focus on remaining findings in exploration, character, and combat surfaces.
+- estimated phases: 1
+- conflicts: none
+
+### [score 7.0] Combat surface architectural audit
+- proposed: 2026-06-03, expand pass 52
+- source signals:
+  - **Critique clustering** — 4 HIGH findings on /combat family: UX unintuitive, token system issues, skill blocking, re-trigger problems
+  - **Commit pattern signal** — 10+ combat-related fixes since May 1st, indicating high-churn surface
+  - **File size concern** — combat.tsx and combat components showing repeated modification patterns
+- rationale: Combat system shows multiple converging signals of architectural stress. HIGH critique findings cluster around usability and engine integration. Commit patterns show repeated fixes suggesting underlying design issues rather than isolated bugs.
+- proposed scope: 1-2 phases. Comprehensive audit of combat surface architecture, particularly around modal behavior, tooltip systems, and engine state integration. May split into audit + implementation phases.
+- estimated phases: 2
+- conflicts: none
+
+### [score 6.0] Large file decomposition phase — state and components
+- proposed: 2026-06-03, expand pass 52
+- source signals:
+  - **File length outlier smell** — state/actions.ts (1529 lines, 3.3× app median), state/presenters/combat.engine.ts (1371 lines), EncounterModalOverlay.tsx (748 lines)
+  - **Decomposition precedent** — Phase 102 successfully decomposed combat.tsx, establishing pattern
+  - **Maintenance burden** — Files 7-13× their folder median create readability and maintenance challenges
+- rationale: Several files have grown beyond maintainable size boundaries. state/actions.ts at 1529 lines is particularly concerning as central state management. Phase 102's combat decomposition provides proven approach.
+- proposed scope: 1 phase. Focus on state/actions.ts decomposition into domain-specific action modules following existing patterns. Consider EncounterModalOverlay.tsx sub-component extraction.
+- estimated phases: 1
 - conflicts: none

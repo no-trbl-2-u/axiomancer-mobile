@@ -118,7 +118,7 @@ export default function CharacterScreen() {
             onLevelUp={() => actions.levelUp()}
           />
         )}
-        <View style={{ marginTop: 8 }}>
+        <View style={styles.marginTop8}>
           <View style={styles.xpRow}>
             <Text style={styles.xpLabel}>XP CHAIN TO LVL {vm.level + 1}</Text>
             <Text style={styles.xpValue}>{vm.xp} / {vm.xpMax}</Text>
@@ -205,7 +205,7 @@ export default function CharacterScreen() {
                   {'isNew' in pool && pool.isNew && <Text style={styles.poolNewBadge}>NEW</Text>}
                   <Text style={styles.poolGloss}>· {pool.gloss}</Text>
                 </View>
-                <Text style={styles.poolValue}>{pool.value}<Text style={{ color: AXM.bone }}> / {pool.max}</Text></Text>
+                <Text style={styles.poolValue}>{pool.value}<Text style={styles.boneText}> / {pool.max}</Text></Text>
               </View>
               <View style={styles.poolTrack}>
                 <View style={[styles.poolFill, { width: `${(pool.value / pool.max) * 100}%`, backgroundColor: pool.color }]} />
@@ -236,7 +236,7 @@ export default function CharacterScreen() {
           <View style={styles.ledgerDivider} />
           <Text style={styles.ledgerLore}>
             {"At "}
-            <Text style={{ color: AXM.blood }}>ii or below</Text>
+            <Text style={styles.bloodText}>ii or below</Text>
             {" the road begins to lie. Maps shift. Nodes whisper wrong names."}
           </Text>
         </View>
@@ -368,7 +368,7 @@ export default function CharacterScreen() {
                   ]}
                 >
                   <EffectGlyph kind={e.kind} size={20} color={e.tint === 'buff' ? AXM.sulfur : AXM.blood} />
-                  <View style={{ flex: 1 }}>
+                  <View style={styles.flexOne}>
                     <View style={styles.effectTopRow}>
                       <Text style={styles.effectName}>{e.name}</Text>
                       <Text style={styles.effectMeta}>
@@ -445,7 +445,7 @@ export default function CharacterScreen() {
                   ]}
                 >
                   <StanceGlyph kind={s.stanceKey} size={16} color={AXM.bone} />
-                  <View style={{ flex: 1 }}>
+                  <View style={styles.flexOne}>
                     <Text style={styles.skillName}>{s.name}</Text>
                     <Text style={[styles.skillCat, { color: s.category === 'paradox' ? AXM.sulfur : AXM.parchment }]}>
                       {s.category.toUpperCase()}
@@ -532,6 +532,10 @@ const styles = StyleSheet.create({
   slotName: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1.5, color: AXM.bone },
   slotItem: { fontFamily: FONTS.serif, fontSize: 11, color: AXM.parchment, lineHeight: 14 },
   skillsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
+  boneText: { color: AXM.bone },
+  bloodText: { color: AXM.blood },
+  flexOne: { flex: 1 },
+  marginTop8: { marginTop: 8 },
   skillCard: { width: '48%', borderWidth: 2, padding: 4, paddingHorizontal: 6, backgroundColor: AXM.bg, flexDirection: 'row', alignItems: 'center', gap: 6 },
   skillName: { fontFamily: FONTS.gothic, fontSize: 12, color: AXM.parchment, lineHeight: 14 },
   skillCat: { fontFamily: FONTS.mono, fontSize: 8, letterSpacing: 1 },

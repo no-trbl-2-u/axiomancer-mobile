@@ -54,7 +54,7 @@ export function StatusCard(props: StatusCardProps = {}) {
         </View>
         <View style={styles.nameCol}>
           <Text style={styles.name} numberOfLines={1}>{name}</Text>
-          <SectionLabel size={9} style={{ color: AXM.bone, marginTop: 2 }}>
+          <SectionLabel size={9} style={styles.levelSubtitle}>
             LEVEL · LVL {level} PILGRIM
           </SectionLabel>
         </View>
@@ -68,7 +68,7 @@ export function StatusCard(props: StatusCardProps = {}) {
               <Text style={styles.moraleGloss}>· RESOLVE TO WALK</Text>
             </View>
             <Text style={styles.moraleValue}>
-              {['', 'i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix', 'x'][moraleDisplay] || 'x'}<Text style={{ color: AXM.bone }}> / x</Text>
+              {['', 'i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix', 'x'][moraleDisplay] || 'x'}<Text style={styles.moraleMax}> / x</Text>
             </Text>
           </View>
           <View style={styles.moraleTrack}>
@@ -173,5 +173,12 @@ const styles = StyleSheet.create({
     bottom: -2,
     width: 1,
     backgroundColor: AXM.blood,
+  },
+  levelSubtitle: {
+    color: AXM.bone,
+    marginTop: 2,
+  },
+  moraleMax: {
+    color: AXM.bone,
   },
 });

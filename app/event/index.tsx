@@ -93,7 +93,7 @@ function ChoiceRow({
             testID={`event-choice-${choice.id}`}
         >
             <ActionIcon kind={choice.iconKey} size={24} color={accent} />
-            <View style={{ flex: 1 }}>
+            <View style={styles.flexOne}>
                 <Text style={styles.choiceLabel}>{choice.label}</Text>
                 <Text style={styles.choiceSub}>{choice.description}</Text>
                 <ConsequenceChips consequences={choice.consequences} />
@@ -213,7 +213,7 @@ export default function EventScreen() {
                         testID="event-choice-back"
                     >
                         <ActionIcon kind="flee" size={24} color={AXM.bone} />
-                        <View style={{ flex: 1 }}>
+                        <View style={styles.flexOne}>
                             <Text style={styles.choiceLabel}>{vm.chrome.emptyBackLabel}</Text>
                             <Text style={styles.choiceSub}>{vm.chrome.emptyBackSub}</Text>
                         </View>
@@ -255,7 +255,7 @@ export default function EventScreen() {
                     color={AXM.blood}
                     size={180}
                     seed={45}
-                    style={{ position: 'absolute', top: -20, right: -30, opacity: isBoss ? 0.7 : 0.5 }}
+                    style={[styles.splatterPosition, { opacity: isBoss ? 0.7 : 0.5 }]}
                 />
             </View>
 
@@ -443,4 +443,6 @@ const styles = StyleSheet.create({
         paddingVertical: 1,
     },
     emptyArea: { padding: 24, gap: 12 },
+    flexOne: { flex: 1 },
+    splatterPosition: { position: 'absolute', top: -20, right: -30 },
 });

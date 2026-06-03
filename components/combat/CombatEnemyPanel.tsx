@@ -81,7 +81,7 @@ export function CombatEnemyPanel({ vm }: CombatEnemyPanelProps) {
                             {`"…${vm.enemy.flavor}"`}
                         </Text>
                     )}
-                    <View style={{ marginTop: 6 }}>
+                    <View style={styles.healthBarSection}>
                         <StatBar
                             value={vm.enemy.hp}
                             max={vm.enemy.hpMax}
@@ -210,5 +210,8 @@ const styles = StyleSheet.create({
         fontSize: 9,
         letterSpacing: 1.6,
         color: AXM.bone,
+    },
+    healthBarSection: {
+        marginTop: 6,
     },
 });

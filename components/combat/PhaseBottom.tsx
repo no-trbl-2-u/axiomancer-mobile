@@ -511,10 +511,10 @@ function ResolvePanel({
                         <Text style={[resolve_styles.scaleEyebrow, { color: AXM.sulfur }]}>YOU · {resolve.playerStance.toUpperCase()}</Text>
                         <Text style={resolve_styles.scaleSubLabel}>ATTACK ROLL</Text>
                     </View>
-                    <View style={{ alignItems: 'center' }}>
+                    <View style={resolve_styles.centerAlign}>
                         <Text style={[resolve_styles.scaleEyebrow, { color: AXM.bone }]}>VS</Text>
                     </View>
-                    <View style={{ alignItems: 'flex-end' }}>
+                    <View style={resolve_styles.rightAlign}>
                         <Text style={[resolve_styles.scaleEyebrow, { color: AXM.blood }]}>FOE · {resolve.enemyStance.toUpperCase()}</Text>
                         <Text style={resolve_styles.scaleSubLabel}>FOE DEFENSE</Text>
                     </View>
@@ -717,4 +717,6 @@ const resolve_styles = StyleSheet.create({
     rippleDesc: { fontFamily: FONTS.serif, fontSize: 11.5, color: AXM.parchment, flex: 1 },
     letBtn: { paddingVertical: 12, alignItems: 'center', borderWidth: 1, backgroundColor: AXM.bg },
     letText: { fontFamily: FONTS.sans, fontSize: 13, letterSpacing: 3 },
+    centerAlign: { alignItems: 'center' },
+    rightAlign: { alignItems: 'flex-end' },
 });

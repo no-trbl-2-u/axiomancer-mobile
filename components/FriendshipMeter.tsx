@@ -13,7 +13,7 @@ interface FriendshipMeterProps {
 export function FriendshipMeter({ value = 0, max = 5, compact = false }: FriendshipMeterProps) {
   return (
     <View style={styles.row}>
-      {!compact && <SectionLabel size={9} style={{ color: AXM.bone }}>FRIEND</SectionLabel>}
+      {!compact && <SectionLabel size={9} style={styles.friendLabel}>FRIEND</SectionLabel>}
       <View style={styles.hearts}>
         {Array.from({ length: max }).map((_, i) => (
           <Svg key={i} viewBox="0 0 16 14" width={11} height={10}>
@@ -44,6 +44,9 @@ const styles = StyleSheet.create({
   counter: {
     fontFamily: FONTS.mono,
     fontSize: 9,
+    color: AXM.bone,
+  },
+  friendLabel: {
     color: AXM.bone,
   },
 });

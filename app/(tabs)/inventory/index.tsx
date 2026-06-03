@@ -278,7 +278,7 @@ export default function InventoryScreen() {
                         <Text style={styles.shillingVal}>⚜ {vm.shilling}</Text>
                     </View>
                 </View>
-                <View style={{ marginTop: 8 }}>
+                <View style={styles.burdenSection}>
                     {/* Phase 74 follow-up walkthrough — wrap the
                         burden bar in a TooltipTarget pointing at
                         the new kind:'burden' content. Tap explains
@@ -701,6 +701,9 @@ const styles = StyleSheet.create({
     },
     tabRowDimmed: {
         opacity: 0.4,
+    },
+    burdenSection: {
+        marginTop: 8,
     },
 
 });

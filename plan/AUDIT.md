@@ -82,7 +82,7 @@
 - addressed: 2026-06-03 via commit `60d9dbb`
 - fix: Extracted inline style objects to StyleSheet constants. Created styles.bloodSplatter and styles.sulfurSplatter to prevent object recreation on each render, improving scroll performance in exploration screen.
 
-### [3.6] Missing SVG accessibility labels in ItemGlyph components
+### [3.6] Missing SVG accessibility labels in ItemGlyph components ✅
 - category: accessibility
 - impact: 6
 - ease: 6
@@ -91,6 +91,9 @@
 - observation: ItemGlyph component has multiple SVG elements with no accessibility attributes, making item types inaccessible to screen readers in inventory management.
 - evidence: components/inventory/ItemCard.tsx lines 36-90 (multiple SVG elements)
 - suggested_fix: Add accessibilityRole="image" and descriptive accessibilityLabel props to all SVG elements in ItemGlyph function
+- issue: #242
+- addressed: 2026-06-03 via commit `606c69e`
+- fix: Added accessibilityRole="image" and descriptive accessibilityLabel props to all SVG elements in ItemGlyph function. Screen readers now receive appropriate labels for equipment ("Accessory equipment icon"), consumable ("Consumable item icon"), material ("Material item icon"), quest ("Quest item icon"), and unknown item types.
 
 ### [3.2] Metro config Node.js version compatibility issue blocks web development
 - category: tests

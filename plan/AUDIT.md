@@ -69,7 +69,7 @@
 - addressed: 2026-06-03 via commit `e050307`
 - fix: Extracted inline style object to StyleSheet constant phase_styles.phaseHeaderLabel, preventing object recreation on every combat phase render and improving performance.
 
-### [4.5] Multiple inline styles in Splatter positioning cause re-renders in exploration
+### [4.5] Multiple inline styles in Splatter positioning cause re-renders in exploration ✅
 - category: performance
 - impact: 5
 - ease: 9
@@ -78,6 +78,9 @@
 - observation: Exploration screen uses inline style objects for Splatter positioning that recreate on every render affecting scroll performance.
 - evidence: app/(tabs)/exploration/index.tsx lines 246-247
 - suggested_fix: Extract position styles to StyleSheet constants like `styles.bloodSplatter` and `styles.sulfurSplatter`
+- issue: #241
+- addressed: 2026-06-03 via commit `60d9dbb`
+- fix: Extracted inline style objects to StyleSheet constants. Created styles.bloodSplatter and styles.sulfurSplatter to prevent object recreation on each render, improving scroll performance in exploration screen.
 
 ### [3.6] Missing SVG accessibility labels in ItemGlyph components
 - category: accessibility

@@ -130,7 +130,7 @@
 - suggested fix: Delete Hard rule 10 (or mark it RESOLVED with the fixing commit and the current green verify count); the live verify status belongs in one place, not contradicted across the doc.
 - source: file-read (repo-proxy)
 
-### [MED] /docs/testing.md — PR self-check tells newcomers to put tests under `app/<route>/e2e/`, contradicting the doc's own `state/e2e/` mandate
+### [MED] /docs/testing.md — PR self-check tells newcomers to put tests under `app/<route>/e2e/`, contradicting the doc's own `state/e2e/` mandate ✅
 - pass: 18 (commit fd525e3)
 - viewport: n/a (repo-proxy)
 - auth_state: anonymous
@@ -139,8 +139,9 @@
 - evidence: docs/testing.md:198 "[ ] At least one new (or modified) test under `app/<route>/e2e/`" vs docs/testing.md:87 "NEVER put non-route files inside `app/`" and :100 "`state/e2e/<feature>.engine.test.ts`"; actual tests in `state/e2e/`, `state/persistence/e2e/`, `state/presenters/__tests__/`.
 - suggested fix: Change docs/testing.md:198 (and the AGENTS.md:82-83 echo) to `state/e2e/`.
 - source: file-read (repo-proxy)
+- addressed: Already fixed in prior commit - docs/testing.md:198 correctly references `state/e2e/` and AGENTS.md:80-82 also uses correct paths. Finding was already resolved before this iterate tick.
 
-### [MED] /docs/testing-guide.md — unfilled QA-template skeleton: omits Memoir tab, placeholder contacts, name-collides with docs/testing.md
+### [MED] /docs/testing-guide.md — unfilled QA-template skeleton: omits Memoir tab, placeholder contacts, name-collides with docs/testing.md ✅
 - pass: 18 (commit fd525e3)
 - viewport: n/a (repo-proxy)
 - auth_state: anonymous
@@ -149,6 +150,9 @@
 - evidence: docs/testing-guide.md:7 tab list omits Memoir; :59 "Email: [internal testing email]"; :85 "[List any known issues that are planned for future fixes]"; :101 "Technical Issues: [development team contact]".
 - suggested fix: Add a top banner clarifying this is the manual TestFlight/Play QA checklist (vs docs/testing.md = the hermetic-test standard), add the Memoir tab, and remove or fill the placeholder contact stubs.
 - source: file-read (repo-proxy)
+- issue: #255
+- addressed: 2026-06-04 via commit cf94ee7
+- fix: Added missing Memoir tab to core functionality checklist and top banner clarifying this is manual QA checklist vs hermetic test standard. Placeholder contacts were already filled in previous commits.
 
 ### [LOW] /plan/bearings.md — Stack table pins engine `^0.4.x` while the rest of the file + package.json pin exact `0.11.0`
 - pass: 18 (commit fd525e3)

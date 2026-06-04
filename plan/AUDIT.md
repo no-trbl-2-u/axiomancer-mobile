@@ -20,6 +20,33 @@
 
 ## Top 5 findings (scored)
 
+### [4.2] Console statements in design files and combat engine expose debug info in production
+- category: perf
+- impact: 6
+- ease: 7
+- next: Wrap console.error in design-canvas.jsx files and console.warn in combat.engine.ts:1034 with __DEV__ guards to prevent debug output in production builds
+- evidence: Found console.error in 3 design-canvas.jsx files and console.warn in combat.engine.ts without __DEV__ protection
+- observation: Design files in handoff directories and combat engine contain console statements that would execute in production builds, potentially exposing debug information
+- issue: #257
+
+### [3.6] Component test coverage gap - at least one component lacks tests
+- category: tests
+- impact: 4
+- ease: 9
+- next: Identify which component lacks test coverage and add corresponding test file
+- evidence: Found 70 component files but only 69 test files in components directory
+- observation: Test coverage appears incomplete with a mismatch between component count and test count
+
+### [2.8] Large images could be optimized for mobile performance  
+- category: perf
+- impact: 7
+- ease: 4
+- next: Optimize largest image assets (react-logo@3x.png at 21KB, icon assets > 10KB) for mobile delivery
+- evidence: react-logo@3x.png is 21KB, several launcher icons > 8KB
+- observation: Several image assets are relatively large for mobile apps and could benefit from optimization
+
+## Completed findings
+
 ### [4.8] Console statements in production builds expose debug info ✅ (already addressed)
 - category: perf
 - impact: 6
@@ -71,7 +98,3 @@
 - observation: App loads multiple font families and debug components that could be optimized for production builds
 - addressed: 2026-06-04 via commit 2a33bc8
 - fix: Implemented code splitting for 17 debug components using React.lazy() and Suspense. Debug components now load asynchronously only when DevMenu is expanded in __DEV__ builds, removing them from the initial production bundle. Created DebugComponentsLazy wrapper component with loading fallback.
-
-## Completed findings
-
-*Previous audit findings will be listed here as they are addressed*

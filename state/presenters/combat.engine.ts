@@ -1030,8 +1030,10 @@ function _devAssertTriangleMatchesEngine(): void {
                 /* istanbul ignore next */
                 if (got !== expected && got !== 'neutral' && expected !== 'neutral') {
                     /* istanbul ignore next */
-                    // eslint-disable-next-line no-console
-                    console.warn('[combat.engine] stance triangle drift', a, b, got, expected);
+                    if (__DEV__) {
+                        // eslint-disable-next-line no-console
+                        console.warn('[combat.engine] stance triangle drift', a, b, got, expected);
+                    }
                 }
             }
         }

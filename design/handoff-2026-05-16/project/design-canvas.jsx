@@ -692,7 +692,11 @@ function DCArtboardFrame({ sectionId, artboard, label, order, onRename, onReorde
     if (!cardRef.current) return;
     const name = String(label || id || 'artboard').replace(/[^\w\s.-]+/g, '_');
     dcExport(cardRef.current, width, height, name, kind)
-      .catch((e) => console.error('[design-canvas] export failed:', e));
+      .catch((e) => {
+        if (__DEV__) {
+          console.error('[design-canvas] export failed:', e);
+        }
+      });
   };
 
   // Live drag-reorder: dragged card sticks to cursor; siblings slide into

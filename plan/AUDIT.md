@@ -31,13 +31,16 @@
 - addressed: 2026-06-04 via commit 21038a2
 - fix: Wrapped console.error in 3 design-canvas.jsx files and console.warn in combat.engine.ts with __DEV__ guards to prevent debug output in production builds
 
-### [3.6] Component test coverage gap - at least one component lacks tests
+### [3.6] Component test coverage gap - at least one component lacks tests ✅
 - category: tests
 - impact: 4
 - ease: 9
 - next: Identify which component lacks test coverage and add corresponding test file
 - evidence: Found 70 component files but only 69 test files in components directory
 - observation: Test coverage appears incomplete with a mismatch between component count and test count
+- issue: #258
+- addressed: 2026-06-04 via commit c4a355f
+- fix: Added comprehensive test coverage for ItemCard component with 25 test cases covering utility functions, glyph rendering for all categories, expanded/collapsed states, accessibility features, and user interactions. Reduces component-to-test gap.
 
 ### [2.8] Large images could be optimized for mobile performance  
 - category: perf

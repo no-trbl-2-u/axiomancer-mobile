@@ -79,8 +79,8 @@ fonts, no real timers, no animations) + deterministic
   `axiomancer-mechanics/src/Combat/e2e/combat.engine.test.ts` (its
   alternating-RNG helper + win-condition split is the model).
 - **Location:**
-  - **Pure presenter / engine logic:** `app/<screen>/e2e/<feature>.engine.test.ts`
-    next to `app/<screen>/e2e/<feature>.engine.ts`.
+  - **Pure presenter / engine logic:** `state/e2e/<feature>.engine.test.ts`
+    next to `state/presenters/<feature>.engine.ts`.
   - **React component rendering:** `components/<Component>.test.tsx`
     rendered via `@testing-library/react-native`.
 - **Stub helpers:** keep all randomness behind `axiomancer-mechanics`'s

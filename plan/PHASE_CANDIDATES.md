@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-03 at commit d243419
-> Pass count: 53
+> Last pass: 2026-06-04 at commit HEAD
+> Pass count: 54
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -22,18 +22,90 @@
 - score: 2.5 base + 0.5 (playtest-source) + 0.5 (visual, confirmed by playtest) = 3.5
 - critique-xref: CRITIQUE.md [MED] Space heart/body/mind buttons evenly
 
-### [score 3.5] Stale paused phases resolution (62d/62e cleanup)
-- proposed: 2026-06-01T11:23:07+00:00, expand pass 50
+### [score 7.0] Doc-drift sweep — close 8 open CRITIQUE doc/consistency findings
+- proposed: 2026-06-04, expand pass 54
 - source signals:
-  - Smell: phases 62d/62e marked [paused] >14 days ago (last touched 2026-05-21)
-  - Build plan organizational debt — unclear if phases should resume or retire
-  - Plan/steps/01_build_plan.md shows stale decision context
-- rationale: Phases 62d (Currency grant debug control) and 62e (Combat-HUD spot overrides) paused during combat regression priority shift. Need explicit resolution.
-- proposed scope: 1 phase — evaluate current product context and either resume with updated scope or formally retire [skipped] with rationale
+  - CRITIQUE [MED] /docs/testing.md — PR self-check says `app/<route>/e2e/`; actual mandate is `state/e2e/`
+  - CRITIQUE [MED] /docs/testing-guide.md — unfilled QA-template skeleton (missing Memoir tab, placeholder contacts)
+  - CRITIQUE [LOW] /plan/bearings.md — Stack table pins `^0.4.x`; rest of file and package.json pin exact `0.11.0` (now `0.14.0`)
+  - CRITIQUE [MED] /README.md — Architecture layout block drifted: presenters at `app/<route>/*.engine.ts` vs actual `state/presenters/`, `(placeholder UI)` labels on shipped screens, Memoir tab absent
+  - CRITIQUE [MED] /README.md — License section incomplete (`"TBD. Ask the project maintainer"`)
+  - CRITIQUE [LOW] /agents.md — Dead link to `.cursor/skills/swap-asset-placeholder/SKILL.md` (path does not exist)
+  - CRITIQUE [MED] /specs/00-how-to-use-specs.md — References missing `GAME-ROADMAP.md` file
+  - CRITIQUE [MED] general — Voice guidance scattered across bearings.md and theme/axm.ts with no cross-references
+- rationale: 8 doc/consistency findings have accumulated since the last doc-sweep. The UX-gap /iterate bias means these lower-scoring doc rows will not be weighted high enough to drain autonomously. A dedicated doc-sweep phase closes the full cluster in one tick rather than waiting indefinitely. All are small edits; the largest is the README architecture block redraw.
+- proposed scope: 1 phase, 1 tick
+  - Fix `docs/testing.md` PR self-check path → `state/e2e/`; fix `AGENTS.md` echo of same wrong path
+  - Add `docs/testing-guide.md` top banner clarifying it is the manual QA checklist vs the hermetic-test standard; add Memoir tab; remove placeholder contact stubs
+  - Update `plan/bearings.md` Stack-table engine pin cell → `0.14.0`
+  - Redraw README layout/architecture block: presenters → `state/presenters/`, drop `(placeholder UI)` labels, add Memoir tab
+  - Fix README license section (minimal: state status or direct to maintainer clearly)
+  - Fix `agents.md` dead link (remove or redirect the asset-swap reference)
+  - Fix `specs/00-how-to-use-specs.md` GAME-ROADMAP reference (remove or redirect to existing roadmap)
+  - Add cross-reference note in bearings.md voice section pointing to theme/axm.ts
 - estimated phases: 1
-- conflicts: none
+- conflicts: none. Pure doc edits; no code or test changes.
+
+### [score 5.5] Hex literal token drain — unreferenced color cluster across 6 production files
+- proposed: 2026-06-04, expand pass 54
+- source signals:
+  - Smell §4 I hex-literal leakage: `'#5a8a3a'` × 3 (EffectChip.tsx:20,23,37 + CombatLogDisplay.tsx:17,68 — heal/regen/poison green, no AXM token); `'#3a3530'` (inventory/index.tsx:562); `'#16130d'` (exploration/index.tsx:691); `'#1a1814'` (character/index.tsx:501 + StatBar.tsx:55); `'#0a0807'` (ErrorBoundary.tsx:472 — missed by Phase 83); `'#1a1410'` (PhaseBottom.tsx:219); `'#0f0a08'` (CombatVictoryPanel.tsx:301)
+  - Bearings hard rule: no hex literals in components
+  - Prior drain phases 81b (`#0a0a0a`/`#06050a`) and 83 (`#0a0807`) established the pattern; these are the remaining unlisted literals
+- rationale: 9 unique hex literals remain across 7+ production files, all missed by prior sweeps. The green heal palette (`#5a8a3a`) appears 3× with no AXM.heal token. Prior phases proved this is mechanical work: add tokens to `theme/axm.ts`, replace with constant.
+- proposed scope: 1 phase, 1 tick
+  - Add `AXM.heal = '#5a8a3a'` (or `AXM.green`) and drain 3 occurrences across EffectChip + CombatLogDisplay
+  - Drain remaining unique literals: confirm each maps to an existing or new AXM token; apply replacements across inventory, exploration, character, StatBar, ErrorBoundary, PhaseBottom, CombatVictoryPanel
+- estimated phases: 1
+- conflicts: none. Mechanical token replacement; same value, no behavioral delta.
+
+### [score 5.0] EncounterModalOverlay sub-component extraction
+- proposed: 2026-06-04, expand pass 54
+- source signals:
+  - Smell §4 I file-length outlier: `components/event/EncounterModalOverlay.tsx` at 748 lines — largest production component, ~2.5× the folder median (~300 lines for components/event/)
+  - Prior extraction wins: Phase 81c (combat.tsx 1476→786, zero regressions), Phase 84 (inventory/index.tsx 1099→703, zero regressions) — pattern is proven
+  - EncounterModalOverlay hosts four cohesive-but-separable sections: modal backdrop + chain-bar chrome; encounter illustration dispatch; CombatPanel mount; aftermath panel router
+  - The encounter flow is the most-modified surface across the project (Phases 63a–d, 65, 70a–d, 71, 72) — high payoff for reduced per-edit surface
+- rationale: Extraction reduces the file from ~750 to ~300 lines, making each section independently testable and locatable. The component already has a 773-line test suite; the extraction should keep tests passing without change.
+- proposed scope: 1 phase, 2 ticks
+  - Tick A: Extract `<EncounterSealChrome>` (chain bars + backdrop opacity + animation) → `components/event/EncounterSealChrome.tsx`
+  - Tick B: Extract encounter-mode state machine into `useEncounterModalState` hook; reduce `EncounterModalOverlay.tsx` to a ~250-line thin shell. Existing tests pass unchanged.
+- estimated phases: 1
+- conflicts: none. Refactor only; presenter contract unchanged.
+
+### [score 4.0] Phase 104/105 TODO follow-ups — combat-hud max resources + mercy state
+- proposed: 2026-06-04, expand pass 54
+- source signals:
+  - TODO smell: `state/presenters/combat-hud.engine.ts:31` — `// TODO: Phase 105 follow-up should track actual max resources.` (Phase 105 shipped per-round accrual but left max tracking deferred)
+  - TODO smell: `state/presenters/combat.engine.ts:1065` — `// TODO: Replace with combat.mercyChoiceState.isActive when available` (Phase 104 mercy modal)
+  - TODO smell: `state/actions.ts:1515` — `// TODO: Replace with engine mercy exploit action dispatch:` (Phase 104 follow-up)
+  - §G commit pattern: Phases 104/105/106 form a tightly coupled engine-truth cleanup cluster; these 3 TODOs are the stated remainder
+  - Engine bump: mechanics 0.14.0 just landed (Phase 106) — new package may expose the max-resources and/or mercyChoiceState surfaces
+- rationale: Phase 104 and 105 explicitly deferred work via TODO comments rather than letting it accumulate silently. The 0.14.0 package may have surfaced the needed APIs. Investigation + wire-up would close all 3 TODOs and complete the engine-truth cleanup arc.
+- proposed scope: 1 phase, 1–2 ticks (contingent on 0.14.0 surface)
+  - Tick A: Read `node_modules/axiomancer-mechanics/dist/` for `combatResources.max` field and `mercyChoiceState` shape; confirm presence
+  - If present: wire max resources into combat-hud presenter + wire mercy state into combat.engine.ts; drop all 3 TODOs; add hermetic pins
+  - If absent: file `[needs-engine-release]` row on each and close phase as doc-only
+- estimated phases: 1
+- conflicts: `[needs-engine-release]` risk if 0.14.0 does not expose these surfaces. Investigation tick resolves.
+
+### [score 3.0] Exploration screen sub-component extraction
+- proposed: 2026-06-04, expand pass 54
+- source signals:
+  - Smell §4 I file-length outlier: `app/(tabs)/exploration/index.tsx` at 705 lines (2× folder median; third-largest source file after EncounterModalOverlay + PhaseBottom)
+  - Four distinct cohesive sections: ExplorationMap (SVG node graph + tap handlers, ~200 lines), StepDrawer (movement-destination cards, ~150 lines), NodeToast (animated arrival notification), HUD strip
+  - Prior extraction wins: Phase 81c, 84 — same refactor shape, proven no-regression
+- rationale: The exploration screen is the second-most-modified file this session (moves, events, aftermath, toast, sealed-node feedback). Extraction would reduce per-edit surface and isolate the SVG rendering unit for future design updates.
+- proposed scope: 1 phase, 2 ticks
+  - Tick A: Extract `<ExplorationMap>` (SVG nodes + tap handling) → `components/exploration/ExplorationMap.tsx`
+  - Tick B: Extract `<StepDrawer>` (destination card list) → `components/exploration/StepDrawer.tsx`; reduce index.tsx to a thin screen shell
+- estimated phases: 1
+- conflicts: none. Refactor only.
 
 ## Drained / shipped
+
+### [resolved 2026-06-04 via oversight] Stale paused phases 62d/62e
+- Phases 62d (currency grant) and 62e (combat-HUD overrides) retired as `[skipped via oversight 2026-06-04 — drained by Phase 87]`. Phase 87 (`cffbc9b`) shipped `<DebugCurrencyControl>` (50/500S grants + BROKE reset) and `<DebugHudOverrides>` (mana/effects/stance visibility toggles), covering both rows' original scope. Build-plan rows updated in PR #251.
 
 ### [promoted 2026-06-04] Cross-stat effects on level-up — engine-driven derived stats preview → Phase 105
 - proposed: 2026-05-26, oversight 42nd call

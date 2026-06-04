@@ -5,6 +5,13 @@
 > visibility, LEDGER encounter/node display, ITEM tooltip
 > Conducted by: /iterate autonomous audit
 
+### [housekeeping] GitHub issue #227 stale — already fixed in Phase 97
+- issue: #227 "Token resource system never accumulates" labeled triage:loop-queued
+- status: Phase 97 (commit 8df2971) fixed this in 2026-06-01; CRITIQUE row marked ✅.
+  Issue was not auto-closed because the commit body may not have contained `Closes #227`.
+- next: close issue #227 manually or confirm it closed when the fix landed.
+- filed: expand pass 54, 2026-06-04
+
 ### [needs-user-call] Engine sync — progression curve + upcoming engine work
 - category: planning
 - observation: User flagged that an engine check-in is needed before more mobile

@@ -14,7 +14,28 @@
 > to ## Promoted / ## Drained via /oversight 2026-05-30 (43rd
 > call). Only genuinely-live candidates remain below.
 
-### [score 5.0] Cross-stat effects on level-up — engine-driven derived stats preview `[needs-engine-release]`
+### [score 3.5] Stance card layout shrink-to-fit (playtest 2026-05-25 [F07])
+- source: deep-playtest
+- finding: [F07] -- Mind stance card clipped at right edge; stats and "BEATS HEART - WEAK BOD" text truncate
+- approach: reduce card width or font size so all three stance cards fit within the combat modal viewport. Already linked to CRITIQUE.md [MED] about spacing.
+- severity: medium
+- score: 2.5 base + 0.5 (playtest-source) + 0.5 (visual, confirmed by playtest) = 3.5
+- critique-xref: CRITIQUE.md [MED] Space heart/body/mind buttons evenly
+
+### [score 3.5] Stale paused phases resolution (62d/62e cleanup)
+- proposed: 2026-06-01T11:23:07+00:00, expand pass 50
+- source signals:
+  - Smell: phases 62d/62e marked [paused] >14 days ago (last touched 2026-05-21)
+  - Build plan organizational debt — unclear if phases should resume or retire
+  - Plan/steps/01_build_plan.md shows stale decision context
+- rationale: Phases 62d (Currency grant debug control) and 62e (Combat-HUD spot overrides) paused during combat regression priority shift. Need explicit resolution.
+- proposed scope: 1 phase — evaluate current product context and either resume with updated scope or formally retire [skipped] with rationale
+- estimated phases: 1
+- conflicts: none
+
+## Drained / shipped
+
+### [promoted 2026-06-04] Cross-stat effects on level-up — engine-driven derived stats preview → Phase 105
 - proposed: 2026-05-26, oversight 42nd call
 - source signals:
   - **CRITIQUE [MED] stat allocation cross-effects not reflected
@@ -43,26 +64,7 @@
 - conflicts: `[needs-engine-release]` — gated on engine shipping
   a `previewStatAllocation` or equivalent API. See engine issue.
 
-### [score 3.5] Stance card layout shrink-to-fit (playtest 2026-05-25 [F07])
-- source: deep-playtest
-- finding: [F07] -- Mind stance card clipped at right edge; stats and "BEATS HEART - WEAK BOD" text truncate
-- approach: reduce card width or font size so all three stance cards fit within the combat modal viewport. Already linked to CRITIQUE.md [MED] about spacing.
-- severity: medium
-- score: 2.5 base + 0.5 (playtest-source) + 0.5 (visual, confirmed by playtest) = 3.5
-- critique-xref: CRITIQUE.md [MED] Space heart/body/mind buttons evenly
-
-### [score 3.5] Stale paused phases resolution (62d/62e cleanup)
-- proposed: 2026-06-01T11:23:07+00:00, expand pass 50
-- source signals:
-  - Smell: phases 62d/62e marked [paused] >14 days ago (last touched 2026-05-21)
-  - Build plan organizational debt — unclear if phases should resume or retire
-  - Plan/steps/01_build_plan.md shows stale decision context
-- rationale: Phases 62d (Currency grant debug control) and 62e (Combat-HUD spot overrides) paused during combat regression priority shift. Need explicit resolution.
-- proposed scope: 1 phase — evaluate current product context and either resume with updated scope or formally retire [skipped] with rationale
-- estimated phases: 1
-- conflicts: none
-
-## Drained / shipped
+**Resolution:** Promoted above normal queue as Phase 105 during Glanton cleanup. Mechanics Phase 97 shipped the required engine-side preview API; if package installation lags, Phase 105 must stop with an exact version/export blocker rather than restore local formulas.
 
 ### [drained 2026-06-04] Befriend mercy-choice modal — shipped as Phase 103
 - proposed: 2026-06-02, T doctrine captured in company CDR-0005 and mobile ADR-0007

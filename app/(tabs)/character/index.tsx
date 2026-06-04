@@ -2,28 +2,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { AXM, FONTS } from '@/theme/axm';
 import { TooltipTarget } from '@/components/tooltip/TooltipTarget';
-import { AestheticDevToggle } from '@/components/AestheticDevToggle';
 import { AscendStrip } from '@/components/levelup/AscendStrip';
 import { LevelReadyStrip } from '@/components/levelup/LevelReadyStrip';
 import { LevelUpModal } from '@/components/levelup/LevelUpModal';
-import { DebugChaosToggle } from '@/components/DebugChaosToggle';
-import { DebugCombatButton } from '@/components/DebugCombatButton';
-import { DebugAlignmentShift } from '@/components/DebugAlignmentShift';
-import { DebugCurrencyControl } from '@/components/DebugCurrencyControl';
-import { DebugDialogueJump } from '@/components/DebugDialogueJump';
-import { DebugEffectApply } from '@/components/DebugEffectApply';
-import { DebugQuestState } from '@/components/DebugQuestState';
-import { DebugEventKindForce } from '@/components/DebugEventKindForce';
-import { DebugFriendship } from '@/components/DebugFriendship';
-import { DebugHudOverrides } from '@/components/DebugHudOverrides';
-import { DebugManaControl } from '@/components/DebugManaControl';
-import { DebugMapResetButton } from '@/components/DebugMapResetButton';
-import { DebugPlaythroughPresets } from '@/components/DebugPlaythroughPresets';
-import { DebugPresetPicker } from '@/components/DebugPresetPicker';
-import { DebugPopulateAllItems } from '@/components/DebugPopulateAllItems';
-import { DebugSeedButton } from '@/components/DebugSeedButton';
-import { DebugXpGrant } from '@/components/DebugXpGrant';
 import { DevMenu } from '@/components/DevMenu';
+import { DebugComponentsLazy } from '@/components/DebugComponentsLazy';
 import { ScreenBg } from '@/components/ScreenBg';
 import { SectionLabel } from '@/components/SectionLabel';
 import { StanceGlyph } from '@/components/StanceGlyph';
@@ -458,24 +441,7 @@ export default function CharacterScreen() {
         </View>
       )}
       <DevMenu>
-        <AestheticDevToggle />
-        <DebugSeedButton />
-        <DebugPopulateAllItems />
-        <DebugCombatButton />
-        <DebugMapResetButton />
-        <DebugChaosToggle />
-        <DebugPresetPicker />
-        <DebugPlaythroughPresets />
-        <DebugXpGrant />
-        <DebugManaControl />
-        <DebugCurrencyControl />
-        <DebugAlignmentShift />
-        <DebugEffectApply />
-        <DebugEventKindForce />
-        <DebugDialogueJump />
-        <DebugQuestState />
-        <DebugFriendship />
-        <DebugHudOverrides />
+        <DebugComponentsLazy />
       </DevMenu>
     </ScreenBg>
   );

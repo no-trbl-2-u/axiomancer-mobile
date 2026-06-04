@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-05-30 at commit fd525e3
-> Pass count: 18
+> Last pass: 2026-06-04 at commit 18c3371
+> Pass count: 19
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -381,6 +381,33 @@
 - observation: ITEM button ("USE A CONSUMABLE") greyed out even with Healing Potion in inventory. No tooltip or message explaining why.
 - suggested_fix: Tooltip on disabled ITEM button. Phase candidate filed.
 - source: deep-playtest [F12]
+### [MED] /README.md — License section incomplete, creates uncertainty for fresh maintainer
+- pass: 19 (commit 18c3371)
+- viewport: desktop
+- auth_state: anonymous
+- category: comprehension
+- observation: README contains incomplete License section stating 'TBD. Ask the project maintainer' which creates uncertainty about usage rights for fresh maintainers examining the repository
+- evidence: Line 263 in README.md showing placeholder license text
+- suggested_fix: Specify actual license or provide clear guidance on where to find licensing information
+- source: browser
+### [MED] /specs/00-how-to-use-specs.md — References missing GAME-ROADMAP.md file
+- pass: 19 (commit 18c3371)
+- viewport: desktop
+- auth_state: anonymous
+- category: navigation
+- observation: Document instructs users to 'Update GAME-ROADMAP.md first' for capturing big ideas, but this file does not exist in repository structure
+- evidence: Line 35 references non-existent GAME-ROADMAP.md file
+- suggested_fix: Create missing GAME-ROADMAP.md file or update reference to point to existing roadmap documentation
+- source: browser
+### [LOW] /agents.md — Dead link to asset swap documentation
+- pass: 19 (commit 18c3371)
+- viewport: desktop
+- auth_state: anonymous
+- category: navigation
+- observation: File references .cursor/skills/swap-asset-placeholder/SKILL.md workflow but this path does not exist in current repository structure
+- evidence: Line 100 contains reference to non-existent .cursor/skills/ path
+- suggested_fix: Update reference to point to correct asset swap documentation or remove outdated reference
+- source: browser
 
 ## Done
 

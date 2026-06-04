@@ -29,13 +29,16 @@
 - observation: Console statements in ErrorBoundary.tsx, LevelUpModal.tsx, and debug components execute in production, potentially exposing debug information and cluttering production logs
 - status: All console statements already properly wrapped with `if (__DEV__)` guards
 
-### [3.6] Missing placeholder content in testing-guide.md 
+### [3.6] Missing placeholder content in testing-guide.md ✅
 - category: content-gaps
 - impact: 4
 - ease: 9
 - next: Fill template placeholders like "[internal testing email]" with actual content or clarify purpose vs docs/testing.md
 - evidence: File contains template placeholders that suggest incomplete documentation
 - observation: docs/testing-guide.md contains unfilled template content that affects contributor onboarding
+- issue: #253
+- addressed: 2026-06-04 via commit 345e73e
+- fix: Replaced template placeholders with concrete guidance - email reporting directs to GitHub Issues, known limitations filled with current build realities, contact info updated to use GitHub and Slack
 
 ### [3.2] Array operations in render functions cause performance overhead ✅
 - category: perf  

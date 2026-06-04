@@ -339,7 +339,7 @@ export const PLAYER_MANA_DEFAULT_START = 9;
 
 function seedCombatMana(store: AppStore): void {
     const cur = store.getState().combatMana;
-    if (cur !== null) return;
+    if (cur !== null && cur !== undefined) return;
     store.setState({
         combatMana: { current: PLAYER_MANA_DEFAULT_START, max: PLAYER_MANA_DEFAULT_MAX },
     });
@@ -351,7 +351,7 @@ function clearCombatMana(store: AppStore): void {
 
 function burnCombatMana(store: AppStore, cost: number): void {
     const cur = store.getState().combatMana;
-    if (cur === null) return;
+    if (cur === null || cur === undefined) return;
     store.setState({
         combatMana: { current: Math.max(0, cur.current - cost), max: cur.max },
     });

@@ -1,5 +1,5 @@
 import { clamp } from 'axiomancer-mechanics';
-import type { ActiveEffect } from 'axiomancer-mechanics';
+import type { ActiveEffect, CombatResources } from 'axiomancer-mechanics';
 
 import type { AppStoreState } from '@/state/store';
 
@@ -26,14 +26,30 @@ function toDisplay(e: ActiveEffect): ActiveEffectDisplay {
 }
 
 /**
+ * Calculate resource percentage from engine combat resources.
+ * Uses estimated max based on typical combat starting values.
+ * TODO: Phase 105 follow-up should track actual max resources.
+ */
+function calculateResourcePercent(resources: CombatResources): number {
+    const totalCurrent = resources.heart + resources.body + resources.mind + 
+                        resources.fallacy + resources.paradox;
+    
+    // Estimate typical max total resources (can be refined based on testing)
+    // Starting values are typically around 3-5 per resource type
+    const estimatedMax = 20; 
+    
+    return totalCurrent > 0 ? clamp(totalCurrent / estimatedMax, 0, 1) : 0;
+}
+
+/**
  * Derives the combat HUD view-model from app state.
  *
  * - `hpPercent` reads from the in-combat player snapshot when a
  *   battle is active, otherwise from the out-of-combat player.
- * - `manaPercent` reads from the mobile-only `combatMana` slice
- *   (Phase 60d — lifted from Character). When the slice is null
- *   (no active combat or fresh store), the bar shows as full
- *   (1.0) rather than empty.
+ * - `manaPercent` reads from engine `CombatState.combatResources` 
+ *   (Phase 105 — uses engine truth). Shows total combined resources
+ *   from all pools (heart/body/mind/fallacy/paradox). When combat
+ *   is inactive, the bar shows as full (1.0).
  * - Dev overrides (Phase 87) can force empty states for testing
  *   branches that would otherwise require specific game state.
  */
@@ -44,11 +60,9 @@ export function selectCombatHudViewModel(state: AppStoreState): CombatHudViewMod
         ? clamp(player.health / player.maxHealth, 0, 1)
         : 0;
 
-    // `combatMana` is null outside combat and on fresh stores; it
-    // may also be undefined when tests construct a raw GameState
-    // without going through createAppStore. Both cases land at "full"
-    // bar (1.0) — only an explicit zero-current with a positive max
-    // counts as "empty".
+    // Engine combat resources (Phase 105 — replaced local combatMana slice).
+    // When combat is inactive, show full bar (1.0). During combat, 
+    // calculate percentage from total current vs approximate max resources.
     // Phase 87 — dev override can force mana hidden (null) for testing.
     const hudOverrides = state.devOverrides?.hud ?? {
         hideMana: false,
@@ -56,12 +70,10 @@ export function selectCombatHudViewModel(state: AppStoreState): CombatHudViewMod
         hideStance: false,
     };
     
-    const mana = hudOverrides.hideMana ? null : (state.combatMana ?? null);
-    const manaPercent: number = mana === null
+    const combatResources = hudOverrides.hideMana ? null : (state.combat?.combatResources ?? null);
+    const manaPercent: number = combatResources === null
         ? 1
-        : mana.max > 0
-            ? clamp(mana.current / mana.max, 0, 1)
-            : 0;
+        : calculateResourcePercent(combatResources);
 
     // Phase 87 — dev override can force effects empty for testing.
     const rawEffects = hudOverrides.hideEffects ? [] : player.effects;

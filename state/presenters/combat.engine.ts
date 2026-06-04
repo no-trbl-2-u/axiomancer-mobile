@@ -129,10 +129,12 @@ export interface CombatPlayerSummary {
     hpMax: number;
     /** [0, 1]. */
     hpRatio: number;
-    mana: number;
-    manaMax: number;
+    /** Total combat resources (engine truth). */
+    totalResources: number;
+    /** Estimated max resources for ratio calculation. */
+    maxResources: number;
     /** [0, 1]. */
-    manaRatio: number;
+    resourceRatio: number;
     effects: readonly CombatEffectDisplay[];
 }
 
@@ -627,9 +629,9 @@ const EMPTY_PLAYER: CombatPlayerSummary = {
     hp: 0,
     hpMax: 0,
     hpRatio: 0,
-    mana: 0,
-    manaMax: 0,
-    manaRatio: 1,
+    totalResources: 0,
+    maxResources: 20,
+    resourceRatio: 1,
     effects: [],
 };
 
@@ -742,22 +744,20 @@ function mindMarkCount(effects: readonly unknown[]): number {
 }
 
 /**
- * Phase 60d — combat mana now lives on the mobile-only
- * `combatMana` slice (lifted from Character). Null outside
- * combat → both fields land at 0. The presenter still
- * defends against negative max with a manaRatio fallback to
- * "1" downstream.
+ * Calculate total combat resources from engine state (Phase 105).
+ * Uses engine truth instead of legacy combatMana slice.
  */
-function readManaPair(state: AppStoreState): { mana: number; manaMax: number } {
-    // Null outside combat / fresh store; undefined when raw GameState
-    // is passed (tests bypass createAppStore). Both land at zero.
-    const mana = state.combatMana ?? null;
-    if (mana === null) return { mana: 0, manaMax: 0 };
-    const cur = Number(mana.current);
-    const max = Number(mana.max);
+function calculateResourceTotals(resources: ResourcePool): { totalResources: number; maxResources: number; resourceRatio: number } {
+    const totalResources = resources.body + resources.mind + resources.heart + 
+                          resources.fallacy + resources.paradox;
+    
+    // Estimate max resources based on typical starting values
+    const maxResources = 20;
+    
     return {
-        mana: isFinite(cur) && cur >= 0 ? cur : 0,
-        manaMax: isFinite(max) && max >= 0 ? max : 0,
+        totalResources,
+        maxResources,
+        resourceRatio: maxResources > 0 ? safeRatio(totalResources, maxResources) : 1,
     };
 }
 
@@ -1092,7 +1092,7 @@ function buildCombatA11y(
         ? `${enemy.name} has ${enemy.hp} of ${enemy.hpMax} health`
         : 'No enemy';
     const playerHpText = `You have ${player.hp} of ${player.hpMax} health`;
-    const playerManaText = `You have ${player.mana} of ${player.manaMax} focus`;
+    const playerManaText = `You have ${player.totalResources} of ${player.maxResources} focus`;
     const phaseText = phase === 'ended' 
         ? 'Combat has ended' 
         : `Combat phase: ${PHASE_LABELS[phase]}`;
@@ -1207,7 +1207,6 @@ export function selectCombatViewModel(
 
     const playerHp = Number(playerEntity.health ?? 0);
     const playerHpMax = Number(playerEntity.maxHealth ?? playerHp);
-    const { mana, manaMax } = readManaPair(state);
     const rawResources = c.combatResources ?? null;
     const resources: ResourcePool = rawResources !== null
         ? {
@@ -1218,13 +1217,12 @@ export function selectCombatViewModel(
             paradox: Number(rawResources.paradox ?? 0),
         }
         : EMPTY_POOL;
+    const resourceTotals = calculateResourceTotals(resources);
     const player: CombatPlayerSummary = {
         hp: playerHp,
         hpMax: playerHpMax,
         hpRatio: safeRatio(playerHp, playerHpMax),
-        mana,
-        manaMax,
-        manaRatio: manaMax > 0 ? safeRatio(mana, manaMax) : 1,
+        ...resourceTotals,
         effects: playerEffectsRaw.slice(0, MAX_EFFECTS_SHOWN).map(classifyEffect),
     };
 

@@ -68,8 +68,8 @@ describe('selectCombatViewModel: no combat', () => {
         expect(vm.enemy.mindMarks).toBe(0);
         expect(vm.enemy.effects).toEqual([]);
         expect(vm.player.hp).toBe(0);
-        expect(vm.player.mana).toBe(0);
-        expect(vm.player.manaRatio).toBe(1);
+        expect(vm.player.totalResources).toBe(0);
+        expect(vm.player.resourceRatio).toBe(1);
         expect(vm.friendshipCounter).toBe(0);
         expect(vm.friendshipCounterMax).toBe(FRIENDSHIP_COUNTER_MAX);
         expect(vm.stancePicker.options).toHaveLength(3);

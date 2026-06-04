@@ -77,8 +77,8 @@ export interface DevOverridesSlice {
 export type AppStoreState = GameStore & {
     event: MobileEventSlice;
     notifications: MobileNotificationsSlice;
-    /** Phase 60d — mobile-only combat mana, lifted from Character. `null` outside combat. */
-    combatMana: CombatManaState | null;
+    /** @deprecated Phase 105 — replaced with engine CombatState.combatResources. Remove in follow-up. */
+    combatMana?: { current: number; max: number } | null;
     /** Phase 87 — dev-only overrides for testing empty-state branches. */
     devOverrides: DevOverridesSlice;
     /**

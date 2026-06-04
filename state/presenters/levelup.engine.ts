@@ -1,13 +1,19 @@
 /**
- * Screen-level presenter for LevelUpModal enhancement (Phase 88).
+ * Screen-level presenter for LevelUpModal enhancement (Phase 105).
  *
  * Implements `selectLevelUpViewModel` for derived stats preview functionality.
- * Builds on existing character presenter data with preview calculations.
+ * Uses engine truth via deriveStats for accurate preview calculations.
  */
 
-import type { BaseStats, Character, GameStore } from 'axiomancer-mechanics';
-import { previewStanceStats, type PreviewAllocation } from '@/lib/previewAllocation';
+import type { BaseStats, Character, GameStore, deriveStats } from 'axiomancer-mechanics';
+import { deriveStats as engineDeriveStats } from 'axiomancer-mechanics';
 import { freezeViewModel } from './freeze';
+
+export interface PreviewAllocation {
+    heart: number;
+    body: number;
+    mind: number;
+}
 
 export interface LevelUpViewModel {
     /** Character display name */
@@ -78,12 +84,43 @@ export function selectLevelUpViewModel(
 }
 
 /**
- * Calculate derived stats preview for the given allocation.
- * Separate helper so the modal can call it on allocation changes.
+ * Calculate derived stats preview using engine truth.
+ * Applies allocation to base stats and uses engine deriveStats for accurate preview.
  */
 export function calculateDerivedPreview(
     baseStats: BaseStats,
     allocation: PreviewAllocation
-) {
-    return previewStanceStats(baseStats, allocation);
+): {
+    heart: { attack: number; skill: number; defense: number };
+    body: { attack: number; skill: number; defense: number };
+    mind: { attack: number; skill: number; defense: number };
+} {
+    // Apply allocation to base stats
+    const projectedStats: BaseStats = {
+        heart: baseStats.heart + allocation.heart,
+        body: baseStats.body + allocation.body,
+        mind: baseStats.mind + allocation.mind,
+    };
+
+    // Use engine truth for derived stats calculation
+    const derivedStats = engineDeriveStats(projectedStats);
+
+    // Map engine derived stats to our preview format
+    return {
+        heart: {
+            attack: derivedStats.emotionalAttack,
+            skill: derivedStats.emotionalSkill,
+            defense: derivedStats.emotionalDefense,
+        },
+        body: {
+            attack: derivedStats.physicalAttack,
+            skill: derivedStats.physicalSkill,
+            defense: derivedStats.physicalDefense,
+        },
+        mind: {
+            attack: derivedStats.mentalAttack,
+            skill: derivedStats.mentalSkill,
+            defense: derivedStats.mentalDefense,
+        },
+    };
 }

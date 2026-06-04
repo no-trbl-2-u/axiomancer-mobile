@@ -53,9 +53,9 @@ const createMockCombatVM = (actionOptions: ActionOption[]): CombatViewModel => (
         hp: 10,
         hpMax: 10,
         hpRatio: 1,
-        mana: 5,
-        manaMax: 5,
-        manaRatio: 1,
+        totalResources: 5,
+        maxResources: 5,
+        resourceRatio: 1,
         effects: [],
     },
     stancePicker: {

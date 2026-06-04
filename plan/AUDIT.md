@@ -1,4 +1,4 @@
-# Site audit — 2026-06-03
+# Site audit — 2026-06-04
 
 > Bias: none (cleared via /oversight 2026-05-30 — the
   combat-modal-audit bias set 2026-05-23 is retired now that
@@ -6,6 +6,60 @@
   again).
 
 ## Top 5 findings (scored)
+
+### [5.4] Test location guidance contradicts between AGENTS.md and docs/testing.md ✅
+- category: external-critique
+- impact: 6
+- ease: 9
+- next: fix AGENTS.md to reference state/e2e/ instead of app/<screen>/e2e/
+- source: external-critique
+- observation: AGENTS.md line 82 tells newcomers to put tests under `app/<screen>/e2e/` while docs/testing.md mandates `state/e2e/` and explicitly states "NEVER put non-route files inside app/". This creates contradictory guidance that causes new contributors to place tests incorrectly.
+- evidence: AGENTS.md:82 "app/<screen>/e2e/<feature>.engine.test.ts" vs docs/testing.md:87 "NEVER put non-route files inside app/" and :100 "state/e2e/<feature>.engine.test.ts"
+- suggested_fix: Update AGENTS.md to use state/e2e/ location matching docs/testing.md standard
+- addressed: 2026-06-04 via commit `ec0c2cc`
+- fix: Updated AGENTS.md line 82-83 to reference state/e2e/<feature>.engine.test.ts next to state/presenters/<feature>.engine.ts, eliminating contradiction with docs/testing.md NEVER rule. New contributors now receive consistent guidance on test file placement.
+
+### [5.4] Multiple inline style objects cause unnecessary re-renders in components
+- category: performance
+- impact: 6
+- ease: 9
+- next: extract remaining inline style objects to StyleSheet constants
+- source: audit
+- observation: Found remaining inline style objects in components that create new object references on every render: CombatPlayerHud line 74 ({ flex: 1 }), CombatEnemyPanel lines 98-99 (position absolute styling), event screen line 127 ({ marginBottom: 6 }). These cause performance issues in high-update scenarios.
+- evidence: components/combat/CombatPlayerHud.tsx:74, components/combat/CombatEnemyPanel.tsx:98-99, app/event/index.tsx:127
+- suggested_fix: Extract to StyleSheet constants like styles.flex1, styles.splatterPosition, styles.marginBottom6
+
+### [4.2] Only show node labels for unvisited, available nodes in exploration screen
+- category: external-critique
+- impact: 6
+- ease: 7
+- next: add conditional rendering logic to show labels only for unvisited+available nodes
+- source: external-critique
+- observation: Map displays labels for all nodes creating visual clutter. UX would improve by showing labels only for nodes the player hasn't visited yet and can currently access.
+- evidence: User feedback from critique pass, exploration screen shows all node labels
+- suggested_fix: Add conditional rendering based on node visit status and availability
+
+### [3.5] Space heart/body/mind buttons evenly in combat modal
+- category: external-critique
+- impact: 5
+- ease: 7
+- next: update combat modal button layout to use even spacing
+- source: external-critique
+- observation: Combat stance buttons (heart/body/mind) are left-aligned instead of evenly spaced across the modal width. Mentioned in playtest findings [F07] where Mind stance card is clipped at right edge.
+- evidence: User feedback from critique, playtest report F07
+- suggested_fix: Update layout to distribute stance buttons evenly across modal width
+
+### [3.2] Testing guide skeleton unfilled with QA template placeholders
+- category: external-critique
+- impact: 4
+- ease: 8
+- next: fill in QA template or clarify its purpose vs docs/testing.md
+- source: external-critique
+- observation: docs/testing-guide.md appears to be a copied QA template with unfilled placeholders like "[internal testing email]", omits Memoir tab from tab list, and name-collides with the canonical docs/testing.md standard.
+- evidence: docs/testing-guide.md:7 omits Memoir tab, :59 "[internal testing email]", :85 placeholder content
+- suggested_fix: Add top banner clarifying this is manual TestFlight/Play QA checklist vs hermetic standard, add Memoir tab, remove/fill placeholder contacts
+
+## Previously addressed
 
 ### [8.1] Inline style object creation in TokenChip components causes unnecessary re-renders ✅
 - category: performance
@@ -158,42 +212,3 @@
 - suggested_fix: Audit all SVG elements across components and add appropriate accessibilityRole="image" and descriptive accessibilityLabel props for screen reader compatibility
 - addressed: 2026-06-03 via commit `05a00dc`
 - fix: Added accessibilityRole="image" and descriptive accessibilityLabel props to all remaining SVG elements: StanceGlyph components (heart, body, mind stance glyphs), MindMark badge with dynamic label, TornPanel decorative edge, TokenIcon SVGs for all five token types, BodyDiagram equipment slots, and XpChain experience indicators. All SVGs now provide appropriate labels for screen readers, completing accessibility compliance across the application.
-
-## Previously addressed
-
-### [6.3] StanceGlyph.test.tsx misplaced in root components directory (violates test organization pattern) ✅
-- category: tests
-- impact: 7
-- ease: 9
-- next: move StanceGlyph.test.tsx to components/__tests__/ directory
-- source: audit
-- observation: The file components/StanceGlyph.test.tsx is placed directly in the components root instead of the __tests__ subdirectory. This violates the project's testing organization pattern where all other component tests are properly organized under __tests__/ directories.
-- evidence: All 69 other component tests follow the pattern components/[category/]__tests__/ComponentName.test.tsx, while StanceGlyph.test.tsx sits at components/StanceGlyph.test.tsx
-- suggested_fix: Move components/StanceGlyph.test.tsx to components/__tests__/StanceGlyph.test.tsx to match project conventions
-- addressed: 2026-06-02 via commit `379182c`
-- fix: Moved components/StanceGlyph.test.tsx to components/__tests__/StanceGlyph.test.tsx and updated import path from './StanceGlyph' to '../StanceGlyph'. Test organization now matches project conventions with all component tests properly organized under __tests__/ directories.
-
-### [5.4] Inline style objects cause unnecessary re-renders in exploration screen ✅
-- category: perf
-- impact: 6
-- ease: 9
-- next: extract inline style objects to StyleSheet constants
-- source: audit
-- observation: The exploration screen uses inline style objects `style={{ color: AXM.bone }}` and `{ backgroundColor: '#16130d' }` which create new object references on every render, potentially causing performance issues.
-- evidence: Found in app/(tabs)/exploration/index.tsx lines with `style={{ color: AXM.bone }}` and `{ backgroundColor: '#16130d' }`
-- suggested_fix: Extract these inline styles to StyleSheet.create() constants to prevent object recreation on each render
-- issue: #238
-- addressed: 2026-06-02 via commit `9d140fc`
-- fix: Extracted inline style objects to StyleSheet constants. Created `styles.continentLabel` and `styles.graphBackground` to prevent object recreation on each render, improving performance.
-
-### [4.8] Magic number styling values in tab layout object spread ✅
-- category: perf
-- impact: 6
-- ease: 8
-- next: refactor object spread to conditional StyleSheet reference
-- source: audit
-- observation: The tab layout uses object spread syntax `{ ...styles.tabBar, display: 'none' as const }` which creates new objects on every render when encounter modal is active.
-- evidence: Found in app/(tabs)/_layout.tsx with conditional object spreading for tab bar visibility
-- suggested_fix: Create separate StyleSheet constants for visible/hidden tab bar states instead of using object spread
-- addressed: 2026-06-03 via commit `1762590`
-- fix: Extracted inline tab bar style object to StyleSheet constants. Created `styles.tabBarHidden` to replace object spread pattern `{ ...styles.tabBar, display: 'none' }`. Prevents object recreation on each render when encounter modal state changes.

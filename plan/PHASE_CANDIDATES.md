@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-04 at commit 3ddd842
-> Pass count: 54
+> Last pass: 2026-06-04 at commit 5ab7b3b
+> Pass count: 55
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -32,6 +32,16 @@
 >   file with a SPECIFIC file + line count; do not file generic
 >   re-treads of the long-standing clusters already archived in
 >   ## Considered / ## Drained below.
+
+### [score 3.9] Map node label display optimization (UX pass 2026-06-04)
+- proposed: 2026-06-04, expand pass 55
+- source signals:
+  - **CRITIQUE [MED] /exploration — Only show node labels for unvisited, available nodes** — user-spotted at 2026-05-25. "In the map, there are a lot of labels for each node. We should only display a label to a node if the player has not ventured there yet and is available as a choice."
+- rationale: User-identified UX improvement for map readability. Map currently shows labels for all nodes regardless of state, creating visual clutter. Selective display based on node visitation/availability state would improve navigation clarity.
+- proposed scope: 1-phase implementation
+- estimated phases: 1
+- conflicts: none
+- implementation approach: Modify exploration/index.tsx node rendering logic to conditionally display labels based on node.visited state and node.isAvailable computed property. Requires coordination with map state management for accurate availability detection.
 
 ### [score 3.5] Stance card layout shrink-to-fit (playtest 2026-05-25 [F07])
 - source: deep-playtest

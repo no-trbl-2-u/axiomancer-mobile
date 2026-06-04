@@ -26,21 +26,19 @@ All commands are in `package.json`:
 | Start on iOS | `npm run ios` |
 | Start on web | `npm run web` |
 | Lint (Expo's ESLint config) | `npm run lint` |
-| Type-check | `npx tsc --noEmit` |
-| Test (Jest) | `npm test` *(once Spec 01 lands)* |
+| Type-check | `npm run typecheck` |
+| Test (Jest) | `npm test` |
+| Full local verify | `npm run verify` |
 
-> **Type-check is the most reliable static-analysis check in this repo
-> today** — `npm run lint` runs `expo lint` which works, but the test
-> harness is not yet bootstrapped. Spec 01 in `specs/` exists for the
-> express purpose of installing `jest-expo` + `@testing-library/react-native`
-> and writing the first hermetic e2e test. Until that lands, "tests pass"
-> means `npx tsc --noEmit` is clean.
+> **Test harness is live.** Spec 01 has landed: `package.json` includes
+> `jest`, `jest-expo`, `@testing-library/react-native`, and `npm test`.
+> Runtime changes should run the narrow relevant Jest file when possible
+> and `npm run verify` before declaring ready.
 
 ### Caveats
 
-- **No test runner is installed yet.** `package.json` has no `test` script
-  and no `jest` config. **Spec 01** (`specs/01-test-harness-setup.md`) is
-  the prerequisite for every other spec — pull it first.
+- **Spec 01 is shipped, not pending.** Use `npm test` / `npm run verify`;
+  do not skip hermetic e2e coverage on the assumption that the runner is absent.
 - **Hard-coded mock data lives in screens.** `app/(tabs)/combat.tsx`,
   `app/(tabs)/character.tsx`, etc. all hold their own `useState` + literal
   fixtures. The migration plan is: extract pure presenter functions

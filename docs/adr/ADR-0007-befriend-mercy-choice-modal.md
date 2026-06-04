@@ -1,16 +1,16 @@
 # ADR-0007 — Befriend mercy choice is a modal consumer of engine truth
 
-- Status: Proposed for future mobile implementation
+- Status: Accepted; modal surface shipped in Phase 103, pending full engine-truth consumption once mechanics contract upgrade lands
 - Date: 2026-06-02
 - Related: `~/Workspace/decisions/CDR-0005-axiomancer-befriend-skill-and-mercy-choice.md`
 
 ## Context
 
-Axiomancer Mechanics is expected to move Befriend toward a first-class heart-based skill that can open a mercy-choice state. Mobile must not invent this state. It must consume engine truth and make the choice legible.
+Axiomancer Mechanics has moved Befriend toward a first-class heart-based skill that can open a mercy-choice state. Mobile must not invent this state. It must consume engine truth and make the choice legible.
 
-## Decision candidate
+## Decision
 
-When the mechanics engine emits a Befriend/mercy choice state, Mobile should present a modal with two choices:
+When the mechanics engine emits a Befriend/mercy choice state, Mobile presents a modal with two choices:
 
 1. Spare / befriend / preserve the encounter.
    - Text may later vary by the player's philosophical alignment.

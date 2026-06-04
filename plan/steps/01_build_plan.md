@@ -1875,8 +1875,8 @@ gets caught on a cadence, not by ad-hoc oversight playtests.
       build plan/candidates/critique/audit, repo-local Nexus skills
       (`march`, `oversight`, `iterate`, `expand`, `jot`, `ship-a-phase`),
       and latest settled T decisions. Unit 2 — source-of-truth law:
-      document hierarchy (T latest explicit decision → central ledger →
-      active build plan → phase candidates → critique/audit → historical
+      document hierarchy (T latest explicit decision → CDRs/ADRs →
+      central ledger → active build plan → phase candidates → critique/audit → historical
       reports) in repo-local Nexus docs/skills. Unit 3 — guardrails: add
       `/oversight` decision-sync checklist and `/march` state-sanity
       preflight so stale Pending rows, deferred candidates, and

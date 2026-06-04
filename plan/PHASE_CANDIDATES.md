@@ -14,19 +14,6 @@
 > to ## Promoted / ## Drained via /oversight 2026-05-30 (43rd
 > call). Only genuinely-live candidates remain below.
 
-### [score 5.0] Befriend mercy-choice modal `[needs-engine-release]`
-- proposed: 2026-06-02, T doctrine captured in company CDR-0005 and mobile ADR-0007
-- source signals:
-  - T's Befriend pitch: keep HP gate; Befriend is a starting heart-based skill requiring 5 heart tokens; successful Befriend opens a choice between sparing/befriending and exploiting the opening for a free guaranteed critical hit.
-  - Mobile obligation: present the engine-emitted mercy choice as a modal with alignment-flavored spare/befriend text later, and a clear exploit/free-critical option.
-- rationale: mobile must make the philosophical consequence legible without inventing mechanics locally. The modal is a presentation consumer of engine truth.
-- proposed scope: 1 phase after mechanics ships the state/action/report contract.
-  - Wire the mechanics mercy-choice state into the combat presenter.
-  - Add modal UI with two choices and consequence copy slots.
-  - Pin hermetic tests for modal visibility, choice dispatch, and accessibility labels.
-- estimated phases: 1
-- conflicts: `[needs-engine-release]` — gated on mechanics exposing Befriend skill and mercy-choice state.
-
 ### [score 5.0] Cross-stat effects on level-up — engine-driven derived stats preview `[needs-engine-release]`
 - proposed: 2026-05-26, oversight 42nd call
 - source signals:
@@ -74,6 +61,23 @@
 - proposed scope: 1 phase — evaluate current product context and either resume with updated scope or formally retire [skipped] with rationale
 - estimated phases: 1
 - conflicts: none
+
+## Drained / shipped
+
+### [drained 2026-06-04] Befriend mercy-choice modal — shipped as Phase 103
+- proposed: 2026-06-02, T doctrine captured in company CDR-0005 and mobile ADR-0007
+- source signals:
+  - T's Befriend pitch: keep HP gate; Befriend is a starting heart-based skill requiring 5 heart tokens; successful Befriend opens a choice between sparing/befriending and exploiting the opening for a free guaranteed critical hit.
+  - Mobile obligation: present the engine-emitted mercy choice as a modal with alignment-flavored spare/befriend text later, and a clear exploit/free-critical option.
+- rationale: mobile must make the philosophical consequence legible without inventing mechanics locally. The modal is a presentation consumer of engine truth.
+- proposed scope: 1 phase after mechanics ships the state/action/report contract.
+  - Wire the mechanics mercy-choice state into the combat presenter.
+  - Add modal UI with two choices and consequence copy slots.
+  - Pin hermetic tests for modal visibility, choice dispatch, and accessibility labels.
+- estimated phases: 1
+- conflicts: `[needs-engine-release]` — gated on mechanics exposing Befriend skill and mercy-choice state.
+
+**Resolution:** Shipped in Phase 103 (`plan/steps/01_build_plan.md`). Candidate removed from Pending during Glanton cleanup because it was no longer engine-gated marching work. Remaining doctrine gap is mobile's local simulation vs engine truth, tracked separately by the doctrine-alignment audit.
 
 ## Considered (below threshold)
 
@@ -528,6 +532,23 @@ promoted as Phase 61 parent + 61a–61f. See `01_build_plan.md`
 - estimated phases: 1 (administrative)
 - conflicts: none. Plan hygiene.
 
+
+## Drained / shipped
+
+### [drained 2026-06-04] Befriend mercy-choice modal — shipped as Phase 103
+- proposed: 2026-06-02, T doctrine captured in company CDR-0005 and mobile ADR-0007
+- source signals:
+  - T's Befriend pitch: keep HP gate; Befriend is a starting heart-based skill requiring 5 heart tokens; successful Befriend opens a choice between sparing/befriending and exploiting the opening for a free guaranteed critical hit.
+  - Mobile obligation: present the engine-emitted mercy choice as a modal with alignment-flavored spare/befriend text later, and a clear exploit/free-critical option.
+- rationale: mobile must make the philosophical consequence legible without inventing mechanics locally. The modal is a presentation consumer of engine truth.
+- proposed scope: 1 phase after mechanics ships the state/action/report contract.
+  - Wire the mechanics mercy-choice state into the combat presenter.
+  - Add modal UI with two choices and consequence copy slots.
+  - Pin hermetic tests for modal visibility, choice dispatch, and accessibility labels.
+- estimated phases: 1
+- conflicts: `[needs-engine-release]` — gated on mechanics exposing Befriend skill and mercy-choice state.
+
+**Resolution:** Shipped in Phase 103 (`plan/steps/01_build_plan.md`). Candidate removed from Pending during Glanton cleanup because it was no longer engine-gated marching work. Remaining doctrine gap is mobile's local simulation vs engine truth, tracked separately by the doctrine-alignment audit.
 
 ## Considered (below threshold)
 
@@ -1376,6 +1397,23 @@ exploration `moveToAction` migration to engine `revealAdjacent` /
 - The original signals remain valid (6+ commit Hard-Rule-#8
   drain pattern); they're addressed by Phase 30 Tick A's
   assertion contract.
+
+## Drained / shipped
+
+### [drained 2026-06-04] Befriend mercy-choice modal — shipped as Phase 103
+- proposed: 2026-06-02, T doctrine captured in company CDR-0005 and mobile ADR-0007
+- source signals:
+  - T's Befriend pitch: keep HP gate; Befriend is a starting heart-based skill requiring 5 heart tokens; successful Befriend opens a choice between sparing/befriending and exploiting the opening for a free guaranteed critical hit.
+  - Mobile obligation: present the engine-emitted mercy choice as a modal with alignment-flavored spare/befriend text later, and a clear exploit/free-critical option.
+- rationale: mobile must make the philosophical consequence legible without inventing mechanics locally. The modal is a presentation consumer of engine truth.
+- proposed scope: 1 phase after mechanics ships the state/action/report contract.
+  - Wire the mechanics mercy-choice state into the combat presenter.
+  - Add modal UI with two choices and consequence copy slots.
+  - Pin hermetic tests for modal visibility, choice dispatch, and accessibility labels.
+- estimated phases: 1
+- conflicts: `[needs-engine-release]` — gated on mechanics exposing Befriend skill and mercy-choice state.
+
+**Resolution:** Shipped in Phase 103 (`plan/steps/01_build_plan.md`). Candidate removed from Pending during Glanton cleanup because it was no longer engine-gated marching work. Remaining doctrine gap is mobile's local simulation vs engine truth, tracked separately by the doctrine-alignment audit.
 
 ## Considered (below threshold)
 

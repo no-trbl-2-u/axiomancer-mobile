@@ -56,14 +56,13 @@ split it into a follow-up spec rather than ploughing on.
 
 ## Recommended order
 
-The order below is the AI's default suggestion. Items at the top
-unblock the most other work. **Spec 01 is a hard prerequisite** — no
-spec after it can satisfy the hermetic-e2e requirement until the test
-harness exists.
+The order below is historical and remains useful for dependency shape.
+**Spec 01 is already done** and the Jest/hermetic-e2e harness is live;
+new runtime specs must use it rather than treating tests as blocked.
 
 | # | Spec | Why this order |
 |---|------|----------------|
-| 1 | [`01-test-harness-setup.md`](./01-test-harness-setup.md) | Installs `jest-expo` + `@testing-library/react-native`, writes the first hermetic e2e test, becomes the reference. **Blocks every other spec.** |
+| 1 | [`01-test-harness-setup.md`](./01-test-harness-setup.md) | **[DONE]** Installed `jest-expo` + `@testing-library/react-native`, wrote the first hermetic e2e test, and became the reference. |
 | 2 | [`02-engine-store-integration.md`](./02-engine-store-integration.md) | Replaces hard-coded `useState` mocks with `createGameStore` from `axiomancer-mechanics`. Foundation for every screen. |
 | 3 | [`03-presenter-layer.md`](./03-presenter-layer.md) | Defines `<screen>.engine.ts` presenter contract: `(state) => ViewModel`. Locks in the testable boundary. |
 | 4 | [`04-combat-screen-wiring.md`](./04-combat-screen-wiring.md) | **[DONE]** First real screen wired through the presenter. The most complex screen — getting it right de-risks the rest. |

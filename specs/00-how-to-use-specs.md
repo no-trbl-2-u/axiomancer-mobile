@@ -136,5 +136,5 @@ If you have no overrides, the AI will implement in this order:
 - **Letting specs go stale.** If you change your mind, edit the spec
   and add a `> Updated <date>:` note next to the answer. The spec is
   the source of truth, not your memory.
-- **Skipping Spec 01.** Until the test harness exists, no other spec
-  can satisfy the hermetic-e2e requirement. Pull Spec 01 first.
+- **Pretending Spec 01 is still missing.** The Jest/hermetic-e2e harness exists now.
+  Use it for runtime work instead of treating tests as blocked.

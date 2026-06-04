@@ -56,7 +56,7 @@
 ### Feedback Channels
 - **TestFlight**: Use built-in TestFlight feedback system for iOS
 - **Internal Slack**: #mobile-testing channel for quick issues
-- **Email**: [internal testing email] for detailed bug reports
+- **Email**: Report bugs through GitHub Issues for tracking and visibility
 - **Github Issues**: For reproducible bugs that need tracking
 
 ### Bug Report Template
@@ -82,9 +82,9 @@
 - **Ongoing**: Regular updates based on feedback and findings
 
 ## Known Limitations (Current Build)
-- [List any known issues that are planned for future fixes]
-- [Temporary workarounds if applicable]
-- [Features that are intentionally limited for testing]
+- Font loading may cause initial startup delay (~3 seconds on some devices)
+- Some debug UI elements may be visible in development builds
+- Performance optimizations for production builds are ongoing
 
 ## Testing Devices/Simulators
 ### iOS
@@ -98,6 +98,6 @@
 - OnePlus device (for OEM-specific testing)
 
 ## Contact Information
-- **Technical Issues**: [development team contact]
-- **Process Questions**: [project management contact] 
-- **Urgent Issues**: [emergency contact method]
+- **Technical Issues**: Create GitHub Issues for bug reports and feature requests
+- **Process Questions**: Use #mobile-testing Slack channel for testing process clarification
+- **Urgent Issues**: Tag critical issues with 'urgent' label in GitHub or escalate through Slack

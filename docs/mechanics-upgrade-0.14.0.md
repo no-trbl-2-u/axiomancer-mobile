@@ -1,6 +1,6 @@
 # Mechanics upgrade — `axiomancer-mechanics@0.14.0`
 
-> Status: published. `npm view axiomancer-mechanics@0.14.0` resolves on the public registry; mobile remains pinned to `0.13.0` until Phase 106 performs the package bump, compile drain, integration fixes, and evidence pass.
+> Status: shipped. `npm view axiomancer-mechanics@0.14.0` resolves on the public registry and mobile now pins `axiomancer-mechanics@0.14.0`; Phase 106 performed the package bump, compile/import drain, integration checks, and evidence pass.
 
 ## What changed upstream
 
@@ -17,9 +17,9 @@ Mechanics `0.14.0` is the mobile catch-up release after `0.13.0`. The important 
 - **Phase 109 — region consequences:** elite/miniboss spare/exploit choices can alter later region-boss Befriend behavior through `RegionConsequences`.
 - **Phase 110 — faction reputation:** boss Befriend outcomes can apply `FactionReputationDelta` values, producing a `factionReputationShift` payload for UI.
 
-## Mobile work required
+## Mobile work completed at Phase 106
 
-1. Bump `axiomancer-mechanics` from `0.13.0` to `0.14.0` as Phase 106 (`plan/phases/phase_106_mechanics_0_14_mobile_catchup.md`).
+1. Bumped `axiomancer-mechanics` from `0.13.0` to `0.14.0` as Phase 106 (`plan/phases/phase_106_mechanics_0_14_mobile_catchup.md`).
 2. Run the mobile type suite and replace any imports removed in mechanics `0.14.0`:
    - `getResistStat` → `getEffectiveStats(combatant).baseStats[stance]`
    - `endCombatPlayerVictory`, `endCombatPlayerDefeat`, `endCombatWithFriendship` → `endCombat()` / engine outcome flow
@@ -41,12 +41,14 @@ Mechanics `0.14.0` is the mobile catch-up release after `0.13.0`. The important 
    - post-combat aftermath showing region/faction consequences where reachable;
    - a second encounter after a terminal combat outcome, proving the re-trigger fix is consumed.
 
-## Suggested mobile phase split
+## Original mobile phase split
 
 - **Package bump + compile drain:** bump package, fix removed-symbol imports, prove `npm test` + `npx tsc --noEmit`.
 - **Presenter migration:** stat preview, unlocked-skill access, combat log assumptions.
 - **Befriend consequence UI:** mercy-choice modal plus aftermath consequence renderers.
 - **Evidence pass:** visual smoke and seeded playthrough coverage.
+
+Phase 106 collapsed this split into one catch-up phase so `/march` consumed the release contract before further mobile polish.
 
 ## Source logs
 

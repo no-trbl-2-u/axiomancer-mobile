@@ -1,8 +1,10 @@
 # Phase 106 — Mechanics 0.14.0 mobile catch-up
 
+> Status: shipped in `0257b19` / closed out in `d6f48a7`. Mobile now pins `axiomancer-mechanics@0.14.0` and has accounted for the release-surface drift in the package bump, compile drain, presenter/action tests, and build-plan closeout.
+
 ## Source
 
-Mechanics `axiomancer-mechanics@0.14.0` is published to npm. Mobile is still pinned to `0.13.0` in `package.json` / `package-lock.json`, so the app must consume the release deliberately rather than drift on stale engine contracts.
+At dispatch time, mechanics `axiomancer-mechanics@0.14.0` was published to npm while mobile was still pinned to `0.13.0` in `package.json` / `package-lock.json`, so the app had to consume the release deliberately rather than drift on stale engine contracts.
 
 ## Problem
 
@@ -52,15 +54,22 @@ Minimum local gate before shipping:
 
 ## Acceptance checklist
 
-- [ ] `package.json` and `package-lock.json` pin `axiomancer-mechanics@0.14.0` from npm.
-- [ ] No mobile code imports removed mechanics symbols.
-- [ ] Level-up/stat preview reads engine-derived truth.
-- [ ] Combat skill visibility/affordability reads known skills and engine resources, not stale equipped-skill assumptions.
-- [ ] Mercy-choice modal and aftermath surfaces compile and render against the published package contract.
-- [ ] Region/faction consequence payloads are either rendered or explicitly documented as not reachable from current mobile fixtures.
-- [ ] Hermetic tests cover the changed highest-level presenter/action entry points.
-- [ ] `npm run verify` passes.
-- [ ] Visual/smoke evidence is refreshed or a precise blocker is recorded.
+- [x] `package.json` and `package-lock.json` pin `axiomancer-mechanics@0.14.0` from npm.
+- [x] No mobile code imports removed mechanics symbols.
+- [x] Level-up/stat preview reads engine-derived truth.
+- [x] Combat skill visibility/affordability reads known skills and engine resources, not stale equipped-skill assumptions.
+- [x] Mercy-choice modal and aftermath surfaces compile and render against the published package contract.
+- [x] Region/faction consequence payloads are either rendered or explicitly documented as not reachable from current mobile fixtures.
+- [x] Hermetic tests cover the changed highest-level presenter/action entry points.
+- [x] `npm run verify` passes.
+- [x] Visual/smoke evidence is refreshed or a precise blocker is recorded.
+
+## Closeout evidence
+
+- Implementation: `0257b19` (`feat: mechanics 0.14.0 mobile catch-up — phase 106`).
+- Plan closeout: `d6f48a7` (`plan: phase 106 shipped — mechanics 0.14.0 mobile catch-up`).
+- Package truth: `package.json` dependency is `axiomancer-mechanics@0.14.0`.
+- Changed entry points included `state/actions.ts`, combat HUD presenter/action tests, and package lockfiles.
 
 ## Out of scope
 

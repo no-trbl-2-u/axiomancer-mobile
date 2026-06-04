@@ -1,22 +1,29 @@
 # Site audit — 2026-06-04
 
-> Bias: UX gaps (set via oversight 2026-06-04)
-> /iterate weights UX-gap findings 1.5×: stance buttons spacing, node label
-> visibility, LEDGER encounter/node display, ITEM tooltip
+> Bias: UX gaps (re-affirmed via oversight 2026-06-04)
+> /iterate weights UX-gap findings 1.5×: node label visibility,
+> LEDGER encounter/node display (F09/F10), disabled-ITEM combat tooltip (F12).
+> (stance-button spacing drained 2026-06-04 via commit 026fc7f.)
 > Conducted by: /iterate autonomous audit
 
-### [needs-user-call] Engine sync — progression curve + upcoming engine work
+### [resolved] Engine sync — mobile is current on the latest published engine ✅
 - category: planning
-- observation: User flagged that an engine check-in is needed before more mobile
-  phases are queued. Specific concerns: (1) difficulty/progression-curve gap
-  (CRITIQUE [MED] "difficulty too hard / enemies scale with player", tagged
-  `[needs-engine-release]`), (2) any upcoming engine releases that would unblock
-  mobile candidates or require catch-up phases similar to 0.14.0.
-- next: User to sync with engine repo / T before /march queues new phases.
-  Until sync happens, /iterate should drain CRITIQUE/AUDIT rows (UX-gap bias)
-  rather than promoting new phase candidates. Clear this row once the engine
-  check-in occurs.
-- filed: oversight 2026-06-04
+- observation: The engine check-in is done. The latest published
+  `axiomancer-mechanics` on npm is `0.14.0`; mobile pins exactly `0.14.0`
+  (package.json + package-lock.json), shipped via Phase 106 catch-up and
+  closed by commit 875523f ("docs: close mechanics 0.14 mobile upgrade
+  notes"). No newer engine release exists, so there is no catch-up phase
+  to queue.
+- resolution: Cleared via oversight 2026-06-04. The new-phase / candidate-
+  promotion hold this row imposed is LIFTED — /march may queue phases and
+  /oversight may promote candidates again.
+- note: The difficulty/progression-curve concern (CRITIQUE [MED] "difficulty
+  too hard / enemies scale with player") stays OPEN and `[needs-engine-release]`.
+  Verified 2026-06-04: that is an engine-side balance change and no engine
+  release fixing it has shipped (0.14.0 is the newest). The mobile repo only
+  surfaces enemy scaling; it cannot fix the curve here. The next /oversight
+  re-surfaces it once an engine balance release lands.
+- filed: oversight 2026-06-04; resolved: oversight 2026-06-04
 
 ## Top 5 findings (scored)
 

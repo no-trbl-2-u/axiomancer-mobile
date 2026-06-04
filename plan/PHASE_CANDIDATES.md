@@ -13,6 +13,25 @@
 > Housekeeping: 22 resolved entries (promoted/drained) were moved
 > to ## Promoted / ## Drained via /oversight 2026-05-30 (43rd
 > call). Only genuinely-live candidates remain below.
+>
+> **Do-not-re-propose guard (set via /oversight 2026-06-04).**
+> `/expand` pass 54 (commit 3ddd842) re-proposed work that had
+> already shipped or was already-tracked iterate drain. Future
+> expand passes MUST check shipped state before filing. The
+> following themes are CLOSED — do not file them as candidates:
+> - **Level-up modal + stat-allocation** → shipped Phase 73.
+> - **Aftermath rendering inside the encounter modal** → shipped
+>   Phase 86.
+> - **Bundle / debug-component lazy-load + font loading** → shipped
+>   2026-06-04 (commits 2a33bc8 + 9d722ca; AUDIT [2.4] addressed).
+> - **Hex-literal → AXM token migration** → ongoing `/iterate`
+>   drain work, NOT a phase. Let /iterate pick these per-file as
+>   it has been (see AUDIT/CRITIQUE done rows). Do not re-file as
+>   a phase candidate.
+> - **`as any` cast drain / large-component extraction** → only
+>   file with a SPECIFIC file + line count; do not file generic
+>   re-treads of the long-standing clusters already archived in
+>   ## Considered / ## Drained below.
 
 ### [score 3.5] Stance card layout shrink-to-fit (playtest 2026-05-25 [F07])
 - source: deep-playtest
@@ -30,37 +49,6 @@
   - Plan/steps/01_build_plan.md shows stale decision context
 - rationale: Phases 62d (Currency grant debug control) and 62e (Combat-HUD spot overrides) paused during combat regression priority shift. Need explicit resolution.
 - proposed scope: 1 phase — evaluate current product context and either resume with updated scope or formally retire [skipped] with rationale
-- estimated phases: 1
-- conflicts: none
-
-### [score 4.5] Design handoff integration — aftermath modals + levelup
-- proposed: 2026-06-04T18:23:07+00:00, expand pass 54
-- source signals:
-  - Design landings: new exports in design/handoff-2026-05-22/aftermath-modals.html
-  - Design landings: new exports in design/handoff-2026-05-23/levelup.jsx
-  - No corresponding mobile integration phases planned
-- rationale: Fresh design handoffs landed without mobile implementation phases. Aftermath modal and levelup flows have design specs ready for mobile port.
-- proposed scope: 2-phase mini-plan — extract design tokens/patterns, implement mobile components with engine integration
-- estimated phases: 2
-- conflicts: none
-
-### [score 3.0] Bundle size optimization follow-up (AUDIT [2.4] drain)
-- proposed: 2026-06-04T18:23:07+00:00, expand pass 54
-- source signals:
-  - AUDIT [2.4] Bundle size optimization opportunities (impact 3, ease 8)
-  - Aggressive posture threshold ≥2.5 met
-- rationale: Active audit finding suggests concrete optimization opportunities. Debug components and font loading strategy improvements identified.
-- proposed scope: 1 phase — audit bundle analyzer output, implement lazy loading for debug components, optimize font loading strategy
-- estimated phases: 1
-- conflicts: none
-
-### [score 3.0] Hex color token migration
-- proposed: 2026-06-04T18:23:07+00:00, expand pass 54
-- source signals:
-  - Smell: 10+ hex color literals in PlaceholderIllustration.tsx and EncounterModalOverlay.tsx
-  - Violates bearings.md theme token contract (AXM.{bg,parchment,blood,sulfur,rust,bone,ash})
-- rationale: Color leakage prevents consistent theming and violates established token system. Examples: #0a0a0a, #1a1410, #6a625a in components.
-- proposed scope: 1 phase — replace hex literals with AXM theme tokens, update affected components
 - estimated phases: 1
 - conflicts: none
 
@@ -85,6 +73,17 @@
 - conflicts: none
 
 ## Drained / shipped
+
+### [drained 2026-06-04 — already shipped] [score 3.0] Bundle size optimization follow-up (AUDIT [2.4] drain)
+- proposed: 2026-06-04, expand pass 54 (commit 3ddd842).
+- Drained via /oversight 2026-06-04. The candidate's proposed
+  scope — "lazy loading for debug components, optimize font
+  loading strategy" — shipped the same day: debug-component
+  code splitting in commit 2a33bc8 (17 components behind
+  React.lazy/Suspense) and progressive font loading in commit
+  9d722ca. AUDIT [2.4] is marked addressed. Residual image-asset
+  optimization remains live as AUDIT [2.8] (a separate row), so
+  no candidate is needed here.
 
 ### [promoted 2026-06-04] Cross-stat effects on level-up — engine-driven derived stats preview → Phase 105
 - proposed: 2026-05-26, oversight 42nd call
@@ -134,6 +133,15 @@
 
 ## Considered (below threshold)
 
+- **[score 3.0] Hex color token migration (PlaceholderIllustration /
+  EncounterModalOverlay)** (expand pass 54, commit 3ddd842) —
+  moved out of ## Pending via /oversight 2026-06-04. Hex-literal →
+  `AXM` token cleanup is ongoing `/iterate` drain work, not a
+  phase-sized unit (see the many "hex literal → AXM.*" done rows
+  in AUDIT/CRITIQUE). /iterate picks these per-file as it has
+  been. Specific live targets if iterate wants them:
+  `PlaceholderIllustration.tsx`, `EncounterModalOverlay.tsx`
+  (`#0a0a0a`, `#1a1410`, `#6a625a`). Do not re-file as a phase.
 - **[score 3.5] Persist run-stats counters across app reload** —
   `encountersFaced` + `deepestNodeId` (Phase 70 Tick C) live
   on the React context shim; lost on app restart. The defeat
@@ -1436,6 +1444,20 @@ exploration `moveToAction` migration to engine `revealAdjacent` /
   `(player as any)` casts and `?? 0` fallbacks after migration.
 
 ## Rejected
+
+### [rejected 2026-06-04 — already shipped] [score 4.5] Design handoff integration — aftermath modals + levelup
+- proposed: 2026-06-04, expand pass 54 (commit 3ddd842).
+- Rejected via /oversight 2026-06-04. The candidate claimed "no
+  corresponding mobile integration phases planned," but both
+  surfaces had already shipped: the level-up modal + SELF-tab
+  ASCEND strip as **Phase 73** (`plan/steps/01_build_plan.md`),
+  and aftermath rendering inside the encounter modal as
+  **Phase 86**. The candidate also mis-cited
+  `design/handoff-2026-05-23/levelup.jsx` — that path does not
+  exist (the bundle's screens are aftermath-modal / character /
+  combat / components). Promoting it would have duplicated
+  shipped code. Root cause logged in the do-not-re-propose
+  guard at the top of this file.
 
 ### [rejected 2026-05-16 — absorbed by Phase 30] [score 4.5] Presenter-copy invariant guard
 

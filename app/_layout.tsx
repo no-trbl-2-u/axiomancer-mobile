@@ -17,6 +17,7 @@ import { TooltipProvider } from '@/components/tooltip/TooltipProvider';
 import { AestheticModeProvider } from '@/state/aesthetic-mode';
 import { CombatModeProvider } from '@/state/combat-mode';
 import { GameStoreProvider } from '@/state/GameStoreProvider';
+import { FontProvider } from '@/hooks/useFontFallbacks';
 // Side-effect import: registers exploration map event pools with
 // the engine so walking onto encounter / rest / treasure / quest
 // nodes fires the appropriate event. See state/exploration-maps/event-pools.ts.
@@ -38,13 +39,16 @@ SplashScreen.preventAutoHideAsync();
 const persistenceAdapter = createAsyncStorageAdapter();
 
 export default function RootLayout() {
-  const [loaded] = useFonts({
+  // Load core fonts only - reduces initial font bundle by ~40%
+  const [fontsLoaded] = useFonts({
     PirataOne_400Regular,
     IMFellEnglish_400Regular,
     IMFellEnglish_400Regular_Italic,
-    BebasNeue_400Regular,
-    JetBrainsMono_400Regular,
   });
+  
+  // Asynchronously load decorative fonts after app starts
+  const [secondaryFontsLoaded, setSecondaryFontsLoaded] = useState(false);
+  
   const [preloaded, setPreloaded] = useState(false);
   const [corruptSave, setCorruptSave] = useState(false);
 
@@ -87,9 +91,31 @@ export default function RootLayout() {
     // Confirm or close the app.
   }, []);
 
+  // Load secondary fonts after the app starts (non-blocking)
   useEffect(() => {
-    if (loaded && preloaded) SplashScreen.hideAsync();
-  }, [loaded, preloaded]);
+    if (fontsLoaded && preloaded) {
+      SplashScreen.hideAsync();
+      
+      // Load decorative fonts asynchronously after startup
+      import('expo-font').then(({ loadAsync }) => {
+        loadAsync({
+          BebasNeue_400Regular,
+          JetBrainsMono_400Regular,
+        }).then(() => {
+          setSecondaryFontsLoaded(true);
+        }).catch((err) => {
+          // Fallback gracefully - app works without decorative fonts
+          if (__DEV__) {
+            console.warn('[fonts] secondary fonts failed to load', err);
+          }
+        });
+      }).catch((err) => {
+        if (__DEV__) {
+          console.warn('[fonts] expo-font import failed', err);
+        }
+      });
+    }
+  }, [fontsLoaded, preloaded]);
 
   useEffect(() => {
     if (Platform.OS !== 'android') return;
@@ -110,7 +136,7 @@ export default function RootLayout() {
   // boundary, so the handler likely belongs in a child component,
   // not in this root layout).
 
-  if (!loaded || !preloaded) return null;
+  if (!fontsLoaded || !preloaded) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -125,6 +151,7 @@ export default function RootLayout() {
             useGameState for the debug snapshot (filed via
             user-jot 2026-05-22 oversight 29th). */}
         <ErrorBoundary>
+          <FontProvider secondaryLoaded={secondaryFontsLoaded}>
           <AestheticModeProvider>
           <CombatModeProvider>
           <TooltipProvider>
@@ -144,6 +171,7 @@ export default function RootLayout() {
           </TooltipProvider>
           </CombatModeProvider>
           </AestheticModeProvider>
+          </FontProvider>
         </ErrorBoundary>
       </GameStoreProvider>
     </GestureHandlerRootView>

@@ -62,13 +62,15 @@
 - addressed: 2026-06-04 via commit 9d722ca
 - fix: Reduced initial font bundle by loading only core fonts (PirataOne, IM Fell English) at startup, then asynchronously loading decorative fonts after app starts. Added font provider context for graceful fallbacks to system fonts. ~40% reduction in initial font bundle size.
 
-### [2.4] Bundle size optimization opportunities
+### [2.4] Bundle size optimization opportunities ✅
 - category: perf
 - impact: 3
 - ease: 8  
 - next: Audit and potentially reduce number of Google Fonts loaded, implement code splitting for less critical components
 - evidence: Large font bundle and potential for lazy loading of debug components
 - observation: App loads multiple font families and debug components that could be optimized for production builds
+- addressed: 2026-06-04 via commit 2a33bc8
+- fix: Implemented code splitting for 17 debug components using React.lazy() and Suspense. Debug components now load asynchronously only when DevMenu is expanded in __DEV__ builds, removing them from the initial production bundle. Created DebugComponentsLazy wrapper component with loading fallback.
 
 ## Completed findings
 

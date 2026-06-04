@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-03 at commit d243419
-> Pass count: 53
+> Last pass: 2026-06-04 at commit 3ddd842
+> Pass count: 54
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -30,6 +30,57 @@
   - Plan/steps/01_build_plan.md shows stale decision context
 - rationale: Phases 62d (Currency grant debug control) and 62e (Combat-HUD spot overrides) paused during combat regression priority shift. Need explicit resolution.
 - proposed scope: 1 phase — evaluate current product context and either resume with updated scope or formally retire [skipped] with rationale
+- estimated phases: 1
+- conflicts: none
+
+### [score 4.5] Design handoff integration — aftermath modals + levelup
+- proposed: 2026-06-04T18:23:07+00:00, expand pass 54
+- source signals:
+  - Design landings: new exports in design/handoff-2026-05-22/aftermath-modals.html
+  - Design landings: new exports in design/handoff-2026-05-23/levelup.jsx
+  - No corresponding mobile integration phases planned
+- rationale: Fresh design handoffs landed without mobile implementation phases. Aftermath modal and levelup flows have design specs ready for mobile port.
+- proposed scope: 2-phase mini-plan — extract design tokens/patterns, implement mobile components with engine integration
+- estimated phases: 2
+- conflicts: none
+
+### [score 3.0] Bundle size optimization follow-up (AUDIT [2.4] drain)
+- proposed: 2026-06-04T18:23:07+00:00, expand pass 54
+- source signals:
+  - AUDIT [2.4] Bundle size optimization opportunities (impact 3, ease 8)
+  - Aggressive posture threshold ≥2.5 met
+- rationale: Active audit finding suggests concrete optimization opportunities. Debug components and font loading strategy improvements identified.
+- proposed scope: 1 phase — audit bundle analyzer output, implement lazy loading for debug components, optimize font loading strategy
+- estimated phases: 1
+- conflicts: none
+
+### [score 3.0] Hex color token migration
+- proposed: 2026-06-04T18:23:07+00:00, expand pass 54
+- source signals:
+  - Smell: 10+ hex color literals in PlaceholderIllustration.tsx and EncounterModalOverlay.tsx
+  - Violates bearings.md theme token contract (AXM.{bg,parchment,blood,sulfur,rust,bone,ash})
+- rationale: Color leakage prevents consistent theming and violates established token system. Examples: #0a0a0a, #1a1410, #6a625a in components.
+- proposed scope: 1 phase — replace hex literals with AXM theme tokens, update affected components
+- estimated phases: 1
+- conflicts: none
+
+### [score 3.0] EncounterModalOverlay component extraction
+- proposed: 2026-06-04T18:23:07+00:00, expand pass 54
+- source signals:
+  - Smell: file length outlier at 748 lines (2× median component size)
+  - Complex component structure with multiple concerns
+- rationale: Large component size suggests sub-component extraction opportunities. Modal has distinct concerns (overlay, content, animations) that could be separated.
+- proposed scope: 1 phase — extract sub-components while preserving modal behavior and accessibility
+- estimated phases: 1
+- conflicts: none
+
+### [score 3.0] Combat engine TODO drain
+- proposed: 2026-06-04T18:23:07+00:00, expand pass 54
+- source signals:
+  - Smell: 3 TODO comments clustered in combat/mercy engine integration
+  - Evidence: state/actions.ts:1515, state/presenters/combat-hud.engine.ts:31, state/presenters/combat.engine.ts:1065
+- rationale: Clustered TODOs suggest unfinished engine integration work following recent mercy/combat phases. Technical debt from Phase 104-106 era.
+- proposed scope: 1 phase — complete mercy state integration, remove TODO scaffolding, verify engine contract compliance
 - estimated phases: 1
 - conflicts: none
 

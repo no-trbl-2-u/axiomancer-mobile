@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import {
     StyleSheet,
     Text,
@@ -416,7 +416,7 @@ function SkillPhase({
     totalCount: number;
     onPick: (s: SkillOption) => void;
 }) {
-    const available = skills.filter((s) => s.enabled);
+    const available = useMemo(() => skills.filter((s) => s.enabled), [skills]);
     return (
         <View style={skill_styles.list}>
             {available.map((s) => (

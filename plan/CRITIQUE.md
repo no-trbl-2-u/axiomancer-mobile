@@ -226,7 +226,7 @@
 - addressed: 2026-05-28 via commit `375c371`
 - fix: Fixed mana→focus terminology inconsistency across tooltip system. Skill tooltips, combat action help text, and debug strings now consistently use "focus" terminology matching MIND stat description rather than "mana".
 
-### [MED] /combat — Space heart/body/mind buttons evenly in combat modal
+### [MED] /combat — Space heart/body/mind buttons evenly in combat modal ✅
 - pass: user-jot (commit `b12f1e9`)
 - viewport: unspecified
 - auth_state: anonymous
@@ -236,6 +236,9 @@
 - suggested_fix: [user has not specified — iterate to determine]
 - source: user
 - playtest: see PLAYTEST_REPORT.md [F07] (Mind stance card clipped at right edge)
+- issue: #256
+- addressed: 2026-06-04 via commit 026fc7f
+- fix: Changed stance card row layout from justifyContent 'space-between' to 'space-evenly' to distribute heart/body/mind buttons evenly across modal width instead of pushing them to edges
 
 ### [MED] /self — Stat allocation cross-effects not reflected in actual character stats
 - pass: user-jot (commit `b12f1e9`)

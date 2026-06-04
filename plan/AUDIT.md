@@ -27,6 +27,15 @@
 
 ## Top 5 findings (scored)
 
+### [8.1] Fix bearings.md engine version inconsistency
+- category: consistency
+- impact: 9
+- ease: 9
+- next: Update bearings.md line 61 from `axiomancer-mechanics` npm package (pinned ^0.4.x)` to `(pinned exact 0.14.0)`
+- evidence: `/home/runner/work/axiomancer-mobile/axiomancer-mobile/plan/bearings.md:61` vs package.json dependency
+- observation: plan/bearings.md line 61 shows engine pinned as `^0.4.x` but package.json has exact pin `0.14.0`, contradicting the "locked" table
+- issue: #260
+
 ### [4.2] Console statements in design files and combat engine expose debug info in production ✅
 - category: perf
 - impact: 6

@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-04 at commit 18c3371
-> Pass count: 19
+> Last pass: 2026-06-04 at commit f10820a
+> Pass count: 20
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -491,6 +491,15 @@
 
 ### [MED] general — Tap-tooltip phase ✅ (PROMOTED → PHASE_CANDIDATES.md candidate)
 - pass: user-jot (commit `cfc524c`); promoted via oversight 31st call 2026-05-22 to `plan/PHASE_CANDIDATES.md` as `[score 5.0] Tap-tooltip primitive + per-surface wiring`. Multi-tick scope — touches every interactive icon across SELF / combat / inventory surfaces. Next `/expand` or `/oversight` decides the slicing (one global primitive + per-surface wiring vs. per-surface ticks).
+
+### [needs-user-call] / — No accessible deployment URL for web critique
+- pass: 20 (commit f10820a)
+- viewport: mobile
+- category: infra
+- observation: No accessible deployment URL for web critique - mobile app not currently served at localhost:19006 or any public URL
+- evidence: WebFetch to localhost:19006 failed - development server not running
+- suggested fix: Start development server with 'npm run web' or provide deployed URL for critique
+- source: browser
 
 ### [MED] general — Expand DEV mode to cover every ported mechanic ✅
 - pass: user-jot (commit 7821f13); addressed at commit `<this-tick>` by filing as a phase candidate (not a one-tick fix — meta-feature ask requires planning).

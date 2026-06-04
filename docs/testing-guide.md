@@ -1,10 +1,13 @@
 # Internal Testing Guide
 
+> **Manual QA checklist for TestFlight and Play Internal Track builds.**
+> For automated testing standards, see [`docs/testing.md`](./testing.md).
+
 ## Testing Focus Areas
 
 ### Core Functionality
 - [ ] App launches without crashes on first install
-- [ ] All tabs (Combat, Character, Inventory, Exploration, Event) are accessible
+- [ ] All tabs (Combat, Character, Inventory, Exploration, Event, Memoir) are accessible
 - [ ] Navigation between screens works smoothly
 - [ ] Game state persists correctly between app sessions
 - [ ] Combat mechanics function as expected

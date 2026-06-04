@@ -1,6 +1,6 @@
 # Mechanics upgrade — `axiomancer-mechanics@0.14.0`
 
-> Status: prepared, but npm publish is blocked until this machine is authenticated with npm. The mechanics release commit/tag exist locally; registry still reports `axiomancer-mechanics@0.13.0` as latest until `npm adduser`/token auth is supplied and `npm publish` succeeds.
+> Status: published. `npm view axiomancer-mechanics@0.14.0` resolves on the public registry; mobile remains pinned to `0.13.0` until Phase 106 performs the package bump, compile drain, integration fixes, and evidence pass.
 
 ## What changed upstream
 
@@ -19,7 +19,7 @@ Mechanics `0.14.0` is the mobile catch-up release after `0.13.0`. The important 
 
 ## Mobile work required
 
-1. Bump `axiomancer-mechanics` from `0.13.0` to `0.14.0` after npm publish.
+1. Bump `axiomancer-mechanics` from `0.13.0` to `0.14.0` as Phase 106 (`plan/phases/phase_106_mechanics_0_14_mobile_catchup.md`).
 2. Run the mobile type suite and replace any imports removed in mechanics `0.14.0`:
    - `getResistStat` → `getEffectiveStats(combatant).baseStats[stance]`
    - `endCombatPlayerVictory`, `endCombatPlayerDefeat`, `endCombatWithFriendship` → `endCombat()` / engine outcome flow
@@ -53,3 +53,4 @@ Mechanics `0.14.0` is the mobile catch-up release after `0.13.0`. The important 
 - Mechanics `CHANGELOG.md` — `0.14.0` section.
 - Mechanics `RELEASES.md` — short-form `0.14.0` summary.
 - Mechanics `plan/steps/01_build_plan.md` — Phases 96–110, especially 108–110.
+- npm registry — `axiomancer-mechanics@0.14.0` tarball resolves at `https://registry.npmjs.org/axiomancer-mechanics/-/axiomancer-mechanics-0.14.0.tgz`.

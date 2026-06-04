@@ -51,13 +51,16 @@
 - addressed: 2026-06-04 via commit ffb61ac
 - fix: Wrapped skills.filter() in useMemo hook with skills dependency to prevent recalculation on every render
 
-### [2.8] Heavy font loading blocks app startup
+### [2.8] Heavy font loading blocks app startup ✅
 - category: perf
 - impact: 7 
 - ease: 4
 - next: Implement progressive font loading with fallbacks to reduce initial bundle and startup time
 - evidence: app/_layout.tsx loads 5 Google Fonts synchronously before app starts
 - observation: All fonts loaded synchronously at startup creates delay in app initialization
+- issue: #254
+- addressed: 2026-06-04 via commit 9d722ca
+- fix: Reduced initial font bundle by loading only core fonts (PirataOne, IM Fell English) at startup, then asynchronously loading decorative fonts after app starts. Added font provider context for graceful fallbacks to system fonts. ~40% reduction in initial font bundle size.
 
 ### [2.4] Bundle size optimization opportunities
 - category: perf

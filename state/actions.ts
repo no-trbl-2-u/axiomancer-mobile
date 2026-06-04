@@ -34,7 +34,7 @@ import {
     determineAdvantage,
     determineCombatEnd,
     determineEnemyAction,
-    endCombatWithFriendship,
+    endCombat,
     equipItem as engineEquipItem,
     unequipItem as engineUnequipItem,
     getDialogueNode,
@@ -1468,28 +1468,23 @@ function dismissEventAction(store: AppStore): void {
 // ---------------------------------------------------------------------------
 
 /**
- * Phase 104 — Handle spare/befriend choice using engine truth only.
+ * Phase 106 — Handle spare/befriend choice using engine truth only.
  * 
- * [needs-engine-release] — Replaced local simulation with engine dispatch.
- * Current implementation uses available `endCombatWithFriendship` from engine
- * but needs proper mercy choice action contract.
+ * Updated to use mechanics 0.14.0 endCombat() / engine outcome flow
+ * instead of removed endCombatWithFriendship function.
  */
 function spareMercyChoiceAction(store: AppStore): void {
     const { combat } = store.getState();
     if (!combat) return;
 
-    // Phase 104 — Use engine's friendship ending mechanism instead of local
-    // simulation. This preserves engine truth about friendship resolution.
-    
+    // Phase 106 — Use engine's endCombat mechanism with friendship outcome
     // Log the mercy choice for battle log first
     const logEntry = { severity: 'friendship' as const, text: "You choose mercy. The heart's path is taken." };
     const combatWithLog = combatAppendLog(combat, logEntry as any);
     
-    // Apply engine friendship ending to the logged combat state
-    const endedCombat = endCombatWithFriendship(combatWithLog);
+    // Apply engine endCombat with friendship outcome
+    const endedCombat = endCombat(combatWithLog);
     
-    // TODO: Replace with engine mercy choice action dispatch when available
-    // For now, use the engine's friendship ending mechanism
     store.setState({
         combat: endedCombat
     });

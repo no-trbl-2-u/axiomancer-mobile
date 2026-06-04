@@ -55,28 +55,35 @@ function makeEnemy() {
 }
 
 /**
- * Build a `state`-shaped fixture (engine GameState + the mobile-only
- * `combatMana` slice). Phase 60d lifted mana off Character; the
- * presenter now reads from `state.combatMana`. Tests that want a
- * specific mana ratio pass the second arg explicitly; the default
- * of `null` reflects the "no active combat" branch which the
- * presenter treats as a full bar (1.0).
+ * Build a `state`-shaped fixture (engine GameState + mobile slices).
+ * Phase 106 — combat resources now read from engine `CombatState.combatResources`
+ * instead of mobile-only `combatMana` slice. Tests that want specific resource
+ * values pass the combatResources explicitly; the default of `null` reflects
+ * "no active combat" which the presenter treats as a full bar (1.0).
  */
 function stateWith(
     playerOverrides: Partial<ReturnType<typeof createCharacter>> = {},
-    combatMana: { current: number; max: number } | null = null,
+    combatResourcesOverride: { heart: number; body: number; mind: number; fallacy: number; paradox: number } | null = null,
 ): AppStoreState {
     const base = createNewGameState();
     // GameState + mobile slices is enough to satisfy AppStoreState
     // for selector-only tests; GameActions are not invoked here.
-    return {
+    const state = {
         ...base,
         player: makePlayer(playerOverrides),
-        combatMana,
         event: EMPTY_EVENT_SLICE,
         notifications: DEFAULT_NOTIFICATIONS_SLICE,
         _recentEvents: [],
     } as unknown as AppStoreState;
+
+    // If combat resources are provided, mock a combat state
+    if (combatResourcesOverride) {
+        state.combat = {
+            combatResources: combatResourcesOverride
+        } as any;
+    }
+
+    return state;
 }
 
 // ---------------------------------------------------------------------------
@@ -84,15 +91,13 @@ function stateWith(
 // ---------------------------------------------------------------------------
 
 describe('selectCombatHudViewModel: happy path', () => {
-    it('returns 1.0 for both percents when player is at full HP and mana', () => {
+    it('returns 1.0 for both percents when player is at full HP and resources', () => {
         const player = makePlayer();
-        // Phase 60d — pass mana as a `combatMana` slice (current=max)
-        // rather than as a Character override. The previous form
-        // (`{ mana: player.maxMana }`) is a no-op now that mana lives
-        // off Character.
+        // Phase 106 — combat resources from engine CombatState.combatResources
+        // Total = 20, estimated max = 20, so manaPercent = 1.0
         const state = stateWith(
             { health: player.maxHealth },
-            { current: 14, max: 14 },
+            { heart: 4, body: 4, mind: 4, fallacy: 4, paradox: 4 },
         );
 
         const vm = selectCombatHudViewModel(state);
@@ -123,10 +128,10 @@ describe('selectCombatHudViewModel: boundary conditions', () => {
         expect(vm.hpPercent).toBe(0);
     });
 
-    it('clamps manaPercent to 0 when combatMana current is 0', () => {
-        // Phase 60d — mana now reads from the mobile-only slice.
-        // Explicit 0/14 lands at manaPercent=0 (the empty-pool case).
-        const state = stateWith({}, { current: 0, max: 14 });
+    it('clamps manaPercent to 0 when all combat resources are 0', () => {
+        // Phase 106 — combat resources from engine CombatState.combatResources
+        // All zero resources should result in manaPercent = 0
+        const state = stateWith({}, { heart: 0, body: 0, mind: 0, fallacy: 0, paradox: 0 });
 
         const vm = selectCombatHudViewModel(state);
 
@@ -286,7 +291,11 @@ describe('engine store lifecycle', () => {
 
         // Fresh combat; player entered at full HP.
         expect(vm.hpPercent).toBe(1);
-        expect(vm.manaPercent).toBe(1);
+        
+        // Phase 106: In mechanics 0.14.0, combat starts with zero resources
+        // This reflects the engine's resource generation system where resources
+        // are generated during combat actions, not pre-allocated.
+        expect(vm.manaPercent).toBe(0);
     });
 
     it('a new store reloads saved state from the adapter', () => {

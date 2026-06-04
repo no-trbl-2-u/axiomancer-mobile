@@ -50,25 +50,31 @@ describe('selectCombatHudViewModel: HP calculation', () => {
 });
 
 describe('selectCombatHudViewModel: mana calculation', () => {
-    it('returns 1.0 when combatMana is null (out of combat)', () => {
+    it('returns 1.0 when combat is null (out of combat)', () => {
         const state = makeBaseState();
-        state.combatMana = null;
+        state.combat = null;
 
         const vm = selectCombatHudViewModel(state);
         expect(vm.manaPercent).toBe(1.0);
     });
 
-    it('calculates percent from combatMana slice when present', () => {
+    it('calculates percent from combatResources when present', () => {
         const state = makeBaseState();
-        state.combatMana = { current: 30, max: 60 };
+        // Mock combat state with combat resources (total = 10, estimated max = 20, so 0.5)
+        state.combat = {
+            combatResources: { heart: 2, body: 2, mind: 2, fallacy: 2, paradox: 2 }
+        } as any;
 
         const vm = selectCombatHudViewModel(state);
         expect(vm.manaPercent).toBe(0.5);
     });
 
-    it('returns 0 when mana max is 0 (defensive)', () => {
+    it('returns 0 when all combat resources are 0', () => {
         const state = makeBaseState();
-        state.combatMana = { current: 10, max: 0 };
+        // Mock combat state with zero resources
+        state.combat = {
+            combatResources: { heart: 0, body: 0, mind: 0, fallacy: 0, paradox: 0 }
+        } as any;
 
         const vm = selectCombatHudViewModel(state);
         expect(vm.manaPercent).toBe(0);
@@ -146,7 +152,9 @@ describe('selectCombatHudViewModel: dev overrides (Phase 87)', () => {
 
     it('overrides work independently — can hide multiple elements', () => {
         const state = makeBaseState();
-        state.combatMana = { current: 50, max: 100 };
+        state.combat = {
+            combatResources: { heart: 10, body: 10, mind: 0, fallacy: 0, paradox: 0 }
+        } as any;
         state.player.effects = [{ effectId: 'test', intensity: 1, remainingDuration: 2, appliedAt: 0, tier: 1 }];
         state.devOverrides = {
             hud: { hideMana: true, hideEffects: true, hideStance: false },
@@ -160,7 +168,9 @@ describe('selectCombatHudViewModel: dev overrides (Phase 87)', () => {
     it('works when devOverrides is missing (defensive)', () => {
         const state = makeBaseState();
         delete (state as any).devOverrides; // Simulate old state
-        state.combatMana = { current: 25, max: 50 };
+        state.combat = {
+            combatResources: { heart: 5, body: 5, mind: 0, fallacy: 0, paradox: 0 }
+        } as any;
 
         const vm = selectCombatHudViewModel(state);
         expect(vm.manaPercent).toBe(0.5); // Normal calculation

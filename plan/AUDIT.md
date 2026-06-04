@@ -1,7 +1,22 @@
 # Site audit — 2026-06-04
 
-> Bias: none
+> Bias: UX gaps (set via oversight 2026-06-04)
+> /iterate weights UX-gap findings 1.5×: stance buttons spacing, node label
+> visibility, LEDGER encounter/node display, ITEM tooltip
 > Conducted by: /iterate autonomous audit
+
+### [needs-user-call] Engine sync — progression curve + upcoming engine work
+- category: planning
+- observation: User flagged that an engine check-in is needed before more mobile
+  phases are queued. Specific concerns: (1) difficulty/progression-curve gap
+  (CRITIQUE [MED] "difficulty too hard / enemies scale with player", tagged
+  `[needs-engine-release]`), (2) any upcoming engine releases that would unblock
+  mobile candidates or require catch-up phases similar to 0.14.0.
+- next: User to sync with engine repo / T before /march queues new phases.
+  Until sync happens, /iterate should drain CRITIQUE/AUDIT rows (UX-gap bias)
+  rather than promoting new phase candidates. Clear this row once the engine
+  check-in occurs.
+- filed: oversight 2026-06-04
 
 ## Top 5 findings (scored)
 

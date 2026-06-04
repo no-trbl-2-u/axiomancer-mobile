@@ -1174,20 +1174,13 @@ DevMenu (Phase 61a wrapper); none change production surfaces.
 > any further Phase 62 dev affordances. `/march` will skip 62d/e
 > until they are explicitly un-paused via `/oversight`.
 
-- [paused] Phase 62d — Currency grant. New `<DebugCurrencyGrant>`
-      row. Single `+100` button that adds to the player's
-      currency slice (engine field — verify shape first; may
-      not exist yet, in which case 62d defers as `[skipped]`
-      pending engine surface). Tests pin: amount added,
-      idempotent across stacked presses. Commit:
-      `feat(spec62d): dev-menu currency grant`.
-- [paused] Phase 62e — Combat-HUD spot overrides. New
-      `<DebugCombatOverrides>` panel with three slider/button
-      groups: player HP (set to 1 / max), enemy HP (set to 1 /
-      max), mind-marks (clear / +3). Only active during
-      combat; warns + no-ops otherwise. Tests pin: each
-      override mutates the right field of state.combat.
-      Commit: `feat(spec62e): dev-menu combat HUD overrides`.
+- [skipped via oversight 2026-06-04 — drained by Phase 87] Phase 62d — Currency
+      grant. Phase 87 (`cffbc9b`) shipped `<DebugCurrencyControl>` (50/500S grants
+      + BROKE reset), covering the same scope this row described.
+- [skipped via oversight 2026-06-04 — drained by Phase 87] Phase 62e — Combat-HUD
+      spot overrides. Phase 87 (`cffbc9b`) shipped `<DebugHudOverrides>` (mana /
+      effects / stance visibility toggles), covering the HUD-override scope this
+      row described.
 
       **Out-of-scope for Phase 62** (re-file if needed):
       enemy effect-apply (covered by Phase 61e's BLEED · FOE

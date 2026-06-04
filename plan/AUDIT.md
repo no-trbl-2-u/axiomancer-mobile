@@ -20,7 +20,7 @@
 
 ## Top 5 findings (scored)
 
-### [4.2] Console statements in design files and combat engine expose debug info in production
+### [4.2] Console statements in design files and combat engine expose debug info in production ✅
 - category: perf
 - impact: 6
 - ease: 7
@@ -28,6 +28,8 @@
 - evidence: Found console.error in 3 design-canvas.jsx files and console.warn in combat.engine.ts without __DEV__ protection
 - observation: Design files in handoff directories and combat engine contain console statements that would execute in production builds, potentially exposing debug information
 - issue: #257
+- addressed: 2026-06-04 via commit 21038a2
+- fix: Wrapped console.error in 3 design-canvas.jsx files and console.warn in combat.engine.ts with __DEV__ guards to prevent debug output in production builds
 
 ### [3.6] Component test coverage gap - at least one component lacks tests
 - category: tests

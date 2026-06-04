@@ -1042,10 +1042,15 @@ _devAssertTriangleMatchesEngine();
 declare const __DEV__: boolean | undefined;
 
 /**
- * Phase 103 — Build mercy choice slice based on engine state.
- * For now, simulates the mechanics by checking friendship threshold.
- * When mechanics Phase 108 lands, this will read the engine's mercy
- * choice state directly.
+ * Phase 104 — Build mercy choice slice from engine-emitted mercy state only.
+ * 
+ * [needs-engine-release] — Replaced local friendship threshold simulation
+ * with engine truth consumption. Requires mechanics package to export:
+ * - `combat.mercyChoiceState` (or similar) with `isActive` boolean
+ * - Engine actions for spare/exploit dispatch (not local damage simulation)
+ * - Engine-emitted mercy choice options/labels
+ * 
+ * For now, mercy choice is disabled until engine contracts are available.
  */
 function buildMercyChoiceSlice(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1053,12 +1058,12 @@ function buildMercyChoiceSlice(
     enemyName: string,
     friendshipCounter: number,
 ): MercyChoiceSlice {
-    // Temporary mechanics simulation: mercy choice activates when
-    // friendship counter reaches max. Real implementation will read
-    // engine-emitted mercy choice state from Phase 108.
-    const isActive = combat !== null && 
-        friendshipCounter >= FRIENDSHIP_COUNTER_MAX &&
-        combat.phase !== 'ended';
+    // Phase 104 — Remove local friendship threshold logic per doctrine cleanup.
+    // Mercy choice activation must come from engine-emitted state, not mobile
+    // simulation. Until mechanics exports mercy choice state, disable the modal.
+    
+    // TODO: Replace with `combat.mercyChoiceState.isActive` when available
+    const isActive = false; // Disabled until engine contract available
     
     const cleanEnemyName = combat === null ? '' : (enemyName || 'ADVERSARY');
     

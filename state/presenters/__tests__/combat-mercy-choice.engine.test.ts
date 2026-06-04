@@ -1,11 +1,12 @@
 /**
- * Hermetic presenter tests — mercy choice slice (Phase 103).
+ * Hermetic presenter tests — mercy choice slice (Phase 103, updated Phase 104).
  *
  * Pins:
- *   - Mercy choice activation when friendship counter reaches max
- *   - Enemy name display in choice context
- *   - Accessibility labels for both choice paths
+ *   - Phase 104: Mercy choice disabled until engine contracts available
+ *   - Enemy name display in choice context (preserved for future use)
+ *   - Accessibility labels for both choice paths (preserved)
  *   - Inactive state when combat is null or ended
+ *   - [needs-engine-release] — Engine mercy choice state required for activation
  */
 
 import { describe, expect, it } from '@jest/globals';
@@ -50,7 +51,7 @@ describe('selectCombatViewModel: mercy choice slice', () => {
         expect(vm.mercyChoice.isActive).toBe(false);
     });
 
-    it('returns active mercy choice when friendship counter reaches max', () => {
+    it('returns inactive mercy choice even when friendship counter reaches max (Phase 104)', () => {
         const state = makeBaseState();
         state.combat = {
             active: true,
@@ -66,7 +67,8 @@ describe('selectCombatViewModel: mercy choice slice', () => {
         } as any;
 
         const vm = selectCombatViewModel(state);
-        expect(vm.mercyChoice.isActive).toBe(true);
+        // Phase 104 — Mercy choice disabled until engine contracts are available
+        expect(vm.mercyChoice.isActive).toBe(false);
         expect(vm.mercyChoice.enemyName).toBe('TEST FOE');
     });
 
@@ -89,7 +91,7 @@ describe('selectCombatViewModel: mercy choice slice', () => {
         expect(vm.mercyChoice.isActive).toBe(false);
     });
 
-    it('includes enemy name in choice hints and accessibility labels', () => {
+    it('includes enemy name in choice hints and accessibility labels (Phase 104 - disabled)', () => {
         const state = makeBaseState();
         state.combat = {
             active: true,
@@ -105,14 +107,15 @@ describe('selectCombatViewModel: mercy choice slice', () => {
         } as any;
 
         const vm = selectCombatViewModel(state);
-        expect(vm.mercyChoice.isActive).toBe(true);
+        // Phase 104 — Modal disabled but labels still populated for future use
+        expect(vm.mercyChoice.isActive).toBe(false);
         expect(vm.mercyChoice.enemyName).toBe('SHADOW WOLF');
         expect(vm.mercyChoice.spareHint).toBe('preserve shadow wolf · path of mercy');
         expect(vm.mercyChoice.a11y.spare).toBe('Spare SHADOW WOLF, choosing mercy and consequence');
         expect(vm.mercyChoice.a11y.exploit).toBe('Exploit the opening for a guaranteed critical attack against SHADOW WOLF');
     });
 
-    it('provides fallback enemy name when enemy name is empty', () => {
+    it('provides fallback enemy name when enemy name is empty (Phase 104 - disabled)', () => {
         const state = makeBaseState();
         state.combat = {
             active: true,
@@ -128,7 +131,8 @@ describe('selectCombatViewModel: mercy choice slice', () => {
         } as any;
 
         const vm = selectCombatViewModel(state);
-        expect(vm.mercyChoice.isActive).toBe(true);
+        // Phase 104 — Modal disabled but fallback logic preserved
+        expect(vm.mercyChoice.isActive).toBe(false);
         expect(vm.mercyChoice.enemyName).toBe('ADVERSARY');
         expect(vm.mercyChoice.spareHint).toBe('preserve adversary · path of mercy');
     });

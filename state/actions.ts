@@ -34,6 +34,7 @@ import {
     determineAdvantage,
     determineCombatEnd,
     determineEnemyAction,
+    endCombatWithFriendship,
     equipItem as engineEquipItem,
     unequipItem as engineUnequipItem,
     getDialogueNode,
@@ -1467,63 +1468,65 @@ function dismissEventAction(store: AppStore): void {
 // ---------------------------------------------------------------------------
 
 /**
- * Phase 103 — Handle spare/befriend choice in mercy modal.
- * When mechanics Phase 108 lands, this will dispatch the engine's
- * befriend action. For now, simulates by ending combat with friendship
- * outcome and clearing the mercy choice trigger.
+ * Phase 104 — Handle spare/befriend choice using engine truth only.
+ * 
+ * [needs-engine-release] — Replaced local simulation with engine dispatch.
+ * Current implementation uses available `endCombatWithFriendship` from engine
+ * but needs proper mercy choice action contract.
  */
 function spareMercyChoiceAction(store: AppStore): void {
     const { combat } = store.getState();
     if (!combat) return;
 
-    // Temporary simulation: end combat with friendship outcome
-    // Real implementation will dispatch engine mercy choice action
-    const endReport = store.getState().endCombat();
+    // Phase 104 — Use engine's friendship ending mechanism instead of local
+    // simulation. This preserves engine truth about friendship resolution.
     
-    // Log the mercy choice for battle log
+    // Log the mercy choice for battle log first
     const logEntry = { severity: 'friendship' as const, text: "You choose mercy. The heart's path is taken." };
-    const updatedCombat = combatAppendLog(combat, logEntry as any);
+    const combatWithLog = combatAppendLog(combat, logEntry as any);
     
+    // Apply engine friendship ending to the logged combat state
+    const endedCombat = endCombatWithFriendship(combatWithLog);
+    
+    // TODO: Replace with engine mercy choice action dispatch when available
+    // For now, use the engine's friendship ending mechanism
     store.setState({
-        combat: {
-            ...updatedCombat,
-            phase: 'ended' as CombatPhase,
-        }
+        combat: endedCombat
     });
 }
 
 /**
- * Phase 103 — Handle exploit/critical choice in mercy modal.
- * When mechanics Phase 108 lands, this will dispatch the engine's
- * exploit action. For now, simulates by applying guaranteed critical
- * damage and clearing the mercy choice trigger.
+ * Phase 104 — Handle exploit/critical choice using engine truth only.
+ * 
+ * [needs-engine-release] — Removed hard-coded exploit damage simulation.
+ * Requires engine to export mercy exploit action that handles:
+ * - Guaranteed critical damage calculation
+ * - Friendship counter reset
+ * - Combat state transitions
+ * 
+ * For now, this action is disabled until engine contract is available.
  */
 function exploitMercyChoiceAction(store: AppStore): void {
     const { combat } = store.getState();
     if (!combat) return;
 
-    // Temporary simulation: apply guaranteed critical damage
-    // Real implementation will dispatch engine mercy choice action
-    const criticalDamage = 15; // Placeholder value
-    const updatedEnemy = {
-        ...combat.enemy,
-        health: Math.max(0, combat.enemy.health - criticalDamage),
+    // Phase 104 — Remove local damage simulation per doctrine cleanup.
+    // Exploit damage and friendship reset must come from engine action,
+    // not mobile calculation. Mobile does not invent mechanics locally.
+    
+    // [needs-engine-release] — Engine should export mercy exploit action
+    // that handles critical damage + friendship reset + combat progression.
+    
+    // TODO: Replace with engine mercy exploit action dispatch:
+    // const result = store.getState().exploitMercyChoice();
+    
+    const logEntry = { 
+        severity: 'system' as const, 
+        text: "[Exploit action disabled - needs engine mercy contract]" 
     };
-
-    const logEntry = { severity: 'crit' as const, text: "You exploit the opening. The critical strike lands true." };
     const updatedCombat = combatAppendLog(combat, logEntry as any);
     
     store.setState({
-        combat: {
-            ...updatedCombat,
-            enemy: updatedEnemy,
-            // Reset friendship counter after exploitation
-            friendshipCounter: 0,
-        }
+        combat: updatedCombat
     });
-
-    // Check if this killed the enemy
-    if (updatedEnemy.health <= 0) {
-        store.getState().endCombat();
-    }
 }

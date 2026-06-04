@@ -591,7 +591,7 @@ const stack_styles = StyleSheet.create({
 });
 
 const stance_styles = StyleSheet.create({
-    row: { flexDirection: 'row', gap: 6, justifyContent: 'space-between' },
+    row: { flexDirection: 'row', gap: 6, justifyContent: 'space-evenly' },
     cardTouch: { flex: 1 },
     card: { borderWidth: 2, padding: 8, paddingHorizontal: 6, minHeight: 178 },
     advBadge: { position: 'absolute', top: 4, right: 4, borderWidth: 1, paddingHorizontal: 3, paddingVertical: 1, backgroundColor: AXM.bg, zIndex: 1 },

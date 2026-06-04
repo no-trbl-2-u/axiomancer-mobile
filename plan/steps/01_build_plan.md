@@ -54,7 +54,7 @@ commit that ships the phase.
 
 **Next up (autonomous loop's queue):**
 
-- [ ] Phase 104 — Mercy modal consumes engine truth only. Promoted above all else by Glanton cleanup 2026-06-04 after doctrine-alignment audit. Replace local friendship-threshold/modal/spare/exploit simulation with mechanics-emitted mercy state/actions/report truth; remove hard-coded exploit damage; preserve modal UX and accessibility. Brief: `plan/phases/phase_104_mercy_modal_engine_truth.md`. Verification: focused Jest + `npm run verify`.
+- [x] Phase 104 — Mercy modal consumes engine truth only. Promoted above all else by Glanton cleanup 2026-06-04 after doctrine-alignment audit. Replace local friendship-threshold/modal/spare/exploit simulation with mechanics-emitted mercy state/actions/report truth; remove hard-coded exploit damage; preserve modal UX and accessibility. Brief: `plan/phases/phase_104_mercy_modal_engine_truth.md`. Verification: focused Jest + `npm run verify`. Shipped in commit ce59115.
 
 - [ ] Phase 105 — Engine-owned stat preview + combat resources. Promoted above normal queue by Glanton cleanup 2026-06-04. Replace local stat-preview math with mechanics `previewStatAllocation` (or current equivalent), remove/quarantine `lib/previewAllocation.ts`, and ensure combat resources/skill affordability read engine `CombatState.combatResources` rather than `combatMana` or local scaffolding. Brief: `plan/phases/phase_105_engine_stat_preview_and_resources.md`. Verification: focused level-up/combat presenter tests + `npm run verify`.
 

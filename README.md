@@ -106,11 +106,11 @@ app/                       expo-router routes
   index.tsx                redirects to /exploration
   (tabs)/                  five-tab shell
     _layout.tsx            tab bar config
-    combat.tsx             combat screen (placeholder UI)
-    character.tsx          character sheet (placeholder UI)
-    exploration.tsx        map / node graph (placeholder UI)
-    inventory.tsx          inventory screen (placeholder UI)
-    event.tsx              event / boss encounter (placeholder UI)
+    combat.tsx             combat screen (fully implemented per spec 04)
+    character.tsx          character sheet (fully implemented per spec 05)
+    exploration.tsx        map / node graph (fully implemented per spec 07)
+    inventory.tsx          inventory screen (fully implemented per spec 06)
+    event.tsx              event / boss encounter (fully implemented per spec 08)
 components/                reusable presentational components
   StanceGlyph.tsx          heart / body / mind glyphs (SVG placeholders)
   EffectGlyph.tsx          buff / debuff glyphs

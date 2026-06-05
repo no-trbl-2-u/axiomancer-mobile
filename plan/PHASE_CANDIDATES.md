@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-05 at commit aea9a94
-> Pass count: 56
+> Last pass: 2026-06-05 at commit 6fdc389
+> Pass count: 57
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 

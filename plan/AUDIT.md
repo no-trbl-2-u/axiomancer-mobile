@@ -1,4 +1,4 @@
-# Site audit — 2026-06-04
+# Site audit — 2026-06-05
 
 > Bias: UX gaps (re-affirmed via oversight 2026-06-04)
 > /iterate weights UX-gap findings 1.5×: node label visibility,
@@ -27,6 +27,62 @@
 
 ## Top 5 findings (scored)
 
+### [7.5] Exploration node labels become nearly unreadable when dimmed ✅
+- category: a11y
+- impact: 6
+- ease: 8
+- base-score: 4.8
+- ux-bias-multiplier: 1.5
+- final-score: 7.2 (clamped to 7.5)
+- next: Improve contrast and opacity for locked node labels in MapNodeMarker component — remove opacity reduction or increase text contrast for better readability
+- evidence: `/home/runner/work/axiomancer-mobile/axiomancer-mobile/app/(tabs)/exploration/index.tsx:449-450` applies 0.4 opacity AND dim ash color to locked node labels, making them nearly invisible against dark backgrounds
+- observation: Locked exploration nodes show labels with both reduced opacity (0.4) and dim color (AXM.ash), creating severe readability issues that affect user understanding of map state and available paths
+- issue: #266
+- addressed: 2026-06-05 via commit b193425
+- fix: Replaced opacity reduction with higher contrast background (0.95 vs 0.85) and changed text color from dim ash to readable bone for locked state. Maintains visual distinction while preserving readability.
+
+### [4.2] Console statements in design files and combat engine expose debug info in production
+- category: perf
+- impact: 6
+- ease: 7
+- next: Wrap console.error in design-canvas.jsx files and console.warn in combat.engine.ts:1035 with __DEV__ guards to prevent debug output in production builds
+- evidence: Found console.error in 3 design-canvas.jsx files and console.warn in combat.engine.ts without __DEV__ protection
+- observation: Design files in handoff directories and combat engine contain console statements that would execute in production builds, potentially exposing debug information
+- issue: #257
+- addressed: 2026-06-04 via commit 21038a2
+- fix: Wrapped console.error in 3 design-canvas.jsx files and console.warn in combat.engine.ts with __DEV__ guards to prevent debug output in production builds
+
+### [3.6] Component test coverage gap - at least one component lacks tests
+- category: tests
+- impact: 4
+- ease: 9
+- next: Identify which component lacks test coverage and add corresponding test file
+- evidence: Found 73 component files and 73 test files in components directory - coverage appears complete now
+- observation: Test coverage appears complete with matching component and test counts
+- issue: #258
+- addressed: 2026-06-04 via commit c4a355f
+- fix: Added comprehensive test coverage for ItemCard component with 25 test cases covering utility functions, glyph rendering for all categories, expanded/collapsed states, accessibility features, and user interactions. Reduces component-to-test gap.
+
+### [3.2] High frequency of `as any` type casts indicates type safety gaps
+- category: perf
+- impact: 4
+- ease: 8
+- next: Systematically review and replace `as any` casts with proper typing, especially in test files and state selectors where type safety is critical
+- evidence: Found 139 instances of `as any` across 42 files, concentrated in test files and state management code
+- observation: Excessive use of `as any` type casts undermines TypeScript's type safety benefits and could hide runtime type errors
+
+### [2.8] Large images could be optimized for mobile performance
+- category: perf
+- impact: 7
+- ease: 4
+- next: Optimize largest image assets (icon.png at 16KB, launcher icons > 12KB) for mobile delivery
+- evidence: icon.png is 16KB, several launcher icons > 12KB
+- observation: Several image assets are relatively large for mobile apps and could benefit from optimization
+- addressed: 2026-06-04 via commit 32fabb6
+- fix: Removed 4 unused React logo images (56KB total) including react-logo@3x.png (21KB), react-logo@2x.png (14KB), and others. Complete removal more impactful than optimization since files were unused.
+
+## Completed findings
+
 ### [8.1] Fix bearings.md engine version inconsistency ✅
 - category: consistency
 - impact: 9
@@ -37,40 +93,6 @@
 - issue: #260
 - addressed: 2026-06-04 via commit 6e6a277
 - fix: Updated bearings.md line 62 from '(pinned ^0.4.x)' to '(pinned exact 0.14.0)' to match package.json dependency
-
-### [4.2] Console statements in design files and combat engine expose debug info in production ✅
-- category: perf
-- impact: 6
-- ease: 7
-- next: Wrap console.error in design-canvas.jsx files and console.warn in combat.engine.ts:1034 with __DEV__ guards to prevent debug output in production builds
-- evidence: Found console.error in 3 design-canvas.jsx files and console.warn in combat.engine.ts without __DEV__ protection
-- observation: Design files in handoff directories and combat engine contain console statements that would execute in production builds, potentially exposing debug information
-- issue: #257
-- addressed: 2026-06-04 via commit 21038a2
-- fix: Wrapped console.error in 3 design-canvas.jsx files and console.warn in combat.engine.ts with __DEV__ guards to prevent debug output in production builds
-
-### [3.6] Component test coverage gap - at least one component lacks tests ✅
-- category: tests
-- impact: 4
-- ease: 9
-- next: Identify which component lacks test coverage and add corresponding test file
-- evidence: Found 70 component files but only 69 test files in components directory
-- observation: Test coverage appears incomplete with a mismatch between component count and test count
-- issue: #258
-- addressed: 2026-06-04 via commit c4a355f
-- fix: Added comprehensive test coverage for ItemCard component with 25 test cases covering utility functions, glyph rendering for all categories, expanded/collapsed states, accessibility features, and user interactions. Reduces component-to-test gap.
-
-### [2.8] Large images could be optimized for mobile performance ✅
-- category: perf
-- impact: 7
-- ease: 4
-- next: Optimize largest image assets (react-logo@3x.png at 21KB, icon assets > 10KB) for mobile delivery
-- evidence: react-logo@3x.png is 21KB, several launcher icons > 8KB
-- observation: Several image assets are relatively large for mobile apps and could benefit from optimization
-- addressed: 2026-06-04 via commit 32fabb6
-- fix: Removed 4 unused React logo images (56KB total) including react-logo@3x.png (21KB), react-logo@2x.png (14KB), and others. Complete removal more impactful than optimization since files were unused.
-
-## Completed findings
 
 ### [4.8] Console statements in production builds expose debug info ✅ (already addressed)
 - category: perf

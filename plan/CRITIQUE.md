@@ -258,7 +258,7 @@
   level-up`.
 - source: user
 
-### [MED] /exploration — Only show node labels for unvisited, available nodes
+### [MED] /exploration — Only show node labels for unvisited, available nodes ✅
 - pass: user-jot (commit `3c9c534`)
 - viewport: unspecified
 - auth_state: anonymous
@@ -267,6 +267,9 @@
 - evidence: user-spotted at 2026-05-25
 - suggested_fix: [user has not specified — iterate to determine]
 - source: user
+- issue: #267
+- addressed: 2026-06-05 via commit `2085246` (Phase 107)
+- fix: Implemented map node label display optimization. Only shows labels for unvisited available nodes that are currently shown as options (first 4 choices). Added shouldShowLabel prop to MapNodeMarker component based on vm.options filtering.
 
 ### [HIGH] /combat — Combat UX unintuitive, numbers and icons lack meaning, needs design overhaul ✅
 - pass: user-jot (commit `dde93f4`)

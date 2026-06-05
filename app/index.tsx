@@ -17,5 +17,5 @@ export default function Index() {
     );
   }
 
-  return <Redirect href={`/${activeTab}` as any} />;
+  return <Redirect href={`/${activeTab}`} />;
 }

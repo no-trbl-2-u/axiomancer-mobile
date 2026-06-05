@@ -8,6 +8,20 @@
 
 ## Top 5 findings (scored)
 
+### [8.0] Navigation route type bypass in app/index.tsx undermines router safety ✅
+- category: perf
+- impact: 6
+- ease: 9
+- base-score: 5.4
+- ux-bias-multiplier: 1.5
+- final-score: 8.1 (clamped to 8.0)
+- next: Remove `as any` cast from `<Redirect href={\`/${activeTab}\` as any} />` and ensure proper typing with expo-router route types
+- evidence: Line 20 in app/index.tsx casts route string to `any`, bypassing TypeScript route validation
+- observation: Main navigation redirect uses `as any` to bypass expo-router's type checking, potentially masking route typos and reducing type safety in core navigation path
+- issue: #273
+- addressed: 2026-06-05 via commit 9366b9f
+- fix: Removed unnecessary `as any` cast from main navigation redirect. Expo-router types now properly handle dynamic route strings, making the type bypass unnecessary while improving type safety in core navigation path.
+
 ### [3.6] React Suspense act() warnings in DebugComponentsLazy test ✅
 - category: tests
 - impact: 4

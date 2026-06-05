@@ -63,7 +63,7 @@ commit that ships the phase.
 - [x] Phase 107 — Map node label display optimization. Promoted via oversight 2026-06-05 from phase candidates. Show exploration node labels only for unvisited nodes that are currently available choices; preserve accessibility and verify with focused exploration tests. Brief: `plan/phases/phase_107_map_node_label_display_optimization.md`. Shipped in commit 2085246.
 - [x] Phase 108 — Combat engine TODO drain. Promoted via oversight 2026-06-05 from phase candidates. Resolve or formalize the three combat/mercy engine-integration TODOs in actions and presenters without reintroducing local mechanics simulation. Brief: `plan/phases/phase_108_combat_engine_todo_drain.md`. Shipped in commit 13ba71d.
 - [x] Phase 109 — Stance card layout shrink-to-fit. Promoted via oversight 2026-06-05 from phase candidates. Fix combat modal stance-card clipping/truncation found by deep playtest F07 while preserving readability and touch targets. Brief: `plan/phases/phase_109_stance_card_layout_shrink_to_fit.md`. Shipped in commit 5728502.
-- [ ] Phase 110 — Stale paused phases resolution. Promoted via oversight 2026-06-05 from phase candidates. Decide and record current disposition for paused phases 62d/62e so build-plan state no longer carries stale ambiguity. Brief: `plan/phases/phase_110_stale_paused_phases_resolution.md`.
+- [ ] Phase 110 — Stale paused phases resolution. Promoted via oversight 2026-06-05 from phase candidates. Clean up stale references to paused phases in build-plan documentation since phases 62d/62e were formally resolved via oversight 2026-06-04. Brief: `plan/phases/phase_110_stale_paused_phases_resolution.md`.
 - [ ] Phase 111 — EncounterModalOverlay component extraction. Promoted via oversight 2026-06-05 from phase candidates. Extract subcomponents/helpers from the large overlay component while preserving current behavior, accessibility, and modal tests. Brief: `plan/phases/phase_111_encounter_modal_overlay_extraction.md`.
 
 - [x] Phase 1 — Adopt nexus methodology. Shipped in commit
@@ -1149,8 +1149,8 @@ DevMenu (Phase 61a wrapper); none change production surfaces.
 
 - [x] Phase 62 — DEV-mode follow-up affordances. Closed via
       `/oversight` 2026-05-25 (41st call). Sub-phases 62a–62c
-      shipped; 62d–62e paused indefinitely (user re-prioritized
-      Phase 63+). Parent closes.
+      shipped; 62d–62e resolved via oversight 2026-06-04 as skipped
+      (functionality delivered by Phase 87). Parent closes.
 - [x] Phase 62a — Dialogue tree jump. Shipped `b5f681e` —
       `feat(spec62a): dev-menu dialogue tree jump`. New
       `<DebugDialogueJump>` row with two static trees (OMEN /
@@ -1174,11 +1174,10 @@ DevMenu (Phase 61a wrapper); none change production surfaces.
       `state.combat.friendshipCounter`. Combat-only; warns +
       no-ops outside combat. +8 hermetic tests; 896/896 green
       (was 888).
-> **Priority note (oversight 2026-05-21, 23rd call):** Phases 62d
-> and 62e are now **paused indefinitely**. The user re-prioritized
-> the [9.8] modal-contained-encounter refactor (Phase 63) over
-> any further Phase 62 dev affordances. `/march` will skip 62d/e
-> until they are explicitly un-paused via `/oversight`.
+> **Resolution note (oversight 2026-06-04):** Phases 62d and 62e
+> were formally skipped as their functionality was delivered by
+> Phase 87's debug control implementations. The [9.8] modal-contained-encounter
+> refactor (Phase 63) proceeded as prioritized.
 
 - [skipped via oversight 2026-06-04 — drained by Phase 87] Phase 62d — Currency
       grant. Phase 87 (`cffbc9b`) shipped `<DebugCurrencyControl>` (50/500S grants
@@ -1273,8 +1272,7 @@ that row gets revisited via `/iterate` once Phase 63 lands.
       **Out-of-scope for Phase 63** (re-file if needed):
       combat-mechanics bug investigation (AUDIT [9.8] row stays
       open; revisit via `/iterate` once user confirms 63 works
-      end-to-end on a fresh preview); DEV-menu additions
-      (62d/e stay paused). The legacy `selectVisibleTabs` /
+      end-to-end on a fresh preview). The legacy `selectVisibleTabs` /
       `isTabHidden` functions stay in `tabs.engine.ts` with
       their existing tests — dead code now; a future iterate
       can prune.

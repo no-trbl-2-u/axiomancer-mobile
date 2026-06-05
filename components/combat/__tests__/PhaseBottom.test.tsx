@@ -164,6 +164,128 @@ const mockProps = {
     onLeave: jest.fn(),
 };
 
+describe('PhaseBottom: Phase 109 stance card layout shrink-to-fit', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('renders stance cards without clipping when all three cards are present', () => {
+        const stanceOptions = [
+            { 
+                key: 'heart' as const,
+                label: 'HEART',
+                gloss: 'Fire of the will. Charm and fervour.',
+                counters: 'BODY',
+                weakTo: 'MIND',
+                advantage: 'neutral' as const,
+                derived: { attack: 11, skill: 9, defense: 6 }
+            },
+            {
+                key: 'body' as const,
+                label: 'BODY',
+                gloss: 'Meat & marrow. Bones that endure.',
+                counters: 'MIND',
+                weakTo: 'HEART',
+                advantage: 'neutral' as const,
+                derived: { attack: 13, skill: 7, defense: 10 }
+            },
+            {
+                key: 'mind' as const,
+                label: 'MIND',
+                gloss: 'Cold reason. Patient cruelty.',
+                counters: 'HEART',
+                weakTo: 'BODY',
+                advantage: 'neutral' as const,
+                derived: { attack: 8, skill: 14, defense: 8 }
+            }
+        ];
+
+        const vmWithStancePhase: CombatViewModel = {
+            ...createMockCombatVM([]),
+            phase: 'choosing_stance',
+            phaseIndex: 0,
+            phaseStack: [
+                {
+                    key: 'choosing_stance',
+                    state: 'current',
+                    visible: true,
+                    label: 'I · STAND',
+                    summary: '',
+                }
+            ],
+            stancePicker: {
+                options: stanceOptions,
+                selected: null,
+                canConfirm: false,
+            }
+        };
+
+        const { tree } = withAllProviders(
+            <PhaseBottom vm={vmWithStancePhase} {...mockProps} />
+        );
+
+        const rendered = render(tree);
+        
+        // All three stance cards should be rendered
+        expect(rendered.getByText('HEART')).toBeTruthy();
+        expect(rendered.getByText('BODY')).toBeTruthy();
+        expect(rendered.getByText('MIND')).toBeTruthy();
+        
+        // Mind card should contain its relationship text without truncation
+        expect(rendered.getByText('Cold reason. Patient cruelty.')).toBeTruthy();
+        expect(rendered.getByText('HEART', { exact: false })).toBeTruthy(); // In "BEATS HEART"
+        expect(rendered.getByText('BODY', { exact: false })).toBeTruthy(); // In "WEAK BODY"
+    });
+
+    it('applies compact styling to stance cards for better fit', () => {
+        const stanceOptions = [
+            { 
+                key: 'mind' as const,
+                label: 'MIND',
+                gloss: 'Cold reason. Patient cruelty.',
+                counters: 'HEART',
+                weakTo: 'BODY',
+                advantage: 'neutral' as const,
+                derived: { attack: 8, skill: 14, defense: 8 }
+            }
+        ];
+
+        const vmWithStancePhase: CombatViewModel = {
+            ...createMockCombatVM([]),
+            phase: 'choosing_stance',
+            phaseIndex: 0,
+            phaseStack: [
+                {
+                    key: 'choosing_stance',
+                    state: 'current',
+                    visible: true,
+                    label: 'I · STAND',
+                    summary: '',
+                }
+            ],
+            stancePicker: {
+                options: stanceOptions,
+                selected: null,
+                canConfirm: false,
+            }
+        };
+
+        const { tree } = withAllProviders(
+            <PhaseBottom vm={vmWithStancePhase} {...mockProps} />
+        );
+
+        const rendered = render(tree);
+        
+        // Mind stance card should render with proper text limiting
+        const mindStanceText = rendered.getByText('MIND');
+        expect(mindStanceText.props.numberOfLines).toBe(1);
+        expect(mindStanceText.props.adjustsFontSizeToFit).toBe(true);
+        
+        const glossText = rendered.getByText('Cold reason. Patient cruelty.');
+        expect(glossText.props.numberOfLines).toBe(2);
+    });
+});
+
 describe('PhaseBottom: Phase 95 disabled ITEM tooltip', () => {
     beforeEach(() => {
         jest.clearAllMocks();

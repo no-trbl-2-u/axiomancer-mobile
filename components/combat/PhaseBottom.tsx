@@ -231,8 +231,8 @@ function StanceCard({
                             <View style={stance_styles.glyphWrap} pointerEvents="none">
                                 <StanceGlyph kind={opt.key} size={36} color={accent} />
                             </View>
-                            <Text style={[stance_styles.stanceName, { color: accent }]}>{opt.label}</Text>
-                            <Text style={stance_styles.stanceGloss}>{opt.gloss}</Text>
+                            <Text style={[stance_styles.stanceName, { color: accent }]} numberOfLines={1} adjustsFontSizeToFit>{opt.label}</Text>
+                            <Text style={stance_styles.stanceGloss} numberOfLines={2}>{opt.gloss}</Text>
                             <View style={stance_styles.triangleMeta}>
                                 <View style={stance_styles.metaLine}>
                                     <Text style={stance_styles.metaVerb}>BEATS</Text>
@@ -591,22 +591,22 @@ const stack_styles = StyleSheet.create({
 });
 
 const stance_styles = StyleSheet.create({
-    row: { flexDirection: 'row', gap: 6, justifyContent: 'space-evenly' },
-    cardTouch: { flex: 1 },
-    card: { borderWidth: 2, padding: 8, paddingHorizontal: 6, minHeight: 178 },
+    row: { flexDirection: 'row', gap: 4, justifyContent: 'space-evenly' },
+    cardTouch: { flex: 1, minWidth: 0 },
+    card: { borderWidth: 2, padding: 6, paddingHorizontal: 4, minHeight: 158, maxWidth: '100%' },
     advBadge: { position: 'absolute', top: 4, right: 4, borderWidth: 1, paddingHorizontal: 3, paddingVertical: 1, backgroundColor: AXM.bg, zIndex: 1 },
     advText: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1 },
-    glyphWrap: { alignItems: 'center', marginTop: 4, marginBottom: 2 },
-    stanceName: { textAlign: 'center', fontFamily: FONTS.gothic, fontSize: 17, letterSpacing: 1 },
+    glyphWrap: { alignItems: 'center', marginTop: 3, marginBottom: 2 },
+    stanceName: { textAlign: 'center', fontFamily: FONTS.gothic, fontSize: 16, letterSpacing: 0.8 },
     stanceGloss: { textAlign: 'center', fontFamily: FONTS.serifItalic, fontSize: 9, color: AXM.bone, marginTop: -2, marginBottom: 2 },
-    triangleMeta: { alignItems: 'center', marginTop: 5, marginBottom: 4, gap: 1 },
-    metaLine: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-    metaVerb: { fontFamily: FONTS.mono, fontSize: 7, color: AXM.bone, letterSpacing: 1 },
-    metaTarget: { fontFamily: FONTS.mono, fontSize: 8, letterSpacing: 1 },
-    divider: { borderTopWidth: 1, borderTopColor: AXM.ash, marginBottom: 4 },
+    triangleMeta: { alignItems: 'center', marginTop: 4, marginBottom: 3, gap: 1 },
+    metaLine: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+    metaVerb: { fontFamily: FONTS.mono, fontSize: 6.5, color: AXM.bone, letterSpacing: 0.8 },
+    metaTarget: { fontFamily: FONTS.mono, fontSize: 7.5, letterSpacing: 0.8 },
+    divider: { borderTopWidth: 1, borderTopColor: AXM.ash, marginBottom: 3 },
     statRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-    statKey: { fontFamily: FONTS.mono, fontSize: 8.5, color: AXM.bone, letterSpacing: 1 },
-    statVal: { fontFamily: FONTS.gothic, fontSize: 13 },
+    statKey: { fontFamily: FONTS.mono, fontSize: 8, color: AXM.bone, letterSpacing: 1 },
+    statVal: { fontFamily: FONTS.gothic, fontSize: 12 },
 });
 
 const action_styles = StyleSheet.create({

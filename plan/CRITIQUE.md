@@ -365,14 +365,6 @@
 - addressed: 2026-05-27 via Phase 92 implementation
 - fix: Added narrative feedback after fleeing encounters via toast message "you fled the encounter. the path bends away.\n\nmorale -2" in actions.ts lines 1392-1393. Exposed morale value on SELF tab via character presenter moralMeter mapping (line 358) displayed as "willpower" value. Both parts of the F03 finding are now resolved with test coverage in flee-action.engine.test.ts.
 
-### [MED] /death — Death screen LEDGER shows wrong encounter count + internal node ID
-- pass: deep-playtest (2026-05-25, commit d560e8c)
-- viewport: mobile (414x896)
-- auth_state: anonymous
-- category: observation
-- observation: LEDGER shows "encounters survived: i" despite dying in the encounter (should be 0). Also shows "deepest node: fv-14" instead of human-readable "Tide Pool."
-- suggested_fix: Fix encounter counter logic + resolve node ID to name via map layout lookup. Phase candidate filed.
-- source: deep-playtest [F09, F10]
 
 ### [LOW] /exploration — Sealed map nodes give no tap feedback
 - pass: deep-playtest (2026-05-25, commit d560e8c)
@@ -420,6 +412,17 @@
 - source: browser
 
 ## Done
+
+### [MED] /death — Death screen LEDGER shows wrong encounter count + internal node ID ✅
+- pass: deep-playtest (2026-05-25, commit d560e8c)
+- viewport: mobile (414x896)
+- auth_state: anonymous
+- category: observation
+- observation: LEDGER shows "encounters survived: i" despite dying in the encounter (should be 0). Also shows "deepest node: fv-14" instead of human-readable "Tide Pool."
+- suggested_fix: Fix encounter counter logic + resolve node ID to name via map layout lookup. Phase candidate filed.
+- source: deep-playtest [F09, F10]
+- addressed: 2026-06-05 via commit 293f171
+- fix: Fixed encounters survived calculation by subtracting 1 from encountersFaced when player died (aftermath.engine.ts:227) and added resolveNodeIdToHumanName function (lines 160-171) to resolve node IDs like "fv-14" to human-readable names like "Tide Pool" via map layout lookup. Both F09 and F10 playtest findings resolved.
 
 ### [MED] general — update mechanics engine to version 0.13.0 ✅
 - pass: user-jot (commit `2673c5e`)

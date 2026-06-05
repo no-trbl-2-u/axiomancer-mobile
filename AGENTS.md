@@ -94,9 +94,10 @@ fonts, no real timers, no animations) + deterministic
 2. If section 4 of the spec has unanswered questions, **answer the
    questions** before writing code. Answers are a deliverable; the spec
    is the source of truth.
-3. Once answered, work through the spec's "Proposed approach" as
-   discrete commits directly on `main`. Do not create a feature branch
-   unless T explicitly asks for branch-based work.
-4. Tick the spec's acceptance checklist as you go; mark it
-   `[DONE on YYYY-MM-DD]` at the top when finished unless T explicitly
-   asks for a PR.
+3. Once answered, fetch `origin`, require a clean `main`, fast-forward
+   from `origin/main`, then create a fresh task branch for the work.
+   Do not begin new implementation work from a dirty `main`.
+4. Work through the spec's "Proposed approach" as discrete commits on
+   that task branch. Tick the spec's acceptance checklist as you go;
+   mark it `[DONE on YYYY-MM-DD]` at the top when finished unless T
+   explicitly asks for a PR or direct mainline edit.

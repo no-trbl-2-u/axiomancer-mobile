@@ -27,6 +27,20 @@
 
 ## Top 5 findings (scored)
 
+### [9.0] Death screen LEDGER shows wrong encounter count + internal node ID ✅
+- category: external-critique
+- impact: 6
+- ease: 10
+- base-score: 6.0
+- ux-bias-multiplier: 1.5
+- final-score: 9.0
+- next: Fix encounter counter logic in death screen presenter + resolve node ID to human-readable name via map layout lookup
+- evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/state/presenters/aftermath.engine.ts:227-229 - encountersFaced calculation and resolveNodeIdToHumanName function
+- observation: Critical UX issue where death screen shows incorrect/confusing information - "encounters survived: i" despite dying + "deepest node: fv-14" instead of "Tide Pool"
+- issue: #269
+- addressed: 2026-06-05 via commit 62ab96d
+- fix: Fixed encounters survived calculation by subtracting 1 from encountersFaced when player died (line 227) and added resolveNodeIdToHumanName function (lines 160-171) to resolve node IDs like "fv-14" to human-readable names like "Tide Pool" via map layout lookup
+
 ### [7.5] Exploration node labels become nearly unreadable when dimmed ✅
 - category: a11y
 - impact: 6

@@ -7,6 +7,22 @@
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
 > for the contract.
 >
+> **Next-pass directive (set via /oversight 2026-06-05).** The
+> internal generators have gone dry — build-plan queue is empty (0
+> pending phases), phase candidates are empty (expand passes 55+56
+> found nothing), and the audit is down to 3 low findings. With no
+> autonomous shipping work queued, the next `/march` tick should
+> fire `/critique` pass 22 unconditionally for fresh external-
+> observer signal (subject to critique's own §6 "no green deploy"
+> self-defer; EAS builds are user-triggered so the deploy gate may
+> stay structurally closed — if so, run the repo-proxy pass per
+> bearings.md). Pass 22 MUST also re-verify two findings that this
+> oversight marked resolved-but-unverified: (1) `/self` stat-
+> allocation cross-effects reflected in *committed* character stats
+> after a real level-up (shipped Phase 105), and (2) `/combat`
+> disabled ITEM button shows a readable tap explanation (shipped
+> Phase 95). If either fails in-app, file a fresh finding.
+>
 > **Critique directive cleared 2026-05-18:** the 2nd /oversight
 > call's "fire pass 14 unconditionally next tick" directive
 > never fired because the loop stopped being idle — user shipped
@@ -62,30 +78,6 @@
      README test-promise ✅, README arch diagram → bumped the
      existing pass-17 row). 4 new findings filed below. -->
 
-### [HIGH] /docs/testing.md — Testing standard references non-existent test files ✅
-- pass: 21 (commit add8801)
-- viewport: repository
-- category: documentation
-- observation: Testing standard states 'Spec 01 — Test Harness Setup has shipped' but provides stale reference pointers to files that may not exist
-- evidence: Lines 133-139 reference 'state/e2e/combat-hud.engine.test.ts' and 'state/e2e/combat.engine.test.ts' as canonical reference examples without verifying existence
-- suggested fix: Verify reference test file paths exist and update documentation to point to actual shipped test files
-- source: repo-proxy
-- issue: #270
-- addressed: 2026-06-05 via verification audit
-- fix: Verified that both referenced test files exist as documented - state/e2e/combat-hud.engine.test.ts and state/e2e/combat.engine.test.ts are present in the repository. The documentation references are accurate.
-
-### [HIGH] /SVG_ASSET_SPEC.md — Asset specification references non-existent components ✅
-- pass: 21 (commit add8801)
-- viewport: repository
-- category: documentation
-- observation: Asset specification references files and components that may not exist, creating broken implementation guidance
-- evidence: Lines 28-29 reference 'components/StanceGlyph.tsx' exports 'GlyphHeart', 'GlyphBody', 'GlyphMind' without verification these components exist as described
-- suggested fix: Verify all file paths and component exports in asset spec match actual codebase structure
-- source: repo-proxy
-- issue: #270
-- addressed: 2026-06-05 via verification audit
-- fix: Verified that components/StanceGlyph.tsx exists and exports exactly the components listed in the specification: GlyphHeart, GlyphBody, GlyphMind, and StanceGlyph. The asset specification is accurate.
-
 ### [MED] /README.md — Project status description inconsistent with current implementation
 - pass: 21 (commit add8801)
 - viewport: repository
@@ -122,6 +114,172 @@
 - suggested fix: Add visual separators or priority indicators for pending vs. completed specs in the recommended order table
 - source: repo-proxy
 
+### [MED] /combat — Difficulty too hard; enemies scale with the player, no progression order `[needs-engine-release]`
+- pass: user-jot (commit ff2b8ae)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: The game's difficulty is WAY too hard, and the mechanics have no order. Start at level 1 with 5 in each stat; even using the Dev Menu to level up manually, enemies just level up with the user. User likes the difficulty scaling in principle but it's rough — needs a real start-to-endgame progression curve, not flat rubber-banding.
+- evidence: user-spotted at 2026-05-30T13:57:17Z (manual playtest)
+- suggested_fix: [user has not specified — iterate to determine] likely an engine-side difficulty/scaling concern (enemy level derivation); mobile may only surface it. Needs a balance pass and probably a design/spec decision before code.
+- source: user
+- engine-gated: tagged `[needs-engine-release]` via /oversight 2026-06-02 (52nd call). Enemy level derivation / progression curve lives in `axiomancer-mechanics`; the mobile repo only surfaces it and cannot fix the balance here. Row stays OPEN so the next /oversight re-surfaces it for an engine-side decision.
+
+### [LOW] /plan/bearings.md — Stack table pins engine `^0.4.x` while the rest of the file + package.json pin exact `0.11.0`
+- pass: 18 (commit fd525e3)
+- viewport: n/a (repo-proxy)
+- auth_state: anonymous
+- category: consistency
+- observation: The "Stack (locked — do not re-litigate)" table pins the engine at `^0.4.x`, but the External-services row (line 79) and package.json both pin it exact at `0.11.0`. A stale cell inside the table that's explicitly labelled "locked — do not re-litigate" undercuts trust in the table.
+- evidence: plan/bearings.md:62 "Engine | `axiomancer-mechanics` npm package (pinned ^0.4.x)" vs :79 "Pinned **exact** (e.g. `0.11.0`)" and package.json "axiomancer-mechanics": "0.11.0".
+- suggested fix: Update the Stack-table cell to the exact current pin (`0.11.0`) so it agrees with line 79 and the lockfile.
+- source: file-read (repo-proxy)
+
+### [MED] /specs/README.md — Spec dependency chain creates false work-ready impression
+- pass: 17 (commit c7a1c9c)
+- viewport: desktop
+- category: comprehension
+- observation: Specs 02-12 listed as available but line 66 states 'Spec 01 is a hard prerequisite' creating false impression work can begin
+- evidence: Specs table suggests readiness but dependency blocks everything until test harness exists
+- suggested fix: Mark specs 02-12 with [BLOCKED BY SPEC 01] prefix until test harness exists
+- source: browser
+
+### [MED] /docs/testing.md — Critical testing documentation references nonexistent files
+- pass: 17 (commit c7a1c9c)
+- viewport: desktop
+- category: navigation
+- observation: Lines 133-138 reference state/e2e/combat-hud.engine.test.ts and state/e2e/combat.engine.test.ts as canonical examples but files don't exist yet
+- evidence: References to future test files break documentation flow for maintainers trying to understand patterns
+- suggested fix: Replace references to future test files with placeholder text or axiomancer-mechanics examples until Spec 01 ships
+- source: browser
+
+### [MED] general — Voice guidance scattered across multiple files without hierarchy
+- pass: 17 (commit c7a1c9c)
+- viewport: desktop
+- category: voice
+- observation: Voice guidance appears in plan/bearings.md and theme/axm.ts with different detail levels and no cross-references
+- evidence: Multiple sources of voice guidance with no clear canonical source
+- suggested fix: Consolidate voice guidance in single source file and reference from others with 'See [file] for full voice guidelines'
+- source: browser
+
+### [MED] /README.md — Architecture diagram + layout drifted behind the code (presenters moved, screens wired)
+- pass: 17 (commit c7a1c9c); severity bumped + reframed pass 18 (commit fd525e3)
+- viewport: desktop
+- category: drift
+- observation: The drift has inverted since pass 17. The diagram/layout now lags BEHIND the code, not ahead of it. README:135 places presenters at `app/<route>/*.engine.ts`, but they actually live in `state/presenters/*.engine.ts` (20 engines) — a maintainer who greps `app/(tabs)/combat.engine.ts` finds nothing. README:103-107 still labels every screen `(placeholder UI)`, but the screens shipped long ago, and the layout omits the Memoir tab entirely.
+- evidence: README.md:135 "Presenters | app/<route>/*.engine.ts" vs `state/presenters/*.engine.ts`; README.md:103-107 "(placeholder UI)" ×5; Memoir tab absent from the layout block though `app/(tabs)/memoir/` ships.
+- suggested fix: Redraw the layout/diagram to point presenters at `state/presenters/`, drop the `(placeholder UI)` labels, and add the Memoir tab.
+- source: file-read (repo-proxy)
+
+### [LOW] /exploration — Sealed map nodes give no tap feedback
+- pass: deep-playtest (2026-05-25, commit d560e8c)
+- viewport: mobile (414x896)
+- auth_state: anonymous
+- category: observation
+- observation: Sealed nodes rendered as tappable buttons (cursor:pointer) but produce no visual response on tap. No tooltip, no message.
+- suggested_fix: Tap shows "path sealed" toast. Phase candidate filed.
+- source: deep-playtest [F11]
+
+### [MED] /README.md — License section incomplete, creates uncertainty for fresh maintainer
+- pass: 19 (commit 18c3371)
+- viewport: desktop
+- auth_state: anonymous
+- category: comprehension
+- observation: README contains incomplete License section stating 'TBD. Ask the project maintainer' which creates uncertainty about usage rights for fresh maintainers examining the repository
+- evidence: Line 263 in README.md showing placeholder license text
+- suggested_fix: Specify actual license or provide clear guidance on where to find licensing information
+- source: browser
+### [MED] /specs/00-how-to-use-specs.md — References missing GAME-ROADMAP.md file
+- pass: 19 (commit 18c3371)
+- viewport: desktop
+- auth_state: anonymous
+- category: navigation
+- observation: Document instructs users to 'Update GAME-ROADMAP.md first' for capturing big ideas, but this file does not exist in repository structure
+- evidence: Line 35 references non-existent GAME-ROADMAP.md file
+- suggested_fix: Create missing GAME-ROADMAP.md file or update reference to point to existing roadmap documentation
+- source: browser
+### [LOW] /agents.md — Dead link to asset swap documentation
+- pass: 19 (commit 18c3371)
+- viewport: desktop
+- auth_state: anonymous
+- category: navigation
+- observation: File references .cursor/skills/swap-asset-placeholder/SKILL.md workflow but this path does not exist in current repository structure
+- evidence: Line 100 contains reference to non-existent .cursor/skills/ path
+- suggested_fix: Update reference to point to correct asset swap documentation or remove outdated reference
+- source: browser
+
+## Done
+
+### [MED] /self — Stat allocation cross-effects not reflected in actual character stats ✅
+- pass: user-jot (commit `b12f1e9`)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: The stat allocation says when I level up a given stat, it effects the other ones (ie. adding mind effects heart). I like that idea, however, it is not reflected in the characters actual stats. This one needs my final call, but it's something we need to talk about.
+- evidence: user-spotted at 2026-05-25
+- resolution: User call made via /oversight 2026-05-26 (42nd call).
+  Decision: **keep cross-effects**, but engine-authoritative.
+  Three actions: (1) engine issue filed requesting
+  `previewStatAllocation` API, (2) mobile's local approximation
+  (`lib/previewAllocation.ts` + `DerivedPreviewRibbon`) to be
+  removed so players don't see inaccurate coefficients,
+  (3) phase candidate filed for re-wiring when engine ships.
+  See PHASE_CANDIDATES.md `[score 5.0] Cross-stat effects on
+  level-up`.
+- source: user
+- addressed: 2026-06-05 via Phase 105 (commit 9ec768a — "Engine-owned
+  stat preview + combat resources"). The candidate this row spawned was
+  promoted as Phase 105 and shipped: mobile now reads the engine
+  `previewStatAllocation` truth and the local `lib/previewAllocation.ts`
+  approximation was removed, so the preview reflects the engine's actual
+  cross-stat formula rather than guessed coefficients. Confirmed/closed
+  via oversight 2026-06-05.
+- re-verify: flagged for /critique pass 22 — confirm in-app that the
+  committed character stats (not just the preview) reflect cross-stat
+  effects after a real level-up allocation.
+
+### [LOW] /combat — ITEM action always disabled with no explanation ✅
+- pass: deep-playtest (2026-05-25, commit d560e8c)
+- viewport: mobile (414x896)
+- auth_state: anonymous
+- category: observation
+- observation: ITEM button ("USE A CONSUMABLE") greyed out even with Healing Potion in inventory. No tooltip or message explaining why.
+- suggested_fix: Tooltip on disabled ITEM button. Phase candidate filed.
+- source: deep-playtest [F12]
+- addressed: shipped as Phase 95 — "Disabled ITEM button tooltip in
+  combat" (see plan/phases/phase_95_disabled_item_button_tooltip.md);
+  playtest finding F12 is marked [x] resolved in
+  plan/PLAYTEST_REPORT.md. Tapping the disabled ITEM action now surfaces
+  a tooltip explaining unavailability. Closed via oversight 2026-06-05.
+- re-verify: flagged for /critique pass 22 — confirm in-app that the
+  disabled ITEM button shows a readable explanation on tap.
+
+> Drained 18 resolved + 1 shipped (/dev→Phase 100) rows from ## Pending via oversight 2026-06-05.
+
+### [HIGH] /docs/testing.md — Testing standard references non-existent test files ✅
+- pass: 21 (commit add8801)
+- viewport: repository
+- category: documentation
+- observation: Testing standard states 'Spec 01 — Test Harness Setup has shipped' but provides stale reference pointers to files that may not exist
+- evidence: Lines 133-139 reference 'state/e2e/combat-hud.engine.test.ts' and 'state/e2e/combat.engine.test.ts' as canonical reference examples without verifying existence
+- suggested fix: Verify reference test file paths exist and update documentation to point to actual shipped test files
+- source: repo-proxy
+- issue: #270
+- addressed: 2026-06-05 via verification audit
+- fix: Verified that both referenced test files exist as documented - state/e2e/combat-hud.engine.test.ts and state/e2e/combat.engine.test.ts are present in the repository. The documentation references are accurate.
+
+### [HIGH] /SVG_ASSET_SPEC.md — Asset specification references non-existent components ✅
+- pass: 21 (commit add8801)
+- viewport: repository
+- category: documentation
+- observation: Asset specification references files and components that may not exist, creating broken implementation guidance
+- evidence: Lines 28-29 reference 'components/StanceGlyph.tsx' exports 'GlyphHeart', 'GlyphBody', 'GlyphMind' without verification these components exist as described
+- suggested fix: Verify all file paths and component exports in asset spec match actual codebase structure
+- source: repo-proxy
+- issue: #270
+- addressed: 2026-06-05 via verification audit
+- fix: Verified that components/StanceGlyph.tsx exists and exports exactly the components listed in the specification: GlyphHeart, GlyphBody, GlyphMind, and StanceGlyph. The asset specification is accurate.
+
 ### [HIGH] /combat — Combat cannot be re-triggered after a victory (only after a loss) ✅
 - pass: user-jot (commit ff2b8ae)
 - viewport: unspecified
@@ -157,18 +315,7 @@
 - source: user
 - addressed: 2026-06-01 via Phase 97(c), commit `8df2971` (drained via /oversight 2026-06-02). Learned skills no longer gated as "not equipped"; in-combat list surfaces currently-usable skills.
 
-### [MED] /combat — Difficulty too hard; enemies scale with the player, no progression order `[needs-engine-release]`
-- pass: user-jot (commit ff2b8ae)
-- viewport: unspecified
-- auth_state: anonymous
-- category: observation
-- observation: The game's difficulty is WAY too hard, and the mechanics have no order. Start at level 1 with 5 in each stat; even using the Dev Menu to level up manually, enemies just level up with the user. User likes the difficulty scaling in principle but it's rough — needs a real start-to-endgame progression curve, not flat rubber-banding.
-- evidence: user-spotted at 2026-05-30T13:57:17Z (manual playtest)
-- suggested_fix: [user has not specified — iterate to determine] likely an engine-side difficulty/scaling concern (enemy level derivation); mobile may only surface it. Needs a balance pass and probably a design/spec decision before code.
-- source: user
-- engine-gated: tagged `[needs-engine-release]` via /oversight 2026-06-02 (52nd call). Enemy level derivation / progression curve lives in `axiomancer-mechanics`; the mobile repo only surfaces it and cannot fix the balance here. Row stays OPEN so the next /oversight re-surfaces it for an engine-side decision.
-
-### [MED] /dev — Add two seeded test playthroughs (level-1-easy + max-level endgame) to Dev Menu [PROMOTED → Phase 100 via /oversight 2026-06-02]
+### [MED] /dev — Add two seeded test playthroughs (level-1-easy + max-level endgame) to Dev Menu [PROMOTED → Phase 100 via /oversight 2026-06-02] ✅
 - pass: user-jot (commit ff2b8ae)
 - viewport: unspecified
 - auth_state: anonymous
@@ -178,6 +325,7 @@
 - suggested_fix: [user has not specified — iterate to determine] add two Dev Menu seed presets ("start seed" and "endgame seed") that initialize the engine state to those two fixtures; pair with the difficulty finding above.
 - source: user
 - promoted: Phase 100 via /oversight 2026-06-02 (52nd call). Mobile Dev-Menu seed-preset harness; pairs with the engine-gated difficulty finding above. See PHASE_CANDIDATES ## Promoted + build-plan Status block.
+- drained: Phase 100 shipped (build plan L1900, marked [x]); moved to Done via oversight 2026-06-05.
 
 ### [HIGH] /plan/bearings.md — Hard rule 10 says verify gate is RED and "the loop CANNOT autonomously commit" — stale, blocks/misleads ✅
 - resolved: 2026-06-01 via /oversight (51st call). Rewrote bearings.md Hard rule 10 to state the verify gate is GREEN and the loop commits autonomously (Phase 2 migration shipped in 527f021; ~96 phases shipped since). Stale RED-gate hold removed.
@@ -213,16 +361,6 @@
 - issue: #255
 - addressed: 2026-06-04 via commit cf94ee7
 - fix: Added missing Memoir tab to core functionality checklist and top banner clarifying this is manual QA checklist vs hermetic test standard. Placeholder contacts were already filled in previous commits.
-
-### [LOW] /plan/bearings.md — Stack table pins engine `^0.4.x` while the rest of the file + package.json pin exact `0.11.0`
-- pass: 18 (commit fd525e3)
-- viewport: n/a (repo-proxy)
-- auth_state: anonymous
-- category: consistency
-- observation: The "Stack (locked — do not re-litigate)" table pins the engine at `^0.4.x`, but the External-services row (line 79) and package.json both pin it exact at `0.11.0`. A stale cell inside the table that's explicitly labelled "locked — do not re-litigate" undercuts trust in the table.
-- evidence: plan/bearings.md:62 "Engine | `axiomancer-mechanics` npm package (pinned ^0.4.x)" vs :79 "Pinned **exact** (e.g. `0.11.0`)" and package.json "axiomancer-mechanics": "0.11.0".
-- suggested fix: Update the Stack-table cell to the exact current pin (`0.11.0`) so it agrees with line 79 and the lockfile.
-- source: file-read (repo-proxy)
 
 ### [HIGH] general — Equipment has no visible effect on character stats ✅
 - pass: user-jot (commit `5e6cd5e`)
@@ -300,24 +438,6 @@
 - addressed: 2026-06-04 via commit 026fc7f
 - fix: Changed stance card row layout from justifyContent 'space-between' to 'space-evenly' to distribute heart/body/mind buttons evenly across modal width instead of pushing them to edges
 
-### [MED] /self — Stat allocation cross-effects not reflected in actual character stats
-- pass: user-jot (commit `b12f1e9`)
-- viewport: unspecified
-- auth_state: anonymous
-- category: observation
-- observation: The stat allocation says when I level up a given stat, it effects the other ones (ie. adding mind effects heart). I like that idea, however, it is not reflected in the characters actual stats. This one needs my final call, but it's something we need to talk about.
-- evidence: user-spotted at 2026-05-25
-- resolution: User call made via /oversight 2026-05-26 (42nd call).
-  Decision: **keep cross-effects**, but engine-authoritative.
-  Three actions: (1) engine issue filed requesting
-  `previewStatAllocation` API, (2) mobile's local approximation
-  (`lib/previewAllocation.ts` + `DerivedPreviewRibbon`) to be
-  removed so players don't see inaccurate coefficients,
-  (3) phase candidate filed for re-wiring when engine ships.
-  See PHASE_CANDIDATES.md `[score 5.0] Cross-stat effects on
-  level-up`.
-- source: user
-
 ### [MED] /exploration — Only show node labels for unvisited, available nodes ✅
 - pass: user-jot (commit `3c9c534`)
 - viewport: unspecified
@@ -367,42 +487,6 @@
 - suggested fix: Add clear disambiguation notice in AGENTS.md header directing to agents.md for current instructions
 - source: browser
 
-### [MED] /specs/README.md — Spec dependency chain creates false work-ready impression
-- pass: 17 (commit c7a1c9c)
-- viewport: desktop
-- category: comprehension
-- observation: Specs 02-12 listed as available but line 66 states 'Spec 01 is a hard prerequisite' creating false impression work can begin
-- evidence: Specs table suggests readiness but dependency blocks everything until test harness exists
-- suggested fix: Mark specs 02-12 with [BLOCKED BY SPEC 01] prefix until test harness exists
-- source: browser
-
-### [MED] /docs/testing.md — Critical testing documentation references nonexistent files
-- pass: 17 (commit c7a1c9c)
-- viewport: desktop
-- category: navigation
-- observation: Lines 133-138 reference state/e2e/combat-hud.engine.test.ts and state/e2e/combat.engine.test.ts as canonical examples but files don't exist yet
-- evidence: References to future test files break documentation flow for maintainers trying to understand patterns
-- suggested fix: Replace references to future test files with placeholder text or axiomancer-mechanics examples until Spec 01 ships
-- source: browser
-
-### [MED] general — Voice guidance scattered across multiple files without hierarchy
-- pass: 17 (commit c7a1c9c)
-- viewport: desktop
-- category: voice
-- observation: Voice guidance appears in plan/bearings.md and theme/axm.ts with different detail levels and no cross-references
-- evidence: Multiple sources of voice guidance with no clear canonical source
-- suggested fix: Consolidate voice guidance in single source file and reference from others with 'See [file] for full voice guidelines'
-- source: browser
-
-### [MED] /README.md — Architecture diagram + layout drifted behind the code (presenters moved, screens wired)
-- pass: 17 (commit c7a1c9c); severity bumped + reframed pass 18 (commit fd525e3)
-- viewport: desktop
-- category: drift
-- observation: The drift has inverted since pass 17. The diagram/layout now lags BEHIND the code, not ahead of it. README:135 places presenters at `app/<route>/*.engine.ts`, but they actually live in `state/presenters/*.engine.ts` (20 engines) — a maintainer who greps `app/(tabs)/combat.engine.ts` finds nothing. README:103-107 still labels every screen `(placeholder UI)`, but the screens shipped long ago, and the layout omits the Memoir tab entirely.
-- evidence: README.md:135 "Presenters | app/<route>/*.engine.ts" vs `state/presenters/*.engine.ts`; README.md:103-107 "(placeholder UI)" ×5; Memoir tab absent from the layout block though `app/(tabs)/memoir/` ships.
-- suggested fix: Redraw the layout/diagram to point presenters at `state/presenters/`, drop the `(placeholder UI)` labels, and add the Memoir tab.
-- source: file-read (repo-proxy)
-
 ### [HIGH] general — No title screen or onboarding for new players ✅
 - pass: deep-playtest (2026-05-25, commit d560e8c)
 - viewport: mobile (414x896)
@@ -425,53 +509,6 @@
 - addressed: 2026-05-27 via Phase 92 implementation
 - fix: Added narrative feedback after fleeing encounters via toast message "you fled the encounter. the path bends away.\n\nmorale -2" in actions.ts lines 1392-1393. Exposed morale value on SELF tab via character presenter moralMeter mapping (line 358) displayed as "willpower" value. Both parts of the F03 finding are now resolved with test coverage in flee-action.engine.test.ts.
 
-
-### [LOW] /exploration — Sealed map nodes give no tap feedback
-- pass: deep-playtest (2026-05-25, commit d560e8c)
-- viewport: mobile (414x896)
-- auth_state: anonymous
-- category: observation
-- observation: Sealed nodes rendered as tappable buttons (cursor:pointer) but produce no visual response on tap. No tooltip, no message.
-- suggested_fix: Tap shows "path sealed" toast. Phase candidate filed.
-- source: deep-playtest [F11]
-
-### [LOW] /combat — ITEM action always disabled with no explanation
-- pass: deep-playtest (2026-05-25, commit d560e8c)
-- viewport: mobile (414x896)
-- auth_state: anonymous
-- category: observation
-- observation: ITEM button ("USE A CONSUMABLE") greyed out even with Healing Potion in inventory. No tooltip or message explaining why.
-- suggested_fix: Tooltip on disabled ITEM button. Phase candidate filed.
-- source: deep-playtest [F12]
-### [MED] /README.md — License section incomplete, creates uncertainty for fresh maintainer
-- pass: 19 (commit 18c3371)
-- viewport: desktop
-- auth_state: anonymous
-- category: comprehension
-- observation: README contains incomplete License section stating 'TBD. Ask the project maintainer' which creates uncertainty about usage rights for fresh maintainers examining the repository
-- evidence: Line 263 in README.md showing placeholder license text
-- suggested_fix: Specify actual license or provide clear guidance on where to find licensing information
-- source: browser
-### [MED] /specs/00-how-to-use-specs.md — References missing GAME-ROADMAP.md file
-- pass: 19 (commit 18c3371)
-- viewport: desktop
-- auth_state: anonymous
-- category: navigation
-- observation: Document instructs users to 'Update GAME-ROADMAP.md first' for capturing big ideas, but this file does not exist in repository structure
-- evidence: Line 35 references non-existent GAME-ROADMAP.md file
-- suggested_fix: Create missing GAME-ROADMAP.md file or update reference to point to existing roadmap documentation
-- source: browser
-### [LOW] /agents.md — Dead link to asset swap documentation
-- pass: 19 (commit 18c3371)
-- viewport: desktop
-- auth_state: anonymous
-- category: navigation
-- observation: File references .cursor/skills/swap-asset-placeholder/SKILL.md workflow but this path does not exist in current repository structure
-- evidence: Line 100 contains reference to non-existent .cursor/skills/ path
-- suggested_fix: Update reference to point to correct asset swap documentation or remove outdated reference
-- source: browser
-
-## Done
 
 ### [MED] /death — Death screen LEDGER shows wrong encounter count + internal node ID ✅
 - pass: deep-playtest (2026-05-25, commit d560e8c)

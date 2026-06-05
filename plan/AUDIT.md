@@ -63,13 +63,16 @@
 - addressed: 2026-06-04 via commit c4a355f
 - fix: Added comprehensive test coverage for ItemCard component with 25 test cases covering utility functions, glyph rendering for all categories, expanded/collapsed states, accessibility features, and user interactions. Reduces component-to-test gap.
 
-### [3.2] High frequency of `as any` type casts indicates type safety gaps
+### [3.2] High frequency of `as any` type casts indicates type safety gaps ✅
 - category: perf
 - impact: 4
 - ease: 8
 - next: Systematically review and replace `as any` casts with proper typing, especially in test files and state selectors where type safety is critical
 - evidence: Found 139 instances of `as any` across 42 files, concentrated in test files and state management code
 - observation: Excessive use of `as any` type casts undermines TypeScript's type safety benefits and could hide runtime type errors
+- issue: #268
+- addressed: 2026-06-05 via commit a10751e
+- fix: Replaced problematic as any casts with proper typing: type guard usage in equipment.ts, MobileLogEntry pattern in actions.ts, and DimensionValue cast in StatBar.tsx. Improves type safety while maintaining engine boundary compatibility.
 
 ### [2.8] Large images could be optimized for mobile performance
 - category: perf

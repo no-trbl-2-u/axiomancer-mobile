@@ -60,13 +60,15 @@
 - addressed: 2026-06-04 via commit c4a355f
 - fix: Added comprehensive test coverage for ItemCard component with 25 test cases covering utility functions, glyph rendering for all categories, expanded/collapsed states, accessibility features, and user interactions. Reduces component-to-test gap.
 
-### [2.8] Large images could be optimized for mobile performance  
+### [2.8] Large images could be optimized for mobile performance ✅
 - category: perf
 - impact: 7
 - ease: 4
 - next: Optimize largest image assets (react-logo@3x.png at 21KB, icon assets > 10KB) for mobile delivery
 - evidence: react-logo@3x.png is 21KB, several launcher icons > 8KB
 - observation: Several image assets are relatively large for mobile apps and could benefit from optimization
+- addressed: 2026-06-04 via commit 32fabb6
+- fix: Removed 4 unused React logo images (56KB total) including react-logo@3x.png (21KB), react-logo@2x.png (14KB), and others. Complete removal more impactful than optimization since files were unused.
 
 ## Completed findings
 

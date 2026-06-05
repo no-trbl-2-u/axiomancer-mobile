@@ -123,6 +123,12 @@ export default function ExplorationScreen() {
         return m;
     }, [vm.nodes]);
 
+    // Phase 107 — Create set of node IDs that should show labels
+    // (only unvisited available nodes that are currently shown as options)
+    const labeledNodeIds = useMemo(() => {
+        return new Set(vm.options.slice(0, 4).map(opt => opt.nodeId));
+    }, [vm.options]);
+
     // Pinch + pan over the map view (Q2=B). Reanimated shared values
     // drive a single transform; gestures compose simultaneously so the
     // user can zoom and drag at once.
@@ -283,7 +289,12 @@ export default function ExplorationScreen() {
 
                         {/* Node markers */}
                         {vm.nodes.map((n) => (
-                            <MapNodeMarker key={n.id} node={n} onNodePress={onNodePress} />
+                            <MapNodeMarker 
+                                key={n.id} 
+                                node={n} 
+                                onNodePress={onNodePress} 
+                                shouldShowLabel={labeledNodeIds.has(n.id)} 
+                            />
                         ))}
                     </Animated.View>
                 </GestureDetector>
@@ -399,9 +410,11 @@ export default function ExplorationScreen() {
 function MapNodeMarker({
     node: n,
     onNodePress,
+    shouldShowLabel,
 }: {
     node: ExplorationNode;
     onNodePress: (n: ExplorationNode) => void;
+    shouldShowLabel: boolean;
 }) {
     const tooltip = useTooltip();
     const ref = useRef<View | null>(null);
@@ -432,14 +445,14 @@ function MapNodeMarker({
             ]}
         >
             <NodeMark kind={n.kind} size={36} />
-            {n.kind === 'available' && (
+            {n.kind === 'available' && shouldShowLabel && (
                 <View style={[styles.nodeLabel, { opacity: dim ? 0.4 : 1 }]}>
                     <Text style={[styles.nodeLabelText, { color: dim ? AXM.ash : AXM.parchment }]}>
                         {n.label}
                     </Text>
                 </View>
             )}
-            {n.kind === 'available' && (
+            {n.kind === 'available' && shouldShowLabel && (
                 <View style={[styles.nodeTypeBadge, { backgroundColor: ev.c }]}>
                     <Text style={styles.nodeTypeBadgeText}>{ev.label}</Text>
                 </View>

@@ -1491,33 +1491,22 @@ function spareMercyChoiceAction(store: AppStore): void {
 }
 
 /**
- * Phase 104 — Handle exploit/critical choice using engine truth only.
+ * Phase 108 — Handle exploit choice using engine truth only.
  * 
- * [needs-engine-release] — Removed hard-coded exploit damage simulation.
- * Requires engine to export mercy exploit action that handles:
- * - Guaranteed critical damage calculation
- * - Friendship counter reset
- * - Combat state transitions
- * 
- * For now, this action is disabled until engine contract is available.
+ * [engine-integration] — selectMercyChoice not yet exported from main 
+ * axiomancer-mechanics package. Formal follow-up: promote to main export
+ * or use dispatch pattern with COMBAT_ROUND + 'exploit' action.
  */
 function exploitMercyChoiceAction(store: AppStore): void {
     const { combat } = store.getState();
     if (!combat) return;
 
-    // Phase 104 — Remove local damage simulation per doctrine cleanup.
-    // Exploit damage and friendship reset must come from engine action,
-    // not mobile calculation. Mobile does not invent mechanics locally.
-    
-    // [needs-engine-release] — Engine should export mercy exploit action
-    // that handles critical damage + friendship reset + combat progression.
-    
-    // TODO: Replace with engine mercy exploit action dispatch:
-    // const result = store.getState().exploitMercyChoice();
+    // Phase 108 — Remove TODO scaffolding per engine contract availability.
+    // Mercy exploit handling awaits engine export promotion.
     
     const logEntry = { 
         severity: 'system' as const, 
-        text: "[Exploit action disabled - needs engine mercy contract]" 
+        text: "[Mercy exploit - awaiting engine selectMercyChoice export]" 
     };
     const updatedCombat = combatAppendLog(combat, logEntry as any);
     

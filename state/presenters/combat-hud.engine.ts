@@ -28,7 +28,7 @@ function toDisplay(e: ActiveEffect): ActiveEffectDisplay {
 /**
  * Calculate resource percentage from engine combat resources.
  * Uses estimated max based on typical combat starting values.
- * TODO: Phase 105 follow-up should track actual max resources.
+ * Formal follow-up: tracked in plan/PHASE_CANDIDATES.md as candidate.
  */
 function calculateResourcePercent(resources: CombatResources): number {
     const totalCurrent = resources.heart + resources.body + resources.mind + 

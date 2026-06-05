@@ -1062,10 +1062,9 @@ function buildMercyChoiceSlice(
 ): MercyChoiceSlice {
     // Phase 104 — Remove local friendship threshold logic per doctrine cleanup.
     // Mercy choice activation must come from engine-emitted state, not mobile
-    // simulation. Until mechanics exports mercy choice state, disable the modal.
+    // simulation. Use the engine's mercy choice state.
     
-    // TODO: Replace with `combat.mercyChoiceState.isActive` when available
-    const isActive = false; // Disabled until engine contract available
+    const isActive = combat?.mercyChoiceActive ?? false;
     
     const cleanEnemyName = combat === null ? '' : (enemyName || 'ADVERSARY');
     

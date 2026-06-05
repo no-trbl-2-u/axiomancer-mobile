@@ -33,6 +33,17 @@
 >   re-treads of the long-standing clusters already archived in
 >   ## Considered / ## Drained below.
 
+## Drained / shipped
+
+### [promoted 2026-06-05] Live mobile candidate batch → Phases 107-111
+- User ordered all five pending candidates promoted.
+- Promotion map:
+  - Map node label display optimization → Phase 107
+  - Combat engine TODO drain → Phase 108
+  - Stance card layout shrink-to-fit → Phase 109
+  - Stale paused phases resolution → Phase 110
+  - EncounterModalOverlay component extraction → Phase 111
+
 ### [score 3.9] Map node label display optimization (UX pass 2026-06-04)
 - proposed: 2026-06-04, expand pass 55
 - source signals:
@@ -81,8 +92,6 @@
 - proposed scope: 1 phase — complete mercy state integration, remove TODO scaffolding, verify engine contract compliance
 - estimated phases: 1
 - conflicts: none
-
-## Drained / shipped
 
 ### [drained 2026-06-04 — already shipped] [score 3.0] Bundle size optimization follow-up (AUDIT [2.4] drain)
 - proposed: 2026-06-04, expand pass 54 (commit 3ddd842).

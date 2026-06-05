@@ -100,6 +100,20 @@
 
 ## Completed findings
 
+### [10.0] Incorrect HIGH priority critique findings claiming missing files ✅
+- category: external-critique
+- impact: 9
+- ease: 10
+- base-score: 9.0
+- ux-bias-multiplier: 1.5
+- final-score: 10.0 (clamped)
+- next: Verify referenced files exist and mark critique findings as resolved
+- evidence: Two HIGH priority findings in CRITIQUE.md incorrectly claimed files don't exist when they do - affects maintainer confidence in documentation
+- observation: /docs/testing.md and /SVG_ASSET_SPEC.md are accurately documented but marked as having missing file references
+- issue: #270
+- addressed: 2026-06-05 via commit 543c560
+- fix: Verified that referenced test files and component exports exist as documented. Marked both HIGH priority findings as resolved in CRITIQUE.md with verification details.
+
 ### [8.1] Fix bearings.md engine version inconsistency ✅
 - category: consistency
 - impact: 9

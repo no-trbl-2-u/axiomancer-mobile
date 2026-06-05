@@ -446,8 +446,8 @@ function MapNodeMarker({
         >
             <NodeMark kind={n.kind} size={36} />
             {n.kind === 'available' && shouldShowLabel && (
-                <View style={[styles.nodeLabel, { opacity: dim ? 0.4 : 1 }]}>
-                    <Text style={[styles.nodeLabelText, { color: dim ? AXM.ash : AXM.parchment }]}>
+                <View style={[styles.nodeLabel, { backgroundColor: dim ? 'rgba(10,10,10,0.95)' : 'rgba(10,10,10,0.85)' }]}>
+                    <Text style={[styles.nodeLabelText, { color: dim ? AXM.bone : AXM.parchment }]}>
                         {n.label}
                     </Text>
                 </View>

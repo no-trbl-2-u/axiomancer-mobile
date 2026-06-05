@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-04 at commit f10820a
-> Pass count: 20
+> Last pass: 2026-06-05 at commit add8801
+> Pass count: 21
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -61,6 +61,60 @@
      findings were dropped as dup/addressed (dual-agent-files ✅,
      README test-promise ✅, README arch diagram → bumped the
      existing pass-17 row). 4 new findings filed below. -->
+
+### [HIGH] /docs/testing.md — Testing standard references non-existent test files
+- pass: 21 (commit add8801)
+- viewport: repository
+- category: documentation
+- observation: Testing standard states 'Spec 01 — Test Harness Setup has shipped' but provides stale reference pointers to files that may not exist
+- evidence: Lines 133-139 reference 'state/e2e/combat-hud.engine.test.ts' and 'state/e2e/combat.engine.test.ts' as canonical reference examples without verifying existence
+- suggested fix: Verify reference test file paths exist and update documentation to point to actual shipped test files
+- source: repo-proxy
+
+### [HIGH] /SVG_ASSET_SPEC.md — Asset specification references non-existent components
+- pass: 21 (commit add8801)
+- viewport: repository
+- category: documentation
+- observation: Asset specification references files and components that may not exist, creating broken implementation guidance
+- evidence: Lines 28-29 reference 'components/StanceGlyph.tsx' exports 'GlyphHeart', 'GlyphBody', 'GlyphMind' without verification these components exist as described
+- suggested fix: Verify all file paths and component exports in asset spec match actual codebase structure
+- source: repo-proxy
+
+### [MED] /README.md — Project status description inconsistent with current implementation
+- pass: 21 (commit add8801)
+- viewport: repository
+- category: comprehension
+- observation: README references 'placeholder UI' in several core screens but doesn't clarify current implementation status vs. spec-driven migration plan
+- evidence: Lines 109-113 describe combat.tsx, character.tsx, etc. as 'placeholder UI' but combat screen is actually fully implemented per spec 04
+- suggested fix: Update project layout section to reflect current implementation status per specs/README.md completion table
+- source: repo-proxy
+
+### [MED] /AGENTS.md — Pre-nexus orientation contains outdated workflow instructions
+- pass: 21 (commit add8801)
+- viewport: repository
+- category: navigation
+- observation: Pre-nexus orientation file contains outdated workflow instructions and duplicate information with agents.md
+- evidence: Lines 3-4 state 'This is the pre-nexus orientation file. For current autonomous loop instructions, see agents.md' but file contains 103 lines of detailed instructions that may conflict with current nexus methodology
+- suggested fix: Consolidate or clearly separate pre-nexus vs. current instructions, or archive AGENTS.md if superseded by agents.md
+- source: repo-proxy
+
+### [LOW] /agents.md — Technical documentation voice contrasts with project voice guidelines
+- pass: 21 (commit add8801)
+- viewport: repository
+- category: voice
+- observation: Nexus rule book uses modern technical language that contrasts with project's 'terse, archaic, ritual' voice guideline
+- evidence: Throughout file uses contemporary technical terms like 'autonomous loop', 'skill files', 'sub-agents' while bearings.md specifies 'terse, archaic, ritual' voice
+- suggested fix: Clarify that voice guidelines apply to in-game content only, not technical documentation, or adjust technical docs to match voice
+- source: repo-proxy
+
+### [LOW] /specs/README.md — Spec completion table lacks visual priority distinction
+- pass: 21 (commit add8801)
+- viewport: repository
+- category: navigation
+- observation: Spec completion status table shows mixed [DONE] vs. unmarked entries but lacks clear visual distinction for maintainer priority
+- evidence: Lines 65-76 mix completed specs (01, 04, 06) with pending ones in same format without clear visual prioritization
+- suggested fix: Add visual separators or priority indicators for pending vs. completed specs in the recommended order table
+- source: repo-proxy
 
 ### [HIGH] /combat — Combat cannot be re-triggered after a victory (only after a loss) ✅
 - pass: user-jot (commit ff2b8ae)

@@ -66,7 +66,7 @@
 - addressed: 2026-06-05 via commit b193425
 - fix: Replaced opacity reduction with higher contrast background (0.95 vs 0.85) and changed text color from dim ash to readable bone for locked state. Maintains visual distinction while preserving readability.
 
-### [4.2] Console statements in design files and combat engine expose debug info in production
+### [4.2] Console statements in design files and combat engine expose debug info in production ✅
 - category: perf
 - impact: 6
 - ease: 7
@@ -77,7 +77,7 @@
 - addressed: 2026-06-04 via commit 21038a2
 - fix: Wrapped console.error in 3 design-canvas.jsx files and console.warn in combat.engine.ts with __DEV__ guards to prevent debug output in production builds
 
-### [3.6] Component test coverage gap - at least one component lacks tests
+### [3.6] Component test coverage gap - at least one component lacks tests ✅
 - category: tests
 - impact: 4
 - ease: 9
@@ -112,7 +112,7 @@
 - addressed: 2026-06-05 via commit 89a3e9f
 - fix: Updated README.md lines 109-113 to show actual implementation status per specs completion table. Changed "placeholder UI" descriptions to "fully implemented per spec 04/05/06/07/08" for combat, character, inventory, exploration, and event screens respectively.
 
-### [2.8] Large images could be optimized for mobile performance
+### [2.8] Large images could be optimized for mobile performance ✅
 - category: perf
 - impact: 7
 - ease: 4

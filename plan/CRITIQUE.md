@@ -62,7 +62,7 @@
      README test-promise ✅, README arch diagram → bumped the
      existing pass-17 row). 4 new findings filed below. -->
 
-### [HIGH] /docs/testing.md — Testing standard references non-existent test files
+### [HIGH] /docs/testing.md — Testing standard references non-existent test files ✅
 - pass: 21 (commit add8801)
 - viewport: repository
 - category: documentation
@@ -70,8 +70,11 @@
 - evidence: Lines 133-139 reference 'state/e2e/combat-hud.engine.test.ts' and 'state/e2e/combat.engine.test.ts' as canonical reference examples without verifying existence
 - suggested fix: Verify reference test file paths exist and update documentation to point to actual shipped test files
 - source: repo-proxy
+- issue: #270
+- addressed: 2026-06-05 via verification audit
+- fix: Verified that both referenced test files exist as documented - state/e2e/combat-hud.engine.test.ts and state/e2e/combat.engine.test.ts are present in the repository. The documentation references are accurate.
 
-### [HIGH] /SVG_ASSET_SPEC.md — Asset specification references non-existent components
+### [HIGH] /SVG_ASSET_SPEC.md — Asset specification references non-existent components ✅
 - pass: 21 (commit add8801)
 - viewport: repository
 - category: documentation
@@ -79,6 +82,9 @@
 - evidence: Lines 28-29 reference 'components/StanceGlyph.tsx' exports 'GlyphHeart', 'GlyphBody', 'GlyphMind' without verification these components exist as described
 - suggested fix: Verify all file paths and component exports in asset spec match actual codebase structure
 - source: repo-proxy
+- issue: #270
+- addressed: 2026-06-05 via verification audit
+- fix: Verified that components/StanceGlyph.tsx exists and exports exactly the components listed in the specification: GlyphHeart, GlyphBody, GlyphMind, and StanceGlyph. The asset specification is accurate.
 
 ### [MED] /README.md — Project status description inconsistent with current implementation
 - pass: 21 (commit add8801)

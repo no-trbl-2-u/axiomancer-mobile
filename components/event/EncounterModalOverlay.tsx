@@ -27,8 +27,7 @@
  * in `components/event/__tests__/EncounterModalOverlay.test.tsx`.
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import Svg, { Path as SvgPath, Circle as SvgCircle, Defs as SvgDefs, RadialGradient as SvgRadialGradient, Stop as SvgStop } from 'react-native-svg';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import Animated, {
     useAnimatedStyle,
     useSharedValue,
@@ -40,12 +39,10 @@ import { CombatPanel } from '@/components/combat/CombatPanel';
 import { CombatDefeatPanel } from '@/components/event/aftermath/CombatDefeatPanel';
 import { CombatFriendshipPanel } from '@/components/event/aftermath/CombatFriendshipPanel';
 import { CombatVictoryPanel } from '@/components/event/aftermath/CombatVictoryPanel';
-import { EventArt } from '@/components/event/EventArt';
-import { EventCodexHeader } from '@/components/event/EventCodexHeader';
-import { Splatter } from '@/components/Splatter';
-import { ActionIcon } from '@/components/ActionIcon';
-import { AXM, FONTS } from '@/theme/axm';
-import { useAesthetic } from '@/state/aesthetic-mode';
+import { ChainBarFixed } from '@/components/event/ChainBarFixed';
+import { EncounterPreludeContent } from '@/components/event/EncounterPreludeContent';
+import { ModalRivet } from '@/components/event/ModalRivet';
+import { AXM } from '@/theme/axm';
 import { useCombatMode } from '@/state/combat-mode';
 import { useGameActions, useGameState } from '@/state/GameStoreProvider';
 import { selectAftermathViewModel } from '@/state/presenters/aftermath.engine';
@@ -53,7 +50,6 @@ import {
     selectEncounterSealChrome,
     type EncounterSealMode,
 } from '@/state/presenters/encounter-seal.engine';
-import { selectEventCodexHeader } from '@/state/presenters/event.codex.engine';
 import type { EventViewModel } from '@/state/presenters/event.engine';
 
 /**
@@ -158,7 +154,6 @@ export function EncounterModalOverlay({
         }, 16);
         return () => clearTimeout(handle);
     }, [mode, combatPhase]);
-    const { mode: aesthetic } = useAesthetic();
 
     // Rise animation (Phase 44 port from prototype.jsx:632-638 — the
     // design's `@keyframes rise`). Backdrop fades in over 280ms;
@@ -198,19 +193,6 @@ export function EncounterModalOverlay({
         // a stale outcome signal), fall back to closing the modal.
         return null;
     }
-    // preludeChrome is non-null in the prelude render path per the
-    // early-return above; combat-mode JSX never reads it. The
-    // non-null assertions in the prelude branch are safe.
-    const isBoss = vm.variant === 'boss';
-    const fightChoice = vm.choices.find((c) => c.id === 'fight');
-    const fleeChoice = vm.choices.find((c) => c.id === 'flee');
-    const fleeEnabled = fleeChoice?.enabled ?? !isBoss;
-    // Phase 45 subtitles — italic cost/consequence chrome under each
-    // button label (the design's prototype.jsx:481-489 pattern).
-    const fightSubtitle = fightChoice?.subtitle ?? null;
-    const fightDecode = fightChoice?.decode ?? null;
-    const fleeSubtitle = fleeChoice?.subtitle ?? null;
-    const fleeDecode = fleeChoice?.decode ?? null;
     return (
         <View
             style={styles.overlay}
@@ -247,10 +229,10 @@ export function EncounterModalOverlay({
                 {/* Phase 73 — four corner rivets inside the seal,
                   * porting the design's `PtRivet` chrome (handoff
                   * bundle `prototype.jsx:580-583`). */}
-                <Rivet position="tl" />
-                <Rivet position="tr" />
-                <Rivet position="bl" />
-                <Rivet position="br" />
+                <ModalRivet position="tl" />
+                <ModalRivet position="tr" />
+                <ModalRivet position="bl" />
+                <ModalRivet position="br" />
                 {mode === 'aftermath' && aftermathVm !== null && aftermathVm.kind === 'victory' ? (
                     <CombatVictoryPanel
                         vm={aftermathVm}
@@ -278,114 +260,11 @@ export function EncounterModalOverlay({
                         <CombatPanel />
                     </ScrollView>
                 ) : (
-                    <>
-                        {aesthetic === 'codex' && (() => {
-                            const { left, right } = selectEventCodexHeader(vm);
-                            return <EventCodexHeader left={left} right={right} />;
-                        })()}
-
-                        <View style={styles.preludeHeader}>
-                            <Svg width={10} height={10} viewBox="0 0 10 10">
-                                <SvgPath d="M5 1 L 7 7 L 3 7 Z" fill={AXM.blood} />
-                            </Svg>
-                            <Text style={styles.preludeHeaderText}>
-                                {vm.preludeChrome!.eyebrow}
-                            </Text>
-                        </View>
-
-                        <View style={styles.illustration}>
-                            <View style={[StyleSheet.absoluteFillObject, { backgroundColor: AXM.deepBg }]} />
-                            <EventArt slug={vm.artSlug} />
-                            <View style={styles.strifeSash} testID="encounter-modal-sash">
-                                <Text style={styles.strifeSashText}>
-                                    {vm.preludeChrome!.sashLabel}
-                                </Text>
-                            </View>
-                            <Splatter
-                                color={AXM.blood}
-                                size={140}
-                                seed={45}
-                                style={{ position: 'absolute', top: -20, right: -30, opacity: isBoss ? 0.7 : 0.5 }}
-                            />
-                        </View>
-
-                        <View style={styles.titleArea}>
-                            <Text style={[styles.title, isBoss && styles.titleBoss]} numberOfLines={2}>
-                                {vm.title}
-                            </Text>
-                            {vm.subtitle.length > 0 && (
-                                <Text style={styles.subtitle} numberOfLines={1}>— {vm.subtitle}</Text>
-                            )}
-                        </View>
-
-                        <View style={styles.body}>
-                            <Text style={styles.bodyText} numberOfLines={3}>
-                                {vm.body}
-                            </Text>
-                        </View>
-
-                        <View style={styles.choices}>
-                            <TouchableOpacity
-                                accessibilityRole="button"
-                                accessibilityLabel="Fight"
-                                onPress={handleFight}
-                                style={[styles.choiceRow, { borderColor: AXM.blood, borderLeftColor: AXM.blood }]}
-                                testID="encounter-modal-fight"
-                            >
-                                <ActionIcon kind="sword" size={20} color={AXM.blood} />
-                                <View style={{ flex: 1 }}>
-                                    <View style={styles.choiceLabelRow}>
-                                        <Text style={[styles.choiceLabel, { color: AXM.blood }]}>FIGHT</Text>
-                                        {fightSubtitle !== null && (
-                                            <Text style={styles.choiceSubtitle} testID="encounter-modal-fight-subtitle">
-                                                {fightSubtitle}
-                                            </Text>
-                                        )}
-                                    </View>
-                                    {fightDecode !== null && (
-                                        <Text style={styles.choiceDecode} testID="encounter-modal-fight-decode">
-                                            {fightDecode}
-                                        </Text>
-                                    )}
-                                </View>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                accessibilityRole="button"
-                                accessibilityLabel="Flee"
-                                accessibilityState={{ disabled: !fleeEnabled }}
-                                disabled={!fleeEnabled}
-                                onPress={onFlee}
-                                style={[
-                                    styles.choiceRow,
-                                    { borderColor: AXM.bone, borderLeftColor: AXM.bone, opacity: fleeEnabled ? 1 : 0.4 },
-                                ]}
-                                testID="encounter-modal-flee"
-                            >
-                                <ActionIcon kind="flee" size={20} color={AXM.bone} />
-                                <View style={{ flex: 1 }}>
-                                    <View style={styles.choiceLabelRow}>
-                                        <Text style={[styles.choiceLabel, { color: AXM.bone }]}>FLEE</Text>
-                                        {fleeSubtitle !== null && (
-                                            <Text style={styles.choiceSubtitle} testID="encounter-modal-flee-subtitle">
-                                                {fleeSubtitle}
-                                            </Text>
-                                        )}
-                                    </View>
-                                    {fleeDecode !== null && (
-                                        <Text style={styles.choiceDecode} testID="encounter-modal-flee-decode">
-                                            {fleeDecode}
-                                        </Text>
-                                    )}
-                                    {!fleeEnabled && fleeSubtitle === null && (
-                                        <Text style={styles.choiceSub}>
-                                            {vm.preludeChrome!.fleeDisabledHint}
-                                        </Text>
-                                    )}
-                                </View>
-                            </TouchableOpacity>
-                        </View>
-                    </>
+                    <EncounterPreludeContent
+                        vm={vm}
+                        onFight={handleFight}
+                        onFlee={onFlee}
+                    />
                 )}
             </Animated.View>
             {/* Phase 73 — bottom chain, also outside the panel. */}
@@ -398,78 +277,6 @@ export function EncounterModalOverlay({
     );
 }
 
-function ChainBarFixed({
-    position,
-    label,
-    accentColor,
-}: {
-    position: 'top' | 'bottom';
-    label: string;
-    accentColor: string;
-}) {
-    return (
-        <View
-            style={[
-                styles.chainBarFixed,
-                position === 'top' ? styles.chainBarTop : styles.chainBarBottom,
-            ]}
-            testID="encounter-modal-chain"
-            pointerEvents="none"
-        >
-            <Text
-                style={[styles.chainDiamonds, { color: accentColor }]}
-                numberOfLines={1}
-                ellipsizeMode="clip"
-            >
-                {DIAMOND_STRAND}
-            </Text>
-            <Text style={[styles.chainText, { color: accentColor }]}>{label}</Text>
-            <Text
-                style={[styles.chainDiamonds, { color: accentColor }]}
-                numberOfLines={1}
-                ellipsizeMode="clip"
-            >
-                {DIAMOND_STRAND}
-            </Text>
-        </View>
-    );
-}
-
-// Diamond strand flanking the label — ports the design's
-// `<span>◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆</span>` chrome on either side of
-// `SEALED · …`. The character itself comes from the mono font;
-// letter-spacing matches the design (~2px) so the strand reads as
-// a chain of rivets, not run-on glyphs. Phase 73 port from the
-// 2026-05-23 handoff bundle (`prototype.jsx:566 / :614`).
-const DIAMOND_STRAND = '◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆';
-
-
-// Four corner rivets inside the seal panel — ports the design's
-// `PtRivet` components (`prototype.jsx:621-630`) which render as
-// metallic dots with a radial highlight at top-left, dark base,
-// thin black border. We approximate the gradient via SVG so it
-// reads the same on web + native.
-function Rivet({ position }: { position: 'tl' | 'tr' | 'bl' | 'br' }) {
-    const offsetStyle =
-        position === 'tl' ? styles.rivetTL :
-        position === 'tr' ? styles.rivetTR :
-        position === 'bl' ? styles.rivetBL :
-        styles.rivetBR;
-    return (
-        <View style={[styles.rivetWrap, offsetStyle]} pointerEvents="none">
-            <Svg width={8} height={8} viewBox="0 0 8 8">
-                <SvgDefs>
-                    <SvgRadialGradient id="rivetFill" cx="35%" cy="30%" r="65%">
-                        <SvgStop offset="0%" stopColor="#6a625a" />
-                        <SvgStop offset="60%" stopColor="#2a2520" />
-                        <SvgStop offset="100%" stopColor="#0a0a0a" />
-                    </SvgRadialGradient>
-                </SvgDefs>
-                <SvgCircle cx={4} cy={4} r={3.5} fill="url(#rivetFill)" stroke="#0a0a0a" strokeWidth={0.5} />
-            </Svg>
-        </View>
-    );
-}
 
 const styles = StyleSheet.create({
     overlay: {
@@ -542,202 +349,12 @@ const styles = StyleSheet.create({
         elevation: 10,
         flexDirection: 'column',
     },
-    chainBar: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        paddingHorizontal: 14,
-        paddingVertical: 6,
-        borderBottomWidth: 1,
-        borderBottomColor: 'rgba(232, 223, 200, 0.12)',
-    },
-    // Phase 73 — chain bars OUTSIDE the panel, pinned to the screen
-    // edges. Mirrors the design's `position: absolute, top: 0,
-    // height: 18` / `bottom: 72, height: 18` chrome
-    // (`prototype.jsx:558 / :605`). Gradient backgrounds + thin
-    // accent rule are kept as native shadows because RN can't do
-    // CSS gradients without an extra dep; the diamond strand + label
-    // already carry the seal signal.
-    chainBarFixed: {
-        position: 'absolute',
-        left: 4,
-        right: 4,
-        height: 18,
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 6,
-        backgroundColor: '#0e0506',
-    },
-    chainBarTop: {
-        top: 4,
-        borderBottomWidth: 1,
-        borderBottomColor: 'rgba(192, 21, 42, 0.55)',
-    },
-    chainBarBottom: {
-        bottom: 4,
-        borderTopWidth: 1,
-        borderTopColor: 'rgba(192, 21, 42, 0.55)',
-    },
-    chainRule: {
-        flex: 1,
-        height: 1,
-        backgroundColor: AXM.rust,
-        opacity: 0.6,
-    },
-    // Phase 73 — diamond strand flanking the chain label. Mono
-    // glyph, narrow letter-spacing to keep the strand readable as
-    // a chain rather than a run of glyphs. Width is `flex: 1` so
-    // the label stays centered with equal-width strands either
-    // side. `overflow: hidden` clips on phones too narrow to fit
-    // the full strand.
-    chainDiamonds: {
-        flex: 1,
-        fontFamily: FONTS.mono,
-        fontSize: 8,
-        letterSpacing: 2,
-        color: AXM.blood,
-        opacity: 0.85,
-        overflow: 'hidden',
-    },
-    chainText: {
-        fontFamily: FONTS.sans,
-        fontSize: 9,
-        letterSpacing: 2.4,
-        color: AXM.blood,
-        textAlign: 'center',
-        paddingHorizontal: 6,
-    },
-    preludeHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        paddingVertical: 6,
-        paddingHorizontal: 14,
-        borderBottomWidth: 1,
-        borderBottomColor: 'rgba(232, 223, 200, 0.12)',
-    },
-    preludeHeaderText: {
-        fontFamily: FONTS.sans,
-        fontSize: 10,
-        letterSpacing: 2.2,
-        color: AXM.blood,
-    },
-    illustration: {
-        height: 200,
-        position: 'relative',
-        overflow: 'hidden',
-        borderBottomWidth: 1,
-        borderBottomColor: 'rgba(232, 223, 200, 0.12)',
-    },
-    strifeSash: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        backgroundColor: AXM.blood,
-        paddingTop: 3,
-        paddingBottom: 3,
-        paddingLeft: 14,
-        paddingRight: 18,
-    },
-    strifeSashText: {
-        fontFamily: FONTS.sans,
-        fontSize: 10,
-        letterSpacing: 1.4,
-        color: AXM.bg,
-    },
-    titleArea: { paddingHorizontal: 14, paddingTop: 10 },
-    title: {
-        fontFamily: FONTS.gothic,
-        fontSize: 24,
-        lineHeight: 26,
-        letterSpacing: 1,
-        color: AXM.parchment,
-    },
-    titleBoss: {
-        fontSize: 30,
-        lineHeight: 32,
-        textShadowColor: AXM.blood,
-        textShadowOffset: { width: 2, height: 2 },
-        textShadowRadius: 0,
-    },
-    subtitle: {
-        fontFamily: FONTS.serifItalic,
-        fontSize: 11,
-        color: AXM.bone,
-        marginTop: 2,
-    },
-    body: { paddingHorizontal: 14, paddingTop: 6, flex: 1 },
-    bodyText: {
-        fontFamily: FONTS.serif,
-        fontSize: 12,
-        color: AXM.parchment,
-        lineHeight: 16,
-        fontStyle: 'italic',
-    },
-    choices: { padding: 12, gap: 6 },
-    choiceRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 10,
-        paddingHorizontal: 10,
-        paddingVertical: 9,
-        backgroundColor: AXM.bg,
-        borderWidth: 2,
-    },
-    choiceLabelRow: {
-        flexDirection: 'row',
-        alignItems: 'baseline',
-        gap: 6,
-    },
-    choiceLabel: {
-        fontFamily: FONTS.gothic,
-        fontSize: 18,
-        letterSpacing: 1.5,
-    },
-    choiceDecode: {
-        fontFamily: FONTS.mono,
-        fontSize: 8.5,
-        color: AXM.parchment,
-        letterSpacing: 0.3,
-        marginTop: 3,
-    },
-    choiceSub: {
-        fontFamily: FONTS.serifItalic,
-        fontSize: 10,
-        color: AXM.bone,
-        marginTop: 2,
-    },
-    // Phase 45 — italic subtitle under each action-button label
-    // (ports prototype.jsx:481-489 'ix · vi vitae · adv. unknown'
-    // pattern). Distinct from `choiceSub` which is the disabled-FLEE
-    // hint (chain-bar-shaped chrome); the subtitle is per-choice
-    // cost/consequence preview.
-    choiceSubtitle: {
-        fontFamily: FONTS.mono,
-        fontSize: 8,
-        color: AXM.bone,
-        letterSpacing: 1.4,
-    },
     // Phase 63b — combat-mode ScrollView wrap. The panel has a
     // bounded height (top: 56, bottom: 84); CombatPanel renders
     // EnemyPanel + log + HUD + PhaseStack, often taller than the
     // panel viewport, so the scroll lets the player see all of
     // it without breaking the modal containment.
     combatScroll: { flex: 1 },
-    // Phase 73 — corner rivets. Absolute-positioned 8px SVG dots
-    // pinned 6px in from each panel corner. zIndex above the chain
-    // bars + body so they read as part of the panel's metal-binding
-    // chrome rather than getting clipped by content.
-    rivetWrap: {
-        position: 'absolute',
-        width: 8,
-        height: 8,
-        zIndex: 5,
-    },
-    rivetTL: { top: 6, left: 6 },
-    rivetTR: { top: 6, right: 6 },
-    rivetBL: { bottom: 6, left: 6 },
-    rivetBR: { bottom: 6, right: 6 },
     // Phase 72 — combat-body horizontal inset aligns with the
     // design bundle's `PtCombatBody` outer wrap
     // (`design/handoff-2026-05-23/project/prototype.jsx:697`

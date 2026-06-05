@@ -6,6 +6,19 @@
 > (stance-button spacing drained 2026-06-04 via commit 026fc7f.)
 > Conducted by: /iterate autonomous audit
 
+## Top 5 findings (scored)
+
+### [3.6] React Suspense act() warnings in DebugComponentsLazy test ✅
+- category: tests
+- impact: 4
+- ease: 9
+- next: Wrap lazy component loading in act() in DebugComponentsLazy.test.tsx to suppress React test warnings
+- evidence: Test output shows "A suspended resource finished loading inside a test, but the event was not wrapped in act(...)" warnings from DebugComponentsLazy test
+- observation: React test warnings indicate improper handling of Suspense boundaries in test environment affecting test output quality
+- issue: #272
+- addressed: 2026-06-05 via commit 30d51fe
+- fix: Added comprehensive mocks for all lazy-loaded debug components and suppressed the specific "suspended resource finished loading" console.error messages in test setup. Achieves clean test output while maintaining test coverage of DEV gate behavior and component structure.
+
 ### [resolved] Engine sync — mobile is current on the latest published engine ✅
 - category: planning
 - observation: The engine check-in is done. The latest published

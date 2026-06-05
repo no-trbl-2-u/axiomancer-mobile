@@ -44,9 +44,9 @@ export function firstEquippedPerSlot(
     const out = new Map<Equipment['slot'], Equipment>();
     for (const item of inventory) {
         if (!isEquipment(item)) continue;
-        const eq = item as Equipment;
-        if (out.has(eq.slot)) continue;
-        out.set(eq.slot, eq);
+        // isEquipment is a type guard, so item is now typed as Equipment
+        if (out.has(item.slot)) continue;
+        out.set(item.slot, item);
     }
     return out;
 }

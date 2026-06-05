@@ -1479,8 +1479,8 @@ function spareMercyChoiceAction(store: AppStore): void {
 
     // Phase 106 — Use engine's endCombat mechanism with friendship outcome
     // Log the mercy choice for battle log first
-    const logEntry = { severity: 'friendship' as const, text: "You choose mercy. The heart's path is taken." };
-    const combatWithLog = combatAppendLog(combat, logEntry as any);
+    const logEntry: MobileLogEntry = { severity: 'friendship', text: "You choose mercy. The heart's path is taken." };
+    const combatWithLog = combatAppendLog(combat, logEntry as unknown as BattleLogEntry);
     
     // Apply engine endCombat with friendship outcome
     const endedCombat = endCombat(combatWithLog);
@@ -1504,11 +1504,11 @@ function exploitMercyChoiceAction(store: AppStore): void {
     // Phase 108 — Remove TODO scaffolding per engine contract availability.
     // Mercy exploit handling awaits engine export promotion.
     
-    const logEntry = { 
-        severity: 'system' as const, 
+    const logEntry: MobileLogEntry = { 
+        severity: 'system', 
         text: "[Mercy exploit - awaiting engine selectMercyChoice export]" 
     };
-    const updatedCombat = combatAppendLog(combat, logEntry as any);
+    const updatedCombat = combatAppendLog(combat, logEntry as unknown as BattleLogEntry);
     
     store.setState({
         combat: updatedCombat

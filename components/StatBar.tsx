@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import type { DimensionValue } from 'react-native';
 import { AXM, FONTS } from '@/theme/axm';
 
 interface StatBarProps {
@@ -23,7 +24,7 @@ export function StatBar({ value, max, color = AXM.blood, label, height = 14, sho
         </View>
       )}
       <View style={[styles.track, { height }]}>
-        <View style={[styles.fill, { width: `${(pct * 100).toFixed(1)}%` as any, backgroundColor: color }]} />
+        <View style={[styles.fill, { width: `${(pct * 100).toFixed(1)}%` as DimensionValue, backgroundColor: color }]} />
         <View style={styles.topLine} />
       </View>
     </View>

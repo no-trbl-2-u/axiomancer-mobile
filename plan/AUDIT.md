@@ -99,6 +99,19 @@
 - addressed: 2026-06-05 via commit a10751e
 - fix: Replaced problematic as any casts with proper typing: type guard usage in equipment.ts, MobileLogEntry pattern in actions.ts, and DimensionValue cast in StatBar.tsx. Improves type safety while maintaining engine boundary compatibility.
 
+### [7.2] README project status description inconsistent with implementation ✅
+- category: external-critique
+- impact: 6
+- ease: 8
+- base-score: 4.8
+- ux-bias-multiplier: 1.5
+- final-score: 7.2
+- next: Update project layout section to reflect current implementation status per specs completion table
+- evidence: Lines 109-113 describe combat.tsx, character.tsx, etc. as 'placeholder UI' but combat screen is actually fully implemented per spec 04
+- observation: README references 'placeholder UI' in several core screens but doesn't clarify current implementation status vs. spec-driven migration plan
+- addressed: 2026-06-05 via commit 89a3e9f
+- fix: Updated README.md lines 109-113 to show actual implementation status per specs completion table. Changed "placeholder UI" descriptions to "fully implemented per spec 04/05/06/07/08" for combat, character, inventory, exploration, and event screens respectively.
+
 ### [2.8] Large images could be optimized for mobile performance
 - category: perf
 - impact: 7

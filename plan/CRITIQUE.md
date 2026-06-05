@@ -86,7 +86,7 @@
 - addressed: 2026-06-05 via verification audit
 - fix: Verified that components/StanceGlyph.tsx exists and exports exactly the components listed in the specification: GlyphHeart, GlyphBody, GlyphMind, and StanceGlyph. The asset specification is accurate.
 
-### [MED] /README.md — Project status description inconsistent with current implementation
+### [MED] /README.md — Project status description inconsistent with current implementation ✅
 - pass: 21 (commit add8801)
 - viewport: repository
 - category: comprehension
@@ -94,6 +94,8 @@
 - evidence: Lines 109-113 describe combat.tsx, character.tsx, etc. as 'placeholder UI' but combat screen is actually fully implemented per spec 04
 - suggested fix: Update project layout section to reflect current implementation status per specs/README.md completion table
 - source: repo-proxy
+- addressed: 2026-06-05 via commit 89a3e9f
+- fix: Updated README.md lines 109-113 to show actual implementation status per specs completion table. Changed "placeholder UI" descriptions to "fully implemented per spec 04/05/06/07/08" for combat, character, inventory, exploration, and event screens respectively.
 
 ### [MED] /AGENTS.md — Pre-nexus orientation contains outdated workflow instructions
 - pass: 21 (commit add8801)

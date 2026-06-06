@@ -701,7 +701,7 @@ const styles = StyleSheet.create({
         color: AXM.bone,
     },
     graphBackground: {
-        backgroundColor: '#16130d',
+        backgroundColor: AXM.deepBg,
     },
     bloodSplatter: {
         position: 'absolute',

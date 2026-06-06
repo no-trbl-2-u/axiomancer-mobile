@@ -63,14 +63,14 @@ new runtime specs must use it rather than treating tests as blocked.
 | # | Spec | Why this order |
 |---|------|----------------|
 | 1 | [`01-test-harness-setup.md`](./01-test-harness-setup.md) | **[DONE]** Installed `jest-expo` + `@testing-library/react-native`, wrote the first hermetic e2e test, and became the reference. |
-| 2 | [`02-engine-store-integration.md`](./02-engine-store-integration.md) | Replaces hard-coded `useState` mocks with `createGameStore` from `axiomancer-mechanics`. Foundation for every screen. |
-| 3 | [`03-presenter-layer.md`](./03-presenter-layer.md) | Defines `<screen>.engine.ts` presenter contract: `(state) => ViewModel`. Locks in the testable boundary. |
+| 2 | [`02-engine-store-integration.md`](./02-engine-store-integration.md) | **[DONE]** Replaces hard-coded `useState` mocks with `createGameStore` from `axiomancer-mechanics`. Foundation for every screen. |
+| 3 | [`03-presenter-layer.md`](./03-presenter-layer.md) | **[DONE]** Defines `<screen>.engine.ts` presenter contract: `(state) => ViewModel`. Locks in the testable boundary. |
 | 4 | [`04-combat-screen-wiring.md`](./04-combat-screen-wiring.md) | **[DONE]** First real screen wired through the presenter. The most complex screen — getting it right de-risks the rest. |
-| 5 | [`05-character-screen-wiring.md`](./05-character-screen-wiring.md) | Reads engine character data; informs the equipment slot story. |
+| 5 | [`05-character-screen-wiring.md`](./05-character-screen-wiring.md) | **[DONE]** Reads engine character data; informs the equipment slot story. |
 | 6 | [`06-inventory-screen-wiring.md`](./06-inventory-screen-wiring.md) | **[DONE]** Reads engine items; introduces `useConsumable` flows. |
-| 7 | [`07-exploration-screen-wiring.md`](./07-exploration-screen-wiring.md) | Reads engine `WorldState`; node graph rendering. |
+| 7 | [`07-exploration-screen-wiring.md`](./07-exploration-screen-wiring.md) | **[DONE]** Reads engine `WorldState`; node graph rendering. |
 | 8 | [`08-event-screen-wiring.md`](./08-event-screen-wiring.md) | Engine Spec 08 (world) is done; this screen waits on Spec 09 store/orchestration + a pinned narrative contract (see spec body). |
-| 9 | [`09-asyncstorage-persistence.md`](./09-asyncstorage-persistence.md) | Adds an `AsyncStorage` adapter so the game survives app restarts. Coordinates with engine Spec 12. |
+| 9 | [`09-asyncstorage-persistence.md`](./09-asyncstorage-persistence.md) | **[DONE]** Adds an `AsyncStorage` adapter so the game survives app restarts. Coordinates with engine Spec 12. |
 | 10 | [`10-navigation-and-app-shell.md`](./10-navigation-and-app-shell.md) | Polish on routing: deep links, back behaviour, tab badges. |
 | 11 | [`11-asset-pipeline.md`](./11-asset-pipeline.md) | Replaces SVG placeholders per `SVG_ASSET_SPEC.md`. |
 | 12 | [`12-accessibility-and-theming.md`](./12-accessibility-and-theming.md) | A11y labels, reduce-motion, font-scaling, large-text support. |

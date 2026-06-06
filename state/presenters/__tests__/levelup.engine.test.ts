@@ -2,7 +2,7 @@
  * Hermetic tests for Phase 105 - Engine-owned stat preview + combat resources
  * 
  * Proves:
- * - Stat preview matches engine API for cross-stat effects
+ * - Stat preview matches engine API (engine has no cross-stat effects)
  * - Combat resource values come from engine state
  * - Skill affordability follows engine truth, not local approximation
  */
@@ -66,18 +66,18 @@ describe('Phase 105: Engine truth stat preview', () => {
         expect(result.mind.defense).toBe(expected.mentalDefense);
     });
 
-    it('calculateDerivedPreview shows stat cross-effects correctly', () => {
+    it('calculateDerivedPreview shows stat specialization correctly', () => {
         const baseStats = { heart: 5, body: 5, mind: 5 };
         
-        // Test that HEART allocation affects emotional stats
+        // Test that HEART allocation affects emotional stats only
         const heartAllocation = { heart: 5, body: 0, mind: 0 };
         const heartResult = calculateDerivedPreview(baseStats, heartAllocation);
         
-        // Verify heart boost primarily affects emotional stats but has cross-effects
+        // Verify heart boost only affects emotional stats (no cross-effects in engine)
         expect(heartResult.heart.attack).toBeGreaterThan(heartResult.body.attack);
         expect(heartResult.heart.attack).toBeGreaterThan(heartResult.mind.attack);
         
-        // Test that BODY allocation affects physical stats
+        // Test that BODY allocation affects physical stats only
         const bodyAllocation = { heart: 0, body: 5, mind: 0 };
         const bodyResult = calculateDerivedPreview(baseStats, bodyAllocation);
         

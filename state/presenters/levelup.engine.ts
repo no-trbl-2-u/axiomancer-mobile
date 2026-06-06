@@ -86,6 +86,11 @@ export function selectLevelUpViewModel(
 /**
  * Calculate derived stats preview using engine truth.
  * Applies allocation to base stats and uses engine deriveStats for accurate preview.
+ * 
+ * NOTE: The engine has no cross-stat effects. Each base stat only affects its primary category:
+ * - Heart only affects emotional stats (emotionalAttack/Skill/Defense)
+ * - Body only affects physical stats (physicalAttack/Skill/Defense)  
+ * - Mind only affects mental stats (mentalAttack/Skill/Defense)
  */
 export function calculateDerivedPreview(
     baseStats: BaseStats,

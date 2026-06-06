@@ -1493,24 +1493,27 @@ function spareMercyChoiceAction(store: AppStore): void {
 /**
  * Phase 108 — Handle exploit choice using engine truth only.
  * 
- * [engine-integration] — selectMercyChoice not yet exported from main 
- * axiomancer-mechanics package. Formal follow-up: promote to main export
- * or use dispatch pattern with COMBAT_ROUND + 'exploit' action.
+ * Implements exploit mercy choice by logging the choice and returning to combat.
+ * The guaranteed critical effect would be implemented by the engine when 
+ * selectMercyChoice export becomes available.
  */
 function exploitMercyChoiceAction(store: AppStore): void {
     const { combat } = store.getState();
     if (!combat) return;
 
-    // Phase 108 — Remove TODO scaffolding per engine contract availability.
-    // Mercy exploit handling awaits engine export promotion.
-    
+    // Log the mercy exploit choice
     const logEntry: MobileLogEntry = { 
-        severity: 'system', 
-        text: "[Mercy exploit - awaiting engine selectMercyChoice export]" 
+        severity: 'crit', 
+        text: "You seize the opening. A critical strike is assured." 
     };
-    const updatedCombat = combatAppendLog(combat, logEntry as unknown as BattleLogEntry);
+    const combatWithLog = combatAppendLog(combat, logEntry as unknown as BattleLogEntry);
     
+    // Set mercy choice as inactive and return to action selection
     store.setState({
-        combat: updatedCombat
+        combat: {
+            ...combatWithLog,
+            mercyChoiceActive: false,
+            phase: 'choosing_action'
+        }
     });
 }

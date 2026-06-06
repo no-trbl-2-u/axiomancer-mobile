@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
   derivedTable: { marginTop: 4, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, padding: 6, paddingHorizontal: 8 },
   derivedRow: { flexDirection: 'row' },
   derivedHeader: { borderBottomWidth: 1, borderBottomColor: AXM.ash, borderStyle: 'dashed', paddingBottom: 3, marginBottom: 0 },
-  derivedDataRow: { borderBottomWidth: 1, borderBottomColor: '#1a1814', paddingVertical: 3 },
+  derivedDataRow: { borderBottomWidth: 1, borderBottomColor: AXM.ash, paddingVertical: 3 },
   derivedCell: { flex: 1 },
   derivedRowLabel: { fontFamily: FONTS.sans, fontSize: 11, color: AXM.parchment, letterSpacing: 1.5, flex: 1.2 },
   derivedHeaderCell: { fontFamily: FONTS.mono, fontSize: 10, color: AXM.bone, textAlign: 'right', letterSpacing: 1 },

@@ -34,7 +34,7 @@
 - source: audit
 - issue: #287
 
-### [ ] [5.4] Hardcoded hex color in exploration screen background bypasses design system
+### [x] [5.4] Hardcoded hex color in exploration screen background bypasses design system
 - category: perf
 - impact: 6  
 - ease: 9

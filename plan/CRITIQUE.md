@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-05 at commit add8801
-> Pass count: 21
+> Last pass: 2026-06-06 at commit 83ee7f2
+> Pass count: 22
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -1472,3 +1472,57 @@
 - suggested fix: Either create TODO.md or remove the broken reference
 - source: reader
 - **Resolved 2026-05-15.** Removed broken reference to non-existent TODO.md file from README. Simplified text to state that native testing is not wired in current pass. See commit 7b5b44d.
+
+### [MED] /README.md — README lacks clear onboarding flow for new maintainers
+- pass: 22 (commit 83ee7f2)
+- viewport: repository
+- category: comprehension
+- observation: README jumps from quick start to complex scripts without explaining prerequisites like Expo CLI installation
+- evidence: Lines 31-32: 'You will need the Expo CLI installed; on first run, install Expo Go or build a development client.' Critical setup step is buried in Quick start section
+- suggested fix: Add dedicated 'Prerequisites' section before Quick start listing required tools
+- source: repo-proxy
+
+### [HIGH] /specs/README.md — Spec dependency table references completed specs without clear status
+- pass: 22 (commit 83ee7f2)
+- viewport: repository
+- category: navigation
+- observation: Spec dependency table references completed specs as blocking dependencies without clear status indicators
+- evidence: Lines 65-76: Table shows Spec 01 as '[DONE]' but Specs 02, 03 are listed without clear status, creating confusion about what can be worked on
+- suggested fix: Update recommended order table with current completion status for all specs
+- source: repo-proxy
+
+### [LOW] /docs/testing.md — Testing documentation uses casual voice conflicting with project archaic tone
+- pass: 22 (commit 83ee7f2)
+- viewport: repository
+- category: voice
+- observation: Testing documentation uses modern casual tone that conflicts with project's archaic voice directive
+- evidence: Line 9: 'If you can't write one, you must explain why in the PR description (and ideally fix the architecture so you can).' Uses casual modern phrasing
+- suggested fix: Revise documentation to match terse, archaic voice established in bearings.md
+- source: repo-proxy
+
+### [MED] /plan/bearings.md — Bearings file lacks executive summary of current project state
+- pass: 22 (commit 83ee7f2)
+- viewport: repository
+- category: comprehension
+- observation: Bearings file has dense technical content but lacks executive summary of current project state
+- evidence: Lines 8-27: Project description starts immediately with technical details without high-level status overview
+- suggested fix: Add 'Current Status' section summarizing shipped phases and next milestones
+- source: repo-proxy
+
+### [LOW] /docs/adr/README.md — ADR index lacks brief summaries for decision context
+- pass: 22 (commit 83ee7f2)
+- viewport: repository
+- category: comprehension
+- observation: ADR index lacks brief summaries making it hard to understand what each decision covers without reading full ADR
+- evidence: Lines 17-23: ADR list shows only titles like 'Engine truth and presenter boundary' without explaining scope or impact
+- suggested fix: Add one-sentence summaries for each ADR explaining its scope and key decision
+- source: repo-proxy
+
+### [MED] /repository structure — Multiple overlapping documentation sources lack clear hierarchy
+- pass: 22 (commit 83ee7f2)
+- viewport: repository
+- category: comprehension
+- observation: Repository has multiple overlapping documentation sources without clear hierarchy for new maintainers
+- evidence: Found README.md, AGENTS.md, agents.md, docs/ folder, specs/ folder, plan/ folder all containing different types of project documentation
+- suggested fix: Create single entry point documentation that guides maintainers through the doc hierarchy based on their role
+- source: repo-proxy

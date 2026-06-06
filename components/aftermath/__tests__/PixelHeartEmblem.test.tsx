@@ -35,4 +35,26 @@ describe('PixelHeartEmblem', () => {
         // Default should be 12px cells (192px total)
         // Component should render successfully with defaults
     });
+
+    it('renders SVG elements for pixel art structure', () => {
+        const { UNSAFE_queryByType, UNSAFE_queryAllByType } = render(<PixelHeartEmblem />);
+        
+        // Should have SVG container
+        const svgElement = UNSAFE_queryByType('RNSVGSvgView' as any);
+        expect(svgElement).toBeTruthy();
+        
+        // Should have multiple rect elements for pixels
+        const rectElements = UNSAFE_queryAllByType('RNSVGRect' as any);
+        expect(rectElements.length).toBeGreaterThan(0);
+    });
+
+    it('handles various cell sizes without crashing', () => {
+        const testCellSizes = [1, 5, 12, 15, 20];
+        
+        testCellSizes.forEach(cellSize => {
+            expect(() => {
+                render(<PixelHeartEmblem cellSize={cellSize} />);
+            }).not.toThrow();
+        });
+    });
 });

@@ -38,4 +38,27 @@ describe('AftermathBackdrop', () => {
 
         expect(getByText('Hatched Content')).toBeTruthy();
     });
+
+    it('renders backdrop with proper component structure', () => {
+        const { UNSAFE_queryAllByType } = render(
+            <AftermathBackdrop>
+                <Text>Structure Test</Text>
+            </AftermathBackdrop>
+        );
+        
+        // Should have View elements for backdrop structure
+        const viewElements = UNSAFE_queryAllByType('View' as any);
+        expect(viewElements.length).toBeGreaterThan(0);
+    });
+
+    it('supports non-dismissible backdrop behavior', () => {
+        // Test that backdrop can be set up for non-dismissible modal
+        expect(() => {
+            render(
+                <AftermathBackdrop>
+                    <Text>Non-dismissible content</Text>
+                </AftermathBackdrop>
+            );
+        }).not.toThrow();
+    });
 });

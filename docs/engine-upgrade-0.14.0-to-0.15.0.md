@@ -9,7 +9,7 @@
 
 - Bump `axiomancer-mechanics` from `0.14.0` to `0.15.0`.
 - This is mostly a balance/content/evidence release, not a broad public API break.
-- Preserve the Phase 104/106 doctrine: Befriend, HP gates, mercy choice, and combat reports are engine truth. Mobile displays them; mobile does not simulate them.
+- Preserve the corrected doctrine: Stance and Vitae are engine truth. Mobile displays mechanics-emitted stance/resource state, affordability, actions, and reports; mobile does not simulate them.
 - Re-check expanded `northern-forest` content, new enemy/NPC/story surfaces, and playtest-facing fixtures against mobile presenters/fallbacks.
 - Verification must include typecheck, focused Jest, full verify, and visual smoke/playtest evidence or an exact blocker.
 
@@ -17,19 +17,19 @@
 
 ## Release contents mobile must account for
 
-## 1. Befriend/mercy authority hardening
+## 1. Stance and Vitae authority hardening
 
-**Mechanics change:** Phase 112 hardened the rule that the engine owns Befriend resolution authority: HP gate, successful opening, mercy-choice state, and report output.
+**Mechanics change:** Phase 112 hardened the rule that the engine owns Stance and Vitae authority: stance state, Vitae/resource generation and spending, action affordability, and report output.
 
 **Mobile action:**
 
-- Keep mercy modal state/action/report wiring engine-owned.
-- Do not restore local HP-gate math, local success checks, local spare/exploit simulation, or hard-coded exploit consequences.
+- Keep stance, Vitae/resource, action-affordability, and report wiring engine-owned.
+- Do not restore local stance/resource math, local affordability checks, local action-resolution simulation, or hard-coded consequences.
 - If the package exposes richer report fields than current UI shows, render safe existing fallbacks first and file polish rows after the package bump is green.
 
-## 2. Mercy-loop and balance evidence
+## 2. Stance/Vitae balance evidence
 
-**Mechanics change:** Phase 113 added stronger mercy-loop playtest evidence and a STRATEGIST witness. Phase 121 added a three-anchor Sage balance scaffold and tuning close-out.
+**Mechanics change:** Phase 113 added stronger Stance/Vitae playtest evidence and a STRATEGIST witness. Phase 121 added a three-anchor Sage balance scaffold and tuning close-out.
 
 **Mobile action:**
 
@@ -53,7 +53,7 @@
 
 **Mobile action:**
 
-- Confirm enemy names, stances, skills, befriendability data, and aftermath/codex/memoir-adjacent copy render through existing presenters.
+- Confirm enemy names, Stance data, Vitae/resource costs, skills, and aftermath/codex/memoir-adjacent copy render through existing presenters.
 - Confirm dialogue/event rendering has safe fallbacks for new story nodes and choices.
 - Do not invent local story consequences; display engine payloads and file critique rows for absent UI polish.
 

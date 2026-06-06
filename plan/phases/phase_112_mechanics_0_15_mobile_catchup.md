@@ -25,12 +25,12 @@ T ordered the mechanics version bump, release publication, tag update, and a pro
 2. **Type/import drift drain**
    - Run `npm run typecheck` immediately after the bump.
    - Fix any compile/import drift against the published package.
-   - Pay attention to new/changed northern-forest, enemy, NPC/story, playtest, and Befriend/mercy surfaces.
+   - Pay attention to new/changed northern-forest, enemy, NPC/story, playtest, and Stance/Vitae surfaces.
 
-3. **Befriend/mercy contract verification**
-   - Confirm mobile still treats Befriend/mercy as engine-owned.
-   - Do not restore local HP-gate, spare/exploit, success, or report simulation.
-   - Preserve the Phase 104/106 modal engine-truth posture.
+3. **Stance and Vitae contract verification**
+   - Confirm mobile still treats Stance and Vitae as engine-owned.
+   - Do not restore local stance/resource math, affordability, action-resolution, or report simulation.
+   - Preserve the engine-truth posture: mobile presents mechanics state; it does not adjudicate rules.
 
 4. **Exploration/story presentation pass**
    - Confirm expanded `northern-forest` map/content does not break exploration presenters, route assumptions, node labels, encounter preludes, or story/memoir copy fallbacks.
@@ -69,7 +69,7 @@ phase 112: mechanics 0.15.0 mobile catch-up
 
 - bump axiomancer-mechanics to 0.15.0
 - drain type/import drift from the published package
-- verify Befriend/mercy remains engine-owned
+- verify Stance and Vitae remain engine-owned
 - refresh exploration/story presentation evidence for expanded northern-forest/content
 - update upgrade notes and phase status
 

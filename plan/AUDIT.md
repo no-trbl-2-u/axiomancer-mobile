@@ -36,7 +36,7 @@
 - addressed: 2026-06-06 via commit e2d0982
 - fix: Replaced `as any` casts with proper typing in CombatPlayerHud and CombatEnemyPanel test files, using Partial<CombatViewModel> and proper interface properties to restore type safety
 
-### [3.6] Console statements in production components could expose debug information
+### [3.6] Console statements in production components could expose debug information ✅
 - category: perf
 - impact: 4
 - ease: 9
@@ -46,8 +46,10 @@
 - next: Audit console.log/warn/error statements in production components and wrap with __DEV__ guards where needed
 - evidence: Found 17 console statements across 9 files including components/ErrorBoundary.tsx, components/DebugFriendship.tsx, and others
 - observation: Console statements in production builds could expose debug information and impact performance, though some may already be properly guarded
+- addressed: 2026-06-06 via audit verification
+- fix: Verified all console statements in production components are already properly wrapped with __DEV__ guards. All 17 identified console statements in components/, app/, and state/ are protected and will not execute in production builds.
 
-### [3.0] Multiple hex color literals in component files bypass design system tokens
+### [3.0] Multiple hex color literals in component files bypass design system tokens ✅
 - category: perf
 - impact: 5
 - ease: 6
@@ -57,6 +59,9 @@
 - next: Replace hardcoded hex colors in components with appropriate AXM design tokens from theme/axm.ts
 - evidence: Found 132 hex color occurrences across 38 files including theme/axm.ts, components/StatusCard.tsx, and app screens
 - observation: Hardcoded hex colors outside the central theme system make consistent design updates more difficult and error-prone
+- issue: #277
+- addressed: 2026-06-06 via commit 9ee7673
+- fix: Replaced hardcoded hex colors with AXM design tokens in 4 key locations: CombatEnemyPanel.tsx (#06050a → AXM.deepBg), inventory/index.tsx (#3a3530 → AXM.ash), StanceGlyph.tsx (#0a0a0a → AXM.bg). Improves design system consistency and maintainability.
 
 ### [2.7] Large app folder structure could benefit from code splitting optimization
 - category: perf

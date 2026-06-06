@@ -97,7 +97,7 @@
 - addressed: 2026-06-05 via commit 89a3e9f
 - fix: Updated README.md lines 109-113 to show actual implementation status per specs completion table. Changed "placeholder UI" descriptions to "fully implemented per spec 04/05/06/07/08" for combat, character, inventory, exploration, and event screens respectively.
 
-### [MED] /AGENTS.md — Pre-nexus orientation contains outdated workflow instructions
+### [MED] /AGENTS.md — Pre-nexus orientation contains outdated workflow instructions ✅
 - pass: 21 (commit add8801)
 - viewport: repository
 - category: navigation
@@ -105,6 +105,9 @@
 - evidence: Lines 3-4 state 'This is the pre-nexus orientation file. For current autonomous loop instructions, see agents.md' but file contains 103 lines of detailed instructions that may conflict with current nexus methodology
 - suggested fix: Consolidate or clearly separate pre-nexus vs. current instructions, or archive AGENTS.md if superseded by agents.md
 - source: repo-proxy
+- issue: #274
+- addressed: 2026-06-05 via commit 0a7766f
+- fix: Streamlined AGENTS.md from 103 lines to 49 lines by removing outdated workflow instructions that conflicted with nexus methodology. File now focuses purely on project-specific technical orientation while clearly directing users to agents.md for current autonomous loop instructions.
 
 ### [LOW] /agents.md — Technical documentation voice contrasts with project voice guidelines
 - pass: 21 (commit add8801)

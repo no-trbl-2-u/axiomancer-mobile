@@ -8,6 +8,39 @@
 
 ## Top 5 findings (scored)
 
+### [3.2] AGENTS.md Pre-nexus orientation contains outdated workflow instructions ✅
+- category: external-critique
+- impact: 4
+- ease: 8
+- next: Consolidate or clearly separate pre-nexus vs. current instructions, or archive AGENTS.md if superseded by agents.md
+- evidence: Lines 3-4 state 'This is the pre-nexus orientation file. For current autonomous loop instructions, see agents.md' but file contains 103 lines of detailed instructions that may conflict with current nexus methodology
+- observation: Pre-nexus orientation file contains outdated workflow instructions and duplicate information with agents.md
+- source: external-critique (pass 21, commit add8801)
+- issue: #274
+- addressed: 2026-06-05 via commit 0a7766f
+- fix: Streamlined AGENTS.md from 103 lines to 49 lines by removing outdated workflow instructions that conflicted with nexus methodology. File now focuses purely on project-specific technical orientation while clearly directing users to agents.md for current autonomous loop instructions.
+
+### [resolved] Engine sync — mobile is current on the latest published engine ✅
+- category: planning
+- observation: The engine check-in is done. The latest published
+  `axiomancer-mechanics` on npm is `0.14.0`; mobile pins exactly `0.14.0`
+  (package.json + package-lock.json), shipped via Phase 106 catch-up and
+  closed by commit 875523f ("docs: close mechanics 0.14 mobile upgrade
+  notes"). No newer engine release exists, so there is no catch-up phase
+  to queue.
+- resolution: Cleared via oversight 2026-06-04. The new-phase / candidate-
+  promotion hold this row imposed is LIFTED — /march may queue phases and
+  /oversight may promote candidates again.
+- note: The difficulty/progression-curve concern (CRITIQUE [MED] "difficulty
+  too hard / enemies scale with player") stays OPEN and `[needs-engine-release]`.
+  Verified 2026-06-04: that is an engine-side balance change and no engine
+  release fixing it has shipped (0.14.0 is the newest). The mobile repo only
+  surfaces enemy scaling; it cannot fix the curve here. The next /oversight
+  re-surfaces it once an engine balance release lands.
+- filed: oversight 2026-06-04; resolved: oversight 2026-06-04
+
+## Completed findings
+
 ### [8.0] Navigation route type bypass in app/index.tsx undermines router safety ✅
 - category: perf
 - impact: 6
@@ -32,27 +65,6 @@
 - issue: #272
 - addressed: 2026-06-05 via commit 30d51fe
 - fix: Added comprehensive mocks for all lazy-loaded debug components and suppressed the specific "suspended resource finished loading" console.error messages in test setup. Achieves clean test output while maintaining test coverage of DEV gate behavior and component structure.
-
-### [resolved] Engine sync — mobile is current on the latest published engine ✅
-- category: planning
-- observation: The engine check-in is done. The latest published
-  `axiomancer-mechanics` on npm is `0.14.0`; mobile pins exactly `0.14.0`
-  (package.json + package-lock.json), shipped via Phase 106 catch-up and
-  closed by commit 875523f ("docs: close mechanics 0.14 mobile upgrade
-  notes"). No newer engine release exists, so there is no catch-up phase
-  to queue.
-- resolution: Cleared via oversight 2026-06-04. The new-phase / candidate-
-  promotion hold this row imposed is LIFTED — /march may queue phases and
-  /oversight may promote candidates again.
-- note: The difficulty/progression-curve concern (CRITIQUE [MED] "difficulty
-  too hard / enemies scale with player") stays OPEN and `[needs-engine-release]`.
-  Verified 2026-06-04: that is an engine-side balance change and no engine
-  release fixing it has shipped (0.14.0 is the newest). The mobile repo only
-  surfaces enemy scaling; it cannot fix the curve here. The next /oversight
-  re-surfaces it once an engine balance release lands.
-- filed: oversight 2026-06-04; resolved: oversight 2026-06-04
-
-## Top 5 findings (scored)
 
 ### [3.0] Missing test file for DebugComponentsLazy component ✅
 - category: tests
@@ -148,8 +160,6 @@
 - observation: Several image assets are relatively large for mobile apps and could benefit from optimization
 - addressed: 2026-06-04 via commit 32fabb6
 - fix: Removed 4 unused React logo images (56KB total) including react-logo@3x.png (21KB), react-logo@2x.png (14KB), and others. Complete removal more impactful than optimization since files were unused.
-
-## Completed findings
 
 ### [10.0] Incorrect HIGH priority critique findings claiming missing files ✅
 - category: external-critique

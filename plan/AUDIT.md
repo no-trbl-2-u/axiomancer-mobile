@@ -46,7 +46,7 @@
 - observation: Background colors should use centralized theme tokens for maintainability and consistent visual hierarchy
 - source: audit
 
-### [ ] [4.5] TODO scaffolding comment in actions.ts indicates incomplete mercy action implementation
+### [x] [4.5] TODO scaffolding comment in actions.ts indicates incomplete mercy action implementation
 - category: tests
 - impact: 5
 - ease: 9
@@ -57,6 +57,8 @@
 - evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/state/actions.ts:1504 contains TODO comment about removing scaffolding per engine contract availability
 - observation: TODO comments indicate incomplete implementation that should be either completed or properly tracked
 - source: audit
+- addressed: 2026-06-06 via commit 6ab9033
+- fix: Removed TODO scaffolding and replaced with proper exploitMercyChoiceAction implementation that logs exploit choice and transitions combat to choosing_action phase
 
 ### [ ] [3.6] Event illustration components use hardcoded hex colors for placeholder artwork
 - category: perf

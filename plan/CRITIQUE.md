@@ -475,17 +475,17 @@
 - evidence: Line 100 contains reference to non-existent .cursor/skills/ path
 - suggested_fix: Update reference to point to correct asset swap documentation or remove outdated reference
 - source: browser
-### [MED] general — Resource system has no visual representation
+## Done
+
+### [MED] general — Resource system has no visual representation ✅
 - pass: user-jot (commit 0529532347c306d861233a4456604db319e7c195)
 - viewport: unspecified
 - auth_state: anonymous
 - category: visual
 - observation: the resource system doesn't have any visual representation. The lane has been replaced with a legend instead
 - evidence: user-spotted at 2026-06-06T16:04:36Z
-- suggested_fix: [user has not specified — iterate to determine]
+- resolution: Phase 113 replaced the crucible token `glyph` (◐◑◒◓◉) with the same 3-letter code as `short`, so the strip rendered duplicate text ("BOD/BOD/count") instead of a token symbol. Restored the visual glyphs in `buildCrucibleTokens` so the strip now shows a colored token symbol + readable label + count. (combat-modal-tokens-button branch)
 - source: user
-
-## Done
 
 ### [MED] /death — Death screen LEDGER shows wrong encounter count + internal node ID ✅
 - pass: deep-playtest (2026-05-25, commit d560e8c)

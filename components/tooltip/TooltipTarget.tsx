@@ -15,6 +15,7 @@
 
 import React, { useRef } from 'react';
 import { Pressable, View } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
 
 import { useTooltip } from '@/hooks/useTooltip';
 import type { TooltipKind } from '@/state/presenters/tooltip.engine';
@@ -23,6 +24,13 @@ export interface TooltipTargetProps {
     kind: TooltipKind;
     id: string;
     children: React.ReactNode;
+    /**
+     * Style applied to the Pressable itself. Needed when the target is a
+     * flex child whose sizing (e.g. `width: '48%'` in a wrap grid) must
+     * live on the pressable rather than an inner wrapper — otherwise the
+     * Pressable shrinks to content width and stretches to row height.
+     */
+    style?: StyleProp<ViewStyle>;
     accessibilityLabel?: string;
     accessibilityHint?: string;
     testID?: string;
@@ -32,6 +40,7 @@ export function TooltipTarget({
     kind,
     id,
     children,
+    style,
     accessibilityLabel,
     accessibilityHint,
     testID,
@@ -41,6 +50,7 @@ export function TooltipTarget({
     return (
         <Pressable
             ref={ref}
+            style={style}
             onPress={() => {
                 if (!id) return;
                 tooltip.show({ kind, id, anchorRef: ref });

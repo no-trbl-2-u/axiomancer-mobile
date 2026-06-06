@@ -11,6 +11,7 @@ import { StanceGlyph } from '@/components/StanceGlyph';
 import { FriendshipMeter } from '@/components/FriendshipMeter';
 import { EffectChip } from '@/components/EffectChip';
 import { TooltipTarget } from '@/components/tooltip/TooltipTarget';
+import { CombatResourceTracker } from '@/components/combat/CombatResourceTracker';
 
 interface CombatPlayerHudProps {
     vm: CombatViewModel;
@@ -25,8 +26,14 @@ export function CombatPlayerHud({ vm }: CombatPlayerHudProps) {
     // effect chips on the bottom row. Mana bar omitted per user-
     // direct override (2026-05-23) — only HEALTH is player-visible.
     const stance = vm.stancePicker.selected;
+    // The crucible resource tracker (skill fuel) sits at the top of the
+    // footer so the pool stays visible in every phase. Guarded because
+    // some hermetic fixtures render the HUD without a `crucibleTokens`
+    // slice; the live VM always provides one.
+    const tokens = vm.crucibleTokens;
     return (
         <View style={styles.playerWrap}>
+            {tokens && tokens.length > 0 && <CombatResourceTracker tokens={tokens} />}
             <View style={styles.playerInner}>
                 <StanceGlyph
                     kind={stance ?? 'body'}

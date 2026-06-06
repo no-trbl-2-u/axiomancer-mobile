@@ -21,7 +21,7 @@
 - source: audit
 - issue: #286
 
-### [ ] [5.4] Hardcoded hex colors in character screen border styling bypasses design system
+### [x] [5.4] Hardcoded hex colors in character screen border styling bypasses design system
 - category: perf  
 - impact: 6
 - ease: 9
@@ -32,6 +32,7 @@
 - evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/app/(tabs)/character/index.tsx:467 uses hardcoded '#1a1814' for derivedDataRow border color
 - observation: Border colors should use centralized theme tokens for maintainability and consistent visual hierarchy
 - source: audit
+- issue: #287
 
 ### [ ] [5.4] Hardcoded hex color in exploration screen background bypasses design system
 - category: perf

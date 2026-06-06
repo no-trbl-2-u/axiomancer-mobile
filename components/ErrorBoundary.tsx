@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         borderWidth: 2,
         borderColor: AXM.parchment,
-        backgroundColor: '#0a0807',
+        backgroundColor: AXM.silhouette,
         alignItems: 'center',
         justifyContent: 'center',
     },

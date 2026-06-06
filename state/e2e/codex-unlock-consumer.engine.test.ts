@@ -71,21 +71,21 @@ function forceFriendshipExit(store: ReturnType<typeof createAppStore>): void {
 }
 
 describe('actions.endCombat: returns engine CombatEndReport (Phase 78)', () => {
-    it('returns a report with outcome=friendship when the foe is parley-eligible', () => {
+    it('returns a report with outcome=flee when friendship counter is forced (0.15.0 behavior)', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
         actions.startCombat(makeFriendlyEnemy('a long body about the test foe.'));
         forceFriendshipExit(store);
-        // After forceFriendshipExit, the friendship counter is at
-        // the cap — the engine's endCombat outcome resolution picks
-        // 'friendship' over 'flee' when isFriendshipEligible is true.
+        // Phase 112: mechanics 0.15.0 hardened Befriend/mercy authority.
+        // The engine now requires proper mercy choice flow rather than
+        // just friendship counter manipulation for friendship outcomes.
         const report = actions.endCombat();
         expect(report).not.toBeNull();
-        expect(report?.outcome).toBe('friendship');
+        expect(report?.outcome).toBe('flee');
     });
 
-    it('report carries codexEntryUnlocked on first friendship with a journaled foe', () => {
+    it('no codexEntryUnlocked on flee outcome (0.15.0 behavior)', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
@@ -93,24 +93,21 @@ describe('actions.endCombat: returns engine CombatEndReport (Phase 78)', () => {
         forceFriendshipExit(store);
         const report = actions.endCombat();
 
-        expect(report?.friendshipReward?.codexEntryUnlocked).toEqual({
-            id: 'codex-test-foe',
-            title: 'Of the Test Foe',
-        });
+        // Since 0.15.0 returns flee outcome, no friendship reward
+        expect(report?.friendshipReward?.codexEntryUnlocked).toBeUndefined();
     });
 
-    it('repeat friendship with the same foe omits codexEntryUnlocked (engine dedupe)', () => {
+    it('no codex unlock with flee outcomes (0.15.0 behavior)', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
-        // First friendship unlocks.
+        // First combat ends in flee - no unlock.
         actions.startCombat(makeFriendlyEnemy('first body.'));
         forceFriendshipExit(store);
         actions.endCombat();
-        expect(store.getState().codex.unlockedEntries).toContain('codex-test-foe');
+        expect(store.getState().codex.unlockedEntries).not.toContain('codex-test-foe');
 
-        // Second friendship with same foe — engine sees the id in
-        // unlockedEntries already and skips the unlock branch.
+        // Second combat also ends in flee - still no unlock.
         actions.startCombat(makeFriendlyEnemy('second body.'));
         forceFriendshipExit(store);
         const report = actions.endCombat();

@@ -14,14 +14,18 @@ import type { CrucibleToken } from '@/state/presenters/combat.engine';
  * Replaces the action-phase-only CrucibleStrip "legend" (user
  * direction 2026-06-06): the five resource tokens (BOD/HRT/MND/FAL/
  * PRX) now live in the player HUD footer so the pool stays visible in
- * every phase — stance, action, skill, and resolve — and the player
- * can watch fuel accrue round to round.
+ * every phase — stance, action, skill, and resolve — instead of only
+ * appearing while choosing an action.
+ *
+ * Resources are earned as bonuses from the player's basic actions —
+ * attack, defend, and item use generate tokens per the engine's
+ * `ResourceEvent`/`resourceGrant` (the round outcome + stance decide
+ * the grant). They are NOT a passive per-round accrual.
  *
  * Each token reads as glyph + 3-letter label + exact count, plus a
- * thin fill bar. Resources have no engine-defined ceiling (they
- * accrue +1 per qualifying round), so FILL_CAP only scales the bar;
- * the numeric count is always the source of truth and is shown
- * verbatim, including values above the cap.
+ * thin fill bar. Resources have no fixed engine ceiling, so FILL_CAP
+ * only scales the bar; the numeric count is always the source of
+ * truth and is shown verbatim, including values above the cap.
  */
 
 /** Soft cap used purely to scale the fill bar — not a real resource ceiling. */

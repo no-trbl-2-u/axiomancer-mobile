@@ -216,7 +216,7 @@ function StanceCard({
                 accessibilityHint={(isAdv || isDis) ? 'hold to read advantage description' : undefined}
                 accessibilityState={{ selected: isSel }}
             >
-                <View style={[stance_styles.card, { borderColor: isSel ? AXM.sulfur : accent, backgroundColor: isSel ? '#1a1410' : AXM.bg }]}>
+                <View style={[stance_styles.card, { borderColor: isSel ? AXM.sulfur : accent, backgroundColor: isSel ? AXM.selectFill : AXM.bg }]}>
                     {(isAdv || isDis) && (
                         <View
                             style={[stance_styles.advBadge, { borderColor: isAdv ? AXM.sulfur : AXM.blood }]}

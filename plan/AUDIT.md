@@ -67,6 +67,22 @@
 
 ## Completed findings
 
+### [9.0] Spec dependency table references completed specs without clear status ✅
+- category: external-critique
+- impact: 6
+- ease: 10
+- base-score: 6.0
+- ux-bias-multiplier: 1.5
+- final-score: 9.0
+- next: Update spec dependency table with current completion status for all specs
+- evidence: Lines 65-76 in specs/README.md show Spec 01 as '[DONE]' but Specs 02, 03, 05, 07, 09 are listed without clear status despite being completed
+- observation: HIGH priority critique finding about spec dependency table references completed specs as blocking dependencies without clear status indicators
+- source: external-critique (pass 22, commit 83ee7f2)
+- addressed: 2026-06-06 via commit a8b8b68
+- fix: Updated specs/README.md lines 66-73 to mark Specs 02, 03, 05, 07, and 09 as [DONE] to match their actual completion status documented in plan/steps/01_build_plan.md
+
+## Completed findings
+
 ### [8.0] Navigation route type bypass in app/index.tsx undermines router safety ✅
 - category: perf
 - impact: 6

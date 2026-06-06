@@ -1482,7 +1482,7 @@
 - suggested fix: Add dedicated 'Prerequisites' section before Quick start listing required tools
 - source: repo-proxy
 
-### [HIGH] /specs/README.md — Spec dependency table references completed specs without clear status
+### [HIGH] /specs/README.md — Spec dependency table references completed specs without clear status ✅
 - pass: 22 (commit 83ee7f2)
 - viewport: repository
 - category: navigation
@@ -1490,6 +1490,8 @@
 - evidence: Lines 65-76: Table shows Spec 01 as '[DONE]' but Specs 02, 03 are listed without clear status, creating confusion about what can be worked on
 - suggested fix: Update recommended order table with current completion status for all specs
 - source: repo-proxy
+- addressed: 2026-06-06 via commit a8b8b68
+- fix: Updated specs/README.md lines 66-73 to mark Specs 02, 03, 05, 07, and 09 as [DONE] to match their actual completion status documented in plan/steps/01_build_plan.md
 
 ### [LOW] /docs/testing.md — Testing documentation uses casual voice conflicting with project archaic tone
 - pass: 22 (commit 83ee7f2)

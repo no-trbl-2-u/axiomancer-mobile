@@ -72,7 +72,7 @@ commit that ships the phase.
 
 - [x] Phase 114 — Aftermath modals (design implementation). Promoted via oversight 2026-06-06 from phase candidate [3.5]. Implement the four post-combat outcome modal/screen artboards per `design/aftermath-modals-prompt.txt` (landed 2026-06-04), reusing established token mapping and matching the 2026-05-16 handoff look. Brief: draft via `/plan-a-phase phase 114`. Verification: focused aftermath/modal presenter Jest + `npm run verify`; visual evidence per `npm run verify:visual` or exact visual-smoke blocker. Shipped in commit b0d1463.
 
-- [ ] Phase 115 — Production component test coverage expansion. Promoted via oversight 2026-06-06 from phase candidate [3.0]. Add hermetic tests for highest-priority untested production components (StatBar, StanceGlyph, ToastHost, CombatEnemyPanel and peers in the 55-uncovered set) following existing test patterns, honoring the hermetic-test standard in `docs/testing.md`. Brief: draft via `/plan-a-phase phase 115`. Verification: new Jest suites pass + `npm run verify`.
+- [x] Phase 115 — Production component test coverage expansion. Promoted via oversight 2026-06-06 from phase candidate [3.0]. Add hermetic tests for highest-priority untested production components (StatBar, StanceGlyph, ToastHost, CombatEnemyPanel and peers in the 55-uncovered set) following existing test patterns, honoring the hermetic-test standard in `docs/testing.md`. Brief: draft via `/plan-a-phase phase 115`. Verification: new Jest suites pass + `npm run verify`. Shipped in commit 5f6c7b0.
 
 - [x] Phase 1 — Adopt nexus methodology. Shipped in commit
       `a703908` ("chore: adopt nexus methodology"); closed out

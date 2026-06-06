@@ -465,8 +465,11 @@ export function CombatPanel() {
 
 // ---------------------------------------------------------------------------
 // Sub-components extracted to components/combat/PhaseBottom.tsx
-// (PhaseStack, StancePhase, ActionPhase, CrucibleStrip, SkillPhase,
-// SkillRow, ResolvePanel + their style sheets).
+// (PhaseStack, StancePhase, ActionPhase, SkillPhase, SkillRow,
+// ResolvePanel + their style sheets). The crucible "skill fuel"
+// pool now renders as a persistent CombatResourceTracker in the
+// player HUD footer (CombatPlayerHud), replacing the former
+// action-phase-only CrucibleStrip legend.
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------

@@ -17,7 +17,6 @@ import { toRomanLower } from '@/state/presenters/roman';
 import type {
     ActionOption,
     CombatViewModel,
-    CrucibleToken,
     ResolveSlice,
     SkillOption,
     StanceKey,
@@ -159,7 +158,6 @@ function PhaseStack({
                                         options={vm.actionPicker.options}
                                         fleeAvailable={vm.actionPicker.fleeAvailable}
                                         fleeHint={vm.actionPicker.fleeHint}
-                                        crucibleTokens={vm.crucibleTokens}
                                         onPick={onPickAction}
                                         onFlee={onFlee}
                                     />
@@ -298,20 +296,17 @@ function ActionPhase({
     options,
     fleeAvailable,
     fleeHint,
-    crucibleTokens,
     onPick,
     onFlee,
 }: {
     options: readonly ActionOption[];
     fleeAvailable: boolean;
     fleeHint: string;
-    crucibleTokens: readonly CrucibleToken[];
     onPick: (k: ActionOption['key']) => void;
     onFlee: () => void;
 }) {
     return (
         <View>
-            <CrucibleStrip tokens={crucibleTokens} />
             <View style={action_styles.grid}>
                 {options.map((opt) => {
                     const accent = ACCENT_BY_KIND[opt.accentKind];
@@ -371,35 +366,6 @@ function ActionPhase({
                     <Text style={action_styles.flee}>{fleeHint}</Text>
                 </TouchableOpacity>
             )}
-        </View>
-    );
-}
-
-function CrucibleStrip({ tokens }: { tokens: readonly CrucibleToken[] }) {
-    return (
-        <View style={crucible_strip_styles.row} testID="combat-crucible-strip">
-            <View style={crucible_strip_styles.labelCol}>
-                <Text style={crucible_strip_styles.eyebrow}>TECHNIQUES</Text>
-                <Text style={crucible_strip_styles.subLabel}>SKILL FUEL</Text>
-            </View>
-            <View style={crucible_strip_styles.tokens}>
-                {tokens.map((t) => {
-                    const depleted = t.count <= 0;
-                    return (
-                        <View key={t.key} style={crucible_strip_styles.tokenCol}>
-                            <Text style={[crucible_strip_styles.tokenGlyph, { color: depleted ? AXM.ash : t.color }]}>
-                                {t.glyph}
-                            </Text>
-                            <Text style={[crucible_strip_styles.tokenShort, { color: depleted ? AXM.ash : t.color }]}>
-                                {t.short}
-                            </Text>
-                            <Text style={[crucible_strip_styles.tokenCount, { color: depleted ? AXM.ash : AXM.parchment }]}>
-                                {t.count}
-                            </Text>
-                        </View>
-                    );
-                })}
-            </View>
         </View>
     );
 }
@@ -617,62 +583,6 @@ const action_styles = StyleSheet.create({
     hint: { fontFamily: FONTS.mono, fontSize: 8, color: AXM.bone, letterSpacing: 1, marginTop: 2 },
     fleeRow: { alignItems: 'center', marginTop: 8 },
     flee: { fontFamily: FONTS.serifItalic, fontSize: 11, color: AXM.bone, borderBottomWidth: 1, borderBottomColor: AXM.bone, paddingBottom: 1 },
-});
-
-const crucible_strip_styles = StyleSheet.create({
-    row: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        padding: 6,
-        paddingHorizontal: 8,
-        borderWidth: 1,
-        borderColor: AXM.ash,
-        backgroundColor: AXM.deepBg,
-        marginBottom: 8,
-    },
-    labelCol: {
-        gap: 0,
-    },
-    eyebrow: {
-        fontFamily: FONTS.sans,
-        fontSize: 9,
-        color: AXM.bone,
-        letterSpacing: 2,
-    },
-    subLabel: {
-        fontFamily: FONTS.mono,
-        fontSize: 7,
-        color: AXM.ash,
-        letterSpacing: 1,
-    },
-    tokens: {
-        flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        gap: 4,
-    },
-    tokenCol: {
-        flexDirection: 'column',
-        alignItems: 'center',
-        paddingHorizontal: 4,
-        paddingVertical: 2,
-        gap: 1,
-    },
-    tokenGlyph: {
-        fontFamily: FONTS.gothic,
-        fontSize: 16,
-    },
-    tokenShort: {
-        fontFamily: FONTS.sans,
-        fontSize: 8.5,
-        letterSpacing: 1.2,
-    },
-    tokenCount: {
-        fontFamily: FONTS.gothic,
-        fontSize: 13,
-        lineHeight: 14,
-    },
 });
 
 const skill_styles = StyleSheet.create({

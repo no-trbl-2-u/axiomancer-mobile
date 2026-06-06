@@ -174,10 +174,13 @@ assisted development. Pick up the loop here:
   — the operator's manual.
 - **Writing tests?** [`docs/testing.md`](./docs/testing.md) — hermetic
   e2e standard. Every implementation must land with at least one.
-- **Catching up to mechanics `0.14.0`?**
+- **Catching up to mechanics `0.15.0`?**
+  [`docs/engine-upgrade-0.14.0-to-0.15.0.md`](./docs/engine-upgrade-0.14.0-to-0.15.0.md)
+  — package bump, Befriend/mercy engine authority, northern-forest/story content,
+  and presenter/visual evidence checklist.
+- **Older mechanics `0.14.0` catch-up:**
   [`docs/mechanics-upgrade-0.14.0.md`](./docs/mechanics-upgrade-0.14.0.md)
-  — package bump, removed imports, Befriend modal, region/faction aftermath,
-  and presenter migration checklist.
+  — removed imports, Befriend modal, region/faction aftermath, and presenter migration checklist.
 
 ## Hermetic E2E testing
 

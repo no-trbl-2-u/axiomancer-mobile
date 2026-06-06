@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-05 at commit 6fdc389
-> Pass count: 57
+> Last pass: 2026-06-06 at commit ab8f598
+> Pass count: 58
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -32,6 +32,39 @@
 >   file with a SPECIFIC file + line count; do not file generic
 >   re-treads of the long-standing clusters already archived in
 >   ## Considered / ## Drained below.
+
+### [score 4.2] Combat UX overhaul design implementation
+- proposed: 2026-06-06, expand pass 58
+- source signals:
+  - **Design landing**: design/combat-ux-overhaul-prompt.md (new file, 350 lines)
+  - **User-driven design brief**: Addresses playtester feedback on combat unintuitive flow
+  - **Specific UX problems**: Numbers/icons lack meaning, opaque choice-to-outcome flow, information that new players cannot decode
+- rationale: New design brief authored to address specific playtester feedback about combat UX comprehension. Combat is core game mechanic but current implementation fails to communicate effectively to first-time users, despite strong aesthetic foundation. Design brief provides concrete direction for improvement.
+- proposed scope: 1 phase - implement design boards from Claude Design project while preserving existing aesthetic language and mechanical depth
+- estimated phases: 1
+- conflicts: none
+
+### [score 3.5] Aftermath modals design implementation  
+- proposed: 2026-06-06, expand pass 58
+- source signals:
+  - **Design landing**: design/aftermath-modals-prompt.txt (new file, detailed design spec)
+  - **Modal system expansion**: Four new modal/screen artboards for post-combat outcomes
+  - **Design consistency**: Matches established look from 2026-05-16 handoff bundle
+- rationale: New design specification for aftermath modal system expansion. Builds on existing aesthetic foundation to improve post-combat experience flow. Design prompt includes complete token mapping and specific implementation guidance.
+- proposed scope: 1 phase - implement four new modals per design specification
+- estimated phases: 1  
+- conflicts: none
+
+### [score 3.0] Production component test coverage expansion
+- proposed: 2026-06-06, expand pass 58
+- source signals:
+  - **Test coverage smell**: 55 production components without tests vs 74 total components (37% uncovered)
+  - **Critical gaps**: Core components like StatBar, StanceGlyph, ToastHost, CombatEnemyPanel lack coverage
+  - **Quality regression risk**: Hard rule §5 requires tests alongside code, but coverage has gaps
+- rationale: Significant test coverage debt in production components. While debug components appropriately lack tests, core UI components that affect user experience should have hermetic coverage per project standards. Coverage gap creates maintainability and regression risk.
+- proposed scope: 1 phase - add hermetic tests for highest-priority production components following existing patterns
+- estimated phases: 1
+- conflicts: none
 
 ## Drained / shipped
 

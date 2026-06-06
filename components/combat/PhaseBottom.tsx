@@ -323,17 +323,16 @@ function ActionPhase({
                                 key={opt.key}
                                 kind="disabled-action"
                                 id={opt.key}
+                                style={[action_styles.cardTouch, { opacity: 0.45 }]}
                                 accessibilityLabel={`${opt.label} unavailable`}
                                 accessibilityHint="Tap for more information"
                                 testID={`combat-action-${opt.key}-disabled-tooltip`}
                             >
-                                <View style={[action_styles.cardTouch, { opacity: 0.45 }]}>
-                                    <View style={[action_styles.card, { borderColor: accent }]}>
-                                        <ActionIcon kind={opt.iconKind} size={32} color={accent} />
-                                        <View style={action_styles.textCol}>
-                                            <Text style={action_styles.label}>{opt.label}</Text>
-                                            <Text style={action_styles.hint}>{opt.hint}</Text>
-                                        </View>
+                                <View style={[action_styles.card, { borderColor: accent }]}>
+                                    <ActionIcon kind={opt.iconKind} size={32} color={accent} />
+                                    <View style={action_styles.textCol}>
+                                        <Text style={action_styles.label}>{opt.label}</Text>
+                                        <Text style={action_styles.hint}>{opt.hint}</Text>
                                     </View>
                                 </View>
                             </TooltipTarget>

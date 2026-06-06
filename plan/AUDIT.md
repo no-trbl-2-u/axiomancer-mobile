@@ -8,6 +8,19 @@
 
 ## Top 5 findings (scored)
 
+### [3.6] Hex literal in ErrorBoundary component undermines design system consistency ✅
+- category: perf
+- impact: 4
+- ease: 9
+- base-score: 3.6
+- ux-bias-multiplier: 1.0 (no UX impact)
+- final-score: 3.6
+- next: Replace hardcoded '#0a0807' with AXM.silhouette token for consistency with design system
+- evidence: components/ErrorBoundary.tsx:472 uses hardcoded hex color instead of AXM theme token
+- observation: Direct hex literals bypass the centralized design system and make theming changes more difficult to maintain
+- addressed: 2026-06-06 via commit 4970b30
+- fix: Replaced hardcoded '#0a0807' with AXM.silhouette token in ErrorBoundary component for consistency with design system
+
 ### [8.1] Inappropriate sitemap.xml for mobile-native app with no web deployment ✅
 - category: seo
 - impact: 6

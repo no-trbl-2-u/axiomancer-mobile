@@ -11,13 +11,15 @@ import { render } from '@testing-library/react-native';
 import React from 'react';
 
 import { CombatEnemyPanel } from '@/components/combat/CombatEnemyPanel';
+import type { CombatViewModel } from '@/state/presenters/combat.engine';
 
-const mockCombatViewModel = {
+const mockCombatViewModel: Partial<CombatViewModel> = {
     enemy: {
         name: 'Test Enemy',
         flavor: 'A fearsome foe',
         hp: 50,
         hpMax: 100,
+        hpRatio: 0.5,
         tier: 'normal' as const,
         lastStance: 'mind' as const,
         mindMarks: 2,
@@ -26,12 +28,12 @@ const mockCombatViewModel = {
     roundToken: 'I',
     friendshipCounter: 3,
     friendshipCounterMax: 10,
-} as any;
+};
 
 describe('CombatEnemyPanel: basic rendering', () => {
     it('renders enemy name and health', () => {
         const { getByText } = render(
-            <CombatEnemyPanel vm={mockCombatViewModel} />
+            <CombatEnemyPanel vm={mockCombatViewModel as CombatViewModel} />
         );
         
         expect(getByText('Test Enemy')).toBeDefined();
@@ -42,7 +44,7 @@ describe('CombatEnemyPanel: basic rendering', () => {
 
     it('renders stance indicator', () => {
         const { getByText } = render(
-            <CombatEnemyPanel vm={mockCombatViewModel} />
+            <CombatEnemyPanel vm={mockCombatViewModel as CombatViewModel} />
         );
         
         expect(getByText('STANDS')).toBeDefined();
@@ -58,7 +60,7 @@ describe('CombatEnemyPanel: basic rendering', () => {
         };
         
         const { getByText, queryByText } = render(
-            <CombatEnemyPanel vm={vmWithoutFlavor} />
+            <CombatEnemyPanel vm={vmWithoutFlavor as CombatViewModel} />
         );
         
         expect(getByText('Test Enemy')).toBeDefined();
@@ -71,16 +73,18 @@ describe('CombatEnemyPanel: basic rendering', () => {
             enemy: {
                 ...mockCombatViewModel.enemy,
                 effects: [{
-                    kind: 'poison' as const,
+                    kind: 'poison',
                     name: 'Poison',
                     effectId: 'poison',
-                    stacks: 1,
+                    duration: 2,
+                    intensity: 1,
+                    tint: 'debuff' as const,
                 }],
             },
         };
         
         const { getByTestId } = render(
-            <CombatEnemyPanel vm={vmWithEffects} />
+            <CombatEnemyPanel vm={vmWithEffects as CombatViewModel} />
         );
         
         expect(getByTestId('combat-enemy-effect-0')).toBeDefined();

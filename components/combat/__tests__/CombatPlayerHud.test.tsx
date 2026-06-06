@@ -10,24 +10,31 @@ import { render } from '@testing-library/react-native';
 import React from 'react';
 
 import { CombatPlayerHud } from '@/components/combat/CombatPlayerHud';
+import type { CombatViewModel } from '@/state/presenters/combat.engine';
 
-const mockCombatViewModel = {
+const mockCombatViewModel: Partial<CombatViewModel> = {
     player: {
         hp: 75,
         hpMax: 100,
+        hpRatio: 0.75,
+        totalResources: 15,
+        maxResources: 20,
+        resourceRatio: 0.75,
         effects: [],
     },
     stancePicker: {
         selected: 'body' as const,
+        options: [],
+        canConfirm: false,
     },
     friendshipCounter: 5,
     friendshipCounterMax: 10,
-} as any;
+};
 
 describe('CombatPlayerHud: basic rendering', () => {
     it('renders player health bar', () => {
         const { getByText } = render(
-            <CombatPlayerHud vm={mockCombatViewModel} />
+            <CombatPlayerHud vm={mockCombatViewModel as CombatViewModel} />
         );
         
         expect(getByText('HEALTH')).toBeDefined();
@@ -35,7 +42,7 @@ describe('CombatPlayerHud: basic rendering', () => {
 
     it('renders stance glyph with selected stance', () => {
         const result = render(
-            <CombatPlayerHud vm={mockCombatViewModel} />
+            <CombatPlayerHud vm={mockCombatViewModel as CombatViewModel} />
         );
         
         // The StanceGlyph component should be present
@@ -52,7 +59,7 @@ describe('CombatPlayerHud: basic rendering', () => {
         };
         
         const result = render(
-            <CombatPlayerHud vm={vmNoStance} />
+            <CombatPlayerHud vm={vmNoStance as CombatViewModel} />
         );
         
         expect(result).toBeDefined();
@@ -64,16 +71,18 @@ describe('CombatPlayerHud: basic rendering', () => {
             player: {
                 ...mockCombatViewModel.player,
                 effects: [{
-                    kind: 'blessed' as const,
+                    kind: 'blessed',
                     name: 'Blessed',
                     effectId: 'blessed',
-                    stacks: 1,
+                    duration: 3,
+                    intensity: 1,
+                    tint: 'buff' as const,
                 }],
             },
         };
         
         const { getByTestId } = render(
-            <CombatPlayerHud vm={vmWithEffects} />
+            <CombatPlayerHud vm={vmWithEffects as CombatViewModel} />
         );
         
         expect(getByTestId('combat-player-effect-0')).toBeDefined();
@@ -81,7 +90,7 @@ describe('CombatPlayerHud: basic rendering', () => {
 
     it('handles empty effects array', () => {
         const result = render(
-            <CombatPlayerHud vm={mockCombatViewModel} />
+            <CombatPlayerHud vm={mockCombatViewModel as CombatViewModel} />
         );
         
         expect(result).toBeDefined();

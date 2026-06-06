@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-06 at commit ab8f598
-> Pass count: 58
+> Last pass: 2026-06-06 at commit 5a5499d
+> Pass count: 59
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -63,6 +63,61 @@
   - **Quality regression risk**: Hard rule §5 requires tests alongside code, but coverage has gaps
 - rationale: Significant test coverage debt in production components. While debug components appropriately lack tests, core UI components that affect user experience should have hermetic coverage per project standards. Coverage gap creates maintainability and regression risk.
 - proposed scope: 1 phase - add hermetic tests for highest-priority production components following existing patterns
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 6.0] Combat UX design system implementation
+- proposed: 2026-06-06, expand pass 59
+- source signals:
+  - **Design landing**: design/combat-ux-overhaul-prompt.md (new file, 350+ lines)
+  - **User feedback**: Playtester feedback that combat flow is unintuitive
+  - **UX comprehension gaps**: Numbers/icons lack meaning, opaque choice-to-outcome flow
+- rationale: Major design brief authored to solve specific combat UX problems identified by first-time playtester. Combat is core mechanic but current implementation fails communication despite strong aesthetic foundation. Design prompt provides concrete solutions while preserving aesthetic language.
+- proposed scope: 1-phase implementation of design boards from Claude Design project
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 4.5] Token resource system accumulation bug fix
+- proposed: 2026-06-06, expand pass 59
+- source signals:
+  - **GitHub issue**: #227 "Token resource system never accumulates (blocks skill casting)"
+  - **Mechanics blocker**: Core skill-casting system non-functional
+  - **UX bias weight**: Aligns with audit bias toward UX gaps
+- rationale: Critical system bug blocking skill usage. Token accumulation failure prevents players from using equipped skills, significantly impacting core combat mechanics. Issue filed in triage queue indicates user-impacting problem.
+- proposed scope: 1-phase engine boundary fix for token accumulation logic
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 3.5] Large component extraction refactor
+- proposed: 2026-06-06, expand pass 59
+- source signals:
+  - **File length outliers**: PhaseBottom.tsx (722 lines), exploration/index.tsx (718 lines), inventory/index.tsx (709 lines)
+  - **Smell pattern**: 3+ files >700 lines exceed 2× folder median
+  - **Maintainability impact**: Large files harder to navigate and test comprehensively
+- rationale: Three core components significantly exceed project size norms. PhaseBottom combat component and exploration/inventory screens are 2-3× larger than typical components, suggesting extraction opportunities for better modularity.
+- proposed scope: 1-phase component extraction for largest outliers
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 3.5] Aftermath modal design implementation continuation
+- proposed: 2026-06-06, expand pass 59
+- source signals:
+  - **Design handoff**: design/handoff-2026-05-23 aftermath modal system
+  - **Design system expansion**: Complete four-modal artboard set for post-combat flow
+  - **Aesthetic consistency**: Builds on established 2026-05-16 design foundation
+- rationale: Comprehensive aftermath modal design system landed. Design handoff includes complete token mapping and implementation guidance for post-combat experience flow improvements. Extends existing aesthetic language systematically.
+- proposed scope: 1-phase implementation of four aftermath modals per design specification
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 3.0] Combat test type safety drain
+- proposed: 2026-06-06, expand pass 59
+- source signals:
+  - **`as any` clusters**: 15+ instances in combat-related test files
+  - **Type safety smell**: Concentrated pattern in combat-mercy-choice.engine.test.ts and combat-hud.engine.test.ts
+  - **Test quality gap**: Type bypass undermines TypeScript benefits in critical test coverage
+- rationale: Combat test files show concentrated `as any` usage pattern, creating type safety gaps in test coverage for core game mechanics. Aggressive posture accepts this smell as primary signal for cleanup phase.
+- proposed scope: 1-phase systematic replacement with proper typing in combat test suite
 - estimated phases: 1
 - conflicts: none
 

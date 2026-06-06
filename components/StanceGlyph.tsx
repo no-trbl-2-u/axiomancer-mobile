@@ -46,8 +46,8 @@ export function GlyphMind({ size = 40, color = AXM.parchment, stroke = 2.4 }: Gl
         d="M14 28 C 14 16, 22 8, 32 8 C 42 8, 50 16, 50 28 L 50 38 C 50 42, 48 44, 44 44 L 44 50 C 44 52, 42 54, 40 54 L 24 54 C 22 54, 20 52, 20 50 L 20 44 C 16 44, 14 42, 14 38 Z"
         fill={color} fillOpacity={0.18} stroke={color} strokeWidth={stroke} strokeLinejoin="round"
       />
-      <Ellipse cx={24} cy={30} rx={5} ry={6} fill="#0a0a0a" />
-      <Ellipse cx={40} cy={30} rx={5} ry={6} fill="#0a0a0a" />
+      <Ellipse cx={24} cy={30} rx={5} ry={6} fill={AXM.bg} />
+      <Ellipse cx={40} cy={30} rx={5} ry={6} fill={AXM.bg} />
       <Path d="M30 38 L 32 42 L 34 38 Z" fill={color} />
       <Path d="M22 48 L 26 48 M 28 48 L 32 48 M 34 48 L 38 48 M 40 48 L 42 48" stroke={color} strokeWidth={stroke} />
       <Path d="M32 8 L 30 14 L 34 18 L 28 22 L 32 26" stroke={color} strokeWidth={stroke * 0.9} />

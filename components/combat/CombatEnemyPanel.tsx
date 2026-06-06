@@ -56,7 +56,7 @@ export function CombatEnemyPanel({ vm }: CombatEnemyPanelProps) {
                         <Ellipse cx={100} cy={100} rx={90} ry={80} fill="url(#eg)" />
                         <Path
                             d="M100 30 C 60 30 40 70 50 130 L 30 200 L 170 200 L 150 130 C 160 70 140 30 100 30 Z"
-                            fill="#06050a"
+                            fill={AXM.deepBg}
                             stroke={AXM.parchment}
                             strokeWidth={1.5}
                         />

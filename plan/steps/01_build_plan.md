@@ -68,6 +68,12 @@ commit that ships the phase.
 
 - [x] Phase 112 — Mechanics 0.15.0 mobile catch-up. `axiomancer-mechanics@0.15.0` is published to npm, tagged `v0.15.0`, and released at https://github.com/no-trbl-2-u/axiomancer-mechanics/releases/tag/v0.15.0. Bump mobile to the registry package, drain type/import drift, preserve engine-owned Stance and Vitae truth, verify northern-forest/story content presentation, and capture focused/visual evidence. Brief: `plan/phases/phase_112_mechanics_0_15_mobile_catchup.md`. Upgrade guide: `docs/engine-upgrade-0.14.0-to-0.15.0.md`. Verification: `npm run typecheck`, focused combat/exploration/story presenter Jest, `npm run verify`, and `npm run verify:visual` or exact visual-smoke blocker. Shipped in commit 892766d.
 
+- [ ] Phase 113 — Combat UX overhaul (design implementation). Promoted via oversight 2026-06-06 from phase candidate [4.2]. Implement the combat UX direction in `design/combat-ux-overhaul-prompt.md` (+ `design/combat-ux-overhaul.md`, landed 2026-06-04) to make numbers/icons legible and the choice→outcome flow decodable for first-time players, while preserving the existing aesthetic language and engine-owned mechanical depth. No local mechanics simulation. Brief: draft via `/plan-a-phase phase 113`. Verification: focused combat presenter/HUD Jest + `npm run verify`; visual evidence per `npm run verify:visual` or exact visual-smoke blocker.
+
+- [ ] Phase 114 — Aftermath modals (design implementation). Promoted via oversight 2026-06-06 from phase candidate [3.5]. Implement the four post-combat outcome modal/screen artboards per `design/aftermath-modals-prompt.txt` (landed 2026-06-04), reusing established token mapping and matching the 2026-05-16 handoff look. Brief: draft via `/plan-a-phase phase 114`. Verification: focused aftermath/modal presenter Jest + `npm run verify`; visual evidence per `npm run verify:visual` or exact visual-smoke blocker.
+
+- [ ] Phase 115 — Production component test coverage expansion. Promoted via oversight 2026-06-06 from phase candidate [3.0]. Add hermetic tests for highest-priority untested production components (StatBar, StanceGlyph, ToastHost, CombatEnemyPanel and peers in the 55-uncovered set) following existing test patterns, honoring the hermetic-test standard in `docs/testing.md`. Brief: draft via `/plan-a-phase phase 115`. Verification: new Jest suites pass + `npm run verify`.
+
 - [x] Phase 1 — Adopt nexus methodology. Shipped in commit
       `a703908` ("chore: adopt nexus methodology"); closed out
       in this commit.

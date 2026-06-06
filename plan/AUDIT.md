@@ -8,7 +8,7 @@
 
 ## Top 5 findings (scored)
 
-### [8.1] Inappropriate sitemap.xml for mobile-native app with no web deployment
+### [8.1] Inappropriate sitemap.xml for mobile-native app with no web deployment ✅
 - category: seo
 - impact: 6
 - ease: 9
@@ -18,6 +18,8 @@
 - next: Remove sitemap.xml file as it's inappropriate for mobile-native app distributed via EAS Build to app stores
 - evidence: public/sitemap.xml contains web URLs (https://axiomancer-mobile.app/) but bearings.md states "no public URL" and eas.json shows only iOS/Android store distribution
 - observation: Sitemap file creates confusion about deployment model and serves no purpose for native mobile app distributed through app stores rather than web crawlers
+- addressed: 2026-06-06 via commit 88479bc
+- fix: Removed inappropriate sitemap.xml file and its test file. The sitemap served no purpose for mobile-native app distributed via EAS Build and created confusion about deployment model.
 
 ### [3.2] AGENTS.md Pre-nexus orientation contains outdated workflow instructions ✅
 - category: external-critique

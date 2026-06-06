@@ -6,6 +6,7 @@ export const AXM = {
   rust: '#9e3a1a',
   debuff: '#1a0a2e',
   buff: '#2a1f00',
+  heal: '#5a8a3a',
   bone: '#8a8273',
   ash: '#3a3530',
   panelBg: '#100d0a',

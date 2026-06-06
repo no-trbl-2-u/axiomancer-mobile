@@ -14,7 +14,7 @@ const LOG_SEVERITY_COLOR: Record<CombatLogEntryDisplay['severity'], string> = {
     info: AXM.parchment,
     damage: AXM.blood,
     crit: AXM.sulfur,
-    heal: '#5a8a3a',
+    heal: AXM.heal,
     effect: AXM.rust,
     friendship: AXM.rust,
     system: AXM.bone,
@@ -65,7 +65,7 @@ export function CombatLogDisplay({
                 <Text style={styles.logLegendLabel}>LEGEND ·</Text>
                 <Text style={[styles.logLegendItem, { color: AXM.blood }]}>■ HARM</Text>
                 <Text style={[styles.logLegendItem, { color: AXM.sulfur }]}>■ CRIT</Text>
-                <Text style={[styles.logLegendItem, { color: '#5a8a3a' }]}>■ HEAL</Text>
+                <Text style={[styles.logLegendItem, { color: AXM.heal }]}>■ HEAL</Text>
                 <Text style={[styles.logLegendItem, { color: AXM.rust }]}>■ EFFECT</Text>
                 <Text style={[styles.logLegendItem, { color: AXM.bone }]}>■ INFO</Text>
             </View>

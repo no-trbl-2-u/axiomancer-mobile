@@ -536,8 +536,8 @@ describe('selectCombatViewModel: skill picker', () => {
         expect(fallacyToken?.count).toBe(0);
         expect(paradoxToken?.count).toBe(1);
         
-        // Verify token structure
-        expect(bodyToken?.glyph).toBe('◐');
+        // Verify token structure (Phase 113: glyphs now use readable labels)
+        expect(bodyToken?.glyph).toBe('BOD');
         expect(bodyToken?.short).toBe('BOD');
         expect(typeof bodyToken?.color).toBe('string');
     });

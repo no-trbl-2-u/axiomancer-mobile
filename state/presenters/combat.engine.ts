@@ -860,11 +860,11 @@ const EMPTY_POOL: ResourcePool = { body: 0, mind: 0, heart: 0, fallacy: 0, parad
 function buildCrucibleTokens(resources: ResourcePool): readonly CrucibleToken[] {
     const { AXM } = require('@/theme/axm');
     return [
-        { key: 'body', glyph: '◐', short: 'BOD', count: resources.body, color: AXM.blood },
-        { key: 'heart', glyph: '◑', short: 'HRT', count: resources.heart, color: AXM.sulfur },
-        { key: 'mind', glyph: '◒', short: 'MND', count: resources.mind, color: AXM.rust },
-        { key: 'fallacy', glyph: '◓', short: 'FAL', count: resources.fallacy, color: AXM.bone },
-        { key: 'paradox', glyph: '◉', short: 'PRX', count: resources.paradox, color: AXM.parchment },
+        { key: 'body', glyph: 'BOD', short: 'BOD', count: resources.body, color: AXM.blood },
+        { key: 'heart', glyph: 'HRT', short: 'HRT', count: resources.heart, color: AXM.sulfur },
+        { key: 'mind', glyph: 'MND', short: 'MND', count: resources.mind, color: AXM.rust },
+        { key: 'fallacy', glyph: 'FAL', short: 'FAL', count: resources.fallacy, color: AXM.bone },
+        { key: 'paradox', glyph: 'PRX', short: 'PRX', count: resources.paradox, color: AXM.parchment },
     ];
 }
 

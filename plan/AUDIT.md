@@ -8,6 +8,66 @@
 
 ## Top 5 findings (scored)
 
+### [5.4] Hardcoded hex color in PhaseBottom combat stance card undermines design system consistency ✅
+- category: perf
+- impact: 6
+- ease: 9
+- base-score: 5.4
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 5.4
+- next: Replace hardcoded '#1a1410' hex literal in PhaseBottom.tsx with appropriate AXM design token
+- evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/combat/PhaseBottom.tsx uses hardcoded '#1a1410' background color in stance card instead of design system token
+- observation: Direct hex literals in combat UI bypass centralized theming system and make design changes more difficult to maintain consistently across the app
+- issue: #276
+- addressed: 2026-06-06 via commit db24837
+- fix: Replaced hardcoded '#1a1410' hex literal with AXM.selectFill token for consistency with design system
+
+### [4.5] High frequency of `as any` type casts in test files reduces type safety validation
+- category: tests
+- impact: 5
+- ease: 9
+- base-score: 4.5
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 4.5
+- next: Systematically replace `as any` casts in test files with proper typing, especially in store state access patterns
+- evidence: Found 40 instances of `as any` across 25 test files, primarily for accessing store state like `(store.getState() as any).philosophicalAlignment`
+- observation: Excessive use of `as any` in tests undermines TypeScript's type safety benefits and could mask type errors during test development
+
+### [3.6] Console statements in production components could expose debug information
+- category: perf
+- impact: 4
+- ease: 9
+- base-score: 3.6
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 3.6
+- next: Audit console.log/warn/error statements in production components and wrap with __DEV__ guards where needed
+- evidence: Found 17 console statements across 9 files including components/ErrorBoundary.tsx, components/DebugFriendship.tsx, and others
+- observation: Console statements in production builds could expose debug information and impact performance, though some may already be properly guarded
+
+### [3.0] Multiple hex color literals in component files bypass design system tokens
+- category: perf
+- impact: 5
+- ease: 6
+- base-score: 3.0
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 3.0
+- next: Replace hardcoded hex colors in components with appropriate AXM design tokens from theme/axm.ts
+- evidence: Found 132 hex color occurrences across 38 files including theme/axm.ts, components/StatusCard.tsx, and app screens
+- observation: Hardcoded hex colors outside the central theme system make consistent design updates more difficult and error-prone
+
+### [2.7] Large app folder structure could benefit from code splitting optimization
+- category: perf
+- impact: 3
+- ease: 9
+- base-score: 2.7
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 2.7
+- next: Analyze bundle size and consider lazy loading for less critical screen components
+- evidence: App folder contains 9 screen files with complex imports and state management that could benefit from code splitting
+- observation: All app screens load at startup which could impact initial bundle size, though React Navigation may already handle some lazy loading
+
+## Completed findings
+
 ### [3.6] Hex literal in ErrorBoundary component undermines design system consistency ✅
 - category: perf
 - impact: 4

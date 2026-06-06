@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-06 at commit 83ee7f2
-> Pass count: 22
+> Last pass: 2026-06-06 at commit 5e63188
+> Pass count: 23
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -399,8 +399,8 @@
 - suggested fix: Consolidate voice guidance in single source file and reference from others with 'See [file] for full voice guidelines'
 - source: browser
 
-### [MED] /README.md — Architecture diagram + layout drifted behind the code (presenters moved, screens wired)
-- pass: 17 (commit c7a1c9c); severity bumped + reframed pass 18 (commit fd525e3)
+### [HIGH] /README.md — Architecture diagram + layout drifted behind the code (presenters moved, screens wired)
+- pass: 17 (commit c7a1c9c); severity bumped pass 18 (commit fd525e3); bumped to HIGH pass 23 (commit 5e63188) — confirmed unfixed after 6 open passes
 - viewport: desktop
 - category: drift
 - observation: The drift has inverted since pass 17. The diagram/layout now lags BEHIND the code, not ahead of it. README:135 places presenters at `app/<route>/*.engine.ts`, but they actually live in `state/presenters/*.engine.ts` (20 engines) — a maintainer who greps `app/(tabs)/combat.engine.ts` finds nothing. README:103-107 still labels every screen `(placeholder UI)`, but the screens shipped long ago, and the layout omits the Memoir tab entirely.
@@ -466,7 +466,7 @@
 - evidence: Line 35 references non-existent GAME-ROADMAP.md file
 - suggested_fix: Create missing GAME-ROADMAP.md file or update reference to point to existing roadmap documentation
 - source: browser
-### [LOW] /agents.md — Dead link to asset swap documentation
+### [LOW] /agents.md — Dead link to asset swap documentation ✅
 - pass: 19 (commit 18c3371)
 - viewport: desktop
 - auth_state: anonymous
@@ -475,6 +475,84 @@
 - evidence: Line 100 contains reference to non-existent .cursor/skills/ path
 - suggested_fix: Update reference to point to correct asset swap documentation or remove outdated reference
 - source: browser
+- addressed: 2026-06-06 via verification pass 23 (commit 5e63188)
+- fix: .cursor/skills/swap-asset-placeholder/SKILL.md verified to exist at this path; dead link finding was incorrect — path is valid.
+
+<!-- Pass 22 (2026-06-06, commit 83ee7f2): 5 findings were erroneously appended to ## Done
+     instead of ## Pending; relocated here at pass 23 (commit 5e63188). -->
+
+### [MED] /README.md — README lacks clear onboarding flow for new maintainers
+- pass: 22 (commit 83ee7f2)
+- viewport: repository
+- category: comprehension
+- observation: README jumps from quick start to complex scripts without explaining prerequisites like Expo CLI installation
+- evidence: Lines 31-32: 'You will need the Expo CLI installed; on first run, install Expo Go or build a development client.' Critical setup step is buried in Quick start section
+- suggested fix: Add dedicated 'Prerequisites' section before Quick start listing required tools
+- source: repo-proxy
+
+### [LOW] /docs/testing.md — Testing documentation uses casual voice conflicting with project archaic tone
+- pass: 22 (commit 83ee7f2)
+- viewport: repository
+- category: voice
+- observation: Testing documentation uses modern casual tone that conflicts with project's archaic voice directive
+- evidence: Line 9: 'If you can't write one, you must explain why in the PR description (and ideally fix the architecture so you can).' Uses casual modern phrasing
+- suggested fix: Revise documentation to match terse, archaic voice established in bearings.md
+- source: repo-proxy
+
+### [MED] /plan/bearings.md — Bearings file lacks executive summary of current project state
+- pass: 22 (commit 83ee7f2)
+- viewport: repository
+- category: comprehension
+- observation: Bearings file has dense technical content but lacks executive summary of current project state
+- evidence: Lines 8-27: Project description starts immediately with technical details without high-level status overview
+- suggested fix: Add 'Current Status' section summarizing shipped phases and next milestones
+- source: repo-proxy
+
+### [LOW] /docs/adr/README.md — ADR index lacks brief summaries for decision context
+- pass: 22 (commit 83ee7f2)
+- viewport: repository
+- category: comprehension
+- observation: ADR index lacks brief summaries making it hard to understand what each decision covers without reading full ADR
+- evidence: Lines 17-23: ADR list shows only titles like 'Engine truth and presenter boundary' without explaining scope or impact
+- suggested fix: Add one-sentence summaries for each ADR explaining its scope and key decision
+- source: repo-proxy
+
+### [MED] /repository structure — Multiple overlapping documentation sources lack clear hierarchy
+- pass: 22 (commit 83ee7f2)
+- viewport: repository
+- category: comprehension
+- observation: Repository has multiple overlapping documentation sources without clear hierarchy for new maintainers
+- evidence: Found README.md, AGENTS.md, agents.md, docs/ folder, specs/ folder, plan/ folder all containing different types of project documentation
+- suggested fix: Create single entry point documentation that guides maintainers through the doc hierarchy based on their role
+- source: repo-proxy
+
+### [HIGH] /plan/bearings.md — Engine pin in Stack table (0.14.0) contradicts package.json (^0.15.0); caret violates exact-pin mandate
+- pass: 23 (commit 5e63188)
+- viewport: repository
+- category: consistency
+- observation: bearings.md Stack table line 62 states 'pinned exact 0.14.0'. package.json line 40 shows '"axiomancer-mechanics": "^0.15.0"' — wrong version number and caret range instead of exact pin. The External-services runbook (bearings.md:79) mandates exact-pin after the 0.6→0.7 drift incident. Both mismatches: version is stale (0.14.0 vs 0.15.0) and caret could silently pull 0.16.x on next npm install.
+- evidence: plan/bearings.md:62 'Engine | axiomancer-mechanics npm package (pinned exact 0.14.0)'; package.json:40 '"axiomancer-mechanics": "^0.15.0"'; bearings.md:79 'Pinned **exact** (e.g. 0.11.0) after the 0.6 → 0.7 drift incident'
+- suggested fix: Remove caret from package.json ("0.15.0" not "^0.15.0"), run npm install --package-lock-only to sync lockfile, update bearings.md Stack table cell to '0.15.0'
+- source: repo-proxy
+
+### [MED] /docs/testing.md — Scaffold import at line 155 uses wrong path '@/app/test-utils/rng'; module lives at test-utils/rng.ts (repo root)
+- pass: 23 (commit 5e63188)
+- viewport: repository
+- category: consistency
+- observation: The hermetic-test scaffold at line 155 imports mockAlternatingRng from '@/app/test-utils/rng'. The actual module lives at test-utils/rng.ts (repo root, no app/ prefix). Line 109 of the same document states 'Test utilities live in test-utils/ at the repo root.' A maintainer copying the scaffold verbatim gets a broken import that contradicts the stated rule and may trip the route-tree guard test.
+- evidence: docs/testing.md:155 'import { mockAlternatingRng } from "@/app/test-utils/rng"'; docs/testing.md:109 'Test utilities live in test-utils/ at the repo root'; actual file at test-utils/rng.ts (no app/ prefix confirmed by directory listing)
+- suggested fix: Change line 155 to 'import { mockAlternatingRng } from "@/test-utils/rng"'
+- source: repo-proxy
+
+### [LOW] /docs/testing.md — Scaffold at line 189 contains 'CHOOSE THY STANCE': banned pronoun and stale game string
+- pass: 23 (commit 5e63188)
+- viewport: repository
+- category: voice
+- observation: The hermetic-test scaffold at line 189 shows 'expect(getByText(/CHOOSE THY STANCE/)).toBeTruthy()'. Two problems: 'thy' is a banned second-person archaic pronoun (bearings.md:182). The game string was updated to 'CHOOSE A STANCE' at commit e3da6ba — a maintainer copying this example writes a test that will fail.
+- evidence: docs/testing.md:189 'expect(getByText(/CHOOSE THY STANCE/)).toBeTruthy()'; bearings.md:182 'No second-person archaic pronouns (thee / thou / thy / thine / ye)'; pass-3 Done row confirms game string changed to 'CHOOSE A STANCE' at commit e3da6ba
+- suggested fix: Update the scaffold example to 'expect(getByText(/CHOOSE A STANCE/)).toBeTruthy()' or use a generic placeholder string
+- source: repo-proxy
+
 ## Done
 
 ### [MED] general — Resource system has no visual representation ✅
@@ -1482,15 +1560,6 @@
 - source: reader
 - **Resolved 2026-05-15.** Removed broken reference to non-existent TODO.md file from README. Simplified text to state that native testing is not wired in current pass. See commit 7b5b44d.
 
-### [MED] /README.md — README lacks clear onboarding flow for new maintainers
-- pass: 22 (commit 83ee7f2)
-- viewport: repository
-- category: comprehension
-- observation: README jumps from quick start to complex scripts without explaining prerequisites like Expo CLI installation
-- evidence: Lines 31-32: 'You will need the Expo CLI installed; on first run, install Expo Go or build a development client.' Critical setup step is buried in Quick start section
-- suggested fix: Add dedicated 'Prerequisites' section before Quick start listing required tools
-- source: repo-proxy
-
 ### [HIGH] /specs/README.md — Spec dependency table references completed specs without clear status ✅
 - pass: 22 (commit 83ee7f2)
 - viewport: repository
@@ -1501,39 +1570,3 @@
 - source: repo-proxy
 - addressed: 2026-06-06 via commit a8b8b68
 - fix: Updated specs/README.md lines 66-73 to mark Specs 02, 03, 05, 07, and 09 as [DONE] to match their actual completion status documented in plan/steps/01_build_plan.md
-
-### [LOW] /docs/testing.md — Testing documentation uses casual voice conflicting with project archaic tone
-- pass: 22 (commit 83ee7f2)
-- viewport: repository
-- category: voice
-- observation: Testing documentation uses modern casual tone that conflicts with project's archaic voice directive
-- evidence: Line 9: 'If you can't write one, you must explain why in the PR description (and ideally fix the architecture so you can).' Uses casual modern phrasing
-- suggested fix: Revise documentation to match terse, archaic voice established in bearings.md
-- source: repo-proxy
-
-### [MED] /plan/bearings.md — Bearings file lacks executive summary of current project state
-- pass: 22 (commit 83ee7f2)
-- viewport: repository
-- category: comprehension
-- observation: Bearings file has dense technical content but lacks executive summary of current project state
-- evidence: Lines 8-27: Project description starts immediately with technical details without high-level status overview
-- suggested fix: Add 'Current Status' section summarizing shipped phases and next milestones
-- source: repo-proxy
-
-### [LOW] /docs/adr/README.md — ADR index lacks brief summaries for decision context
-- pass: 22 (commit 83ee7f2)
-- viewport: repository
-- category: comprehension
-- observation: ADR index lacks brief summaries making it hard to understand what each decision covers without reading full ADR
-- evidence: Lines 17-23: ADR list shows only titles like 'Engine truth and presenter boundary' without explaining scope or impact
-- suggested fix: Add one-sentence summaries for each ADR explaining its scope and key decision
-- source: repo-proxy
-
-### [MED] /repository structure — Multiple overlapping documentation sources lack clear hierarchy
-- pass: 22 (commit 83ee7f2)
-- viewport: repository
-- category: comprehension
-- observation: Repository has multiple overlapping documentation sources without clear hierarchy for new maintainers
-- evidence: Found README.md, AGENTS.md, agents.md, docs/ folder, specs/ folder, plan/ folder all containing different types of project documentation
-- suggested fix: Create single entry point documentation that guides maintainers through the doc hierarchy based on their role
-- source: repo-proxy

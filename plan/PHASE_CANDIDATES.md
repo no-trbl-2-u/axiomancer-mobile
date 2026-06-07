@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-07 at commit 857be36
-> Pass count: 61
+> Last pass: 2026-06-07 at commit 95b4fd3
+> Pass count: 62
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -35,6 +35,17 @@
 
 > All pass-58 candidates promoted via /oversight 2026-06-06 — see
 > ## Promoted. Pending queue is empty; next /expand pass refills it.
+
+### [ ] [score 2.8] Repository onboarding documentation consolidation
+- proposed: 2026-06-07, expand pass 62
+- source signals:
+  - **Critique clustering**: 4 pending documentation/onboarding findings from pass 24 (commit 1c8be58)
+  - **Documentation gaps**: Missing setup/ directory, script workflow guidance, human-only spec usage, test troubleshooting
+  - **Maintainer friction**: Fresh contributor experience gaps identified by repo-proxy critique
+- rationale: Four independent critique findings all point to onboarding/documentation fragmentation. Signal multiplicity suggests systemic documentation debt affecting new maintainer experience rather than isolated issues.
+- proposed scope: 1-phase documentation consolidation addressing setup references, script guidance, spec workflow clarity, and test configuration documentation
+- estimated phases: 1
+- conflicts: none
 
 ### [ ] [score 3.5] Large component extraction refactor
 - proposed: 2026-06-06, expand pass 59

@@ -70,6 +70,66 @@ why it came up) and stops to ask. It does not invent answers.
 
 ---
 
+## Debugging Engine Boundaries
+
+When mobile behavior doesn't match engine expectations (like token
+accumulation not working, stats not updating, or mechanics not firing),
+the issue often lies at the **engine ↔ mobile boundary** — where engine
+state flows through presenters to UI components.
+
+### Methodology
+
+1. **Confirm the engine behavior.** Test the same action sequence in the
+   engine's own test suite or a minimal Node.js script. If the engine
+   test passes but mobile fails, the boundary is suspect.
+
+2. **Trace the presenter chain.** Find the presenter that consumes the
+   engine state for your failing feature:
+   - Token/mana display → `state/presenters/combat.engine.ts`
+   - Character stats → `state/presenters/character.ts`
+   - Exploration state → `state/presenters/exploration.ts`
+
+3. **Add temporary logging.** Insert `console.log` statements at key
+   boundary points:
+   ```ts
+   // In the presenter
+   console.log('Engine state:', gameStore.getState().engine)
+   console.log('Presenter output:', selectedValue)
+   
+   // In the component
+   console.log('Received props:', { tokens, maxTokens })
+   ```
+
+4. **Compare expected vs actual.** Run the action that should trigger
+   the change. Check if:
+   - Engine state contains the expected values
+   - Presenter transforms them correctly
+   - Component receives and displays them correctly
+
+### Common boundary bugs
+
+- **Stale selectors:** Presenter uses cached/memoized values that don't
+  update when engine state changes
+- **Missing engine reads:** Mobile doesn't call the right engine getter
+  after an action completes
+- **Type mismatches:** Engine exports a new shape but mobile still
+  expects the old interface
+- **Action dispatch gaps:** Mobile triggers an engine action but doesn't
+  re-read the updated state
+
+### Example: Token accumulation debugging
+
+For Phase 116's token accumulation issue:
+
+1. Verify `engine.resolveRound()` actually increments combat resources
+2. Check if `state/actions.ts` re-reads engine state after `resolveRound`
+3. Trace `state/presenters/combat.engine.ts` → does it read the fresh
+   `combatResources`?
+4. Follow the chain to `CrucibleStrip` → does it receive updated token
+   counts?
+
+---
+
 ## Spec template
 
 Copy this into a new file when starting a fresh spec.

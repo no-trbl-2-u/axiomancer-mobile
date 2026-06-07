@@ -62,12 +62,12 @@ describe('EffectChip: tint-map resolution', () => {
         expect(style.backgroundColor).toBe(AXM.debuff);
     });
 
-    it('uses neutral background (#171410) when tint is missing', () => {
+    it('uses neutral background (AXM.deepBg) when tint is missing', () => {
         const tree = render(
             <EffectChip effect={{ kind: 'bleed', name: 'Bleed' }} />,
         );
         const style = chipStyle(tree);
-        expect(style.backgroundColor).toBe('#171410');
+        expect(style.backgroundColor).toBe(AXM.deepBg);
     });
 });
 

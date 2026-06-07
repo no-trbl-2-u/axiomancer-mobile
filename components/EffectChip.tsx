@@ -17,10 +17,10 @@ interface EffectChipProps {
 }
 
 const COLOR_MAP: Record<string, string> = {
-  poison: '#5a8a3a',
+  poison: AXM.heal,
   bleed: AXM.blood,
   stun: AXM.sulfur,
-  regen: '#5a8a3a',
+  regen: AXM.heal,
   burn: AXM.rust,
   buff: AXM.sulfur,
   debuff: AXM.blood,
@@ -29,12 +29,12 @@ const COLOR_MAP: Record<string, string> = {
 const TINT_MAP: Record<string, string> = {
   buff: AXM.buff,
   debuff: AXM.debuff,
-  neutral: '#171410',
+  neutral: AXM.deepBg,
 };
 
 export function EffectChip({ effect, dim = false }: EffectChipProps) {
   const c = COLOR_MAP[effect.kind] || AXM.parchment;
-  const bg = TINT_MAP[effect.tint || 'neutral'] || '#171410';
+  const bg = TINT_MAP[effect.tint || 'neutral'] || AXM.deepBg;
 
   return (
     <View style={[styles.chip, { backgroundColor: bg, borderColor: c, opacity: dim ? 0.55 : 1 }]}>

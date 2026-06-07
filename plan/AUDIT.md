@@ -60,7 +60,7 @@
 - addressed: 2026-06-06 via commit 6ab9033
 - fix: Removed TODO scaffolding and replaced with proper exploitMercyChoiceAction implementation that logs exploit choice and transitions combat to choosing_action phase
 
-### [ ] [3.6] Event illustration components use hardcoded hex colors for placeholder artwork
+### [x] [3.6] Event illustration components use hardcoded hex colors for placeholder artwork
 - category: perf
 - impact: 4
 - ease: 9

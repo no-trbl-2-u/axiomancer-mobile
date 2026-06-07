@@ -60,6 +60,20 @@
 - addressed: 2026-06-06 via commit 6ab9033
 - fix: Removed TODO scaffolding and replaced with proper exploitMercyChoiceAction implementation that logs exploit choice and transitions combat to choosing_action phase
 
+### [x] [5.4] Hardcoded hex color '#000' in PhaseBottom roll bar track bypasses design system
+- category: perf
+- impact: 6
+- ease: 9
+- base-score: 5.4
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 5.4
+- next: Replace hardcoded '#000' hex literal in PhaseBottom.tsx with appropriate AXM design token
+- evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/combat/PhaseBottom.tsx:617 uses hardcoded '#000' for rollBarTrack backgroundColor
+- observation: Direct hex literals in combat UI bypass centralized theming system and make design changes harder to maintain consistently
+- source: audit
+- addressed: 2026-06-07 via commit 161f6d9
+- fix: Replaced hardcoded '#000' hex literal with AXM.deepBg design token for consistent theming
+
 ### [x] [3.6] Event illustration components use hardcoded hex colors for placeholder artwork
 - category: perf
 - impact: 4
@@ -71,6 +85,8 @@
 - evidence: Multiple event illustration components (PlaceholderIllustration.tsx, EncounterIllustration.tsx, BossIllustration.tsx) use hardcoded hex colors like '#0a0a0a', '#06050a' 
 - observation: Even placeholder artwork should follow design system for consistency when real assets are swapped in
 - source: audit
+- addressed: 2026-06-07 via commit b911885
+- fix: Replaced hardcoded hex colors in event illustrations with AXM design tokens
 
 ## Previously addressed (completed)
 

@@ -34,7 +34,7 @@
 - addressed: 2026-06-07 via commit 885e756
 - fix: Replaced hardcoded '#1a1814' hex literal with AXM.ash design token for consistent theming across HP/MP displays
 
-### [ ] [5.4] Hardcoded hex color '#0f0a08' in CombatVictoryPanel finalBlowWrap bypasses design system
+### [x] [5.4] Hardcoded hex color '#0f0a08' in CombatVictoryPanel finalBlowWrap bypasses design system
 - category: perf
 - impact: 6
 - ease: 9
@@ -45,6 +45,9 @@
 - evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/event/aftermath/CombatVictoryPanel.tsx:301 uses hardcoded '#0f0a08' for finalBlowWrap backgroundColor
 - observation: Victory panel styling should use centralized theme tokens for maintainability and consistent visual hierarchy
 - source: audit
+- issue: #297
+- addressed: 2026-06-07 via commit b7f10c7
+- fix: Replaced hardcoded '#0f0a08' hex literal with AXM.dockBg design token for consistent theming
 
 ### [ ] [4.8] Hardcoded hex colors in EncounterModalOverlay shadowColor and comments reference hardcoded values
 - category: perf

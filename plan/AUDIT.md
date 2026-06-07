@@ -19,6 +19,20 @@
 
 ## Top 5 findings (scored)
 
+### [x] [5.6] Multiple hardcoded hex colors in NodeMark component bypass design system
+- category: perf
+- impact: 7
+- ease: 8
+- base-score: 5.6
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 5.6
+- next: Replace hardcoded hex colors '#0a0a0a', '#1a1814' in NodeMark.tsx with appropriate AXM design tokens
+- evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/NodeMark.tsx contains hardcoded colors: '#0a0a0a' (lines 15, 16, 17, 34) and '#1a1814' (line 24)
+- observation: NodeMark is used across exploration screens for map node states; hardcoded colors bypass centralized theming system
+- source: audit
+- addressed: 2026-06-07 via commit 923f09a
+- fix: Replaced hardcoded '#0a0a0a' with AXM.bg and '#1a1814' with AXM.selectFill for consistent theming across map node states
+
 ### [x] [5.4] Hardcoded hex color '#1a1814' in StatBar track background bypasses design system
 - category: perf
 - impact: 6

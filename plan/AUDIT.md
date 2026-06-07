@@ -6,6 +6,17 @@
 > (stance-button spacing drained 2026-06-04 via commit 026fc7f.)
 > Conducted by: /iterate autonomous audit
 
+> **Noise-floor directive (set via `/oversight` 2026-06-07).** While
+> a HIGH-severity gameplay bug is open (currently #227, promoted to
+> Phase 116), `/iterate` should NOT spend ticks on sub-4.0
+> housekeeping — hex-literal→AXM token swaps, `as any` cast drains,
+> micro-label tweaks. Those had drained the audit to zero while the
+> token-accumulation blocker sat unaddressed for ~6 days. Prefer
+> higher-impact gameplay/UX findings; if the only candidates are
+> sub-4.0 perf/cosmetic smells, file them but defer to the open
+> phase work first. Re-evaluate this floor once Phase 116 ships and
+> no HIGH bug remains open.
+
 ## Top 5 findings (scored)
 
 ### [x] [5.4] Hardcoded hex color '#000' in character screen levelBox and poolTrack styling bypasses design system

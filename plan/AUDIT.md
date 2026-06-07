@@ -37,7 +37,7 @@
 - addressed: 2026-06-07 via commit de9a016
 - fix: Replaced hardcoded '#000' hex literal with AXM.deepBg design token for consistent theming
 
-### [ ] [4.5] Hardcoded hex color '#000' in EncounterModalOverlay shadowColor bypasses design system
+### [x] [4.5] Hardcoded hex color '#000' in EncounterModalOverlay shadowColor bypasses design system
 - category: perf
 - impact: 5
 - ease: 9
@@ -48,6 +48,9 @@
 - evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/event/EncounterModalOverlay.tsx:345 uses hardcoded '#000' for shadowColor instead of design system token
 - observation: Even shadow colors should use centralized theme tokens for consistency and maintainability
 - source: audit
+- issue: #291
+- addressed: 2026-06-07 via commit 0b35f3d
+- fix: Replaced hardcoded '#000' hex literal with AXM.deepBg design token for consistent theming
 
 ### [ ] [3.6] Hardcoded hex colors in EffectChip TINT_MAP bypasses design system tokens
 - category: perf

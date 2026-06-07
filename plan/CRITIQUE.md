@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-06 at commit 83ee7f2
-> Pass count: 22
+> Last pass: 2026-06-07 at commit 88a3708
+> Pass count: 23
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -63,6 +63,49 @@
 
 ## Pending
 
+<!-- Pass 23 (2026-06-07, commit 88a3708): repo-proxy pass —
+     Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
+     critique reads docs/specs/artifacts as the "fresh maintainer"
+     proxy. Focus on recent Phase 116 integration, documentation
+     clarity for new maintainers, and code organization patterns.
+     Reader examined README, specs/, docs/, component structure,
+     recent phase implementations. 4 findings filed below. -->
+
+### [HIGH] /specs/README.md — Phase 116 engine boundary debugging guidance missing
+- pass: 23 (commit 88a3708)
+- viewport: repository
+- category: comprehension
+- observation: Phase 116 (token accumulation bug #227) requires understanding engine vs mobile boundary debugging but no clear documentation exists for this debugging approach
+- evidence: Build plan references 'suspected engine-vs-mobile boundary' without guidance. Critical for active work but specs don't explain boundary debugging methodology
+- suggested fix: Add 'Debugging Engine Boundaries' section in specs/00-how-to-use-specs.md with concrete steps to trace state flow through presenters
+- source: repo-proxy
+
+### [MED] /README.md — New maintainer onboarding path unclear  
+- pass: 23 (commit 88a3708)
+- viewport: repository
+- category: comprehension
+- observation: README mentions specs/ and docs/ but provides no guided walkthrough for new maintainers to understand the system
+- evidence: Lines 166-175 assume existing context. New maintainer must navigate AGENTS.md, specs/README.md, docs/testing.md independently without clear sequence
+- suggested fix: Add 'New Maintainer Quick Start' section with numbered walkthrough of key files and concepts
+- source: repo-proxy
+
+### [MED] /plan/CRITIQUE.md — Issue #227 status inconsistency across files
+- pass: 23 (commit 88a3708) 
+- viewport: repository
+- category: comprehension
+- observation: Issue #227 token accumulation shows conflicting status between CRITIQUE.md (resolved) and build plan (active Phase 116 work)
+- evidence: Previous critique entries suggest #227 was addressed but build plan shows Phase 116 as active work for same issue
+- suggested fix: Reconcile #227 status across files - either mark fully resolved or clarify Phase 116 scope vs previous work
+- source: repo-proxy
+
+### [LOW] /components — Component organization pattern inconsistent
+- pass: 23 (commit 88a3708)
+- viewport: repository  
+- category: code_quality
+- observation: aftermath/ and combat/ subdirectories show good domain organization but pattern not applied consistently across all components
+- evidence: Well-organized aftermath/combat directories while other components remain flat in root directory
+- suggested fix: Organize remaining components by domain (inventory/, event/, shared/) to match established pattern
+- source: repo-proxy
 
 <!-- Pass 18 (2026-05-30, commit fd525e3): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,

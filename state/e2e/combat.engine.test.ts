@@ -1205,3 +1205,116 @@ describe('resolveRound: engine-driven skill resolution', () => {
         expect(() => actions.resolveRound()).not.toThrow();
     });
 });
+
+// ---------------------------------------------------------------------------
+// Phase 116 — Token resource accumulation fix (issue #227)
+// ---------------------------------------------------------------------------
+
+describe('resolveRound: token resource accumulation (Phase 116)', () => {
+    it('accumulates combat resources per round from engine resolution', () => {
+        mockFixedRng(0.5);
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
+
+        // Initial state - should start with zero resources
+        const vmInitial = selectCombatViewModel(store.getState());
+        const initialResources = vmInitial.player.totalResources;
+        expect(initialResources).toBe(0);
+
+        // Resolve one round in heart stance - should accumulate heart tokens
+        actions.setPlayerStance('heart');
+        actions.setPlayerAction('attack');
+        actions.resolveRound();
+        actions.nextRound();
+
+        const vmAfterRound1 = selectCombatViewModel(store.getState());
+        const resourcesRound1 = vmAfterRound1.player.totalResources;
+
+        // Resolve second round in body stance - should accumulate body tokens
+        actions.setPlayerStance('body');
+        actions.setPlayerAction('attack');
+        actions.resolveRound();
+        actions.nextRound();
+
+        const vmAfterRound2 = selectCombatViewModel(store.getState());
+        const resourcesRound2 = vmAfterRound2.player.totalResources;
+
+        // Resources should accumulate over rounds (non-decreasing)
+        expect(resourcesRound1).toBeGreaterThan(initialResources);
+        expect(resourcesRound2).toBeGreaterThan(resourcesRound1);
+        
+        // Crucible tokens should reflect the accumulated resources
+        const tokens = vmAfterRound2.crucibleTokens;
+        const totalFromTokens = tokens.reduce((sum, token) => sum + token.count, 0);
+        expect(totalFromTokens).toBe(resourcesRound2);
+        
+        // Verify specific token types accumulated
+        const heartToken = tokens.find(t => t.key === 'heart');
+        const bodyToken = tokens.find(t => t.key === 'body');
+        expect(heartToken?.count).toBeGreaterThan(0);
+        expect(bodyToken?.count).toBeGreaterThan(0);
+    });
+
+    it('preserves engine combatResources through the action chain', () => {
+        mockFixedRng(0.5);
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
+
+        // Manually set known resource state to verify preservation
+        const combat = store.getState().combat!;
+        const mockResources = { body: 3, heart: 2, mind: 1, fallacy: 1, paradox: 0 };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        store.getState().updateCombat({ ...combat, combatResources: mockResources } as any);
+
+        // Verify the presenter reads the mocked resources correctly
+        const vmBefore = selectCombatViewModel(store.getState());
+        expect(vmBefore.player.totalResources).toBe(7); // 3+2+1+1+0
+        
+        // Resolve a round and verify resources are preserved
+        actions.setPlayerStance('heart');
+        actions.setPlayerAction('attack');
+        actions.resolveRound();
+
+        const vmAfter = selectCombatViewModel(store.getState());
+        const combatAfter = store.getState().combat!;
+        
+        // Engine combatResources should exist and be preserved
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((combatAfter as any).combatResources).toBeDefined();
+        expect(vmAfter.player.totalResources).toBeGreaterThan(0);
+    });
+    
+    it('skills become affordable as resources accumulate per round', () => {
+        mockFixedRng(0.5);
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
+
+        // Initially, no skills should be affordable (zero resources)
+        const vmInitial = selectCombatViewModel(store.getState(), { selectedStance: 'heart' });
+        const affordableInitial = vmInitial.skillPicker.skills.filter(s => s.enabled && s.disabledReason !== 'wrong-stance');
+        expect(affordableInitial.length).toBe(0);
+
+        // Accumulate resources by resolving a few rounds
+        for (let round = 0; round < 3; round++) {
+            actions.setPlayerStance('heart');
+            actions.setPlayerAction('attack');
+            actions.resolveRound();
+            actions.nextRound();
+        }
+
+        // After accumulation, some heart skills should become affordable
+        const vmAfterAccumulation = selectCombatViewModel(store.getState(), { selectedStance: 'heart' });
+        const affordableAfter = vmAfterAccumulation.skillPicker.skills.filter(s => 
+            s.enabled && s.stance === 'heart' && s.disabledReason === null
+        );
+        
+        expect(vmAfterAccumulation.player.totalResources).toBeGreaterThan(0);
+        expect(affordableAfter.length).toBeGreaterThan(0);
+        
+        // Verify the skill picker correctly shows availability
+        expect(vmAfterAccumulation.skillPicker.availableCount).toBeGreaterThan(0);
+    });
+});

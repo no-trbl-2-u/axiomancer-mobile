@@ -14,6 +14,7 @@ import { selectCombatHudViewModel } from '@/state/presenters/combat-hud.engine';
 import type { AppStoreState } from '@/state/store';
 import { createAppStore } from '@/state/store';
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
+import type { CombatState } from 'axiomancer-mechanics';
 
 function makeBaseState(): AppStoreState {
     const store = createAppStore({ adapter: createMemoryAdapter() });
@@ -63,7 +64,7 @@ describe('selectCombatHudViewModel: mana calculation', () => {
         // Mock combat state with combat resources (total = 10, estimated max = 20, so 0.5)
         state.combat = {
             combatResources: { heart: 2, body: 2, mind: 2, fallacy: 2, paradox: 2 }
-        } as any;
+        } as CombatState;
 
         const vm = selectCombatHudViewModel(state);
         expect(vm.manaPercent).toBe(0.5);
@@ -74,7 +75,7 @@ describe('selectCombatHudViewModel: mana calculation', () => {
         // Mock combat state with zero resources
         state.combat = {
             combatResources: { heart: 0, body: 0, mind: 0, fallacy: 0, paradox: 0 }
-        } as any;
+        } as CombatState;
 
         const vm = selectCombatHudViewModel(state);
         expect(vm.manaPercent).toBe(0);
@@ -154,7 +155,7 @@ describe('selectCombatHudViewModel: dev overrides (Phase 87)', () => {
         const state = makeBaseState();
         state.combat = {
             combatResources: { heart: 10, body: 10, mind: 0, fallacy: 0, paradox: 0 }
-        } as any;
+        } as CombatState;
         state.player.effects = [{ effectId: 'test', intensity: 1, remainingDuration: 2, appliedAt: 0, tier: 1 }];
         state.devOverrides = {
             hud: { hideMana: true, hideEffects: true, hideStance: false },
@@ -170,7 +171,7 @@ describe('selectCombatHudViewModel: dev overrides (Phase 87)', () => {
         delete (state as any).devOverrides; // Simulate old state
         state.combat = {
             combatResources: { heart: 5, body: 5, mind: 0, fallacy: 0, paradox: 0 }
-        } as any;
+        } as CombatState;
 
         const vm = selectCombatHudViewModel(state);
         expect(vm.manaPercent).toBe(0.5); // Normal calculation

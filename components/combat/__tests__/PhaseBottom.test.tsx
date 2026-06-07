@@ -14,6 +14,7 @@ import React from 'react';
 import { withAllProviders } from '@/test-utils/withAllProviders';
 import { PhaseBottom } from '@/components/combat/PhaseBottom';
 import type { CombatViewModel, ActionOption } from '@/state/presenters/combat.engine';
+import { AXM } from '@/theme/axm';
 
 // Mock minimal combat VM with focus on action phase
 const createMockCombatVM = (actionOptions: ActionOption[]): CombatViewModel => ({
@@ -114,11 +115,11 @@ const createMockCombatVM = (actionOptions: ActionOption[]): CombatViewModel => (
         effects: [],
     },
     crucibleTokens: [
-        { key: 'body', glyph: '◐', short: 'BOD', count: 2, color: '#b53e3e' },
-        { key: 'heart', glyph: '◑', short: 'HRT', count: 1, color: '#e4b429' },
-        { key: 'mind', glyph: '◒', short: 'MND', count: 0, color: '#9d5a3c' },
-        { key: 'fallacy', glyph: '◓', short: 'FAL', count: 1, color: '#9a8d75' },
-        { key: 'paradox', glyph: '◉', short: 'PRX', count: 0, color: '#e4dcc6' },
+        { key: 'body', glyph: '◐', short: 'BOD', count: 2, color: AXM.blood },
+        { key: 'heart', glyph: '◑', short: 'HRT', count: 1, color: AXM.sulfur },
+        { key: 'mind', glyph: '◒', short: 'MND', count: 0, color: AXM.rust },
+        { key: 'fallacy', glyph: '◓', short: 'FAL', count: 1, color: AXM.bone },
+        { key: 'paradox', glyph: '◉', short: 'PRX', count: 0, color: AXM.parchment },
     ],
     loadingMessage: 'loading...',
     mercyChoice: {

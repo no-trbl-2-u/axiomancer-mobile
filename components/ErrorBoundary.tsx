@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
         paddingVertical: 3,
         borderWidth: 1,
         borderColor: AXM.ash,
-        backgroundColor: 'rgba(0,0,0,0.4)',
+        backgroundColor: AXM.backdrop,
     },
     copyButtonPressed: {
         borderColor: AXM.sulfur,

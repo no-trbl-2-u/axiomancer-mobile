@@ -533,7 +533,7 @@ const stack_styles = StyleSheet.create({
     rowCurrent: {
         backgroundColor: AXM.panelBg,
         borderWidth: 1,
-        borderColor: 'rgba(232, 223, 200, 0.12)',
+        borderColor: AXM.divider,
         padding: 12,
         paddingTop: 12,
         paddingBottom: 14,
@@ -545,7 +545,7 @@ const stack_styles = StyleSheet.create({
         letterSpacing: 2.2,
         color: AXM.parchment,
     },
-    rowRule: { flex: 1, height: 1, backgroundColor: 'rgba(232, 223, 200, 0.12)' },
+    rowRule: { flex: 1, height: 1, backgroundColor: AXM.divider },
     rowSummary: {
         fontFamily: FONTS.sans,
         fontSize: 9,

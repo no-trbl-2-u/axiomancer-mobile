@@ -104,7 +104,7 @@ export function MercyChoiceModal({
 const styles = StyleSheet.create({
     backdrop: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(6, 5, 10, 0.92)',
+        backgroundColor: AXM.overlay,
     },
     panelWrap: {
         flex: 1,

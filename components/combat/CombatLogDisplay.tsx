@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     logEntry: { flexDirection: 'row', gap: 6, paddingVertical: 2 },
     logRail: { width: 4, alignSelf: 'stretch', marginTop: 2, marginBottom: 2 },
     logLine: { fontFamily: FONTS.serif, fontSize: 11, lineHeight: 14, flex: 1 },
-    logLegend: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4, paddingVertical: 5, paddingHorizontal: 8, borderWidth: 1, borderColor: AXM.ash, backgroundColor: 'rgba(0,0,0,0.4)' },
+    logLegend: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4, paddingVertical: 5, paddingHorizontal: 8, borderWidth: 1, borderColor: AXM.ash, backgroundColor: AXM.backdrop },
     logLegendLabel: { fontFamily: FONTS.mono, fontSize: 8, color: AXM.bone, letterSpacing: 1 },
     logLegendItem: { fontFamily: FONTS.mono, fontSize: 8, letterSpacing: 1 },
 });

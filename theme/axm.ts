@@ -29,6 +29,21 @@ export const AXM = {
    * (`design/handoff-2026-05-16/project/screens/inventory.jsx:61,313`).
    */
   selectFill: '#1f1a0a',
+  /**
+   * Semi-transparent backdrop for overlays and modals.
+   * Replaces 'rgba(0,0,0,0.4)' usage.
+   */
+  backdrop: 'rgba(6, 5, 10, 0.4)',
+  /**
+   * Heavy overlay background for modal backdrops.
+   * Replaces 'rgba(6, 5, 10, 0.92)' usage.
+   */
+  overlay: 'rgba(6, 5, 10, 0.92)',
+  /**
+   * Subtle divider line using parchment with low opacity.
+   * Replaces 'rgba(232, 223, 200, 0.12)' usage.
+   */
+  divider: 'rgba(232, 223, 200, 0.12)',
 } as const;
 
 export const FONTS = {

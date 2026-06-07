@@ -53,6 +53,16 @@
 
 ## Pending
 
+### [MED] general — Add tiny stat-effect label to each combat action button
+- pass: user-jot (commit 14cae2c99ce7a5fdfe09876a451f89c31b83f3ae)
+- viewport: unspecified
+- auth_state: anonymous
+- category: visual
+- observation: There should be a very concise (maybe 15 chars max), small, text label of which status effect (no name, just direct stat effect) on each button (attack/defend/each specific skill)
+- evidence: user-spotted at 2026-06-07T09:02:26Z
+- suggested_fix: [user has not specified — iterate to determine]
+- source: user
+
 <!-- Pass 18 (2026-05-30, commit fd525e3): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
      critique reads docs/specs/artifacts as the "fresh maintainer"

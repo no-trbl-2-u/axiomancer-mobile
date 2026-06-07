@@ -78,7 +78,7 @@
 - addressed: 2026-06-07 via commit 8ad8c17
 - fix: Replaced 7 instances of 'as any' with 'as unknown as CombatState' in combat-mercy-choice test for better type documentation while maintaining test functionality
 
-### [ ] [4.5] Hardcoded hex colors in test fixture data should use design tokens for consistency
+### [x] [4.5] Hardcoded hex colors in test fixture data should use design tokens for consistency
 - category: tests
 - impact: 5
 - ease: 9
@@ -89,6 +89,9 @@
 - evidence: Test files like PhaseBottom.test.tsx and CombatResourceTracker.test.tsx use hardcoded colors like '#b53e3e', '#e4b429' in mock data
 - observation: Test fixtures should mirror production theming to catch theme-related regressions and maintain consistency
 - source: audit
+- issue: #300
+- addressed: 2026-06-07 via commit 05d0dac
+- fix: Replaced hardcoded hex colors in PhaseBottom and CombatResourceTracker test fixtures with appropriate AXM theme tokens (blood, sulfur, rust, bone, parchment)
 
 ## Previously addressed (completed)
 

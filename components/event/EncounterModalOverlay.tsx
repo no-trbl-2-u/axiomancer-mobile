@@ -221,7 +221,7 @@ export function EncounterModalOverlay({
                     {
                         borderColor: sealChrome.accentColor,
                         shadowColor: sealChrome.glowColor,
-                        boxShadow: `0 0 0 1px #0a0a0a, 0 0 24px ${sealChrome.glowColor}, inset 0 0 60px rgba(0,0,0,0.7)`,
+                        boxShadow: `0 0 0 1px ${AXM.bg}, 0 0 24px ${sealChrome.glowColor}, inset 0 0 60px rgba(0,0,0,0.7)`,
                     },
                     panelStyle,
                 ]}
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
         right: 8,
         top: 26,
         bottom: 22,
-        // Phase 73 — match the design's panel fill `#0a0807`
+        // Phase 73 — match the design's panel fill (AXM.silhouette)
         // (`prototype.jsx:574`). Slightly warmer than AXM.bg so
         // the panel reads as a sealed parchment leaf rather
         // than the same flat near-black as the page behind it.
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: AXM.rust,
         // Phase 73 — port the design's `boxShadow: 0 0 0 1px
-        // #0a0a0a, 0 0 24px <accent-tint>, inset 0 0 60px
+        // ${AXM.bg}, 0 0 24px <accent-tint>, inset 0 0 60px
         // rgba(0,0,0,0.7)` (`prototype.jsx:576`). React Native's
         // legacy shadowProps can only carry the outer halo, so
         // we surface the dark 1px outer ring + inset darken via
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
         // shadow* keys as a native fallback for older Android.
         // The accent-tint outer glow is driven by sealChrome.
         boxShadow:
-            '0 0 0 1px #0a0a0a, 0 0 24px rgba(192,21,42,0.35), inset 0 0 60px rgba(0,0,0,0.7)',
+            `0 0 0 1px ${AXM.bg}, 0 0 24px rgba(192,21,42,0.35), inset 0 0 60px rgba(0,0,0,0.7)`,
         shadowColor: AXM.deepBg,
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.8,

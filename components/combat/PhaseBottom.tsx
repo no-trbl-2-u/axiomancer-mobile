@@ -328,6 +328,7 @@ function ActionPhase({
                                     <View style={action_styles.textCol}>
                                         <Text style={action_styles.label}>{opt.label}</Text>
                                         <Text style={action_styles.hint}>{opt.hint}</Text>
+                                        <Text style={action_styles.statEffect}>{opt.statEffect}</Text>
                                     </View>
                                 </View>
                             </TooltipTarget>
@@ -350,6 +351,7 @@ function ActionPhase({
                                 <View style={action_styles.textCol}>
                                     <Text style={action_styles.label}>{opt.label}</Text>
                                     <Text style={action_styles.hint}>{opt.hint}</Text>
+                                    <Text style={action_styles.statEffect}>{opt.statEffect}</Text>
                                 </View>
                             </View>
                         </TouchableOpacity>
@@ -581,6 +583,7 @@ const action_styles = StyleSheet.create({
     textCol: { flex: 1 },
     label: { fontFamily: FONTS.gothic, fontSize: 18, color: AXM.parchment, lineHeight: 20, letterSpacing: 1 },
     hint: { fontFamily: FONTS.mono, fontSize: 8, color: AXM.bone, letterSpacing: 1, marginTop: 2 },
+    statEffect: { fontFamily: FONTS.mono, fontSize: 7, color: AXM.sulfur, letterSpacing: 1.2, marginTop: 1, textAlign: 'right' },
     fleeRow: { alignItems: 'center', marginTop: 8 },
     flee: { fontFamily: FONTS.serifItalic, fontSize: 11, color: AXM.bone, borderBottomWidth: 1, borderBottomColor: AXM.bone, paddingBottom: 1 },
 });

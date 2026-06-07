@@ -183,6 +183,8 @@ export interface ActionOption {
     accentKind: 'blood' | 'parchment' | 'sulfur' | 'rust';
     /** False when the action is not yet implemented (greyed in UI). */
     enabled: boolean;
+    /** Concise stat effect label (≤15 chars) shown on action button. */
+    statEffect: string;
 }
 
 export interface ActionPickerSlice {
@@ -582,6 +584,7 @@ const ACTION_DEFAULTS: readonly ActionOption[] = [
         iconKind: 'sword',
         accentKind: 'blood',
         enabled: true,
+        statEffect: '+DMG',
     },
     {
         key: 'defend',
@@ -590,6 +593,7 @@ const ACTION_DEFAULTS: readonly ActionOption[] = [
         iconKind: 'shield',
         accentKind: 'parchment',
         enabled: true,
+        statEffect: '+DEF',
     },
     {
         key: 'skill',
@@ -602,6 +606,7 @@ const ACTION_DEFAULTS: readonly ActionOption[] = [
         iconKind: 'arcane',
         accentKind: 'sulfur',
         enabled: true,
+        statEffect: 'VAR',
     },
     {
         key: 'item',
@@ -610,6 +615,7 @@ const ACTION_DEFAULTS: readonly ActionOption[] = [
         iconKind: 'bag',
         accentKind: 'rust',
         enabled: false,
+        statEffect: 'VAR',
     },
 ];
 

@@ -143,6 +143,7 @@ const mockActionOptions: ActionOption[] = [
         iconKind: 'sword',
         accentKind: 'blood',
         enabled: true,
+        statEffect: '+DMG',
     },
     {
         key: 'item',
@@ -151,6 +152,7 @@ const mockActionOptions: ActionOption[] = [
         iconKind: 'bag',
         accentKind: 'rust',
         enabled: false, // This is the disabled ITEM button
+        statEffect: 'VAR',
     },
 ];
 
@@ -326,6 +328,7 @@ describe('PhaseBottom: Phase 95 disabled ITEM tooltip', () => {
                 iconKind: 'shield',
                 accentKind: 'parchment',
                 enabled: false, // Disabled but not ITEM
+                statEffect: '+DEF',
             },
         ];
         
@@ -352,6 +355,7 @@ describe('PhaseBottom: Phase 95 disabled ITEM tooltip', () => {
                 iconKind: 'bag', 
                 accentKind: 'rust',
                 enabled: true, // Enabled ITEM
+                statEffect: 'VAR',
             },
         ];
 

@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     height: 36,
     borderWidth: 2,
     borderColor: AXM.parchment,
-    backgroundColor: '#000',
+    backgroundColor: AXM.deepBg,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   moraleTrack: {
     position: 'relative' as const,
     height: 8,
-    backgroundColor: '#000',
+    backgroundColor: AXM.deepBg,
     borderWidth: 1,
     borderColor: AXM.ash,
   },

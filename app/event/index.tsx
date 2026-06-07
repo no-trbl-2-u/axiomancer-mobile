@@ -86,7 +86,7 @@ function ChoiceRow({
                 styles.choiceRow,
                 {
                     borderColor: accent,
-                    backgroundColor: isFirst ? '#1a0a0a' : AXM.bg,
+                    backgroundColor: isFirst ? AXM.selectFill : AXM.bg,
                     opacity: choice.enabled ? 1 : 0.4,
                 },
             ]}

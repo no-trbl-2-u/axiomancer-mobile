@@ -62,7 +62,7 @@ export function CombatEnemyPanel({ vm }: CombatEnemyPanelProps) {
                         />
                         <Path
                             d="M70 70 Q 100 50 130 70 L 130 110 Q 100 130 70 110 Z"
-                            fill="#000"
+                            fill={AXM.deepBg}
                         />
                         <Circle cx={85} cy={90} r={3.5} fill={AXM.blood} />
                         <Circle cx={115} cy={90} r={3.5} fill={AXM.blood} />

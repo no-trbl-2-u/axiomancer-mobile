@@ -52,7 +52,7 @@
 - addressed: 2026-06-07 via commit 0b35f3d
 - fix: Replaced hardcoded '#000' hex literal with AXM.deepBg design token for consistent theming
 
-### [ ] [3.6] Hardcoded hex colors in EffectChip TINT_MAP bypasses design system tokens
+### [x] [3.6] Hardcoded hex colors in EffectChip TINT_MAP bypasses design system tokens
 - category: perf
 - impact: 4
 - ease: 9
@@ -63,6 +63,9 @@
 - evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/EffectChip.tsx lines 20, 23, 32, 37 use hardcoded hex colors like '#5a8a3a' and '#171410'
 - observation: Effect tinting should use centralized color system for consistent visual hierarchy
 - source: audit
+- issue: #292
+- addressed: 2026-06-07 via commit e32f1ab
+- fix: Replaced hardcoded hex colors '#5a8a3a' with AXM.heal and '#171410' with AXM.deepBg for consistent theming
 
 ### [ ] [3.6] High frequency of 'as any' type casts reduces type safety in test files
 - category: tests

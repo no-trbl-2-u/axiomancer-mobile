@@ -78,7 +78,7 @@ describe('selectCombatViewModel: no combat', () => {
         expect(vm.actionPicker.fleeAvailable).toBe(true);
         expect(vm.skillPicker.skills).toHaveLength(COMBAT_SKILLS.length);
         expect(vm.log).toEqual([]);
-        expect(vm.phaseHeader).toContain('Choose Your Guard');
+        expect(vm.phaseHeader).toContain('Choose a Stance');
     });
 
     it('exposes the composed HUD slice (hpPercent, manaPercent, effects)', () => {

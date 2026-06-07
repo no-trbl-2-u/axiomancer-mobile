@@ -26,13 +26,13 @@ Transform combat from "decode the interface" to "understand the tactical situati
 
 | **Current Engine Term** | **Player-Friendly Term** | **Context** |
 |---|---|---|
-| `choosingStance` | "Choose Your Guard" | Phase picker label |
+| `choosingStance` | "Choose a Stance" | Phase picker label |
 | `choosingAction` | "Your Move" | Phase picker label |
 | `choosingSkill` | "Select Technique" | Phase picker label |
 | `resolving` | "Strike Unfolds" | Phase picker label |
 | "LET IT FALL" | "COMMIT" | Action confirmation button |
 | "CRUCIBLE" | "TECHNIQUES" | Skill panel header |
-| "VITAE" | "HEALTH" | HP bar label |
+| "VITAE" | "VITAE" | HP bar label; keep Axiomancer's canon term |
 | "MIND MARKS" | "FOCUS" | Mental state indicator |
 | "STRIFE STIRS" | "BATTLE BEGINS" | Encounter modal sash |
 

@@ -111,7 +111,7 @@ describe('CombatScreen: phase coverage', () => {
         seedPhase(store, 'choosing_stance');
         const tree = render(withProviders(store, <CombatScreen />));
         const text = JSON.stringify(tree.toJSON());
-        expect(text).toContain('Choose Your Guard');
+        expect(text).toContain('Choose a Stance');
     });
 
     it('renders the choosing_action phase header', () => {

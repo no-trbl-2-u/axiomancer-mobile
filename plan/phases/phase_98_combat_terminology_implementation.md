@@ -53,12 +53,12 @@ Phase 96 produced the design specification for fixing combat UX comprehension ba
 - Footer: Action buttons with intuitive language ("COMMIT" vs "LET IT FALL")
 
 **Key terminology updates:**
-- "Choose Your Guard" (was `choosingStance`)
+- "Choose a Stance" (was `choosingStance`)
 - "Your Move" (was `choosingAction`) 
 - "Select Technique" (was `choosingSkill`)
 - "Strike Unfolds" (was `resolving`)
 - "TECHNIQUES" header (was "CRUCIBLE")
-- "HEALTH" label (was "VITAE")
+- "VITAE" label (retained as Axiomancer canon; do not replace with "HEALTH")
 - "FOCUS" indicator (was "MIND MARKS")
 
 ## Empty / loading / error states
@@ -115,7 +115,7 @@ npm run lint        # Code style compliance
 feat: combat terminology clarity — phase 98
 
 - Replace engine jargon with player-friendly language across combat UI
-- Update phase labels: "Choose Your Guard", "Your Move", "Select Technique"  
+- Update phase labels: "Choose a Stance", "Your Move", "Select Technique"
 - Improve action buttons: "COMMIT" replaces "LET IT FALL"
 - Clarify combat panel headers: "TECHNIQUES" vs "CRUCIBLE"
 - Enhance battle log with natural language descriptions

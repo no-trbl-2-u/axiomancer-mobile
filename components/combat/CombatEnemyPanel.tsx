@@ -86,7 +86,7 @@ export function CombatEnemyPanel({ vm }: CombatEnemyPanelProps) {
                             value={vm.enemy.hp}
                             max={vm.enemy.hpMax}
                             color={AXM.blood}
-                            label="HEALTH"
+                            label="VITAE"
                             height={8}
                         />
                     </View>

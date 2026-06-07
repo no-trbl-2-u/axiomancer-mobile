@@ -37,7 +37,7 @@ describe('CombatPlayerHud: basic rendering', () => {
             <CombatPlayerHud vm={mockCombatViewModel as CombatViewModel} />
         );
         
-        expect(getByText('HEALTH')).toBeDefined();
+        expect(getByText('VITAE')).toBeDefined();
     });
 
     it('renders stance glyph with selected stance', () => {
@@ -95,6 +95,6 @@ describe('CombatPlayerHud: basic rendering', () => {
         
         expect(result).toBeDefined();
         // Component renders successfully with no effects
-        expect(result.getByText('HEALTH')).toBeDefined();
+        expect(result.getByText('VITAE')).toBeDefined();
     });
 });

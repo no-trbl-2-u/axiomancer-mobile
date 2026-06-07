@@ -443,7 +443,7 @@ const PHASE_ORDER: readonly CombatPhaseKey[] = [
 ];
 
 const PHASE_LABELS: Record<CombatPhaseKey, string> = {
-    choosing_stance: '✠ Choose Your Guard',
+    choosing_stance: '✠ Choose a Stance',
     choosing_action: '✠ Your Move',
     choosing_skill: '✠ Select Technique',
     resolving: '✠ Strike Unfolds',

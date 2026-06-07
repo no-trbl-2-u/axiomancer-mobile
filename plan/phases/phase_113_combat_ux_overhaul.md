@@ -13,7 +13,7 @@ The AUDIT [4.5] "Combat UX unintuitive" finding and playtest feedback [F02-F06] 
 ### Combat terminology updates
 
 Replace engine jargon with player-friendly terms in all combat presenters:
-- `choosingStance` → "Choose Your Guard"
+- `choosingStance` → "Choose a Stance"
 - `choosingAction` → "Your Move"  
 - `choosingSkill` → "Select Technique"
 - `resolving` → "Strike Unfolds"

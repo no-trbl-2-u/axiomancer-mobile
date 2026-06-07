@@ -8,6 +8,70 @@
 
 ## Top 5 findings (scored)
 
+### [x] [5.4] Hardcoded hex color '#000' in character screen levelBox and poolTrack styling bypasses design system
+- category: perf
+- impact: 6
+- ease: 9
+- base-score: 5.4
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 5.4
+- next: Replace hardcoded '#000' hex literals in character/index.tsx lines 454 and 516 with appropriate AXM design tokens
+- evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/app/(tabs)/character/index.tsx:454 uses '#000' for levelBox backgroundColor and line 516 uses '#000' for poolTrack backgroundColor
+- observation: Hardcoded colors bypass centralized theming system and make design changes more difficult to maintain consistently
+- source: audit
+- addressed: 2026-06-07 via commit 20eb9c2
+- fix: Replaced hardcoded '#000' hex literals with AXM.deepBg design token for consistent theming
+
+### [ ] [4.5] Hardcoded hex color '#000' in MindMark component backgroundColor bypasses design system
+- category: perf
+- impact: 5
+- ease: 9
+- base-score: 4.5
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 4.5
+- next: Replace hardcoded '#000' hex literal in MindMark.tsx line 31 with appropriate AXM design token
+- evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/MindMark.tsx:31 uses hardcoded '#000' backgroundColor instead of AXM.deepBg or similar token
+- observation: Component-level hardcoded colors prevent consistent theming across the app
+- source: audit
+
+### [ ] [4.5] Hardcoded hex color '#000' in EncounterModalOverlay shadowColor bypasses design system
+- category: perf
+- impact: 5
+- ease: 9
+- base-score: 4.5
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 4.5
+- next: Replace hardcoded '#000' hex literal in EncounterModalOverlay.tsx line 345 with appropriate AXM design token
+- evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/event/EncounterModalOverlay.tsx:345 uses hardcoded '#000' for shadowColor instead of design system token
+- observation: Even shadow colors should use centralized theme tokens for consistency and maintainability
+- source: audit
+
+### [ ] [3.6] Hardcoded hex colors in EffectChip TINT_MAP bypasses design system tokens
+- category: perf
+- impact: 4
+- ease: 9
+- base-score: 3.6
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 3.6
+- next: Replace hardcoded hex colors in EffectChip.tsx TINT_MAP with appropriate AXM design tokens
+- evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/EffectChip.tsx lines 20, 23, 32, 37 use hardcoded hex colors like '#5a8a3a' and '#171410'
+- observation: Effect tinting should use centralized color system for consistent visual hierarchy
+- source: audit
+
+### [ ] [3.6] High frequency of 'as any' type casts reduces type safety in test files
+- category: tests
+- impact: 4
+- ease: 9
+- base-score: 3.6
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 3.6
+- next: Replace unnecessary 'as any' casts in test files with proper type assertions where possible
+- evidence: Found over 130 instances of 'as any' casts across test files, many of which could be replaced with more specific type assertions
+- observation: While some 'as any' casts in tests are justified for mocking, excessive use reduces the type safety benefits of TypeScript
+- source: audit
+
+## Previously addressed (completed)
+
 ### [x] [5.4] Hardcoded hex color '#000' in StatusCard component bypasses design system
 - category: perf
 - impact: 6

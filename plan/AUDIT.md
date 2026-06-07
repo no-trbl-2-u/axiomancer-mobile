@@ -8,6 +8,71 @@
 
 ## Top 5 findings (scored)
 
+### [x] [5.4] Hardcoded hex color '#1a1814' in StatBar track background bypasses design system
+- category: perf
+- impact: 6
+- ease: 9
+- base-score: 5.4
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 5.4
+- next: Replace hardcoded '#1a1814' hex literal in StatBar.tsx line 56 with appropriate AXM design token (likely AXM.ash or AXM.selectFill)
+- evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/StatBar.tsx:56 uses hardcoded '#1a1814' for track backgroundColor
+- observation: StatBar is used across multiple screens for HP/MP display; hardcoded colors bypass centralized theming system
+- source: audit
+- issue: #294
+- addressed: 2026-06-07 via commit 885e756
+- fix: Replaced hardcoded '#1a1814' hex literal with AXM.ash design token for consistent theming across HP/MP displays
+
+### [ ] [5.4] Hardcoded hex color '#0f0a08' in CombatVictoryPanel finalBlowWrap bypasses design system
+- category: perf
+- impact: 6
+- ease: 9
+- base-score: 5.4
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 5.4
+- next: Replace hardcoded '#0f0a08' hex literal in CombatVictoryPanel.tsx line 301 with appropriate AXM design token (likely AXM.dockBg or AXM.panelBg)
+- evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/event/aftermath/CombatVictoryPanel.tsx:301 uses hardcoded '#0f0a08' for finalBlowWrap backgroundColor
+- observation: Victory panel styling should use centralized theme tokens for maintainability and consistent visual hierarchy
+- source: audit
+
+### [ ] [4.8] Hardcoded hex colors in EncounterModalOverlay shadowColor and comments reference hardcoded values
+- category: perf
+- impact: 6
+- ease: 8
+- base-score: 4.8
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 4.8
+- next: Replace hardcoded hex values in EncounterModalOverlay.tsx lines 224, 324, 336, 344 with appropriate AXM design tokens
+- evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/event/EncounterModalOverlay.tsx contains multiple hardcoded hex colors: '#0a0a0a' in boxShadow (line 224, 336, 344) and design comment references '#0a0807' (line 324)
+- observation: Encounter modal is a key UI surface that should follow design system consistently for shadows and panel fills
+- source: audit
+
+### [ ] [4.5] High frequency of 'as any' type casts reduces TypeScript type safety across codebase
+- category: tests
+- impact: 5
+- ease: 9
+- base-score: 4.5
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 4.5
+- next: Review and replace 'as any' casts with more specific type assertions, prioritizing non-test files
+- evidence: Found 116 instances of 'as any' across 47 files, including production code in state/selectors/equipment.ts, state/actions.ts, and multiple presenters
+- observation: While some 'as any' usage in tests is acceptable for mocking, production code instances reduce type safety benefits
+- source: audit
+
+### [ ] [4.5] Hardcoded hex colors in test fixture data should use design tokens for consistency
+- category: tests
+- impact: 5
+- ease: 9
+- base-score: 4.5
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 4.5
+- next: Replace hardcoded hex colors in test fixtures with references to AXM theme tokens
+- evidence: Test files like PhaseBottom.test.tsx and CombatResourceTracker.test.tsx use hardcoded colors like '#b53e3e', '#e4b429' in mock data
+- observation: Test fixtures should mirror production theming to catch theme-related regressions and maintain consistency
+- source: audit
+
+## Previously addressed (completed)
+
 ### [x] [5.4] Hardcoded hex color '#000' in character screen levelBox and poolTrack styling bypasses design system
 - category: perf
 - impact: 6
@@ -81,8 +146,6 @@
 - issue: #293
 - addressed: 2026-06-07 via commit 7c3e72e
 - fix: Replaced 4 instances of 'as any' with 'as CombatState' in combat-hud tests for better type documentation
-
-## Previously addressed (completed)
 
 ### [x] [5.4] Hardcoded hex color '#000' in StatusCard component bypasses design system
 - category: perf
@@ -178,33 +241,3 @@
 - source: audit
 - addressed: 2026-06-07 via commit b911885
 - fix: Replaced hardcoded hex colors in event illustrations with AXM design tokens
-
-## Previously addressed (completed)
-
-### [5.4] Hardcoded hex color in PhaseBottom combat stance card undermines design system consistency ✅
-- category: perf
-- impact: 6
-- ease: 9
-- base-score: 5.4
-- ux-bias-multiplier: 1.0 (no direct UX impact)
-- final-score: 5.4
-- next: Replace hardcoded '#1a1410' hex literal in PhaseBottom.tsx with appropriate AXM design token
-- evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/combat/PhaseBottom.tsx uses hardcoded '#1a1410' background color in stance card instead of design system token
-- observation: Direct hex literals in combat UI bypass centralized theming system and make design changes more difficult to maintain consistently across the app
-- issue: #276
-- addressed: 2026-06-06 via commit db24837
-- fix: Replaced hardcoded '#1a1410' hex literal with AXM.selectFill token for consistency with design system
-
-### [4.5] High frequency of `as any` type casts in test files reduces type safety validation ✅
-- category: tests
-- impact: 5
-- ease: 9
-- base-score: 4.5
-- ux-bias-multiplier: 1.0 (no direct UX impact)
-- final-score: 4.5
-- next: Replace `as any` casts in test files with proper type assertions or mocks
-- evidence: Multiple test files use `as any` casts including components/aftermath/__tests__/AftermathBackdrop.test.tsx, state/selectors/__tests__/equipment.test.ts
-- observation: Type safety is compromised when using `as any`, especially in tests where type correctness helps catch regressions
-- issue: #275
-- addressed: 2026-06-06 via commit af0a87f
-- fix: Replaced most `as any` casts with proper type assertions and improved mock typing

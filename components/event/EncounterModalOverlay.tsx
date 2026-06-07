@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
         // The accent-tint outer glow is driven by sealChrome.
         boxShadow:
             '0 0 0 1px #0a0a0a, 0 0 24px rgba(192,21,42,0.35), inset 0 0 60px rgba(0,0,0,0.7)',
-        shadowColor: '#000',
+        shadowColor: AXM.deepBg,
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.8,
         shadowRadius: 24,

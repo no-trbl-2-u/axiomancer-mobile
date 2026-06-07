@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-07 at commit 88a3708
-> Pass count: 23
+> Last pass: 2026-06-07 at commit 1c8be58
+> Pass count: 24
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -62,6 +62,50 @@
 > open for whenever the rate-limit hits again.
 
 ## Pending
+
+<!-- Pass 24 (2026-06-07, commit 1c8be58): repo-proxy pass —
+     Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
+     critique reads docs/specs/artifacts as the "fresh maintainer"
+     proxy. Focus on repository onboarding experience, development
+     workflow, and documentation completeness. Reader examined README,
+     .env setup, package.json scripts, specs human workflow, and 
+     configuration files. 4 findings filed below. -->
+
+### [MED] /.env.example — Environment setup references missing documentation files
+- pass: 24 (commit 1c8be58)
+- viewport: repository
+- category: onboarding
+- observation: Environment setup references non-existent setup files
+- evidence: Line 17 references 'See setup/02_eas.md for detailed configuration steps' but no setup/ directory exists in repository
+- suggested fix: Remove references to missing setup files or create the referenced setup documentation
+- source: repo-proxy
+
+### [MED] /package.json — Package scripts lack development workflow guidance
+- pass: 24 (commit 1c8be58)
+- viewport: repository
+- category: maintainability
+- observation: Package.json scripts include verification and deployment commands but no development workflow guidance
+- evidence: Commands like 'verify', 'deploy:preview', 'baseline:approve' exist with no explanation of when/how to use them in development workflow
+- suggested fix: Add script descriptions in README.md Scripts table or package.json comments explaining development workflow usage
+- source: repo-proxy
+
+### [LOW] /specs/README.md — Specs unclear for human-only development workflow
+- pass: 24 (commit 1c8be58)
+- viewport: repository
+- category: comprehension
+- observation: Specs are marked as 'conversation loop' oriented toward AI assistance but unclear for human-only development
+- evidence: Lines 39-52 describe AI-centric workflow but no guidance for developers working without AI assistance on spec-driven development
+- suggested fix: Add section explaining how to use specs for traditional human-only development workflow
+- source: repo-proxy
+
+### [LOW] /jest.config.js — Complex transform patterns lack troubleshooting documentation
+- pass: 24 (commit 1c8be58)
+- viewport: repository
+- category: testing
+- observation: Jest configuration includes complex transformIgnorePatterns with minimal inline documentation
+- evidence: Lines 5-19 contain complex regex for pnpm store handling but insufficient explanation for maintainer troubleshooting
+- suggested fix: Add comment explaining when to modify transformIgnorePatterns and common troubleshooting scenarios
+- source: repo-proxy
 
 <!-- Pass 23 (2026-06-07, commit 88a3708): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,

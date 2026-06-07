@@ -614,7 +614,7 @@ const resolve_styles = StyleSheet.create({
     scaleSubLabel: { fontFamily: FONTS.mono, fontSize: 8.5, color: AXM.bone, letterSpacing: 0.6, marginTop: 1 },
     rollBarRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },
     rollBarValue: { fontFamily: FONTS.gothic, fontSize: 22, width: 32, textAlign: 'right' },
-    rollBarTrack: { flex: 1, height: 12, backgroundColor: '#000', borderWidth: 1, borderColor: AXM.ash, position: 'relative', overflow: 'hidden' },
+    rollBarTrack: { flex: 1, height: 12, backgroundColor: AXM.deepBg, borderWidth: 1, borderColor: AXM.ash, position: 'relative', overflow: 'hidden' },
     rollBarFill: { position: 'absolute', top: 1, bottom: 1, left: 1 },
     rollBarLabel: { fontFamily: FONTS.mono, fontSize: 8, color: AXM.bone, letterSpacing: 1, width: 24 },
     verdictText: { textAlign: 'center', fontFamily: FONTS.serifItalic, fontSize: 14, color: AXM.parchment, marginTop: 10 },

@@ -71,14 +71,6 @@
      Reader examined README, specs/, docs/, component structure,
      recent phase implementations. 4 findings filed below. -->
 
-### [HIGH] /specs/README.md — Phase 116 engine boundary debugging guidance missing
-- pass: 23 (commit 88a3708)
-- viewport: repository
-- category: comprehension
-- observation: Phase 116 (token accumulation bug #227) requires understanding engine vs mobile boundary debugging but no clear documentation exists for this debugging approach
-- evidence: Build plan references 'suspected engine-vs-mobile boundary' without guidance. Critical for active work but specs don't explain boundary debugging methodology
-- suggested fix: Add 'Debugging Engine Boundaries' section in specs/00-how-to-use-specs.md with concrete steps to trace state flow through presenters
-- source: repo-proxy
 
 ### [MED] /README.md — New maintainer onboarding path unclear  
 - pass: 23 (commit 88a3708)
@@ -534,6 +526,18 @@
 - suggested_fix: Update reference to point to correct asset swap documentation or remove outdated reference
 - source: browser
 ## Done
+
+### [HIGH] /specs/README.md — Phase 116 engine boundary debugging guidance missing ✅
+- pass: 23 (commit 88a3708)
+- viewport: repository
+- category: comprehension
+- observation: Phase 116 (token accumulation bug #227) requires understanding engine vs mobile boundary debugging but no clear documentation exists for this debugging approach
+- evidence: Build plan references 'suspected engine-vs-mobile boundary' without guidance. Critical for active work but specs don't explain boundary debugging methodology
+- suggested fix: Add 'Debugging Engine Boundaries' section in specs/00-how-to-use-specs.md with concrete steps to trace state flow through presenters
+- source: repo-proxy
+- issue: #298
+- addressed: 2026-06-07 via commit 03be47c
+- fix: Added comprehensive 'Debugging Engine Boundaries' section with methodology, common bug patterns, and Phase 116 token accumulation example
 
 ### [MED] general — Add tiny stat-effect label to each combat action button ✅
 - pass: user-jot (commit 14cae2c99ce7a5fdfe09876a451f89c31b83f3ae)

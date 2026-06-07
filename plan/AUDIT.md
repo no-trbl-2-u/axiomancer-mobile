@@ -22,7 +22,7 @@
 - addressed: 2026-06-07 via commit 20eb9c2
 - fix: Replaced hardcoded '#000' hex literals with AXM.deepBg design token for consistent theming
 
-### [ ] [4.5] Hardcoded hex color '#000' in MindMark component backgroundColor bypasses design system
+### [x] [4.5] Hardcoded hex color '#000' in MindMark component backgroundColor bypasses design system
 - category: perf
 - impact: 5
 - ease: 9
@@ -33,6 +33,9 @@
 - evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/MindMark.tsx:31 uses hardcoded '#000' backgroundColor instead of AXM.deepBg or similar token
 - observation: Component-level hardcoded colors prevent consistent theming across the app
 - source: audit
+- issue: #290
+- addressed: 2026-06-07 via commit de9a016
+- fix: Replaced hardcoded '#000' hex literal with AXM.deepBg design token for consistent theming
 
 ### [ ] [4.5] Hardcoded hex color '#000' in EncounterModalOverlay shadowColor bypasses design system
 - category: perf

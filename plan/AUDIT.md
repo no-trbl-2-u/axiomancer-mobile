@@ -1,4 +1,4 @@
-# Site audit — 2026-06-06
+# Site audit — 2026-06-07
 
 > Bias: UX gaps (re-affirmed via oversight 2026-06-04)
 > /iterate weights UX-gap findings 1.5×: node label visibility,
@@ -7,6 +7,21 @@
 > Conducted by: /iterate autonomous audit
 
 ## Top 5 findings (scored)
+
+### [x] [5.4] Hardcoded hex color '#000' in StatusCard component bypasses design system
+- category: perf
+- impact: 6
+- ease: 9
+- base-score: 5.4
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 5.4
+- next: Replace hardcoded '#000' hex literals in StatusCard.tsx with appropriate AXM design token
+- evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/StatusCard.tsx:103 and :159 use hardcoded '#000' backgroundColor instead of AXM.deepBg
+- observation: Hardcoded colors bypass centralized theming system and make design changes more difficult to maintain consistently
+- source: audit
+- issue: [mirror-failed: 2026-06-07T03:14:25+00:00]
+- addressed: 2026-06-07 via commit 521edc9
+- fix: Replaced hardcoded '#000' hex literals with AXM.deepBg design token for consistent theming
 
 ### [x] [6.3] Hardcoded hex color '#5a8a3a' for heal effects in CombatLogDisplay undermines design system consistency
 - category: perf

@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
         position: 'relative',
         borderWidth: 1,
         borderColor: AXM.blood,
-        backgroundColor: '#0f0a08',
+        backgroundColor: AXM.dockBg,
         overflow: 'hidden',
     },
     splatterTopRight: {

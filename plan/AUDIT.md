@@ -49,7 +49,7 @@
 - addressed: 2026-06-07 via commit b7f10c7
 - fix: Replaced hardcoded '#0f0a08' hex literal with AXM.dockBg design token for consistent theming
 
-### [ ] [4.8] Hardcoded hex colors in EncounterModalOverlay shadowColor and comments reference hardcoded values
+### [x] [4.8] Hardcoded hex colors in EncounterModalOverlay shadowColor and comments reference hardcoded values
 - category: perf
 - impact: 6
 - ease: 8
@@ -60,6 +60,8 @@
 - evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/event/EncounterModalOverlay.tsx contains multiple hardcoded hex colors: '#0a0a0a' in boxShadow (line 224, 336, 344) and design comment references '#0a0807' (line 324)
 - observation: Encounter modal is a key UI surface that should follow design system consistently for shadows and panel fills
 - source: audit
+- addressed: 2026-06-07 via commit a4df4a8
+- fix: Replaced hardcoded '#0a0a0a' hex literals with AXM.bg design token in boxShadow properties and updated design comments to reference AXM.silhouette for consistent theming
 
 ### [ ] [4.5] High frequency of 'as any' type casts reduces TypeScript type safety across codebase
 - category: tests

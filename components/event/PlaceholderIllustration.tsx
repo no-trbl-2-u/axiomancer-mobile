@@ -43,7 +43,7 @@ export function PlaceholderIllustration({ slug }: { slug: EventArtSlug }) {
             </G>
             {slug === 'rest' && (
                 <G>
-                    <Path d="M120 220 L 187 130 L 254 220 Z" fill="#0a0a0a" stroke={AXM.parchment} strokeWidth={2} />
+                    <Path d="M120 220 L 187 130 L 254 220 Z" fill={AXM.bg} stroke={AXM.parchment} strokeWidth={2} />
                     <Circle cx={187} cy={160} r={6} fill={AXM.sulfur} />
                     <Path d="M170 200 q 17 -20 34 0" stroke={AXM.blood} strokeWidth={1.5} fill="none" />
                 </G>
@@ -61,15 +61,15 @@ export function PlaceholderIllustration({ slug }: { slug: EventArtSlug }) {
             {slug === 'loot-cache' && (
                 <G transform="translate(187 170)">
                     <Path d="M-40 -10 L -40 30 L 40 30 L 40 -10 L 30 -20 L -30 -20 Z"
-                        fill="#1a1810" stroke={AXM.sulfur} strokeWidth={2} />
+                        fill={AXM.panelBg} stroke={AXM.sulfur} strokeWidth={2} />
                     <Circle cx={0} cy={10} r={5} fill={AXM.sulfur} />
                     <Path d="M-40 -10 L 40 -10" stroke={AXM.sulfur} strokeWidth={1.5} />
                 </G>
             )}
             {slug === 'interaction-generic' && (
                 <G transform="translate(187 170)">
-                    <Ellipse cx={0} cy={-10} rx={18} ry={22} fill="#0a0a0a" stroke={AXM.parchment} strokeWidth={2} />
-                    <Path d="M-25 25 L -25 70 L 25 70 L 25 25 Z" fill="#06050a" stroke={AXM.parchment} strokeWidth={1.5} />
+                    <Ellipse cx={0} cy={-10} rx={18} ry={22} fill={AXM.bg} stroke={AXM.parchment} strokeWidth={2} />
+                    <Path d="M-25 25 L -25 70 L 25 70 L 25 25 Z" fill={AXM.deepBg} stroke={AXM.parchment} strokeWidth={1.5} />
                     <Circle cx={-6} cy={-12} r={2} fill={AXM.parchment} />
                     <Circle cx={6} cy={-12} r={2} fill={AXM.parchment} />
                 </G>
@@ -78,7 +78,7 @@ export function PlaceholderIllustration({ slug }: { slug: EventArtSlug }) {
                 <G transform="translate(187 200)">
                     {[-80, -30, 30, 80].map((x, i) => (
                         <G key={i} transform={`translate(${x} 0)`}>
-                            <Path d="M-20 0 L 0 -25 L 20 0 L 20 30 L -20 30 Z" fill="#0a0a0a" stroke={AXM.parchment} strokeWidth={1.5} />
+                            <Path d="M-20 0 L 0 -25 L 20 0 L 20 30 L -20 30 Z" fill={AXM.bg} stroke={AXM.parchment} strokeWidth={1.5} />
                             <Path d="M-5 10 L 5 10 L 5 28 L -5 28 Z" fill={AXM.parchment} opacity={0.4} />
                         </G>
                     ))}

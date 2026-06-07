@@ -20,15 +20,15 @@ export function EncounterIllustration() {
                     <Path d={`M${x - 30} 90 L ${x + 30} 90 M ${x - 25} 130 L ${x + 20} 125`} stroke={AXM.parchment} strokeWidth={1.5} />
                     <Ellipse cx={x} cy={130} rx={3} ry={6} fill={AXM.parchment} />
                     <Line x1={x - 20} y1={90} x2={x - 20} y2={115} stroke={AXM.parchment} strokeWidth={1} />
-                    <Circle cx={x - 20} cy={120} r={4} fill="#0a0a0a" stroke={AXM.parchment} strokeWidth={1} />
+                    <Circle cx={x - 20} cy={120} r={4} fill={AXM.bg} stroke={AXM.parchment} strokeWidth={1} />
                 </G>
             ))}
             <G transform="translate(187 200)">
-                <Ellipse cx={0} cy={0} rx={60} ry={12} fill="#06050a" stroke={AXM.parchment} strokeWidth={1} />
+                <Ellipse cx={0} cy={0} rx={60} ry={12} fill={AXM.deepBg} stroke={AXM.parchment} strokeWidth={1} />
                 <Path d="M-50 0 L -55 -20 L -40 -30 L -25 -10 L -10 -38 L 5 -22 L 25 -45 L 38 -25 L 50 -8 L 55 0 Z"
-                    fill="#0a0a0a" stroke={AXM.parchment} strokeWidth={1.5} />
+                    fill={AXM.bg} stroke={AXM.parchment} strokeWidth={1.5} />
                 <G transform="translate(0 -50)">
-                    <Ellipse cx={0} cy={0} rx={14} ry={20} fill="#0a0a0a" stroke={AXM.parchment} strokeWidth={1.5} />
+                    <Ellipse cx={0} cy={0} rx={14} ry={20} fill={AXM.bg} stroke={AXM.parchment} strokeWidth={1.5} />
                     {[[-6, -8], [6, -8], [-8, -2], [8, -2], [0, -12]].map((p, i) => (
                         <Circle key={i} cx={p[0]} cy={p[1]} r={1.5} fill={AXM.blood} />
                     ))}

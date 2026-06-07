@@ -36,28 +36,6 @@
 > All pass-58 candidates promoted via /oversight 2026-06-06 — see
 > ## Promoted. Pending queue is empty; next /expand pass refills it.
 
-### [ ] [score 6.0] Combat UX design system implementation
-- proposed: 2026-06-06, expand pass 59
-- source signals:
-  - **Design landing**: design/combat-ux-overhaul-prompt.md (new file, 350+ lines)
-  - **User feedback**: Playtester feedback that combat flow is unintuitive
-  - **UX comprehension gaps**: Numbers/icons lack meaning, opaque choice-to-outcome flow
-- rationale: Major design brief authored to solve specific combat UX problems identified by first-time playtester. Combat is core mechanic but current implementation fails communication despite strong aesthetic foundation. Design prompt provides concrete solutions while preserving aesthetic language.
-- proposed scope: 1-phase implementation of design boards from Claude Design project
-- estimated phases: 1
-- conflicts: none
-
-### [ ] [score 4.5] Token resource system accumulation bug fix
-- proposed: 2026-06-06, expand pass 59
-- source signals:
-  - **GitHub issue**: #227 "Token resource system never accumulates (blocks skill casting)"
-  - **Mechanics blocker**: Core skill-casting system non-functional
-  - **UX bias weight**: Aligns with audit bias toward UX gaps
-- rationale: Critical system bug blocking skill usage. Token accumulation failure prevents players from using equipped skills, significantly impacting core combat mechanics. Issue filed in triage queue indicates user-impacting problem.
-- proposed scope: 1-phase engine boundary fix for token accumulation logic
-- estimated phases: 1
-- conflicts: none
-
 ### [ ] [score 3.5] Large component extraction refactor
 - proposed: 2026-06-06, expand pass 59
 - source signals:
@@ -66,17 +44,6 @@
   - **Maintainability impact**: Large files harder to navigate and test comprehensively
 - rationale: Three core components significantly exceed project size norms. PhaseBottom combat component and exploration/inventory screens are 2-3× larger than typical components, suggesting extraction opportunities for better modularity.
 - proposed scope: 1-phase component extraction for largest outliers
-- estimated phases: 1
-- conflicts: none
-
-### [ ] [score 3.5] Aftermath modal design implementation continuation
-- proposed: 2026-06-06, expand pass 59
-- source signals:
-  - **Design handoff**: design/handoff-2026-05-23 aftermath modal system
-  - **Design system expansion**: Complete four-modal artboard set for post-combat flow
-  - **Aesthetic consistency**: Builds on established 2026-05-16 design foundation
-- rationale: Comprehensive aftermath modal design system landed. Design handoff includes complete token mapping and implementation guidance for post-combat experience flow improvements. Extends existing aesthetic language systematically.
-- proposed scope: 1-phase implementation of four aftermath modals per design specification
 - estimated phases: 1
 - conflicts: none
 
@@ -838,6 +805,10 @@ warranted a full phase promotion:
 
 ## Promoted
 
+### [promoted → status Phase 116] [score 4.5] Token resource accumulation fix (issue #227)
+
+- moved from ## Pending via /oversight 2026-06-07, assigned Phase 116. Open HIGH-severity gameplay bug (#227, user-spotted in /critique pass 18, open since 2026-06-01): the token resource system never accumulates, so combat skills can never be cast. Promoted above the remaining cleanup candidates ([3.5] large-component extraction, [3.0] combat test types) as the highest user-impact item in the system — the loop had been grinding sub-4.0 perf/hex-token iterate ticks while this core-mechanic blocker sat unaddressed. Brief lives in `plan/steps/01_build_plan.md` Status block (draft via `/plan-a-phase phase 116`). Suspected engine-vs-mobile boundary in `state/presenters/combat.engine.ts`; if engine-gated, stop with an exact version/export blocker rather than simulating accrual locally.
+
 ### [promoted → status Phase 113] [score 4.2] Combat UX overhaul design implementation
 
 - moved from ## Pending via /oversight 2026-06-06, assigned Phase 113. User ordered all three pass-58 candidates promoted. Implements the combat UX direction in `design/combat-ux-overhaul-prompt.md` (+ `design/combat-ux-overhaul.md`) to make numbers/icons legible and the choice→outcome flow decodable for first-time players, preserving aesthetic language and engine-owned mechanical depth. Brief lives in `plan/steps/01_build_plan.md` Status block (draft via `/plan-a-phase phase 113`).
@@ -1533,6 +1504,25 @@ exploration `moveToAction` migration to engine `revealAdjacent` /
   `(player as any)` casts and `?? 0` fallbacks after migration.
 
 ## Rejected
+
+### [rejected 2026-06-07 — already shipped] [score 6.0] Combat UX design system implementation
+- proposed: 2026-06-06, expand pass 59.
+- Rejected via /oversight 2026-06-07. Re-treads work already shipped
+  as **Phase 113** (Combat UX overhaul, commit
+  `3e24267`): the candidate's sole source signal is the same design
+  doc (`design/combat-ux-overhaul-prompt.md`) that Phase 113 was
+  promoted against (candidate [4.2]). Promoting it would duplicate
+  shipped code. Do-not-re-propose guard already flags combat-UX as a
+  closed theme — `/expand` should check shipped state before filing.
+
+### [rejected 2026-06-07 — already shipped] [score 3.5] Aftermath modal design implementation continuation
+- proposed: 2026-06-06, expand pass 59.
+- Rejected via /oversight 2026-06-07. The "four-modal artboard set
+  for post-combat flow" shipped as **Phase 114** (aftermath modals,
+  commit `b0d1463`). Aftermath rendering inside the encounter modal
+  also shipped earlier as **Phase 86**. Both are named closed themes
+  in the do-not-re-propose guard. Promoting would duplicate shipped
+  code.
 
 ### [rejected 2026-06-04 — already shipped] [score 4.5] Design handoff integration — aftermath modals + levelup
 - proposed: 2026-06-04, expand pass 54 (commit 3ddd842).

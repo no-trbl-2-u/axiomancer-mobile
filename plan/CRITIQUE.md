@@ -7,6 +7,16 @@
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
 > for the contract.
 >
+> **Green-deploy gate dropped (set via `/oversight` 2026-06-07).**
+> Every prior "fire pass N once a green deploy lands" directive is
+> hereby **superseded** — it was a structural deadlock: EAS builds
+> are user-triggered, so no green deploy ever auto-fires and the
+> gate stayed closed indefinitely. `/critique` should now fire on
+> its normal rate-limit (>=12 commits or >=24h since the last pass)
+> as a **repo-proxy pass** — the mode pass 18 already used for
+> mobile/EAS, reading docs/specs/artifacts as the "fresh maintainer"
+> proxy per `plan/bearings.md`. No deploy-state precondition.
+>
 > **Critique directive cleared 2026-05-18:** the 2nd /oversight
 > call's "fire pass 14 unconditionally next tick" directive
 > never fired because the loop stopped being idle — user shipped

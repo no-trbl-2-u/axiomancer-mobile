@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-06 at commit 610f79c
-> Pass count: 60
+> Last pass: 2026-06-07 at commit 857be36
+> Pass count: 61
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -2008,4 +2008,54 @@ exploration `moveToAction` migration to engine `revealAdjacent` /
 - rationale: Several files have grown beyond maintainable size boundaries. state/actions.ts at 1529 lines is particularly concerning as central state management. Phase 102's combat decomposition provides proven approach.
 - proposed scope: 1 phase. Focus on state/actions.ts decomposition into domain-specific action modules following existing patterns. Consider EncounterModalOverlay.tsx sub-component extraction.
 - estimated phases: 1
+- conflicts: none
+
+### [ ] [score 8.5] App route test coverage establishment 
+- proposed: 2026-06-07, expand pass 61
+- source signals:
+  - **Test:code ratio drop smell** — 9 .tsx files in app/ directory with 0 test files, compared to components/ with 81 tests for 161 files
+  - **High-LOC untested files** — app/(tabs)/exploration/index.tsx (718 lines), app/(tabs)/inventory/index.tsx (709 lines) lack dedicated test coverage
+- rationale: Critical testing infrastructure gap. App directory holds all route components with complex presenter integration but zero dedicated tests, while components directory maintains good test coverage. This creates maintainability risk for user-facing screens.
+- proposed scope: 1 phase. Establish hermetic testing pattern for app route components following existing state/e2e/ precedent. Focus on presenter integration and route-specific UI state management for the 5 tab screens.
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 8.5] Test fixture scaffolding improvement (reduce as any casts)
+- proposed: 2026-06-07, expand pass 61
+- source signals:
+  - **Type cast cluster smell** — 20+ `as any` occurrences concentrated in presenter test files
+  - **Test maintenance burden** — Repeated scaffolding patterns in combat-mercy-choice.engine.test.ts (7 instances), combat-hud.engine.test.ts (5 instances)
+- rationale: Test fixture scaffolding relies heavily on `as any` casts, indicating poor type safety in test setup. This creates fragile test foundations and reduces confidence in presenter contract verification.
+- proposed scope: 1 phase. Create proper typed test fixtures and factories to replace `as any` scaffolding patterns, focusing on presenter test files with highest cast concentrations.
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 6.5] EncounterModalOverlay.test.tsx size reduction
+- proposed: 2026-06-07, expand pass 61
+- source signals:
+  - **File-length outlier smell** — components/event/__tests__/EncounterModalOverlay.test.tsx at 773 lines, significantly above ~600 line threshold
+  - **Test maintainability** — Large test file creates navigation and maintenance burden
+- rationale: Single test file has grown beyond manageable size. At 773 lines, it's the largest file in the codebase and represents a maintenance bottleneck for event/modal testing.
+- proposed scope: 1 phase. Extract test utilities and group related tests into focused sub-suites while preserving existing test coverage and hermetic test principles.
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 3.6] Exploration screen component extraction
+- proposed: 2026-06-07, expand pass 61
+- source signals:
+  - **File-length outlier smell** — app/(tabs)/exploration/index.tsx at 718 lines, above maintainability threshold
+  - **User-facing surface** — Primary navigation screen with high interaction complexity
+- rationale: Exploration screen has grown beyond maintainable size. As a user-facing tab screen with complex state management and map interactions, it would benefit from component extraction.
+- proposed scope: 2-3 phases. Extract map rendering, node interaction, and navigation sub-components while preserving current behavior and accessibility patterns.
+- estimated phases: 3
+- conflicts: none
+
+### [ ] [score 3.6] Inventory screen component extraction
+- proposed: 2026-06-07, expand pass 61
+- source signals:
+  - **File-length outlier smell** — app/(tabs)/inventory/index.tsx at 709 lines, above maintainability threshold
+  - **User-facing surface** — Primary navigation screen with item management complexity
+- rationale: Inventory screen has grown beyond maintainable size. As a user-facing tab screen with complex item interaction and presenter integration, it would benefit from component extraction.
+- proposed scope: 2-3 phases. Extract item list, item detail, and action panels into focused sub-components while preserving current behavior and accessibility patterns.
+- estimated phases: 3
 - conflicts: none

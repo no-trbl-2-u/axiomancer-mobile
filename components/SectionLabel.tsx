@@ -11,7 +11,11 @@ interface SectionLabelProps {
 
 export function SectionLabel({ children, color = AXM.parchment, size = 11, style }: SectionLabelProps) {
   return (
-    <Text style={[styles.base, { color, fontSize: size }, style]}>
+    <Text 
+      style={[styles.base, { color, fontSize: size }, style]}
+      accessibilityRole="header"
+      accessibilityLabel={`Section: ${children}`}
+    >
       {children}
     </Text>
   );

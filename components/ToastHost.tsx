@@ -65,9 +65,21 @@ export function ToastHost() {
     if (toast.text === null) return null;
 
     return (
-        <View pointerEvents="none" style={styles.host} accessibilityLiveRegion="polite">
+        <View 
+            pointerEvents="none" 
+            style={styles.host} 
+            accessibilityLiveRegion="polite"
+            accessibilityLabel="Game notification"
+            accessibilityRole="alert"
+        >
             <View style={styles.toast}>
-                <Text style={styles.text}>{toast.text}</Text>
+                <Text 
+                    style={styles.text}
+                    accessibilityRole="text"
+                    accessibilityLabel={`Notification: ${toast.text}`}
+                >
+                    {toast.text}
+                </Text>
             </View>
         </View>
     );

@@ -14,18 +14,50 @@ interface StatBarProps {
 
 export function StatBar({ value, max, color = AXM.blood, label, height = 14, showText = true }: StatBarProps) {
   const pct = Math.max(0, Math.min(1, value / max));
+  const percentage = Math.round(pct * 100);
+  const accessibilityLabel = label ? 
+    `${label}: ${value} out of ${max}, ${percentage} percent` : 
+    `Progress bar: ${value} out of ${max}, ${percentage} percent`;
 
   return (
-    <View style={styles.container}>
+    <View 
+      style={styles.container}
+      accessibilityRole="progressbar"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityValue={{ now: value, min: 0, max: max }}
+    >
       {label && (
         <View style={styles.labelRow}>
-          <Text style={styles.label}>{label}</Text>
-          {showText && <Text style={styles.value}>{value}/{max}</Text>}
+          <Text 
+            style={styles.label}
+            accessibilityRole="text"
+            importantForAccessibility="no"
+          >
+            {label}
+          </Text>
+          {showText && (
+            <Text 
+              style={styles.value}
+              accessibilityRole="text"
+              importantForAccessibility="no"
+            >
+              {value}/{max}
+            </Text>
+          )}
         </View>
       )}
-      <View style={[styles.track, { height }]}>
-        <View style={[styles.fill, { width: `${(pct * 100).toFixed(1)}%` as DimensionValue, backgroundColor: color }]} />
-        <View style={styles.topLine} />
+      <View 
+        style={[styles.track, { height }]}
+        importantForAccessibility="no"
+      >
+        <View 
+          style={[styles.fill, { width: `${(pct * 100).toFixed(1)}%` as DimensionValue, backgroundColor: color }]}
+          importantForAccessibility="no"
+        />
+        <View 
+          style={styles.topLine}
+          importantForAccessibility="no"
+        />
       </View>
     </View>
   );

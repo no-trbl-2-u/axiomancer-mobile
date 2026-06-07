@@ -19,6 +19,21 @@
 
 ## Top 5 findings (scored)
 
+### [x] [4.8] Hardcoded hex colors in combat and event UI components bypass design system
+- category: perf
+- impact: 6
+- ease: 8
+- base-score: 4.8
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 4.8
+- next: Replace hardcoded hex colors in CombatEnemyPanel.tsx and app/event/index.tsx with appropriate AXM design tokens
+- evidence: CombatEnemyPanel.tsx:65 uses '#000' for SVG fill, app/event/index.tsx:89 uses '#1a0a0a' for choice background
+- observation: Hardcoded colors in UI components bypass centralized theming system and reduce design consistency
+- source: audit
+- issue: #301
+- addressed: 2026-06-07 via commit d17011c
+- fix: Replaced '#000' with AXM.deepBg and '#1a0a0a' with AXM.selectFill for consistent theming
+
 ### [x] [5.6] Multiple hardcoded hex colors in NodeMark component bypass design system
 - category: perf
 - impact: 7

@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     gap: 3,
     paddingVertical: 1,
     paddingHorizontal: 4,
-    backgroundColor: '#000',
+    backgroundColor: AXM.deepBg,
     borderWidth: 1,
     borderColor: AXM.sulfur,
     borderStyle: 'dashed',

@@ -38,7 +38,7 @@
 - addressed: 2026-06-07 via commit e462e2c
 - fix: Enhanced accessibility in core UI components - added accessibilityRole="alert" to ToastHost, accessibilityRole="header" to SectionLabel, and comprehensive progressbar accessibility to StatBar with proper value reporting
 
-### [ ] [8.1] Multiple hardcoded RGBA colors in critical UI components bypass design system
+### [x] [8.1] Multiple hardcoded RGBA colors in critical UI components bypass design system
 - category: perf
 - impact: 9
 - ease: 9
@@ -49,6 +49,9 @@
 - evidence: components/ErrorBoundary.tsx:425 'rgba(0,0,0,0.4)', components/combat/MercyChoiceModal.tsx:107 'rgba(6, 5, 10, 0.92)', components/combat/PhaseBottom.tsx:536,548 multiple rgba borders/backgrounds, components/combat/CombatLogDisplay.tsx:85 'rgba(0,0,0,0.4)'
 - observation: Critical UI surfaces including error handling, combat mercy choices, and combat log use hardcoded RGBA values instead of centralized AXM design tokens
 - source: audit
+- issue: #303
+- addressed: 2026-06-07 via commit 6714a09
+- fix: Added AXM.backdrop, AXM.overlay, and AXM.divider design tokens, replaced hardcoded RGBA values in ErrorBoundary, MercyChoiceModal, PhaseBottom, and CombatLogDisplay components
 
 ### [ ] [7.2] Complete absence of test coverage for app directory components
 - category: tests

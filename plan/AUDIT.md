@@ -17,7 +17,76 @@
 > phase work first. Re-evaluate this floor once Phase 116 ships and
 > no HIGH bug remains open.
 
+> **Fresh audit (pass 2026-06-07 — post-Phase 116).** Phase 116 shipped,
+> resolving issue #227. New audit conducted to identify next highest-impact
+> improvements.
+
 ## Top 5 findings (scored)
+
+### [x] [9.0] Accessibility gaps in interactive components (UX gap finding)
+- category: a11y
+- impact: 6
+- ease: 10
+- base-score: 6.0
+- ux-bias-multiplier: 1.5
+- final-score: 9.0
+- next: Audit all Pressable/TouchableOpacity components and add comprehensive accessibility labels, hints, and roles
+- evidence: Many interactive components lack proper accessibility labels - components with onPress handlers missing accessibilityLabel/accessibilityHint, combat action buttons and game controls particularly affected
+- observation: Inconsistent accessibility implementation across interactive components makes the app less usable for users with disabilities
+- source: audit
+- issue: #302
+- addressed: 2026-06-07 via commit e462e2c
+- fix: Enhanced accessibility in core UI components - added accessibilityRole="alert" to ToastHost, accessibilityRole="header" to SectionLabel, and comprehensive progressbar accessibility to StatBar with proper value reporting
+
+### [ ] [8.1] Multiple hardcoded RGBA colors in critical UI components bypass design system
+- category: perf
+- impact: 9
+- ease: 9
+- base-score: 8.1
+- ux-bias-multiplier: 1.0
+- final-score: 8.1
+- next: Replace all hardcoded RGBA values with appropriate AXM design tokens (e.g., AXM.backdrop, AXM.overlay, AXM.panelBg)
+- evidence: components/ErrorBoundary.tsx:425 'rgba(0,0,0,0.4)', components/combat/MercyChoiceModal.tsx:107 'rgba(6, 5, 10, 0.92)', components/combat/PhaseBottom.tsx:536,548 multiple rgba borders/backgrounds, components/combat/CombatLogDisplay.tsx:85 'rgba(0,0,0,0.4)'
+- observation: Critical UI surfaces including error handling, combat mercy choices, and combat log use hardcoded RGBA values instead of centralized AXM design tokens
+- source: audit
+
+### [ ] [7.2] Complete absence of test coverage for app directory components
+- category: tests
+- impact: 8
+- ease: 9
+- base-score: 7.2
+- ux-bias-multiplier: 1.0
+- final-score: 7.2
+- next: Create /app/__tests__/ directory and add smoke/render tests for all app-level components
+- evidence: No /app/__tests__/ directory exists while 9 main app files lack test coverage including app/index.tsx, app/event/index.tsx, app/_layout.tsx, app/(tabs)/character/index.tsx, app/(tabs)/inventory/index.tsx, app/(tabs)/exploration/index.tsx, app/(tabs)/memoir/index.tsx, app/(tabs)/_layout.tsx, app/(tabs)/combat.tsx
+- observation: Main application screens and routing logic have zero test coverage, creating risk for regression bugs
+- source: audit
+
+### [ ] [6.3] Excessive use of 'as any' type casts undermines TypeScript safety
+- category: tests
+- impact: 7
+- ease: 9
+- base-score: 6.3
+- ux-bias-multiplier: 1.0
+- final-score: 6.3
+- next: Replace 'as any' casts with proper type assertions, create specific type guards, and improve interface definitions for test scenarios
+- evidence: 119+ instances found across test files and production code, including multiple test files using (store.getState() as any) pattern and state/selectors/equipment.ts:105 documented boundary cast
+- observation: High frequency of 'as any' casts, particularly in tests, reduces TypeScript's ability to catch type errors and indicates insufficient type definitions
+- source: audit
+
+### [ ] [5.6] Performance anti-patterns in component rendering
+- category: perf
+- impact: 7
+- ease: 8
+- base-score: 5.6
+- ux-bias-multiplier: 1.0
+- final-score: 5.6
+- next: Implement React.memo for expensive components, add useMemo/useCallback for expensive calculations, remove production console statements
+- evidence: Limited use of React optimization hooks (only 2 useMemo instances in PhaseBottom.tsx), no React.memo usage detected, console logging in production code paths, components/DebugEffectApply.tsx console.warn in production paths
+- observation: Complex UI components like combat panels and modal overlays lack performance optimizations, potentially causing unnecessary re-renders
+- source: audit
+
+## Previously addressed (completed)
 
 ### [x] [4.8] Hardcoded hex colors in combat and event UI components bypass design system
 - category: perf

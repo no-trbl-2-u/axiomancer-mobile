@@ -10,7 +10,7 @@
  */
 
 import { describe, expect, it } from '@jest/globals';
-import { FRIENDSHIP_COUNTER_MAX } from 'axiomancer-mechanics';
+import { FRIENDSHIP_COUNTER_MAX, type CombatState } from 'axiomancer-mechanics';
 
 import { selectCombatViewModel } from '@/state/presenters/combat.engine';
 import type { AppStoreState } from '@/state/store';
@@ -45,7 +45,7 @@ describe('selectCombatViewModel: mercy choice slice', () => {
             enemyChoice: {},
             log: [],
             combatResources: { body: 0, mind: 0, heart: 0, fallacy: 0, paradox: 0 },
-        } as any;
+        } as unknown as CombatState;
 
         const vm = selectCombatViewModel(state);
         expect(vm.mercyChoice.isActive).toBe(false);
@@ -65,7 +65,7 @@ describe('selectCombatViewModel: mercy choice slice', () => {
             log: [],
             combatResources: { body: 0, mind: 0, heart: 0, fallacy: 0, paradox: 0 },
             mercyChoiceActive: false,
-        } as any;
+        } as unknown as CombatState;
 
         const vm = selectCombatViewModel(state);
         expect(vm.mercyChoice.isActive).toBe(false);
@@ -86,7 +86,7 @@ describe('selectCombatViewModel: mercy choice slice', () => {
             log: [],
             combatResources: { body: 0, mind: 0, heart: 0, fallacy: 0, paradox: 0 },
             mercyChoiceActive: true,
-        } as any;
+        } as unknown as CombatState;
 
         const vm = selectCombatViewModel(state);
         expect(vm.mercyChoice.isActive).toBe(true);
@@ -106,7 +106,7 @@ describe('selectCombatViewModel: mercy choice slice', () => {
             enemyChoice: {},
             log: [],
             combatResources: { body: 0, mind: 0, heart: 0, fallacy: 0, paradox: 0 },
-        } as any;
+        } as unknown as CombatState;
 
         const vm = selectCombatViewModel(state);
         expect(vm.mercyChoice.isActive).toBe(false);
@@ -125,7 +125,7 @@ describe('selectCombatViewModel: mercy choice slice', () => {
             enemyChoice: {},
             log: [],
             combatResources: { body: 1, mind: 2, heart: 1, fallacy: 0, paradox: 0 },
-        } as any;
+        } as unknown as CombatState;
 
         const vm = selectCombatViewModel(state);
         // Phase 108 — Modal inactive unless mercyChoiceActive is set
@@ -149,7 +149,7 @@ describe('selectCombatViewModel: mercy choice slice', () => {
             enemyChoice: {},
             log: [],
             combatResources: { body: 0, mind: 0, heart: 2, fallacy: 0, paradox: 0 },
-        } as any;
+        } as unknown as CombatState;
 
         const vm = selectCombatViewModel(state);
         // Phase 108 — Modal inactive but fallback logic preserved
@@ -171,7 +171,7 @@ describe('selectCombatViewModel: mercy choice slice', () => {
             enemyChoice: {},
             log: [],
             combatResources: { body: 0, mind: 1, heart: 1, fallacy: 0, paradox: 0 },
-        } as any;
+        } as unknown as CombatState;
 
         const vm = selectCombatViewModel(state);
         expect(vm.mercyChoice.spareLabel).toBe('SPARE');

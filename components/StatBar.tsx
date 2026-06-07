@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   },
   track: {
     width: '100%',
-    backgroundColor: '#1a1814',
+    backgroundColor: AXM.ash,
     borderWidth: 1,
     borderColor: 'rgba(232,223,200,0.35)',
     overflow: 'hidden',

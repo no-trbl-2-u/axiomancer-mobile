@@ -219,8 +219,8 @@
 - addressed: 2026-06-04 via commit cf94ee7
 - fix: Added missing Memoir tab to core functionality checklist and top banner clarifying this is manual QA checklist vs hermetic test standard. Placeholder contacts were already filled in previous commits.
 
-### [LOW] /plan/bearings.md — Stack table pins engine `^0.4.x` while the rest of the file + package.json pin exact `0.11.0`
-- pass: 18 (commit fd525e3)
+### [LOW] /plan/bearings.md — Stack table pins engine `^0.4.x` while the rest of the file + package.json pin exact `0.11.0` ✅
+- pass: 18 (commit fd525e3); addressed at commit f003a8a
 - viewport: n/a (repo-proxy)
 - auth_state: anonymous
 - category: consistency
@@ -228,6 +228,7 @@
 - evidence: plan/bearings.md:62 "Engine | `axiomancer-mechanics` npm package (pinned ^0.4.x)" vs :79 "Pinned **exact** (e.g. `0.11.0`)" and package.json "axiomancer-mechanics": "0.11.0".
 - suggested fix: Update the Stack-table cell to the exact current pin (`0.11.0`) so it agrees with line 79 and the lockfile.
 - source: file-read (repo-proxy)
+- fix: Updated stack table engine pin and external services example to reflect current ^0.15.0 from package.json
 
 ### [HIGH] general — Equipment has no visible effect on character stats ✅
 - pass: user-jot (commit `5e6cd5e`)

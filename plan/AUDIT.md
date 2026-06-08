@@ -9,7 +9,7 @@
 
 ## Top 5 findings (scored)
 
-### [ ] [9.0] Missing accessibility labels on combat enemy portrait SVG reduces screen reader usability
+### [x] [9.0] Missing accessibility labels on combat enemy portrait SVG reduces screen reader usability
 - category: a11y  
 - impact: 6
 - ease: 10

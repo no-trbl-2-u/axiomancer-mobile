@@ -31,15 +31,15 @@ const bodyXml = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <path d="M32 16 L 32 12 M 30 14 L 32 12 L 34 14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
 
-export function GlyphHeart({ size = 40, color = AXM.parchment }: GlyphProps) {
+export const GlyphHeart = React.memo(function GlyphHeart({ size = 40, color = AXM.parchment }: GlyphProps) {
   return <SvgXml xml={heartXml} width={size} height={size} color={color} accessibilityRole="image" accessibilityLabel="Heart stance glyph" />;
-}
+});
 
-export function GlyphBody({ size = 40, color = AXM.parchment }: GlyphProps) {
+export const GlyphBody = React.memo(function GlyphBody({ size = 40, color = AXM.parchment }: GlyphProps) {
   return <SvgXml xml={bodyXml} width={size} height={size} color={color} accessibilityRole="image" accessibilityLabel="Body stance glyph" />;
-}
+});
 
-export function GlyphMind({ size = 40, color = AXM.parchment, stroke = 2.4 }: GlyphProps) {
+export const GlyphMind = React.memo(function GlyphMind({ size = 40, color = AXM.parchment, stroke = 2.4 }: GlyphProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 64 64" fill="none" accessibilityRole="image" accessibilityLabel="Mind stance glyph">
       <Path
@@ -53,7 +53,7 @@ export function GlyphMind({ size = 40, color = AXM.parchment, stroke = 2.4 }: Gl
       <Path d="M32 8 L 30 14 L 34 18 L 28 22 L 32 26" stroke={color} strokeWidth={stroke * 0.9} />
     </Svg>
   );
-}
+});
 
 export function StanceGlyph({ kind, size = 40, color = AXM.parchment, stroke = 2.4 }: GlyphProps & { kind: string }) {
   if (kind === 'heart') return <GlyphHeart size={size} color={color} stroke={stroke} />;

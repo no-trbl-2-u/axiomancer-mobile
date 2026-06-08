@@ -9,7 +9,7 @@ interface SectionLabelProps {
   style?: object;
 }
 
-export function SectionLabel({ children, color = AXM.parchment, size = 11, style }: SectionLabelProps) {
+export const SectionLabel = React.memo(function SectionLabel({ children, color = AXM.parchment, size = 11, style }: SectionLabelProps) {
   return (
     <Text 
       style={[styles.base, { color, fontSize: size }, style]}
@@ -19,7 +19,7 @@ export function SectionLabel({ children, color = AXM.parchment, size = 11, style
       {children}
     </Text>
   );
-}
+});
 
 const styles = StyleSheet.create({
   base: {

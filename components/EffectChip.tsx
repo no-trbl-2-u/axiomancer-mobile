@@ -32,7 +32,7 @@ const TINT_MAP: Record<string, string> = {
   neutral: AXM.deepBg,
 };
 
-export function EffectChip({ effect, dim = false }: EffectChipProps) {
+export const EffectChip = React.memo(function EffectChip({ effect, dim = false }: EffectChipProps) {
   const c = COLOR_MAP[effect.kind] || AXM.parchment;
   const bg = TINT_MAP[effect.tint || 'neutral'] || AXM.deepBg;
 
@@ -47,7 +47,7 @@ export function EffectChip({ effect, dim = false }: EffectChipProps) {
       )}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   chip: {

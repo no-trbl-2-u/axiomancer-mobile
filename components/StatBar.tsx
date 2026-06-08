@@ -12,7 +12,7 @@ interface StatBarProps {
   showText?: boolean;
 }
 
-export function StatBar({ value, max, color = AXM.blood, label, height = 14, showText = true }: StatBarProps) {
+export const StatBar = React.memo(function StatBar({ value, max, color = AXM.blood, label, height = 14, showText = true }: StatBarProps) {
   const pct = Math.max(0, Math.min(1, value / max));
   const percentage = Math.round(pct * 100);
   const accessibilityLabel = label ? 
@@ -61,7 +61,7 @@ export function StatBar({ value, max, color = AXM.blood, label, height = 14, sho
       </View>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: { width: '100%' },

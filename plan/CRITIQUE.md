@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-08 at commit 44794db
-> Pass count: 25
+> Last pass: 2026-06-08 at commit 2f0ed3d
+> Pass count: 26
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -63,13 +63,58 @@
 
 ## Pending
 
-<!-- Pass 24 (2026-06-07, commit 1c8be58): repo-proxy pass —
+<!-- Pass 26 (2026-06-08, commit 2f0ed3d): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
      critique reads docs/specs/artifacts as the "fresh maintainer"
-     proxy. Focus on repository onboarding experience, development
-     workflow, and documentation completeness. Reader examined README,
-     .env setup, package.json scripts, specs human workflow, and 
-     configuration files. 4 findings filed below. -->
+     proxy. Focus on repository comprehension and documentation
+     quality. Reader examined README.md, docs/README.md,
+     specs/README.md, plan/bearings.md, and docs/testing.md.
+     5 findings filed below. -->
+
+### [HIGH] docs/README.md — Referenced documentation file does not exist
+- pass: 26 (commit 2f0ed3d)
+- viewport: repository
+- category: navigation
+- observation: docs/README.md referenced in main README but file does not exist — creates broken navigation path for fresh maintainer
+- evidence: Main README line 132 shows 'docs/ design notes' and bearings.md line 132 shows 'docs/' in repo structure, but glob search found no docs/README.md
+- suggested fix: Create docs/README.md with overview of documentation structure or remove reference from main README
+- source: repo-proxy
+
+### [MED] /README.md — Project description buries key user context
+- pass: 26 (commit 2f0ed3d)
+- viewport: repository
+- category: comprehension
+- observation: Project description buries the key user context — 'TTRPG client' is mentioned in first paragraph but the actual game genre (gothic tabletop RPG) is unclear until much later in bearings.md
+- evidence: README opens with 'Expo / React Native client for the Axiomancer TTRPG' but never explains what kind of game Axiomancer is
+- suggested fix: Add one sentence after line 7 explaining 'Axiomancer is a gothic tabletop RPG with combat, exploration, and character progression'
+- source: repo-proxy
+
+### [MED] /plan/bearings.md — Technical context lacks quick-start orientation
+- pass: 26 (commit 2f0ed3d)
+- viewport: repository
+- category: comprehension
+- observation: Technical context is comprehensive but lacks quick-start orientation — fresh maintainer must read 348 lines to understand basic project scope and setup
+- evidence: File contains detailed operational context but no executive summary or 'TL;DR' section before diving into stack choices and repo structure
+- suggested fix: Add 3-4 line executive summary after line 7 covering: what the app does, target platforms, and development approach
+- source: repo-proxy
+
+### [MED] /README.md — Scripts table lacks development workflow context
+- pass: 26 (commit 2f0ed3d)
+- viewport: repository
+- category: navigation
+- observation: Scripts table lacks development workflow context — no guidance on typical dev loop or which commands a new contributor runs first
+- evidence: Lines 34-54 list 21 script commands but no workflow guidance like 'new contributor: run npm install → npm start → npm run ios' or 'before pushing: npm run verify'
+- suggested fix: Add 'Development workflow' section after Scripts table showing common command sequences for first-time setup and daily development
+- source: repo-proxy
+
+### [MED] /README.md — Architecture section uses undefined technical jargon
+- pass: 26 (commit 2f0ed3d)
+- viewport: repository
+- category: comprehension
+- observation: Architecture diagram and presenter contract explanation provides clear separation of concerns but uses technical jargon without defining key terms for fresh maintainers
+- evidence: Lines 139-168 mention 'presenter', 'view-model', and 'hermetic e2e' without definitions, though these are crucial concepts for understanding the codebase structure
+- suggested fix: Add brief definitions inline or link to docs/presenters.md from the architecture section
+- source: repo-proxy
 
 ### [MED] /.env.example — Environment setup references missing documentation files
 - pass: 24 (commit 1c8be58)

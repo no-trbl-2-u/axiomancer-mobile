@@ -35,7 +35,7 @@
 - source: external-critique
 - issue: #311
 
-### [ ] [6.3] Multiple hardcoded color literals in EncounterPreludeContent bypass design system
+### [x] [6.3] Multiple hardcoded color literals in EncounterPreludeContent bypass design system
 - category: perf
 - impact: 7
 - ease: 9

@@ -6,12 +6,26 @@
 > (stance-button spacing drained 2026-06-04 via commit 026fc7f.)
 > Conducted by: /iterate autonomous audit
 
-> **Fresh audit (pass 3 2026-06-08).** Post-all previous findings addressed, 
+> **Fresh audit (pass 4 2026-06-08).** Post-all previous findings addressed, 
 > conducted comprehensive audit across all categories. All major hardcoded color 
-> issues resolved. Identified remaining hardcoded gradient colors in ModalRivet 
+> issues resolved. Identified remaining hardcoded pixel art colors in PixelEmblem 
 > component as highest-impact remaining finding.
 
 ## Top 5 findings (scored)
+
+### [x] [4.5] Hardcoded hex colors in PixelEmblem bypass design system despite carve-out justification
+- category: perf
+- impact: 5
+- ease: 9
+- base-score: 4.5
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 4.5
+- next: Replace hardcoded hex colors '#7a0d1c' and '#fff5e0' in PixelEmblem.tsx with appropriate AXM design tokens while preserving pixel art aesthetic
+- evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/event/aftermath/PixelEmblem.tsx lines 70-71 use hardcoded colors '#7a0d1c' (shadow) and '#fff5e0' (highlight) instead of design system tokens
+- observation: While pixel art has design carve-out justification, hardcoded colors still create maintenance burden and bypass centralized theming system
+- source: audit
+- addressed: 2026-06-08 via commit 8f72b6f
+- fix: Added AXM.pixelShadow and AXM.pixelHighlight design tokens and replaced hardcoded hex colors in both PixelEmblem and PixelHeartEmblem components. Preserves exact pixel art aesthetic while centralizing color management for easier theme maintenance.
 
 ### [x] [5.4] Hardcoded gradient hex colors in ModalRivet component bypass design system
 - category: perf

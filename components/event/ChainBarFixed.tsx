@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { FONTS } from '@/theme/axm';
+import { AXM, FONTS } from '@/theme/axm';
 
 const DIAMOND_STRAND = '◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆';
 
@@ -57,12 +57,12 @@ const styles = StyleSheet.create({
     chainBarTop: {
         top: 4,
         borderBottomWidth: 1,
-        borderBottomColor: 'rgba(192, 21, 42, 0.55)',
+        borderBottomColor: AXM.bloodStrong,
     },
     chainBarBottom: {
         bottom: 4,
         borderTopWidth: 1,
-        borderTopColor: 'rgba(192, 21, 42, 0.55)',
+        borderTopColor: AXM.bloodStrong,
     },
     chainDiamonds: {
         flex: 1,

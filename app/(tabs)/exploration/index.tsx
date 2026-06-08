@@ -446,7 +446,7 @@ function MapNodeMarker({
         >
             <NodeMark kind={n.kind} size={36} />
             {n.kind === 'available' && shouldShowLabel && (
-                <View style={[styles.nodeLabel, { backgroundColor: dim ? 'rgba(10,10,10,0.95)' : 'rgba(10,10,10,0.85)' }]}>
+                <View style={[styles.nodeLabel, { backgroundColor: AXM.nodeBg }]}>
                     <Text style={[styles.nodeLabelText, { color: dim ? AXM.bone : AXM.parchment }]}>
                         {n.label}
                     </Text>
@@ -543,7 +543,7 @@ const styles = StyleSheet.create({
         marginTop: 2,
         paddingHorizontal: 4,
         paddingVertical: 1,
-        backgroundColor: 'rgba(10,10,10,0.85)',
+        backgroundColor: AXM.nodeBg,
     },
     nodeLabelText: {
         fontFamily: FONTS.sans,
@@ -636,7 +636,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         backgroundColor: AXM.panelBg,
         borderWidth: 1,
-        borderColor: 'rgba(232, 223, 200, 0.12)',
+        borderColor: AXM.divider,
         borderLeftWidth: 2,
     },
     stepCardIconBox: {

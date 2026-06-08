@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     paddingHorizontal: 6,
     borderWidth: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: AXM.shadow,
   },
   dot: {
     width: 5,

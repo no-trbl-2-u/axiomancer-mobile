@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 8,
         borderLeftWidth: 2,
         borderLeftColor: AXM.blood,
-        backgroundColor: 'rgba(192, 21, 42, 0.06)',
+        backgroundColor: AXM.bloodSubtle,
     },
     replacePreviewEyebrow: {
         fontFamily: FONTS.mono,
@@ -361,11 +361,11 @@ const styles = StyleSheet.create({
         borderWidth: 1,
     },
     replaceDeltaChipPos: {
-        backgroundColor: 'rgba(212, 192, 38, 0.12)',
+        backgroundColor: AXM.sulfurSubtle,
         borderColor: AXM.sulfur,
     },
     replaceDeltaChipNeg: {
-        backgroundColor: 'rgba(192, 21, 42, 0.14)',
+        backgroundColor: AXM.bloodSubtle,
         borderColor: AXM.blood,
     },
     replaceDeltaChipText: {

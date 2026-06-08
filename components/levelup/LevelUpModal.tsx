@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
         color: AXM.parchment,
         textAlign: 'center',
         marginTop: 14,
-        textShadowColor: 'rgba(192, 21, 42, 0.25)',
+        textShadowColor: AXM.bloodMed,
         textShadowOffset: { width: 1.5, height: 1.5 },
         textShadowRadius: 0,
     },
@@ -504,7 +504,7 @@ const styles = StyleSheet.create({
         color: AXM.sulfur,
     },
     pointsValueLit: {
-        textShadowColor: 'rgba(212, 192, 38, 0.6)',
+        textShadowColor: AXM.sulfurMed,
         textShadowOffset: { width: 0, height: 0 },
         textShadowRadius: 6,
     },
@@ -580,7 +580,7 @@ const styles = StyleSheet.create({
         bottom: 0,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(6, 5, 10, 0.8)',
+        backgroundColor: AXM.overlay, // Using existing overlay token
     },
     discardInset: {
         backgroundColor: AXM.panelBg,

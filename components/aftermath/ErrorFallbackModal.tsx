@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
         paddingVertical: 4,
     },
     copyButtonPressed: {
-        backgroundColor: 'rgba(212, 192, 38, 0.2)', // Sulfur with opacity
+        backgroundColor: AXM.sulfurMed,
     },
     copyButtonText: {
         fontSize: 12,
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     technicalText: {
         fontSize: 14,
         lineHeight: 18,
-        color: 'rgba(232, 223, 200, 0.7)', // Parchment dimmed
+        color: AXM.parchmentDim,
         // Allow text wrapping for long error messages
         flexWrap: 'wrap',
     },

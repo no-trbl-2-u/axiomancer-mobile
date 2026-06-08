@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: AXM.ash,
     borderWidth: 1,
-    borderColor: 'rgba(232,223,200,0.35)',
+    borderColor: AXM.parchmentMed,
     overflow: 'hidden',
     position: 'relative',
   },
@@ -103,6 +103,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: 'rgba(232,223,200,0.4)',
+    backgroundColor: AXM.parchmentMed,
   },
 });

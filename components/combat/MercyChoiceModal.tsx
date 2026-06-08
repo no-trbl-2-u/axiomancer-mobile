@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
         borderColor: AXM.sulfur,
     },
     exploitButton: {
-        backgroundColor: 'rgba(139, 69, 19, 0.1)', // Rust tint
+        backgroundColor: AXM.rustSubtle,
         borderColor: AXM.blood,
     },
     choiceLabel: {

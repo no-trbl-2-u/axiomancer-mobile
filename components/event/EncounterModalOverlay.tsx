@@ -221,7 +221,7 @@ export function EncounterModalOverlay({
                     {
                         borderColor: sealChrome.accentColor,
                         shadowColor: sealChrome.glowColor,
-                        boxShadow: `0 0 0 1px ${AXM.bg}, 0 0 24px ${sealChrome.glowColor}, inset 0 0 60px rgba(0,0,0,0.7)`,
+                        boxShadow: `0 0 0 1px ${AXM.bg}, 0 0 24px ${sealChrome.glowColor}, inset 0 0 60px ${AXM.shadow}`,
                     },
                     panelStyle,
                 ]}
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
         // marginally darker (0.65 vs 0.6) so the panel border reads
         // sharp on the lighter regions of the exploration map. Phase
         // 39 port from the handoff bundle.
-        backgroundColor: 'rgba(10, 10, 10, 0.65)',
+        backgroundColor: AXM.nodeBg,
     },
     panel: {
         position: 'absolute',
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
         // shadow* keys as a native fallback for older Android.
         // The accent-tint outer glow is driven by sealChrome.
         boxShadow:
-            `0 0 0 1px ${AXM.bg}, 0 0 24px rgba(192,21,42,0.35), inset 0 0 60px rgba(0,0,0,0.7)`,
+            `0 0 0 1px ${AXM.bg}, 0 0 24px ${AXM.bloodMed}, inset 0 0 60px ${AXM.shadow}`,
         shadowColor: AXM.deepBg,
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.8,

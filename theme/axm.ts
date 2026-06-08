@@ -44,6 +44,56 @@ export const AXM = {
    * Replaces 'rgba(232, 223, 200, 0.12)' usage.
    */
   divider: 'rgba(232, 223, 200, 0.12)',
+  /**
+   * Medium opacity parchment for subtle backgrounds and borders.
+   * Replaces 'rgba(232, 223, 200, 0.35)' and 'rgba(232, 223, 200, 0.4)' usage.
+   */
+  parchmentMed: 'rgba(232, 223, 200, 0.35)',
+  /**
+   * High opacity parchment for readable dimmed text.
+   * Replaces 'rgba(232, 223, 200, 0.62)' and 'rgba(232, 223, 200, 0.7)' usage.
+   */
+  parchmentDim: 'rgba(232, 223, 200, 0.65)',
+  /**
+   * Low opacity sulfur for subtle highlights and button states.
+   * Replaces 'rgba(212, 192, 38, 0.10)' and 'rgba(212, 192, 38, 0.12)' usage.
+   */
+  sulfurSubtle: 'rgba(212, 192, 38, 0.1)',
+  /**
+   * Medium opacity sulfur for emphasis and backgrounds.
+   * Replaces 'rgba(212, 192, 38, 0.2)' and 'rgba(212, 192, 38, 0.6)' usage.
+   */
+  sulfurMed: 'rgba(212, 192, 38, 0.3)',
+  /**
+   * Low opacity blood for subtle highlights.
+   * Replaces 'rgba(192, 21, 42, 0.06)' and 'rgba(192, 21, 42, 0.14)' usage.
+   */
+  bloodSubtle: 'rgba(192, 21, 42, 0.1)',
+  /**
+   * Medium opacity blood for effects and shadows.
+   * Replaces 'rgba(192, 21, 42, 0.25)' and 'rgba(192, 21, 42, 0.35)' usage.
+   */
+  bloodMed: 'rgba(192, 21, 42, 0.3)',
+  /**
+   * Strong opacity blood for prominent borders and accents.
+   * Replaces 'rgba(192, 21, 42, 0.55)' usage.
+   */
+  bloodStrong: 'rgba(192, 21, 42, 0.55)',
+  /**
+   * Low opacity rust for subtle backgrounds.
+   * Replaces 'rgba(139, 69, 19, 0.1)' usage.
+   */
+  rustSubtle: 'rgba(158, 58, 26, 0.1)',
+  /**
+   * Semi-transparent black for overlays.
+   * Replaces 'rgba(0, 0, 0, 0.5)' and 'rgba(0, 0, 0, 0.7)' usage.
+   */
+  shadow: 'rgba(0, 0, 0, 0.6)',
+  /**
+   * Semi-opaque dark background for node labels and tooltips.
+   * Replaces 'rgba(10, 10, 10, 0.85)' and 'rgba(10, 10, 10, 0.95)' usage.
+   */
+  nodeBg: 'rgba(10, 10, 10, 0.9)',
 } as const;
 
 export const FONTS = {

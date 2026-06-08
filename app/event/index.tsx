@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
         paddingVertical: 6,
         paddingHorizontal: 14,
         borderBottomWidth: 1,
-        borderBottomColor: 'rgba(232, 223, 200, 0.12)',
+        borderBottomColor: AXM.divider,
     },
     preludeHeaderText: {
         fontFamily: FONTS.sans,

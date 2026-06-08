@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
     },
     copyButtonPressed: {
         borderColor: AXM.sulfur,
-        backgroundColor: 'rgba(212,192,38,0.10)',
+        backgroundColor: AXM.sulfurSubtle,
     },
     copyButtonLabel: {
         fontFamily: FONTS.sans,
@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
         fontFamily: FONTS.mono,
         fontSize: 10.5,
         lineHeight: 14,
-        color: 'rgba(232,223,200,0.62)',
+        color: AXM.parchmentDim,
     },
     section: { marginTop: 14 },
     sectionLabel: {

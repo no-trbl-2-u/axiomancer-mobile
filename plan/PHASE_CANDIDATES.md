@@ -34,7 +34,17 @@
 >   ## Considered / ## Drained below.
 
 > All pass-58 candidates promoted via /oversight 2026-06-06 — see
-> ## Promoted. Pending queue is empty; next /expand pass refills it.
+> ## Promoted.
+>
+> **Runway directive (set via /oversight 2026-06-08, queue-drained call).**
+> The build-plan phase queue is fully drained (all 148 rows shipped) and
+> the remaining candidates are sub-4.0 cleanup-tier. The [3.5]
+> large-component extraction candidate was promoted to **Phase 117** (see
+> ## Promoted + build-plan Status block). To rebuild higher-value runway,
+> the **next `/march` tick must fire an `/expand` pass** before falling
+> through to `/iterate` — the current candidate pool is too thin to feed
+> the loop. After expand refills, the next `/oversight` promotes from the
+> fresh batch.
 
 ### [ ] [score 2.8] Repository onboarding documentation consolidation
 - proposed: 2026-06-07, expand pass 62
@@ -44,17 +54,6 @@
   - **Maintainer friction**: Fresh contributor experience gaps identified by repo-proxy critique
 - rationale: Four independent critique findings all point to onboarding/documentation fragmentation. Signal multiplicity suggests systemic documentation debt affecting new maintainer experience rather than isolated issues.
 - proposed scope: 1-phase documentation consolidation addressing setup references, script guidance, spec workflow clarity, and test configuration documentation
-- estimated phases: 1
-- conflicts: none
-
-### [ ] [score 3.5] Large component extraction refactor
-- proposed: 2026-06-06, expand pass 59
-- source signals:
-  - **File length outliers**: PhaseBottom.tsx (722 lines), exploration/index.tsx (718 lines), inventory/index.tsx (709 lines)
-  - **Smell pattern**: 3+ files >700 lines exceed 2× folder median
-  - **Maintainability impact**: Large files harder to navigate and test comprehensively
-- rationale: Three core components significantly exceed project size norms. PhaseBottom combat component and exploration/inventory screens are 2-3× larger than typical components, suggesting extraction opportunities for better modularity.
-- proposed scope: 1-phase component extraction for largest outliers
 - estimated phases: 1
 - conflicts: none
 
@@ -815,6 +814,18 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted → status Phase 117] [score 3.5] Large-component extraction refactor
+
+- moved from ## Pending via /oversight 2026-06-08 (queue-drained call),
+  assigned Phase 117. Source: expand pass 59 file-length outliers —
+  `PhaseBottom.tsx` (~722), `app/(tabs)/exploration/index.tsx` (~718),
+  `app/(tabs)/inventory/index.tsx` (~709), all >2× folder median.
+  Promoted to give the drained phase queue a concrete structural-refactor
+  unit while `/expand` refills higher-value candidates. Pure refactor —
+  no engine-boundary or behavior change. Brief lives in
+  `plan/steps/01_build_plan.md` Status block (draft via
+  `/plan-a-phase phase 117`).
 
 ### [promoted → status Phase 116] [score 4.5] Token resource accumulation fix (issue #227)
 

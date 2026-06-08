@@ -80,7 +80,7 @@
 - suggested fix: Remove references to missing setup files or create the referenced setup documentation
 - source: repo-proxy
 
-### [MED] /package.json — Package scripts lack development workflow guidance
+### [x] [MED] /package.json — Package scripts lack development workflow guidance ✅
 - pass: 24 (commit 1c8be58)
 - viewport: repository
 - category: maintainability
@@ -88,6 +88,8 @@
 - evidence: Commands like 'verify', 'deploy:preview', 'baseline:approve' exist with no explanation of when/how to use them in development workflow
 - suggested fix: Add script descriptions in README.md Scripts table or package.json comments explaining development workflow usage
 - source: repo-proxy
+- addressed: 2026-06-08 via commit 6ad6e8b
+- fix: Expanded README.md Scripts table with 7 additional development workflow scripts including verify (quality gate), verify:visual (visual smoke tests), baseline:approve (visual test maintenance), and deploy:* commands with clear descriptions for new maintainer onboarding
 
 ### [LOW] /specs/README.md — Specs unclear for human-only development workflow
 - pass: 24 (commit 1c8be58)

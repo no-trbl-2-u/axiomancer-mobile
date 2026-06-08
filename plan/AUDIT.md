@@ -13,6 +13,20 @@
 
 ## Top 5 findings (scored)
 
+### [x] [4.5] Package.json scripts lack development workflow guidance (external critique)
+- category: external-critique
+- impact: 5
+- ease: 9
+- base-score: 4.5
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 4.5
+- next: Add missing development workflow scripts to README.md Scripts table with clear descriptions
+- evidence: External critique finding from pass 24: Commands like 'verify', 'deploy:preview', 'baseline:approve' exist with no explanation of when/how to use them in development workflow
+- observation: README.md Scripts table incomplete - missing critical development workflow scripts that new maintainers need to understand
+- source: external-critique
+- addressed: 2026-06-08 via commit 6ad6e8b
+- fix: Expanded README.md Scripts table with 7 additional development workflow scripts including verify (quality gate), verify:visual (visual smoke tests), baseline:approve (visual test maintenance), and deploy:* commands with clear descriptions
+
 ### [x] [4.5] Hardcoded hex colors in PixelEmblem bypass design system despite carve-out justification
 - category: perf
 - impact: 5

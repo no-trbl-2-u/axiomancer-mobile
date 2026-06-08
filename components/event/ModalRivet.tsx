@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Circle as SvgCircle, Defs as SvgDefs, RadialGradient as SvgRadialGradient, Stop as SvgStop } from 'react-native-svg';
+import { AXM } from '@/theme/axm';
 
 interface ModalRivetProps {
     position: 'tl' | 'tr' | 'bl' | 'br';
@@ -19,10 +20,10 @@ export function ModalRivet({ position }: ModalRivetProps) {
                     <SvgRadialGradient id="rivetFill" cx="35%" cy="30%" r="65%">
                         <SvgStop offset="0%" stopColor="#6a625a" />
                         <SvgStop offset="60%" stopColor="#2a2520" />
-                        <SvgStop offset="100%" stopColor="#0a0a0a" />
+                        <SvgStop offset="100%" stopColor={AXM.bg} />
                     </SvgRadialGradient>
                 </SvgDefs>
-                <SvgCircle cx={4} cy={4} r={3.5} fill="url(#rivetFill)" stroke="#0a0a0a" strokeWidth={0.5} />
+                <SvgCircle cx={4} cy={4} r={3.5} fill="url(#rivetFill)" stroke={AXM.bg} strokeWidth={0.5} />
             </Svg>
         </View>
     );

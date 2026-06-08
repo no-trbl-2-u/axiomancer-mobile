@@ -75,19 +75,19 @@ export function LevelReadyStrip({ level, onLevelUp }: LevelReadyStripProps) {
 function ChevronUpGlyph() {
     return (
         <Svg viewBox="0 0 22 22" width={22} height={22}>
-            <Circle cx={11} cy={11} r={10} fill={AXM.sulfur} stroke="#0a0a0a" strokeWidth={0.6} />
+            <Circle cx={11} cy={11} r={10} fill={AXM.sulfur} stroke={AXM.bg} strokeWidth={0.6} />
             <Circle
                 cx={11}
                 cy={11}
                 r={10}
                 fill="none"
-                stroke="#0a0a0a"
+                stroke={AXM.bg}
                 strokeWidth={0.4}
                 strokeDasharray="1 1.5"
                 opacity={0.6}
             />
             {/* upward chevron — two strokes meeting at the apex */}
-            <SvgPath d="M5 13 L11 7 L17 13" fill="none" stroke="#0a0a0a" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
+            <SvgPath d="M5 13 L11 7 L17 13" fill="none" stroke={AXM.bg} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
         </Svg>
     );
 }

@@ -101,23 +101,23 @@ function renderChevrons(n: number): string {
 function LockSealGlyph() {
     return (
         <Svg viewBox="0 0 22 22" width={22} height={22}>
-            <Circle cx={11} cy={11} r={10} fill={AXM.sulfur} stroke="#0a0a0a" strokeWidth={0.6} />
+            <Circle cx={11} cy={11} r={10} fill={AXM.sulfur} stroke={AXM.bg} strokeWidth={0.6} />
             <Circle
                 cx={11}
                 cy={11}
                 r={10}
                 fill="none"
-                stroke="#0a0a0a"
+                stroke={AXM.bg}
                 strokeWidth={0.4}
                 strokeDasharray="1 1.5"
                 opacity={0.6}
             />
             {/* impressed lock — shackle + body */}
-            <SvgPath d="M7.5 11 h7 v5 h-7 z" fill="none" stroke="#0a0a0a" strokeWidth={1.2} />
+            <SvgPath d="M7.5 11 h7 v5 h-7 z" fill="none" stroke={AXM.bg} strokeWidth={1.2} />
             <SvgPath
                 d="M8.5 11 v-2 a2.5 2.5 0 0 1 5 0 v2"
                 fill="none"
-                stroke="#0a0a0a"
+                stroke={AXM.bg}
                 strokeWidth={1.2}
             />
         </Svg>

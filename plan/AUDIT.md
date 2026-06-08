@@ -53,7 +53,7 @@
 - addressed: 2026-06-07 via commit 6714a09
 - fix: Added AXM.backdrop, AXM.overlay, and AXM.divider design tokens, replaced hardcoded RGBA values in ErrorBoundary, MercyChoiceModal, PhaseBottom, and CombatLogDisplay components
 
-### [ ] [7.2] Complete absence of test coverage for app directory components
+### [x] [7.2] Complete absence of test coverage for app directory components
 - category: tests
 - impact: 8
 - ease: 9
@@ -64,6 +64,9 @@
 - evidence: No /app/__tests__/ directory exists while 9 main app files lack test coverage including app/index.tsx, app/event/index.tsx, app/_layout.tsx, app/(tabs)/character/index.tsx, app/(tabs)/inventory/index.tsx, app/(tabs)/exploration/index.tsx, app/(tabs)/memoir/index.tsx, app/(tabs)/_layout.tsx, app/(tabs)/combat.tsx
 - observation: Main application screens and routing logic have zero test coverage, creating risk for regression bugs
 - source: audit
+- issue: #304
+- addressed: 2026-06-08 via commit 611f956
+- fix: Added comprehensive hermetic E2E smoke tests for all app directory components in state/e2e/app-components.engine.test.tsx, covering main screens (index, event, inventory, memoir) and component imports for all app files
 
 ### [ ] [6.3] Excessive use of 'as any' type casts undermines TypeScript safety
 - category: tests

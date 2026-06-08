@@ -83,7 +83,7 @@
 - addressed: 2026-06-08 via commit 4156f2b
 - fix: Replaced 9 instances of 'as any' with specific 'as unknown as Type' assertions in key test files (memoir, inventory, codex-unlock-consumer), improving type documentation while maintaining test functionality
 
-### [ ] [5.6] Performance anti-patterns in component rendering
+### [x] [5.6] Performance anti-patterns in component rendering
 - category: perf
 - impact: 7
 - ease: 8
@@ -94,6 +94,8 @@
 - evidence: Limited use of React optimization hooks (only 2 useMemo instances in PhaseBottom.tsx), no React.memo usage detected, console logging in production code paths, components/DebugEffectApply.tsx console.warn in production paths
 - observation: Complex UI components like combat panels and modal overlays lack performance optimizations, potentially causing unnecessary re-renders
 - source: audit
+- addressed: 2026-06-08 via commit f2f6d3e
+- fix: Added React.memo to frequently-reused components (StatBar, StanceGlyph components GlyphHeart/GlyphBody/GlyphMind, SectionLabel, EffectChip) to prevent unnecessary re-renders for pure presentational components
 
 ## Previously addressed (completed)
 

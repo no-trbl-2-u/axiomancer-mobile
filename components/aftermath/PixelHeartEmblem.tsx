@@ -108,9 +108,9 @@ export default function PixelHeartEmblem({ cellSize = 12 }: PixelHeartEmblemProp
                     const isTopLeftHighlight = (row === 1 && col === 3) || (row === 1 && col === 8);
                     
                     if (isTopLeftHighlight) {
-                        color = '#ffffff'; // White highlight pixel
+                        color = AXM.pixelHighlight; // White highlight pixel
                     } else if (isBottomRightEdge) {
-                        color = '#7a0d1c'; // Darker shadow pixels
+                        color = AXM.pixelShadow; // Darker shadow pixels
                     } else {
                         color = AXM.blood; // Main heart color
                     }

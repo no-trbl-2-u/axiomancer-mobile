@@ -94,6 +94,16 @@ export const AXM = {
    * Replaces 'rgba(10, 10, 10, 0.85)' and 'rgba(10, 10, 10, 0.95)' usage.
    */
   nodeBg: 'rgba(10, 10, 10, 0.9)',
+  /**
+   * Pixel art shadow color for the friendship emblem.
+   * Dark blood shadow used exclusively in PixelEmblem component.
+   */
+  pixelShadow: '#7a0d1c',
+  /**
+   * Pixel art highlight color for the friendship emblem.
+   * Warm highlight used exclusively in PixelEmblem component.
+   */
+  pixelHighlight: '#fff5e0',
 } as const;
 
 export const FONTS = {

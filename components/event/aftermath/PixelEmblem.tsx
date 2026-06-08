@@ -36,8 +36,8 @@ import { AXM } from '@/theme/axm';
  * 16×16 sprite. Characters:
  *   .  transparent
  *   r  heart blood (AXM.blood)
- *   s  shadow (#7a0d1c)
- *   h  highlight (#fff5e0)
+ *   s  shadow (AXM.pixelShadow)
+ *   h  highlight (AXM.pixelHighlight)
  *   p  hand parchment (AXM.parchment)
  *   *  sulfur sparkle (AXM.sulfur)
  *
@@ -67,8 +67,8 @@ export const PIXEL_HEART: readonly string[] = [
 
 const PIX_COLORS: Record<string, string> = {
     r: AXM.blood,
-    s: '#7a0d1c',
-    h: '#fff5e0',
+    s: AXM.pixelShadow,
+    h: AXM.pixelHighlight,
     p: AXM.parchment,
     '*': AXM.sulfur,
 };

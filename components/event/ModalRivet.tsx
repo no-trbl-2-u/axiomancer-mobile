@@ -18,8 +18,8 @@ export function ModalRivet({ position }: ModalRivetProps) {
             <Svg width={8} height={8} viewBox="0 0 8 8">
                 <SvgDefs>
                     <SvgRadialGradient id="rivetFill" cx="35%" cy="30%" r="65%">
-                        <SvgStop offset="0%" stopColor="#6a625a" />
-                        <SvgStop offset="60%" stopColor="#2a2520" />
+                        <SvgStop offset="0%" stopColor={AXM.bone} />
+                        <SvgStop offset="60%" stopColor={AXM.ash} />
                         <SvgStop offset="100%" stopColor={AXM.bg} />
                     </SvgRadialGradient>
                 </SvgDefs>

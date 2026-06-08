@@ -6,11 +6,27 @@
 > (stance-button spacing drained 2026-06-04 via commit 026fc7f.)
 > Conducted by: /iterate autonomous audit
 
-> **Fresh audit (pass 2026-06-08).** Post-all previous findings addressed, 
-> conducted comprehensive audit across all categories. Identified remaining 
-> hardcoded #0a0a0a colors in levelup and modal components as highest-impact finding.
+> **Fresh audit (pass 3 2026-06-08).** Post-all previous findings addressed, 
+> conducted comprehensive audit across all categories. All major hardcoded color 
+> issues resolved. Identified remaining hardcoded gradient colors in ModalRivet 
+> component as highest-impact remaining finding.
 
 ## Top 5 findings (scored)
+
+### [x] [5.4] Hardcoded gradient hex colors in ModalRivet component bypass design system
+- category: perf
+- impact: 6
+- ease: 9
+- base-score: 5.4
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 5.4
+- next: Replace hardcoded hex colors #6a625a and #2a2520 in ModalRivet.tsx with appropriate AXM design tokens
+- evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/event/ModalRivet.tsx lines 21-22 use hardcoded hex colors in SVG gradient stops instead of AXM design tokens
+- observation: Modal rivet decorative elements use hardcoded gradients that bypass the centralized theming system and reduce design consistency
+- source: audit
+- issue: #308
+- addressed: 2026-06-08 via commit c25a316
+- fix: Replaced hardcoded hex colors #6a625a and #2a2520 in SVG gradient stops with AXM.bone and AXM.ash design tokens. Maintains metallic rivet gradient effect while using centralized design system tokens for consistency.
 
 ### [x] [5.4] Hardcoded #0a0a0a colors in levelup and modal components bypass design system
 - category: perf

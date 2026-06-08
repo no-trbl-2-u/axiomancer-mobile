@@ -18,6 +18,7 @@ import {
     selectMemoirViewModel,
     type MemoirViewModel,
 } from '@/state/presenters/memoir.engine';
+import { type AppStoreState } from '@/state/store';
 
 afterEach(() => {
     jest.restoreAllMocks();
@@ -113,8 +114,8 @@ function setQuests(
         completed?: unknown[];
     },
 ): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    store.setState({ quests: log } as any);
+    // Type assertion needed for test mock data - setState expects AppStoreState partial
+    store.setState({ quests: log } as unknown as Partial<AppStoreState>);
 }
 
 function makeQuest(
@@ -251,8 +252,8 @@ describe('selectMemoirViewModel: quests section', () => {
 // ---------------------------------------------------------------------------
 
 function setMoralMeter(store: ReturnType<typeof createGameStore>, value: number): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    store.setState({ moralMeter: value } as any);
+    // Type assertion needed for test mock data - setState expects AppStoreState partial
+    store.setState({ moralMeter: value } as unknown as Partial<AppStoreState>);
 }
 
 function setBaseStats(
@@ -260,8 +261,8 @@ function setBaseStats(
     stats: { heart: number; body: number; mind: number },
 ): void {
     const player = store.getState().player;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    store.setState({ player: { ...player, baseStats: stats } } as any);
+    // Type assertion needed for test mock data - setState expects AppStoreState partial
+    store.setState({ player: { ...player, baseStats: stats } } as unknown as Partial<AppStoreState>);
 }
 
 describe('selectMemoirViewModel: moral alignment', () => {
@@ -399,8 +400,8 @@ function setRecentEvents(
     store: ReturnType<typeof createGameStore>,
     events: RecentEvent[],
 ): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    store.setState({ _recentEvents: events } as any);
+    // Type assertion needed for test mock data - setState expects AppStoreState partial
+    store.setState({ _recentEvents: events } as unknown as Partial<AppStoreState>);
 }
 
 describe('selectMemoirViewModel: chronicle (Tick D)', () => {

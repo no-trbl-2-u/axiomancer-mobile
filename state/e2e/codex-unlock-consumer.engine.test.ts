@@ -10,7 +10,7 @@
  */
 
 import { describe, expect, it } from '@jest/globals';
-import { applyEffect, effectsLibrary } from 'axiomancer-mechanics';
+import { applyEffect, effectsLibrary, type Enemy } from 'axiomancer-mechanics';
 
 import { createAppActions } from '@/state/actions';
 import { createAppStore } from '@/state/store';
@@ -34,8 +34,8 @@ function makeFriendlyEnemy(journalEntryBody?: string) {
             mentalTest: 0, emotionalAttack: 5, emotionalSkill: 5,
             emotionalDefense: 5, emotionalSave: 5, emotionalTest: 0,
             luck: 0,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
+            // Type assertion for test mock data - partial Enemy derivedStats
+        } as unknown as Enemy['derivedStats'],
         mapName: 'home-bay',
         logic: 'aggressive' as const,
         effects: [],
@@ -47,8 +47,8 @@ function makeFriendlyEnemy(journalEntryBody?: string) {
                 body: journalEntryBody,
             }
             : undefined,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any;
+        // Type assertion for test mock data - partial Enemy properties
+    } as unknown as Enemy;
 }
 
 function forceFriendshipExit(store: ReturnType<typeof createAppStore>): void {

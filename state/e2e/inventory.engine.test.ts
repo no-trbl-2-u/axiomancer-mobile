@@ -348,8 +348,8 @@ describe('selectInventoryViewModel: invariants', () => {
             name: `Phial ${i}`,
             category: 'consumable',
             description: '',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        })) as any;
+            // Type assertion for test mock data - partial Item properties
+        })) as unknown as Item[];
         store.setState({
             player: { ...store.getState().player, inventory },
         });

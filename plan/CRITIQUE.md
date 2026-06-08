@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-07 at commit 1c8be58
-> Pass count: 24
+> Last pass: 2026-06-08 at commit 44794db
+> Pass count: 25
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -569,6 +569,69 @@
 - evidence: Line 100 contains reference to non-existent .cursor/skills/ path
 - suggested_fix: Update reference to point to correct asset swap documentation or remove outdated reference
 - source: browser
+
+<!-- Pass 25 (2026-06-08, commit 44794db): repo-proxy pass —
+     Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
+     critique reads docs/specs/artifacts as the "fresh maintainer"
+     proxy. Focus on repository experience, development workflow,
+     documentation completeness. Reader examined environment setup,
+     workflow guidance, voice consistency, theme tokens, performance
+     concerns, script documentation. 6 findings filed below. -->
+
+### [MED] /.env.example — Environment setup references missing documentation files
+- pass: 25 (commit 44794db)
+- viewport: n/a
+- category: comprehension
+- observation: Environment configuration file references 'setup/02_eas.md for detailed configuration steps' but no setup/ directory exists in repository
+- evidence: Line 17: '# See setup/02_eas.md for detailed configuration steps.' but no setup/ directory found in repository structure
+- suggested fix: Either create referenced setup/02_eas.md file or remove reference and move configuration details into .env.example comments
+- source: file-read
+
+### [MED] /README.md — Missing guidance for development workflow ordering
+- pass: 25 (commit 44794db)
+- viewport: n/a
+- category: comprehension
+- observation: Scripts table lists verification and deployment commands but lacks guidance on typical development workflow sequence
+- evidence: Scripts section shows 'verify', 'deploy:preview', 'baseline:approve' but no clear indication of when/how to use them in normal development flow
+- suggested fix: Add workflow section showing typical development sequence: start → lint/test → verify → commit → deploy
+- source: file-read
+
+### [MED] /plan/AUDIT.md — Audit findings indicate performance concerns unaddressed
+- pass: 25 (commit 44794db)
+- viewport: n/a
+- category: performance
+- observation: Open performance finding [5.6] indicates components lack optimization patterns despite complex UI rendering requirements
+- evidence: Lines 87-96 describe limited use of React optimization hooks, no React.memo usage, and console logging in production paths
+- suggested fix: Implement React.memo for expensive components and add useMemo/useCallback for complex calculations in combat and modal components
+- source: file-read
+
+### [LOW] /specs/README.md — Specs workflow unclear for human-only development
+- pass: 25 (commit 44794db)
+- viewport: n/a
+- category: comprehension
+- observation: Documentation describes AI-assisted conversation loop but provides no guidance for developers working without AI assistance
+- evidence: Lines 39-52 detail AI-centric workflow but no alternative path for traditional human development using specs
+- suggested fix: Add section explaining how to use specs independently for traditional development workflow without AI assistance
+- source: file-read
+
+### [LOW] /plan/bearings.md — Voice guidelines conflict with actual implementation voice
+- pass: 25 (commit 44794db)
+- viewport: n/a
+- category: voice
+- observation: Voice guidelines specify 'terse, archaic, ritual' but some recent commit messages and documentation use modern, conversational tone
+- evidence: Bearings.md lines 180-184 specify cold/old register but recent docs and error messages use contemporary language patterns
+- suggested fix: Audit recent documentation and in-app copy to align with specified archaic voice or revise voice guidelines to reflect current practice
+- source: file-read
+
+### [LOW] /theme/axm.ts — Theme tokens include deprecated font references
+- pass: 25 (commit 44794db)
+- viewport: n/a
+- category: consistency
+- observation: Theme file exports both legacy FONTS.{pirata, fell, fellItalic, bebas, mono} and new FONTS.{gothic, serif, serifItalic, sans, mono} patterns
+- evidence: Lines 49-58 show current implementation but bearings.md references legacy pattern FONTS.{pirata, fell, fellItalic, bebas, mono}
+- suggested fix: Update plan/bearings.md to reference current theme token names or add legacy aliases for backward compatibility
+- source: file-read
+
 ## Done
 
 ### [HIGH] /specs/README.md — Phase 116 engine boundary debugging guidance missing ✅

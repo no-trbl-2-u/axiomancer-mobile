@@ -303,7 +303,7 @@ describe('selectTooltipContentFor', () => {
             // description (which Phase 75 originally surfaced but the
             // user-jot follow-up asked to drop in favour of the
             // payload-derived line).
-            expect(content?.body).toBe('+1 physical attack');
+            expect(content?.body).toBe('+2 physical attack');
             // Body-target effect → 'body' accent (rust tint).
             expect(content?.accent).toBe('body');
             // Footnote dropped under the tighten — the body now

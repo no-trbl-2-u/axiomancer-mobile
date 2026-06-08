@@ -181,7 +181,11 @@ assisted development. Pick up the loop here:
   — the operator's manual.
 - **Writing tests?** [`docs/testing.md`](./docs/testing.md) — hermetic
   e2e standard. Every implementation must land with at least one.
-- **Catching up to mechanics `0.15.0`?**
+- **Catching up to mechanics `0.15.1`?**
+  [`docs/engine-upgrade-0.15.0-to-0.15.1.md`](./docs/engine-upgrade-0.15.0-to-0.15.1.md)
+  — package bump, stronger status effects, effect-driven victory/friendship resolution,
+  and manual-build evidence checklist.
+- **Previous mechanics `0.15.0` catch-up:**
   [`docs/engine-upgrade-0.14.0-to-0.15.0.md`](./docs/engine-upgrade-0.14.0-to-0.15.0.md)
   — package bump, Stance and Vitae engine authority, northern-forest/story content,
   and presenter/visual evidence checklist.

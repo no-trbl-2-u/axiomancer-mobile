@@ -16,6 +16,7 @@ import React from 'react';
 import { Line, Path } from 'react-native-svg';
 
 import { PlaceholderIllustration } from '@/components/event/PlaceholderIllustration';
+import { EVENT_ART_SLUGS, type EventArtSlug } from '@/state/presenters/event-assets';
 
 describe('PlaceholderIllustration: always-on background', () => {
     it('renders the 60-segment Line grid regardless of slug', () => {
@@ -62,6 +63,49 @@ describe('PlaceholderIllustration: kind-specific branches', () => {
     it('hazard: emits the warning triangle + exclamation (2 Paths)', () => {
         const tree = render(<PlaceholderIllustration slug="hazard" />);
         expect(tree.UNSAFE_getAllByType(Path)).toHaveLength(2);
+    });
+});
+
+describe('PlaceholderIllustration: accessibility labels', () => {
+    it('provides accessibility labels for all defined EventArtSlug values', () => {
+        // Verify that getAccessibilityLabel function has coverage for every
+        // slug defined in EVENT_ART_SLUGS to prevent accessibility gaps
+        EVENT_ART_SLUGS.forEach((slug: EventArtSlug) => {
+            const tree = render(<PlaceholderIllustration slug={slug} />);
+            const svgElement = tree.getByLabelText(/illustration/i);
+            
+            // Verify the SVG has an accessibility label that contains meaningful text
+            expect(svgElement.props.accessibilityLabel).toBeTruthy();
+            expect(svgElement.props.accessibilityLabel).not.toBe(`Event illustration for ${slug}`);
+        });
+    });
+
+    it('provides specific descriptive labels for each event type', () => {
+        // Verify specific accessibility labels match expected patterns
+        const expectedLabels: Record<EventArtSlug, string> = {
+            'rest': 'Rest location illustration showing a tent with campfire',
+            'gathering': 'Gathering spot illustration showing multiple resource nodes',
+            'loot-cache': 'Loot cache illustration showing a treasure chest',
+            'interaction-generic': 'Generic interaction illustration showing a figure with speech elements',
+            'village': 'Village illustration showing multiple buildings',
+            'cutscene': 'Cutscene illustration showing narrative elements with circular focus',
+            'hazard': 'Hazard illustration showing warning symbols and danger markers',
+            'encounter': 'Combat encounter illustration showing a creature among twisted trees and ground debris',
+            'boss': 'Boss encounter illustration showing a crowned figure with glowing eyes and ornate robes on a throne'
+        };
+
+        (Object.entries(expectedLabels) as [EventArtSlug, string][]).forEach(([slug, expectedLabel]) => {
+            const tree = render(<PlaceholderIllustration slug={slug} />);
+            const svgElement = tree.getByLabelText(expectedLabel);
+            expect(svgElement).toBeTruthy();
+        });
+    });
+
+    it('sets proper accessibility role as image for screen readers', () => {
+        const tree = render(<PlaceholderIllustration slug="rest" />);
+        const svgElement = tree.getByLabelText('Rest location illustration showing a tent with campfire');
+        expect(svgElement).toBeTruthy();
+        expect(svgElement.props.accessibilityRole).toBe('image');
     });
 });
 

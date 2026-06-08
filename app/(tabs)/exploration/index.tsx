@@ -193,17 +193,16 @@ export default function ExplorationScreen() {
         if (result.moved) {
             recordDeepestNode(node.id);
         }
-        // Phase 32 design-handoff port (2026-05-16): encounter / boss
-        // taps no longer fast-path straight into combat. Instead the
-        // arrival resolves the map event, populating the pending event
-        // slice; the screen's render path then mounts
-        // <EncounterModalOverlay> over the map so the player must pick
-        // FIGHT or FLEE (chat1: "user cannot exit these modals"). Phase
-        // 63b (2026-05-21) extended this so combat itself plays inside
-        // the same modal — FIGHT transitions the overlay's internal mode
-        // 'prelude' → 'combat' and renders <CombatPanel> in-place
-        // instead of routing to the /combat tab.
-        if (result.moved && node.triggersCombat) {
+        // Temporary non-combat event shell: resolve the map event for
+        // every node type after a successful move, not just
+        // encounter/boss nodes. Combat-prelude events are handled by
+        // <EncounterModalOverlay> (kind === 'combat-prelude'); all other
+        // paced/narrative events route to /event via <EventGate>.
+        // This is a rudimentary shell, not the final board-game/minigame
+        // event design — see task "non-combat event shell" (2026-06-08).
+        // Phase 32 / 63b: encounter/boss path unchanged (FIGHT/FLEE
+        // inside modal; FIGHT transitions 'prelude' → 'combat' in-place).
+        if (result.moved) {
             actions.resolveCurrentMapEvent();
         }
     };

@@ -13,6 +13,9 @@ import { createMapState, getMapDefinition } from 'axiomancer-mechanics';
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
 import { createAppActions } from '@/state/actions';
 import { createAppStore } from '@/state/store';
+// Side-effect: registers exploration map event pools so resolveMapEvent
+// produces real events in the travel-to-event path tests below.
+import '@/state/exploration-maps/event-pools';
 import {
     selectExplorationViewModel,
     type ExplorationViewModel,
@@ -510,7 +513,12 @@ describe('selectExplorationViewModel: LEAGUES bucket', () => {
 // is hermetic (pure props in, dispatches out).
 // ---------------------------------------------------------------------------
 
-import { selectEventViewModel, selectHasActiveEvent } from '@/state/presenters/event.engine';
+import {
+    selectEventViewModel,
+    selectHasActiveEvent,
+    selectHasActivePacedEvent,
+    selectHasActiveCombatPrelude,
+} from '@/state/presenters/event.engine';
 
 describe('encounter-modal seam (Tick D)', () => {
     function moveToFirstEncounter(): {

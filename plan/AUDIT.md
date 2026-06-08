@@ -13,6 +13,23 @@
 
 ## Top 5 findings (scored)
 
+### [x] [7.2] Missing docs/README.md creates broken navigation path (external critique)
+- category: external-critique
+- impact: 8
+- ease: 9
+- base-score: 7.2
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 7.2
+- next: Create docs/README.md with overview of documentation structure
+- evidence: External critique finding from pass 26: docs/README.md referenced in main README but file does not exist — creates broken navigation path for fresh maintainer
+- observation: Main README line 132 shows 'docs/ design notes' but docs/README.md was missing
+- source: external-critique
+- issue: #309
+- addressed: 2026-06-08 via commit cf60f7a
+- fix: Created comprehensive docs/README.md with overview of documentation structure, ADR guidance, engine integration guides, design and UX documentation sections, and navigation back to main README and plan/
+
+## Previously addressed (completed)
+
 ### [x] [4.5] Package.json scripts lack development workflow guidance (external critique)
 - category: external-critique
 - impact: 5

@@ -71,14 +71,16 @@
      specs/README.md, plan/bearings.md, and docs/testing.md.
      5 findings filed below. -->
 
-### [HIGH] docs/README.md — Referenced documentation file does not exist
-- pass: 26 (commit 2f0ed3d)
+### [HIGH] docs/README.md — Referenced documentation file does not exist ✅
+- pass: 26 (commit 2f0ed3d); addressed at commit cf60f7a via `/iterate`
 - viewport: repository
 - category: navigation
 - observation: docs/README.md referenced in main README but file does not exist — creates broken navigation path for fresh maintainer
 - evidence: Main README line 132 shows 'docs/ design notes' and bearings.md line 132 shows 'docs/' in repo structure, but glob search found no docs/README.md
 - suggested fix: Create docs/README.md with overview of documentation structure or remove reference from main README
+- fix: Created comprehensive docs/README.md with overview of documentation structure, ADR guidance, engine integration guides, and navigation back to main README
 - source: repo-proxy
+- issue: #309
 
 ### [MED] /README.md — Project description buries key user context
 - pass: 26 (commit 2f0ed3d)

@@ -145,7 +145,7 @@ SVG_ASSET_SPEC.md          contract for replacing every placeholder SVG
                │
                ▼
 ┌────────────────────────────┐
-│       Presenters           │  app/<route>/*.engine.ts
+│       Presenters           │  state/presenters/*.engine.ts
 │  (pure: state → ViewModel) │  ← hermetic e2e lives here
 └──────────────┬─────────────┘
                │

@@ -6,11 +6,28 @@
 > (stance-button spacing drained 2026-06-04 via commit 026fc7f.)
 > Conducted by: /iterate autonomous audit
 
-> **Fresh audit (pass 2026-06-08).** Post-Phase 116, conducted comprehensive
-> audit across all categories. Identified RGBA hardcoded color issues as
-> highest-impact finding for design system consistency.
+> **Fresh audit (pass 2026-06-08).** Post-all previous findings addressed, 
+> conducted comprehensive audit across all categories. Identified remaining 
+> hardcoded #0a0a0a colors in levelup and modal components as highest-impact finding.
 
 ## Top 5 findings (scored)
+
+### [x] [5.4] Hardcoded #0a0a0a colors in levelup and modal components bypass design system
+- category: perf
+- impact: 6
+- ease: 9
+- base-score: 5.4
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 5.4
+- next: Replace hardcoded #0a0a0a values with AXM.bg design token in AscendStrip.tsx, LevelReadyStrip.tsx, and ModalRivet.tsx
+- evidence: Found hardcoded #0a0a0a in /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/levelup/AscendStrip.tsx lines 104,110,116,120; /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/levelup/LevelReadyStrip.tsx lines 78,84,90; /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/event/ModalRivet.tsx lines 22,25
+- observation: Level-up UI components and modal rivets use hardcoded color values instead of centralized AXM.bg design token
+- source: audit
+- issue: #307
+- addressed: 2026-06-08 via commit 14eb1da
+- fix: Replaced hardcoded #0a0a0a hex literals with AXM.bg design token in AscendStrip.tsx, LevelReadyStrip.tsx, and ModalRivet.tsx. Added AXM import to ModalRivet component for design system consistency.
+
+## Previously addressed (completed)
 
 ### [x] [5.6] RGBA hardcoded colors in multiple components bypass design system
 - category: perf

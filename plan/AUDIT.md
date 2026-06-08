@@ -47,7 +47,7 @@
 - observation: Encounter prelude UI uses direct theme references instead of semantic tokens, reducing design system maintainability and consistency
 - source: audit
 
-### [ ] [5.4] Missing test coverage for critical event illustration accessibility patterns  
+### [x] [5.4] Missing test coverage for critical event illustration accessibility patterns  
 - category: tests
 - impact: 6
 - ease: 9
@@ -58,6 +58,7 @@
 - evidence: PlaceholderIllustration.tsx has comprehensive accessibility labels but no tests verify the getAccessibilityLabel function covers all EventArtSlug values
 - observation: Event illustrations are key narrative elements but lack test coverage ensuring accessibility compliance across all event types
 - source: audit
+- issue: #313
 
 ### [ ] [4.5] Stale TODO comments in mercy action test files reference outdated Phase 108 context
 - category: tests  

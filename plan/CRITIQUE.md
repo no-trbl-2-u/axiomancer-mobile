@@ -17,49 +17,12 @@
 > mobile/EAS, reading docs/specs/artifacts as the "fresh maintainer"
 > proxy per `plan/bearings.md`. No deploy-state precondition.
 >
-> **Critique directive cleared 2026-05-18:** the 2nd /oversight
-> call's "fire pass 14 unconditionally next tick" directive
-> never fired because the loop stopped being idle — user shipped
-> Phase 32 sub-tick E (equipment dock port from design handoff,
-> commit `02beaeb`). With substantive product work pending the
-> directive's premise (refill an idle queue) no longer applied.
-> Critique gate now waits for its standard rate-limit (≥12
-> commits or ≥24h past pass 13 at `ce4f851`).
->
-> **Next-pass directive (set via `/oversight` 2026-05-21, 20th
-> call):** Since the 19th oversight call's directive was set,
-> the loop shipped Phase 60f (engine bump 0.10.2 + fixture
-> sweep, 56 type errors fixed), Phase 61 closed end-to-end
-> (parent + 6 sub-phases — 11 new Debug* affordances on SELF),
-> 8 iterate ticks (+105 tests across EffectChip, FriendshipMeter,
-> AftermathBanner, EffectGlyph, NodeMark, MindMark, ScreenBg,
-> Splatter), and a 32-warning lint drain. The 19th-call directive
-> never fired (deploy gate red structurally — EAS builds are
-> user-triggered, no auto-deploy). Re-affirming the directive at
-> the 20th call: next `/march` tick should fire `/critique` pass
-> 17 unconditionally once a green deploy lands. Until then the
-> critique skill self-defers per its §6 "no green deploy" path
-> and the gate stays closed. The cascade of new surface area
-> (60a–60f migrations + 61 chrome + 11 dev-menu rows + 8 test
-> additions) remains real signal worth a fresh external-observer
-> pass.
->
-> **Supersedes the 19th-call directive** (which targeted
-> commit `56725ae`'s state — now superseded by 22 commits of
-> shipped product since).
->
-> **Pass-5 policy (set via `/oversight` 2026-05-15):** pause new
-> critique passes until the Pending count drains to ≤ 3 rows.
-> Pass 5-9 history: each pass fired at Pending ≤ 3, filed
-> findings, drained via /iterate, repeated. Pass 9 fired at
-> Pending=3 and filed 3 small findings (all docs/YAGNI),
-> validating the "drain-first, critique-later" rhythm. Pass 10
-> fired at Pending=0 (loop at drain steady-state) and surfaced
-> just 1 MED finding (rename-aftermath crumb — `'Nothing in
-> the sack.'` survived the Phase 32 SACK→SATCHEL chrome sweep
-> because narrative copy wasn't on its hit-list). After pass
-> 10 Pending = 1 → still below pass-5 threshold, gate stays
-> open for whenever the rate-limit hits again.
+> **Superseded directives pruned (via /oversight 2026-06-08).** The
+> 2026-05-15 pass-5 policy, the 2026-05-18 / 2026-05-21 "fire pass N
+> once a green deploy lands" directives, and the 19th/20th-call
+> re-affirmations were all superseded by the green-deploy-gate-dropped
+> directive above and the loop's current rate-limit rhythm; removed to
+> keep this header actionable.
 
 ## Pending
 
@@ -70,17 +33,6 @@
      quality. Reader examined README.md, docs/README.md,
      specs/README.md, plan/bearings.md, and docs/testing.md.
      5 findings filed below. -->
-
-### [HIGH] docs/README.md — Referenced documentation file does not exist ✅
-- pass: 26 (commit 2f0ed3d); addressed at commit cf60f7a via `/iterate`
-- viewport: repository
-- category: navigation
-- observation: docs/README.md referenced in main README but file does not exist — creates broken navigation path for fresh maintainer
-- evidence: Main README line 132 shows 'docs/ design notes' and bearings.md line 132 shows 'docs/' in repo structure, but glob search found no docs/README.md
-- suggested fix: Create docs/README.md with overview of documentation structure or remove reference from main README
-- fix: Created comprehensive docs/README.md with overview of documentation structure, ADR guidance, engine integration guides, and navigation back to main README
-- source: repo-proxy
-- issue: #309
 
 ### [MED] /README.md — Project description buries key user context
 - pass: 26 (commit 2f0ed3d)
@@ -126,17 +78,6 @@
 - evidence: Line 17 references 'See setup/02_eas.md for detailed configuration steps' but no setup/ directory exists in repository
 - suggested fix: Remove references to missing setup files or create the referenced setup documentation
 - source: repo-proxy
-
-### [x] [MED] /package.json — Package scripts lack development workflow guidance ✅
-- pass: 24 (commit 1c8be58)
-- viewport: repository
-- category: maintainability
-- observation: Package.json scripts include verification and deployment commands but no development workflow guidance
-- evidence: Commands like 'verify', 'deploy:preview', 'baseline:approve' exist with no explanation of when/how to use them in development workflow
-- suggested fix: Add script descriptions in README.md Scripts table or package.json comments explaining development workflow usage
-- source: repo-proxy
-- addressed: 2026-06-08 via commit 6ad6e8b
-- fix: Expanded README.md Scripts table with 7 additional development workflow scripts including verify (quality gate), verify:visual (visual smoke tests), baseline:approve (visual test maintenance), and deploy:* commands with clear descriptions for new maintainer onboarding
 
 ### [LOW] /specs/README.md — Specs unclear for human-only development workflow
 - pass: 24 (commit 1c8be58)
@@ -201,6 +142,218 @@
      README test-promise ✅, README arch diagram → bumped the
      existing pass-17 row). 4 new findings filed below. -->
 
+### [LOW] /agents.md — Technical documentation voice contrasts with project voice guidelines
+- pass: 21 (commit add8801)
+- viewport: repository
+- category: voice
+- observation: Nexus rule book uses modern technical language that contrasts with project's 'terse, archaic, ritual' voice guideline
+- evidence: Throughout file uses contemporary technical terms like 'autonomous loop', 'skill files', 'sub-agents' while bearings.md specifies 'terse, archaic, ritual' voice
+- suggested fix: Clarify that voice guidelines apply to in-game content only, not technical documentation, or adjust technical docs to match voice
+- source: repo-proxy
+
+### [LOW] /specs/README.md — Spec completion table lacks visual priority distinction
+- pass: 21 (commit add8801)
+- viewport: repository
+- category: navigation
+- observation: Spec completion status table shows mixed [DONE] vs. unmarked entries but lacks clear visual distinction for maintainer priority
+- evidence: Lines 65-76 mix completed specs (01, 04, 06) with pending ones in same format without clear visual prioritization
+- suggested fix: Add visual separators or priority indicators for pending vs. completed specs in the recommended order table
+- source: repo-proxy
+
+### [MED] /combat — Difficulty too hard; enemies scale with the player, no progression order `[needs-engine-release]`
+- pass: user-jot (commit ff2b8ae)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: The game's difficulty is WAY too hard, and the mechanics have no order. Start at level 1 with 5 in each stat; even using the Dev Menu to level up manually, enemies just level up with the user. User likes the difficulty scaling in principle but it's rough — needs a real start-to-endgame progression curve, not flat rubber-banding.
+- evidence: user-spotted at 2026-05-30T13:57:17Z (manual playtest)
+- suggested_fix: [user has not specified — iterate to determine] likely an engine-side difficulty/scaling concern (enemy level derivation); mobile may only surface it. Needs a balance pass and probably a design/spec decision before code.
+- source: user
+- engine-gated: tagged `[needs-engine-release]` via /oversight 2026-06-02 (52nd call). Enemy level derivation / progression curve lives in `axiomancer-mechanics`; the mobile repo only surfaces it and cannot fix the balance here. Row stays OPEN so the next /oversight re-surfaces it for an engine-side decision.
+- re-affirmed deferred via /oversight 2026-06-08 (queue-drained call). User reviewed and chose to **keep deferred** — no GitHub engine issue filed yet. Remains the only live gameplay blocker; re-surface again next oversight for the file-an-engine-issue / accept-as-is decision.
+
+### [MED] /dev — Add two seeded test playthroughs (level-1-easy + max-level endgame) to Dev Menu [PROMOTED → Phase 100 via /oversight 2026-06-02]
+- pass: user-jot (commit ff2b8ae)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: Testing strategy request — provide two reproducible playthroughs to test the game across its range: (a) a fresh level-1 run against easy enemies (start-of-game testing), and (b) a max-level run with max stats and all items + skills unlocked (endgame testing). Today everything starts at level 1 / 5-each with enemies that scale to the player, so neither extreme is easy to exercise.
+- evidence: user-spotted at 2026-05-30T13:57:17Z (manual playtest)
+- suggested_fix: [user has not specified — iterate to determine] add two Dev Menu seed presets ("start seed" and "endgame seed") that initialize the engine state to those two fixtures; pair with the difficulty finding above.
+- source: user
+- promoted: Phase 100 via /oversight 2026-06-02 (52nd call). Mobile Dev-Menu seed-preset harness; pairs with the engine-gated difficulty finding above. See PHASE_CANDIDATES ## Promoted + build-plan Status block.
+
+### [MED] /specs/README.md — Spec dependency chain creates false work-ready impression
+- pass: 17 (commit c7a1c9c)
+- viewport: desktop
+- category: comprehension
+- observation: Specs 02-12 listed as available but line 66 states 'Spec 01 is a hard prerequisite' creating false impression work can begin
+- evidence: Specs table suggests readiness but dependency blocks everything until test harness exists
+- suggested fix: Mark specs 02-12 with [BLOCKED BY SPEC 01] prefix until test harness exists
+- source: browser
+
+### [MED] /docs/testing.md — Critical testing documentation references nonexistent files
+- pass: 17 (commit c7a1c9c)
+- viewport: desktop
+- category: navigation
+- observation: Lines 133-138 reference state/e2e/combat-hud.engine.test.ts and state/e2e/combat.engine.test.ts as canonical examples but files don't exist yet
+- evidence: References to future test files break documentation flow for maintainers trying to understand patterns
+- suggested fix: Replace references to future test files with placeholder text or axiomancer-mechanics examples until Spec 01 ships
+- source: browser
+
+### [MED] general — Voice guidance scattered across multiple files without hierarchy
+- pass: 17 (commit c7a1c9c)
+- viewport: desktop
+- category: voice
+- observation: Voice guidance appears in plan/bearings.md and theme/axm.ts with different detail levels and no cross-references
+- evidence: Multiple sources of voice guidance with no clear canonical source
+- suggested fix: Consolidate voice guidance in single source file and reference from others with 'See [file] for full voice guidelines'
+- source: browser
+
+### [MED] /README.md — Architecture diagram + layout drifted behind the code (presenters moved, screens wired)
+- pass: 17 (commit c7a1c9c); severity bumped + reframed pass 18 (commit fd525e3)
+- viewport: desktop
+- category: drift
+- observation: The drift has inverted since pass 17. The diagram/layout now lags BEHIND the code, not ahead of it. README:135 places presenters at `app/<route>/*.engine.ts`, but they actually live in `state/presenters/*.engine.ts` (20 engines) — a maintainer who greps `app/(tabs)/combat.engine.ts` finds nothing. README:103-107 still labels every screen `(placeholder UI)`, but the screens shipped long ago, and the layout omits the Memoir tab entirely.
+- evidence: README.md:135 "Presenters | app/<route>/*.engine.ts" vs `state/presenters/*.engine.ts`; README.md:103-107 "(placeholder UI)" ×5; Memoir tab absent from the layout block though `app/(tabs)/memoir/` ships.
+- suggested fix: Redraw the layout/diagram to point presenters at `state/presenters/`, drop the `(placeholder UI)` labels, and add the Memoir tab.
+- source: file-read (repo-proxy)
+
+### [LOW] /exploration — Sealed map nodes give no tap feedback
+- pass: deep-playtest (2026-05-25, commit d560e8c)
+- viewport: mobile (414x896)
+- auth_state: anonymous
+- category: observation
+- observation: Sealed nodes rendered as tappable buttons (cursor:pointer) but produce no visual response on tap. No tooltip, no message.
+- suggested_fix: Tap shows "path sealed" toast. Phase candidate filed.
+- source: deep-playtest [F11]
+
+### [LOW] /combat — ITEM action always disabled with no explanation
+- pass: deep-playtest (2026-05-25, commit d560e8c)
+- viewport: mobile (414x896)
+- auth_state: anonymous
+- category: observation
+- observation: ITEM button ("USE A CONSUMABLE") greyed out even with Healing Potion in inventory. No tooltip or message explaining why.
+- suggested_fix: Tooltip on disabled ITEM button. Phase candidate filed.
+- source: deep-playtest [F12]
+### [MED] /README.md — License section incomplete, creates uncertainty for fresh maintainer
+- pass: 19 (commit 18c3371)
+- viewport: desktop
+- auth_state: anonymous
+- category: comprehension
+- observation: README contains incomplete License section stating 'TBD. Ask the project maintainer' which creates uncertainty about usage rights for fresh maintainers examining the repository
+- evidence: Line 263 in README.md showing placeholder license text
+- suggested_fix: Specify actual license or provide clear guidance on where to find licensing information
+- source: browser
+### [MED] /specs/00-how-to-use-specs.md — References missing GAME-ROADMAP.md file
+- pass: 19 (commit 18c3371)
+- viewport: desktop
+- auth_state: anonymous
+- category: navigation
+- observation: Document instructs users to 'Update GAME-ROADMAP.md first' for capturing big ideas, but this file does not exist in repository structure
+- evidence: Line 35 references non-existent GAME-ROADMAP.md file
+- suggested_fix: Create missing GAME-ROADMAP.md file or update reference to point to existing roadmap documentation
+- source: browser
+### [LOW] /agents.md — Dead link to asset swap documentation
+- pass: 19 (commit 18c3371)
+- viewport: desktop
+- auth_state: anonymous
+- category: navigation
+- observation: File references .cursor/skills/swap-asset-placeholder/SKILL.md workflow but this path does not exist in current repository structure
+- evidence: Line 100 contains reference to non-existent .cursor/skills/ path
+- suggested_fix: Update reference to point to correct asset swap documentation or remove outdated reference
+- source: browser
+
+<!-- Pass 25 (2026-06-08, commit 44794db): repo-proxy pass —
+     Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
+     critique reads docs/specs/artifacts as the "fresh maintainer"
+     proxy. Focus on repository experience, development workflow,
+     documentation completeness. Reader examined environment setup,
+     workflow guidance, voice consistency, theme tokens, performance
+     concerns, script documentation. 6 findings filed below. -->
+
+### [MED] /.env.example — Environment setup references missing documentation files
+- pass: 25 (commit 44794db)
+- viewport: n/a
+- category: comprehension
+- observation: Environment configuration file references 'setup/02_eas.md for detailed configuration steps' but no setup/ directory exists in repository
+- evidence: Line 17: '# See setup/02_eas.md for detailed configuration steps.' but no setup/ directory found in repository structure
+- suggested fix: Either create referenced setup/02_eas.md file or remove reference and move configuration details into .env.example comments
+- source: file-read
+
+### [MED] /README.md — Missing guidance for development workflow ordering
+- pass: 25 (commit 44794db)
+- viewport: n/a
+- category: comprehension
+- observation: Scripts table lists verification and deployment commands but lacks guidance on typical development workflow sequence
+- evidence: Scripts section shows 'verify', 'deploy:preview', 'baseline:approve' but no clear indication of when/how to use them in normal development flow
+- suggested fix: Add workflow section showing typical development sequence: start → lint/test → verify → commit → deploy
+- source: file-read
+
+### [MED] /plan/AUDIT.md — Audit findings indicate performance concerns unaddressed
+- pass: 25 (commit 44794db)
+- viewport: n/a
+- category: performance
+- observation: Open performance finding [5.6] indicates components lack optimization patterns despite complex UI rendering requirements
+- evidence: Lines 87-96 describe limited use of React optimization hooks, no React.memo usage, and console logging in production paths
+- suggested fix: Implement React.memo for expensive components and add useMemo/useCallback for complex calculations in combat and modal components
+- source: file-read
+
+### [LOW] /specs/README.md — Specs workflow unclear for human-only development
+- pass: 25 (commit 44794db)
+- viewport: n/a
+- category: comprehension
+- observation: Documentation describes AI-assisted conversation loop but provides no guidance for developers working without AI assistance
+- evidence: Lines 39-52 detail AI-centric workflow but no alternative path for traditional human development using specs
+- suggested fix: Add section explaining how to use specs independently for traditional development workflow without AI assistance
+- source: file-read
+
+### [LOW] /plan/bearings.md — Voice guidelines conflict with actual implementation voice
+- pass: 25 (commit 44794db)
+- viewport: n/a
+- category: voice
+- observation: Voice guidelines specify 'terse, archaic, ritual' but some recent commit messages and documentation use modern, conversational tone
+- evidence: Bearings.md lines 180-184 specify cold/old register but recent docs and error messages use contemporary language patterns
+- suggested fix: Audit recent documentation and in-app copy to align with specified archaic voice or revise voice guidelines to reflect current practice
+- source: file-read
+
+### [LOW] /theme/axm.ts — Theme tokens include deprecated font references
+- pass: 25 (commit 44794db)
+- viewport: n/a
+- category: consistency
+- observation: Theme file exports both legacy FONTS.{pirata, fell, fellItalic, bebas, mono} and new FONTS.{gothic, serif, serifItalic, sans, mono} patterns
+- evidence: Lines 49-58 show current implementation but bearings.md references legacy pattern FONTS.{pirata, fell, fellItalic, bebas, mono}
+- suggested fix: Update plan/bearings.md to reference current theme token names or add legacy aliases for backward compatibility
+- source: file-read
+
+## Done
+
+<!-- Drained from ## Pending via /oversight 2026-06-08 (queue-drained
+     call): addressed-✅ findings moved here so the open-findings
+     signal /iterate reads is accurate. -->
+
+### [HIGH] docs/README.md — Referenced documentation file does not exist ✅
+- pass: 26 (commit 2f0ed3d); addressed at commit cf60f7a via `/iterate`
+- viewport: repository
+- category: navigation
+- observation: docs/README.md referenced in main README but file does not exist — creates broken navigation path for fresh maintainer
+- evidence: Main README line 132 shows 'docs/ design notes' and bearings.md line 132 shows 'docs/' in repo structure, but glob search found no docs/README.md
+- suggested fix: Create docs/README.md with overview of documentation structure or remove reference from main README
+- fix: Created comprehensive docs/README.md with overview of documentation structure, ADR guidance, engine integration guides, and navigation back to main README
+- source: repo-proxy
+- issue: #309
+
+### [x] [MED] /package.json — Package scripts lack development workflow guidance ✅
+- pass: 24 (commit 1c8be58)
+- viewport: repository
+- category: maintainability
+- observation: Package.json scripts include verification and deployment commands but no development workflow guidance
+- evidence: Commands like 'verify', 'deploy:preview', 'baseline:approve' exist with no explanation of when/how to use them in development workflow
+- suggested fix: Add script descriptions in README.md Scripts table or package.json comments explaining development workflow usage
+- source: repo-proxy
+- addressed: 2026-06-08 via commit 6ad6e8b
+- fix: Expanded README.md Scripts table with 7 additional development workflow scripts including verify (quality gate), verify:visual (visual smoke tests), baseline:approve (visual test maintenance), and deploy:* commands with clear descriptions for new maintainer onboarding
+
 ### [HIGH] /docs/testing.md — Testing standard references non-existent test files ✅
 - pass: 21 (commit add8801)
 - viewport: repository
@@ -248,24 +401,6 @@
 - addressed: 2026-06-05 via commit 0a7766f
 - fix: Streamlined AGENTS.md from 103 lines to 49 lines by removing outdated workflow instructions that conflicted with nexus methodology. File now focuses purely on project-specific technical orientation while clearly directing users to agents.md for current autonomous loop instructions.
 
-### [LOW] /agents.md — Technical documentation voice contrasts with project voice guidelines
-- pass: 21 (commit add8801)
-- viewport: repository
-- category: voice
-- observation: Nexus rule book uses modern technical language that contrasts with project's 'terse, archaic, ritual' voice guideline
-- evidence: Throughout file uses contemporary technical terms like 'autonomous loop', 'skill files', 'sub-agents' while bearings.md specifies 'terse, archaic, ritual' voice
-- suggested fix: Clarify that voice guidelines apply to in-game content only, not technical documentation, or adjust technical docs to match voice
-- source: repo-proxy
-
-### [LOW] /specs/README.md — Spec completion table lacks visual priority distinction
-- pass: 21 (commit add8801)
-- viewport: repository
-- category: navigation
-- observation: Spec completion status table shows mixed [DONE] vs. unmarked entries but lacks clear visual distinction for maintainer priority
-- evidence: Lines 65-76 mix completed specs (01, 04, 06) with pending ones in same format without clear visual prioritization
-- suggested fix: Add visual separators or priority indicators for pending vs. completed specs in the recommended order table
-- source: repo-proxy
-
 ### [HIGH] /combat — Combat cannot be re-triggered after a victory (only after a loss) ✅
 - pass: user-jot (commit ff2b8ae)
 - viewport: unspecified
@@ -300,28 +435,6 @@
 - suggested_fix: [user has not specified — iterate to determine] drop the equipped-gate for learned skills; filter the in-combat skill list to those castable right now (affordable tokens + valid stance/target). Relates to Phase 82a equippedSkills filter — may need a product re-decision.
 - source: user
 - addressed: 2026-06-01 via Phase 97(c), commit `8df2971` (drained via /oversight 2026-06-02). Learned skills no longer gated as "not equipped"; in-combat list surfaces currently-usable skills.
-
-### [MED] /combat — Difficulty too hard; enemies scale with the player, no progression order `[needs-engine-release]`
-- pass: user-jot (commit ff2b8ae)
-- viewport: unspecified
-- auth_state: anonymous
-- category: observation
-- observation: The game's difficulty is WAY too hard, and the mechanics have no order. Start at level 1 with 5 in each stat; even using the Dev Menu to level up manually, enemies just level up with the user. User likes the difficulty scaling in principle but it's rough — needs a real start-to-endgame progression curve, not flat rubber-banding.
-- evidence: user-spotted at 2026-05-30T13:57:17Z (manual playtest)
-- suggested_fix: [user has not specified — iterate to determine] likely an engine-side difficulty/scaling concern (enemy level derivation); mobile may only surface it. Needs a balance pass and probably a design/spec decision before code.
-- source: user
-- engine-gated: tagged `[needs-engine-release]` via /oversight 2026-06-02 (52nd call). Enemy level derivation / progression curve lives in `axiomancer-mechanics`; the mobile repo only surfaces it and cannot fix the balance here. Row stays OPEN so the next /oversight re-surfaces it for an engine-side decision.
-
-### [MED] /dev — Add two seeded test playthroughs (level-1-easy + max-level endgame) to Dev Menu [PROMOTED → Phase 100 via /oversight 2026-06-02]
-- pass: user-jot (commit ff2b8ae)
-- viewport: unspecified
-- auth_state: anonymous
-- category: observation
-- observation: Testing strategy request — provide two reproducible playthroughs to test the game across its range: (a) a fresh level-1 run against easy enemies (start-of-game testing), and (b) a max-level run with max stats and all items + skills unlocked (endgame testing). Today everything starts at level 1 / 5-each with enemies that scale to the player, so neither extreme is easy to exercise.
-- evidence: user-spotted at 2026-05-30T13:57:17Z (manual playtest)
-- suggested_fix: [user has not specified — iterate to determine] add two Dev Menu seed presets ("start seed" and "endgame seed") that initialize the engine state to those two fixtures; pair with the difficulty finding above.
-- source: user
-- promoted: Phase 100 via /oversight 2026-06-02 (52nd call). Mobile Dev-Menu seed-preset harness; pairs with the engine-gated difficulty finding above. See PHASE_CANDIDATES ## Promoted + build-plan Status block.
 
 ### [HIGH] /plan/bearings.md — Hard rule 10 says verify gate is RED and "the loop CANNOT autonomously commit" — stale, blocks/misleads ✅
 - resolved: 2026-06-01 via /oversight (51st call). Rewrote bearings.md Hard rule 10 to state the verify gate is GREEN and the loop commits autonomously (Phase 2 migration shipped in 527f021; ~96 phases shipped since). Stale RED-gate hold removed.
@@ -515,42 +628,6 @@
 - suggested fix: Add clear disambiguation notice in AGENTS.md header directing to agents.md for current instructions
 - source: browser
 
-### [MED] /specs/README.md — Spec dependency chain creates false work-ready impression
-- pass: 17 (commit c7a1c9c)
-- viewport: desktop
-- category: comprehension
-- observation: Specs 02-12 listed as available but line 66 states 'Spec 01 is a hard prerequisite' creating false impression work can begin
-- evidence: Specs table suggests readiness but dependency blocks everything until test harness exists
-- suggested fix: Mark specs 02-12 with [BLOCKED BY SPEC 01] prefix until test harness exists
-- source: browser
-
-### [MED] /docs/testing.md — Critical testing documentation references nonexistent files
-- pass: 17 (commit c7a1c9c)
-- viewport: desktop
-- category: navigation
-- observation: Lines 133-138 reference state/e2e/combat-hud.engine.test.ts and state/e2e/combat.engine.test.ts as canonical examples but files don't exist yet
-- evidence: References to future test files break documentation flow for maintainers trying to understand patterns
-- suggested fix: Replace references to future test files with placeholder text or axiomancer-mechanics examples until Spec 01 ships
-- source: browser
-
-### [MED] general — Voice guidance scattered across multiple files without hierarchy
-- pass: 17 (commit c7a1c9c)
-- viewport: desktop
-- category: voice
-- observation: Voice guidance appears in plan/bearings.md and theme/axm.ts with different detail levels and no cross-references
-- evidence: Multiple sources of voice guidance with no clear canonical source
-- suggested fix: Consolidate voice guidance in single source file and reference from others with 'See [file] for full voice guidelines'
-- source: browser
-
-### [MED] /README.md — Architecture diagram + layout drifted behind the code (presenters moved, screens wired)
-- pass: 17 (commit c7a1c9c); severity bumped + reframed pass 18 (commit fd525e3)
-- viewport: desktop
-- category: drift
-- observation: The drift has inverted since pass 17. The diagram/layout now lags BEHIND the code, not ahead of it. README:135 places presenters at `app/<route>/*.engine.ts`, but they actually live in `state/presenters/*.engine.ts` (20 engines) — a maintainer who greps `app/(tabs)/combat.engine.ts` finds nothing. README:103-107 still labels every screen `(placeholder UI)`, but the screens shipped long ago, and the layout omits the Memoir tab entirely.
-- evidence: README.md:135 "Presenters | app/<route>/*.engine.ts" vs `state/presenters/*.engine.ts`; README.md:103-107 "(placeholder UI)" ×5; Memoir tab absent from the layout block though `app/(tabs)/memoir/` ships.
-- suggested fix: Redraw the layout/diagram to point presenters at `state/presenters/`, drop the `(placeholder UI)` labels, and add the Memoir tab.
-- source: file-read (repo-proxy)
-
 ### [HIGH] general — No title screen or onboarding for new players ✅
 - pass: deep-playtest (2026-05-25, commit d560e8c)
 - viewport: mobile (414x896)
@@ -574,114 +651,6 @@
 - fix: Added narrative feedback after fleeing encounters via toast message "you fled the encounter. the path bends away.\n\nmorale -2" in actions.ts lines 1392-1393. Exposed morale value on SELF tab via character presenter moralMeter mapping (line 358) displayed as "willpower" value. Both parts of the F03 finding are now resolved with test coverage in flee-action.engine.test.ts.
 
 
-### [LOW] /exploration — Sealed map nodes give no tap feedback
-- pass: deep-playtest (2026-05-25, commit d560e8c)
-- viewport: mobile (414x896)
-- auth_state: anonymous
-- category: observation
-- observation: Sealed nodes rendered as tappable buttons (cursor:pointer) but produce no visual response on tap. No tooltip, no message.
-- suggested_fix: Tap shows "path sealed" toast. Phase candidate filed.
-- source: deep-playtest [F11]
-
-### [LOW] /combat — ITEM action always disabled with no explanation
-- pass: deep-playtest (2026-05-25, commit d560e8c)
-- viewport: mobile (414x896)
-- auth_state: anonymous
-- category: observation
-- observation: ITEM button ("USE A CONSUMABLE") greyed out even with Healing Potion in inventory. No tooltip or message explaining why.
-- suggested_fix: Tooltip on disabled ITEM button. Phase candidate filed.
-- source: deep-playtest [F12]
-### [MED] /README.md — License section incomplete, creates uncertainty for fresh maintainer
-- pass: 19 (commit 18c3371)
-- viewport: desktop
-- auth_state: anonymous
-- category: comprehension
-- observation: README contains incomplete License section stating 'TBD. Ask the project maintainer' which creates uncertainty about usage rights for fresh maintainers examining the repository
-- evidence: Line 263 in README.md showing placeholder license text
-- suggested_fix: Specify actual license or provide clear guidance on where to find licensing information
-- source: browser
-### [MED] /specs/00-how-to-use-specs.md — References missing GAME-ROADMAP.md file
-- pass: 19 (commit 18c3371)
-- viewport: desktop
-- auth_state: anonymous
-- category: navigation
-- observation: Document instructs users to 'Update GAME-ROADMAP.md first' for capturing big ideas, but this file does not exist in repository structure
-- evidence: Line 35 references non-existent GAME-ROADMAP.md file
-- suggested_fix: Create missing GAME-ROADMAP.md file or update reference to point to existing roadmap documentation
-- source: browser
-### [LOW] /agents.md — Dead link to asset swap documentation
-- pass: 19 (commit 18c3371)
-- viewport: desktop
-- auth_state: anonymous
-- category: navigation
-- observation: File references .cursor/skills/swap-asset-placeholder/SKILL.md workflow but this path does not exist in current repository structure
-- evidence: Line 100 contains reference to non-existent .cursor/skills/ path
-- suggested_fix: Update reference to point to correct asset swap documentation or remove outdated reference
-- source: browser
-
-<!-- Pass 25 (2026-06-08, commit 44794db): repo-proxy pass —
-     Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
-     critique reads docs/specs/artifacts as the "fresh maintainer"
-     proxy. Focus on repository experience, development workflow,
-     documentation completeness. Reader examined environment setup,
-     workflow guidance, voice consistency, theme tokens, performance
-     concerns, script documentation. 6 findings filed below. -->
-
-### [MED] /.env.example — Environment setup references missing documentation files
-- pass: 25 (commit 44794db)
-- viewport: n/a
-- category: comprehension
-- observation: Environment configuration file references 'setup/02_eas.md for detailed configuration steps' but no setup/ directory exists in repository
-- evidence: Line 17: '# See setup/02_eas.md for detailed configuration steps.' but no setup/ directory found in repository structure
-- suggested fix: Either create referenced setup/02_eas.md file or remove reference and move configuration details into .env.example comments
-- source: file-read
-
-### [MED] /README.md — Missing guidance for development workflow ordering
-- pass: 25 (commit 44794db)
-- viewport: n/a
-- category: comprehension
-- observation: Scripts table lists verification and deployment commands but lacks guidance on typical development workflow sequence
-- evidence: Scripts section shows 'verify', 'deploy:preview', 'baseline:approve' but no clear indication of when/how to use them in normal development flow
-- suggested fix: Add workflow section showing typical development sequence: start → lint/test → verify → commit → deploy
-- source: file-read
-
-### [MED] /plan/AUDIT.md — Audit findings indicate performance concerns unaddressed
-- pass: 25 (commit 44794db)
-- viewport: n/a
-- category: performance
-- observation: Open performance finding [5.6] indicates components lack optimization patterns despite complex UI rendering requirements
-- evidence: Lines 87-96 describe limited use of React optimization hooks, no React.memo usage, and console logging in production paths
-- suggested fix: Implement React.memo for expensive components and add useMemo/useCallback for complex calculations in combat and modal components
-- source: file-read
-
-### [LOW] /specs/README.md — Specs workflow unclear for human-only development
-- pass: 25 (commit 44794db)
-- viewport: n/a
-- category: comprehension
-- observation: Documentation describes AI-assisted conversation loop but provides no guidance for developers working without AI assistance
-- evidence: Lines 39-52 detail AI-centric workflow but no alternative path for traditional human development using specs
-- suggested fix: Add section explaining how to use specs independently for traditional development workflow without AI assistance
-- source: file-read
-
-### [LOW] /plan/bearings.md — Voice guidelines conflict with actual implementation voice
-- pass: 25 (commit 44794db)
-- viewport: n/a
-- category: voice
-- observation: Voice guidelines specify 'terse, archaic, ritual' but some recent commit messages and documentation use modern, conversational tone
-- evidence: Bearings.md lines 180-184 specify cold/old register but recent docs and error messages use contemporary language patterns
-- suggested fix: Audit recent documentation and in-app copy to align with specified archaic voice or revise voice guidelines to reflect current practice
-- source: file-read
-
-### [LOW] /theme/axm.ts — Theme tokens include deprecated font references
-- pass: 25 (commit 44794db)
-- viewport: n/a
-- category: consistency
-- observation: Theme file exports both legacy FONTS.{pirata, fell, fellItalic, bebas, mono} and new FONTS.{gothic, serif, serifItalic, sans, mono} patterns
-- evidence: Lines 49-58 show current implementation but bearings.md references legacy pattern FONTS.{pirata, fell, fellItalic, bebas, mono}
-- suggested fix: Update plan/bearings.md to reference current theme token names or add legacy aliases for backward compatibility
-- source: file-read
-
-## Done
 
 ### [HIGH] /specs/README.md — Phase 116 engine boundary debugging guidance missing ✅
 - pass: 23 (commit 88a3708)

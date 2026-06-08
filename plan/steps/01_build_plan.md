@@ -76,6 +76,22 @@ commit that ships the phase.
 
 - [x] Phase 116 — Token resource accumulation fix (issue #227, HIGH gameplay bug). Promoted via `/oversight` 2026-06-07 from phase candidate [4.5]. The token resource system never accumulates, so combat skills can never be cast — a core-mechanic blocker, user-spotted in `/critique` pass 18 and open since 2026-06-01. Suspected engine-vs-mobile boundary: verify the engine's per-round `combatResources` accrual is read and propagated through `state/presenters/combat.engine.ts` (and the combat-mana / token surfaces) rather than rendered as a static pool. Trace from `resolveRound` in `state/actions.ts` through the presenter to the CrucibleStrip / Token Crucible display; confirm whether the gap is a missing engine read, a stale mobile-side default pool (see Phase 49's `DEFAULT_POOL` stop-gap), or an engine release gap — if engine-gated, stop with an exact version/export blocker rather than simulating accrual locally. Brief: draft via `/plan-a-phase phase 116` (or flesh inline at ship time). Verification: focused combat presenter/resource Jest pinning round-over-round token accrual + skill affordability, then `npm run verify`. Single commit closes issue #227 (`Closes #227`). Shipped in commit aa320df.
 
+- [ ] Phase 117 — Large-component extraction refactor. Promoted via
+      `/oversight` 2026-06-08 from phase candidate [3.5] (expand pass
+      59). Three core files exceed 2× the folder median: `PhaseBottom.tsx`
+      (~722 lines), `app/(tabs)/exploration/index.tsx` (~718 lines),
+      `app/(tabs)/inventory/index.tsx` (~709 lines). Extract focused
+      subcomponents/helpers into their own files (per the build-plan
+      style guardrail — prefer 5 small named files over 1 dense one)
+      while preserving current behavior, accessibility, and existing
+      test coverage. No engine-boundary or mechanics changes; pure
+      structural refactor. Pick the highest-yield file first; the
+      others can follow as sub-ticks or sibling phases. Brief: draft
+      via `/plan-a-phase phase 117` (or flesh inline at ship time).
+      Verification: existing suites stay green + `npm run verify`
+      (no behavior change expected); add render/coverage tests for
+      any newly-extracted component lacking one.
+
 - [x] Phase 1 — Adopt nexus methodology. Shipped in commit
       `a703908` ("chore: adopt nexus methodology"); closed out
       in this commit.

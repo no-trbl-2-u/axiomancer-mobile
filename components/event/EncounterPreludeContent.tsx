@@ -56,7 +56,7 @@ export function EncounterPreludeContent({
                     </Text>
                 </View>
                 <Splatter
-                    color={AXM.blood}
+                    color={AXM.bloodMed}
                     size={140}
                     seed={45}
                     style={{ position: 'absolute', top: -20, right: -30, opacity: isBoss ? 0.7 : 0.5 }}
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
     titleBoss: {
         fontSize: 30,
         lineHeight: 32,
-        textShadowColor: AXM.blood,
+        textShadowColor: AXM.bloodStrong,
         textShadowOffset: { width: 2, height: 2 },
         textShadowRadius: 0,
     },

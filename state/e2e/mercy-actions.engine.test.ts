@@ -3,11 +3,10 @@
  */
 
 /**
- * Hermetic action tests — mercy choice actions (Phase 108).
+ * Hermetic action tests — mercy choice actions.
  *
- * Phase 108: Combat engine TODO drain
- * - exploitMercyChoiceAction now uses engine selectMercyChoice('exploit')
- * - Actions consume engine contract instead of placeholder scaffolding
+ * Engine-integrated mercy choice actions that consume axiomancer-mechanics
+ * selectMercyChoice contract for exploit choices in combat encounters.
  */
 
 import { describe, expect, it } from '@jest/globals';
@@ -33,7 +32,7 @@ function makeEnemy() {
     });
 }
 
-describe('mercy choice actions - engine integration (Phase 108)', () => {
+describe('mercy choice actions - engine integration', () => {
     it('exploitMercyChoiceAction calls engine selectMercyChoice with exploit', () => {
         const store = makeStore();
         const actions = createAppActions(store);

@@ -22,7 +22,7 @@
 - source: audit
 - issue: #310
 
-### [ ] [7.2] README.md architecture documentation references outdated presenter file locations
+### [x] [7.2] README.md architecture documentation references outdated presenter file locations
 - category: external-critique
 - impact: 8
 - ease: 9  
@@ -33,6 +33,7 @@
 - evidence: README.md line 135 states "Presenters | app/<route>/*.engine.ts" but presenters actually live in state/presenters/ directory with 20+ engine files
 - observation: Documentation drift creates confusion for new maintainers trying to locate presenter files, found via external critique pass 17/18
 - source: external-critique
+- issue: #311
 
 ### [ ] [6.3] Multiple hardcoded color literals in EncounterPreludeContent bypass design system
 - category: perf

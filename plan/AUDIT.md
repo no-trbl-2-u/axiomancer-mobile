@@ -60,7 +60,7 @@
 - source: audit
 - issue: #313
 
-### [ ] [4.5] Stale TODO comments in mercy action test files reference outdated Phase 108 context
+### [x] [4.5] Stale TODO comments in mercy action test files reference outdated Phase 108 context
 - category: tests  
 - impact: 5
 - ease: 9
@@ -71,6 +71,9 @@
 - evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/state/e2e/mercy-actions.engine.test.ts contains Phase 108 TODO references that are outdated
 - observation: Stale TODO comments in test files create maintenance debt and confusion about current implementation status
 - source: audit
+- issue: #314
+- addressed: 2026-06-08 via commit 97a9834
+- fix: Removed outdated Phase 108 references in mercy action test file header and test description. Updated file documentation to reflect current engine-integrated implementation state rather than historical development phase context.
 
 ## Previous findings (completed)
 

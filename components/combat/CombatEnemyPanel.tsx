@@ -43,6 +43,8 @@ export function CombatEnemyPanel({ vm }: CombatEnemyPanelProps) {
                         viewBox="0 0 200 200"
                         width={58}
                         height={70}
+                        accessibilityRole="image"
+                        accessibilityLabel={`Enemy portrait: ${vm.enemy.name || 'Unknown enemy'}`}
                         // The detailed hooded silhouette renders smaller now;
                         // the eye/mouth pixels become subtle marks rather than
                         // the dominant chrome they were pre-Phase-72.

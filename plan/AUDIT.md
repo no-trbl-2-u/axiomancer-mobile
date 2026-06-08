@@ -3,15 +3,74 @@
 > Bias: UX gaps (re-affirmed via oversight 2026-06-04)
 > /iterate weights UX-gap findings 1.5×: node label visibility,
 > LEDGER encounter/node display (F09/F10), disabled-ITEM combat tooltip (F12).
-> (stance-button spacing drained 2026-06-04 via commit 026fc7f.)
 > Conducted by: /iterate autonomous audit
 
-> **Fresh audit (pass 4 2026-06-08).** Post-all previous findings addressed, 
-> conducted comprehensive audit across all categories. All major hardcoded color 
-> issues resolved. Identified remaining hardcoded pixel art colors in PixelEmblem 
-> component as highest-impact remaining finding.
+> **Fresh comprehensive audit (2026-06-08).** Examined external critique pending items, content/data gaps, SEO/discoverability, link integrity, accessibility, test coverage, and performance across entire codebase following skills/iterate.md methodology.
 
 ## Top 5 findings (scored)
+
+### [ ] [9.0] Missing accessibility labels on combat enemy portrait SVG reduces screen reader usability
+- category: a11y  
+- impact: 6
+- ease: 10
+- base-score: 6.0
+- ux-bias-multiplier: 1.5 (accessibility is UX-related)
+- final-score: 9.0
+- next: Add accessibilityLabel and accessibilityRole to enemy portrait SVG in CombatEnemyPanel.tsx
+- evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/combat/CombatEnemyPanel.tsx lines 42-69 contain detailed enemy silhouette SVG with no accessibility attributes
+- observation: Combat enemy portrait is a critical UI element for combat encounters but lacks accessibility labels, making it impossible for screen readers to convey enemy presence to visually impaired users
+- source: audit
+- issue: #310
+
+### [ ] [7.2] README.md architecture documentation references outdated presenter file locations
+- category: external-critique
+- impact: 8
+- ease: 9  
+- base-score: 7.2
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 7.2
+- next: Update README.md line 135 to reference correct presenter location at `state/presenters/*.engine.ts` instead of `app/<route>/*.engine.ts`
+- evidence: README.md line 135 states "Presenters | app/<route>/*.engine.ts" but presenters actually live in state/presenters/ directory with 20+ engine files
+- observation: Documentation drift creates confusion for new maintainers trying to locate presenter files, found via external critique pass 17/18
+- source: external-critique
+
+### [ ] [6.3] Multiple hardcoded color literals in EncounterPreludeContent bypass design system
+- category: perf
+- impact: 7
+- ease: 9
+- base-score: 6.3
+- ux-bias-multiplier: 1.0 (no direct UX impact)  
+- final-score: 6.3
+- next: Replace hardcoded color references in EncounterPreludeContent.tsx with appropriate AXM design tokens
+- evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/event/EncounterPreludeContent.tsx uses direct AXM.blood reference without semantic token abstraction
+- observation: Encounter prelude UI uses direct theme references instead of semantic tokens, reducing design system maintainability and consistency
+- source: audit
+
+### [ ] [5.4] Missing test coverage for critical event illustration accessibility patterns  
+- category: tests
+- impact: 6
+- ease: 9
+- base-score: 5.4
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 5.4  
+- next: Add accessibility-focused tests for PlaceholderIllustration component to verify all event slugs have proper aria labels
+- evidence: PlaceholderIllustration.tsx has comprehensive accessibility labels but no tests verify the getAccessibilityLabel function covers all EventArtSlug values
+- observation: Event illustrations are key narrative elements but lack test coverage ensuring accessibility compliance across all event types
+- source: audit
+
+### [ ] [4.5] Stale TODO comments in mercy action test files reference outdated Phase 108 context
+- category: tests  
+- impact: 5
+- ease: 9
+- base-score: 4.5
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 4.5
+- next: Remove TODO scaffolding comments in mercy-actions.engine.test.ts and update documentation to reflect current implementation state
+- evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/state/e2e/mercy-actions.engine.test.ts contains Phase 108 TODO references that are outdated
+- observation: Stale TODO comments in test files create maintenance debt and confusion about current implementation status
+- source: audit
+
+## Previous findings (completed)
 
 ### [x] [7.2] Missing docs/README.md creates broken navigation path (external critique)
 - category: external-critique

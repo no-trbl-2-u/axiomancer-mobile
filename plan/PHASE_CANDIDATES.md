@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-07 at commit 95b4fd3
-> Pass count: 62
+> Last pass: 2026-06-08 at commit 656dbc4
+> Pass count: 63
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -2059,4 +2059,26 @@ exploration `moveToAction` migration to engine `revealAdjacent` /
 - rationale: Inventory screen has grown beyond maintainable size. As a user-facing tab screen with complex item interaction and presenter integration, it would benefit from component extraction.
 - proposed scope: 2-3 phases. Extract item list, item detail, and action panels into focused sub-components while preserving current behavior and accessibility patterns.
 - estimated phases: 3
+- conflicts: none
+
+### [ ] [score 3.2] Presenter purity migration for tab screens
+- proposed: 2026-06-08, expand pass 63
+- source signals:
+  - **Presenter bypass smell** — Multiple `useState` instances in presenter screens: character (1), inventory (4), exploration (1), combat (2)
+  - **Bearings violation** — "Presenter purity" rule states presenters should be pure `(state) → ViewModel` without side effects or local state
+  - **Architecture debt** — Screens with both presenter patterns and direct useState bypass the presenter boundary
+- rationale: Tab screens are violating the presenter purity principle by using bare useState alongside presenter patterns. This creates inconsistent state management and reduces testability of the presenter layer.
+- proposed scope: 1 phase. Migrate tab screen useState patterns into presenter layer or proper state management, preserving functionality while enforcing presenter purity.
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 2.8] Test file hex literal cleanup completion
+- proposed: 2026-06-08, expand pass 63
+- source signals:
+  - **Hex literal cluster smell** — 10+ hardcoded hex colors in test files despite recent design system cleanup campaign
+  - **Cleanup campaign continuation** — Recent commits show systematic replacement of hardcoded colors with AXM tokens across components
+  - **Design system consistency** — Test fixtures still use hex literals (#ff0000, #c0152a, #abcdef) instead of AXM design tokens
+- rationale: While production code has been cleaned of hardcoded hex colors, test files still contain hex literals that should use AXM design tokens for consistency and maintainability.
+- proposed scope: 1 phase. Replace hardcoded hex colors in test fixtures and test assertions with appropriate AXM design tokens, following the pattern established in recent cleanup commits.
+- estimated phases: 1
 - conflicts: none

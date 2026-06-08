@@ -43,8 +43,15 @@ or build a development client.
 | `npm run web:container:wait` | Block until the containerised dev server responds with HTTP 200. |
 | `npm run web:container:down` | Stop and remove the container. |
 | `npm run lint`      | `expo lint` (ESLint with Expo's config).                     |
-| `npx tsc --noEmit`  | Type-check.                                                  |
-| `npm test`          | Run Jest (requires Spec 01 setup first). |
+| `npm run typecheck` | Type-check with TypeScript.                                  |
+| `npm test`          | Run Jest (requires Spec 01 setup first).                     |
+| `npm run verify`    | Run lint + typecheck + test. Development quality gate.       |
+| `npm run verify:visual` | Visual smoke tests — generate and compare screenshots.   |
+| `npm run smoke:bundler` | Smoke test for bundler configuration.                    |
+| `npm run baseline:approve` | Approve new visual baselines after UI changes.        |
+| `npm run deploy:check` | Check EAS Build status for current commit.                |
+| `npm run deploy:preview` | Build Android preview via EAS (requires .env setup).   |
+| `npm run deploy:production` | Build all platforms for production (requires .env).  |
 
 ## Deploy environment
 

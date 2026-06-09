@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-08 at commit 656dbc4
-> Pass count: 63
+> Last pass: 2026-06-09 at commit 1f86a1b
+> Pass count: 64
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -65,6 +65,46 @@
   - **Test quality gap**: Type bypass undermines TypeScript benefits in critical test coverage
 - rationale: Combat test files show concentrated `as any` usage pattern, creating type safety gaps in test coverage for core game mechanics. Aggressive posture accepts this smell as primary signal for cleanup phase.
 - proposed scope: 1-phase systematic replacement with proper typing in combat test suite
+- estimated phases: 1
+- conflicts: none
+### [ ] [score 6.0] Large component extraction continuation (exploration + inventory)
+- proposed: 2026-06-09, expand pass 64
+- source signals:
+  - **File-length outliers**: app/(tabs)/exploration/index.tsx (717 lines), app/(tabs)/inventory/index.tsx (709 lines)
+  - **Follow-up to shipped Phase 117**: PhaseBottom.tsx extraction was successful, establishing pattern
+  - **Build-plan style guardrail**: "Prefer 5 small files over 1 dense file" remains violated
+- rationale: Phase 117 successfully extracted PhaseBottom subcomponents. Two remaining large files exceed folder median by >2× and create maintenance debt. Signal multiplicity from file-length outlier smell plus established extraction pattern.
+- proposed scope: 1-phase extraction of focused subcomponents from exploration and inventory screens, following Phase 117 pattern
+- estimated phases: 1
+- conflicts: none
+### [ ] [score 3.5] Development bundle size optimization audit
+- proposed: 2026-06-09, expand pass 64
+- source signals:
+  - **AUDIT [6.8]**: Node.js bundle size at 507MB suggests dependency bloat
+  - **Development UX impact**: Large footprint slows builds and CI/CD processes
+  - **Performance concern**: Potential unused/redundant dependencies affecting developer experience
+- rationale: 507MB node_modules suggests significant optimization opportunity. Audit finding identifies concrete performance impact on development workflow.
+- proposed scope: 1-phase dependency audit + optimization (analyze bundle, identify unused deps, optimize size)
+- estimated phases: 1
+- conflicts: none
+### [ ] [score 3.0] Comprehensive type safety drain for cast clusters
+- proposed: 2026-06-09, expand pass 64
+- source signals:
+  - **"as any" / "as unknown" cast clusters**: 144 instances across codebase (aggressive posture smell)
+  - **Type safety erosion**: Concentrated patterns in state/actions.ts, test files, component boundaries
+  - **Maintenance debt**: Cast clusters bypass TypeScript benefits and create debugging friction
+- rationale: 144 cast instances represent significant type safety debt. Aggressive posture accepts this smell pattern as primary signal. Concentrated in critical areas like state management and engine boundaries.
+- proposed scope: Multi-phase systematic cast reduction with proper typing (start with highest-concentration files)
+- estimated phases: 2-3
+- conflicts: none
+### [ ] [score 2.5] Accessibility focus management implementation
+- proposed: 2026-06-09, expand pass 64
+- source signals:
+  - **AUDIT [6.0]**: Missing accessibility focus management for keyboard navigation
+  - **UX gap**: Interactive components lack keyboard nav support
+  - **A11y compliance**: Screen reader/assistive technology accessibility missing
+- rationale: Audit finding identifies concrete accessibility gap affecting users who rely on keyboard navigation. UX-related finding with clear implementation path.
+- proposed scope: 1-phase focus management patterns for modals, combat sequences, interactive components
 - estimated phases: 1
 - conflicts: none
 

@@ -1,5 +1,18 @@
 # Axiomancer — SVG Asset Swap Spec
 
+## Executive Summary
+
+**This document is for asset replacement workflow, not initial development setup.**
+
+If you're a fresh maintainer getting oriented with the project, you likely don't need this file yet. This specification is used when:
+- Replacing coded SVG placeholders with final artwork
+- Working on the visual polish phase of development
+- Implementing new visual assets that integrate with existing components
+
+For initial development and contributing to game logic, start with [README.md](./README.md) and [docs/](./docs/).
+
+---
+
 Every SVG in this codebase is a coded placeholder. This document maps each
 placeholder to the real asset that should replace it, specifies its exact
 dimensions/contract, and explains how to do the swap.

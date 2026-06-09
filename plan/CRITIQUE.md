@@ -34,14 +34,16 @@
      docs/testing.md, agents.md, and SVG_ASSET_SPEC.md. 3 findings
      filed below. -->
 
-### [MED] /README.md — Architecture diagram mentions undefined presenter contract
-- pass: 27 (commit 8da116b)
+### [MED] /README.md — Architecture diagram mentions undefined presenter contract ✅
+- pass: 27 (commit 8da116b); addressed at commit c3b6b97 via `/iterate`
 - viewport: repository
 - category: comprehension
 - observation: Architecture section uses technical terms 'presenter' and 'view-model' without defining them for fresh maintainers, though these are core concepts for understanding the codebase
 - evidence: Lines 147-168 reference presenter contract and hermetic e2e testing but assume prior knowledge of these patterns
 - suggested fix: Add brief inline definitions or clear reference to docs/presenters.md where the contract is explained
+- fix: Added brief inline definition of 'view-model' as data objects containing exactly what UI components need to render alongside existing presenter definition
 - source: repo-proxy
+- issue: [mirror-failed: 2026-06-09T00:00:00Z]
 
 ### [MED] /agents.md — Documentation file truncated preventing full comprehension
 - pass: 27 (commit 8da116b)

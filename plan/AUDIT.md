@@ -24,7 +24,7 @@
 - addressed: 2026-06-09 via commit 7592efc
 - fix: Added hermetic surface tests for ActionPhase, ResolvePanel, SkillPhase, SkillRow, and StancePhase components. These module tests establish export contracts for critical combat UX components while avoiding duplication with existing behavioral coverage in state/e2e/combat.engine.test.ts.
 
-### [ ] [8.1] Hardcoded color values in BossIllustration and ChainBarFixed bypass design system consistency
+### [x] [8.1] Hardcoded color values in BossIllustration and ChainBarFixed bypass design system consistency
 - category: perf
 - impact: 9
 - ease: 9
@@ -35,6 +35,9 @@
 - evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/event/BossIllustration.tsx:23 and /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/event/ChainBarFixed.tsx use hardcoded hex colors
 - observation: Critical event UI components bypass centralized theming system, making design changes harder to maintain and potentially breaking visual consistency
 - source: audit
+- issue: #318
+- addressed: 2026-06-09 via commit d3f0b78
+- fix: Replaced hardcoded '#3a0612' in BossIllustration.tsx with AXM.panelBg and '#0e0506' in ChainBarFixed.tsx with AXM.dockBg. These changes improve maintainability and ensure consistency with the centralized design system.
 
 ### [ ] [7.2] Console logging statements in production code paths may impact performance
 - category: perf

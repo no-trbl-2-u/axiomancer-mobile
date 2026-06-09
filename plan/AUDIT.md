@@ -54,7 +54,7 @@
 - addressed: 2026-06-09 via commit 7d59250
 - fix: Removed redundant __DEV__ guards around console.warn statements since the entire component already returns null when !isDevToolsEnabled(). This eliminates redundant production code paths while maintaining dev-only functionality.
 
-### [ ] [6.8] Node.js bundle size at 507MB suggests potential dependency bloat
+### [x] [6.8] Node.js bundle size at 507MB suggests potential dependency bloat
 - category: perf
 - impact: 8
 - ease: 7
@@ -65,6 +65,9 @@
 - evidence: node_modules directory size is 507MB which may indicate unused or redundant dependencies
 - observation: Large dependency footprint can slow down development builds and CI/CD processes, impacting developer experience
 - source: audit
+- issue: #320
+- addressed: 2026-06-09 via commit ba5a99a
+- fix: Removed 8 unused dependencies (@react-navigation packages, @expo/vector-icons, expo-symbols, expo-system-ui, expo-web-browser) and added missing @jest/globals. While node_modules size increased slightly due to test dependencies, the cleanup removes maintenance burden of tracking unused packages and clarifies the actual dependency graph.
 
 ### [ ] [6.0] Missing accessibility focus management for keyboard navigation
 - category: a11y

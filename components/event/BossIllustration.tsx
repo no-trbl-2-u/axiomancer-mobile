@@ -37,7 +37,7 @@ export function BossIllustration() {
                     </G>
                 ))}
                 <Path d="M-30 5 L -36 80 L -10 90 L 10 90 L 36 80 L 30 5" fill={AXM.deepBg} stroke={AXM.parchment} strokeWidth={1.5} />
-                <Path d="M-22 10 L -28 70 L 28 70 L 22 10 Z" fill="#3a0612" stroke={AXM.blood} strokeWidth={1} />
+                <Path d="M-22 10 L -28 70 L 28 70 L 22 10 Z" fill={AXM.panelBg} stroke={AXM.blood} strokeWidth={1} />
                 {[15, 28, 41, 54, 67].map((y, i) => (
                     <Path key={i} d={`M-22 ${y} Q 0 ${y - 5} 22 ${y}`} stroke={AXM.parchment} strokeWidth={1} fill="none" />
                 ))}

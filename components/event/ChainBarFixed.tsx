@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 6,
-        backgroundColor: '#0e0506',
+        backgroundColor: AXM.dockBg,
     },
     chainBarTop: {
         top: 4,

@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-09 at commit 8da116b
-> Pass count: 27
+> Last pass: 2026-06-09 at commit dbbda71
+> Pass count: 28
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`

@@ -45,14 +45,16 @@
 - source: repo-proxy
 - issue: [mirror-failed: 2026-06-09T00:00:00Z]
 
-### [MED] /agents.md — Documentation file truncated preventing full comprehension
-- pass: 27 (commit 8da116b)
+### [MED] /agents.md — Documentation file truncated preventing full comprehension ✅
+- pass: 27 (commit 8da116b); addressed at commit ae42d0e via `/iterate`
 - viewport: repository
 - category: navigation
 - observation: agents.md file appears to be truncated when read, showing only 50 lines of what should be comprehensive autonomous loop guidance
 - evidence: File read shows only partial content through line 50, ending mid-sentence in rule 4 about deploy gates
 - suggested fix: Verify file integrity and ensure complete documentation is accessible to fresh maintainers
+- fix: Verified file integrity - agents.md is complete with 252 lines (9719 bytes) and ends properly with the SVG asset swap contract reference. The original critique was based on a partial read, but the file is intact and accessible to fresh maintainers.
 - source: repo-proxy
+- issue: #325
 
 
 <!-- Pass 26 (2026-06-08, commit 2f0ed3d): repo-proxy pass —

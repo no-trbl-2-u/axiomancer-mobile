@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-08 at commit 2f0ed3d
-> Pass count: 26
+> Last pass: 2026-06-09 at commit 8da116b
+> Pass count: 27
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -25,6 +25,41 @@
 > keep this header actionable.
 
 ## Pending
+
+<!-- Pass 27 (2026-06-09, commit 8da116b): repo-proxy pass —
+     Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
+     critique reads docs/specs/artifacts as the "fresh maintainer"
+     proxy. Focus on repository comprehension and fresh maintainer
+     onboarding experience. Reader examined README.md, specs/README.md,
+     docs/testing.md, agents.md, and SVG_ASSET_SPEC.md. 3 findings
+     filed below. -->
+
+### [MED] /README.md — Architecture diagram mentions undefined presenter contract
+- pass: 27 (commit 8da116b)
+- viewport: repository
+- category: comprehension
+- observation: Architecture section uses technical terms 'presenter' and 'view-model' without defining them for fresh maintainers, though these are core concepts for understanding the codebase
+- evidence: Lines 147-168 reference presenter contract and hermetic e2e testing but assume prior knowledge of these patterns
+- suggested fix: Add brief inline definitions or clear reference to docs/presenters.md where the contract is explained
+- source: repo-proxy
+
+### [MED] /agents.md — Documentation file truncated preventing full comprehension
+- pass: 27 (commit 8da116b)
+- viewport: repository
+- category: navigation
+- observation: agents.md file appears to be truncated when read, showing only 50 lines of what should be comprehensive autonomous loop guidance
+- evidence: File read shows only partial content through line 50, ending mid-sentence in rule 4 about deploy gates
+- suggested fix: Verify file integrity and ensure complete documentation is accessible to fresh maintainers
+- source: repo-proxy
+
+### [MED] /SVG_ASSET_SPEC.md — Asset specification overwhelming for fresh maintainer first impression
+- pass: 27 (commit 8da116b)
+- viewport: repository
+- category: comprehension
+- observation: SVG asset specification provides comprehensive detail but may overwhelm fresh maintainers with 260 lines of specific replacement instructions before basic project understanding
+- evidence: File jumps directly into detailed asset replacement procedures without context about when/why a maintainer would need this information
+- suggested fix: Add executive summary at top explaining this is for asset replacement workflow, not initial development setup
+- source: repo-proxy
 
 <!-- Pass 26 (2026-06-08, commit 2f0ed3d): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,

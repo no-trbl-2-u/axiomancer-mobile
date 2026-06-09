@@ -39,7 +39,7 @@
 - addressed: 2026-06-09 via commit d3f0b78
 - fix: Replaced hardcoded '#3a0612' in BossIllustration.tsx with AXM.panelBg and '#0e0506' in ChainBarFixed.tsx with AXM.dockBg. These changes improve maintainability and ensure consistency with the centralized design system.
 
-### [ ] [7.2] Console logging statements in production code paths may impact performance
+### [x] [7.2] Console logging statements in production code paths may impact performance
 - category: perf
 - impact: 6
 - ease: 10
@@ -50,6 +50,9 @@
 - evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/DebugFriendship.tsx contains console.warn statements in production code paths
 - observation: Production console statements can impact performance and create noise in production debugging environments
 - source: audit
+- issue: #319
+- addressed: 2026-06-09 via commit 7d59250
+- fix: Removed redundant __DEV__ guards around console.warn statements since the entire component already returns null when !isDevToolsEnabled(). This eliminates redundant production code paths while maintaining dev-only functionality.
 
 ### [ ] [6.8] Node.js bundle size at 507MB suggests potential dependency bloat
 - category: perf

@@ -1,8 +1,9 @@
 # Axiomancer — Mobile Client
 
-Expo / React Native client for the Axiomancer TTRPG. This repo is the
-**presentation layer** only. Game rules, state shape, and randomness
-live in the
+Expo / React Native client for the Axiomancer TTRPG — a philosophical
+tabletop RPG system exploring moral choice through tactical combat and
+character alignment. This repo is the **presentation layer** only. Game
+rules, state shape, and randomness live in the
 [`axiomancer-mechanics`](https://www.npmjs.com/package/axiomancer-mechanics)
 engine, which this app consumes as a library.
 

@@ -1104,22 +1104,26 @@ function moveToAction(store: AppStore, nodeId: string): MoveToResult {
 }
 
 function changeMapAction(store: AppStore, mapName: MapName): void {
-    const world: WorldState | undefined = store.getState().world;
-    if (!world) return;
+    try {
+        const world: WorldState | undefined = store.getState().world;
+        if (!world) return;
 
-    // Phase 60a — adopted `createMapState(getMapDefinition(...))`
-    // pattern. The engine's `getCoastalMap` was the single-arg
-    // convenience on 0.10.0 (`getCoastalMap(name)`); 0.10.1+
-    // removed it in favour of the two-step
-    // `createMapState(getMapDefinition(continent, name))` form.
-    // Both paths exist on 0.10.0, so this migration is safe under
-    // the current lockfile. Continent is sourced from the current
-    // map (Coastal Cradle today; world-state-tracked when the
-    // northern continent ships).
-    const continent = world.currentMap.continent;
-    const nextMap = createMapState(getMapDefinition(continent, mapName));
-    const nextWorld = worldChangeMap(world, nextMap);
-    store.setState({ world: nextWorld });
+        // Phase 60a — adopted `createMapState(getMapDefinition(...))`
+        // pattern. The engine's `getCoastalMap` was the single-arg
+        // convenience on 0.10.0 (`getCoastalMap(name)`); 0.10.1+
+        // removed it in favour of the two-step
+        // `createMapState(getMapDefinition(continent, name))` form.
+        // Both paths exist on 0.10.0, so this migration is safe under
+        // the current lockfile. Continent is sourced from the current
+        // map (Coastal Cradle today; world-state-tracked when the
+        // northern continent ships).
+        const continent = world.currentMap.continent;
+        const nextMap = createMapState(getMapDefinition(continent, mapName));
+        const nextWorld = worldChangeMap(world, nextMap);
+        store.setState({ world: nextWorld });
+    } catch (error) {
+        console.error(`Failed to change map to ${mapName}:`, error);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1132,89 +1136,106 @@ function changeMapAction(store: AppStore, mapName: MapName): void {
 // (treasure-pool synthesis) now route through the shared helper.
 
 function debugSeedAction(store: AppStore): DebugSeedResult {
-    const state = store.getState();
-    const addItem = state.addItem;
-
     let itemsAdded = 0;
     let skillsLearned = 0;
+    let mapReset = false;
 
-    // 1. One consumable from the engine library (Healing Potion as the
-    //    canonical test item). `addItem` is the engine reducer; we
-    //    spread to a fresh object so the engine's stack-merge path can
-    //    do its work without alias issues.
-    const potion = consumableLibrary[0];
-    if (potion) {
-        addItem({ ...potion });
-        itemsAdded++;
-    }
+    try {
+        const state = store.getState();
+        const addItem = state.addItem;
 
-    // 2. One equipment per major slot (head / body / weapon). The
-    //    inventory dock and equip-replace preview both key off slot,
-    //    so covering three slots gives a meaningful smoke test. The
-    //    slot list is typed by engine `EquipmentSlot` so an engine
-    //    rename is a tsc error; templates are pulled via the engine's
-    //    `getTemplatesBySlot` rather than a local `equipmentTemplates`
-    //    scan, so new templates per slot pick the first available.
-    const seedSlots: ReadonlyArray<EquipmentSlot> = ['head', 'body', 'weapon'];
-    for (const slot of seedSlots) {
-        const tpl = getTemplatesBySlot(slot)[0];
-        if (tpl) {
-            addItem(templateToEquipment(tpl));
-            itemsAdded++;
+        // 1. One consumable from the engine library (Healing Potion as the
+        //    canonical test item). `addItem` is the engine reducer; we
+        //    spread to a fresh object so the engine's stack-merge path can
+        //    do its work without alias issues.
+        try {
+            const potion = consumableLibrary[0];
+            if (potion) {
+                addItem({ ...potion });
+                itemsAdded++;
+            }
+        } catch (error) {
+            console.warn('Failed to add consumable item:', error);
         }
-    }
 
-    // 3. Two skills from the engine's library (covers both paradox +
-    //    fallacy categories). Phase 16 swapped the data source from
-    //    the local mock to `state/selectors/combat-skills`; engine
-    //    0.10.2 now re-exports `skillLibrary` at the top level.
-    //    Push directly onto `player.knownSkills` rather than via
-    //    `engine.learnSkill` — `learnSkill` enforces level-/stat-
-    //    gating which the dev seed should bypass. The ids it adds
-    //    are exactly what the picker renders from `COMBAT_SKILLS`.
-    const fixtureSkillIds: ReadonlyArray<string> = COMBAT_SKILLS
-        .slice(0, 4)
-        .map((s) => s.id);
-    if (fixtureSkillIds.length > 0) {
-        const afterAdd = store.getState();
-        const player = afterAdd.player;
-        const known = new Set<string>(player.knownSkills ?? []);
-        for (const id of fixtureSkillIds) {
-            if (!known.has(id)) {
-                known.add(id);
-                skillsLearned++;
+        // 2. One equipment per major slot (head / body / weapon). The
+        //    inventory dock and equip-replace preview both key off slot,
+        //    so covering three slots gives a meaningful smoke test. The
+        //    slot list is typed by engine `EquipmentSlot` so an engine
+        //    rename is a tsc error; templates are pulled via the engine's
+        //    `getTemplatesBySlot` rather than a local `equipmentTemplates`
+        //    scan, so new templates per slot pick the first available.
+        const seedSlots: ReadonlyArray<EquipmentSlot> = ['head', 'body', 'weapon'];
+        for (const slot of seedSlots) {
+            try {
+                const tpl = getTemplatesBySlot(slot)[0];
+                if (tpl) {
+                    addItem(templateToEquipment(tpl));
+                    itemsAdded++;
+                }
+            } catch (error) {
+                console.warn(`Failed to add equipment for slot ${slot}:`, error);
             }
         }
-        const nextPlayer: Character = {
-            ...player,
-            knownSkills: Array.from(known),
-        };
-        store.setState({ player: nextPlayer });
-    }
 
-    // 4. Reset the current map: re-seed via the engine's two-step
-    //    `createMapState(getMapDefinition(continent, name))` +
-    //    `changeMap`. Engine guarantees the returned `MapState` is at
-    //    `currentNode = startingNode.id` with cleared
-    //    discoveredNodes / consumedNodes.
-    //    (Phase 60a — migrated from the deprecated single-arg
-    //    `getCoastalMap`; both paths exist on 0.10.0 but 0.10.1+
-    //    drops the old form.)
-    let mapReset = false;
-    const world: WorldState | undefined = store.getState().world;
-    if (world && world.currentMap) {
+        // 3. Two skills from the engine's library (covers both paradox +
+        //    fallacy categories). Phase 16 swapped the data source from
+        //    the local mock to `state/selectors/combat-skills`; engine
+        //    0.10.2 now re-exports `skillLibrary` at the top level.
+        //    Push directly onto `player.knownSkills` rather than via
+        //    `engine.learnSkill` — `learnSkill` enforces level-/stat-
+        //    gating which the dev seed should bypass. The ids it adds
+        //    are exactly what the picker renders from `COMBAT_SKILLS`.
         try {
-            const fresh = createMapState(
-                getMapDefinition(world.currentMap.continent, world.currentMap.name),
-            );
-            const nextWorld = worldChangeMap(world, fresh);
-            store.setState({ world: nextWorld });
-            mapReset = true;
-        } catch {
-            // changeMap can throw if the map name is unknown. Swallow
-            // and report — the seed action is best-effort dev affordance.
-            mapReset = false;
+            const fixtureSkillIds: ReadonlyArray<string> = COMBAT_SKILLS
+                .slice(0, 4)
+                .map((s) => s.id);
+            if (fixtureSkillIds.length > 0) {
+                const afterAdd = store.getState();
+                const player = afterAdd.player;
+                const known = new Set<string>(player.knownSkills ?? []);
+                for (const id of fixtureSkillIds) {
+                    if (!known.has(id)) {
+                        known.add(id);
+                        skillsLearned++;
+                    }
+                }
+                const nextPlayer: Character = {
+                    ...player,
+                    knownSkills: Array.from(known),
+                };
+                store.setState({ player: nextPlayer });
+            }
+        } catch (error) {
+            console.warn('Failed to add skills:', error);
         }
+
+        // 4. Reset the current map: re-seed via the engine's two-step
+        //    `createMapState(getMapDefinition(continent, name))` +
+        //    `changeMap`. Engine guarantees the returned `MapState` is at
+        //    `currentNode = startingNode.id` with cleared
+        //    discoveredNodes / consumedNodes.
+        //    (Phase 60a — migrated from the deprecated single-arg
+        //    `getCoastalMap`; both paths exist on 0.10.0 but 0.10.1+
+        //    drops the old form.)
+        const world: WorldState | undefined = store.getState().world;
+        if (world && world.currentMap) {
+            try {
+                const fresh = createMapState(
+                    getMapDefinition(world.currentMap.continent, world.currentMap.name),
+                );
+                const nextWorld = worldChangeMap(world, fresh);
+                store.setState({ world: nextWorld });
+                mapReset = true;
+            } catch (error) {
+                // changeMap can throw if the map name is unknown. Swallow
+                // and report — the seed action is best-effort dev affordance.
+                console.warn('Failed to reset map:', error);
+                mapReset = false;
+            }
+        }
+    } catch (error) {
+        console.error('Debug seed action failed:', error);
     }
 
     return { itemsAdded, skillsLearned, mapReset };
@@ -1237,34 +1258,51 @@ function debugSeedAction(store: AppStore): DebugSeedResult {
  * quest), so they're out of scope.
  */
 function populateAllItemsAction(store: AppStore): PopulateAllItemsResult {
-    const state = store.getState();
-    const addItem = state.addItem;
-
     let equipment = 0;
     let unique = 0;
     let consumable = 0;
 
-    for (const tpl of equipmentTemplates) {
-        addItem(templateToEquipment(tpl));
-        equipment++;
-    }
+    try {
+        const state = store.getState();
+        const addItem = state.addItem;
 
-    // Uniques share the EquipmentTemplate shape (UniqueItemTemplate
-    // extends it) so `templateToEquipment` works, but the helper
-    // hard-codes `rarity: 'common'`. Override per-item so the
-    // inventory chrome surfaces the unique rarity correctly.
-    for (const tpl of uniqueTemplates) {
-        const base = templateToEquipment(tpl);
-        addItem({ ...base, rarity: 'unique' });
-        unique++;
-    }
+        // Add equipment templates with error handling
+        for (const tpl of equipmentTemplates) {
+            try {
+                addItem(templateToEquipment(tpl));
+                equipment++;
+            } catch (error) {
+                console.warn(`Failed to add equipment template ${tpl.name}:`, error);
+            }
+        }
 
-    for (const item of consumableLibrary) {
-        // Spread to a fresh object so the engine's stack-merge path
-        // can do its work without alias issues (same pattern as
-        // `debugSeedAction`).
-        addItem({ ...item });
-        consumable++;
+        // Uniques share the EquipmentTemplate shape (UniqueItemTemplate
+        // extends it) so `templateToEquipment` works, but the helper
+        // hard-codes `rarity: 'common'`. Override per-item so the
+        // inventory chrome surfaces the unique rarity correctly.
+        for (const tpl of uniqueTemplates) {
+            try {
+                const base = templateToEquipment(tpl);
+                addItem({ ...base, rarity: 'unique' });
+                unique++;
+            } catch (error) {
+                console.warn(`Failed to add unique template ${tpl.name}:`, error);
+            }
+        }
+
+        for (const item of consumableLibrary) {
+            try {
+                // Spread to a fresh object so the engine's stack-merge path
+                // can do its work without alias issues (same pattern as
+                // `debugSeedAction`).
+                addItem({ ...item });
+                consumable++;
+            } catch (error) {
+                console.warn(`Failed to add consumable ${item.name}:`, error);
+            }
+        }
+    } catch (error) {
+        console.error('Populate all items action failed:', error);
     }
 
     const itemsAdded = equipment + unique + consumable;
@@ -1275,13 +1313,18 @@ function applyCharacterPresetAction(
     store: AppStore,
     presetId: string,
 ): ApplyCharacterPresetResult {
-    const preset = getPresetById(presetId);
-    if (!preset) {
+    try {
+        const preset = getPresetById(presetId);
+        if (!preset) {
+            return { applied: false, presetId: null, presetName: null };
+        }
+        const nextPlayer = buildCharacterFromPreset(preset) as Character;
+        store.setState({ player: nextPlayer });
+        return { applied: true, presetId: preset.id, presetName: preset.name };
+    } catch (error) {
+        console.error(`Failed to apply character preset ${presetId}:`, error);
         return { applied: false, presetId: null, presetName: null };
     }
-    const nextPlayer = buildCharacterFromPreset(preset) as Character;
-    store.setState({ player: nextPlayer });
-    return { applied: true, presetId: preset.id, presetName: preset.name };
 }
 
 // ---------------------------------------------------------------------------
@@ -1289,57 +1332,62 @@ function applyCharacterPresetAction(
 // ---------------------------------------------------------------------------
 
 function resolveCurrentMapEventAction(store: AppStore, sourceNodeType?: string): boolean {
-    const state = store.getState();
-    // Spec 08 Q4 = Future spec: do not stack events on top of combat.
-    if (state.combat !== null) return false;
+    try {
+        const state = store.getState();
+        // Spec 08 Q4 = Future spec: do not stack events on top of combat.
+        if (state.combat !== null) return false;
 
-    const gameState = state as unknown as GameState;
-    const result: ResolveMapEventResult = resolveMapEvent(gameState);
+        const gameState = state as unknown as GameState;
+        const result: ResolveMapEventResult = resolveMapEvent(gameState);
 
-    // Phase 27: when a non-'none' event resolves, mark the current
-    // node consumed in the engine's parallel data model
-    // (`consumedNodes`) for one-time events only. Encounter and boss
-    // events should be reusable (can trigger multiple times), while
-    // rest, treasure, quest, and gathering events are consumable
-    // (one-time only). This fixes the issue where encounters stop
-    // triggering after the first completion.
-    // Coexists with legacy `completedNodes` (already populated by
-    // `moveToAction`'s `worldCompleteNode` call). Screen still reads
-    // legacy fields; Phase 30+ TBD migrates the read side.
-    let resolvedState: GameState = result.state;
-    const shouldConsumeNode = result.event.kind !== 'none' && 
-        !['encounter'].includes(result.event.kind);
-    if (shouldConsumeNode) {
-        const currentNodeId = resolvedState.world?.currentMap?.currentNode;
-        if (currentNodeId) {
-            resolvedState = {
-                ...resolvedState,
-                world: {
-                    ...resolvedState.world,
-                    currentMap: markNodeConsumed(resolvedState.world.currentMap, currentNodeId),
-                },
-            };
+        // Phase 27: when a non-'none' event resolves, mark the current
+        // node consumed in the engine's parallel data model
+        // (`consumedNodes`) for one-time events only. Encounter and boss
+        // events should be reusable (can trigger multiple times), while
+        // rest, treasure, quest, and gathering events are consumable
+        // (one-time only). This fixes the issue where encounters stop
+        // triggering after the first completion.
+        // Coexists with legacy `completedNodes` (already populated by
+        // `moveToAction`'s `worldCompleteNode` call). Screen still reads
+        // legacy fields; Phase 30+ TBD migrates the read side.
+        let resolvedState: GameState = result.state;
+        const shouldConsumeNode = result.event.kind !== 'none' && 
+            !['encounter'].includes(result.event.kind);
+        if (shouldConsumeNode) {
+            const currentNodeId = resolvedState.world?.currentMap?.currentNode;
+            if (currentNodeId) {
+                resolvedState = {
+                    ...resolvedState,
+                    world: {
+                        ...resolvedState.world,
+                        currentMap: markNodeConsumed(resolvedState.world.currentMap, currentNodeId),
+                    },
+                };
+            }
         }
+
+        // Spread the advanced state onto the store. `event` is mobile-only
+        // and survives because `result.state` does not include it.
+        const nextEvent = {
+            ...(state.event ?? EMPTY_EVENT_SLICE),
+            pending: result,
+            // If the resolved event is an interaction with a DialogueTree,
+            // seed the dialogue cursor at the tree's root so
+            // `selectEventViewModel` composes against the right node.
+            dialogueCursor:
+                result.event.kind === 'interaction' && result.event.dialogue
+                    ? { tree: result.event.dialogue, nodeId: result.event.dialogue.rootId }
+                    : null,
+            history: [],
+            sourceNodeType: sourceNodeType ?? null,
+        };
+        store.setState({ ...resolvedState, event: nextEvent });
+
+        return result.event.kind !== 'none';
+    } catch (error) {
+        console.error('Failed to resolve current map event:', error);
+        return false;
     }
-
-    // Spread the advanced state onto the store. `event` is mobile-only
-    // and survives because `result.state` does not include it.
-    const nextEvent = {
-        ...(state.event ?? EMPTY_EVENT_SLICE),
-        pending: result,
-        // If the resolved event is an interaction with a DialogueTree,
-        // seed the dialogue cursor at the tree's root so
-        // `selectEventViewModel` composes against the right node.
-        dialogueCursor:
-            result.event.kind === 'interaction' && result.event.dialogue
-                ? { tree: result.event.dialogue, nodeId: result.event.dialogue.rootId }
-                : null,
-        history: [],
-        sourceNodeType: sourceNodeType ?? null,
-    };
-    store.setState({ ...resolvedState, event: nextEvent });
-
-    return result.event.kind !== 'none';
 }
 
 function clearEventSlice(store: AppStore): void {
@@ -1347,121 +1395,141 @@ function clearEventSlice(store: AppStore): void {
 }
 
 function pickEventChoiceAction(store: AppStore, choiceId: string): void {
-    const state = store.getState();
-    const slice = state.event;
-    if (!slice || slice.pending === null) return;
+    try {
+        const state = store.getState();
+        const slice = state.event;
+        if (!slice || slice.pending === null) return;
 
-    const processed = slice.pending.event;
+        const processed = slice.pending.event;
 
-    // combat-prelude path
-    if (processed.kind === 'encounter') {
-        if (choiceId === 'fight') {
-            // Phase 60b — engine's canonical `Encounter` shape is
-            // `{ enemies: Enemy[], origin?: string, rewards?:
-            // Reward[] }` (axiomancer-mechanics/dist/World/types.d.ts).
-            // The prelude consumes the first enemy. The earlier
-            // `as any` cast (closed via [2.5] event-audit row 4)
-            // dated back to Phase 60b's migration; the engine type
-            // exposes `.enemies` directly today.
-            const enemy = processed.encounter.enemies[0];
-            store.getState().startCombat(enemy);
-            // Phase 60d — seed mobile-only mana slice after the
-            // encounter-prelude path starts combat. Matches the
-            // direct `actions.startCombat` branch above.
-            if (store.getState().combat !== null) {
-                seedCombatMana(store);
+        // combat-prelude path
+        if (processed.kind === 'encounter') {
+            if (choiceId === 'fight') {
+                try {
+                    // Phase 60b — engine's canonical `Encounter` shape is
+                    // `{ enemies: Enemy[], origin?: string, rewards?:
+                    // Reward[] }` (axiomancer-mechanics/dist/World/types.d.ts).
+                    // The prelude consumes the first enemy. The earlier
+                    // `as any` cast (closed via [2.5] event-audit row 4)
+                    // dated back to Phase 60b's migration; the engine type
+                    // exposes `.enemies` directly today.
+                    const enemy = processed.encounter.enemies[0];
+                    store.getState().startCombat(enemy);
+                    // Phase 60d — seed mobile-only mana slice after the
+                    // encounter-prelude path starts combat. Matches the
+                    // direct `actions.startCombat` branch above.
+                    if (store.getState().combat !== null) {
+                        seedCombatMana(store);
+                    }
+                    clearEventSlice(store);
+                } catch (error) {
+                    console.error('Failed to start combat from encounter:', error);
+                    clearEventSlice(store);
+                }
+                return;
             }
-            clearEventSlice(store);
+            if (choiceId === 'flee') {
+                try {
+                    // [4.5] DRIFT fix (mechanics-vs-UI audit row 10):
+                    // the FLEE button's chrome subtitle reads
+                    // `forfeit the path · -ii morale` on non-boss
+                    // encounters. Honour the chrome — shift the
+                    // engine `moralMeter` by -2 so the SELF tab's
+                    // alignment readout reflects the cost. Boss
+                    // flee is engine-disabled in the UI (KNEEL /
+                    // `enabled: false`) and the subtitle reads
+                    // `sealed · no retreat` — no morale delta
+                    // applies there even if the choice somehow
+                    // dispatched.
+                    if (!processed.isBoss) {
+                        store.getState().shiftMoralMeter(-2);
+                        // Phase 92 — flee narrative feedback. Display prose-style
+                        // narrative after successful flee action matching existing
+                        // lowercase ritual register patterns. Combined with morale
+                        // cost feedback as requested in deep-playtest F03.
+                        const prev = store.getState().notifications;
+                        store.setState({
+                            notifications: {
+                                levelUpAcknowledged: prev?.levelUpAcknowledged ?? true,
+                                toast: {
+                                    text: 'you fled the encounter. the path bends away.\n\nmorale -2',
+                                    id: (prev?.toast?.id ?? 0) + 1,
+                                },
+                            },
+                        });
+                    }
+                    clearEventSlice(store);
+                } catch (error) {
+                    console.error('Failed to process flee action:', error);
+                    clearEventSlice(store);
+                }
+                return;
+            }
+            // Unknown choice id on combat-prelude — defensive no-op.
             return;
         }
-        if (choiceId === 'flee') {
-            // [4.5] DRIFT fix (mechanics-vs-UI audit row 10):
-            // the FLEE button's chrome subtitle reads
-            // `forfeit the path · -ii morale` on non-boss
-            // encounters. Honour the chrome — shift the
-            // engine `moralMeter` by -2 so the SELF tab's
-            // alignment readout reflects the cost. Boss
-            // flee is engine-disabled in the UI (KNEEL /
-            // `enabled: false`) and the subtitle reads
-            // `sealed · no retreat` — no morale delta
-            // applies there even if the choice somehow
-            // dispatched.
-            if (!processed.isBoss) {
-                store.getState().shiftMoralMeter(-2);
-                // Phase 92 — flee narrative feedback. Display prose-style
-                // narrative after successful flee action matching existing
-                // lowercase ritual register patterns. Combined with morale
-                // cost feedback as requested in deep-playtest F03.
-                const prev = store.getState().notifications;
-                store.setState({
-                    notifications: {
-                        levelUpAcknowledged: prev?.levelUpAcknowledged ?? true,
-                        toast: {
-                            text: 'you fled the encounter. the path bends away.\n\nmorale -2',
-                            id: (prev?.toast?.id ?? 0) + 1,
+
+        // npc dialogue path (cursor-driven)
+        if (slice.dialogueCursor !== null) {
+            try {
+                const { tree, nodeId } = slice.dialogueCursor;
+                const node = getDialogueNode(tree, nodeId);
+                // Phase 60c — engine flattened DialogueChoice (dropped `.id`).
+                // The presenter now derives `choiceId` from the choice's
+                // index in `node.choices`; lookup mirrors that index. If the
+                // id isn't a valid index, treat as unknown choice
+                // (defensive no-op preserved).
+                const idx = Number(choiceId);
+                const choices = node.choices ?? [];
+                const choice: DialogueChoice | undefined =
+                    Number.isInteger(idx) && idx >= 0 && idx < choices.length
+                        ? choices[idx]
+                        : undefined;
+                if (!choice) {
+                    // Unknown choice on dialogue node — defensive no-op.
+                    return;
+                }
+
+                // applyDialogue advances engine state. Mobile-side: walk the cursor.
+                store.getState().applyDialogue(tree, choice);
+                const nextState = store.getState() as unknown as GameState;
+                const result = applyDialogueChoice(nextState, tree, choice);
+
+                const nextHistory = [
+                    ...(slice.history as ReadonlyArray<{ nodeId: string; choiceId: string }>),
+                    { nodeId, choiceId },
+                ];
+
+                if (result.nextNode !== null) {
+                    store.setState({
+                        event: {
+                            ...slice,
+                            dialogueCursor: {
+                                tree,
+                                nodeId: result.nextNode.id ?? nodeId,
+                            },
+                            history: nextHistory,
                         },
-                    },
-                });
+                    });
+                } else {
+                    // Dialogue tree exhausted — clear the event.
+                    clearEventSlice(store);
+                }
+            } catch (error) {
+                console.error('Failed to process dialogue choice:', error);
+                clearEventSlice(store);
             }
-            clearEventSlice(store);
-            return;
-        }
-        // Unknown choice id on combat-prelude — defensive no-op.
-        return;
-    }
-
-    // npc dialogue path (cursor-driven)
-    if (slice.dialogueCursor !== null) {
-        const { tree, nodeId } = slice.dialogueCursor;
-        const node = getDialogueNode(tree, nodeId);
-        // Phase 60c — engine flattened DialogueChoice (dropped `.id`).
-        // The presenter now derives `choiceId` from the choice's
-        // index in `node.choices`; lookup mirrors that index. If the
-        // id isn't a valid index, treat as unknown choice
-        // (defensive no-op preserved).
-        const idx = Number(choiceId);
-        const choices = node.choices ?? [];
-        const choice: DialogueChoice | undefined =
-            Number.isInteger(idx) && idx >= 0 && idx < choices.length
-                ? choices[idx]
-                : undefined;
-        if (!choice) {
-            // Unknown choice on dialogue node — defensive no-op.
             return;
         }
 
-        // applyDialogue advances engine state. Mobile-side: walk the cursor.
-        store.getState().applyDialogue(tree, choice);
-        const nextState = store.getState() as unknown as GameState;
-        const result = applyDialogueChoice(nextState, tree, choice);
-
-        const nextHistory = [
-            ...(slice.history as ReadonlyArray<{ nodeId: string; choiceId: string }>),
-            { nodeId, choiceId },
-        ];
-
-        if (result.nextNode !== null) {
-            store.setState({
-                event: {
-                    ...slice,
-                    dialogueCursor: {
-                        tree,
-                        nodeId: result.nextNode.id ?? nodeId,
-                    },
-                    history: nextHistory,
-                },
-            });
-        } else {
-            // Dialogue tree exhausted — clear the event.
-            clearEventSlice(store);
-        }
-        return;
+        // narrative-choice auto-resolve path (rest / gathering / loot-cache /
+        // interaction-without-dialogue / village / cutscene / hazard). Engine
+        // already advanced state via resolveMapEvent; just clear the event slice.
+        clearEventSlice(store);
+    } catch (error) {
+        console.error('Failed to pick event choice:', error);
+        clearEventSlice(store);
     }
-
-    // narrative-choice auto-resolve path (rest / gathering / loot-cache /
-    // interaction-without-dialogue / village / cutscene / hazard). Engine
-    // already advanced state via resolveMapEvent; just clear the event slice.
-    clearEventSlice(store);
 }
 
 function dismissEventAction(store: AppStore): void {

@@ -475,15 +475,37 @@ const PHASE_STACK_ORDER: readonly CombatPhaseKey[] = [
 ];
 
 /**
+ * **Presenter Pattern Transformation Example**
+ * 
  * Build the vertical phase-stack rows from the current engine phase +
- * picker state. Past-state summary is the chosen value where the
- * engine preserves it: stance is read from `playerChoice.stance` and
- * action from `playerChoice.action` (both survive phase transitions).
+ * picker state. This is a classic presenter transformation that demonstrates
+ * how raw engine state becomes structured view-model data:
+ * 
+ * **Input (Engine State):** 
+ * - Raw phase enum, stance choice, action choice
+ * 
+ * **Output (View Model):**
+ * - Structured array of display objects with labels, states, summaries
+ * 
+ * **Business Logic Applied:**
+ * - Maps engine phases to display labels (`"I · STAND"`, `"II · DO"`)
+ * - Determines UI state (past/current/future) from current phase
+ * - Builds human-readable summaries from past choices
+ * - Controls visibility (skill phase only shows when action = 'skill')
+ * 
+ * Past-state summary is the chosen value where the engine preserves it: 
+ * stance is read from `playerChoice.stance` and action from 
+ * `playerChoice.action` (both survive phase transitions).
  * The skill row's summary stays empty for now — the engine exposes
  * the picked skill id but the presenter has no library-friendly
  * label resolution yet; a future Phase 21 follow-up can populate it.
  * Phase 38 hermetically pinned the stance + action past-summary
  * contracts (combat.engine.test.ts).
+ * 
+ * @param currentPhase - Current engine combat phase
+ * @param selectedStance - Player's chosen stance (if any)
+ * @param pickedAction - Player's chosen action (if any)
+ * @returns Array of phase stack entries for UI rendering
  */
 function buildPhaseStack(
     currentPhase: CombatPhaseKey,
@@ -833,6 +855,33 @@ const STANCE_GLOSS: Record<StanceKey, string> = {
     mind: 'cipher, ruse',
 };
 
+/**
+ * **Complex Presenter Transformation**
+ * 
+ * Transforms raw engine stats into stance options with calculated advantages.
+ * This function demonstrates complex presenter logic where multiple engine
+ * inputs combine to create rich view-model data:
+ * 
+ * **Engine Inputs:**
+ * - Player derived stats (attack/skill/defense per stance)
+ * - Enemy's last chosen stance
+ * - Player's active effects (can modify advantages)
+ * 
+ * **View Model Outputs:**
+ * - Formatted stance labels and glosses
+ * - Counter/weakness relationships for each stance
+ * - Calculated advantage states vs enemy stance
+ * - Effect-modified advantages (via engine's resolveEffectiveAdvantage)
+ * 
+ * **Business Logic:**
+ * - Applies stance triangle (Heart > Body > Mind > Heart)
+ * - Considers active effects that grant/deny advantage
+ * - Formats numeric stats from engine into display values
+ * - Provides contextual glosses ("parley, mercy" for Heart)
+ * 
+ * This exemplifies the presenter's role: taking multiple engine truths
+ * and combining them into exactly what the UI needs to render.
+ */
 function buildStanceOptions(
     derivedStats: DerivedStats | undefined,
     enemyLastStance: StanceKey | null,
@@ -1127,6 +1176,33 @@ function buildCombatA11y(
 // Main selector
 // ---------------------------------------------------------------------------
 
+/**
+ * **Core Presenter Pattern Contract**
+ * 
+ * Transforms raw engine state into a structured view-model for the combat screen.
+ * This function implements the presenter pattern as defined in docs/presenters.md:
+ * 
+ * - **Pure function**: No side effects, no I/O, no state mutations
+ * - **Single responsibility**: Maps state → view-model only
+ * - **Complete isolation**: Screen components read ONLY from the returned VM
+ * - **Stable interface**: VM shape is the contract between engine and UI
+ * 
+ * The presenter acts as a translation layer that:
+ * 1. Reads raw engine state (combat slice, player data, etc.)
+ * 2. Applies business logic for UI concerns (stance advantages, formatting)
+ * 3. Returns a complete view-model containing everything the screen needs
+ * 4. Ensures the UI never directly accesses engine state
+ * 
+ * This pattern enables:
+ * - Hermetic testing of UI logic via view-model assertions
+ * - Engine upgrades without breaking UI components
+ * - Complex state transformations isolated from view code
+ * - Clear separation between game logic (engine) and presentation (mobile)
+ * 
+ * @param state - Complete app state containing engine slices
+ * @param localUi - Optional ephemeral UI state (previews, selections)
+ * @returns Immutable view-model with all data needed by combat screen
+ */
 export function selectCombatViewModel(
     state: AppStoreState,
     localUi: CombatLocalUi = {},
@@ -1329,17 +1405,30 @@ export function selectCombatViewModel(
 // ---------------------------------------------------------------------------
 
 /**
- * React hook returning a `CombatViewModel` that's stable by reference
- * when the underlying state (and `localUi`) hasn't changed.
- *
- * `selectCombatViewModel` returns a freshly-constructed object on every
- * call (deep-frozen per Spec 03 Q3). Passing that selector straight into
- * Zustand's `useStore` would loop forever — `useSyncExternalStore`
- * requires `getSnapshot` to return a stable reference for the same
- * snapshot. This hook subscribes to the engine slices the VM actually
- * depends on (`combat`, `player`, `combatMana`) and memoises the VM
- * against them.
- *
+ * **React Hook for Presenter Pattern Integration**
+ * 
+ * Provides a memoized, reference-stable `CombatViewModel` for React components.
+ * This hook bridges the presenter pattern with React's rendering lifecycle:
+ * 
+ * **Presenter Pattern Role:**
+ * - Calls `selectCombatViewModel` (the pure presenter function)
+ * - Ensures components receive stable view-model references
+ * - Prevents unnecessary re-renders when state hasn't changed
+ * - Maintains the pure function presenter while optimizing for React
+ * 
+ * **Technical Implementation:**
+ * - Subscribes only to relevant state slices (`combat`, `player`, `combatMana`)
+ * - Memoizes view-model construction against actual dependencies
+ * - Returns stable references when input state is unchanged
+ * - Uses explicit dependency tracking to avoid React Compiler issues
+ * 
+ * **Usage in Components:**
+ * ```tsx
+ * const vm = useCombatViewModel({ selectedStance: 'heart' });
+ * // Components read vm.stancePicker.options, vm.enemy.hp, etc.
+ * // Never access state.combat or other engine state directly
+ * ```
+ * 
  * The `'use no memo'` directive opts this hook out of the React Compiler
  * (enabled in `app.json`). The compiler's static analysis cannot see
  * through `store.getState()` reads, so when the factory body's only
@@ -1350,6 +1439,9 @@ export function selectCombatViewModel(
  * advancing to resolving". The manual `useMemo` below + the subscribed
  * slice values + the explicit deps array is the correct intent; the
  * compiler must not second-guess it.
+ * 
+ * @param localUi - Ephemeral UI state for previews and selections
+ * @returns Reference-stable view-model for combat screen components
  */
 export function useCombatViewModel(localUi: CombatLocalUi = {}): CombatViewModel {
     'use no memo';

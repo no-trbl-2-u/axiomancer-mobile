@@ -35,6 +35,7 @@
 - evidence: state/presenters/combat.engine.ts contains complex view-model transformation logic without inline documentation
 - observation: Presenter modules are core to the architecture but lack documentation for future maintainers
 - source: audit
+- issue: #324
 
 ### [ ] [3.6] Inconsistent error handling in async operations
 - category: perf

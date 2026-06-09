@@ -167,7 +167,8 @@ Read upward, mutate downward. The screens never reach past the
 presenter; the presenter never mutates state. 
 
 **Presenters** are pure functions `(state) → ViewModel` that map engine 
-state to screen-specific view-models (see [`docs/presenters.md`](docs/presenters.md)). 
+state to screen-specific **view-models** (data objects containing exactly 
+what a UI component needs to render, see [`docs/presenters.md`](docs/presenters.md)). 
 Presenters are the hermetic-e2e contract — that's where the testing standard lives.
 
 ## AI workflow

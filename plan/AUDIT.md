@@ -69,17 +69,43 @@
 - addressed: 2026-06-09 via commit ba5a99a
 - fix: Removed 8 unused dependencies (@react-navigation packages, @expo/vector-icons, expo-symbols, expo-system-ui, expo-web-browser) and added missing @jest/globals. While node_modules size increased slightly due to test dependencies, the cleanup removes maintenance burden of tracking unused packages and clarifies the actual dependency graph.
 
-### [ ] [6.0] Missing accessibility focus management for keyboard navigation
+### [x] [6.3] Missing accessibility focus management for keyboard navigation
 - category: a11y
-- impact: 4
-- ease: 10
-- base-score: 4.0
+- impact: 6
+- ease: 7
+- base-score: 4.2
 - ux-bias-multiplier: 1.5 (accessibility is UX-related)
-- final-score: 6.0
+- final-score: 6.3
 - next: Implement focus management patterns with onFocus/onBlur handlers for interactive components, especially in modal dialogs and combat sequences
 - evidence: Grep search shows only 3 design files contain focus-related patterns, no production components implement keyboard focus management
 - observation: Interactive components lack keyboard navigation support, making the app inaccessible for users who rely on keyboard navigation or assistive technologies
 - source: audit
+- addressed: 2026-06-09 via commit 45d6c93
+- fix: Added focus management with visual feedback to critical interactive components: MercyChoiceModal (modal focus trapping), SkillRow (combat skill selection), and ItemCard (inventory interaction). Implemented onFocus/onBlur handlers with sulfur-colored borders and shadow effects for clear keyboard navigation feedback.
+
+### [ ] [5.4] /README.md — Architecture diagram mentions undefined presenter contract
+- category: external-critique
+- impact: 6
+- ease: 9
+- base-score: 5.4
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 5.4
+- next: Add brief inline definitions or clear reference to docs/presenters.md where the contract is explained
+- evidence: Lines 147-168 reference presenter contract and hermetic e2e testing but assume prior knowledge of these patterns
+- observation: Architecture section uses technical terms 'presenter' and 'view-model' without defining them for fresh maintainers
+- source: external-critique (CRITIQUE.md pass 27)
+
+### [ ] [3.6] /SVG_ASSET_SPEC.md — Asset specification overwhelming for fresh maintainer
+- category: external-critique  
+- impact: 4
+- ease: 9
+- base-score: 3.6
+- ux-bias-multiplier: 1.0 (no direct UX impact)
+- final-score: 3.6
+- next: Add executive summary at top explaining this is for asset replacement workflow, not initial development setup
+- evidence: File jumps directly into detailed asset replacement procedures without context about when/why a maintainer would need this information
+- observation: SVG asset specification provides comprehensive detail but may overwhelm fresh maintainers with 260 lines of specific replacement instructions before basic project understanding
+- source: external-critique (CRITIQUE.md pass 27)
 
 ## Previously completed findings (prior audit 2026-06-08)
 

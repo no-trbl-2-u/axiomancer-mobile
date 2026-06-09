@@ -24,7 +24,7 @@
 - addressed: 2026-06-09 via commit bca3771
 - fix: Enhanced README.md introduction to explain Axiomancer as a philosophical tabletop RPG system exploring moral choice through tactical combat and character alignment. This provides essential context for new maintainers to understand the game genre and contribute meaningfully to UI/UX decisions.
 
-### [ ] [4.5] Missing component documentation in complex presenter modules
+### [x] [4.5] Missing component documentation in complex presenter modules
 - category: tests
 - impact: 5
 - ease: 9
@@ -36,6 +36,8 @@
 - observation: Presenter modules are core to the architecture but lack documentation for future maintainers
 - source: audit
 - issue: #324
+- addressed: 2026-06-09 via commit 8cfed60
+- fix: Added comprehensive JSDoc documentation to combat presenter explaining the presenter pattern contract, view-model transformations, and React integration. Documented core functions like selectCombatViewModel, useCombatViewModel, buildPhaseStack, and buildStanceOptions with detailed explanations of how raw engine state transforms into structured view-models for UI components.
 
 ### [ ] [3.6] Inconsistent error handling in async operations
 - category: perf

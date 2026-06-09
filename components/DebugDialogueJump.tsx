@@ -92,6 +92,7 @@ export function DebugDialogueJump() {
                 pending: { state, event: interaction },
                 dialogueCursor: { tree: option.tree, nodeId: option.tree.rootId },
                 history: [],
+                sourceNodeType: null,
             },
         });
     };

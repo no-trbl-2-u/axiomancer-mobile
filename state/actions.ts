@@ -292,10 +292,14 @@ export interface AppActions {
      * the resulting `state` to the engine store. No-ops while combat
      * is active (Spec 08 Q4 = Future spec).
      *
-     * Returns `true` when an event was produced (kind !== 'none').
+     * `sourceNodeType` — the map node type that triggered this event
+     * (e.g. `'quest'`, `'rest'`, `'treasure'`). Stored in the event
+     * slice so the event modal can apply category-specific visual
+     * treatment even when the engine resolves to a generic kind.
      *
+     * Returns `true` when an event was produced (kind !== 'none').
      */
-    resolveCurrentMapEvent: () => boolean;
+    resolveCurrentMapEvent: (sourceNodeType?: string) => boolean;
     /**
      * Resolve the currently-pending event by id. Branches on VM kind:
      *  - combat-prelude + 'fight'  -> startCombat(encounter.enemies[0]); clear
@@ -829,7 +833,7 @@ export function createAppActions(store: AppStore): AppActions {
             engineStore.levelUp?.();
         },
         save: () => store.getState().save(),
-        resolveCurrentMapEvent: () => resolveCurrentMapEventAction(store),
+        resolveCurrentMapEvent: (sourceNodeType?: string) => resolveCurrentMapEventAction(store, sourceNodeType),
         pickEventChoice: (choiceId) => pickEventChoiceAction(store, choiceId),
         dismissEvent: () => dismissEventAction(store),
         spareMercyChoice: () => spareMercyChoiceAction(store),
@@ -1284,7 +1288,7 @@ function applyCharacterPresetAction(
 // Event actions (Spec 08 — Phase 6 Tick B)
 // ---------------------------------------------------------------------------
 
-function resolveCurrentMapEventAction(store: AppStore): boolean {
+function resolveCurrentMapEventAction(store: AppStore, sourceNodeType?: string): boolean {
     const state = store.getState();
     // Spec 08 Q4 = Future spec: do not stack events on top of combat.
     if (state.combat !== null) return false;
@@ -1331,6 +1335,7 @@ function resolveCurrentMapEventAction(store: AppStore): boolean {
                 ? { tree: result.event.dialogue, nodeId: result.event.dialogue.rootId }
                 : null,
         history: [],
+        sourceNodeType: sourceNodeType ?? null,
     };
     store.setState({ ...resolvedState, event: nextEvent });
 

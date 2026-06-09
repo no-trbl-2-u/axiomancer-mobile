@@ -21,6 +21,18 @@ import { AXM, FONTS } from '@/theme/axm';
 
 import { EventArt } from '@/components/event/EventArt';
 
+type CategoryChrome = { color: string; icon: string; label: string };
+
+const CATEGORY_CHROME: Record<string, CategoryChrome> = {
+    rest:                  { color: AXM.rust,      icon: '☽', label: 'REST'       },
+    gathering:             { color: AXM.bone,      icon: '✦', label: 'GATHER'     },
+    'loot-cache':          { color: AXM.sulfur,    icon: '◈', label: 'CACHE'      },
+    'interaction-generic': { color: AXM.parchment, icon: '◉', label: 'PARLEY'     },
+    village:               { color: AXM.parchment, icon: '⌂', label: 'SETTLEMENT' },
+    cutscene:              { color: AXM.sulfur,    icon: '▶', label: 'OMEN'       },
+    hazard:                { color: AXM.rust,      icon: '⚠', label: 'HAZARD'     },
+};
+
 function resolveAccent(key: ChoiceAccentKey): string {
     if (key === 'blood') return AXM.blood;
     if (key === 'sulfur') return AXM.sulfur;
@@ -198,6 +210,10 @@ export default function EventScreen() {
     const illustrationHeight = isBoss ? 360 : 320;
     const badgeAccent = resolveAccent(vm.badgeAccentKey);
     const preludeChrome = vm.preludeChrome;
+    const categoryChrome = preludeChrome === null
+        ? (CATEGORY_CHROME[vm.artSlug] ?? null)
+        : null;
+    const dropCapColor = categoryChrome?.color ?? AXM.blood;
 
     if (!hasEvent) {
         return (
@@ -234,12 +250,32 @@ export default function EventScreen() {
                     <Text style={styles.preludeHeaderText}>{preludeChrome.eyebrow}</Text>
                 </View>
             )}
+            {preludeChrome === null && categoryChrome !== null && (
+                <View
+                    style={[styles.categoryHeader, { borderBottomColor: categoryChrome.color }]}
+                    testID="event-category-header"
+                >
+                    <Text style={[styles.categoryHeaderText, { color: categoryChrome.color }]}>
+                        {categoryChrome.icon}{' '}{categoryChrome.label}
+                        {vm.sourceNodeType === 'quest' ? ' · QUEST' : ''}
+                    </Text>
+                </View>
+            )}
             <View style={[styles.illustration, { height: illustrationHeight }]}>
                 <View style={[StyleSheet.absoluteFillObject, { backgroundColor: AXM.deepBg }]} />
                 <EventArt slug={vm.artSlug} />
                 {preludeChrome !== null ? (
                     <View style={styles.strifeSash} testID="event-strife-sash">
                         <Text style={styles.strifeSashText}>{preludeChrome.sashLabel}</Text>
+                    </View>
+                ) : categoryChrome !== null ? (
+                    <View
+                        style={[styles.strifeSash, { backgroundColor: categoryChrome.color }]}
+                        testID="event-category-sash"
+                    >
+                        <Text style={styles.strifeSashText}>
+                            {categoryChrome.icon}{' '}{categoryChrome.label}
+                        </Text>
                     </View>
                 ) : (
                     <View style={styles.badge}>
@@ -270,7 +306,7 @@ export default function EventScreen() {
                 <Text style={styles.bodyText}>
                     {vm.body.length > 0 && (
                         <>
-                            <Text style={styles.dropCap}>{vm.body[0]}</Text>
+                            <Text style={[styles.dropCap, { color: dropCapColor }]}>{vm.body[0]}</Text>
                             {vm.body.slice(1)}
                         </>
                     )}
@@ -327,6 +363,18 @@ const styles = StyleSheet.create({
         fontSize: 10,
         letterSpacing: 2.2,
         color: AXM.blood,
+    },
+    categoryHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 6,
+        paddingHorizontal: 14,
+        borderBottomWidth: 1,
+    },
+    categoryHeaderText: {
+        fontFamily: FONTS.sans,
+        fontSize: 10,
+        letterSpacing: 2.2,
     },
     strifeSash: {
         position: 'absolute',

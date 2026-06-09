@@ -24,6 +24,14 @@ export interface MobileEventSlice {
     pending: ResolveMapEventResult | null;
     dialogueCursor: { tree: DialogueTree; nodeId: string } | null;
     history: ReadonlyArray<{ nodeId: string; choiceId: string }>;
+    /**
+     * Map node type that triggered this event (e.g. 'quest', 'rest',
+     * 'treasure'). Populated by `resolveCurrentMapEvent` so the modal
+     * can apply quest-source visual treatment even when the engine
+     * resolves to a generic kind (loot-cache, interaction, etc.).
+     * `null` when the event was not triggered from exploration.
+     */
+    sourceNodeType: string | null;
 }
 
 /**
@@ -101,6 +109,7 @@ export const EMPTY_EVENT_SLICE: MobileEventSlice = Object.freeze({
     pending: null,
     dialogueCursor: null,
     history: Object.freeze([]),
+    sourceNodeType: null,
 });
 
 /**

@@ -736,6 +736,66 @@ describe('eventActions.resolveCurrentMapEvent', () => {
     });
 });
 
+describe('selectEventViewModel: sourceNodeType', () => {
+    it('is null on the empty-state VM (no pending event)', () => {
+        const store = makeStore();
+        const vm = selectEventViewModel(store.getState());
+        expect(vm.sourceNodeType).toBeNull();
+    });
+
+    it('is null when event is active but sourceNodeType was not set on the slice', () => {
+        const store = makeStore();
+        setPending(store, makeRestResult(5));
+        const vm = selectEventViewModel(store.getState());
+        expect(vm.sourceNodeType).toBeNull();
+    });
+
+    it('passes "rest" sourceNodeType through from the slice', () => {
+        const store = makeStore();
+        store.setState({
+            event: { ...EMPTY_EVENT_SLICE, pending: makeRestResult(5), sourceNodeType: 'rest' },
+        });
+        const vm = selectEventViewModel(store.getState());
+        expect(vm.sourceNodeType).toBe('rest');
+    });
+
+    it('passes "gather" sourceNodeType through from the slice', () => {
+        const store = makeStore();
+        store.setState({
+            event: { ...EMPTY_EVENT_SLICE, pending: makeGatheringResult(), sourceNodeType: 'gather' },
+        });
+        const vm = selectEventViewModel(store.getState());
+        expect(vm.sourceNodeType).toBe('gather');
+    });
+
+    it('passes "treasure" sourceNodeType through for a loot-cache event', () => {
+        const store = makeStore();
+        store.setState({
+            event: { ...EMPTY_EVENT_SLICE, pending: makeLootCacheResult(), sourceNodeType: 'treasure' },
+        });
+        const vm = selectEventViewModel(store.getState());
+        expect(vm.sourceNodeType).toBe('treasure');
+    });
+
+    it('passes "quest" sourceNodeType through for a village event (quest-source)', () => {
+        const store = makeStore();
+        store.setState({
+            event: { ...EMPTY_EVENT_SLICE, pending: makeVillageResult(), sourceNodeType: 'quest' },
+        });
+        const vm = selectEventViewModel(store.getState());
+        expect(vm.sourceNodeType).toBe('quest');
+    });
+
+    it('passes "encounter" sourceNodeType through for a combat-prelude', () => {
+        const store = makeStore();
+        store.setState({
+            event: { ...EMPTY_EVENT_SLICE, pending: makeEncounterResult(), sourceNodeType: 'encounter' },
+        });
+        const vm = selectEventViewModel(store.getState());
+        expect(vm.sourceNodeType).toBe('encounter');
+    });
+});
+
 describe('selectEventViewModel: invariants', () => {
     it('the returned VM is deep-frozen', () => {
         const store = makeStore();

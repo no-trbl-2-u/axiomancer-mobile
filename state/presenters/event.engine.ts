@@ -186,6 +186,15 @@ export interface EventViewModel {
     preludeChrome: PreludeChrome | null;
     /** General chrome strings (eyebrow, skip, empty-state back). Constant across variants. */
     chrome: EventChrome;
+    /**
+     * Map node type that triggered this event (`'quest'`, `'rest'`,
+     * `'treasure'`, etc.). Passed through from the mobile event slice
+     * so the modal can apply quest-source visual treatment even when
+     * the engine resolves to a generic kind (loot-cache, interaction…).
+     * `null` when the event was not triggered from exploration or the
+     * source node type was not recorded.
+     */
+    sourceNodeType: string | null;
 }
 
 const EMPTY_VM: EventViewModel = {
@@ -202,6 +211,7 @@ const EMPTY_VM: EventViewModel = {
     canSkip: false,
     preludeChrome: null,
     chrome: EVENT_CHROME,
+    sourceNodeType: null,
 };
 
 /**
@@ -264,7 +274,7 @@ export function selectHasActiveCombatPrelude(state: AppStoreState): boolean {
  * other kind gets `null`. The strings live here (presenter), not in
  * the screen, per Hard Rule #8.
  */
-function withPreludeChrome(vm: Omit<EventViewModel, 'preludeChrome'>): EventViewModel {
+function withPreludeChrome(vm: Omit<EventViewModel, 'preludeChrome' | 'sourceNodeType'>): Omit<EventViewModel, 'sourceNodeType'> {
     if (vm.kind !== 'combat-prelude') {
         return { ...vm, preludeChrome: null };
     }
@@ -279,6 +289,10 @@ function withPreludeChrome(vm: Omit<EventViewModel, 'preludeChrome'>): EventView
     };
 }
 
+function withSourceNodeType(vm: Omit<EventViewModel, 'sourceNodeType'>, sourceNodeType: string | null): EventViewModel {
+    return { ...vm, sourceNodeType };
+}
+
 /**
  * Stamp the constant `chrome` block onto compose results. Sibling of
  * `withPreludeChrome`. Both wrappers run on every active VM so the
@@ -286,8 +300,8 @@ function withPreludeChrome(vm: Omit<EventViewModel, 'preludeChrome'>): EventView
  * touching chrome strings.
  */
 function withChrome(
-    vm: Omit<EventViewModel, 'preludeChrome' | 'chrome'>,
-): Omit<EventViewModel, 'preludeChrome'> {
+    vm: Omit<EventViewModel, 'preludeChrome' | 'chrome' | 'sourceNodeType'>,
+): Omit<EventViewModel, 'preludeChrome' | 'sourceNodeType'> {
     return { ...vm, chrome: EVENT_CHROME };
 }
 
@@ -302,11 +316,13 @@ export function selectEventViewModel(state: AppStoreState): EventViewModel {
     const slice = state.event;
     const result = slice.pending as ResolveMapEventResult;
     const resolved = result.event;
+    const sourceNodeType = slice.sourceNodeType;
 
     if (resolved.kind === 'encounter') {
         return freezeViewModel(
-            withPreludeChrome(
-                withChrome(composeCombatPrelude(resolved.encounter, resolved.isBoss)),
+            withSourceNodeType(
+                withPreludeChrome(withChrome(composeCombatPrelude(resolved.encounter, resolved.isBoss))),
+                sourceNodeType,
             ),
         );
     }
@@ -314,15 +330,21 @@ export function selectEventViewModel(state: AppStoreState): EventViewModel {
     // Dialogue cursor takes precedence when walking an NPC tree.
     if (slice.dialogueCursor !== null) {
         return freezeViewModel(
-            withPreludeChrome(
-                withChrome(
-                    composeNpcDialogue(slice.dialogueCursor.tree, slice.dialogueCursor.nodeId, state),
+            withSourceNodeType(
+                withPreludeChrome(
+                    withChrome(composeNpcDialogue(slice.dialogueCursor.tree, slice.dialogueCursor.nodeId, state)),
                 ),
+                sourceNodeType,
             ),
         );
     }
 
-    return freezeViewModel(withPreludeChrome(withChrome(composeNarrative(resolved))));
+    return freezeViewModel(
+        withSourceNodeType(
+            withPreludeChrome(withChrome(composeNarrative(resolved))),
+            sourceNodeType,
+        ),
+    );
 }
 
 // -- composition helpers -----------------------------------------------------
@@ -347,7 +369,7 @@ const BOSS_OMEN_BY_LEVEL: readonly string[] = [
 // doc-block on this surface; both call sites now import from the
 // shared util.
 
-function composeCombatPrelude(encounter: Encounter, isBoss: boolean): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
+function composeCombatPrelude(encounter: Encounter, isBoss: boolean): Omit<EventViewModel, 'preludeChrome' | 'chrome' | 'sourceNodeType'> {
     // Phase 60b — engine's canonical `Encounter` shape is
     // `{ enemies: Enemy[], origin?: string }`. The prelude
     // consumes the first enemy (combat is single-enemy today).
@@ -432,7 +454,7 @@ function composeNpcDialogue(
     tree: DialogueTree,
     nodeId: string,
     state: AppStoreState,
-): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
+): Omit<EventViewModel, 'preludeChrome' | 'chrome' | 'sourceNodeType'> {
     const node: DialogueNode = getDialogueNode(tree, nodeId);
     const activeNames: string[] = state.quests.active.map((q: { name: string }) => q.name);
     const ctx = {
@@ -490,7 +512,7 @@ function bodyFromPayload(event: ResolvedEvent): string {
     return defaultBodyForEvent(event);
 }
 
-function composeNarrative(resolved: ResolvedEvent): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
+function composeNarrative(resolved: ResolvedEvent): Omit<EventViewModel, 'preludeChrome' | 'chrome' | 'sourceNodeType'> {
     const artSlug = selectEventArtSlug(resolved);
     const body = bodyFromPayload(resolved);
     switch (resolved.kind) {
@@ -565,7 +587,7 @@ function composeItemBag(
     artSlug: EventArtSlug,
     variant: EventVariant,
     currency?: number,
-): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
+): Omit<EventViewModel, 'preludeChrome' | 'chrome' | 'sourceNodeType'> {
     const consequences: EventConsequence[] = items.map((item) => ({
         kind: 'item',
         label: item.name,
@@ -600,7 +622,7 @@ function composeItemBag(
     };
 }
 
-function composeInteraction(npcName: string, body: string, artSlug: EventArtSlug): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
+function composeInteraction(npcName: string, body: string, artSlug: EventArtSlug): Omit<EventViewModel, 'preludeChrome' | 'chrome' | 'sourceNodeType'> {
     return {
         kind: 'narrative-choice',
         variant: 'npc',
@@ -637,7 +659,7 @@ function composeVillage(
     merchants: ReadonlyArray<NPC>,
     body: string,
     artSlug: EventArtSlug,
-): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
+): Omit<EventViewModel, 'preludeChrome' | 'chrome' | 'sourceNodeType'> {
     // Shop UI is still out of scope (was already deferred under Spec
     // 08's 'shop' kind). Render the village name + a single LEAVE
     // choice. Surface `merchants.length` in the subtitle so the
@@ -675,7 +697,7 @@ function composeVillage(
     };
 }
 
-function composeCutscene(body: string, artSlug: EventArtSlug): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
+function composeCutscene(body: string, artSlug: EventArtSlug): Omit<EventViewModel, 'preludeChrome' | 'chrome' | 'sourceNodeType'> {
     return {
         kind: 'narrative-choice',
         variant: 'quest',
@@ -709,7 +731,7 @@ function composeHazard(
     effects: ReadonlyArray<ActiveEffect>,
     body: string,
     artSlug: EventArtSlug,
-): Omit<EventViewModel, 'preludeChrome' | 'chrome'> {
+): Omit<EventViewModel, 'preludeChrome' | 'chrome' | 'sourceNodeType'> {
     // Phase 60e — engine `ActiveEffect` carries `effectId`, not
     // `id` / `name`. The prior `{ id?, name? }` parameter type
     // always landed on the 'effect' fallback because neither field

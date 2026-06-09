@@ -72,6 +72,7 @@ function makePreludeVm(overrides: Partial<EventViewModel> = {}): EventViewModel 
             emptyBackLabel: 'BACK',
             emptyBackSub: 'RETURN',
         },
+        sourceNodeType: null,
         ...overrides,
     };
 }

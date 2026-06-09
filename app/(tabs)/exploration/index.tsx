@@ -203,7 +203,7 @@ export default function ExplorationScreen() {
         // Phase 32 / 63b: encounter/boss path unchanged (FIGHT/FLEE
         // inside modal; FIGHT transitions 'prelude' → 'combat' in-place).
         if (result.moved) {
-            actions.resolveCurrentMapEvent();
+            actions.resolveCurrentMapEvent(node.type);
         }
     };
 

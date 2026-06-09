@@ -63,6 +63,7 @@ function makeCombatPreludeVm(overrides: Partial<EventViewModel> = {}): EventView
             emptyBackLabel: 'BACK',
             emptyBackSub: 'RETURN',
         },
+        sourceNodeType: null,
         ...overrides,
     };
 }

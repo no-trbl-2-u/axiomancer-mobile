@@ -31,10 +31,7 @@ export function DebugFriendship() {
     const onIncrement = () => {
         const combat = store.getState().combat;
         if (!combat) {
-             
-            if (__DEV__) {
-                console.warn('DebugFriendship: no active combat to mutate.');
-            }
+            console.warn('DebugFriendship: no active combat to mutate.');
             return;
         }
          
@@ -46,9 +43,7 @@ export function DebugFriendship() {
     const onReset = () => {
         const combat = store.getState().combat;
         if (!combat) {
-            if (__DEV__) {
-                console.warn('DebugFriendship: no active combat to reset.');
-            }
+            console.warn('DebugFriendship: no active combat to reset.');
             return;
         }
         store.setState({

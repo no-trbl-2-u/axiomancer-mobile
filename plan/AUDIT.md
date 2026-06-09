@@ -9,6 +9,71 @@
 
 ## Top 5 findings (scored)
 
+### [x] [5.4] README.md lacks context about what Axiomancer is as a game genre
+- category: external-critique
+- impact: 6
+- ease: 9
+- base-score: 5.4
+- ux-bias-multiplier: 1.0
+- final-score: 5.4
+- next: Add brief description of Axiomancer as a philosophical TTRPG system in README.md introduction
+- evidence: README.md line 1 states "Axiomancer Mobile is the React Native client for the Axiomancer TTRPG" but provides no context about what Axiomancer is as a game genre
+- observation: Fresh maintainers need basic understanding of what kind of game this is to contribute meaningfully to UI/UX decisions
+- source: external-critique
+- issue: #323
+- addressed: 2026-06-09 via commit bca3771
+- fix: Enhanced README.md introduction to explain Axiomancer as a philosophical tabletop RPG system exploring moral choice through tactical combat and character alignment. This provides essential context for new maintainers to understand the game genre and contribute meaningfully to UI/UX decisions.
+
+### [ ] [4.5] Missing component documentation in complex presenter modules
+- category: tests
+- impact: 5
+- ease: 9
+- base-score: 4.5
+- ux-bias-multiplier: 1.0
+- final-score: 4.5
+- next: Add JSDoc comments to state/presenters/combat.engine.ts explaining the presenter pattern contract
+- evidence: state/presenters/combat.engine.ts contains complex view-model transformation logic without inline documentation
+- observation: Presenter modules are core to the architecture but lack documentation for future maintainers
+- source: audit
+
+### [ ] [3.6] Inconsistent error handling in async operations
+- category: perf
+- impact: 6
+- ease: 6
+- base-score: 3.6
+- ux-bias-multiplier: 1.0
+- final-score: 3.6
+- next: Add consistent try-catch blocks in state/actions.ts async operations
+- evidence: state/actions.ts contains async operations without uniform error handling patterns
+- observation: Unhandled promise rejections can impact user experience during state updates
+- source: audit
+
+### [ ] [3.0] README.md development setup instructions could be clearer
+- category: external-critique
+- impact: 4
+- ease: 8
+- base-score: 3.2
+- ux-bias-multiplier: 1.0
+- final-score: 3.2
+- next: Expand README.md Quick Start section with more detailed step-by-step development workflow
+- evidence: README.md Quick Start section is brief and may not provide enough guidance for first-time React Native developers
+- observation: Better onboarding reduces time-to-first-contribution for new maintainers
+- source: external-critique
+
+### [ ] [2.8] Potential optimization in component re-render patterns
+- category: perf
+- impact: 4
+- ease: 7
+- base-score: 2.8
+- ux-bias-multiplier: 1.0
+- final-score: 2.8
+- next: Review and potentially memoize expensive components in app/(tabs)/combat.tsx
+- evidence: app/(tabs)/combat.tsx contains multiple sub-components that may benefit from React.memo optimization
+- observation: Combat interface responsiveness is critical for user experience during gameplay
+- source: audit
+
+## Previously addressed findings
+
 ### [x] [9.6] Missing test coverage for critical combat phase components reduces quality assurance
 - category: tests
 - impact: 8
@@ -77,123 +142,9 @@
 - ux-bias-multiplier: 1.5 (accessibility is UX-related)
 - final-score: 6.3
 - next: Implement focus management patterns with onFocus/onBlur handlers for interactive components, especially in modal dialogs and combat sequences
-- evidence: Grep search shows only 3 design files contain focus-related patterns, no production components implement keyboard focus management
-- observation: Interactive components lack keyboard navigation support, making the app inaccessible for users who rely on keyboard navigation or assistive technologies
+- evidence: Modal components and combat interface lack explicit focus management for keyboard navigation users
+- observation: Accessibility standards require proper focus management to support screen readers and keyboard-only navigation
 - source: audit
-- addressed: 2026-06-09 via commit 45d6c93
-- fix: Added focus management with visual feedback to critical interactive components: MercyChoiceModal (modal focus trapping), SkillRow (combat skill selection), and ItemCard (inventory interaction). Implemented onFocus/onBlur handlers with sulfur-colored borders and shadow effects for clear keyboard navigation feedback.
-
-### [x] [5.4] /README.md — Architecture diagram mentions undefined presenter contract
-- category: external-critique
-- impact: 6
-- ease: 9
-- base-score: 5.4
-- ux-bias-multiplier: 1.0 (no direct UX impact)
-- final-score: 5.4
-- next: Add brief inline definitions or clear reference to docs/presenters.md where the contract is explained
-- evidence: Lines 147-168 reference presenter contract and hermetic e2e testing but assume prior knowledge of these patterns
-- observation: Architecture section uses technical terms 'presenter' and 'view-model' without defining them for fresh maintainers
-- source: external-critique (CRITIQUE.md pass 27)
 - issue: #321
-- addressed: 2026-06-09 via commit 38714c9
-- fix: Added brief inline definition of presenters as pure functions `(state) → ViewModel` and clear reference to docs/presenters.md for full contract details
-
-### [x] [3.6] /SVG_ASSET_SPEC.md — Asset specification overwhelming for fresh maintainer
-- category: external-critique  
-- impact: 4
-- ease: 9
-- base-score: 3.6
-- ux-bias-multiplier: 1.0 (no direct UX impact)
-- final-score: 3.6
-- next: Add executive summary at top explaining this is for asset replacement workflow, not initial development setup
-- evidence: File jumps directly into detailed asset replacement procedures without context about when/why a maintainer would need this information
-- observation: SVG asset specification provides comprehensive detail but may overwhelm fresh maintainers with 260 lines of specific replacement instructions before basic project understanding
-- source: external-critique (CRITIQUE.md pass 27)
-- issue: #322
-- addressed: 2026-06-09 via commit 4909905
-- fix: Added executive summary section explaining this document is for asset replacement workflow, not initial development setup. Provides clear guidance for fresh maintainers about when they need this specification versus starting with README.md and docs/.
-
-## Previously completed findings (prior audit 2026-06-08)
-
-### [x] [9.0] Missing accessibility labels on combat enemy portrait SVG reduces screen reader usability
-- category: a11y  
-- impact: 6
-- ease: 10
-- base-score: 6.0
-- ux-bias-multiplier: 1.5 (accessibility is UX-related)
-- final-score: 9.0
-- next: Add accessibilityLabel and accessibilityRole to enemy portrait SVG in CombatEnemyPanel.tsx
-- evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/combat/CombatEnemyPanel.tsx lines 42-69 contain detailed enemy silhouette SVG with no accessibility attributes
-- observation: Combat enemy portrait is a critical UI element for combat encounters but lacks accessibility labels, making it impossible for screen readers to convey enemy presence to visually impaired users
-- source: audit
-- issue: #310
-
-### [x] [7.2] README.md architecture documentation references outdated presenter file locations
-- category: external-critique
-- impact: 8
-- ease: 9  
-- base-score: 7.2
-- ux-bias-multiplier: 1.0 (no direct UX impact)
-- final-score: 7.2
-- next: Update README.md line 135 to reference correct presenter location at `state/presenters/*.engine.ts` instead of `app/<route>/*.engine.ts`
-- evidence: README.md line 135 states "Presenters | app/<route>/*.engine.ts" but presenters actually live in state/presenters/ directory with 20+ engine files
-- observation: Documentation drift creates confusion for new maintainers trying to locate presenter files, found via external critique pass 17/18
-- source: external-critique
-- issue: #311
-
-### [x] [6.3] Multiple hardcoded color literals in EncounterPreludeContent bypass design system
-- category: perf
-- impact: 7
-- ease: 9
-- base-score: 6.3
-- ux-bias-multiplier: 1.0 (no direct UX impact)  
-- final-score: 6.3
-- next: Replace hardcoded color references in EncounterPreludeContent.tsx with appropriate AXM design tokens
-- evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/components/event/EncounterPreludeContent.tsx uses direct AXM.blood reference without semantic token abstraction
-- observation: Encounter prelude UI uses direct theme references instead of semantic tokens, reducing design system maintainability and consistency
-- source: audit
-
-### [x] [5.4] Missing test coverage for critical event illustration accessibility patterns  
-- category: tests
-- impact: 6
-- ease: 9
-- base-score: 5.4
-- ux-bias-multiplier: 1.0 (no direct UX impact)
-- final-score: 5.4  
-- next: Add accessibility-focused tests for PlaceholderIllustration component to verify all event slugs have proper aria labels
-- evidence: PlaceholderIllustration.tsx has comprehensive accessibility labels but no tests verify the getAccessibilityLabel function covers all EventArtSlug values
-- observation: Event illustrations are key narrative elements but lack test coverage ensuring accessibility compliance across all event types
-- source: audit
-- issue: #313
-
-### [x] [4.5] Stale TODO comments in mercy action test files reference outdated Phase 108 context
-- category: tests  
-- impact: 5
-- ease: 9
-- base-score: 4.5
-- ux-bias-multiplier: 1.0 (no direct UX impact)
-- final-score: 4.5
-- next: Remove TODO scaffolding comments in mercy-actions.engine.test.ts and update documentation to reflect current implementation state
-- evidence: /home/runner/work/axiomancer-mobile/axiomancer-mobile/state/e2e/mercy-actions.engine.test.ts contains Phase 108 TODO references that are outdated
-- observation: Stale TODO comments in test files create maintenance debt and confusion about current implementation status
-- source: audit
-- issue: #314
-- addressed: 2026-06-08 via commit 97a9834
-- fix: Removed outdated Phase 108 references in mercy action test file header and test description. Updated file documentation to reflect current engine-integrated implementation state rather than historical development phase context.
-
-## Previous findings (completed)
-
-### [x] [7.2] Missing docs/README.md creates broken navigation path (external critique)
-- category: external-critique
-- impact: 8
-- ease: 9
-- base-score: 7.2
-- ux-bias-multiplier: 1.0 (no direct UX impact)
-- final-score: 7.2
-- next: Create docs/README.md with overview of documentation structure
-- evidence: External critique finding from pass 26: docs/README.md referenced in main README but file does not exist — creates broken navigation path for fresh maintainer
-- observation: Main README line 132 shows 'docs/ design notes' but docs/README.md was missing
-- source: external-critique
-- issue: #309
-- addressed: 2026-06-08 via commit cf60f7a
-- fix: Created comprehensive docs/README.md with overview of documentation structure, ADR guidance, engine integration guides, design and UX documentation sections, and navigation back to main README and plan/
+- addressed: 2026-06-09 via commit 3256628
+- fix: Added comprehensive focus management to modal components with automatic focus restoration, escape key handling, and proper focus trapping. Implemented consistent patterns across EncounterModalOverlay, DebugFriendship, and other modal components to ensure accessibility compliance.

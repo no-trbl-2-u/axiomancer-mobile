@@ -39,7 +39,7 @@
 - addressed: 2026-06-09 via commit 8cfed60
 - fix: Added comprehensive JSDoc documentation to combat presenter explaining the presenter pattern contract, view-model transformations, and React integration. Documented core functions like selectCombatViewModel, useCombatViewModel, buildPhaseStack, and buildStanceOptions with detailed explanations of how raw engine state transforms into structured view-models for UI components.
 
-### [ ] [3.6] Inconsistent error handling in async operations
+### [x] [3.6] Inconsistent error handling in async operations
 - category: perf
 - impact: 6
 - ease: 6
@@ -50,6 +50,9 @@
 - evidence: state/actions.ts contains async operations without uniform error handling patterns
 - observation: Unhandled promise rejections can impact user experience during state updates
 - source: audit
+- issue: #326
+- addressed: 2026-06-09 via commit d06479c
+- fix: Added comprehensive try-catch error handling to async action functions. Wrapped debugSeedAction, populateAllItemsAction, applyCharacterPresetAction, changeMapAction, resolveCurrentMapEventAction, and pickEventChoiceAction with proper error boundaries. All operations now log errors gracefully and continue where possible, preventing unhandled promise rejections from impacting user experience during state updates.
 
 ### [ ] [3.0] README.md development setup instructions could be clearer
 - category: external-critique

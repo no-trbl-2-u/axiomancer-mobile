@@ -83,7 +83,7 @@
 - addressed: 2026-06-09 via commit 45d6c93
 - fix: Added focus management with visual feedback to critical interactive components: MercyChoiceModal (modal focus trapping), SkillRow (combat skill selection), and ItemCard (inventory interaction). Implemented onFocus/onBlur handlers with sulfur-colored borders and shadow effects for clear keyboard navigation feedback.
 
-### [ ] [5.4] /README.md — Architecture diagram mentions undefined presenter contract
+### [x] [5.4] /README.md — Architecture diagram mentions undefined presenter contract
 - category: external-critique
 - impact: 6
 - ease: 9
@@ -94,6 +94,9 @@
 - evidence: Lines 147-168 reference presenter contract and hermetic e2e testing but assume prior knowledge of these patterns
 - observation: Architecture section uses technical terms 'presenter' and 'view-model' without defining them for fresh maintainers
 - source: external-critique (CRITIQUE.md pass 27)
+- issue: #321
+- addressed: 2026-06-09 via commit 38714c9
+- fix: Added brief inline definition of presenters as pure functions `(state) → ViewModel` and clear reference to docs/presenters.md for full contract details
 
 ### [ ] [3.6] /SVG_ASSET_SPEC.md — Asset specification overwhelming for fresh maintainer
 - category: external-critique  

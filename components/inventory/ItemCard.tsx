@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
@@ -134,6 +134,8 @@ export interface ItemCardProps {
 }
 
 export function ItemCard({ item, expanded, onTap, onUseOrEquip, onDiscard }: ItemCardProps) {
+    const [isFocused, setIsFocused] = useState(false);
+    
     const itemLabel = item.equipped
         ? `${item.name}, worn`
         : item.quantity > 1
@@ -145,9 +147,12 @@ export function ItemCard({ item, expanded, onTap, onUseOrEquip, onDiscard }: Ite
             accessibilityLabel={itemLabel}
             accessibilityState={{ expanded }}
             onPress={onTap}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             style={[
                 styles.itemCard,
                 expanded && styles.itemCardExpanded,
+                isFocused && styles.itemCardFocused,
                 {
                     borderColor: item.equipped ? AXM.sulfur : AXM.ash,
                     borderWidth: item.equipped ? 2 : 1,
@@ -378,5 +383,13 @@ const styles = StyleSheet.create({
     },
     replaceDeltaChipTextNeg: {
         color: AXM.blood,
+    },
+    itemCardFocused: {
+        shadowColor: AXM.sulfur,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 4,
+        elevation: 3,
+        borderColor: AXM.sulfur,
     },
 });

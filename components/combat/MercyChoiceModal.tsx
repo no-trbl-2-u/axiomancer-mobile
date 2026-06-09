@@ -10,7 +10,7 @@
  * button. It is temptation with consequence.
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { AXM, FONTS } from '@/theme/axm';
@@ -30,6 +30,21 @@ export function MercyChoiceModal({
     onSpare,
     onExploit,
 }: MercyChoiceModalProps) {
+    const [focusedButton, setFocusedButton] = useState<'spare' | 'exploit' | null>(null);
+
+    // Focus management: when modal opens, set initial focus state to spare button as the default choice
+    useEffect(() => {
+        if (mercyChoice.isActive) {
+            // Use a slight delay to ensure modal animation completes
+            const timer = setTimeout(() => {
+                setFocusedButton('spare');
+            }, 300);
+            return () => clearTimeout(timer);
+        } else {
+            setFocusedButton(null);
+        }
+    }, [mercyChoice.isActive]);
+
     if (!mercyChoice.isActive) {
         return null;
     }
@@ -69,7 +84,13 @@ export function MercyChoiceModal({
                             accessibilityRole="button"
                             accessibilityLabel={mercyChoice.a11y.spare}
                             onPress={onSpare}
-                            style={[styles.choiceButton, styles.spareButton]}
+                            onFocus={() => setFocusedButton('spare')}
+                            onBlur={() => setFocusedButton(null)}
+                            style={[
+                                styles.choiceButton, 
+                                styles.spareButton,
+                                focusedButton === 'spare' && styles.focusedButton
+                            ]}
                             testID="mercy-choice-spare"
                         >
                             <Text style={[styles.choiceLabel, styles.spareLabel]}>
@@ -84,7 +105,13 @@ export function MercyChoiceModal({
                             accessibilityRole="button"
                             accessibilityLabel={mercyChoice.a11y.exploit}
                             onPress={onExploit}
-                            style={[styles.choiceButton, styles.exploitButton]}
+                            onFocus={() => setFocusedButton('exploit')}
+                            onBlur={() => setFocusedButton(null)}
+                            style={[
+                                styles.choiceButton, 
+                                styles.exploitButton,
+                                focusedButton === 'exploit' && styles.focusedButton
+                            ]}
                             testID="mercy-choice-exploit"
                         >
                             <Text style={[styles.choiceLabel, styles.exploitLabel]}>
@@ -202,5 +229,13 @@ const styles = StyleSheet.create({
     },
     exploitHint: {
         color: AXM.rust, // Darker warning tone
+    },
+    focusedButton: {
+        shadowColor: AXM.sulfur,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.6,
+        shadowRadius: 6,
+        elevation: 4,
+        borderWidth: 3,
     },
 });

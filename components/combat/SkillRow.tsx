@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { AXM, FONTS } from '@/theme/axm';
@@ -15,12 +15,16 @@ export interface SkillRowProps {
 export function SkillRow({ skill: s, onPick }: SkillRowProps) {
     const tooltip = useTooltip();
     const ref = useRef<View | null>(null);
+    const [isFocused, setIsFocused] = useState(false);
+    
     return (
         <View ref={ref}>
             <TouchableOpacity
                 onPress={() => onPick(s)}
                 onLongPress={() => tooltip.show({ kind: 'skill', id: s.id, anchorRef: ref })}
-                style={styles.row}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                style={[styles.row, isFocused && styles.focusedRow]}
                 accessibilityRole="button"
                 accessibilityLabel={`Skill ${s.name}`}
                 accessibilityHint="hold to read full description"
@@ -83,5 +87,14 @@ const styles = StyleSheet.create({
         fontSize: 10,
         color: AXM.sulfur,
         fontWeight: '600',
+    },
+    focusedRow: {
+        borderColor: AXM.sulfur,
+        borderWidth: 2,
+        shadowColor: AXM.sulfur,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.4,
+        shadowRadius: 4,
+        elevation: 2,
     },
 });

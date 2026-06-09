@@ -98,7 +98,7 @@
 - addressed: 2026-06-09 via commit 38714c9
 - fix: Added brief inline definition of presenters as pure functions `(state) → ViewModel` and clear reference to docs/presenters.md for full contract details
 
-### [ ] [3.6] /SVG_ASSET_SPEC.md — Asset specification overwhelming for fresh maintainer
+### [x] [3.6] /SVG_ASSET_SPEC.md — Asset specification overwhelming for fresh maintainer
 - category: external-critique  
 - impact: 4
 - ease: 9
@@ -109,6 +109,9 @@
 - evidence: File jumps directly into detailed asset replacement procedures without context about when/why a maintainer would need this information
 - observation: SVG asset specification provides comprehensive detail but may overwhelm fresh maintainers with 260 lines of specific replacement instructions before basic project understanding
 - source: external-critique (CRITIQUE.md pass 27)
+- issue: #322
+- addressed: 2026-06-09 via commit 4909905
+- fix: Added executive summary section explaining this document is for asset replacement workflow, not initial development setup. Provides clear guidance for fresh maintainers about when they need this specification versus starting with README.md and docs/.
 
 ## Previously completed findings (prior audit 2026-06-08)
 

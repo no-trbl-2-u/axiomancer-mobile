@@ -52,14 +52,6 @@
 - suggested fix: Verify file integrity and ensure complete documentation is accessible to fresh maintainers
 - source: repo-proxy
 
-### [MED] /SVG_ASSET_SPEC.md — Asset specification overwhelming for fresh maintainer first impression
-- pass: 27 (commit 8da116b)
-- viewport: repository
-- category: comprehension
-- observation: SVG asset specification provides comprehensive detail but may overwhelm fresh maintainers with 260 lines of specific replacement instructions before basic project understanding
-- evidence: File jumps directly into detailed asset replacement procedures without context about when/why a maintainer would need this information
-- suggested fix: Add executive summary at top explaining this is for asset replacement workflow, not initial development setup
-- source: repo-proxy
 
 <!-- Pass 26 (2026-06-08, commit 2f0ed3d): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
@@ -377,6 +369,16 @@
 - fix: Created comprehensive docs/README.md with overview of documentation structure, ADR guidance, engine integration guides, and navigation back to main README
 - source: repo-proxy
 - issue: #309
+### [MED] /SVG_ASSET_SPEC.md — Asset specification overwhelming for fresh maintainer first impression ✅
+- pass: 27 (commit 8da116b); addressed at commit 4909905 via `/iterate`
+- viewport: repository
+- category: comprehension
+- observation: SVG asset specification provides comprehensive detail but may overwhelm fresh maintainers with 260 lines of specific replacement instructions before basic project understanding
+- evidence: File jumps directly into detailed asset replacement procedures without context about when/why a maintainer would need this information
+- suggested fix: Add executive summary at top explaining this is for asset replacement workflow, not initial development setup
+- fix: Added executive summary section explaining this document is for asset replacement workflow, not initial development setup. Provides clear guidance for fresh maintainers about when they need this specification versus starting with README.md and docs/
+- source: repo-proxy
+- issue: #322
 
 ### [x] [MED] /package.json — Package scripts lack development workflow guidance ✅
 - pass: 24 (commit 1c8be58)

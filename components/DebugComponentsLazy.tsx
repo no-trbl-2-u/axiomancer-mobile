@@ -24,6 +24,7 @@ const DebugDialogueJump = lazy(() => import('@/components/DebugDialogueJump').th
 const DebugEffectApply = lazy(() => import('@/components/DebugEffectApply').then(m => ({ default: m.DebugEffectApply })));
 const DebugQuestState = lazy(() => import('@/components/DebugQuestState').then(m => ({ default: m.DebugQuestState })));
 const DebugEventKindForce = lazy(() => import('@/components/DebugEventKindForce').then(m => ({ default: m.DebugEventKindForce })));
+const DebugTriggerEncounter = lazy(() => import('@/components/DebugTriggerEncounter').then(m => ({ default: m.DebugTriggerEncounter })));
 const DebugFriendship = lazy(() => import('@/components/DebugFriendship').then(m => ({ default: m.DebugFriendship })));
 const DebugHudOverrides = lazy(() => import('@/components/DebugHudOverrides').then(m => ({ default: m.DebugHudOverrides })));
 const DebugManaControl = lazy(() => import('@/components/DebugManaControl').then(m => ({ default: m.DebugManaControl })));
@@ -57,6 +58,7 @@ export function DebugComponentsLazy() {
       <AestheticDevToggle />
       <DebugSeedButton />
       <DebugPopulateAllItems />
+      <DebugTriggerEncounter />
       <DebugCombatButton />
       <DebugHazardButton />
       <DebugMapResetButton />

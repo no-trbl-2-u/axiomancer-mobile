@@ -131,9 +131,9 @@ export const fishingVillageLayout: MapLayout = {
             x: 20,
             y: 280,
             label: 'Tide Pool',
-            type: 'encounter',
+            type: 'hazard',
             connectedNodes: ['fv-11', 'fv-15'],
-            description: 'Pools carved by the tide. Eyes watch from the depths.',
+            description: 'The tide turns without warning here. Linger and the water climbs past your knees.',
         },
         {
             id: 'fv-15',

@@ -63,6 +63,10 @@ const POOL_IDS = {
      * per-node override. Production should always have an override
      * registered (see QUEST_NPCS), so this is a defensive default. */
     questCommon: 'quest-common',
+    /** Hazard pool — drives the environmental hazard minigame on
+     * `hazard`-typed nodes. Shared across maps (the minigame's
+     * locale flavor is picked engine-side at `beginHazard`). */
+    hazardCommon: 'hazard-common',
     encounterFishingVillage: 'encounter-fishing-village',
     encounterNorthernForest: 'encounter-northern-forest',
     bossFishingVillage: 'boss-fishing-village',
@@ -141,6 +145,24 @@ function restPool(id: string): MapEventPool {
                 kind: 'rest',
                 weight: 1,
                 payload: { kind: 'rest', healFraction: 0.5 },
+            },
+        ],
+    };
+}
+
+/** Hazard pool — single hazard entry. The resolved `hazard` event
+ * is intercepted in `resolveCurrentMapEventAction` (state/actions.ts)
+ * which restores pre-event VITAE and launches the hazard minigame
+ * via `beginHazard`; the flat `damage` here is the legacy passive
+ * value the engine still threads through the resolved event. */
+function hazardPool(id: string, damage = 5): MapEventPool {
+    return {
+        id,
+        entries: [
+            {
+                kind: 'hazard',
+                weight: 1,
+                payload: { kind: 'hazard', damage },
             },
         ],
     };
@@ -369,6 +391,9 @@ const POOLS: ReadonlyArray<MapEventPool> = [
     treasurePool(POOL_IDS.treasureNorthernForest, NORTHERN_FOREST_TREASURE, 10),
     questPool(POOL_IDS.questCommon),
     ...QUEST_POOLS,
+    // Hazard pool — fires the environmental hazard minigame on
+    // `hazard`-typed nodes (e.g. fishing-village's Tide Pool).
+    hazardPool(POOL_IDS.hazardCommon),
     // Fishing-village + northern-forest encounter pools (Phase 55) —
     // weighted across multiple enemies per map.
     multiEncounterPool(POOL_IDS.encounterFishingVillage, FISHING_VILLAGE_ENCOUNTERS),
@@ -414,6 +439,8 @@ export function poolIdForNode(mapId: string, nodeId: string, nodeType: NodeType)
             if (mapId === 'fishing-village') return POOL_IDS.bossFishingVillage;
             if (mapId === 'northern-forest') return POOL_IDS.bossNorthernForest;
             return POOL_IDS.bossFishingVillage;
+        case 'hazard':
+            return POOL_IDS.hazardCommon;
         case 'current':
             // 'current' is the player's current location — no event
             // attaches to it (it's a display state, not a node

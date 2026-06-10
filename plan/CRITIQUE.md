@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-09 at commit dbbda71
-> Pass count: 28
+> Last pass: 2026-06-10 at commit cef865b
+> Pass count: 29
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -25,6 +25,49 @@
 > keep this header actionable.
 
 ## Pending
+
+<!-- Pass 29 (2026-06-10, commit cef865b): repo-proxy pass —
+     Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
+     critique reads docs/specs/artifacts as the "fresh maintainer"
+     proxy. Focus on general fresh maintainer experience. Reader
+     examined README.md, specs/README.md, docs/, app/ structure,
+     SVG_ASSET_SPEC.md. 4 findings filed below. -->
+
+### [MED] /README.md — VISION.md reference lacks context for maintainer navigation
+- pass: 29 (commit cef865b)
+- viewport: repository
+- category: navigation
+- observation: Main README references VISION.md on line 14 but then immediately jumps into technical quick start without explaining what the vision contains or why a maintainer should read it
+- evidence: Line 14: 'T's current game vision and UX doctrine guardrail lives in [`VISION.md`](./VISION.md). Read it before major mobile UX, combat, mercy/friendship, alignment, or `/march` work.' followed directly by technical prerequisites
+- suggested fix: Add one sentence after line 14 explaining what VISION.md contains (game identity, combat UX principles) so maintainers understand its relevance
+- source: repo-proxy
+
+### [MED] /specs/README.md — Spec dependency information contradicts completion status
+- pass: 29 (commit cef865b)
+- viewport: repository
+- category: comprehension
+- observation: Specs README shows 'Spec 8 waits on Spec 09 store/orchestration' but Spec 09 is marked as DONE, creating confusion about implementation order
+- evidence: Line 72: 'Engine Spec 08 (world) is done; this screen waits on Spec 09 store/orchestration + a pinned narrative contract (see spec body)' vs line 73: '09-asyncstorage-persistence.md [DONE]'
+- suggested fix: Update spec 8 description to reflect current status since spec 09 is complete
+- source: repo-proxy
+
+### [LOW] /app/(tabs)/_layout.tsx — Extensive legacy comments may confuse maintainers
+- pass: 29 (commit cef865b)
+- viewport: repository
+- category: maintainability
+- observation: Tab layout component contains extensive legacy comments about Phase 63d combat tab behavior that may confuse new maintainers about current state
+- evidence: Lines 83-91 contain detailed historical context about retired WILDS↔STRIFE tab mutex and lines 177-182 explain permanently hidden STRIFE tab
+- suggested fix: Consolidate historical comments into single brief comment explaining current tab configuration
+- source: repo-proxy
+
+### [LOW] /.env.example — References non-existent setup documentation
+- pass: 29 (commit cef865b)
+- viewport: repository
+- category: comprehension
+- observation: Environment example file references setup docs that don't exist yet, creating dead-end navigation path
+- evidence: Line 17: 'See setup/02_eas.md for detailed configuration steps.' but setup/ directory does not exist in repository
+- suggested fix: Either create the referenced setup docs or update comment to point to existing documentation
+- source: repo-proxy
 
 <!-- Pass 27 (2026-06-09, commit 8da116b): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,

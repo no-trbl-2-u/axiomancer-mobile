@@ -30,6 +30,9 @@
       "lang": "en",
       "themeColor": "#0a0a0a",
       "backgroundColor": "#0a0a0a",
+      "keywords": "axiomancer, ttrpg, rpg, gothic, tabletop, role-playing, mobile, game, combat, exploration, dark fantasy",
+      "author": "No Trouble To You",
+      "viewport": "width=device-width, initial-scale=1.0, viewport-fit=cover",
       "openGraph": {
         "type": "website",
         "title": "Axiomancer Mobile - Gothic TTRPG",
@@ -42,6 +45,24 @@
         "title": "Axiomancer Mobile - Gothic TTRPG", 
         "description": "The official mobile client for the Axiomancer tabletop RPG. Explore gothic realms, engage in tactical combat, and uncover dark mysteries in this atmospheric role-playing experience.",
         "image": "./assets/images/icon.png"
+      },
+      "structuredData": {
+        "@context": "https://schema.org",
+        "@type": "MobileApplication",
+        "name": "Axiomancer Mobile",
+        "description": "The official mobile client for the Axiomancer tabletop RPG. Explore gothic realms, engage in tactical combat, and uncover dark mysteries in this atmospheric role-playing experience.",
+        "applicationCategory": "GameApplication",
+        "genre": "Role-Playing Game",
+        "operatingSystem": ["iOS", "Android", "Web"],
+        "author": {
+          "@type": "Organization",
+          "name": "No Trouble To You"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
       }
     },
     "plugins": [

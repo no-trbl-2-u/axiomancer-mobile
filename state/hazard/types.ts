@@ -56,7 +56,20 @@ export type HazardKeywordId =
     | 'draw'
     | 'recast'
     | 'gilded'
+    | 'salvage'
     | 'crack';
+
+/**
+ * Salvage — the discard benefit. Dragging a card to the trash bin
+ * grants this instead of the card's actions. Always strictly weaker
+ * than playing the card:
+ *  - progress: +amount of one type, THIS round only (it rides
+ *    `progressBase`, which the round advance overwrites);
+ *  - mana: conjure a temporary die of the card's colour.
+ */
+export type HazardSalvage =
+    | { type: 'progress'; key: HazardProgressKey; amount: number }
+    | { type: 'mana' };
 
 export interface HazardCardDef {
     id: string;
@@ -81,6 +94,8 @@ export interface HazardCardDef {
      * contribute nothing — they only clog the hand.
      */
     dead?: boolean;
+    /** Discard benefit (trash bin). Omitted = discards for nothing. */
+    salvage?: HazardSalvage;
     flavor: string;
     keywords: HazardKeywordId[];
 }

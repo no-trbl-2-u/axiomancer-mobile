@@ -31,6 +31,7 @@ export const HAZARD_KEYWORDS: Record<HazardKeywordId, { name: string; desc: stri
     draw: { name: 'DRAW', desc: 'Pull more cards into your hand — more ways to cross.' },
     recast: { name: 'RE-CAST', desc: 'Re-roll all your unspent dice into fresh faces.' },
     gilded: { name: 'GILDED', desc: 'Gold cards are rare and strong — but only a GOLD die can power them.' },
+    salvage: { name: 'SALVAGE', desc: 'Drag this card to the bin to scrap it for a lesser benefit instead of playing it.' },
     crack: { name: 'CRACK', desc: 'Dead weight. This card does nothing and cannot be powered. It only clogs your hand.' },
 };
 
@@ -41,26 +42,26 @@ export const HAZARD_KEYWORDS: Record<HazardKeywordId, { name: string; desc: stri
 
 export const HAZARD_DECK: HazardCardDef[] = [
     // RED — force
-    { id: 'steps', name: 'STONE STEPS', kind: 'red', rarity: 'common', weight: 3, f: 3, e: 0, fp: 6, ep: 1, flavor: 'Kick footholds into the failing rock.', keywords: ['force', 'surge'] },
-    { id: 'haul', name: 'DEAD-MAN HAUL', kind: 'red', rarity: 'common', weight: 3, f: 4, e: 1, fp: 7, ep: 1, flavor: 'Drag yourself up by rope and will.', keywords: ['force', 'surge'] },
-    { id: 'grip', name: 'IRON GRIP', kind: 'red', rarity: 'uncommon', weight: 2, f: 5, e: 0, fp: 9, ep: 0, flavor: 'Hands like a closing vise.', keywords: ['force', 'surge'] },
+    { id: 'steps', name: 'STONE STEPS', kind: 'red', rarity: 'common', weight: 3, f: 3, e: 0, fp: 6, ep: 1, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Kick footholds into the failing rock.', keywords: ['force', 'surge'] },
+    { id: 'haul', name: 'DEAD-MAN HAUL', kind: 'red', rarity: 'common', weight: 3, f: 4, e: 1, fp: 7, ep: 1, salvage: { type: 'mana' }, flavor: 'Drag yourself up by rope and will.', keywords: ['force', 'surge'] },
+    { id: 'grip', name: 'IRON GRIP', kind: 'red', rarity: 'uncommon', weight: 2, f: 5, e: 0, fp: 9, ep: 0, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Hands like a closing vise.', keywords: ['force', 'surge'] },
     { id: 'quarry', name: 'QUARRY-SIGN', kind: 'red', rarity: 'uncommon', weight: 2, f: 0, e: 0, effect: 'convert', flavor: 'Mark the stone; it answers in kind.', keywords: ['convert', 'surge'] },
 
     // BLUE — escape
-    { id: 'scram', name: 'SCRAMBLE', kind: 'blue', rarity: 'common', weight: 3, f: 0, e: 3, fp: 1, ep: 6, flavor: 'Half-fall, half-fly across the gap.', keywords: ['escape', 'surge'] },
-    { id: 'runner', name: 'CLIFFRUNNER', kind: 'blue', rarity: 'common', weight: 3, f: 1, e: 4, fp: 1, ep: 7, flavor: 'Momentum is the only thing holding you up.', keywords: ['escape', 'surge'] },
-    { id: 'leap', name: 'FAITH LEAP', kind: 'blue', rarity: 'uncommon', weight: 2, f: 0, e: 5, fp: 0, ep: 9, flavor: 'Close your eyes. Trust the far side.', keywords: ['escape', 'surge'] },
+    { id: 'scram', name: 'SCRAMBLE', kind: 'blue', rarity: 'common', weight: 3, f: 0, e: 3, fp: 1, ep: 6, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Half-fall, half-fly across the gap.', keywords: ['escape', 'surge'] },
+    { id: 'runner', name: 'CLIFFRUNNER', kind: 'blue', rarity: 'common', weight: 3, f: 1, e: 4, fp: 1, ep: 7, salvage: { type: 'mana' }, flavor: 'Momentum is the only thing holding you up.', keywords: ['escape', 'surge'] },
+    { id: 'leap', name: 'FAITH LEAP', kind: 'blue', rarity: 'uncommon', weight: 2, f: 0, e: 5, fp: 0, ep: 9, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Close your eyes. Trust the far side.', keywords: ['escape', 'surge'] },
     { id: 'scout', name: 'SCOUT AHEAD', kind: 'blue', rarity: 'uncommon', weight: 2, f: 0, e: 0, effect: 'draw', drawBase: 1, drawPowered: 3, flavor: 'Send your eyes ahead of your feet.', keywords: ['draw', 'surge'] },
 
     // PURPLE — mid both (one tilts force, one tilts escape, one even)
-    { id: 'footing', name: 'SURE FOOTING', kind: 'purple', rarity: 'common', weight: 3, f: 2, e: 2, fp: 4, ep: 4, flavor: 'Read the ledge before you trust it.', keywords: ['surge'] },
-    { id: 'pole', name: 'BALANCE POLE', kind: 'purple', rarity: 'common', weight: 2, f: 3, e: 1, fp: 5, ep: 3, flavor: 'Weight in both hands, breath in the middle.', keywords: ['surge'] },
-    { id: 'windread', name: 'READ THE WIND', kind: 'purple', rarity: 'common', weight: 2, f: 1, e: 3, fp: 3, ep: 5, flavor: 'Let the valley tell you when to move.', keywords: ['surge'] },
+    { id: 'footing', name: 'SURE FOOTING', kind: 'purple', rarity: 'common', weight: 3, f: 2, e: 2, fp: 4, ep: 4, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Read the ledge before you trust it.', keywords: ['surge'] },
+    { id: 'pole', name: 'BALANCE POLE', kind: 'purple', rarity: 'common', weight: 2, f: 3, e: 1, fp: 5, ep: 3, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Weight in both hands, breath in the middle.', keywords: ['surge'] },
+    { id: 'windread', name: 'READ THE WIND', kind: 'purple', rarity: 'common', weight: 2, f: 1, e: 3, fp: 3, ep: 5, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Let the valley tell you when to move.', keywords: ['surge'] },
     { id: 'wind', name: 'SECOND WIND', kind: 'purple', rarity: 'uncommon', weight: 2, f: 0, e: 0, effect: 'recast', flavor: 'Shake the dice loose. Breathe. Begin again.', keywords: ['recast', 'surge'] },
 
     // GOLD — strong both, rare, gold die only
-    { id: 'oath', name: 'UNBROKEN OATH', kind: 'gold', rarity: 'rare', weight: 1, f: 3, e: 3, fp: 8, ep: 8, flavor: 'You will not fall. You refuse.', keywords: ['gilded', 'surge'] },
-    { id: 'blessing', name: "PILGRIM'S BLESSING", kind: 'gold', rarity: 'rare', weight: 1, f: 4, e: 4, fp: 7, ep: 7, flavor: 'Something older than the cliff steadies you.', keywords: ['gilded', 'surge'] },
+    { id: 'oath', name: 'UNBROKEN OATH', kind: 'gold', rarity: 'rare', weight: 1, f: 3, e: 3, fp: 8, ep: 8, salvage: { type: 'mana' }, flavor: 'You will not fall. You refuse.', keywords: ['gilded', 'surge'] },
+    { id: 'blessing', name: "PILGRIM'S BLESSING", kind: 'gold', rarity: 'rare', weight: 1, f: 4, e: 4, fp: 7, ep: 7, salvage: { type: 'mana' }, flavor: 'Something older than the cliff steadies you.', keywords: ['gilded', 'surge'] },
 ];
 
 /**
@@ -77,12 +78,12 @@ export const HAZARD_CRACK_CARD: HazardCardDef = {
 // ---------------------------------------------------------------------------
 
 export const HAZARD_REWARD_CARDS: HazardCardDef[] = [
-    { id: 'r_grip', name: 'GREATGRIP', kind: 'red', rarity: 'common', f: 4, e: 0, fp: 7, ep: 1, flavor: 'Hands like vise-iron.', keywords: ['force', 'surge'] },
-    { id: 'r_wind', name: 'TAILWIND', kind: 'blue', rarity: 'common', f: 0, e: 4, fp: 1, ep: 7, flavor: 'The valley breathes you onward.', keywords: ['escape', 'surge'] },
-    { id: 'r_even', name: 'EVENKEEL', kind: 'purple', rarity: 'uncommon', f: 3, e: 3, fp: 5, ep: 5, flavor: 'Neither rushed nor rooted.', keywords: ['surge'] },
+    { id: 'r_grip', name: 'GREATGRIP', kind: 'red', rarity: 'common', f: 4, e: 0, fp: 7, ep: 1, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Hands like vise-iron.', keywords: ['force', 'surge'] },
+    { id: 'r_wind', name: 'TAILWIND', kind: 'blue', rarity: 'common', f: 0, e: 4, fp: 1, ep: 7, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'The valley breathes you onward.', keywords: ['escape', 'surge'] },
+    { id: 'r_even', name: 'EVENKEEL', kind: 'purple', rarity: 'uncommon', f: 3, e: 3, fp: 5, ep: 5, salvage: { type: 'mana' }, flavor: 'Neither rushed nor rooted.', keywords: ['surge'] },
     { id: 'r_conv', name: 'HEX-BREAKER', kind: 'purple', rarity: 'uncommon', f: 0, e: 0, effect: 'convert', flavor: 'Unmake the hostile die.', keywords: ['convert', 'surge'] },
-    { id: 'r_oath', name: 'UNBROKEN OATH', kind: 'gold', rarity: 'rare', f: 3, e: 3, fp: 8, ep: 8, flavor: 'You will not fall. You refuse.', keywords: ['gilded', 'surge'] },
-    { id: 'r_crown', name: 'CROWN RELIC', kind: 'gold', rarity: 'rare', f: 5, e: 5, fp: 9, ep: 9, flavor: 'A king died wearing this on a worse ledge.', keywords: ['gilded', 'surge'] },
+    { id: 'r_oath', name: 'UNBROKEN OATH', kind: 'gold', rarity: 'rare', f: 3, e: 3, fp: 8, ep: 8, salvage: { type: 'mana' }, flavor: 'You will not fall. You refuse.', keywords: ['gilded', 'surge'] },
+    { id: 'r_crown', name: 'CROWN RELIC', kind: 'gold', rarity: 'rare', f: 5, e: 5, fp: 9, ep: 9, salvage: { type: 'mana' }, flavor: 'A king died wearing this on a worse ledge.', keywords: ['gilded', 'surge'] },
 ];
 
 export function getHazardCardDef(cardId: string): HazardCardDef {

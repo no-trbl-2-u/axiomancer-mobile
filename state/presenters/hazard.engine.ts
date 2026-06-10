@@ -62,6 +62,8 @@ export interface HazardCardVM {
     dieAvailable: boolean;
     /** Powered by which die (staged cards only). */
     poweredByDieId: string | null;
+    /** Discard benefit copy for the trash bin, e.g. "+1 FORCE this round". */
+    salvageLabel: string | null;
 }
 
 export interface HazardMeterVM {
@@ -185,6 +187,24 @@ function effectLabel(def: HazardCardDef, powered: boolean): string | null {
     return null;
 }
 
+const DIE_LABEL: Record<HazardColor, string> = {
+    red: 'RED',
+    blue: 'BLUE',
+    purple: 'PURPLE',
+    gold: 'GOLD',
+};
+
+function salvageLabelOf(def: HazardCardDef): string | null {
+    if (!def.salvage) return null;
+    if (def.salvage.type === 'mana') return `conjure a ${DIE_LABEL[def.kind]} die`;
+    return `+${def.salvage.amount} ${def.salvage.key.toUpperCase()} this round`;
+}
+
+function keywordsOf(def: HazardCardDef): { id: string; name: string; desc: string }[] {
+    const ids = def.salvage ? [...def.keywords, 'salvage' as const] : def.keywords;
+    return ids.map((k) => ({ id: k, ...HAZARD_KEYWORDS[k] }));
+}
+
 function cardVM(entry: HazardHandEntry, session: HazardSessionState): HazardCardVM {
     const def = getHazardCardDef(entry.cardId);
     const dieAvailable =
@@ -203,9 +223,10 @@ function cardVM(entry: HazardHandEntry, session: HazardSessionState): HazardCard
         freeEffectLabel: effectLabel(def, false),
         poweredEffectLabel: effectLabel(def, true),
         flavor: def.flavor,
-        keywords: def.keywords.map((k) => ({ id: k, ...HAZARD_KEYWORDS[k] })),
+        keywords: keywordsOf(def),
         dieAvailable,
         poweredByDieId: entry.dieId,
+        salvageLabel: salvageLabelOf(def),
     };
 }
 
@@ -223,9 +244,10 @@ function offerCardVM(def: HazardCardDef): HazardCardVM {
         freeEffectLabel: effectLabel(def, false),
         poweredEffectLabel: effectLabel(def, true),
         flavor: def.flavor,
-        keywords: def.keywords.map((k) => ({ id: k, ...HAZARD_KEYWORDS[k] })),
+        keywords: keywordsOf(def),
         dieAvailable: false,
         poweredByDieId: null,
+        salvageLabel: salvageLabelOf(def),
     };
 }
 

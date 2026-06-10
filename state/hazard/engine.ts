@@ -359,6 +359,49 @@ export function powerHazardCard(
     return ns;
 }
 
+/**
+ * Drags a card to the trash bin. Works from hand or play (a staged
+ * card refunds its die first). The card leaves the round for its
+ * SALVAGE benefit, when it has one:
+ *  - progress salvage rides `progressBase`, so it counts THIS round
+ *    only (the round advance overwrites the base with momentum);
+ *  - mana salvage conjures a temporary die of the card's colour.
+ * Cards without salvage (utilities, CRACK) discard for nothing —
+ * thinning the hand is the whole benefit.
+ */
+export function discardHazardCard(s: HazardSessionState, uid: string): HazardSessionState {
+    if (s.phase !== 'playing') return s;
+    const inHand = s.hand.find((h) => h.uid === uid);
+    const inPlay = s.play.find((p) => p.uid === uid);
+    const card = inHand ?? inPlay;
+    if (!card) return s;
+    let dice = s.dice;
+    if (inPlay?.dieId) {
+        dice = dice.map((d) => (d.id === inPlay.dieId ? { ...d, state: 'available' as const } : d));
+    }
+    let ns: HazardSessionState = {
+        ...s,
+        dice,
+        hand: s.hand.filter((h) => h.uid !== uid),
+        play: s.play.filter((p) => p.uid !== uid),
+        discardPile: [...s.discardPile, card.cardId],
+    };
+    const def = getHazardCardDef(card.cardId);
+    if (def.salvage?.type === 'progress') {
+        ns = {
+            ...ns,
+            progressBase: {
+                ...ns.progressBase,
+                [def.salvage.key]: ns.progressBase[def.salvage.key] + def.salvage.amount,
+            },
+        };
+    } else if (def.salvage?.type === 'mana') {
+        const extra = rollManaDie(ns.rng, ns.uidCounter, def.kind);
+        ns = { ...ns, dice: [...ns.dice, extra.value], rng: extra.rng, uidCounter: extra.uidCounter };
+    }
+    return ns;
+}
+
 // ---------------------------------------------------------------------------
 // Resolve
 // ---------------------------------------------------------------------------
@@ -503,8 +546,10 @@ function computeOutcome(s: HazardSessionState): { outcome: HazardOutcome; rng: H
 
 /**
  * Dismisses the resolve flash. Final round → compute outcome and enter
- * `outcome`; otherwise advance the round: discard hand+play, draw 5,
- * apply momentum — the dice pool is NOT re-cast.
+ * `outcome`; otherwise advance the round: PLAYED cards discard, the
+ * unplayed hand is KEPT, and the player draws back up to
+ * HAZARD_HAND_SIZE (a draw-effect-inflated hand keeps everything and
+ * draws nothing). Momentum applies — the dice pool is NOT re-cast.
  */
 export function continueHazardAfterResolve(
     s: HazardSessionState,
@@ -516,18 +561,15 @@ export function continueHazardAfterResolve(
         const { outcome, rng } = computeOutcome(s);
         return { ...s, phase: 'outcome', outcome, resolveInfo: null, rng };
     }
-    const discardPile = [
-        ...s.discardPile,
-        ...s.play.map((p) => p.cardId),
-        ...s.hand.map((h) => h.cardId),
-    ];
-    const draw = drawFromPile(s.rng, s.uidCounter, s.drawPile, deckBag, HAZARD_HAND_SIZE);
+    const discardPile = [...s.discardPile, ...s.play.map((p) => p.cardId)];
+    const drawCount = Math.max(0, HAZARD_HAND_SIZE - s.hand.length);
+    const draw = drawFromPile(s.rng, s.uidCounter, s.drawPile, deckBag, drawCount);
     return {
         ...s,
         phase: 'playing',
         round: info.round + 1,
         play: [],
-        hand: draw.drawn,
+        hand: [...s.hand, ...draw.drawn],
         drawPile: draw.drawPile,
         discardPile,
         progressBase: { force: info.carryForce, escape: info.carryEscape },

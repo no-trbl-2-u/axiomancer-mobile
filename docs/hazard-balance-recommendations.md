@@ -11,8 +11,8 @@ consequence ladder by rounds lost. Tuning evidence: greedy-bot Monte-Carlo in
 `state/hazard/__tests__/balance.sim.test.ts` (500-run rates: Safe ≈55–60%
 perfect / ≈0% failure · Risk ≈17–20% perfect / ≈8–12% failure).
 
-**REC#1, REC#2 and REC#3 are implemented in this PR** (flagged ✅); the other
-seven are proposals.
+**REC#1, REC#2, REC#3 and REC#7 are implemented** (flagged ✅); the other
+six are proposals.
 
 ---
 
@@ -76,14 +76,30 @@ Draconum demand different builds. With the persistent deck (won cards
 accumulate), asymmetric hazards give the card rewards direction: "I'm building
 the blue deck for the marsh crossings."
 
-## REC#7 — Hand selection: keep 1 card between rounds
+## ✅ REC#7 — Hand persistence: draw up to 5 + the trash bin + salvage (implemented, user-directed variant)
 
-*StS's "Well-Laid Plans" / Dawncaster's persistent hand slots.* Discarding the
-whole hand every round makes round boundaries memoryless — a gold card you
-can't power yet is pure waste. Allowing the player to bank exactly one card
-across the round boundary creates setup turns ("hold PILGRIM'S BLESSING,
-convert a hex to gold next round, then surge it") without breaking the
-5-card rhythm. Costs nothing in UI: long-press a card to pin it.
+*StS's "Well-Laid Plans" / Dawncaster's persistent hand slots — upgraded per
+direction (2026-06-10).* Instead of banking a single pinned card, the round
+boundary now keeps the ENTIRE unplayed hand and draws back **up to 5**
+(a draw-effect-inflated hand keeps everything and draws nothing). The
+counterweight is the **trash bin** (bottom-left SCRAP target): drag any hand
+or staged card onto it to discard it — staged cards refund their die — for
+its **SALVAGE** benefit, always strictly weaker than playing the card:
+
+- cheap stat cards (STONE STEPS, SCRAMBLE, IRON GRIP, FAITH LEAP, the
+  purples) salvage **+1 of their type, this round only**;
+- the mid commons (DEAD-MAN HAUL, CLIFFRUNNER) and all gold cards salvage a
+  **conjured temporary die of their colour** — scrapping one gold card to
+  surge the other is a real decision;
+- utilities and CRACK salvage **nothing** — thinning the hand is the payoff
+  (and the bin is the dead-card consequence's escape valve).
+
+Re-simulated after the change: rates land exactly on the original targets
+(Safe ≈53–60% perfect / ≤1% fail · Risk ≈17–20% perfect / 8–12% fail) when
+the bot uses the bin, and measurably WORSE when it hoards — the mechanic is
+balance-neutral for disciplined play and purely skill-expressive.
+**Files:** `engine.ts` (`discardHazardCard`, keep-hand advance), content
+salvage table, board trash drop-zone, card-detail SALVAGE line.
 
 ## REC#8 — Per-hazard signature consequence instead of the generic ladder
 

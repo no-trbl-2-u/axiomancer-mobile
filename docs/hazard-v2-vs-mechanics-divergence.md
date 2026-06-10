@@ -31,6 +31,8 @@ imports.
 | **Rewards** | Static per-route reward objects (`vitae`, `items`, `supplyTokens`) | Tiered reward ids (cache/relic/vitae/token) + a **pick-1-of-3 card offer** (guaranteed rare + skippable on Perfect; 0% rare on a single win) + **reserve bonus** (+1 VITAE per unspent non-hex die — REC#3). |
 | **Penalties** | Typed but unapplied (`resolveRound` TODO) | Fully applied at claim: consequence ladder by rounds lost — 1: lose banked tokens · 2: −5 max VITAE + CRACK dead card · 3: −8 VITAE + all of the above + Hexed flag — plus route penalty (penaltyVitae × losses). VITAE floors at 1 (hazards maim, never kill). |
 | **Momentum** | none | Cleared-round surplus carries ⌊surplus/2⌋ (cap 3) into the next round (REC#1). |
+| **Hand between rounds** | discard hand, draw 5 | Played cards discard; the unplayed hand is KEPT and the player draws back up to 5 (REC#7 variant, user-directed). |
+| **Discard / salvage** | none | Trash-bin discard from hand or play (staged cards refund their die) for an authored SALVAGE benefit: +1 progress this round, or a conjured temporary die of the card's colour; utilities/CRACK salvage nothing. |
 | **Hazard library** | 5 hazards (H01–H05), thresholds 2–6 | 3 hazards tuned for the no-re-cast economy (safe ~19–24 combined, risk ~9–12 per meter). Monte-Carlo evidence in `state/hazard/__tests__/balance.sim.test.ts`. |
 | **Card library** | 18 cards, several `noOpEffect` placeholders | 14 starter cards + 6 reward-pool cards + CRACK. Utilities all live: draw (1 free / 3 powered), re-cast, convert-✕. No placeholders. |
 | **Enchantments** | `isEnchant` typed, arrays empty | Not implemented (prototype dropped them in the v2 redesign). |

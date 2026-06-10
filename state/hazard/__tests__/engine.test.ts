@@ -8,6 +8,7 @@ import {
     claimHazardRewards,
     continueHazardAfterResolve,
     createHazardSession,
+    discardHazardCard,
     finishHazardRolling,
     hazardCardValue,
     hazardProjectedProgress,
@@ -367,7 +368,7 @@ describe('round resolution — risk route (dual meters, BOTH required)', () => {
 });
 
 describe('between rounds — the dice do NOT re-cast', () => {
-    it('advances the round with the same dice pool, fresh hand, discards tracked', () => {
+    it('advances the round: same dice pool, PLAYED cards discard, the unplayed hand is KEPT, draw tops up to 5', () => {
         let s = playingSession(5, 'safe');
         const diceBefore = s.dice;
         s = rig(s, { hand: [entry('h1', 'steps'), entry('h2', 'scram')], play: [] });
@@ -377,10 +378,23 @@ describe('between rounds — the dice do NOT re-cast', () => {
         expect(s.phase).toBe('playing');
         expect(s.round).toBe(2);
         expect(s.dice).toEqual(diceBefore); // identity of the cast preserved
+        // played card discarded; the held SCRAMBLE survives the boundary
+        expect(s.discardPile).toEqual(['steps']);
+        expect(s.hand.map((h) => h.uid)).toContain('h2');
+        // drew back up to exactly HAZARD_HAND_SIZE
         expect(s.hand).toHaveLength(HAZARD_HAND_SIZE);
-        // staged + unplayed hand cards both discarded
-        expect(s.discardPile).toEqual(expect.arrayContaining(['steps', 'scram']));
         expect(s.play).toHaveLength(0);
+    });
+
+    it('a draw-inflated hand keeps everything and draws nothing', () => {
+        let s = playingSession(5, 'safe');
+        const seven = Array.from({ length: 7 }, (_, i) => entry(`k${i}`, 'footing'));
+        s = rig(s, { hand: [...seven, entry('p1', 'steps')], play: [] });
+        s = stageHazardCard(s, 'p1', BAG);
+        s = resolveHazardRound(s);
+        s = continueHazardAfterResolve(s, BAG);
+        expect(s.hand).toHaveLength(7); // all kept, none drawn
+        expect(s.hand.map((h) => h.uid)).toEqual(seven.map((k) => k.uid));
     });
 
     it('spent dice stay spent across rounds', () => {
@@ -399,6 +413,69 @@ describe('between rounds — the dice do NOT re-cast', () => {
         s = continueHazardAfterResolve(s, BAG);
         expect(s.dice.find((d) => d.id === 'd1')?.state).toBe('spent');
         expect(s.dice.find((d) => d.id === 'd2')?.state).toBe('available');
+    });
+});
+
+describe('discard to the trash bin (salvage)', () => {
+    it('progress salvage adds to the CURRENT round only', () => {
+        let s = playingSession(5, 'safe');
+        s = rig(s, { hand: [entry('h1', 'steps'), entry('h2', 'haul')], play: [], progressBase: { force: 0, escape: 0 } });
+        s = discardHazardCard(s, 'h1'); // STONE STEPS salvage: +1 FORCE this round
+        expect(s.hand.map((h) => h.uid)).toEqual(['h2']);
+        expect(s.discardPile).toContain('steps');
+        expect(s.progressBase.force).toBe(1);
+        expect(hazardProjectedProgress(s).force).toBe(1);
+        // the round advance overwrites the base — salvage does not persist
+        s = stageHazardCard(s, 'h2', BAG);
+        s = resolveHazardRound(s);
+        const carry = s.resolveInfo!.carryForce;
+        s = continueHazardAfterResolve(s, BAG);
+        expect(s.progressBase.force).toBe(carry);
+    });
+
+    it('mana salvage conjures a temporary die of the card colour', () => {
+        let s = playingSession(5, 'safe');
+        s = rig(s, { hand: [entry('h1', 'haul')], play: [], dice: [] });
+        s = discardHazardCard(s, 'h1'); // DEAD-MAN HAUL salvage: conjure a red die
+        expect(s.dice).toHaveLength(1);
+        expect(s.dice[0].kind).toBe('red');
+        expect(s.dice[0].temporary).toBe(true);
+        expect(s.dice[0].state).toBe('available');
+    });
+
+    it('cards without salvage (CRACK, utilities) discard for nothing', () => {
+        let s = playingSession(5, 'safe');
+        s = rig(s, { hand: [entry('h1', HAZARD_CRACK_CARD.id), entry('h2', 'wind')], play: [], dice: [] });
+        s = discardHazardCard(s, 'h1');
+        s = discardHazardCard(s, 'h2');
+        expect(s.hand).toHaveLength(0);
+        expect(s.dice).toHaveLength(0);
+        expect(s.progressBase).toEqual({ force: 0, escape: 0 });
+        expect(s.discardPile).toEqual([HAZARD_CRACK_CARD.id, 'wind']);
+    });
+
+    it('discarding a STAGED card refunds its die first', () => {
+        let s = playingSession(5, 'safe');
+        s = rig(s, {
+            hand: [entry('h1', 'grip')],
+            play: [],
+            dice: [{ id: 'dr', kind: 'red', state: 'available' }],
+        });
+        s = stageHazardCard(s, 'h1', BAG);
+        s = powerHazardCard(s, 'h1', 'dr', BAG);
+        expect(s.dice[0].state).toBe('spent');
+        s = discardHazardCard(s, 'h1');
+        expect(s.play).toHaveLength(0);
+        expect(s.dice.find((d) => d.id === 'dr')?.state).toBe('available');
+        // IRON GRIP salvage still fires: +1 FORCE this round
+        expect(s.progressBase.force).toBe(1);
+    });
+
+    it('discard is a no-op outside the playing phase and for unknown uids', () => {
+        const reveal = freshSession();
+        expect(discardHazardCard(reveal, 'nope')).toBe(reveal);
+        const playing = playingSession(5, 'safe');
+        expect(discardHazardCard(playing, 'nope')).toBe(playing);
     });
 });
 

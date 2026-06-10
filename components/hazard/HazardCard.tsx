@@ -279,6 +279,14 @@ export function HazardCard({
                 <View style={{ paddingHorizontal: 14 }}>
                     {section(false)}
                     {section(true)}
+                    {card.salvageLabel !== null && (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, marginTop: 6, paddingVertical: 4, borderWidth: 1, borderStyle: 'dashed', borderColor: CARD_EDGE }}>
+                            <Text style={{ fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1.2, color: CARD_INK2 }}>SALVAGE</Text>
+                            <Text style={{ fontFamily: FONTS.serif, fontSize: 11, color: CARD_INK }}>
+                                scrap for {card.salvageLabel}
+                            </Text>
+                        </View>
+                    )}
                     <Text style={{ fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 11.5, color: CARD_INK2, marginTop: 8, lineHeight: 15, textAlign: 'center' }}>
                         “{card.flavor}”
                     </Text>

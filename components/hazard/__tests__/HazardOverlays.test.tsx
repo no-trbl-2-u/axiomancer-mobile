@@ -22,14 +22,13 @@ jest.mock('react-native-reanimated', () => {
     return Reanimated;
 });
 
-// Mock expo-haptics
+// Mock expo-haptics (calls are promise-chained with .catch; the
+// outcome overlay also fires notificationAsync)
 jest.mock('expo-haptics', () => ({
-    impactAsync: jest.fn(),
-    ImpactFeedbackStyle: {
-        Light: 'light',
-        Medium: 'medium',
-        Heavy: 'heavy',
-    },
+    impactAsync: jest.fn(() => Promise.resolve()),
+    notificationAsync: jest.fn(() => Promise.resolve()),
+    ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
+    NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
 }));
 
 const mockCard: HazardCardVM = {
@@ -48,6 +47,7 @@ const mockCard: HazardCardVM = {
     keywords: [],
     dieAvailable: true,
     poweredByDieId: null,
+    salvageLabel: null,
 };
 
 const mockDice: HazardDieVM[] = [
@@ -122,7 +122,8 @@ describe('ResolveFlashOverlay', () => {
         const { getByText } = render(
             <ResolveFlashOverlay flash={mockResolveFlash} onDone={jest.fn()} />
         );
-        expect(getByText(/I/)).toBeTruthy();
+        expect(getByText(/ROUND I — CLEARED/)).toBeTruthy();
+        expect(getByText('pass')).toBeTruthy();
     });
 
     it('renders resolve flash with fail verdict', () => {
@@ -159,7 +160,7 @@ describe('OutcomeOverlay', () => {
         const { getByText } = render(
             <OutcomeOverlay outcome={mockOutcome} onContinue={jest.fn()} />
         );
-        expect(getByText('You have successfully completed the hazard.')).toBeTruthy();
+        expect(getByText(/You have successfully completed the hazard\./)).toBeTruthy();
     });
 });
 

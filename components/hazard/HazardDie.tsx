@@ -27,7 +27,7 @@ export interface HazardDieProps {
     temporary?: boolean;
 }
 
-export function HazardDie({ kind, size = 48, state = 'available', glow = false, temporary = false }: HazardDieProps) {
+export const HazardDie = React.memo(function HazardDie({ kind, size = 48, state = 'available', glow = false, temporary = false }: HazardDieProps) {
     const d = DIE[kind];
     const isHex = kind === 'hex';
     const o = Math.round(size * 0.32); // isometric offset
@@ -122,4 +122,4 @@ export function HazardDie({ kind, size = 48, state = 'available', glow = false, 
             </View>
         </View>
     );
-}
+});

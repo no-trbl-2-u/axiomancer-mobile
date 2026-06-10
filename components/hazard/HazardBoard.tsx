@@ -13,7 +13,7 @@
  * this board reports gestures up through the `drag` controller.
  */
 
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -128,6 +128,12 @@ function SegBar({ meter }: { meter: HazardMeterVM }) {
 }
 
 function LiveMeter({ vm }: { vm: HazardViewModel }) {
+    // Memoized expensive calculation for threshold ladder text
+    const ladderText = useMemo(() => {
+        return vm.thresholdLadder
+            .map((row) => `${row.label} ${row.values.map((v, i) => (i === 0 ? `${v}` : `·${v}`)).join('')}`)
+            .join('   ');
+    }, [vm.thresholdLadder]);
     return (
         <View style={styles.meterPanel} testID="hazard-meters">
             {vm.meters.map((meter, i) => (
@@ -146,9 +152,7 @@ function LiveMeter({ vm }: { vm: HazardViewModel }) {
             {/* full ladder + momentum (REC#1 / REC#2) */}
             <View style={styles.metaRow}>
                 <Text style={styles.ladderText}>
-                    {vm.thresholdLadder
-                        .map((row) => `${row.label} ${row.values.map((v, i) => (i === 0 ? `${v}` : `·${v}`)).join('')}`)
-                        .join('   ')}
+                    {ladderText}
                 </Text>
                 {vm.momentumNote !== null && <Text style={styles.momentum}>⟜ {vm.momentumNote}</Text>}
             </View>
@@ -253,7 +257,7 @@ export interface HazardBoardProps {
     onInspect: (card: HazardCardVM) => void;
 }
 
-export function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onDiscard, onResolve, onInspect }: HazardBoardProps) {
+export const HazardBoard = React.memo(function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onDiscard, onResolve, onInspect }: HazardBoardProps) {
     const playAreaRef = useRef<View | null>(null);
     const trashRef = useRef<View | null>(null);
     const stagedRefs = useRef(new Map<string, View | null>());
@@ -363,6 +367,7 @@ export function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onDiscard, 
     const n = vm.hand.length;
     const mid = (n - 1) / 2;
     const overlap = n > 6 ? 56 : n > 4 ? 42 : 24;
+
 
     return (
         <View style={styles.root} testID="hazard-board">
@@ -514,7 +519,7 @@ export function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onDiscard, 
             </View>
         </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
     root: { flex: 1, backgroundColor: '#0c0a08' },

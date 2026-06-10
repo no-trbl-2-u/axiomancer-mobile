@@ -27,7 +27,7 @@ export type HazardCardMode = 'hand' | 'play' | 'detail' | 'offer';
 // ---------------------------------------------------------------------------
 
 /** Colour medallion with the card colour's glyph. */
-export function CardArt({ kind, size = 40 }: { kind: HazardCardVM['kind']; size?: number }) {
+export const CardArt = React.memo(function CardArt({ kind, size = 40 }: { kind: HazardCardVM['kind']; size?: number }) {
     const c = DIE[kind];
     return (
         <View
@@ -45,7 +45,7 @@ export function CardArt({ kind, size = 40 }: { kind: HazardCardVM['kind']; size?
             <DieGlyph kind={c.glyph} size={size * 0.6} color={c.c} />
         </View>
     );
-}
+});
 
 /** The mana socket — where the matching-colour die lands. */
 function ManaSocket({
@@ -157,7 +157,7 @@ function Row({
 // The card
 // ---------------------------------------------------------------------------
 
-export function HazardCard({
+export const HazardCard = React.memo(function HazardCard({
     card,
     mode = 'hand',
     dragging = false,
@@ -336,7 +336,7 @@ export function HazardCard({
             />
         </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
     frame: {

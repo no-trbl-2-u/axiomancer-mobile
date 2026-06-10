@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-10 at commit cef865b
-> Pass count: 29
+> Last pass: 2026-06-10 at commit c4c5c1a
+> Pass count: 30
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -26,12 +26,39 @@
 
 ## Pending
 
-<!-- Pass 29 (2026-06-10, commit cef865b): repo-proxy pass —
+<!-- Pass 30 (2026-06-10, commit c4c5c1a): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
      critique reads docs/specs/artifacts as the "fresh maintainer"
-     proxy. Focus on general fresh maintainer experience. Reader
-     examined README.md, specs/README.md, docs/, app/ structure,
-     SVG_ASSET_SPEC.md. 4 findings filed below. -->
+     proxy. Focus on general fresh maintainer experience. Examined
+     README.md, package.json, .env.example, docs/, recent commits.
+     3 findings filed below. -->
+
+### [MED] /README.md — Engine upgrade docs reference outdated versions
+- pass: 30 (commit c4c5c1a)
+- viewport: repository
+- category: comprehension
+- observation: README mentions engine upgrade guides for 0.14.0→0.15.0 and 0.15.0→0.15.1 but package.json shows axiomancer-mechanics ^0.16.0, creating confusion about which upgrade guide applies
+- evidence: README lines 208-217 reference 0.15.0 and 0.15.1 upgrade docs while package.json line 37 shows "axiomancer-mechanics": "^0.16.0"
+- suggested fix: Update README engine upgrade references to reflect current 0.16.0 version or add 0.15.1→0.16.0 upgrade documentation
+- source: repo-proxy
+
+### [MED] /.env.example — References non-existent EAS setup documentation
+- pass: 30 (commit c4c5c1a)
+- viewport: repository
+- category: navigation
+- observation: .env.example references setup/02_eas.md for EAS Build configuration steps but this file does not exist, creating broken guidance for new contributors
+- evidence: Line 17: "See setup/02_eas.md for detailed configuration steps" but setup/ directory contains no 02_eas.md file
+- suggested fix: Create setup/02_eas.md with EAS configuration steps or update reference to point to existing documentation
+- source: repo-proxy
+
+### [LOW] /package.json — Node version requirement lacks specificity guidance
+- pass: 30 (commit c4c5c1a)
+- viewport: repository
+- category: maintainability
+- observation: Package.json specifies "node": ">=20.0.0" but dev scripts reference node:20-alpine container, potentially creating confusion about exact version requirements for fresh maintainers
+- evidence: Line 6 shows ">=20.0.0" while scripts/dev-server-container.sh uses "node:20-alpine" image
+- suggested fix: Add brief comment in package.json engines section explaining recommended Node version or align container version reference
+- source: repo-proxy
 
 ### [LOW] /app/(tabs)/_layout.tsx — Extensive legacy comments may confuse maintainers ✅
 - pass: 29 (commit cef865b); addressed at commit 3ef9e82 via `/iterate`

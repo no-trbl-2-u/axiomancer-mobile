@@ -37,7 +37,7 @@
 - addressed: 2026-06-10 via commit 92d4b72
 - fix: Extracted StanceRow component and levelUpFlavor utility from LevelUpModal.tsx, reducing it from 697→537 lines. Created StanceRow.tsx for stance allocation controls and levelUpFlavor.ts for deterministic flavor text selection.
 
-### [ ] [7.2] Accessibility labels missing for interactive hazard game elements
+### [x] [7.2] Accessibility labels missing for interactive hazard game elements
 - category: a11y
 - impact: 6
 - ease: 8
@@ -48,6 +48,9 @@
 - evidence: components/hazard/HazardBoard.tsx contains complex drag interactions but limited accessibility labels
 - observation: The hazard minigame has extensive touch interactions (drag-to-stage, tap-to-read) but lacks comprehensive accessibility labels for screen readers
 - source: audit
+- issue: #336
+- addressed: 2026-06-10 via commit 80221c7
+- fix: Added comprehensive accessibility labels to hand cards (name, type, stats), staged cards (power status, hints), and progress meters (role, value). Provided clear hints for drag/tap interactions to improve screen reader navigation of the hazard minigame.
 
 ### [ ] [4.5] App configuration lacks comprehensive SEO metadata for web builds
 - category: seo

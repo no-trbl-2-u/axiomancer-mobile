@@ -88,7 +88,12 @@ function SegBar({ meter }: { meter: HazardMeterVM }) {
     const accent = TYPE_ACCENT[meter.key];
     const segs = Math.max(1, meter.need);
     return (
-        <View>
+        <View
+            accessible
+            accessibilityRole="progressbar"
+            accessibilityLabel={`${meter.label} progress: ${meter.value} of ${meter.need} ${meter.met ? '- requirement met' : '- not yet met'}`}
+            accessibilityValue={{ min: 0, max: meter.need, now: meter.value }}
+        >
             <View style={styles.meterHead}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                     <ProgGlyph kind={meter.key} size={13} color={accent} />
@@ -440,6 +445,10 @@ export function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onDiscard, 
                                             drag.active?.type === 'card' && drag.active.uid === card.uid ? 0.3 : 1,
                                     }}
                                     testID={`hazard-staged-${card.uid}`}
+                                    accessible
+                                    accessibilityRole="button"
+                                    accessibilityLabel={`${card.name}, ${card.kind} card staged for play. ${card.poweredByDieId ? 'Powered by mana die. ' : 'Needs mana die to activate. '}${card.powered.force || card.powered.escape ? `Will provide: ${card.powered.force} force, ${card.powered.escape} escape.` : ''}`}
+                                    accessibilityHint="Tap to return to hand, or drag mana die here to power it"
                                 >
                                     <HazardCard card={card} mode="play" />
                                 </Animated.View>
@@ -491,6 +500,10 @@ export function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onDiscard, 
                                     ],
                                 }}
                                 testID={`hazard-hand-${card.uid}`}
+                                accessible
+                                accessibilityRole="button"
+                                accessibilityLabel={`${card.name}, ${card.kind} card in hand. ${card.powered.force || card.powered.escape ? `Powered: ${card.powered.force} force, ${card.powered.escape} escape. ` : ''}${card.free.force || card.free.escape ? `Free: ${card.free.force} force, ${card.free.escape} escape. ` : ''}`}
+                                accessibilityHint="Drag up to stage this card, or tap to read details"
                             >
                                 <HazardCard card={card} mode="hand" />
                             </Animated.View>

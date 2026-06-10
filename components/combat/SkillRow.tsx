@@ -12,7 +12,7 @@ export interface SkillRowProps {
     onPick: (s: SkillOption) => void;
 }
 
-export function SkillRow({ skill: s, onPick }: SkillRowProps) {
+export const SkillRow = React.memo(function SkillRow({ skill: s, onPick }: SkillRowProps) {
     const tooltip = useTooltip();
     const ref = useRef<View | null>(null);
     const [isFocused, setIsFocused] = useState(false);
@@ -45,7 +45,7 @@ export function SkillRow({ skill: s, onPick }: SkillRowProps) {
             </TouchableOpacity>
         </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
     row: {

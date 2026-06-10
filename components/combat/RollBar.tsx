@@ -10,7 +10,7 @@ export interface RollBarProps {
     label: string;
 }
 
-export function RollBar({ value, max, color, label }: RollBarProps) {
+export const RollBar = React.memo(function RollBar({ value, max, color, label }: RollBarProps) {
     const pct = Math.min(1, Math.max(0, value / max));
     return (
         <View style={styles.rollBarRow}>
@@ -21,7 +21,7 @@ export function RollBar({ value, max, color, label }: RollBarProps) {
             <Text style={styles.rollBarLabel}>{label}</Text>
         </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
     rollBarRow: {

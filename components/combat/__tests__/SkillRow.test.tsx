@@ -13,11 +13,12 @@ import { SkillRow } from '@/components/combat/SkillRow';
 describe('SkillRow: module surface', () => {
     it('exports a named SkillRow symbol', () => {
         expect(SkillRow).toBeDefined();
-        expect(typeof SkillRow).toBe('function');
+        // React.memo returns an object (MemoizedComponent), not a function
+        expect(typeof SkillRow).toBe('object');
     });
 
     it('SkillRow is a valid React component', () => {
-        // Component should accept props matching SkillRowProps interface
-        expect(SkillRow.length).toBeGreaterThanOrEqual(1);
+        // React.memo components have a $$typeof property
+        expect(SkillRow).toHaveProperty('$$typeof');
     });
 });

@@ -64,7 +64,7 @@
 - observation: While the app has basic OpenGraph and Twitter card metadata, it lacks comprehensive SEO optimization for web discovery and indexing
 - source: audit
 
-### [ ] [5.4] Performance optimization opportunities in component rendering patterns
+### [x] [5.4] Performance optimization opportunities in component rendering patterns
 - category: perf
 - impact: 6
 - ease: 6
@@ -75,6 +75,9 @@
 - evidence: Complex components in components/hazard/ and combat directories lack memoization
 - observation: Large component trees with frequent state updates (combat, hazard) may benefit from React.memo and useMemo optimizations
 - source: audit
+- issue: #337
+- addressed: 2026-06-10 via commit 7c650cb
+- fix: Added React.memo to HazardCard, HazardBoard, HazardDie, CardArt, SkillRow, and RollBar components. Implemented useMemo for expensive threshold ladder text calculation in HazardBoard. These optimizations reduce unnecessary re-renders during combat and hazard interactions, improving UX smoothness in complex component trees.
 
 ## Previously addressed findings
 

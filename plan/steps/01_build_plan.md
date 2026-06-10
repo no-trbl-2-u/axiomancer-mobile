@@ -2191,6 +2191,12 @@ adapter).
 
 ## Carry-overs / known gaps (update as phases ship)
 
+### [user-issue #333] [MED] Gate Hazard Minigame on mechanics package engine
+- category: external-issue  
+- impact: 6
+- ease: 7
+- next: /iterate will pick up; reference #333 in commit body.
+
 - **No `setup/` runbooks yet.** Phase 10 (EAS) and a
   follow-up GitHub runbook are queued; until then,
   `agents.md` "Operational secrets" is the canonical config

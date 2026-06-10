@@ -20,6 +20,7 @@
     "test:watch": "jest --watch",
     "verify": "npm run lint && npm run typecheck && npm test",
     "verify:visual": "node scripts/smoke-screens.mjs",
+    "e2e:hazard": "node scripts/hazard-e2e.mjs",
     "smoke:bundler": "node scripts/smoke-bundler.mjs",
     "baseline:approve": "node scripts/baseline-approve.mjs",
     "deploy:check": "node scripts/deploy-check.mjs",

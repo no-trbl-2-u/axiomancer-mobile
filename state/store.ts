@@ -13,6 +13,8 @@ import {
     type TypedGameEvent,
 } from 'axiomancer-mechanics';
 
+import type { HazardSessionState } from './hazard/types';
+
 /**
  * Mobile-only state slice for the event modal. The engine returns
  * `ResolveMapEventResult` synchronously from `resolveMapEvent(state)`;
@@ -82,8 +84,20 @@ export interface DevOverridesSlice {
     };
 }
 
+/**
+ * Mobile-only Hazard minigame slice. Holds the active v2 hazard
+ * session (see `state/hazard/`) — `null` outside a hazard. Sessions
+ * are transient by design: abandoning mid-hazard forfeits progress.
+ * The persistent piece (the player's hazard action deck) rides
+ * `GameState.flags` instead — see `state/hazard/deck-flags.ts`.
+ */
+export interface MobileHazardSlice {
+    session: HazardSessionState | null;
+}
+
 export type AppStoreState = GameStore & {
     event: MobileEventSlice;
+    hazard: MobileHazardSlice;
     notifications: MobileNotificationsSlice;
     /** @deprecated Phase 105 — replaced with engine CombatState.combatResources. Remove in follow-up. */
     combatMana?: { current: number; max: number } | null;
@@ -111,6 +125,8 @@ export const EMPTY_EVENT_SLICE: MobileEventSlice = Object.freeze({
     history: Object.freeze([]),
     sourceNodeType: null,
 });
+
+export const EMPTY_HAZARD_SLICE: MobileHazardSlice = Object.freeze({ session: null });
 
 /**
  * Default notifications slice. `levelUpAcknowledged: true` because a
@@ -192,6 +208,7 @@ export function createAppStore(options: CreateAppStoreOptions = {}): AppStore {
     store.setState({
         save: () => withPassthrough(engineSave),
         event: EMPTY_EVENT_SLICE,
+        hazard: EMPTY_HAZARD_SLICE,
         notifications: DEFAULT_NOTIFICATIONS_SLICE,
         combatMana: null,
         devOverrides: DEFAULT_DEV_OVERRIDES_SLICE,

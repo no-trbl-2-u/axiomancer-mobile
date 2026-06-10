@@ -87,6 +87,8 @@ const EXPECTED_ROUTE_FILES: ReadonlySet<string> = new Set([
     './_layout.tsx',
     './index.tsx',
     './event/index.tsx',
+    // Hazard minigame (design handoff 2026-06-10).
+    './hazard/index.tsx',
     './(tabs)/_layout.tsx',
     './(tabs)/character/index.tsx',
     './(tabs)/combat.tsx',

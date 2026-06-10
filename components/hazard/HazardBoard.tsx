@@ -1,0 +1,532 @@
+/**
+ * The Hazard round-play board: header ledger, crisis scene strip, live
+ * progress meter(s), the mana dice tray, the play area, the fanned
+ * hand dock, and the translucent sulfur-glow PLAY button.
+ *
+ * Touch model (drag-only, per direction):
+ *  - drag a hand card up into the play area to stage it;
+ *  - tap a hand card (or abort a drag) to read it;
+ *  - tap a staged card (or drag it out) to return it to hand;
+ *  - drag a mana die onto a staged card of its colour to power it.
+ *
+ * The drag ghost renders at screen level in `app/hazard/index.tsx`;
+ * this board reports gestures up through the `drag` controller.
+ */
+
+import React, { useCallback, useRef } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, {
+    FadeIn,
+    FadeInDown,
+    LinearTransition,
+    runOnJS,
+    useAnimatedStyle,
+    useSharedValue,
+    withRepeat,
+    withSequence,
+    withTiming,
+} from 'react-native-reanimated';
+
+import type { HazardCardVM, HazardDieVM, HazardMeterVM, HazardViewModel } from '@/state/presenters/hazard.engine';
+import { AXM, FONTS } from '@/theme/axm';
+
+import { HazardCard } from './HazardCard';
+import { HazardDie } from './HazardDie';
+import { Cracks, LedgerMark, ProgGlyph } from './glyphs';
+import { HZ, ROUTE_ACCENT, TYPE_ACCENT } from './palette';
+
+// ---------------------------------------------------------------------------
+// Drag plumbing
+// ---------------------------------------------------------------------------
+
+export type DragPayload =
+    | { type: 'card'; from: 'hand' | 'play'; uid: string; card: HazardCardVM }
+    | { type: 'die'; dieId: string; die: HazardDieVM };
+
+export interface DragController {
+    /** Begin tracking a drag; the screen renders the ghost. */
+    begin: (payload: DragPayload, x: number, y: number) => void;
+    move: (x: number, y: number) => void;
+    /** End the drag at (x, y); the board's drop logic runs. */
+    end: (x: number, y: number) => void;
+    /** Currently dragged payload (React state from the screen). */
+    active: DragPayload | null;
+}
+
+interface Rect {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
+
+function rectContains(rect: Rect | null, x: number, y: number): boolean {
+    if (!rect) return false;
+    return x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height;
+}
+
+type MeasurableRef = React.RefObject<View | null>;
+
+function measureRect(ref: MeasurableRef): Promise<Rect | null> {
+    return new Promise((resolve) => {
+        const node = ref.current;
+        if (!node) {
+            resolve(null);
+            return;
+        }
+        node.measureInWindow((x, y, width, height) => resolve({ x, y, width, height }));
+    });
+}
+
+// ---------------------------------------------------------------------------
+// Meters
+// ---------------------------------------------------------------------------
+
+function SegBar({ meter }: { meter: HazardMeterVM }) {
+    const accent = TYPE_ACCENT[meter.key];
+    const segs = Math.max(1, meter.need);
+    return (
+        <View>
+            <View style={styles.meterHead}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                    <ProgGlyph kind={meter.key} size={13} color={accent} />
+                    <Text style={[styles.meterLabel, { color: accent }]}>{meter.label}</Text>
+                </View>
+                <Text style={[styles.meterValue, { color: meter.met ? accent : AXM.parchment }]}>
+                    {meter.value}
+                    <Text style={{ color: AXM.bone }}> / {meter.need}</Text>
+                    {meter.met ? ' ✓' : ''}
+                </Text>
+            </View>
+            <View style={styles.segRow}>
+                {Array.from({ length: segs }, (_, i) => {
+                    const filled = i < meter.value;
+                    return (
+                        <Animated.View
+                            key={i}
+                            layout={LinearTransition.duration(140)}
+                            style={[
+                                styles.seg,
+                                {
+                                    borderColor: filled ? accent : AXM.ash,
+                                    backgroundColor: filled ? accent : 'rgba(0,0,0,0.45)',
+                                },
+                            ]}
+                        />
+                    );
+                })}
+            </View>
+        </View>
+    );
+}
+
+function LiveMeter({ vm }: { vm: HazardViewModel }) {
+    return (
+        <View style={styles.meterPanel} testID="hazard-meters">
+            {vm.meters.map((meter, i) => (
+                <React.Fragment key={meter.key}>
+                    <SegBar meter={meter} />
+                    {vm.bothRequired && i === 0 && (
+                        <View style={styles.bothRow}>
+                            <View style={styles.bothLine} />
+                            <Text style={styles.bothText}>BOTH REQUIRED</Text>
+                            <View style={styles.bothLine} />
+                        </View>
+                    )}
+                </React.Fragment>
+            ))}
+            {vm.meterDetail !== null && <Text style={styles.meterDetail}>{vm.meterDetail}</Text>}
+            {/* full ladder + momentum (REC#1 / REC#2) */}
+            <View style={styles.metaRow}>
+                <Text style={styles.ladderText}>
+                    {vm.thresholdLadder
+                        .map((row) => `${row.label} ${row.values.map((v, i) => (i === 0 ? `${v}` : `·${v}`)).join('')}`)
+                        .join('   ')}
+                </Text>
+                {vm.momentumNote !== null && <Text style={styles.momentum}>⟜ {vm.momentumNote}</Text>}
+            </View>
+        </View>
+    );
+}
+
+// ---------------------------------------------------------------------------
+// Dice tray
+// ---------------------------------------------------------------------------
+
+function TrayDie({
+    die,
+    drag,
+    ghosted,
+}: {
+    die: HazardDieVM;
+    drag: DragController;
+    ghosted: boolean;
+}) {
+    const pan = Gesture.Pan()
+        .enabled(die.usable)
+        .minDistance(6)
+        .onStart((e) => {
+            runOnJS(drag.begin)({ type: 'die', dieId: die.id, die }, e.absoluteX, e.absoluteY);
+        })
+        .onUpdate((e) => {
+            runOnJS(drag.move)(e.absoluteX, e.absoluteY);
+        })
+        .onEnd((e) => {
+            runOnJS(drag.end)(e.absoluteX, e.absoluteY);
+        })
+        .onFinalize((e, success) => {
+            if (!success) runOnJS(drag.end)(-1, -1);
+        });
+    return (
+        <GestureDetector gesture={pan}>
+            <Animated.View
+                layout={LinearTransition.duration(180)}
+                entering={FadeIn.duration(220)}
+                style={{ opacity: ghosted ? 0.25 : 1 }}
+                testID={`hazard-die-${die.id}`}
+                accessible
+                accessibilityLabel={die.accessibilityLabel}
+            >
+                <HazardDie kind={die.kind} size={42} state={die.state} glow={die.usable} temporary={die.temporary} />
+                {die.temporary && <Text style={styles.dieTag}>CONJURED</Text>}
+            </Animated.View>
+        </GestureDetector>
+    );
+}
+
+// ---------------------------------------------------------------------------
+// PLAY button — translucent sulfur glow, pulsing when armed.
+// ---------------------------------------------------------------------------
+
+function PlayButton({ enabled, subLabel, onPress }: { enabled: boolean; subLabel: string; onPress: () => void }) {
+    const pulse = useSharedValue(0);
+    React.useEffect(() => {
+        pulse.value = enabled
+            ? withRepeat(withSequence(withTiming(1, { duration: 900 }), withTiming(0, { duration: 900 })), -1)
+            : withTiming(0, { duration: 200 });
+    }, [enabled, pulse]);
+    const glow = useAnimatedStyle(() => ({
+        shadowOpacity: enabled ? 0.35 + pulse.value * 0.45 : 0,
+    }));
+    return (
+        <Animated.View style={[styles.playWrap, glow]}>
+            <Pressable
+                onPress={enabled ? onPress : undefined}
+                accessibilityRole="button"
+                accessibilityState={{ disabled: !enabled }}
+                accessibilityLabel={enabled ? 'Play — resolve the round' : 'Play, disabled. Stage a card first.'}
+                testID="hazard-play-button"
+                style={[
+                    styles.playBtn,
+                    {
+                        borderColor: enabled ? AXM.sulfur : AXM.ash,
+                        backgroundColor: enabled ? 'rgba(212,192,38,0.16)' : 'rgba(0,0,0,0.4)',
+                    },
+                ]}
+            >
+                <Text style={[styles.playText, { color: enabled ? AXM.sulfur : AXM.bone }]}>PLAY</Text>
+                <Text style={[styles.playSub, { color: enabled ? AXM.sulfur : AXM.bone }]}>{subLabel}</Text>
+            </Pressable>
+        </Animated.View>
+    );
+}
+
+// ---------------------------------------------------------------------------
+// The board
+// ---------------------------------------------------------------------------
+
+export interface HazardBoardProps {
+    vm: HazardViewModel;
+    drag: DragController;
+    onStage: (uid: string) => void;
+    onUnstage: (uid: string) => void;
+    onPower: (uid: string, dieId: string) => void;
+    onResolve: () => void;
+    onInspect: (card: HazardCardVM) => void;
+}
+
+export function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onResolve, onInspect }: HazardBoardProps) {
+    const playAreaRef = useRef<View | null>(null);
+    const stagedRefs = useRef(new Map<string, View | null>());
+
+    // Drop resolution: called by the screen-level drag controller when a
+    // gesture ends. Coordinates are window-absolute.
+    const resolveDrop = useCallback(
+        async (payload: DragPayload, x: number, y: number) => {
+            if (x < 0 && y < 0) return; // cancelled gesture
+            if (payload.type === 'card' && payload.from === 'hand') {
+                const playRect = await measureRect(playAreaRef);
+                if (rectContains(playRect, x, y)) {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
+                    onStage(payload.uid);
+                } else {
+                    // an aborted drag reads the card — matches the prototype
+                    onInspect(payload.card);
+                }
+                return;
+            }
+            if (payload.type === 'card' && payload.from === 'play') {
+                const playRect = await measureRect(playAreaRef);
+                if (!rectContains(playRect, x, y)) onUnstage(payload.uid);
+                return;
+            }
+            if (payload.type === 'die') {
+                for (const [uid, node] of stagedRefs.current) {
+                    if (!node) continue;
+                    const rect = await measureRect({ current: node });
+                    if (rectContains(rect, x, y)) {
+                        const target = vm.play.find((p) => p.uid === uid);
+                        if (target && target.kind !== payload.die.kind) {
+                            // wrong colour — the engine will reject; give the
+                            // warning haptic the design brief asks for.
+                            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => undefined);
+                        } else {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => undefined);
+                        }
+                        onPower(uid, payload.dieId);
+                        return;
+                    }
+                }
+            }
+        },
+        [onStage, onUnstage, onPower, onInspect, vm.play],
+    );
+
+    // Expose drop resolution to the screen-level controller.
+    (drag as DragController & { resolveDrop?: typeof resolveDrop }).resolveDrop = resolveDrop;
+
+    const handCardGesture = (card: HazardCardVM) => {
+        const pan = Gesture.Pan()
+            .minDistance(10)
+            .onStart((e) => {
+                runOnJS(drag.begin)({ type: 'card', from: 'hand', uid: card.uid, card }, e.absoluteX, e.absoluteY);
+            })
+            .onUpdate((e) => {
+                runOnJS(drag.move)(e.absoluteX, e.absoluteY);
+            })
+            .onEnd((e) => {
+                runOnJS(drag.end)(e.absoluteX, e.absoluteY);
+            })
+            .onFinalize((e, success) => {
+                if (!success) runOnJS(drag.end)(-1, -1);
+            });
+        const tap = Gesture.Tap()
+            .maxDistance(9)
+            .onEnd(() => {
+                runOnJS(onInspect)(card);
+            });
+        return Gesture.Exclusive(pan, tap);
+    };
+
+    const stagedCardGesture = (card: HazardCardVM) => {
+        const pan = Gesture.Pan()
+            .minDistance(10)
+            .onStart((e) => {
+                runOnJS(drag.begin)({ type: 'card', from: 'play', uid: card.uid, card }, e.absoluteX, e.absoluteY);
+            })
+            .onUpdate((e) => {
+                runOnJS(drag.move)(e.absoluteX, e.absoluteY);
+            })
+            .onEnd((e) => {
+                runOnJS(drag.end)(e.absoluteX, e.absoluteY);
+            })
+            .onFinalize((e, success) => {
+                if (!success) runOnJS(drag.end)(-1, -1);
+            });
+        const tap = Gesture.Tap()
+            .maxDistance(9)
+            .onEnd(() => {
+                runOnJS(onUnstage)(card.uid);
+            });
+        return Gesture.Exclusive(pan, tap);
+    };
+
+    const routeAccent = vm.routeKey ? ROUTE_ACCENT[vm.routeKey] : AXM.bone;
+    const n = vm.hand.length;
+    const mid = (n - 1) / 2;
+    const overlap = n > 6 ? 56 : n > 4 ? 42 : 24;
+
+    return (
+        <View style={styles.root} testID="hazard-board">
+            {/* header — title, route badge, round, O/X ledger */}
+            <View style={styles.header}>
+                <View>
+                    <Text style={styles.headerTitle}>{vm.title}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 }}>
+                        <Text style={[styles.routeBadge, { backgroundColor: routeAccent }]}>{vm.routeLabel}</Text>
+                        <Text style={styles.roundLabel}>{vm.roundLabel}</Text>
+                    </View>
+                </View>
+                <View style={{ flexDirection: 'row', gap: 5 }} testID="hazard-ledger">
+                    {vm.marks.map((m, i) => (
+                        <LedgerMark key={i} kind={m} size={22} />
+                    ))}
+                </View>
+            </View>
+
+            {/* crisis scene strip */}
+            <View style={styles.scene}>
+                <Cracks seed={7} opacity={0.6} />
+                <Text style={styles.sceneTitle}>{vm.boardHeadline}</Text>
+                <Text style={styles.sceneNote}>— {vm.boardNote}</Text>
+            </View>
+
+            <LiveMeter vm={vm} />
+
+            {/* dice tray */}
+            <View style={styles.tray}>
+                <View style={styles.trayHead}>
+                    <Text style={styles.trayLabel}>⬡ MANA DICE — DRAG ONTO A MATCHING CARD</Text>
+                    <Text style={styles.trayCount}>
+                        <Text style={{ color: vm.diceReady > 0 ? HZ.acid : AXM.bone }}>{vm.diceReady} READY</Text>
+                        {vm.hexCount > 0 && <Text style={{ color: HZ.purple }}> · {vm.hexCount} ✕</Text>}
+                    </Text>
+                </View>
+                <View style={styles.trayDice} testID="hazard-dice-tray">
+                    {vm.dice.map((die) => (
+                        <TrayDie
+                            key={die.id}
+                            die={die}
+                            drag={drag}
+                            ghosted={drag.active?.type === 'die' && drag.active.dieId === die.id}
+                        />
+                    ))}
+                </View>
+            </View>
+
+            {/* play area */}
+            <View
+                ref={playAreaRef}
+                style={[styles.playArea, { borderColor: vm.play.length ? `${HZ.acid}88` : AXM.ash }]}
+                testID="hazard-play-area"
+            >
+                <View style={styles.playHead}>
+                    <Text style={[styles.playLabel, { color: vm.play.length ? HZ.acid : AXM.bone }]}>
+                        PLAY AREA — {vm.play.length} / {vm.playMax}
+                    </Text>
+                    <Text style={styles.deckCounts} testID="hazard-deck-counts">
+                        DECK {vm.deckCount} · DISCARD {vm.discardCount}
+                    </Text>
+                </View>
+                {vm.play.length === 0 ? (
+                    <View style={styles.playEmpty}>
+                        <Text style={styles.playEmptyText}>drag cards up from your hand</Text>
+                    </View>
+                ) : (
+                    <View style={styles.playCards}>
+                        {vm.play.map((card) => (
+                            <GestureDetector key={card.uid} gesture={stagedCardGesture(card)}>
+                                <Animated.View
+                                    ref={(node) => {
+                                        stagedRefs.current.set(card.uid, node as unknown as View | null);
+                                    }}
+                                    entering={FadeInDown.duration(200)}
+                                    layout={LinearTransition.duration(180)}
+                                    style={{
+                                        opacity:
+                                            drag.active?.type === 'card' && drag.active.uid === card.uid ? 0.3 : 1,
+                                    }}
+                                    testID={`hazard-staged-${card.uid}`}
+                                >
+                                    <HazardCard card={card} mode="play" />
+                                </Animated.View>
+                            </GestureDetector>
+                        ))}
+                    </View>
+                )}
+                <Text style={styles.playHint}>tap a staged card to return it</Text>
+            </View>
+
+            {/* hand dock + PLAY button */}
+            <View style={styles.dock}>
+                <View style={styles.fan} testID="hazard-hand">
+                    {vm.hand.map((card, i) => (
+                        <GestureDetector key={card.uid} gesture={handCardGesture(card)}>
+                            <Animated.View
+                                entering={FadeInDown.delay(i * 60).duration(240)}
+                                layout={LinearTransition.duration(180)}
+                                style={{
+                                    marginLeft: i === 0 ? 0 : -overlap,
+                                    zIndex: drag.active?.type === 'card' && drag.active.uid === card.uid ? 30 : i,
+                                    opacity: drag.active?.type === 'card' && drag.active.uid === card.uid ? 0.3 : 1,
+                                    transform: [
+                                        { translateY: Math.abs(i - mid) * (n > 6 ? 5 : 7) },
+                                        { rotate: `${(i - mid) * (n > 6 ? 4 : 5)}deg` },
+                                    ],
+                                }}
+                                testID={`hazard-hand-${card.uid}`}
+                            >
+                                <HazardCard card={card} mode="hand" />
+                            </Animated.View>
+                        </GestureDetector>
+                    ))}
+                </View>
+                <PlayButton enabled={vm.resolveEnabled} subLabel={vm.resolveSubLabel} onPress={onResolve} />
+            </View>
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    root: { flex: 1, backgroundColor: '#0c0a08' },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 12,
+        paddingTop: 8,
+        paddingBottom: 9,
+        borderBottomWidth: 1,
+        borderBottomColor: AXM.ash,
+    },
+    headerTitle: { fontFamily: FONTS.gothic, fontSize: 16, lineHeight: 17, color: AXM.parchment, letterSpacing: 0.5 },
+    routeBadge: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1.4, color: AXM.bg, paddingHorizontal: 5, paddingVertical: 1, overflow: 'hidden' },
+    roundLabel: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone, letterSpacing: 1 },
+    scene: { height: 64, overflow: 'hidden', borderBottomWidth: 1, borderBottomColor: AXM.ash, backgroundColor: HZ.stone, alignItems: 'center', justifyContent: 'center' },
+    sceneTitle: { fontFamily: FONTS.gothic, fontSize: 19, color: AXM.parchment, letterSpacing: 1, textShadowColor: '#000', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 0 },
+    sceneNote: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 10.5, color: AXM.bone, marginTop: 1 },
+    meterPanel: { paddingHorizontal: 12, paddingVertical: 7, backgroundColor: 'rgba(6,5,4,0.82)', borderBottomWidth: 1, borderBottomColor: AXM.ash },
+    meterHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 3 },
+    meterLabel: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1.4 },
+    meterValue: { fontFamily: FONTS.mono, fontSize: 12 },
+    segRow: { flexDirection: 'row', gap: 2, height: 13 },
+    seg: { flex: 1, borderWidth: 1 },
+    bothRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginVertical: 5 },
+    bothLine: { flex: 1, height: 1, backgroundColor: AXM.ash },
+    bothText: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 2, color: AXM.sulfur },
+    meterDetail: { fontFamily: FONTS.mono, fontSize: 8, color: AXM.bone, letterSpacing: 0.6, marginTop: 3 },
+    metaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
+    ladderText: { fontFamily: FONTS.mono, fontSize: 7.5, color: AXM.bone, letterSpacing: 0.8 },
+    momentum: { fontFamily: FONTS.mono, fontSize: 8, color: HZ.gold, letterSpacing: 0.6 },
+    tray: { paddingHorizontal: 12, paddingTop: 8, paddingBottom: 6, backgroundColor: 'rgba(0,0,0,0.35)' },
+    trayHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 },
+    trayLabel: { fontFamily: FONTS.sans, fontSize: 8.5, letterSpacing: 1.2, color: AXM.bone },
+    trayCount: { fontFamily: FONTS.mono, fontSize: 8, letterSpacing: 1 },
+    trayDice: { flexDirection: 'row', gap: 14, justifyContent: 'center', alignItems: 'flex-end', minHeight: 64 },
+    dieTag: { fontFamily: FONTS.mono, fontSize: 6.5, color: AXM.bone, letterSpacing: 0.5, textAlign: 'center', marginTop: 2 },
+    playArea: { flex: 1, marginHorizontal: 10, marginVertical: 8, borderWidth: 1.5, borderStyle: 'dashed', backgroundColor: 'rgba(134,168,33,0.04)', paddingHorizontal: 8, paddingVertical: 7 },
+    playHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 },
+    playLabel: { fontFamily: FONTS.sans, fontSize: 8.5, letterSpacing: 1.2 },
+    deckCounts: { fontFamily: FONTS.mono, fontSize: 7.5, color: AXM.bone, letterSpacing: 1 },
+    playEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    playEmptyText: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 12, color: AXM.ash },
+    playCards: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, justifyContent: 'center', alignContent: 'flex-start' },
+    playHint: { fontFamily: FONTS.mono, fontSize: 7, color: AXM.bone, letterSpacing: 1, textAlign: 'center', marginTop: 4 },
+    dock: { height: 148, borderTopWidth: 1, borderTopColor: AXM.ash },
+    fan: { ...StyleSheet.absoluteFillObject, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 8 },
+    playWrap: {
+        position: 'absolute',
+        right: 10,
+        bottom: 12,
+        zIndex: 40,
+        shadowColor: AXM.sulfur,
+        shadowRadius: 16,
+        shadowOffset: { width: 0, height: 0 },
+        elevation: 8,
+    },
+    playBtn: { width: 78, height: 78, borderRadius: 39, borderWidth: 2.5, alignItems: 'center', justifyContent: 'center' },
+    playText: { fontFamily: FONTS.gothic, fontSize: 17, letterSpacing: 1, lineHeight: 18 },
+    playSub: { fontFamily: FONTS.mono, fontSize: 7, letterSpacing: 1, marginTop: 2 },
+});

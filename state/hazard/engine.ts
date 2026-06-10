@@ -1,0 +1,559 @@
+/**
+ * Hazard Minigame v2 — pure engine.
+ *
+ * Every function takes a `HazardSessionState` and returns a new one
+ * (or the same reference when the transition is illegal). All
+ * randomness flows through the session's embedded mulberry32 state,
+ * so a session is fully reproducible from its seed.
+ *
+ * Doctrine (user-confirmed 2026-06-10):
+ *  - Dice are cast ONCE at route selection and never re-cast between
+ *    rounds. Spent dice stay spent. Only the SECOND WIND (re-cast) and
+ *    convert cards manipulate the pool mid-hazard.
+ *  - Safe route: one combined FORCE+ESCAPE meter per round.
+ *  - Risk route: dual meters — BOTH must clear in the same round.
+ *  - Momentum (REC#1): surplus progress on a cleared round carries
+ *    half (capped at HAZARD_MOMENTUM_CAP) into the next round.
+ *  - Reserves (REC#3): unspent non-hex dice at completion each restore
+ *    1 VITAE on complete/perfect tiers.
+ */
+
+import {
+    getHazardCardDef,
+    getHazardDef,
+    HAZARD_DIE_FACES,
+    HAZARD_REWARD_CARDS,
+} from './content';
+import { nextFloat, nextInt, seedRng, shuffle, type HazardRngState } from './rng';
+import {
+    HAZARD_DICE_COUNT,
+    HAZARD_HAND_SIZE,
+    HAZARD_MOMENTUM_CAP,
+    HAZARD_PLAY_MAX,
+    type HazardCardDef,
+    type HazardColor,
+    type HazardConsequenceId,
+    type HazardDie,
+    type HazardHandEntry,
+    type HazardMark,
+    type HazardOutcome,
+    type HazardOutcomeTier,
+    type HazardResolveInfo,
+    type HazardRewardId,
+    type HazardRouteKey,
+    type HazardSessionState,
+} from './types';
+
+// ---------------------------------------------------------------------------
+// Internal helpers
+// ---------------------------------------------------------------------------
+
+interface Roll<T> {
+    value: T;
+    rng: HazardRngState;
+    uidCounter: number;
+}
+
+function rollDie(rng: HazardRngState, uidCounter: number): Roll<HazardDie> {
+    const draw = nextInt(rng, HAZARD_DIE_FACES.length);
+    const id = `d${uidCounter + 1}`;
+    return {
+        value: { id, kind: HAZARD_DIE_FACES[draw.value], state: 'available' },
+        rng: draw.state,
+        uidCounter: uidCounter + 1,
+    };
+}
+
+/** A fresh usable (non-hex) colour die — for powered re-cast / convert extras. */
+function rollManaDie(rng: HazardRngState, uidCounter: number, kind?: HazardColor): Roll<HazardDie> {
+    const colors: HazardColor[] = ['red', 'blue', 'purple', 'gold'];
+    let nextRng = rng;
+    let color = kind;
+    if (!color) {
+        const draw = nextInt(nextRng, colors.length);
+        nextRng = draw.state;
+        color = colors[draw.value];
+    }
+    const id = `d${uidCounter + 1}`;
+    return {
+        value: { id, kind: color, state: 'available', temporary: true },
+        rng: nextRng,
+        uidCounter: uidCounter + 1,
+    };
+}
+
+/** Builds the weighted draw bag from a list of deck card ids. */
+function refillPile(rng: HazardRngState, deckBag: readonly string[]): { pile: string[]; rng: HazardRngState } {
+    const shuffled = shuffle(rng, deckBag);
+    return { pile: shuffled.value, rng: shuffled.state };
+}
+
+interface DrawResult {
+    drawn: HazardHandEntry[];
+    drawPile: string[];
+    rng: HazardRngState;
+    uidCounter: number;
+}
+
+function drawFromPile(
+    rng: HazardRngState,
+    uidCounter: number,
+    drawPile: readonly string[],
+    deckBag: readonly string[],
+    n: number,
+): DrawResult {
+    let pile = drawPile.slice();
+    let r = rng;
+    if (pile.length < n) {
+        const refill = refillPile(r, deckBag);
+        pile = pile.concat(refill.pile);
+        r = refill.rng;
+    }
+    let uc = uidCounter;
+    const drawn = pile.slice(0, n).map((cardId) => {
+        uc += 1;
+        return { uid: `c${uc}`, cardId, dieId: null };
+    });
+    return { drawn, drawPile: pile.slice(n), rng: r, uidCounter: uc };
+}
+
+/** Per-card {force, escape} contribution. Dead cards contribute nothing. */
+export function hazardCardValue(entry: HazardHandEntry): { force: number; escape: number } {
+    const def = getHazardCardDef(entry.cardId);
+    if (def.effect || def.dead) return { force: 0, escape: 0 };
+    const powered = entry.dieId !== null;
+    return {
+        force: powered ? (def.fp ?? def.f) : def.f,
+        escape: powered ? (def.ep ?? def.e) : def.e,
+    };
+}
+
+/** Staged progress (play area only — excludes momentum base). */
+export function hazardStagedProgress(s: HazardSessionState): { force: number; escape: number } {
+    return s.play.reduce(
+        (acc, e) => {
+            const v = hazardCardValue(e);
+            return { force: acc.force + v.force, escape: acc.escape + v.escape };
+        },
+        { force: 0, escape: 0 },
+    );
+}
+
+/** Projected round progress: momentum base + staged cards. */
+export function hazardProjectedProgress(s: HazardSessionState): { force: number; escape: number } {
+    const staged = hazardStagedProgress(s);
+    return {
+        force: s.progressBase.force + staged.force,
+        escape: s.progressBase.escape + staged.escape,
+    };
+}
+
+// ---------------------------------------------------------------------------
+// Session lifecycle
+// ---------------------------------------------------------------------------
+
+/**
+ * Creates a fresh session in `route-select`: opening hand drawn (the
+ * player sees their 5 cards BEFORE committing to a route), dice not
+ * yet cast.
+ */
+export function createHazardSession(
+    seed: number,
+    deckBag: readonly string[],
+    hazardId: string,
+): HazardSessionState {
+    const def = getHazardDef(hazardId);
+    let rng = seedRng(seed);
+    const refill = refillPile(rng, deckBag);
+    rng = refill.rng;
+    const draw = drawFromPile(rng, 0, refill.pile, deckBag, HAZARD_HAND_SIZE);
+    return {
+        hazardId,
+        phase: 'route-select',
+        route: null,
+        round: 1,
+        totalRounds: def.rounds,
+        marks: Array.from({ length: def.rounds }, () => 'pending' as HazardMark),
+        drawPile: draw.drawPile,
+        discardPile: [],
+        hand: draw.drawn,
+        play: [],
+        dice: [],
+        progressBase: { force: 0, escape: 0 },
+        resolveInfo: null,
+        outcome: null,
+        pickedRewardCardId: null,
+        seed,
+        rng: draw.rng,
+        uidCounter: draw.uidCounter,
+    };
+}
+
+/** Route choice is binding for the whole hazard; casts the dice (once). */
+export function selectHazardRoute(
+    s: HazardSessionState,
+    route: HazardRouteKey,
+    deckBag: readonly string[],
+): HazardSessionState {
+    void deckBag;
+    if (s.phase !== 'route-select') return s;
+    let rng = s.rng;
+    let uc = s.uidCounter;
+    const dice: HazardDie[] = [];
+    for (let i = 0; i < HAZARD_DICE_COUNT; i++) {
+        const roll = rollDie(rng, uc);
+        rng = roll.rng;
+        uc = roll.uidCounter;
+        dice.push(roll.value);
+    }
+    return { ...s, phase: 'rolling', route, dice, rng, uidCounter: uc };
+}
+
+/** The dice-cast interstitial finished animating; begin round play. */
+export function finishHazardRolling(s: HazardSessionState): HazardSessionState {
+    if (s.phase !== 'rolling') return s;
+    return { ...s, phase: 'playing' };
+}
+
+// ---------------------------------------------------------------------------
+// Card effects (draw / re-cast / convert)
+// ---------------------------------------------------------------------------
+
+function applyUtilityEffect(
+    s: HazardSessionState,
+    def: HazardCardDef,
+    powered: boolean,
+    deckBag: readonly string[],
+): HazardSessionState {
+    if (def.effect === 'draw') {
+        const base = def.drawBase ?? 1;
+        const poweredN = def.drawPowered ?? base;
+        const n = powered ? poweredN - base : base;
+        if (n <= 0) return s;
+        const draw = drawFromPile(s.rng, s.uidCounter, s.drawPile, deckBag, n);
+        return {
+            ...s,
+            hand: [...s.hand, ...draw.drawn],
+            drawPile: draw.drawPile,
+            rng: draw.rng,
+            uidCounter: draw.uidCounter,
+        };
+    }
+    if (def.effect === 'recast') {
+        let rng = s.rng;
+        let uc = s.uidCounter;
+        let dice = s.dice.map((d) => {
+            if (d.state !== 'available') return d;
+            const roll = rollDie(rng, uc);
+            rng = roll.rng;
+            uc = roll.uidCounter;
+            return roll.value;
+        });
+        if (powered) {
+            const extra = rollManaDie(rng, uc);
+            rng = extra.rng;
+            uc = extra.uidCounter;
+            dice = [...dice, extra.value];
+        }
+        return { ...s, dice, rng, uidCounter: uc };
+    }
+    if (def.effect === 'convert') {
+        let dice = s.dice.map((d) =>
+            d.kind === 'hex' ? { ...d, kind: def.kind, state: 'available' as const } : d,
+        );
+        let rng = s.rng;
+        let uc = s.uidCounter;
+        if (powered) {
+            const extra = rollManaDie(rng, uc, def.kind);
+            rng = extra.rng;
+            uc = extra.uidCounter;
+            dice = [...dice, extra.value];
+        }
+        return { ...s, dice, rng, uidCounter: uc };
+    }
+    return s;
+}
+
+// ---------------------------------------------------------------------------
+// Round play
+// ---------------------------------------------------------------------------
+
+/** Moves a hand card into the play area (max HAZARD_PLAY_MAX). */
+export function stageHazardCard(
+    s: HazardSessionState,
+    uid: string,
+    deckBag: readonly string[],
+): HazardSessionState {
+    if (s.phase !== 'playing') return s;
+    if (s.play.length >= HAZARD_PLAY_MAX) return s;
+    const card = s.hand.find((h) => h.uid === uid);
+    if (!card) return s;
+    let ns: HazardSessionState = {
+        ...s,
+        hand: s.hand.filter((h) => h.uid !== uid),
+        play: [...s.play, card],
+    };
+    const def = getHazardCardDef(card.cardId);
+    if (def.effect && !card.effectFired) {
+        ns = applyUtilityEffect(ns, def, false, deckBag);
+        ns = { ...ns, play: ns.play.map((p) => (p.uid === uid ? { ...p, effectFired: 'base' as const } : p)) };
+    }
+    return ns;
+}
+
+/**
+ * Returns a staged card to hand. Frees its die. Utility effects already
+ * fired stay fired (drawn cards remain — matches the prototype).
+ */
+export function unstageHazardCard(s: HazardSessionState, uid: string): HazardSessionState {
+    if (s.phase !== 'playing') return s;
+    const card = s.play.find((p) => p.uid === uid);
+    if (!card) return s;
+    let dice = s.dice;
+    if (card.dieId) {
+        dice = s.dice.map((d) => (d.id === card.dieId ? { ...d, state: 'available' as const } : d));
+    }
+    return {
+        ...s,
+        play: s.play.filter((p) => p.uid !== uid),
+        hand: [...s.hand, { ...card, dieId: null }],
+        dice,
+    };
+}
+
+/**
+ * Drops a die onto a staged card to power its SURGE action. Colour
+ * must match (gold cards therefore demand a gold die); hex dice are
+ * blocked; dead cards reject all dice.
+ */
+export function powerHazardCard(
+    s: HazardSessionState,
+    uid: string,
+    dieId: string,
+    deckBag: readonly string[],
+): HazardSessionState {
+    if (s.phase !== 'playing') return s;
+    const card = s.play.find((p) => p.uid === uid);
+    const die = s.dice.find((d) => d.id === dieId);
+    if (!card || !die) return s;
+    if (die.kind === 'hex' || die.state !== 'available') return s;
+    const def = getHazardCardDef(card.cardId);
+    if (def.dead) return s;
+    if (def.kind !== die.kind) return s;
+    let dice = s.dice.map((d) => (d.id === dieId ? { ...d, state: 'spent' as const } : d));
+    if (card.dieId) {
+        dice = dice.map((d) => (d.id === card.dieId ? { ...d, state: 'available' as const } : d));
+    }
+    let ns: HazardSessionState = {
+        ...s,
+        dice,
+        play: s.play.map((p) => (p.uid === uid ? { ...p, dieId } : p)),
+    };
+    if (def.effect && card.effectFired !== 'powered') {
+        ns = applyUtilityEffect(ns, def, true, deckBag);
+        ns = {
+            ...ns,
+            play: ns.play.map((p) => (p.uid === uid ? { ...p, dieId, effectFired: 'powered' as const } : p)),
+        };
+    }
+    return ns;
+}
+
+// ---------------------------------------------------------------------------
+// Resolve
+// ---------------------------------------------------------------------------
+
+function momentumCarry(value: number, need: number, cleared: boolean, lastRound: boolean): number {
+    if (!cleared || lastRound) return 0;
+    const surplus = Math.max(0, value - need);
+    return Math.min(HAZARD_MOMENTUM_CAP, Math.floor(surplus / 2));
+}
+
+/** Commits the staged set, judges the round, enters `resolve-flash`. */
+export function resolveHazardRound(s: HazardSessionState): HazardSessionState {
+    if (s.phase !== 'playing') return s;
+    if (s.play.length === 0) return s;
+    const def = getHazardDef(s.hazardId);
+    const p = hazardProjectedProgress(s);
+    const lastRound = s.round >= s.totalRounds;
+    let info: HazardResolveInfo;
+    if (s.route === 'risk') {
+        const [nF, nE] = def.risk.thresholds[s.round - 1];
+        const cleared = p.force >= nF && p.escape >= nE;
+        info = {
+            cleared,
+            dual: true,
+            round: s.round,
+            force: p.force,
+            escape: p.escape,
+            needF: nF,
+            needE: nE,
+            carryForce: momentumCarry(p.force, nF, cleared, lastRound),
+            carryEscape: momentumCarry(p.escape, nE, cleared, lastRound),
+        };
+    } else {
+        const need = def.safe.thresholds[s.round - 1];
+        const combined = p.force + p.escape;
+        const cleared = combined >= need;
+        // Safe route carry is combined; bank it on the force meter so
+        // projected math stays a plain sum.
+        info = {
+            cleared,
+            dual: false,
+            round: s.round,
+            force: p.force,
+            escape: p.escape,
+            combined,
+            need,
+            carryForce: momentumCarry(combined, need, cleared, lastRound),
+            carryEscape: 0,
+        };
+    }
+    const marks = s.marks.slice();
+    marks[s.round - 1] = info.cleared ? 'O' : 'X';
+    return { ...s, phase: 'resolve-flash', marks, resolveInfo: info };
+}
+
+// ---------------------------------------------------------------------------
+// Outcome
+// ---------------------------------------------------------------------------
+
+export function hazardTierOf(marks: readonly HazardMark[]): HazardOutcomeTier {
+    const wins = marks.filter((m) => m === 'O').length;
+    if (wins === marks.length) return 'perfect';
+    if (wins >= 1) return 'complete';
+    return 'failure';
+}
+
+function rollRewardCards(
+    rng: HazardRngState,
+    tier: HazardOutcomeTier,
+    wins: number,
+): { cards: HazardCardDef[]; rng: HazardRngState } {
+    let r = rng;
+    const pick = (rarity: HazardCardDef['rarity']): HazardCardDef => {
+        const options = HAZARD_REWARD_CARDS.filter((c) => c.rarity === rarity);
+        const draw = nextInt(r, options.length);
+        r = draw.state;
+        return options[draw.value];
+    };
+    const chosen: HazardCardDef[] = [];
+    if (tier === 'perfect') chosen.push(pick('rare')); // guaranteed rare
+    let guard = 0;
+    while (chosen.length < 3 && guard++ < 40) {
+        const draw = nextFloat(r);
+        r = draw.state;
+        let rarity: HazardCardDef['rarity'];
+        if (wins <= 1) {
+            rarity = draw.value < 0.7 ? 'common' : 'uncommon'; // 0% rare on a single win
+        } else {
+            rarity = draw.value < 0.5 ? 'common' : draw.value < 0.85 ? 'uncommon' : 'rare';
+        }
+        const c = pick(rarity);
+        if (!chosen.find((x) => x.id === c.id)) chosen.push(c);
+    }
+    return { cards: chosen, rng: r };
+}
+
+const CONSEQUENCES_BY_LOSS: Record<number, HazardConsequenceId[]> = {
+    0: [],
+    1: ['tokens'],
+    2: ['maxhp', 'deadcard'],
+    3: ['minhp', 'maxhp', 'deadcard', 'curse'],
+};
+
+function computeOutcome(s: HazardSessionState): { outcome: HazardOutcome; rng: HazardRngState } {
+    const def = getHazardDef(s.hazardId);
+    const wins = s.marks.filter((m) => m === 'O').length;
+    const losses = s.marks.length - wins;
+    const tier = hazardTierOf(s.marks);
+    const routeKey = s.route ?? 'safe';
+    let rewards: HazardRewardId[] = [];
+    if (tier === 'perfect') {
+        rewards = routeKey === 'risk' ? ['cache', 'relic', 'token'] : ['cache', 'vitae', 'token'];
+    } else if (tier === 'complete') {
+        rewards = routeKey === 'risk' ? (wins >= 2 ? ['cache', 'relic'] : ['cache']) : ['vitae'];
+    }
+    const consequences = CONSEQUENCES_BY_LOSS[Math.min(losses, 3)] ?? [];
+    let offerCards: HazardCardDef[] = [];
+    let rng = s.rng;
+    if (tier !== 'failure') {
+        const rolled = rollRewardCards(rng, tier, wins);
+        offerCards = rolled.cards;
+        rng = rolled.rng;
+    }
+    const reserveBonus =
+        tier === 'failure'
+            ? 0
+            : s.dice.filter((d) => d.kind !== 'hex' && d.state === 'available').length;
+    const route = routeKey === 'risk' ? def.risk : def.safe;
+    const outcome: HazardOutcome = {
+        tier,
+        wins,
+        losses,
+        rewards,
+        consequences,
+        offerCards,
+        canSkip: tier === 'perfect',
+        reserveBonus,
+        penaltyVitae: route.penaltyVitae * losses,
+    };
+    return { outcome, rng };
+}
+
+/**
+ * Dismisses the resolve flash. Final round → compute outcome and enter
+ * `outcome`; otherwise advance the round: discard hand+play, draw 5,
+ * apply momentum — the dice pool is NOT re-cast.
+ */
+export function continueHazardAfterResolve(
+    s: HazardSessionState,
+    deckBag: readonly string[],
+): HazardSessionState {
+    if (s.phase !== 'resolve-flash' || !s.resolveInfo) return s;
+    const info = s.resolveInfo;
+    if (info.round >= s.totalRounds) {
+        const { outcome, rng } = computeOutcome(s);
+        return { ...s, phase: 'outcome', outcome, resolveInfo: null, rng };
+    }
+    const discardPile = [
+        ...s.discardPile,
+        ...s.play.map((p) => p.cardId),
+        ...s.hand.map((h) => h.cardId),
+    ];
+    const draw = drawFromPile(s.rng, s.uidCounter, s.drawPile, deckBag, HAZARD_HAND_SIZE);
+    return {
+        ...s,
+        phase: 'playing',
+        round: info.round + 1,
+        play: [],
+        hand: draw.drawn,
+        drawPile: draw.drawPile,
+        discardPile,
+        progressBase: { force: info.carryForce, escape: info.carryEscape },
+        resolveInfo: null,
+        rng: draw.rng,
+        uidCounter: draw.uidCounter,
+        // dice untouched — the one cast must last the hazard.
+    };
+}
+
+/** Outcome modal acknowledged → rewards/consequences ledger. */
+export function acknowledgeHazardOutcome(s: HazardSessionState): HazardSessionState {
+    if (s.phase !== 'outcome') return s;
+    return { ...s, phase: 'rewards' };
+}
+
+/**
+ * Confirms the rewards modal. `cardId` is the picked reward card
+ * (null = skip on perfect, or failure with no offer). Terminal phase;
+ * the store applies the outcome to real game state and clears the
+ * session.
+ */
+export function claimHazardRewards(s: HazardSessionState, cardId: string | null): HazardSessionState {
+    if (s.phase !== 'rewards') return s;
+    if (!s.outcome) return s;
+    if (cardId !== null && !s.outcome.offerCards.find((c) => c.id === cardId)) return s;
+    if (cardId === null && s.outcome.offerCards.length > 0 && !s.outcome.canSkip) return s;
+    return { ...s, phase: 'done', pickedRewardCardId: cardId };
+}

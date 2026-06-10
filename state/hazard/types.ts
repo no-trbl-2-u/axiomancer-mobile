@@ -1,0 +1,248 @@
+/**
+ * Hazard Minigame v2 — engine types.
+ *
+ * This is the LOCAL v2 engine implementing the final design-handoff
+ * prototype (design bundle 2026-06-10, `Hazard Minigame Prototype.html`).
+ * The published `axiomancer-mechanics` hazard engine still implements
+ * the older CDR-0006 doctrine; the exact differences are catalogued in
+ * `docs/hazard-v2-vs-mechanics-divergence.md` so the rules can be
+ * upstreamed later. Mobile components must never compute rules — they
+ * render `HazardSessionState` via the presenter and dispatch actions.
+ */
+
+import type { HazardRngState } from './rng';
+
+// ---------------------------------------------------------------------------
+// Colours, progress, dice
+// ---------------------------------------------------------------------------
+
+/** The only four card/mana colours in the v2 system. */
+export type HazardColor = 'red' | 'blue' | 'purple' | 'gold';
+
+/** A die face is a colour or the hostile blocked face. */
+export type HazardDieKind = HazardColor | 'hex';
+
+/** The two progress types that fill the meters. */
+export type HazardProgressKey = 'force' | 'escape';
+
+export type HazardDieState = 'available' | 'spent';
+
+export interface HazardDie {
+    id: string;
+    kind: HazardDieKind;
+    state: HazardDieState;
+    /**
+     * True for dice created by card effects (powered convert / re-cast).
+     * Display-only distinction; temporary dice follow normal spend rules
+     * and — like all dice under the no-re-cast doctrine — persist until
+     * spent or the hazard ends.
+     */
+    temporary?: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// Cards
+// ---------------------------------------------------------------------------
+
+export type HazardCardRarity = 'common' | 'uncommon' | 'rare';
+
+export type HazardUtilityEffect = 'draw' | 'recast' | 'convert';
+
+export type HazardKeywordId =
+    | 'surge'
+    | 'force'
+    | 'escape'
+    | 'convert'
+    | 'draw'
+    | 'recast'
+    | 'gilded'
+    | 'crack';
+
+export interface HazardCardDef {
+    id: string;
+    name: string;
+    /** Card colour — also the single die colour that can power it. */
+    kind: HazardColor;
+    rarity: HazardCardRarity;
+    /** Relative frequency in the starter draw pile (reward cards omit it). */
+    weight?: number;
+    /** FREE (top) action values. */
+    f: number;
+    e: number;
+    /** MANA (bottom / SURGE) action values. Utility cards omit them. */
+    fp?: number;
+    ep?: number;
+    /** Utility cards replace stat values with an effect. */
+    effect?: HazardUtilityEffect;
+    drawBase?: number;
+    drawPowered?: number;
+    /**
+     * Dead cards (consequence CRACK cards) cannot be powered and
+     * contribute nothing — they only clog the hand.
+     */
+    dead?: boolean;
+    flavor: string;
+    keywords: HazardKeywordId[];
+}
+
+/** A physical card instance in hand / play. */
+export interface HazardHandEntry {
+    uid: string;
+    cardId: string;
+    /** Die powering this card's MANA action, or null when un-powered. */
+    dieId: string | null;
+    /**
+     * Utility effects fire on placement (base) and again on powering
+     * (the powered delta). Tracks the strongest tier already fired so
+     * re-staging can't double-fire.
+     */
+    effectFired?: 'base' | 'powered';
+}
+
+// ---------------------------------------------------------------------------
+// Routes & hazards
+// ---------------------------------------------------------------------------
+
+export type HazardRouteKey = 'safe' | 'risk';
+
+export interface HazardSafeRouteDef {
+    key: 'safe';
+    dual: false;
+    /** Combined FORCE+ESCAPE threshold per round. */
+    thresholds: number[];
+    rewardLabel: string;
+    /** Vitae lost per failed round when the hazard ends in failure tiers. */
+    penaltyVitae: number;
+}
+
+export interface HazardRiskRouteDef {
+    key: 'risk';
+    dual: true;
+    /** Per-round [force, escape] thresholds — BOTH required. */
+    thresholds: [number, number][];
+    rewardLabel: string;
+    penaltyVitae: number;
+}
+
+export type HazardRouteDef = HazardSafeRouteDef | HazardRiskRouteDef;
+
+export interface HazardDef {
+    id: string;
+    title: string;
+    scenario: string;
+    /** Dramatic headline on the play board's scene strip. */
+    boardHeadline: string;
+    /** One-line route flavor shown on the play board. */
+    safeBoardNote: string;
+    riskBoardNote: string;
+    safeRouteName: string;
+    riskRouteName: string;
+    safeRouteDesc: string;
+    riskRouteDesc: string;
+    rounds: number;
+    safe: HazardSafeRouteDef;
+    risk: HazardRiskRouteDef;
+}
+
+// ---------------------------------------------------------------------------
+// Rounds, outcome, rewards
+// ---------------------------------------------------------------------------
+
+export type HazardMark = 'O' | 'X' | 'pending';
+
+export interface HazardResolveInfo {
+    cleared: boolean;
+    dual: boolean;
+    round: number;
+    force: number;
+    escape: number;
+    /** Safe route: combined value + need. */
+    combined?: number;
+    need?: number;
+    /** Risk route: per-meter needs. */
+    needF?: number;
+    needE?: number;
+    /**
+     * Momentum (REC#1): surplus carried into the next round, already
+     * halved and capped. Zero on a failed round or the final round.
+     */
+    carryForce: number;
+    carryEscape: number;
+}
+
+export type HazardOutcomeTier = 'perfect' | 'complete' | 'failure';
+
+export type HazardRewardId = 'cache' | 'relic' | 'vitae' | 'token';
+
+export type HazardConsequenceId = 'tokens' | 'deadcard' | 'maxhp' | 'minhp' | 'curse';
+
+export interface HazardOutcome {
+    tier: HazardOutcomeTier;
+    wins: number;
+    losses: number;
+    rewards: HazardRewardId[];
+    consequences: HazardConsequenceId[];
+    /** Pick-1-of-3 card offer (empty on failure). */
+    offerCards: HazardCardDef[];
+    /** Perfect runs may decline the card pick. */
+    canSkip: boolean;
+    /**
+     * Reserves (REC#3): unspent non-hex dice at completion each restore
+     * 1 VITAE on complete/perfect tiers. Mage Knight's crystal economy —
+     * dice you didn't burn are worth something.
+     */
+    reserveBonus: number;
+    /** Vitae lost to the route penalty: penaltyVitae × lost rounds. */
+    penaltyVitae: number;
+}
+
+// ---------------------------------------------------------------------------
+// Session
+// ---------------------------------------------------------------------------
+
+export type HazardPhase =
+    | 'route-select'
+    | 'rolling'
+    | 'playing'
+    | 'resolve-flash'
+    | 'outcome'
+    | 'rewards'
+    | 'done';
+
+export interface HazardSessionState {
+    hazardId: string;
+    phase: HazardPhase;
+    route: HazardRouteKey | null;
+    round: number;
+    totalRounds: number;
+    marks: HazardMark[];
+    /** Card ids remaining in the draw pile (refilled from the deck bag when low). */
+    drawPile: string[];
+    /** Card ids discarded this hazard (UI shows the count — REC#2). */
+    discardPile: string[];
+    hand: HazardHandEntry[];
+    play: HazardHandEntry[];
+    dice: HazardDie[];
+    /** Momentum carried into the current round (REC#1). */
+    progressBase: { force: number; escape: number };
+    resolveInfo: HazardResolveInfo | null;
+    outcome: HazardOutcome | null;
+    /** Reward card picked in the rewards phase (null = skipped / none). */
+    pickedRewardCardId: string | null;
+    seed: number;
+    rng: HazardRngState;
+    /** Monotonic per-session counter backing uid generation. */
+    uidCounter: number;
+}
+
+/** Maximum cards stageable in the play area per round. */
+export const HAZARD_PLAY_MAX = 6;
+
+/** Cards drawn at the start of every round. */
+export const HAZARD_HAND_SIZE = 5;
+
+/** Dice cast once at route selection — they do NOT re-cast between rounds. */
+export const HAZARD_DICE_COUNT = 4;
+
+/** Momentum cap: carried surplus per meter never exceeds this (REC#1). */
+export const HAZARD_MOMENTUM_CAP = 3;

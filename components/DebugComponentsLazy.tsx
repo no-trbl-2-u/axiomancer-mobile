@@ -17,6 +17,7 @@ import { isDevToolsEnabled } from '@/lib/buildProfile';
 // Lazy load debug components to reduce bundle size
 const DebugChaosToggle = lazy(() => import('@/components/DebugChaosToggle').then(m => ({ default: m.DebugChaosToggle })));
 const DebugCombatButton = lazy(() => import('@/components/DebugCombatButton').then(m => ({ default: m.DebugCombatButton })));
+const DebugHazardButton = lazy(() => import('@/components/DebugHazardButton').then(m => ({ default: m.DebugHazardButton })));
 const DebugAlignmentShift = lazy(() => import('@/components/DebugAlignmentShift').then(m => ({ default: m.DebugAlignmentShift })));
 const DebugCurrencyControl = lazy(() => import('@/components/DebugCurrencyControl').then(m => ({ default: m.DebugCurrencyControl })));
 const DebugDialogueJump = lazy(() => import('@/components/DebugDialogueJump').then(m => ({ default: m.DebugDialogueJump })));
@@ -57,6 +58,7 @@ export function DebugComponentsLazy() {
       <DebugSeedButton />
       <DebugPopulateAllItems />
       <DebugCombatButton />
+      <DebugHazardButton />
       <DebugMapResetButton />
       <DebugChaosToggle />
       <DebugPresetPicker />

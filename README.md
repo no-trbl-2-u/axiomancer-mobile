@@ -21,16 +21,34 @@ and below T's latest explicit decision / company CDRs.
 
 ## Quick start
 
+### Prerequisites
+
+- **Node.js 18+** — the React Native toolchain requires modern Node.js
+- **Expo CLI** — install globally with `npm install -g @expo/cli`
+- **Target platforms:**
+  - **iOS:** Xcode (Mac only) or Expo Go app
+  - **Android:** Android Studio or Expo Go app  
+  - **Web:** Any modern browser
+
+### Development workflow
+
 ```bash
+# 1. Install dependencies
 npm install
-npm start              # Metro dev server
-npm run ios            # iOS simulator
-npm run android        # Android emulator
-npm run web            # web target
+
+# 2. Start the development server
+npm start              # Opens Metro bundler with QR code
+
+# 3. Choose your target platform:
+npm run ios            # iOS simulator (requires Xcode)
+npm run android        # Android emulator (requires Android Studio)
+npm run web            # Web browser (localhost:19006)
+
+# 4. Before committing changes:
+npm run verify         # Runs lint + typecheck + test
 ```
 
-You will need the Expo CLI installed; on first run, install Expo Go
-or build a development client.
+**First time setup:** Install Expo Go on your mobile device and scan the QR code from `npm start`, or set up development simulators following [Expo's environment setup guide](https://docs.expo.dev/get-started/installation/).
 
 ## Scripts
 

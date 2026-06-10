@@ -12,7 +12,7 @@ export interface SkillPhaseProps {
     onPick: (s: SkillOption) => void;
 }
 
-export function SkillPhase({
+export const SkillPhase = React.memo(function SkillPhase({
     skills,
     availableCount,
     totalCount,
@@ -32,7 +32,7 @@ export function SkillPhase({
             </Text>
         </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
     list: {

@@ -21,7 +21,7 @@ export interface ActionPhaseProps {
     onFlee: () => void;
 }
 
-export function ActionPhase({
+export const ActionPhase = React.memo(function ActionPhase({
     options,
     fleeAvailable,
     fleeHint,
@@ -93,7 +93,7 @@ export function ActionPhase({
             )}
         </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
     grid: {

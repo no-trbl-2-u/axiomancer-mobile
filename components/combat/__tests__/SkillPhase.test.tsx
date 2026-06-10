@@ -13,11 +13,12 @@ import { SkillPhase } from '@/components/combat/SkillPhase';
 describe('SkillPhase: module surface', () => {
     it('exports a named SkillPhase symbol', () => {
         expect(SkillPhase).toBeDefined();
-        expect(typeof SkillPhase).toBe('function');
+        // React.memo returns an object (MemoizedComponent), not a function
+        expect(typeof SkillPhase).toBe('object');
     });
 
     it('SkillPhase is a valid React component', () => {
-        // Component should accept props matching SkillPhaseProps interface
-        expect(SkillPhase.length).toBeGreaterThanOrEqual(1);
+        // React.memo components have a $$typeof property
+        expect(SkillPhase).toHaveProperty('$$typeof');
     });
 });

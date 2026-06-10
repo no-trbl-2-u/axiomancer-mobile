@@ -24,7 +24,7 @@ export interface PhaseStackProps {
     onLeave: () => void;
 }
 
-export function PhaseStack({
+export const PhaseStack = React.memo(function PhaseStack({
     vm,
     onPickStance,
     onPickAction,
@@ -128,7 +128,7 @@ export function PhaseStack({
                 })}
         </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
     column: {

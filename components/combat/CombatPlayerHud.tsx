@@ -17,7 +17,7 @@ interface CombatPlayerHudProps {
     vm: CombatViewModel;
 }
 
-export function CombatPlayerHud({ vm }: CombatPlayerHudProps) {
+export const CombatPlayerHud = React.memo(function CombatPlayerHud({ vm }: CombatPlayerHudProps) {
     // Phase 73 — port the design's PlayerHUDLive (`prototype.jsx:
     // 452-472`). Sits at the bottom of the seal as a "your turn"
     // footer: stance glyph on the left (sulfur when a stance is
@@ -69,7 +69,7 @@ export function CombatPlayerHud({ vm }: CombatPlayerHudProps) {
             </View>
         </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
     // Phase 73 — design's PlayerHUDLive frame (`prototype.jsx:454`).

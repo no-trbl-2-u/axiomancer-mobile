@@ -26,7 +26,7 @@ export interface PhaseBottomProps {
     onLeave: () => void;
 }
 
-export function PhaseBottom({ vm, onPickStance, onPickAction, onPickSkill, onGoBackToPhase, onFlee, onContinue, onLeave }: PhaseBottomProps) {
+export const PhaseBottom = React.memo(function PhaseBottom({ vm, onPickStance, onPickAction, onPickSkill, onGoBackToPhase, onFlee, onContinue, onLeave }: PhaseBottomProps) {
     return (
         <View style={styles.phaseSection} testID={`combat-phase-${vm.phase}`}>
             <View style={styles.phaseHeader}>
@@ -55,7 +55,7 @@ export function PhaseBottom({ vm, onPickStance, onPickAction, onPickSkill, onGoB
             />
         </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
     phaseSection: { 

@@ -21,7 +21,7 @@ interface CombatEnemyPanelProps {
     vm: CombatViewModel;
 }
 
-export function CombatEnemyPanel({ vm }: CombatEnemyPanelProps) {
+export const CombatEnemyPanel = React.memo(function CombatEnemyPanel({ vm }: CombatEnemyPanelProps) {
     const lastStance: StanceKey = vm.enemy.lastStance ?? 'mind';
     // Phase 72 — restructured to the design's left-portrait pattern
     // (`design/handoff-2026-05-23/project/screens-canonical.jsx:213-243`).
@@ -130,7 +130,7 @@ export function CombatEnemyPanel({ vm }: CombatEnemyPanelProps) {
             </View>
         </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
     // Phase 72 — three-column EnemyPanel layout matching the design's

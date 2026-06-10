@@ -13,11 +13,12 @@ import { ActionPhase } from '@/components/combat/ActionPhase';
 describe('ActionPhase: module surface', () => {
     it('exports a named ActionPhase symbol', () => {
         expect(ActionPhase).toBeDefined();
-        expect(typeof ActionPhase).toBe('function');
+        // React.memo returns an object (MemoizedComponent), not a function
+        expect(typeof ActionPhase).toBe('object');
     });
 
     it('ActionPhase is a valid React component', () => {
-        // Component should accept props matching ActionPhaseProps interface
-        expect(ActionPhase.length).toBeGreaterThanOrEqual(1);
+        // React.memo components have a $$typeof property
+        expect(ActionPhase).toHaveProperty('$$typeof');
     });
 });

@@ -89,6 +89,7 @@ import {
     beginHazardAction,
     claimHazardRewardsAction,
     continueHazardAfterResolveAction,
+    discardHazardCardAction,
     finishHazardRollingAction,
     powerHazardCardAction,
     resolveHazardRoundAction,
@@ -350,6 +351,8 @@ export interface AppActions {
     stageHazardCard: (uid: string) => void;
     /** Tap a staged card to return it to hand (frees its die). */
     unstageHazardCard: (uid: string) => void;
+    /** Drag a card to the trash bin — discard it for its SALVAGE benefit. */
+    discardHazardCard: (uid: string) => void;
     /** Drop a matching-colour die on a staged card's SURGE socket. */
     powerHazardCard: (uid: string, dieId: string) => void;
     /** Commit the staged set; the engine stamps O or X. */
@@ -893,6 +896,7 @@ export function createAppActions(store: AppStore): AppActions {
         finishHazardRolling: () => finishHazardRollingAction(store),
         stageHazardCard: (uid) => stageHazardCardAction(store, uid),
         unstageHazardCard: (uid) => unstageHazardCardAction(store, uid),
+        discardHazardCard: (uid) => discardHazardCardAction(store, uid),
         powerHazardCard: (uid, dieId) => powerHazardCardAction(store, uid, dieId),
         resolveHazardRound: () => resolveHazardRoundAction(store),
         continueHazardAfterResolve: () => continueHazardAfterResolveAction(store),

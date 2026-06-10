@@ -16,6 +16,7 @@ import {
     claimHazardRewards as engineClaimRewards,
     continueHazardAfterResolve as engineContinueAfterResolve,
     createHazardSession,
+    discardHazardCard as engineDiscardCard,
     finishHazardRolling as engineFinishRolling,
     powerHazardCard as enginePowerCard,
     resolveHazardRound as engineResolveRound,
@@ -114,6 +115,12 @@ export function unstageHazardCardAction(store: AppStore, uid: string): void {
     const s = store.getState().hazard?.session;
     if (!s) return;
     setSession(store, engineUnstageCard(s, uid));
+}
+
+export function discardHazardCardAction(store: AppStore, uid: string): void {
+    const s = store.getState().hazard?.session;
+    if (!s) return;
+    setSession(store, engineDiscardCard(s, uid));
 }
 
 export function powerHazardCardAction(store: AppStore, uid: string, dieId: string): void {

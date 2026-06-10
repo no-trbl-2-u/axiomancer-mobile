@@ -175,10 +175,38 @@ async function stagedCount(page) {
     return page.locator('[data-testid^="hazard-staged-"]').count()
 }
 
+async function discardCount(page) {
+    const text = await page.getByTestId('hazard-deck-counts').innerText()
+    const match = text.match(/DISCARD\s+(\d+)/)
+    return match ? Number(match[1]) : 0
+}
+
 async function playOneRound(page, round) {
+    const playArea = page.getByTestId('hazard-play-area')
+
+    // Round 1: exercise the trash bin — drag one hand card onto it and
+    // verify the discard registers (salvage fires engine-side).
+    if (round === 1) {
+        const before = await discardCount(page)
+        const handBefore = await page.locator('[data-testid^="hazard-hand-"]').count()
+        const trashTarget = await centerOf(page.getByTestId('hazard-trash'))
+        await dragTo(page, page.locator('[data-testid^="hazard-hand-"]').first(), trashTarget)
+        // a missed drop opens the detail overlay — close it and report
+        const detail = page.getByTestId('hazard-card-detail')
+        if (await detail.isVisible().catch(() => false)) {
+            await detail.click()
+            fail('trash-bin drop opened the card detail instead of discarding')
+        }
+        const after = await discardCount(page)
+        const handAfter = await page.locator('[data-testid^="hazard-hand-"]').count()
+        if (after !== before + 1 || handAfter !== handBefore - 1) {
+            fail(`trash bin did not discard (discard ${before}→${after}, hand ${handBefore}→${handAfter})`)
+        }
+        log(`round ${round}: scrapped a card to the bin (discard ${after})`)
+    }
+
     // Stage every hand card (up to the 6-card cap) by dragging it into
     // the play area.
-    const playArea = page.getByTestId('hazard-play-area')
     let guard = 0
     while ((await stagedCount(page)) < 6 && guard++ < 12) {
         const handCards = page.locator('[data-testid^="hazard-hand-"]')

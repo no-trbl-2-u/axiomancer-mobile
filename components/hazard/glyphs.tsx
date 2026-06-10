@@ -255,6 +255,21 @@ export function Cracks({ seed = 1, opacity = 0.5 }: { seed?: number; opacity?: n
 }
 
 // ---------------------------------------------------------------------------
+// Trash bin — the discard/salvage drop target
+// ---------------------------------------------------------------------------
+
+export function TrashGlyph({ size = 22, color = AXM.bone }: { size?: number; color?: string }) {
+    const s = { stroke: color, strokeWidth: 1.6, fill: 'none' as const, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const };
+    return (
+        <Svg viewBox="0 0 24 24" width={size} height={size}>
+            <Path d="M5 7 L6.5 21 H17.5 L19 7" {...s} />
+            <Path d="M3.5 7 H20.5 M9 7 V4.5 H15 V7" {...s} />
+            <Path d="M9.5 10.5 V17.5 M12 10.5 V17.5 M14.5 10.5 V17.5" {...s} strokeWidth={1.2} />
+        </Svg>
+    );
+}
+
+// ---------------------------------------------------------------------------
 // Cast shadow ellipse for dice
 // ---------------------------------------------------------------------------
 

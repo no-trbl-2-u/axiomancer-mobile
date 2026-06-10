@@ -102,6 +102,43 @@ describe('hazard screen — round play board', () => {
         expect(screen.getByTestId('hazard-hand').children.length).toBeGreaterThan(0);
     });
 
+    it('renders the trash bin; discarding through the store removes the card and grants salvage', () => {
+        const { store, actions } = mountHazard();
+        toPlaying(actions, 'safe');
+        expect(screen.getByTestId('hazard-trash')).toBeTruthy();
+        expect(screen.getByLabelText(/Trash bin/)).toBeTruthy();
+        act(() => {
+            rigHand(store, [
+                { uid: 'h1', cardId: 'steps' },
+                { uid: 'h2', cardId: 'scram' },
+            ]);
+            actions.discardHazardCard('h1'); // salvage: +1 FORCE this round
+        });
+        const session = store.getState().hazard.session!;
+        expect(session.hand.map((h) => h.uid)).toEqual(['h2']);
+        expect(session.discardPile).toContain('steps');
+        expect(session.progressBase.force).toBe(1);
+        expect(screen.getByText(/DISCARD 1/)).toBeTruthy();
+    });
+
+    it('kept hand survives the round boundary and draws back up to 5', () => {
+        const { store, actions } = mountHazard();
+        toPlaying(actions, 'safe');
+        act(() => {
+            rigHand(store, [
+                { uid: 'keep1', cardId: 'scram' },
+                { uid: 'play1', cardId: 'grip' },
+            ]);
+            actions.stageHazardCard('play1');
+            actions.resolveHazardRound();
+            actions.continueHazardAfterResolve();
+        });
+        const session = store.getState().hazard.session!;
+        expect(session.round).toBe(2);
+        expect(session.hand.map((h) => h.uid)).toContain('keep1');
+        expect(session.hand).toHaveLength(5);
+    });
+
     it('safe route renders the single combined PASSAGE meter', () => {
         const { actions } = mountHazard();
         toPlaying(actions, 'safe');

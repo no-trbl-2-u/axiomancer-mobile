@@ -98,6 +98,27 @@ describe('hazard presenter — affordability', () => {
         expect(vm.hand.find((c) => c.uid === 'h-gold')?.dieAvailable).toBe(false);
     });
 
+    it('salvage maps to readable copy and appends the SALVAGE keyword', () => {
+        let s = playingSession('safe');
+        s = {
+            ...s,
+            hand: [
+                { uid: 'h-prog', cardId: 'steps', dieId: null }, // +1 FORCE
+                { uid: 'h-mana', cardId: 'haul', dieId: null }, // conjure red die
+                { uid: 'h-none', cardId: 'wind', dieId: null }, // no salvage
+            ],
+        };
+        const vm = vmOf(s);
+        const prog = vm.hand.find((c) => c.uid === 'h-prog')!;
+        expect(prog.salvageLabel).toBe('+1 FORCE this round');
+        expect(prog.keywords.map((k) => k.id)).toContain('salvage');
+        const mana = vm.hand.find((c) => c.uid === 'h-mana')!;
+        expect(mana.salvageLabel).toBe('conjure a RED die');
+        const none = vm.hand.find((c) => c.uid === 'h-none')!;
+        expect(none.salvageLabel).toBeNull();
+        expect(none.keywords.map((k) => k.id)).not.toContain('salvage');
+    });
+
     it('dead CRACK cards are flagged and never affordable', () => {
         let s = playingSession('safe');
         s = {

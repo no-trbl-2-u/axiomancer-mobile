@@ -13,6 +13,7 @@
 import {
     continueHazardAfterResolve,
     createHazardSession,
+    discardHazardCard,
     finishHazardRolling,
     hazardCardValue,
     hazardProjectedProgress,
@@ -96,7 +97,20 @@ function playGreedyRound(s: HazardSessionState, bag: readonly string[]): HazardS
         if (candidates.length === 0) break;
         s = stageHazardCard(s, candidates[0].h.uid, bag);
     }
-    // 4. Spend matching dice while still short. Best powered delta first.
+    // 4. Scrap the dead weight: hand cards contributing nothing this
+    //    round (CRACKs, off-meter stat cards, utilities with no current
+    //    use) go to the bin for their salvage — a player with a trash
+    //    bin doesn't hoard clutter. Convert cards are held while hex
+    //    dice could still appear from a re-cast.
+    const anyHex = s.dice.some((d) => d.kind === 'hex');
+    for (const h of s.hand.slice()) {
+        const def = getHazardCardDef(h.cardId);
+        const worthless = def.dead || (!def.effect && freeValueToward(s, h.cardId) === 0);
+        const staleUtility =
+            (def.effect === 'convert' && !anyHex) || def.effect === 'recast';
+        if (worthless || staleUtility) s = discardHazardCard(s, h.uid);
+    }
+    // 5. Spend matching dice while still short. Best powered delta first.
     guard = 0;
     while (shortfall(s) > 0 && guard++ < 12) {
         const need = roundNeed(s);

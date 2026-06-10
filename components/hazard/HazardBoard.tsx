@@ -34,7 +34,7 @@ import { AXM, FONTS } from '@/theme/axm';
 
 import { HazardCard } from './HazardCard';
 import { HazardDie } from './HazardDie';
-import { Cracks, LedgerMark, ProgGlyph } from './glyphs';
+import { Cracks, LedgerMark, ProgGlyph, TrashGlyph } from './glyphs';
 import { HZ, ROUTE_ACCENT, TYPE_ACCENT } from './palette';
 
 // ---------------------------------------------------------------------------
@@ -243,12 +243,14 @@ export interface HazardBoardProps {
     onStage: (uid: string) => void;
     onUnstage: (uid: string) => void;
     onPower: (uid: string, dieId: string) => void;
+    onDiscard: (uid: string) => void;
     onResolve: () => void;
     onInspect: (card: HazardCardVM) => void;
 }
 
-export function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onResolve, onInspect }: HazardBoardProps) {
+export function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onDiscard, onResolve, onInspect }: HazardBoardProps) {
     const playAreaRef = useRef<View | null>(null);
+    const trashRef = useRef<View | null>(null);
     const stagedRefs = useRef(new Map<string, View | null>());
 
     // Drop resolution: called by the screen-level drag controller when a
@@ -256,6 +258,15 @@ export function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onResolve, 
     const resolveDrop = useCallback(
         async (payload: DragPayload, x: number, y: number) => {
             if (x < 0 && y < 0) return; // cancelled gesture
+            // The trash bin outranks every other card target.
+            if (payload.type === 'card') {
+                const trashRect = await measureRect(trashRef);
+                if (rectContains(trashRect, x, y)) {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => undefined);
+                    onDiscard(payload.uid);
+                    return;
+                }
+            }
             if (payload.type === 'card' && payload.from === 'hand') {
                 const playRect = await measureRect(playAreaRef);
                 if (rectContains(playRect, x, y)) {
@@ -291,7 +302,7 @@ export function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onResolve, 
                 }
             }
         },
-        [onStage, onUnstage, onPower, onInspect, vm.play],
+        [onStage, onUnstage, onPower, onDiscard, onInspect, vm.play],
     );
 
     // Expose drop resolution to the screen-level controller.
@@ -439,8 +450,31 @@ export function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onResolve, 
                 <Text style={styles.playHint}>tap a staged card to return it</Text>
             </View>
 
-            {/* hand dock + PLAY button */}
+            {/* hand dock + trash bin + PLAY button */}
             <View style={styles.dock}>
+                {/* trash bin — drag a card here to scrap it for its SALVAGE */}
+                <View
+                    ref={trashRef}
+                    style={[
+                        styles.trashBin,
+                        drag.active?.type === 'card'
+                            ? { borderColor: AXM.blood, backgroundColor: AXM.bloodSubtle, borderStyle: 'solid' }
+                            : null,
+                    ]}
+                    testID="hazard-trash"
+                    accessible
+                    accessibilityLabel="Trash bin. Drag a card here to discard it for its salvage benefit."
+                >
+                    <TrashGlyph size={22} color={drag.active?.type === 'card' ? AXM.blood : AXM.bone} />
+                    <Text
+                        style={[
+                            styles.trashLabel,
+                            drag.active?.type === 'card' ? { color: AXM.blood } : null,
+                        ]}
+                    >
+                        SCRAP
+                    </Text>
+                </View>
                 <View style={styles.fan} testID="hazard-hand">
                     {vm.hand.map((card, i) => (
                         <GestureDetector key={card.uid} gesture={handCardGesture(card)}>
@@ -515,6 +549,22 @@ const styles = StyleSheet.create({
     playCards: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, justifyContent: 'center', alignContent: 'flex-start' },
     playHint: { fontFamily: FONTS.mono, fontSize: 7, color: AXM.bone, letterSpacing: 1, textAlign: 'center', marginTop: 4 },
     dock: { height: 148, borderTopWidth: 1, borderTopColor: AXM.ash },
+    trashBin: {
+        position: 'absolute',
+        left: 10,
+        bottom: 12,
+        zIndex: 40,
+        width: 54,
+        height: 54,
+        borderRadius: 27,
+        borderWidth: 1.5,
+        borderStyle: 'dashed',
+        borderColor: AXM.ash,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    trashLabel: { fontFamily: FONTS.mono, fontSize: 6, letterSpacing: 1, color: AXM.bone, marginTop: 1 },
     fan: { ...StyleSheet.absoluteFillObject, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 8 },
     playWrap: {
         position: 'absolute',

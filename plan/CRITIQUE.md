@@ -33,15 +33,6 @@
      examined README.md, specs/README.md, docs/, app/ structure,
      SVG_ASSET_SPEC.md. 4 findings filed below. -->
 
-### [MED] /README.md — VISION.md reference lacks context for maintainer navigation
-- pass: 29 (commit cef865b)
-- viewport: repository
-- category: navigation
-- observation: Main README references VISION.md on line 14 but then immediately jumps into technical quick start without explaining what the vision contains or why a maintainer should read it
-- evidence: Line 14: 'T's current game vision and UX doctrine guardrail lives in [`VISION.md`](./VISION.md). Read it before major mobile UX, combat, mercy/friendship, alignment, or `/march` work.' followed directly by technical prerequisites
-- suggested fix: Add one sentence after line 14 explaining what VISION.md contains (game identity, combat UX principles) so maintainers understand its relevance
-- source: repo-proxy
-
 ### [MED] /specs/README.md — Spec dependency information contradicts completion status
 - pass: 29 (commit cef865b)
 - viewport: repository
@@ -405,6 +396,16 @@
 <!-- Drained from ## Pending via /oversight 2026-06-08 (queue-drained
      call): addressed-✅ findings moved here so the open-findings
      signal /iterate reads is accurate. -->
+
+### [MED] /README.md — VISION.md reference lacks context for maintainer navigation ✅
+- pass: 29 (commit cef865b); addressed at commit eb8b431 via `/iterate`
+- viewport: repository
+- category: navigation
+- observation: Main README references VISION.md on line 14 but then immediately jumps into technical quick start without explaining what the vision contains or why a maintainer should read it
+- evidence: Line 14: 'T's current game vision and UX doctrine guardrail lives in [`VISION.md`](./VISION.md). Read it before major mobile UX, combat, mercy/friendship, alignment, or `/march` work.' followed directly by technical prerequisites
+- suggested fix: Add one sentence after line 14 explaining what VISION.md contains (game identity, combat UX principles) so maintainers understand its relevance
+- fix: Added explanatory sentence defining VISION.md as containing game identity, core UX principles, and philosophical design constraints, providing essential context for maintainer navigation
+- source: repo-proxy
 
 ### [HIGH] docs/README.md — Referenced documentation file does not exist ✅
 - pass: 26 (commit 2f0ed3d); addressed at commit cf60f7a via `/iterate`

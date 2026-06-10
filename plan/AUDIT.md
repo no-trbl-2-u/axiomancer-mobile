@@ -9,6 +9,68 @@
 
 ## Top 5 findings (scored)
 
+### [ ] [8.4] Missing test coverage for hazard minigame components reduces quality assurance
+- category: tests
+- impact: 8
+- ease: 7
+- base-score: 5.6
+- ux-bias-multiplier: 1.5 (hazard UX is critical gameplay)
+- final-score: 8.4
+- next: Create test files for HazardBoard.tsx, HazardCard.tsx, HazardDie.tsx, HazardOverlays.tsx, RewardsOverlay.tsx, RouteSelect.tsx, and glyphs.tsx components
+- evidence: components/hazard/ directory contains 8 components without corresponding test files
+- observation: The new hazard minigame components (532 lines in HazardBoard.tsx alone) lack test coverage despite being critical for the v2 hazard system implementation
+- source: audit
+
+### [ ] [7.2] Large component files may impact development and build performance 
+- category: perf
+- impact: 6
+- ease: 8
+- base-score: 4.8
+- ux-bias-multiplier: 1.5 (affects development UX)
+- final-score: 7.2
+- next: Refactor LevelUpModal.tsx (697 lines) and HazardBoard.tsx (532 lines) into smaller, more focused components
+- evidence: components/levelup/LevelUpModal.tsx at 697 lines and HazardBoard.tsx at 532 lines
+- observation: Several components exceed 500 lines, which can slow development, increase memory usage, and make code maintenance difficult
+- source: audit
+
+### [ ] [7.2] Accessibility labels missing for interactive hazard game elements
+- category: a11y
+- impact: 6
+- ease: 8
+- base-score: 4.8
+- ux-bias-multiplier: 1.5 (accessibility is UX-critical)
+- final-score: 7.2
+- next: Add accessibilityLabel props to HazardCard, HazardDie gesture detectors, and drag/drop interactions
+- evidence: components/hazard/HazardBoard.tsx contains complex drag interactions but limited accessibility labels
+- observation: The hazard minigame has extensive touch interactions (drag-to-stage, tap-to-read) but lacks comprehensive accessibility labels for screen readers
+- source: audit
+
+### [ ] [4.5] App configuration lacks comprehensive SEO metadata for web builds
+- category: seo
+- impact: 5
+- ease: 9
+- base-score: 4.5
+- ux-bias-multiplier: 1.0
+- final-score: 4.5
+- next: Add keywords, author, viewport meta tags, and structured data to app.json web configuration
+- evidence: app.json web section has basic OpenGraph but missing keywords, author, and other SEO metadata
+- observation: While the app has basic OpenGraph and Twitter card metadata, it lacks comprehensive SEO optimization for web discovery and indexing
+- source: audit
+
+### [ ] [5.4] Performance optimization opportunities in component rendering patterns
+- category: perf
+- impact: 6
+- ease: 6
+- base-score: 3.6
+- ux-bias-multiplier: 1.5 (affects UX smoothness)
+- final-score: 5.4
+- next: Add React.memo to frequently re-rendering components like HazardCard, implement useMemo for expensive calculations in combat and hazard systems
+- evidence: Complex components in components/hazard/ and combat directories lack memoization
+- observation: Large component trees with frequent state updates (combat, hazard) may benefit from React.memo and useMemo optimizations
+- source: audit
+
+## Previously addressed findings
+
 ### [x] [2.4] Extensive legacy comments may confuse maintainers in tab layout
 - category: external-critique
 - impact: 3

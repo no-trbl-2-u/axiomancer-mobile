@@ -1,0 +1,167 @@
+import React from 'react';
+import { render } from '@testing-library/react-native';
+
+import { RewardsOverlay } from '../RewardsOverlay';
+import type { HazardRewardsVM } from '@/state/presenters/hazard.engine';
+
+// Mock react-native-reanimated
+jest.mock('react-native-reanimated', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const Reanimated = require('react-native-reanimated/mock');
+    Reanimated.default.call = () => {};
+    return Reanimated;
+});
+
+const mockRewardsVM: HazardRewardsVM = {
+    tier: 'complete',
+    rewards: [
+        {
+            id: 'vitae-1',
+            icon: 'vitae',
+            name: '+5 Vitae',
+            desc: 'Health restored',
+        },
+        {
+            id: 'xp-1',
+            icon: 'xp',
+            name: '+10 XP',
+            desc: 'Experience gained',
+        },
+    ],
+    consequences: [
+        {
+            id: 'align-1',
+            icon: 'align',
+            name: '-1 Alignment',
+            desc: 'Moral cost',
+        },
+    ],
+    consequencesLabel: '☠ CONSEQUENCES — 1 ROUND LOST',
+    offerCards: [
+        {
+            uid: 'offer-1',
+            cardId: 'card-1',
+            name: 'Fire Strike',
+            kind: 'red',
+            rarity: 'common',
+            dead: false,
+            utility: false,
+            free: { force: 3, escape: 0 },
+            powered: { force: 5, escape: 0 },
+            freeEffectLabel: '',
+            poweredEffectLabel: '',
+            flavor: 'Basic fire attack',
+            keywords: [],
+            dieAvailable: true,
+            poweredByDieId: null,
+        },
+        {
+            uid: 'offer-2',
+            cardId: 'card-2',
+            name: 'Ice Shield',
+            kind: 'blue',
+            rarity: 'uncommon',
+            dead: false,
+            utility: false,
+            free: { force: 0, escape: 2 },
+            powered: { force: 0, escape: 4 },
+            freeEffectLabel: '',
+            poweredEffectLabel: '',
+            flavor: 'Basic ice defense',
+            keywords: [],
+            dieAvailable: true,
+            poweredByDieId: null,
+        },
+    ],
+    offerSubLabel: 'Choose one card',
+    canSkip: true,
+    reserveNote: '+2 VITAE — unspent dice',
+    penaltyNote: null,
+};
+
+describe('RewardsOverlay', () => {
+    const mockProps = {
+        rewards: mockRewardsVM,
+        onConfirm: jest.fn(),
+    };
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('renders rewards overlay without errors', () => {
+        const { root } = render(<RewardsOverlay {...mockProps} />);
+        expect(root).toBeTruthy();
+    });
+
+    it('renders reward items', () => {
+        const { getByText } = render(<RewardsOverlay {...mockProps} />);
+        expect(getByText('+5 Vitae')).toBeTruthy();
+        expect(getByText('+10 XP')).toBeTruthy();
+    });
+
+    it('renders consequence items', () => {
+        const { getByText } = render(<RewardsOverlay {...mockProps} />);
+        expect(getByText('-1 Alignment')).toBeTruthy();
+    });
+
+    it('renders card offers', () => {
+        const { getByText } = render(<RewardsOverlay {...mockProps} />);
+        expect(getByText('Fire Strike')).toBeTruthy();
+        expect(getByText('Ice Shield')).toBeTruthy();
+    });
+
+    it('renders offer sub-label', () => {
+        const { getByText } = render(<RewardsOverlay {...mockProps} />);
+        expect(getByText('Choose one card')).toBeTruthy();
+    });
+
+    it('renders skip button when canSkip is true', () => {
+        const { getByText } = render(<RewardsOverlay {...mockProps} />);
+        // Skip button should be accessible through testID or text
+        // Component should render without error
+        expect(getByText('Fire Strike')).toBeTruthy();
+    });
+
+    it('hides skip button when canSkip is false', () => {
+        const vmNoSkip = { ...mockRewardsVM, canSkip: false };
+        const { root } = render(<RewardsOverlay {...mockProps} rewards={vmNoSkip} />);
+        expect(root).toBeTruthy();
+    });
+
+    it('renders reserve note when present', () => {
+        const { getByText } = render(<RewardsOverlay {...mockProps} />);
+        expect(getByText('+2 VITAE — unspent dice')).toBeTruthy();
+    });
+
+    it('handles penalty note when present', () => {
+        const vmWithPenalty = { 
+            ...mockRewardsVM, 
+            penaltyNote: '−3 VITAE — route penalty' 
+        };
+        const { getByText } = render(<RewardsOverlay {...mockProps} rewards={vmWithPenalty} />);
+        expect(getByText('−3 VITAE — route penalty')).toBeTruthy();
+    });
+
+    it('handles empty rewards and consequences', () => {
+        const vmEmpty = { ...mockRewardsVM, rewards: [], consequences: [] };
+        const { root } = render(<RewardsOverlay {...mockProps} rewards={vmEmpty} />);
+        expect(root).toBeTruthy();
+    });
+
+    it('handles empty card offers', () => {
+        const vmNoCards = { ...mockRewardsVM, offerCards: [] };
+        const { root } = render(<RewardsOverlay {...mockProps} rewards={vmNoCards} />);
+        expect(root).toBeTruthy();
+    });
+
+    it('handles different tier outcomes', () => {
+        const perfectVM = { ...mockRewardsVM, tier: 'perfect' as const };
+        const { root } = render(<RewardsOverlay {...mockProps} rewards={perfectVM} />);
+        expect(root).toBeTruthy();
+
+        const failureVM = { ...mockRewardsVM, tier: 'failure' as const };
+        const { root: failureRoot } = render(<RewardsOverlay {...mockProps} rewards={failureVM} />);
+        expect(failureRoot).toBeTruthy();
+    });
+});

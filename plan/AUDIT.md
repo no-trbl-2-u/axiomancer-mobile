@@ -54,7 +54,7 @@
 - addressed: 2026-06-09 via commit d06479c
 - fix: Added comprehensive try-catch error handling to async action functions. Wrapped debugSeedAction, populateAllItemsAction, applyCharacterPresetAction, changeMapAction, resolveCurrentMapEventAction, and pickEventChoiceAction with proper error boundaries. All operations now log errors gracefully and continue where possible, preventing unhandled promise rejections from impacting user experience during state updates.
 
-### [ ] [3.0] README.md development setup instructions could be clearer
+### [x] [3.2] README.md development setup instructions could be clearer
 - category: external-critique
 - impact: 4
 - ease: 8
@@ -65,6 +65,9 @@
 - evidence: README.md Quick Start section is brief and may not provide enough guidance for first-time React Native developers
 - observation: Better onboarding reduces time-to-first-contribution for new maintainers
 - source: external-critique
+- issue: #327
+- addressed: 2026-06-09 via commit 50cf1ad
+- fix: Enhanced README.md Quick Start section with Prerequisites subsection listing Node.js 18+, Expo CLI, and platform requirements. Added numbered Development workflow steps with clear explanations and verification reminder. Included first-time setup guidance with links to Expo environment setup docs. This provides better onboarding for first-time React Native developers and reduces time-to-first-contribution for new maintainers.
 
 ### [ ] [2.8] Potential optimization in component re-render patterns
 - category: perf

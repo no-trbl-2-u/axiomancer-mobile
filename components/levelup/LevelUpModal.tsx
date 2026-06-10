@@ -19,15 +19,14 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { SectionLabel } from '@/components/SectionLabel';
-import { StanceGlyph } from '@/components/StanceGlyph';
 import { DerivedPreviewRibbon } from '@/components/levelup/DerivedPreviewRibbon';
+import { StanceRow, type LevelStance } from '@/components/levelup/StanceRow';
+import { pickFlavor } from '@/components/levelup/levelUpFlavor';
 import { AXM, FONTS } from '@/theme/axm';
 import { toRomanLower } from '@/state/presenters/roman';
 import { STANCES } from '@/state/presenters/stances';
 import { calculateDerivedPreview } from '@/state/presenters/levelup.engine';
 
-export type LevelStance = 'heart' | 'body' | 'mind';
 
 export interface LevelUpModalProps {
     characterName: string;
@@ -51,18 +50,6 @@ export interface LevelUpModalProps {
     onCancel: () => void;
 }
 
-const FLAVOR_VARIANTS = [
-    'the body that survives is not the body that arrived.',
-    'something in the marrow learned its own name.',
-    'the page turned itself.',
-] as const;
-
-function pickFlavor(toLevel: number): string {
-    // Deterministic pick — the same level transition always shows
-    // the same line. Keeps tests stable + the flavour reads as a
-    // chronicle entry, not RNG noise.
-    return FLAVOR_VARIANTS[toLevel % FLAVOR_VARIANTS.length];
-}
 
 export function LevelUpModal({
     characterName,
@@ -310,90 +297,6 @@ export function LevelUpModal({
     );
 }
 
-interface StanceRowProps {
-    stance: LevelStance;
-    current: number;
-    spent: number;
-    canInc: boolean;
-    canDec: boolean;
-    onInc: () => void;
-    onDec: () => void;
-}
-
-function StanceRow({ stance, current, spent, canInc, canDec, onInc, onDec }: StanceRowProps) {
-    const newValue = current + spent;
-    const showDelta = spent > 0;
-    return (
-        <View style={stance_styles.row} testID={`levelup-modal-row-${stance}`}>
-            {/* Left — stance emblem */}
-            <View style={stance_styles.emblemCol}>
-                <View style={stance_styles.emblemFrame}>
-                    <StanceGlyph kind={stance} size={32} color={AXM.parchment} />
-                </View>
-                <SectionLabel size={9}>{stance.toUpperCase()}</SectionLabel>
-            </View>
-
-            {/* Middle — counter */}
-            <View style={stance_styles.counterCol}>
-                <View style={stance_styles.numericRow}>
-                    <Text style={stance_styles.bigNumber}>{newValue}</Text>
-                    <Text style={stance_styles.fromText}>from {current}</Text>
-                </View>
-                {showDelta ? (
-                    <Text style={stance_styles.deltaLabel}>+{spent}</Text>
-                ) : (
-                    <View style={stance_styles.deltaWaiting} />
-                )}
-            </View>
-
-            {/* Right — ± controls */}
-            <View style={stance_styles.controlsCol}>
-                <Pressable
-                    onPress={canInc ? onInc : undefined}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Increment ${stance}`}
-                    accessibilityState={{ disabled: !canInc }}
-                    testID={`levelup-modal-inc-${stance}`}
-                    style={[
-                        stance_styles.btn,
-                        stance_styles.btnInc,
-                        !canInc && stance_styles.btnDisabled,
-                    ]}
-                >
-                    <Text
-                        style={[
-                            stance_styles.btnGlyph,
-                            { color: canInc ? AXM.sulfur : AXM.ash },
-                        ]}
-                    >
-                        +
-                    </Text>
-                </Pressable>
-                <Pressable
-                    onPress={canDec ? onDec : undefined}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Decrement ${stance}`}
-                    accessibilityState={{ disabled: !canDec }}
-                    testID={`levelup-modal-dec-${stance}`}
-                    style={[
-                        stance_styles.btn,
-                        stance_styles.btnDec,
-                        !canDec && stance_styles.btnDisabled,
-                    ]}
-                >
-                    <Text
-                        style={[
-                            stance_styles.btnGlyph,
-                            { color: canDec ? AXM.bone : AXM.ash },
-                        ]}
-                    >
-                        −
-                    </Text>
-                </Pressable>
-            </View>
-        </View>
-    );
-}
 
 const styles = StyleSheet.create({
     root: {
@@ -631,67 +534,3 @@ const styles = StyleSheet.create({
     },
 });
 
-const stance_styles = StyleSheet.create({
-    row: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 10,
-        paddingVertical: 8,
-        borderTopWidth: 1,
-        borderTopColor: AXM.ash,
-        borderStyle: 'dotted',
-    },
-    emblemCol: { alignItems: 'center', gap: 4, width: 60 },
-    emblemFrame: {
-        width: 50,
-        height: 50,
-        borderWidth: 1,
-        borderColor: AXM.parchment,
-        backgroundColor: AXM.panelBg,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    counterCol: { flex: 1, alignItems: 'flex-start' },
-    numericRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8 },
-    bigNumber: {
-        fontFamily: FONTS.gothic,
-        fontSize: 36,
-        color: AXM.sulfur,
-        letterSpacing: 1,
-    },
-    fromText: {
-        fontFamily: FONTS.mono,
-        fontSize: 8,
-        color: AXM.bone,
-    },
-    deltaLabel: {
-        fontFamily: FONTS.mono,
-        fontSize: 11,
-        color: AXM.parchment,
-        opacity: 0.5,
-        marginTop: 2,
-    },
-    deltaWaiting: {
-        width: 24,
-        height: 1,
-        backgroundColor: AXM.sulfur,
-        opacity: 0.4,
-        marginTop: 8,
-    },
-    controlsCol: { gap: 4 },
-    btn: {
-        width: 36,
-        height: 36,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: AXM.panelBg,
-    },
-    btnInc: { borderWidth: 1, borderColor: AXM.parchment },
-    btnDec: { borderWidth: 1, borderColor: AXM.ash, borderStyle: 'dashed' },
-    btnDisabled: { borderColor: AXM.ash },
-    btnGlyph: {
-        fontFamily: FONTS.gothic,
-        fontSize: 22,
-        lineHeight: 22,
-    },
-});

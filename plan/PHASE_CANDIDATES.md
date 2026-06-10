@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-09 at commit dbbda71
-> Pass count: 65
+> Last pass: 2026-06-10 at commit 3e3d2c9
+> Pass count: 66
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -2131,5 +2131,35 @@ exploration `moveToAction` migration to engine `revealAdjacent` /
   - **Design system consistency** — Test fixtures still use hex literals (#ff0000, #c0152a, #abcdef) instead of AXM design tokens
 - rationale: While production code has been cleaned of hardcoded hex colors, test files still contain hex literals that should use AXM design tokens for consistency and maintainability.
 - proposed scope: 1 phase. Replace hardcoded hex colors in test fixtures and test assertions with appropriate AXM design tokens, following the pattern established in recent cleanup commits.
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 4.0] Hazard minigame mobile implementation
+- proposed: 2026-06-10, expand pass 66
+- source signals:
+  - **Design landing signal** — design/hazard-minigame-mobile.md updated 2026-06-09 with comprehensive implementation brief
+  - **Feature gap** — Design brief exists but no corresponding implementation phase in build plan
+- rationale: New design brief landed for hazard minigame mobile implementation with comprehensive spec including UI wireframes, mechanics integration, and mobile-specific constraints. This represents a new game feature ready for implementation.
+- proposed scope: 2 phases - UI component implementation phase + engine integration phase for complete hazard minigame system
+- estimated phases: 2
+- conflicts: none
+
+### [ ] [score 3.0] Large component extraction refactor
+- proposed: 2026-06-10, expand pass 66
+- source signals:
+  - **File length outlier smell** — EncounterModalOverlay.test.tsx (774 lines), exploration/index.tsx (717 lines), inventory/index.tsx (709 lines), LevelUpModal.tsx (697 lines)
+  - **Maintainability signal** — 4 files exceed 600 lines, 2x folder median suggests sub-component extraction opportunities
+- rationale: Multiple large components indicate need for sub-component extraction to improve maintainability, readability, and testing. Current largest files are over 2x the typical component size.
+- proposed scope: 2 phases targeting the largest files (EncounterModalOverlay test refactor + exploration/inventory screen decomposition)
+- estimated phases: 2
+- conflicts: none
+
+### [ ] [score 2.5] Mechanics 0.16.0 integration follow-up
+- proposed: 2026-06-10, expand pass 66
+- source signals:
+  - **Engine bump signal** — mechanics bumped to 0.16.0 in recent commit (cef865b)
+  - **Historical pattern** — Previous engine bumps required follow-up integration phases to consume new surfaces
+- rationale: Historical pattern shows engine bumps need follow-up integration phases to fully consume new engine capabilities and avoid feature drift. 0.16.0 likely introduces new surfaces worth integrating.
+- proposed scope: 1 phase to explore and integrate new 0.16.0 features, ensure full consumption of engine capabilities
 - estimated phases: 1
 - conflicts: none

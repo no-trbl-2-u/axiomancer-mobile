@@ -83,6 +83,22 @@ import {
 } from '@/state/selectors/combat-skills';
 import { templateToEquipment } from '@/state/selectors/equipment';
 import { EMPTY_EVENT_SLICE, type AppStore } from './store';
+import {
+    abandonHazardAction,
+    acknowledgeHazardOutcomeAction,
+    beginHazardAction,
+    claimHazardRewardsAction,
+    continueHazardAfterResolveAction,
+    finishHazardRollingAction,
+    powerHazardCardAction,
+    resolveHazardRoundAction,
+    selectHazardRouteAction,
+    stageHazardCardAction,
+    unstageHazardCardAction,
+    type BeginHazardOptions,
+    type ClaimHazardRewardsResult,
+} from './hazard/store-actions';
+import type { HazardRouteKey } from './hazard/types';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -316,6 +332,40 @@ export interface AppActions {
     spareMercyChoice: () => void;
     /** Phase 103 — Choose exploit/critical path in mercy choice modal. */
     exploitMercyChoice: () => void;
+
+    // -----------------------------------------------------------------
+    // Hazard minigame (v2 local engine — see state/hazard/). The pure
+    // engine owns every rule; these wrappers thread the session through
+    // the `hazard` slice. Phase order: route-select → rolling → playing
+    // → resolve-flash → … → outcome → rewards → done.
+    // -----------------------------------------------------------------
+
+    /** Start a hazard session (random hazard unless pinned). Returns false if one is active. */
+    beginHazard: (options?: BeginHazardOptions) => boolean;
+    /** Binding route choice; casts the 4 mana dice (once per hazard). */
+    selectHazardRoute: (route: HazardRouteKey) => void;
+    /** Dice-cast interstitial finished animating. */
+    finishHazardRolling: () => void;
+    /** Drag a hand card into the play area (max 6; utility effects fire). */
+    stageHazardCard: (uid: string) => void;
+    /** Tap a staged card to return it to hand (frees its die). */
+    unstageHazardCard: (uid: string) => void;
+    /** Drop a matching-colour die on a staged card's SURGE socket. */
+    powerHazardCard: (uid: string, dieId: string) => void;
+    /** Commit the staged set; the engine stamps O or X. */
+    resolveHazardRound: () => void;
+    /** Dismiss the resolve flash; advances the round or computes the outcome. */
+    continueHazardAfterResolve: () => void;
+    /** Outcome modal acknowledged → rewards ledger. */
+    acknowledgeHazardOutcome: () => void;
+    /**
+     * Confirm rewards (cardId = picked offer, null = skip/none) and
+     * apply the outcome to live game state (VITAE, currency, deck
+     * flags). Clears the session and persists.
+     */
+    claimHazardRewards: (cardId: string | null) => ClaimHazardRewardsResult;
+    /** Clear the session without rewards or penalties (dev / escape hatch). */
+    abandonHazard: () => void;
 }
 
 export interface UseItemResult {
@@ -838,6 +888,17 @@ export function createAppActions(store: AppStore): AppActions {
         dismissEvent: () => dismissEventAction(store),
         spareMercyChoice: () => spareMercyChoiceAction(store),
         exploitMercyChoice: () => exploitMercyChoiceAction(store),
+        beginHazard: (options) => beginHazardAction(store, options),
+        selectHazardRoute: (route) => selectHazardRouteAction(store, route),
+        finishHazardRolling: () => finishHazardRollingAction(store),
+        stageHazardCard: (uid) => stageHazardCardAction(store, uid),
+        unstageHazardCard: (uid) => unstageHazardCardAction(store, uid),
+        powerHazardCard: (uid, dieId) => powerHazardCardAction(store, uid, dieId),
+        resolveHazardRound: () => resolveHazardRoundAction(store),
+        continueHazardAfterResolve: () => continueHazardAfterResolveAction(store),
+        acknowledgeHazardOutcome: () => acknowledgeHazardOutcomeAction(store),
+        claimHazardRewards: (cardId) => claimHazardRewardsAction(store, cardId),
+        abandonHazard: () => abandonHazardAction(store),
     };
 }
 
@@ -1364,6 +1425,22 @@ function resolveCurrentMapEventAction(store: AppStore, sourceNodeType?: string):
                     },
                 };
             }
+        }
+
+        // Hazard events launch the v2 minigame instead of the legacy
+        // passive damage consequence (design handoff 2026-06-10). The
+        // engine's resolveMapEvent already applied its flat damage to
+        // `result.state`; restore the pre-event player so the minigame's
+        // outcome is the only thing that touches VITAE, then start a
+        // session. `<HazardGate>` routes to /hazard when the slice fills.
+        if (result.event.kind === 'hazard') {
+            store.setState({
+                ...resolvedState,
+                player: gameState.player,
+                event: EMPTY_EVENT_SLICE,
+            });
+            beginHazardAction(store);
+            return true;
         }
 
         // Spread the advanced state onto the store. `event` is mobile-only

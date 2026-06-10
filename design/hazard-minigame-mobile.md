@@ -1,5 +1,12 @@
 # Hazard Minigame Mobile Presentation — Design Brief
 
+> **Implementation status (2026-06-10):** the v2 minigame shipped — local
+> engine `state/hazard/`, presenter `state/presenters/hazard.engine.ts`,
+> screen `app/hazard/`, components `components/hazard/`. Final rules follow
+> the Claude Design handoff prototype plus user-confirmed doctrine (notably:
+> dice never re-cast between rounds on either route). Where this brief and the
+> shipped rules differ, see `docs/hazard-v2-vs-mechanics-divergence.md`.
+
 > **Design-first phase output.** This document translates the mechanics-repo Hazard Minigame doctrine (CDR-0006) into mobile presentation guidance. The mechanics repo owns rules, state, dice, cards, scoring, and tuning. Mobile owns clarity, touch flow, presenter shape, and player comprehension.
 
 ## Source of Truth

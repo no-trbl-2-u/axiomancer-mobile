@@ -28,6 +28,7 @@ import { DevAutoSeed } from '@/components/DevAutoSeed';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { HardwareBackHandler } from '@/components/HardwareBackHandler';
 import { EventGate } from '@/components/EventGate';
+import { HazardGate } from '@/components/HazardGate';
 import { ToastHost } from '@/components/ToastHost';
 
 SplashScreen.preventAutoHideAsync();
@@ -158,6 +159,7 @@ export default function RootLayout() {
             <StatusBar style="light" />
             <HardwareBackHandler />
             <EventGate />
+            <HazardGate />
             <ToastHost />
             <DevAutoSeed />
             <Stack screenOptions={{ headerShown: false }}>
@@ -166,6 +168,10 @@ export default function RootLayout() {
               <Stack.Screen
                 name="event/index"
                 options={{ headerShown: false, presentation: 'fullScreenModal' }}
+              />
+              <Stack.Screen
+                name="hazard/index"
+                options={{ headerShown: false, presentation: 'fullScreenModal', gestureEnabled: false }}
               />
             </Stack>
           </TooltipProvider>

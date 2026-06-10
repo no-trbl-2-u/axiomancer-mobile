@@ -13,6 +13,7 @@ import type { GameState } from 'axiomancer-mechanics';
 
 import {
     acknowledgeHazardOutcome as engineAcknowledgeOutcome,
+    applyHazardCard as engineApplyCard,
     claimHazardRewards as engineClaimRewards,
     continueHazardAfterResolve as engineContinueAfterResolve,
     createHazardSession,
@@ -129,10 +130,16 @@ export function powerHazardCardAction(store: AppStore, uid: string, dieId: strin
     setSession(store, enginePowerCard(s, uid, dieId, currentBag(store)));
 }
 
+export function applyHazardCardAction(store: AppStore, uid: string): void {
+    const s = store.getState().hazard?.session;
+    if (!s) return;
+    setSession(store, engineApplyCard(s, uid, currentBag(store)));
+}
+
 export function resolveHazardRoundAction(store: AppStore): void {
     const s = store.getState().hazard?.session;
     if (!s) return;
-    setSession(store, engineResolveRound(s));
+    setSession(store, engineResolveRound(s, currentBag(store)));
 }
 
 export function continueHazardAfterResolveAction(store: AppStore): void {

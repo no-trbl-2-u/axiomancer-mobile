@@ -9,15 +9,19 @@
  * the rationale in `docs/hazard-balance-recommendations.md`.
  */
 
+import { HAZARD_TUNING } from './tuning';
 import type {
     HazardCardDef,
     HazardConsequenceId,
     HazardDef,
-    HazardDieKind,
     HazardKeywordId,
     HazardProgressKey,
     HazardRewardId,
 } from './types';
+
+/** Card stat bands — the magnitudes the library draws from (see tuning). */
+const C = HAZARD_TUNING.cards;
+const U = C.utility;
 
 // ---------------------------------------------------------------------------
 // Keyword glossary (tap-to-read detail)
@@ -30,7 +34,7 @@ export const HAZARD_KEYWORDS: Record<HazardKeywordId, { name: string; desc: stri
     convert: { name: 'CONVERT', desc: 'Turn hostile ✕-dice into usable mana dice of this card’s colour.' },
     draw: { name: 'DRAW', desc: 'Pull more cards into your hand — more ways to cross.' },
     recast: { name: 'RE-CAST', desc: 'Re-roll all your unspent dice into fresh faces.' },
-    gilded: { name: 'GILDED', desc: 'Gold cards are rare and strong — but only a GOLD die can power them.' },
+    gilded: { name: 'GILDED', desc: 'Yellow cards are rare. They give a major effect for free; apply a yellow die to add their numbers.' },
     salvage: { name: 'SALVAGE', desc: 'Drag this card to the bin to scrap it for a lesser benefit instead of playing it.' },
     crack: { name: 'CRACK', desc: 'Dead weight. This card does nothing and cannot be powered. It only clogs your hand.' },
 };
@@ -41,27 +45,27 @@ export const HAZARD_KEYWORDS: Record<HazardKeywordId, { name: string; desc: stri
 // ---------------------------------------------------------------------------
 
 export const HAZARD_DECK: HazardCardDef[] = [
-    // RED — force
-    { id: 'steps', name: 'STONE STEPS', kind: 'red', rarity: 'common', weight: 3, f: 3, e: 0, fp: 6, ep: 1, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Kick footholds into the failing rock.', keywords: ['force', 'surge'] },
-    { id: 'haul', name: 'DEAD-MAN HAUL', kind: 'red', rarity: 'common', weight: 3, f: 4, e: 1, fp: 7, ep: 1, salvage: { type: 'mana' }, flavor: 'Drag yourself up by rope and will.', keywords: ['force', 'surge'] },
-    { id: 'grip', name: 'IRON GRIP', kind: 'red', rarity: 'uncommon', weight: 2, f: 5, e: 0, fp: 9, ep: 0, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Hands like a closing vise.', keywords: ['force', 'surge'] },
-    { id: 'quarry', name: 'QUARRY-SIGN', kind: 'red', rarity: 'uncommon', weight: 2, f: 0, e: 0, effect: 'convert', flavor: 'Mark the stone; it answers in kind.', keywords: ['convert', 'surge'] },
+    // RED — pure FORCE numbers (single meter), considerably higher than purple.
+    { id: 'steps', name: 'STONE STEPS', kind: 'red', rarity: 'common', weight: 3, f: C.redBlue.common.free, e: 0, fp: C.redBlue.common.powered, ep: 0, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Kick footholds into the failing rock.', keywords: ['force', 'surge'] },
+    { id: 'haul', name: 'DEAD-MAN HAUL', kind: 'red', rarity: 'common', weight: 3, f: C.redBlue.common.free, e: 0, fp: C.redBlue.common.powered, ep: 0, salvage: { type: 'mana' }, flavor: 'Drag yourself up by rope and will.', keywords: ['force', 'surge'] },
+    { id: 'grip', name: 'IRON GRIP', kind: 'red', rarity: 'uncommon', weight: 2, f: C.redBlue.uncommon.free, e: 0, fp: C.redBlue.uncommon.powered, ep: 0, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Hands like a closing vise.', keywords: ['force', 'surge'] },
 
-    // BLUE — escape
-    { id: 'scram', name: 'SCRAMBLE', kind: 'blue', rarity: 'common', weight: 3, f: 0, e: 3, fp: 1, ep: 6, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Half-fall, half-fly across the gap.', keywords: ['escape', 'surge'] },
-    { id: 'runner', name: 'CLIFFRUNNER', kind: 'blue', rarity: 'common', weight: 3, f: 1, e: 4, fp: 1, ep: 7, salvage: { type: 'mana' }, flavor: 'Momentum is the only thing holding you up.', keywords: ['escape', 'surge'] },
-    { id: 'leap', name: 'FAITH LEAP', kind: 'blue', rarity: 'uncommon', weight: 2, f: 0, e: 5, fp: 0, ep: 9, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Close your eyes. Trust the far side.', keywords: ['escape', 'surge'] },
-    { id: 'scout', name: 'SCOUT AHEAD', kind: 'blue', rarity: 'uncommon', weight: 2, f: 0, e: 0, effect: 'draw', drawBase: 1, drawPowered: 3, flavor: 'Send your eyes ahead of your feet.', keywords: ['draw', 'surge'] },
+    // BLUE — pure ESCAPE numbers (single meter).
+    { id: 'scram', name: 'SCRAMBLE', kind: 'blue', rarity: 'common', weight: 3, f: 0, e: C.redBlue.common.free, fp: 0, ep: C.redBlue.common.powered, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Half-fall, half-fly across the gap.', keywords: ['escape', 'surge'] },
+    { id: 'runner', name: 'CLIFFRUNNER', kind: 'blue', rarity: 'common', weight: 3, f: 0, e: C.redBlue.common.free, fp: 0, ep: C.redBlue.common.powered, salvage: { type: 'mana' }, flavor: 'Momentum is the only thing holding you up.', keywords: ['escape', 'surge'] },
+    { id: 'leap', name: 'FAITH LEAP', kind: 'blue', rarity: 'uncommon', weight: 2, f: 0, e: C.redBlue.uncommon.free, fp: 0, ep: C.redBlue.uncommon.powered, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Close your eyes. Trust the far side.', keywords: ['escape', 'surge'] },
 
-    // PURPLE — mid both (one tilts force, one tilts escape, one even)
-    { id: 'footing', name: 'SURE FOOTING', kind: 'purple', rarity: 'common', weight: 3, f: 2, e: 2, fp: 4, ep: 4, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Read the ledge before you trust it.', keywords: ['surge'] },
-    { id: 'pole', name: 'BALANCE POLE', kind: 'purple', rarity: 'common', weight: 2, f: 3, e: 1, fp: 5, ep: 3, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Weight in both hands, breath in the middle.', keywords: ['surge'] },
-    { id: 'windread', name: 'READ THE WIND', kind: 'purple', rarity: 'common', weight: 2, f: 1, e: 3, fp: 3, ep: 5, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Let the valley tell you when to move.', keywords: ['surge'] },
-    { id: 'wind', name: 'SECOND WIND', kind: 'purple', rarity: 'uncommon', weight: 2, f: 0, e: 0, effect: 'recast', flavor: 'Shake the dice loose. Breathe. Begin again.', keywords: ['recast', 'surge'] },
+    // PURPLE — low DUAL number (both meters) + a MINOR utility that the die
+    // upgrades to MAJOR. The die powers the utility, not the number, so the
+    // powered numbers match the free ones by design.
+    { id: 'footing', name: 'SURE FOOTING', kind: 'purple', rarity: 'common', weight: 3, f: C.purple.free, e: C.purple.free, fp: C.purple.powered, ep: C.purple.powered, effect: 'draw', drawBase: U.drawMinorBase, drawPowered: U.drawMinorPowered, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Read the ledge, then send your eyes ahead.', keywords: ['draw', 'surge'] },
+    { id: 'windread', name: 'READ THE WIND', kind: 'purple', rarity: 'common', weight: 2, f: C.purple.free, e: C.purple.free, fp: C.purple.powered, ep: C.purple.powered, effect: 'convert', salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Let the valley turn the hostile gust to your back.', keywords: ['convert', 'surge'] },
+    { id: 'pole', name: 'BALANCE POLE', kind: 'purple', rarity: 'uncommon', weight: 2, f: C.purple.strong, e: C.purple.strong, fp: C.purple.strong, ep: C.purple.strong, effect: 'recast', salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Weight in both hands; shake the dice loose and begin again.', keywords: ['recast', 'surge'] },
 
-    // GOLD — strong both, rare, gold die only
-    { id: 'oath', name: 'UNBROKEN OATH', kind: 'gold', rarity: 'rare', weight: 1, f: 3, e: 3, fp: 8, ep: 8, salvage: { type: 'mana' }, flavor: 'You will not fall. You refuse.', keywords: ['gilded', 'surge'] },
-    { id: 'blessing', name: "PILGRIM'S BLESSING", kind: 'gold', rarity: 'rare', weight: 1, f: 4, e: 4, fp: 7, ep: 7, salvage: { type: 'mana' }, flavor: 'Something older than the cliff steadies you.', keywords: ['gilded', 'surge'] },
+    // GOLD ("YELLOW") — utility-FIRST: a MAJOR effect for free, and a high
+    // DUAL number that only appears once a (wild) gold die is applied. Rare.
+    { id: 'oath', name: 'UNBROKEN OATH', kind: 'gold', rarity: 'rare', weight: 1, f: C.gold.free, e: C.gold.free, fp: C.gold.powered, ep: C.gold.powered, effect: 'draw', majorEffect: true, drawBase: U.drawMajor, drawPowered: U.drawMajor, salvage: { type: 'mana' }, flavor: 'You will not fall. You refuse — and the path answers.', keywords: ['gilded', 'draw', 'surge'] },
+    { id: 'blessing', name: "PILGRIM'S BLESSING", kind: 'gold', rarity: 'rare', weight: 1, f: C.gold.free, e: C.gold.free, fp: C.gold.strongPowered, ep: C.gold.strongPowered, effect: 'recast', majorEffect: true, salvage: { type: 'mana' }, flavor: 'Something older than the cliff steadies your hand.', keywords: ['gilded', 'recast', 'surge'] },
 ];
 
 /**
@@ -78,12 +82,18 @@ export const HAZARD_CRACK_CARD: HazardCardDef = {
 // ---------------------------------------------------------------------------
 
 export const HAZARD_REWARD_CARDS: HazardCardDef[] = [
-    { id: 'r_grip', name: 'GREATGRIP', kind: 'red', rarity: 'common', f: 4, e: 0, fp: 7, ep: 1, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Hands like vise-iron.', keywords: ['force', 'surge'] },
-    { id: 'r_wind', name: 'TAILWIND', kind: 'blue', rarity: 'common', f: 0, e: 4, fp: 1, ep: 7, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'The valley breathes you onward.', keywords: ['escape', 'surge'] },
-    { id: 'r_even', name: 'EVENKEEL', kind: 'purple', rarity: 'uncommon', f: 3, e: 3, fp: 5, ep: 5, salvage: { type: 'mana' }, flavor: 'Neither rushed nor rooted.', keywords: ['surge'] },
-    { id: 'r_conv', name: 'HEX-BREAKER', kind: 'purple', rarity: 'uncommon', f: 0, e: 0, effect: 'convert', flavor: 'Unmake the hostile die.', keywords: ['convert', 'surge'] },
-    { id: 'r_oath', name: 'UNBROKEN OATH', kind: 'gold', rarity: 'rare', f: 3, e: 3, fp: 8, ep: 8, salvage: { type: 'mana' }, flavor: 'You will not fall. You refuse.', keywords: ['gilded', 'surge'] },
-    { id: 'r_crown', name: 'CROWN RELIC', kind: 'gold', rarity: 'rare', f: 5, e: 5, fp: 9, ep: 9, salvage: { type: 'mana' }, flavor: 'A king died wearing this on a worse ledge.', keywords: ['gilded', 'surge'] },
+    // commons / uncommons — clean numbers
+    { id: 'r_grip', name: 'GREATGRIP', kind: 'red', rarity: 'common', f: C.redBlue.reward.free, e: 0, fp: C.redBlue.reward.powered, ep: 0, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Hands like vise-iron.', keywords: ['force', 'surge'] },
+    { id: 'r_wind', name: 'TAILWIND', kind: 'blue', rarity: 'common', f: 0, e: C.redBlue.reward.free, fp: 0, ep: C.redBlue.reward.powered, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'The valley breathes you onward.', keywords: ['escape', 'surge'] },
+    { id: 'r_even', name: 'EVENKEEL', kind: 'purple', rarity: 'uncommon', f: C.purple.strong, e: C.purple.strong, fp: C.purple.strong, ep: C.purple.strong, effect: 'draw', drawBase: U.drawMinorBase, drawPowered: U.drawMinorPowered, salvage: { type: 'mana' }, flavor: 'Neither rushed nor rooted — and one eye further down the path.', keywords: ['draw', 'surge'] },
+    { id: 'r_conv', name: 'HEX-BREAKER', kind: 'purple', rarity: 'uncommon', f: C.purple.free, e: C.purple.free, fp: C.purple.free, ep: C.purple.free, effect: 'convert', salvage: { type: 'mana' }, flavor: 'Unmake the hostile die and steady your feet.', keywords: ['convert', 'surge'] },
+    // rare red/blue — number cards that ALSO carry a minor utility (the die
+    // still upgrades the number; the small utility fires for free).
+    { id: 'r_seer', name: 'FAR-SEER', kind: 'red', rarity: 'rare', f: C.redBlue.uncommon.free, e: 0, fp: C.redBlue.uncommon.powered, ep: 0, effect: 'draw', drawBase: U.drawMinorBase, drawPowered: U.drawMinorBase, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Strength, and the wit to see where to spend it.', keywords: ['force', 'draw', 'surge'] },
+    { id: 'r_gale', name: 'GALE-READER', kind: 'blue', rarity: 'rare', f: 0, e: C.redBlue.uncommon.free, fp: 0, ep: C.redBlue.uncommon.powered, effect: 'draw', drawBase: U.drawMinorBase, drawPowered: U.drawMinorBase, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Speed, and the eyes to aim it.', keywords: ['escape', 'draw', 'surge'] },
+    // rare gold — utility-first, dual numbers on a wild die
+    { id: 'r_oath', name: 'UNBROKEN OATH', kind: 'gold', rarity: 'rare', f: C.gold.free, e: C.gold.free, fp: C.gold.powered, ep: C.gold.powered, effect: 'draw', majorEffect: true, drawBase: U.drawMajor, drawPowered: U.drawMajor, salvage: { type: 'mana' }, flavor: 'You will not fall. You refuse.', keywords: ['gilded', 'draw', 'surge'] },
+    { id: 'r_crown', name: 'CROWN RELIC', kind: 'gold', rarity: 'rare', f: C.gold.free, e: C.gold.free, fp: C.gold.strongPowered, ep: C.gold.strongPowered, effect: 'recast', majorEffect: true, salvage: { type: 'mana' }, flavor: 'A king died wearing this on a worse ledge.', keywords: ['gilded', 'recast', 'surge'] },
 ];
 
 export function getHazardCardDef(cardId: string): HazardCardDef {
@@ -115,15 +125,15 @@ export const HAZARD_CONSEQUENCES: Record<HazardConsequenceId, { name: string; ic
 };
 
 /** Vitae restored by the `vitae` reward. */
-export const HAZARD_VITAE_REWARD = 6;
+export const HAZARD_VITAE_REWARD = HAZARD_TUNING.rewards.vitae;
 /** Shillings granted by the `cache` reward. */
-export const HAZARD_CACHE_SHILLINGS = 12;
+export const HAZARD_CACHE_SHILLINGS = HAZARD_TUNING.rewards.cacheShillings;
 /** Shillings granted by the `relic` reward. */
-export const HAZARD_RELIC_SHILLINGS = 20;
+export const HAZARD_RELIC_SHILLINGS = HAZARD_TUNING.rewards.relicShillings;
 /** Vitae lost to the `minhp` consequence. */
-export const HAZARD_MINHP_LOSS = 8;
+export const HAZARD_MINHP_LOSS = HAZARD_TUNING.rewards.minhpLoss;
 /** Maximum-vitae reduction from the `maxhp` consequence. */
-export const HAZARD_MAXHP_SCAR = 5;
+export const HAZARD_MAXHP_SCAR = HAZARD_TUNING.rewards.maxhpScar;
 
 // ---------------------------------------------------------------------------
 // Progress types & die faces
@@ -134,8 +144,9 @@ export const HAZARD_TYPES: Record<HazardProgressKey, { key: HazardProgressKey; l
     escape: { key: 'escape', label: 'ESCAPE' },
 };
 
-/** Die faces: the four colours plus two hostile ✕ — 1/3 chance hostile. */
-export const HAZARD_DIE_FACES: HazardDieKind[] = ['red', 'blue', 'purple', 'gold', 'hex', 'hex'];
+/** Die faces: the four colours plus hostile ✕. Authored in the tuning
+ *  module (gold is the wild face); re-exported here for existing imports. */
+export { HAZARD_DIE_FACES } from './tuning';
 
 // ---------------------------------------------------------------------------
 // Authored hazards.

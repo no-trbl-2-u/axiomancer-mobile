@@ -30,6 +30,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import type { HazardCardVM, HazardDieVM, HazardMeterVM, HazardViewModel } from '@/state/presenters/hazard.engine';
+import { HAZARD_TUNING } from '@/state/hazard/tuning';
 import { AXM, FONTS } from '@/theme/axm';
 
 import { HazardCard } from './HazardCard';
@@ -62,9 +63,20 @@ interface Rect {
     height: number;
 }
 
-function rectContains(rect: Rect | null, x: number, y: number): boolean {
+function rectContains(rect: Rect | null, x: number, y: number, pad = 0): boolean {
     if (!rect) return false;
-    return x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height;
+    return (
+        x >= rect.x - pad &&
+        x <= rect.x + rect.width + pad &&
+        y >= rect.y - pad &&
+        y <= rect.y + rect.height + pad
+    );
+}
+
+/** A die of colour `dieKind` can power a card of colour `cardKind` when the
+ *  colours match or the die is the wild gold die. (Mirrors the engine.) */
+function dieFits(dieKind: HazardDieVM['kind'], cardKind: HazardCardVM['kind']): boolean {
+    return dieKind === 'gold' || dieKind === cardKind;
 }
 
 type MeasurableRef = React.RefObject<View | null>;
@@ -202,6 +214,36 @@ function TrayDie({
 }
 
 // ---------------------------------------------------------------------------
+// APPLY button — under each staged card. Commits the card (fires its
+// utility, locks it). Once applied it reads LOCKED and can't be undone.
+// ---------------------------------------------------------------------------
+
+function ApplyButton({ card, onApply }: { card: HazardCardVM; onApply: (uid: string) => void }) {
+    if (card.applied) {
+        return (
+            <View style={[styles.applyBtn, styles.applyLocked]} testID={`hazard-applied-${card.uid}`}>
+                <Text style={styles.applyLockedText}>✓ LOCKED</Text>
+            </View>
+        );
+    }
+    const armed = card.dieAvailable || card.poweredByDieId !== null;
+    return (
+        <Pressable
+            onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid).catch(() => undefined);
+                onApply(card.uid);
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={`Apply ${card.name} — locks it in${card.poweredByDieId ? ', powered' : ''}`}
+            testID={`hazard-apply-${card.uid}`}
+            style={[styles.applyBtn, { borderColor: armed ? HZ.acid : AXM.bone }]}
+        >
+            <Text style={[styles.applyText, { color: armed ? HZ.acid : AXM.parchment }]}>APPLY</Text>
+        </Pressable>
+    );
+}
+
+// ---------------------------------------------------------------------------
 // PLAY button — translucent sulfur glow, pulsing when armed.
 // ---------------------------------------------------------------------------
 
@@ -218,10 +260,11 @@ function PlayButton({ enabled, subLabel, onPress }: { enabled: boolean; subLabel
     return (
         <Animated.View style={[styles.playWrap, glow]}>
             <Pressable
-                onPress={enabled ? onPress : undefined}
+                disabled={!enabled}
+                onPress={onPress}
                 accessibilityRole="button"
                 accessibilityState={{ disabled: !enabled }}
-                accessibilityLabel={enabled ? 'Play — resolve the round' : 'Play, disabled. Stage a card first.'}
+                accessibilityLabel={enabled ? 'Play — resolve the round' : 'Play, disabled. Apply every staged card first.'}
                 testID="hazard-play-button"
                 style={[
                     styles.playBtn,
@@ -248,12 +291,13 @@ export interface HazardBoardProps {
     onStage: (uid: string) => void;
     onUnstage: (uid: string) => void;
     onPower: (uid: string, dieId: string) => void;
+    onApply: (uid: string) => void;
     onDiscard: (uid: string) => void;
     onResolve: () => void;
     onInspect: (card: HazardCardVM) => void;
 }
 
-export function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onDiscard, onResolve, onInspect }: HazardBoardProps) {
+export function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onApply, onDiscard, onResolve, onInspect }: HazardBoardProps) {
     const playAreaRef = useRef<View | null>(null);
     const trashRef = useRef<View | null>(null);
     const stagedRefs = useRef(new Map<string, View | null>());
@@ -263,16 +307,15 @@ export function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onDiscard, 
     const resolveDrop = useCallback(
         async (payload: DragPayload, x: number, y: number) => {
             if (x < 0 && y < 0) return; // cancelled gesture
-            // The trash bin outranks every other card target.
-            if (payload.type === 'card') {
+            // Discard is HAND-ONLY: a hand card dropped on the trash bin
+            // scraps for salvage. The bin gets a generous pad.
+            if (payload.type === 'card' && payload.from === 'hand') {
                 const trashRect = await measureRect(trashRef);
-                if (rectContains(trashRect, x, y)) {
+                if (rectContains(trashRect, x, y, 18)) {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => undefined);
                     onDiscard(payload.uid);
                     return;
                 }
-            }
-            if (payload.type === 'card' && payload.from === 'hand') {
                 const playRect = await measureRect(playAreaRef);
                 if (rectContains(playRect, x, y)) {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
@@ -289,20 +332,36 @@ export function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onDiscard, 
                 return;
             }
             if (payload.type === 'die') {
+                // 1) Direct hit anywhere on a staged card frame (generous pad)
+                //    that isn't already applied and can take this die.
+                let onCard: string | null = null;
                 for (const [uid, node] of stagedRefs.current) {
                     if (!node) continue;
                     const rect = await measureRect({ current: node });
-                    if (rectContains(rect, x, y)) {
-                        const target = vm.play.find((p) => p.uid === uid);
-                        if (target && target.kind !== payload.die.kind) {
-                            // wrong colour — the engine will reject; give the
-                            // warning haptic the design brief asks for.
-                            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => undefined);
-                        } else {
-                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => undefined);
-                        }
-                        onPower(uid, payload.dieId);
-                        return;
+                    if (rectContains(rect, x, y, 14)) {
+                        onCard = uid;
+                        break;
+                    }
+                }
+                // 2) Forgiveness: a die dropped loosely in the play area, when
+                //    exactly one staged card can still take it, lands there.
+                if (onCard === null) {
+                    const playRect = await measureRect(playAreaRef);
+                    if (rectContains(playRect, x, y)) {
+                        const takers = vm.play.filter(
+                            (p) => !p.applied && dieFits(payload.die.kind, p.kind),
+                        );
+                        if (takers.length === 1) onCard = takers[0].uid;
+                    }
+                }
+                if (onCard !== null) {
+                    const target = vm.play.find((p) => p.uid === onCard);
+                    const ok = target && !target.applied && dieFits(payload.die.kind, target.kind);
+                    if (ok) {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => undefined);
+                        onPower(onCard, payload.dieId);
+                    } else {
+                        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => undefined);
                     }
                 }
             }
@@ -338,6 +397,7 @@ export function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onDiscard, 
 
     const stagedCardGesture = (card: HazardCardVM) => {
         const pan = Gesture.Pan()
+            .enabled(!card.applied)
             .minDistance(10)
             .onStart((e) => {
                 runOnJS(drag.begin)({ type: 'card', from: 'play', uid: card.uid, card }, e.absoluteX, e.absoluteY);
@@ -352,6 +412,7 @@ export function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onDiscard, 
                 if (!success) runOnJS(drag.end)(-1, -1);
             });
         const tap = Gesture.Tap()
+            .enabled(!card.applied)
             .maxDistance(9)
             .onEnd(() => {
                 runOnJS(onUnstage)(card.uid);
@@ -363,6 +424,12 @@ export function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onDiscard, 
     const n = vm.hand.length;
     const mid = (n - 1) / 2;
     const overlap = n > 6 ? 56 : n > 4 ? 42 : 24;
+    // Fanned-hand arch (tunable). Always applied so the hand never renders
+    // as a flat line; tightened a touch once the hand grows past the cap.
+    const ARCH = HAZARD_TUNING.hand;
+    const archScale = n > ARCH.tightenAbove ? ARCH.tightenScale : 1;
+    const archLift = ARCH.archLiftPerStep * archScale;
+    const archRotate = ARCH.archRotatePerStep * archScale;
 
     return (
         <View style={styles.root} testID="hazard-board">
@@ -433,30 +500,33 @@ export function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onDiscard, 
                 ) : (
                     <View style={styles.playCards}>
                         {vm.play.map((card) => (
-                            <GestureDetector key={card.uid} gesture={stagedCardGesture(card)}>
-                                <Animated.View
-                                    ref={(node) => {
-                                        stagedRefs.current.set(card.uid, node as unknown as View | null);
-                                    }}
-                                    entering={FadeInDown.duration(200)}
-                                    layout={LinearTransition.duration(180)}
-                                    style={{
-                                        opacity:
-                                            drag.active?.type === 'card' && drag.active.uid === card.uid ? 0.3 : 1,
-                                    }}
-                                    testID={`hazard-staged-${card.uid}`}
-                                    accessible
-                                    accessibilityRole="button"
-                                    accessibilityLabel={`${card.name}, ${card.kind} card staged for play. ${card.poweredByDieId ? 'Powered by mana die. ' : 'Needs mana die to activate. '}${card.powered.force || card.powered.escape ? `Will provide: ${card.powered.force} force, ${card.powered.escape} escape.` : ''}`}
-                                    accessibilityHint="Tap to return to hand, or drag mana die here to power it"
-                                >
-                                    <HazardCard card={card} mode="play" />
-                                </Animated.View>
-                            </GestureDetector>
+                            <View key={card.uid} style={styles.stagedCol}>
+                                <GestureDetector gesture={stagedCardGesture(card)}>
+                                    <Animated.View
+                                        ref={(node) => {
+                                            stagedRefs.current.set(card.uid, node as unknown as View | null);
+                                        }}
+                                        entering={FadeInDown.duration(200)}
+                                        layout={LinearTransition.duration(180)}
+                                        style={{
+                                            opacity:
+                                                drag.active?.type === 'card' && drag.active.uid === card.uid ? 0.3 : 1,
+                                        }}
+                                        testID={`hazard-staged-${card.uid}`}
+                                        accessible
+                                        accessibilityRole="button"
+                                        accessibilityLabel={`${card.name}, ${card.kind} card staged for play. ${card.applied ? 'Applied and locked. ' : card.poweredByDieId ? 'Powered by mana die. ' : 'Drop a die anywhere on it to power it. '}${card.powered.force || card.powered.escape ? `Will provide: ${card.powered.force} force, ${card.powered.escape} escape.` : ''}`}
+                                        accessibilityHint={card.applied ? 'Locked in' : 'Tap to return to hand, or drag a die onto the card to power it, then Apply'}
+                                    >
+                                        <HazardCard card={card} mode="play" />
+                                    </Animated.View>
+                                </GestureDetector>
+                                <ApplyButton card={card} onApply={onApply} />
+                            </View>
                         ))}
                     </View>
                 )}
-                <Text style={styles.playHint}>tap a staged card to return it</Text>
+                <Text style={styles.playHint}>drop a die on a card, then APPLY each to lock your set</Text>
             </View>
 
             {/* hand dock + trash bin + PLAY button */}
@@ -488,15 +558,15 @@ export function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onDiscard, 
                     {vm.hand.map((card, i) => (
                         <GestureDetector key={card.uid} gesture={handCardGesture(card)}>
                             <Animated.View
-                                entering={FadeInDown.delay(i * 60).duration(240)}
+                                entering={FadeIn.duration(200)}
                                 layout={LinearTransition.duration(180)}
                                 style={{
                                     marginLeft: i === 0 ? 0 : -overlap,
                                     zIndex: drag.active?.type === 'card' && drag.active.uid === card.uid ? 30 : i,
                                     opacity: drag.active?.type === 'card' && drag.active.uid === card.uid ? 0.3 : 1,
                                     transform: [
-                                        { translateY: Math.abs(i - mid) * (n > 6 ? 5 : 7) },
-                                        { rotate: `${(i - mid) * (n > 6 ? 4 : 5)}deg` },
+                                        { translateY: Math.abs(i - mid) * archLift },
+                                        { rotate: `${(i - mid) * archRotate}deg` },
                                     ],
                                 }}
                                 testID={`hazard-hand-${card.uid}`}
@@ -560,16 +630,29 @@ const styles = StyleSheet.create({
     playEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     playEmptyText: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 12, color: AXM.ash },
     playCards: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, justifyContent: 'center', alignContent: 'flex-start' },
+    stagedCol: { alignItems: 'center', gap: 3 },
+    applyBtn: {
+        width: 70,
+        borderWidth: 1.5,
+        borderColor: AXM.bone,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        paddingVertical: 3,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    applyText: { fontFamily: FONTS.sans, fontSize: 9, letterSpacing: 1.6, color: AXM.parchment },
+    applyLocked: { borderColor: HZ.acidDim, backgroundColor: 'rgba(134,168,33,0.16)' },
+    applyLockedText: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1.2, color: HZ.acid },
     playHint: { fontFamily: FONTS.mono, fontSize: 7, color: AXM.bone, letterSpacing: 1, textAlign: 'center', marginTop: 4 },
     dock: { height: 148, borderTopWidth: 1, borderTopColor: AXM.ash },
     trashBin: {
         position: 'absolute',
-        left: 10,
-        bottom: 12,
+        left: 8,
+        bottom: 10,
         zIndex: 40,
-        width: 54,
-        height: 54,
-        borderRadius: 27,
+        width: 66,
+        height: 66,
+        borderRadius: 33,
         borderWidth: 1.5,
         borderStyle: 'dashed',
         borderColor: AXM.ash,

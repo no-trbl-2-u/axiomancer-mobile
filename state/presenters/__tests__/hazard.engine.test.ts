@@ -8,6 +8,7 @@
 import { describe, expect, it } from '@jest/globals';
 
 import {
+    applyHazardCard,
     continueHazardAfterResolve,
     createHazardSession,
     finishHazardRolling,
@@ -105,7 +106,7 @@ describe('hazard presenter — affordability', () => {
             hand: [
                 { uid: 'h-prog', cardId: 'steps', dieId: null }, // +1 FORCE
                 { uid: 'h-mana', cardId: 'haul', dieId: null }, // conjure red die
-                { uid: 'h-none', cardId: 'wind', dieId: null }, // no salvage
+                { uid: 'h-none', cardId: HAZARD_CRACK_CARD.id, dieId: null }, // no salvage
             ],
         };
         const vm = vmOf(s);
@@ -137,12 +138,12 @@ describe('hazard presenter — meters', () => {
     it('safe route: one combined PASSAGE meter with split detail line', () => {
         let s = playingSession('safe');
         s = { ...s, hand: entries('haul', 2), play: [] };
-        s = stageHazardCard(s, 'h0', BAG); // DEAD-MAN HAUL free 4F/1E
+        s = stageHazardCard(s, 'h0', BAG); // DEAD-MAN HAUL free 3F/0E
         const vm = vmOf(s);
         expect(vm.meters).toHaveLength(1);
         expect(vm.meters[0].key).toBe('passage');
-        expect(vm.meters[0].value).toBe(5);
-        expect(vm.meterDetail).toBe('FORCE 4 · ESCAPE 1 — either type counts');
+        expect(vm.meters[0].value).toBe(3);
+        expect(vm.meterDetail).toBe('FORCE 3 · ESCAPE 0 — either type counts');
         expect(vm.bothRequired).toBe(false);
     });
 
@@ -171,13 +172,19 @@ describe('hazard presenter — resolve and ledger', () => {
         return resolveHazardRound(s);
     }
 
-    it('PLAY button disabled with an empty play area, enabled once staged', () => {
+    it('PLAY stays disabled until every staged card is APPLIED', () => {
         const idle = vmOf(playingSession('safe'));
         expect(idle.resolveEnabled).toBe(false);
         expect(idle.resolveSubLabel).toBe('STAGE A CARD');
         let s = playingSession('safe');
         s = { ...s, hand: entries('steps', 1), play: [] };
         s = stageHazardCard(s, 'h0', BAG);
+        // staged but not applied — still locked
+        const staged = vmOf(s);
+        expect(staged.resolveEnabled).toBe(false);
+        expect(staged.resolveSubLabel).toBe('APPLY 1 MORE');
+        // apply it — now armed
+        s = applyHazardCard(s, 'h0', BAG);
         const armed = vmOf(s);
         expect(armed.resolveEnabled).toBe(true);
         expect(armed.resolveSubLabel).toBe('RESOLVE');

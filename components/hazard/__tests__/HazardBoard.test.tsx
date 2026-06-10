@@ -80,6 +80,7 @@ const mockHazardViewModel: HazardViewModel = {
             keywords: [],
             dieAvailable: true,
             poweredByDieId: null,
+            applied: false,
             salvageLabel: null,
         },
     ],
@@ -140,6 +141,7 @@ describe('HazardBoard', () => {
         onPower: jest.fn(),
         onDiscard: jest.fn(),
         onResolve: jest.fn(),
+        onApply: jest.fn(),
         onInspect: jest.fn(),
     };
 

@@ -119,8 +119,9 @@ Recommended vertical stack:
 2. **Requirement Panel** — active route, current progress type(s), threshold, reward/risk affordance.
 3. **Mana Board** — 4 persistent dice plus temporary dice if created.
 4. **Progress Meter** — current round progress vs threshold.
-5. **Action Hand** — horizontally scrollable cards or expandable card tray.
-6. **Commit / Resolve Bar** — resolve button, undo-last-play if supported, consequence preview.
+5. **Play Area** — staging lane for up to 6 selected cards; staged cards shrink and remain tappable to return to hand.
+6. **Action Hand** — compact 5-card tray anchored at the bottom; cards should fit without scrolling, using slight overlap/stacking if needed.
+7. **Commit / Play Bar** — Play button, undo/unstage affordance if supported, consequence preview.
 
 ### Reveal / Route Select Layout
 
@@ -140,9 +141,9 @@ During round play:
 
 - Current threshold stays fixed and visible.
 - Progress meter updates immediately after each card play.
-- Cards played this round appear in a small played-row ledger.
+- Cards dragged into the play area appear as a small staged ledger of up to 6 cards.
 - Dice states update in place: available, spent, exhausted, locked, preserved, temporary.
-- The `RESOLVE ROUND` button is disabled only if the engine disallows resolution; otherwise the player may accept an `X`.
+- The `PLAY` button commits the staged set; before that point, card placement and die assignment are reversible UI intent.
 
 ### Complete Layout
 
@@ -159,6 +160,23 @@ Penalty: Final round wound avoided / applied as engine reports
 If score is positive, show reward grant. If zero or negative, show survival/penalty. For 4-5 round hazards, keep the same ledger shape and let the count speak.
 
 ---
+
+
+### Result and Reward Modal Contract
+
+After the final round, show two clear beats:
+
+1. **Result modal**
+   - **Perfect:** every round is `O`.
+   - **Complete:** at least 1 round is `O`.
+   - **Failure:** no rounds are `O`.
+
+2. **Rewards / consequences modal**
+   - Show reward icons and consequence icons in a shared area if space is tight. Every icon needs tooltip/explainer copy.
+   - Perfect shows 3 card choices with 1 guaranteed rare and a bottom-right `X` button allowing the player to skip card reward. Perfect has 0 consequences.
+   - Normal Complete forces the player to choose 1 of 3 cards; rarity ranges common to rare by RNG, but a one-round-only success has 0% rare chance.
+   - Consequences scale with lost rounds. Failure applies maximum consequences.
+   - Consequence examples: dead cards added to deck, maximum VITAE loss, minimum VITAE loss, loss of all current paradox/fallacy tokens, and hazard-authored penalties.
 
 ## 4. Component Recommendations
 
@@ -250,7 +268,8 @@ Recommended card structure:
 - Name.
 - Verb class icon.
 - Top/free action row.
-- Bottom/mana action row with cost pips.
+- Bottom/mana action row with a single cost pip.
+- Subtle card-stock tint keyed to the single mana color the bottom action can consume.
 - Affordability state:
   - bottom action bright when affordable;
   - dimmed when unaffordable;
@@ -258,10 +277,13 @@ Recommended card structure:
 
 Touch model:
 
-- Tap card: expand details.
-- Tap top row: play free action.
-- Tap bottom row: play mana action if affordable.
-- Long press: rules text / class explanation.
+- Compact hand cards sit at the bottom of the screen, small enough to show all 5 without scrolling; slight overlap/stacking is allowed.
+- Tap compact card: expand to readable detail view with keyword explanations.
+- Drag card to play area: stage it for the round; staged cards shrink.
+- Tap staged card: unstage it and return it to hand.
+- Drag die onto staged card: assign the single mana needed to power its bottom action.
+- Tap/press keyword in expanded view: show rules text / class explanation.
+- Tap Play: confirm and resolve the staged set through engine-owned actions.
 
 ### `HazardRoundLedger`
 
@@ -428,7 +450,10 @@ When mechanics exposes hazard actions, mobile should wrap them in app actions si
 - `drawHazardOpeningHand()`
 - `selectHazardRoute(route, playerChoiceProgressType?)`
 - `rollHazardDice()`
-- `playHazardCard(cardId, action: 'top' | 'bottom')`
+- `stageHazardCard(cardId)`
+- `unstageHazardCard(cardId)`
+- `assignHazardDieToCard(dieId, cardId)`
+- `playStagedHazardCards()`
 - `resolveHazardRound()`
 - `advanceHazardRound()`
 - `completeHazard()`

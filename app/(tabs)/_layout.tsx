@@ -80,15 +80,8 @@ function TabIcon({ kind, color, size }: { kind: string; color: string; size: num
 
 export default function TabLayout() {
   const { inEncounterModal } = useCombatMode();
-  // Phase 63d (2026-05-21): retired the WILDS↔STRIFE tab mutex.
-  // Combat now lives inside the encounter modal (Phase 63a-c);
-  // the STRIFE tab is permanently hidden from the tab bar.
-  // Exploration stays as the leftmost positional tab unconditionally.
-  // The /combat route file remains so deep-link navigation +
-  // DebugCombatButton's dev path keep working; the bar just doesn't
-  // surface it. Pre-63d the mutex swapped WILDS↔STRIFE based on
-  // `inCombat || hasCombatPrelude`; both signals are no longer
-  // read here.
+  // Tab configuration: Combat moved to encounter modal (Phase 63d).
+  // STRIFE tab hidden from bar but route preserved for dev tools.
   // Subscribe to the slim slices `selectTabBadges` reads, then memo
   // the badges object. The presenter returns a stable `EMPTY_BADGES`
   // reference in the no-event / no-levelup steady state but a fresh
@@ -174,9 +167,7 @@ export default function TabLayout() {
               badge={badges.combat}
             />
           ),
-          // Phase 63d — STRIFE tab permanently hidden from the bar.
-          // Combat lives in the encounter modal now. Route file
-          // remains for deep-link compatibility + DebugCombatButton.
+          // STRIFE tab hidden (combat moved to modal).
           href: null,
         }}
       />

@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-10 at commit d94593d
-> Pass count: 67
+> Last pass: 2026-06-10 at commit 3406fea
+> Pass count: 68
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -105,6 +105,61 @@
   - **A11y compliance**: Screen reader/assistive technology accessibility missing
 - rationale: Audit finding identifies concrete accessibility gap affecting users who rely on keyboard navigation. UX-related finding with clear implementation path.
 - proposed scope: 1-phase focus management patterns for modals, combat sequences, interactive components
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 9.0] Combat encounters stop triggering after first encounter fix
+- proposed: 2026-06-10, expand pass 68
+- source signals:
+  - **GitHub issue #191**: HIGH severity user-spotted bug (triage:loop-queued)
+  - **Core gameplay blocker**: Subsequent combat encounters fail to trigger after first completion
+  - **User jot source**: Spotted during actual gameplay (2026-05-25)
+- rationale: Critical gameplay bug that blocks core combat mechanic progression. HIGH severity user-spotted issue with clear reproduction case. Signal multiplicity from GitHub triage + user feedback.
+- proposed scope: 1-phase investigation and fix of encounter state persistence/reset logic
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 6.0] Hazard minigame hex-literal token migration
+- proposed: 2026-06-10, expand pass 68
+- source signals:
+  - **Hex literal smell**: 15+ untouched hex literals in components/hazard/ directory
+  - **Design system bypass**: Hardcoded colors like '#0c0a08', '#8a57bd', '#17150f' in HazardCard, HazardDie, RouteSelect
+  - **Token system exists**: AXM design tokens available but not consistently used
+- rationale: Concentrated hex-literal usage in hazard components bypasses established design token system. Aggressive posture accepts smell as primary signal with design consistency multiplier.
+- proposed scope: 1-phase systematic replacement of hex literals with appropriate AXM tokens in hazard component family
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 3.7] Large state file extraction refactor
+- proposed: 2026-06-10, expand pass 68
+- source signals:
+  - **AUDIT [2.7]**: Large TypeScript files impact development performance
+  - **File length smell**: state/actions.ts (1677 lines), state/presenters/combat.engine.ts (1473 lines)
+  - **Development UX**: Files exceed 2× folder median, affecting IDE performance and maintainability
+- rationale: Core state management files have grown to development-impacting sizes. Audit finding corroborated by file-length smell detection under aggressive posture.
+- proposed scope: Multi-phase extraction of focused modules from large state files while preserving behavior
+- estimated phases: 2-3
+- conflicts: none
+
+### [ ] [score 3.0] React Native accessibility audit implementation
+- proposed: 2026-06-10, expand pass 68
+- source signals:
+  - **AUDIT [2.0]**: Missing accessibility patterns across React Native components
+  - **A11y gap**: No accessibility props found via grep across interactive components
+  - **UX-critical**: Screen reader and assistive technology support missing
+- rationale: Systematic accessibility gap across component library affects users with disabilities. Audit finding identifies concrete implementation need.
+- proposed scope: 1-phase accessibility audit adding accessibilityLabel, accessibilityRole props to primary user flows
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 2.6] Node.js dependency weight analysis
+- proposed: 2026-06-10, expand pass 68
+- source signals:
+  - **AUDIT [2.4]**: Node.js bundle size at 506MB suggests potential dependency weight
+  - **Development UX**: Large bundle affects build performance and development iteration
+  - **Maintenance burden**: Bundle size monitoring for future optimization opportunities
+- rationale: Substantial bundle size warrants investigation for optimization opportunities. Audit finding suggests potential for development performance improvement.
+- proposed scope: 1-phase dependency analysis and lightweight optimization where feasible
 - estimated phases: 1
 - conflicts: none
 

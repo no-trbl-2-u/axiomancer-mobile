@@ -23,7 +23,7 @@
 - addressed: 2026-06-10 via commit 27c324d
 - fix: Created comprehensive test files for all 7 hazard components with proper TypeScript interfaces and mocking. Tests cover render modes, states, interactions, and error conditions. Establishes surface-level test contracts following hermetic-test methodology.
 
-### [ ] [7.2] Large component files may impact development and build performance 
+### [x] [7.2] Large component files may impact development and build performance 
 - category: perf
 - impact: 6
 - ease: 8
@@ -34,6 +34,8 @@
 - evidence: components/levelup/LevelUpModal.tsx at 697 lines and HazardBoard.tsx at 532 lines
 - observation: Several components exceed 500 lines, which can slow development, increase memory usage, and make code maintenance difficult
 - source: audit
+- addressed: 2026-06-10 via commit 92d4b72
+- fix: Extracted StanceRow component and levelUpFlavor utility from LevelUpModal.tsx, reducing it from 697→537 lines. Created StanceRow.tsx for stance allocation controls and levelUpFlavor.ts for deterministic flavor text selection.
 
 ### [ ] [7.2] Accessibility labels missing for interactive hazard game elements
 - category: a11y

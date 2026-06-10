@@ -11,7 +11,7 @@ If you are looking for "how does combat work" or "what does an effect
 do", read the engine. If you are looking for "what does the combat
 screen show in the `choosing_stance` phase", read this repo.
 
-T's current game vision and UX doctrine guardrail lives in [`VISION.md`](./VISION.md). Read it before major mobile UX, combat, mercy/friendship, alignment, or `/march` work.
+T's current game vision and UX doctrine guardrail lives in [`VISION.md`](./VISION.md). This defines the game identity, core UX principles, and philosophical design constraints that guide combat interface and interaction design decisions. Read it before major mobile UX, combat, mercy/friendship, alignment, or `/march` work.
 
 Durable mobile architecture and product decisions live in
 [`docs/adr/`](./docs/adr/). These records sit above build-plan execution

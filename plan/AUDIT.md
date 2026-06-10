@@ -24,7 +24,7 @@
 - addressed: 2026-06-10 via commit 3ef9e82
 - fix: Simplified extensive historical comments in app/(tabs)/_layout.tsx to brief explanations. Consolidated 9 lines of Phase 63d details into 2 concise comments explaining current tab configuration. Improves maintainer comprehension without losing essential context.
 
-### [ ] [2.8] Potential optimization in component re-render patterns
+### [x] [2.8] Potential optimization in component re-render patterns
 - category: perf
 - impact: 4
 - ease: 7
@@ -35,6 +35,9 @@
 - evidence: app/(tabs)/combat.tsx contains multiple sub-components that may benefit from React.memo optimization
 - observation: Combat interface responsiveness is critical for user experience during gameplay
 - source: audit
+- issue: #331
+- addressed: 2026-06-10 via commit fbf68b3
+- fix: Applied React.memo to PhaseBottom, PhaseStack, CombatEnemyPanel, CombatPlayerHud, ActionPhase, and SkillPhase components to reduce unnecessary re-renders during combat interactions. Updated corresponding hermetic tests to handle memoized component type checks. Improves combat interface responsiveness during gameplay.
 
 ## Previously addressed findings
 

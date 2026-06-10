@@ -52,7 +52,7 @@
 - addressed: 2026-06-10 via commit 80221c7
 - fix: Added comprehensive accessibility labels to hand cards (name, type, stats), staged cards (power status, hints), and progress meters (role, value). Provided clear hints for drag/tap interactions to improve screen reader navigation of the hazard minigame.
 
-### [ ] [4.5] App configuration lacks comprehensive SEO metadata for web builds
+### [x] [4.5] App configuration lacks comprehensive SEO metadata for web builds
 - category: seo
 - impact: 5
 - ease: 9
@@ -63,6 +63,9 @@
 - evidence: app.json web section has basic OpenGraph but missing keywords, author, and other SEO metadata
 - observation: While the app has basic OpenGraph and Twitter card metadata, it lacks comprehensive SEO optimization for web discovery and indexing
 - source: audit
+- issue: #339
+- addressed: 2026-06-10 via commit ada2d1e
+- fix: Added comprehensive SEO metadata to app.json web configuration including keywords field with relevant terms (axiomancer, ttrpg, rpg, gothic, etc.), author field, viewport meta tag, and structured JSON-LD data using schema.org MobileApplication type with application category, genre, operating systems, author organization, and pricing information.
 
 ### [x] [5.4] Performance optimization opportunities in component rendering patterns
 - category: perf

@@ -41,6 +41,7 @@ const EVENT_BADGE: Record<NodeType, { c: string; label: string }> = {
     rest: { c: AXM.rust, label: 'REST' },
     gather: { c: AXM.bone, label: 'GATHER' },
     current: { c: AXM.sulfur, label: 'HERE' },
+    hazard: { c: AXM.rust, label: 'HAZARD' },
 };
 
 const OPTION_ICON: Record<NodeType, string> = {
@@ -51,6 +52,7 @@ const OPTION_ICON: Record<NodeType, string> = {
     treasure: 'scroll',
     boss: 'sword',
     quest: 'scroll',
+    hazard: 'arcane',
 };
 
 export default function ExplorationScreen() {

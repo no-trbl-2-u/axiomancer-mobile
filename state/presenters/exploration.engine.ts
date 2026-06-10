@@ -23,7 +23,8 @@ export type NodeType =
     | 'encounter'
     | 'treasure'
     | 'boss'
-    | 'quest';
+    | 'quest'
+    | 'hazard';
 
 export interface ExplorationNode {
     /** Stable engine node ID. */
@@ -129,6 +130,7 @@ const ACTION_ICON_BY_TYPE: Record<NodeType, string> = {
     treasure: 'scroll',
     boss: 'sword',
     quest: 'scroll',
+    hazard: 'arcane',
 };
 
 const ACTION_TAG_BY_TYPE: Record<NodeType, string> = {
@@ -139,6 +141,7 @@ const ACTION_TAG_BY_TYPE: Record<NodeType, string> = {
     treasure: 'SKILL · MIND',
     boss: 'TRAVEL · BOSS',
     quest: 'LORE',
+    hazard: 'PERIL · BRAVE IT',
 };
 
 const ENCOUNTER_NODE_TYPES = new Set<NodeType>(['encounter', 'boss']);

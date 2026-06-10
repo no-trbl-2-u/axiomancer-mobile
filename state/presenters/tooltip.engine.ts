@@ -155,9 +155,9 @@ const QUEST_OBJECTIVE_CONTENT: Record<string, TooltipContent> = {
 };
 
 // Phase 74 follow-up — exploration walkthrough Tick 1: map-node
-// content. Keys match the 7 NodeType variants emitted by the
+// content. Keys match the 8 NodeType variants emitted by the
 // exploration presenter (`encounter | treasure | boss | quest |
-// rest | gather | current`). Each entry: uppercased title + short
+// rest | gather | hazard | current`). Each entry: uppercased title + short
 // description of what happens when the node is engaged.
 const MAP_NODE_CONTENT: Record<string, TooltipContent> = {
     encounter: {
@@ -189,6 +189,11 @@ const MAP_NODE_CONTENT: Record<string, TooltipContent> = {
         title: 'GATHER',
         body: 'forage, scavenge, salvage. yields are small but reliable; one of the cheaper ways to refill consumables.',
         footnote: 'no combat',
+    },
+    hazard: {
+        title: 'HAZARD',
+        body: 'the ground itself turns against you. a short minigame — read the route, brave it, and you pass; falter and it costs vitae.',
+        footnote: 'no combat · costs vitae',
     },
     current: {
         title: 'HERE',

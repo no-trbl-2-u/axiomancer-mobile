@@ -425,6 +425,7 @@ describe('NodeType <-> pool-id prefix contract (mechanics-ui audit [3.0] explora
         quest: 'quest-',
         encounter: 'encounter-',
         boss: 'boss-',
+        hazard: 'hazard-',
     };
 
     for (const layout of [fishingVillageLayout, northernForestLayout]) {

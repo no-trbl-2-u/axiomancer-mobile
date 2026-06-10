@@ -13,14 +13,18 @@
  */
 
 import { HAZARD_DECK } from './content';
+import { HAZARD_TUNING } from './tuning';
 
 export const HAZARD_CARD_FLAG_PREFIX = 'hazard-card:';
 
-/** The starter draw bag: weighted card ids from the authored deck. */
+/** The starter draw bag: weighted card ids from the authored deck, scaled
+ *  by the tunable deck-size multiplier (floored at one copy per card). */
 export function hazardStarterBag(): string[] {
+    const scale = HAZARD_TUNING.deck.starterWeightScale;
     const bag: string[] = [];
     for (const card of HAZARD_DECK) {
-        for (let i = 0; i < (card.weight ?? 1); i++) bag.push(card.id);
+        const copies = Math.max(1, Math.round((card.weight ?? 1) * scale));
+        for (let i = 0; i < copies; i++) bag.push(card.id);
     }
     return bag;
 }

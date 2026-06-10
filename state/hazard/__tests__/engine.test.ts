@@ -5,6 +5,7 @@
 
 import {
     acknowledgeHazardOutcome,
+    applyHazardCard,
     claimHazardRewards,
     continueHazardAfterResolve,
     createHazardSession,
@@ -209,40 +210,58 @@ describe('powering cards with dice (SURGE)', () => {
     });
 });
 
-describe('utility card effects', () => {
-    it('SCOUT AHEAD draws 1 on placement and 2 more when powered', () => {
+describe('utility card effects (fire on APPLY, not on stage/power)', () => {
+    it('the wild gold die powers a card of ANY colour', () => {
         let s = playingSession();
         s = rig(s, {
-            hand: [entry('h1', 'scout'), entry('h2', 'steps')],
+            hand: [entry('h1', 'steps')],
             play: [],
-            dice: [{ id: 'db', kind: 'blue', state: 'available' }],
+            dice: [{ id: 'dg', kind: 'gold', state: 'available' }],
         });
         s = stageHazardCard(s, 'h1', BAG);
-        expect(s.hand).toHaveLength(2); // started 2, staged 1 (-1), drew 1 (+1)
-        s = powerHazardCard(s, 'h1', 'db', BAG);
-        expect(s.hand).toHaveLength(4); // +2 powered delta
-        expect(s.play[0].effectFired).toBe('powered');
+        s = powerHazardCard(s, 'h1', 'dg', BAG);
+        expect(s.play[0].dieId).toBe('dg');
+        const def = getHazardCardDef('steps');
+        expect(hazardCardValue(s.play[0])).toEqual({ force: def.fp, escape: 0 });
     });
 
-    it('draw effect does not re-fire when the card is re-staged', () => {
+    it('SURE FOOTING draws nothing on stage; base 1 on apply, powered 2', () => {
         let s = playingSession();
         s = rig(s, {
-            hand: [entry('h1', 'scout')],
+            hand: [entry('h1', 'footing')],
             play: [],
-            dice: [],
+            dice: [{ id: 'dp', kind: 'purple', state: 'available' }],
         });
         s = stageHazardCard(s, 'h1', BAG);
-        const afterFirst = s.hand.length; // 0 staged + 1 drawn = 1
-        s = unstageHazardCard(s, 'h1'); // back to 2 in hand
-        s = stageHazardCard(s, 'h1', BAG); // re-stage: no second draw
-        expect(s.hand.length).toBe(afterFirst); // still just the drawn card
-        expect(s.play[0].effectFired).toBe('base');
+        expect(s.hand).toHaveLength(0); // staged, no draw yet
+        // base apply (no die) draws drawBase = 1
+        const base = applyHazardCard(s, 'h1', BAG);
+        expect(base.hand).toHaveLength(1);
+        expect(base.play[0].applied).toBe(true);
+        // powered apply draws drawPowered = 2
+        const powered = applyHazardCard(powerHazardCard(s, 'h1', 'dp', BAG), 'h1', BAG);
+        expect(powered.hand).toHaveLength(2);
     });
 
-    it('SECOND WIND re-casts only available dice; powered adds a bonus die', () => {
+    it('apply is one-way: re-apply, unstage, power, and discard are all refused', () => {
+        let s = playingSession();
+        s = rig(s, {
+            hand: [entry('h1', 'steps')],
+            play: [],
+            dice: [{ id: 'dr', kind: 'red', state: 'available' }],
+        });
+        s = stageHazardCard(s, 'h1', BAG);
+        s = applyHazardCard(s, 'h1', BAG);
+        expect(s.play[0].applied).toBe(true);
+        expect(applyHazardCard(s, 'h1', BAG)).toBe(s);
+        expect(unstageHazardCard(s, 'h1')).toBe(s);
+        expect(powerHazardCard(s, 'h1', 'dr', BAG)).toBe(s);
+    });
+
+    it('BALANCE POLE re-casts available dice on apply (base, no bonus die)', () => {
         let s = playingSession(11);
         s = rig(s, {
-            hand: [entry('h1', 'wind')],
+            hand: [entry('h1', 'pole')],
             play: [],
             dice: [
                 { id: 'd1', kind: 'red', state: 'available' },
@@ -251,27 +270,34 @@ describe('utility card effects', () => {
             ],
         });
         s = stageHazardCard(s, 'h1', BAG);
-        expect(s.dice).toHaveLength(3);
-        // spent die untouched
-        expect(s.dice.find((d) => d.id === 'd2')).toBeDefined();
-        // available dice replaced with new ids
-        expect(s.dice.find((d) => d.id === 'd1')).toBeUndefined();
-        expect(s.dice.find((d) => d.id === 'd3')).toBeUndefined();
+        s = applyHazardCard(s, 'h1', BAG); // base recast — no die attached
+        expect(s.dice).toHaveLength(3); // no bonus die at base tier
+        expect(s.dice.find((d) => d.id === 'd2')).toBeDefined(); // spent untouched
+        expect(s.dice.find((d) => d.id === 'd1')).toBeUndefined(); // recast
+        expect(s.dice.find((d) => d.id === 'd3')).toBeUndefined(); // recast
+    });
 
-        // power it with a purple die for the +1 die bonus
+    it('powered re-cast adds a bonus die', () => {
+        let s = playingSession(11);
         s = rig(s, {
-            dice: [...s.dice, { id: 'dp', kind: 'purple', state: 'available' }],
+            hand: [entry('h1', 'pole')],
+            play: [],
+            dice: [
+                { id: 'dp', kind: 'purple', state: 'available' },
+                { id: 'dx', kind: 'red', state: 'available' },
+            ],
         });
-        s = powerHazardCard(s, 'h1', 'dp', BAG);
-        // dp spent + one fresh temporary die appended
+        s = stageHazardCard(s, 'h1', BAG);
+        s = powerHazardCard(s, 'h1', 'dp', BAG); // spend a purple die on the card
+        s = applyHazardCard(s, 'h1', BAG); // powered → recast + bonus die
         expect(s.dice.filter((d) => d.temporary)).toHaveLength(1);
         expect(s.dice.find((d) => d.temporary)?.kind).not.toBe('hex');
     });
 
-    it('QUARRY-SIGN converts hex dice to its own colour', () => {
+    it('READ THE WIND converts hex dice to its own colour on apply', () => {
         let s = playingSession();
         s = rig(s, {
-            hand: [entry('h1', 'quarry')],
+            hand: [entry('h1', 'windread')],
             play: [],
             dice: [
                 { id: 'd1', kind: 'hex', state: 'available' },
@@ -280,25 +306,26 @@ describe('utility card effects', () => {
             ],
         });
         s = stageHazardCard(s, 'h1', BAG);
-        expect(s.dice.filter((d) => d.kind === 'red')).toHaveLength(2);
+        s = applyHazardCard(s, 'h1', BAG);
+        expect(s.dice.filter((d) => d.kind === 'purple')).toHaveLength(2);
         expect(s.dice.find((d) => d.id === 'd3')?.kind).toBe('blue');
     });
 
-    it('powered convert also adds a die of the card colour', () => {
+    it('gold OATH: major draw fires for free; its dual number pays only when powered', () => {
         let s = playingSession();
         s = rig(s, {
-            hand: [entry('h1', 'quarry')],
+            hand: [entry('h1', 'oath')],
             play: [],
-            dice: [
-                { id: 'd1', kind: 'hex', state: 'available' },
-                { id: 'dr', kind: 'red', state: 'available' },
-            ],
+            dice: [{ id: 'dg', kind: 'gold', state: 'available' }],
         });
         s = stageHazardCard(s, 'h1', BAG);
-        s = powerHazardCard(s, 'h1', 'dr', BAG);
-        const temps = s.dice.filter((d) => d.temporary);
-        expect(temps).toHaveLength(1);
-        expect(temps[0].kind).toBe('red');
+        expect(hazardCardValue(s.play[0])).toEqual({ force: 0, escape: 0 }); // free row 0/0
+        s = powerHazardCard(s, 'h1', 'dg', BAG);
+        const def = getHazardCardDef('oath');
+        expect(hazardCardValue(s.play[0])).toEqual({ force: def.fp, escape: def.ep });
+        const before = s.hand.length;
+        s = applyHazardCard(s, 'h1', BAG);
+        expect(s.hand.length).toBe(before + (def.drawPowered ?? def.drawBase ?? 0)); // major draw
     });
 });
 
@@ -443,18 +470,17 @@ describe('discard to the trash bin (salvage)', () => {
         expect(s.dice[0].state).toBe('available');
     });
 
-    it('cards without salvage (CRACK, utilities) discard for nothing', () => {
+    it('CRACK cards discard for nothing (no salvage)', () => {
         let s = playingSession(5, 'safe');
-        s = rig(s, { hand: [entry('h1', HAZARD_CRACK_CARD.id), entry('h2', 'wind')], play: [], dice: [] });
+        s = rig(s, { hand: [entry('h1', HAZARD_CRACK_CARD.id)], play: [], dice: [] });
         s = discardHazardCard(s, 'h1');
-        s = discardHazardCard(s, 'h2');
         expect(s.hand).toHaveLength(0);
         expect(s.dice).toHaveLength(0);
         expect(s.progressBase).toEqual({ force: 0, escape: 0 });
-        expect(s.discardPile).toEqual([HAZARD_CRACK_CARD.id, 'wind']);
+        expect(s.discardPile).toEqual([HAZARD_CRACK_CARD.id]);
     });
 
-    it('discarding a STAGED card refunds its die first', () => {
+    it('discard is HAND-ONLY: a staged card cannot be binned', () => {
         let s = playingSession(5, 'safe');
         s = rig(s, {
             hand: [entry('h1', 'grip')],
@@ -463,12 +489,7 @@ describe('discard to the trash bin (salvage)', () => {
         });
         s = stageHazardCard(s, 'h1', BAG);
         s = powerHazardCard(s, 'h1', 'dr', BAG);
-        expect(s.dice[0].state).toBe('spent');
-        s = discardHazardCard(s, 'h1');
-        expect(s.play).toHaveLength(0);
-        expect(s.dice.find((d) => d.id === 'dr')?.state).toBe('available');
-        // IRON GRIP salvage still fires: +1 FORCE this round
-        expect(s.progressBase.force).toBe(1);
+        expect(discardHazardCard(s, 'h1')).toBe(s); // staged → no-op
     });
 
     it('discard is a no-op outside the playing phase and for unknown uids', () => {

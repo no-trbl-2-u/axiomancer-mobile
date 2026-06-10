@@ -43,6 +43,7 @@ const mockViewModel: HazardViewModel = {
             keywords: [],
             dieAvailable: true,
             poweredByDieId: null,
+            applied: false,
             salvageLabel: null,
         },
         {
@@ -61,6 +62,7 @@ const mockViewModel: HazardViewModel = {
             keywords: [],
             dieAvailable: true,
             poweredByDieId: null,
+            applied: false,
             salvageLabel: null,
         },
     ],

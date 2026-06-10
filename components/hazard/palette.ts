@@ -35,7 +35,7 @@ export const DIE: Record<HazardDieKind, DieColorway> = {
     red: { c: '#c0152a', dark: '#6e0c18', lite: '#e2455a', bg: '#1a0808', label: 'RED', glyph: 'blade' },
     blue: { c: '#5b86c4', dark: '#34527a', lite: '#8fb0dd', bg: '#0b1018', label: 'BLUE', glyph: 'eye' },
     purple: { c: '#8a57bd', dark: '#522f78', lite: '#b083e0', bg: '#160a26', label: 'PURPLE', glyph: 'crescent' },
-    gold: { c: '#c2a14e', dark: '#6e5a28', lite: '#ddc372', bg: '#16130a', label: 'GOLD', glyph: 'sun' },
+    gold: { c: '#c2a14e', dark: '#6e5a28', lite: '#ddc372', bg: '#16130a', label: 'YELLOW', glyph: 'sun' },
     hex: { c: '#0c0c0e', dark: '#040405', lite: '#cdbede', bg: '#040405', label: 'HEX', glyph: 'cross' },
 };
 

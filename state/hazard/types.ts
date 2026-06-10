@@ -79,14 +79,27 @@ export interface HazardCardDef {
     rarity: HazardCardRarity;
     /** Relative frequency in the starter draw pile (reward cards omit it). */
     weight?: number;
-    /** FREE (top) action values. */
+    /** FREE (top) action values — contributed the moment the card is staged. */
     f: number;
     e: number;
-    /** MANA (bottom / SURGE) action values. Utility cards omit them. */
+    /** MANA (bottom / SURGE) action values, used once a die is applied. */
     fp?: number;
     ep?: number;
-    /** Utility cards replace stat values with an effect. */
+    /**
+     * Optional utility, fired once when the card is APPLIED (powered tier
+     * if a die is attached, else base). A card may carry BOTH numbers and
+     * a utility (purple hybrids; gold cards lead with the utility and only
+     * pay their numbers when a die is applied).
+     */
     effect?: HazardUtilityEffect;
+    /**
+     * Gold ("yellow") cards lead with their utility: the effect always
+     * fires at its MAJOR tier (the powered amount / the +die bonus) even
+     * with no die attached. The die on a gold card buys its numbers
+     * instead. Purple/red/blue utilities omit this — they upgrade from
+     * minor to major only when a die is applied.
+     */
+    majorEffect?: boolean;
     drawBase?: number;
     drawPowered?: number;
     /**
@@ -107,11 +120,12 @@ export interface HazardHandEntry {
     /** Die powering this card's MANA action, or null when un-powered. */
     dieId: string | null;
     /**
-     * Utility effects fire on placement (base) and again on powering
-     * (the powered delta). Tracks the strongest tier already fired so
-     * re-staging can't double-fire.
+     * Set once the card is APPLIED. Applying fires the card's utility
+     * effect (if any) and locks the card permanently — it can no longer
+     * be returned to hand, re-powered, or discarded. A round can only be
+     * resolved once every staged card is applied.
      */
-    effectFired?: 'base' | 'powered';
+    applied?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -250,14 +264,12 @@ export interface HazardSessionState {
     uidCounter: number;
 }
 
-/** Maximum cards stageable in the play area per round. */
-export const HAZARD_PLAY_MAX = 6;
-
-/** Cards drawn at the start of every round. */
-export const HAZARD_HAND_SIZE = 5;
-
-/** Dice cast once at route selection — they do NOT re-cast between rounds. */
-export const HAZARD_DICE_COUNT = 4;
-
-/** Momentum cap: carried surplus per meter never exceeds this (REC#1). */
-export const HAZARD_MOMENTUM_CAP = 3;
+// Round-shape constants now live in the central tuning module so the
+// hazard-tuning skill has one file to edit. Re-exported here under their
+// long-standing names for every existing import site.
+export {
+    HAZARD_DICE_COUNT,
+    HAZARD_HAND_SIZE,
+    HAZARD_MOMENTUM_CAP,
+    HAZARD_PLAY_MAX,
+} from './tuning';

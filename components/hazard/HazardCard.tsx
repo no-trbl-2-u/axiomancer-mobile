@@ -104,7 +104,8 @@ function StatPair({
     return <View style={{ flexDirection: 'row', gap }}>{[item('force', force), item('escape', escape)]}</View>;
 }
 
-/** A FREE/MANA row used by hand + play modes. */
+/** A FREE/MANA row used by hand + play modes. Hybrid cards (purple/gold)
+ *  show BOTH their numbers and a compact utility tag. */
 function Row({
     card,
     bottom,
@@ -117,13 +118,10 @@ function Row({
     const c = DIE[card.kind];
     const powered = card.poweredByDieId !== null;
     const active = bottom ? powered : !powered;
+    const effectLabel = bottom ? card.poweredEffectLabel : card.freeEffectLabel;
     return (
         <View
             style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 4,
                 paddingVertical: compact ? 2 : 3,
                 paddingHorizontal: compact ? 4 : 6,
                 backgroundColor: bottom ? `${c.c}22` : 'rgba(255,255,255,0.07)',
@@ -132,22 +130,26 @@ function Row({
                 opacity: active ? 1 : 0.5,
             }}
         >
-            {card.utility ? (
-                <Text style={{ fontFamily: FONTS.sans, fontSize: compact ? 9 : 10, letterSpacing: 0.6, color: bottom ? c.dark : CARD_INK }}>
-                    {bottom ? card.poweredEffectLabel : card.freeEffectLabel}
-                </Text>
-            ) : (
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
                 <StatPair
                     force={bottom ? card.powered.force : card.free.force}
                     escape={bottom ? card.powered.escape : card.free.escape}
                     size={compact ? 10 : 12}
                     gap={compact ? 5 : 8}
                 />
-            )}
-            {bottom ? (
-                <ManaSocket kind={card.kind} filled={powered} size={compact ? 15 : 17} pulse={!powered && card.dieAvailable} />
-            ) : (
-                <Text style={{ fontFamily: FONTS.sans, fontSize: compact ? 7 : 8, letterSpacing: 1, color: CARD_INK2 }}>FREE</Text>
+                {bottom ? (
+                    <ManaSocket kind={card.kind} filled={powered} size={compact ? 15 : 17} pulse={!powered && card.dieAvailable} />
+                ) : (
+                    <Text style={{ fontFamily: FONTS.sans, fontSize: compact ? 7 : 8, letterSpacing: 1, color: CARD_INK2 }}>FREE</Text>
+                )}
+            </View>
+            {card.utility && effectLabel !== null && (
+                <Text
+                    numberOfLines={1}
+                    style={{ fontFamily: FONTS.sans, fontSize: compact ? 7 : 8, letterSpacing: 0.4, color: bottom ? c.dark : CARD_INK, marginTop: 1 }}
+                >
+                    ⬡ {effectLabel}
+                </Text>
             )}
         </View>
     );
@@ -210,6 +212,11 @@ export const HazardCard = React.memo(function HazardCard({
                     <Row card={card} compact />
                     <Row card={card} bottom compact />
                 </View>
+                {card.applied && (
+                    <View pointerEvents="none" style={styles.appliedVeil}>
+                        <Text style={styles.appliedTag}>✓ LOCKED</Text>
+                    </View>
+                )}
             </View>
         );
     }
@@ -228,17 +235,18 @@ export const HazardCard = React.memo(function HazardCard({
                 }}
             >
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                    {card.utility ? (
-                        <Text style={{ fontFamily: FONTS.gothic, fontSize: 16, color: bottom ? c.dark : CARD_INK }}>
-                            {bottom ? card.poweredEffectLabel : card.freeEffectLabel}
-                        </Text>
-                    ) : (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                         <StatPair
                             force={bottom ? card.powered.force : card.free.force}
                             escape={bottom ? card.powered.escape : card.free.escape}
                             size={14}
                         />
-                    )}
+                        {card.utility && (
+                            <Text style={{ fontFamily: FONTS.gothic, fontSize: 15, color: bottom ? c.dark : CARD_INK }}>
+                                ⬡ {bottom ? card.poweredEffectLabel : card.freeEffectLabel}
+                            </Text>
+                        )}
+                    </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                         <Text style={{ fontFamily: FONTS.sans, fontSize: 9, letterSpacing: 1.2, color: bottom ? c.dark : CARD_INK2 }}>
                             {bottom ? 'MANA' : 'FREE'}
@@ -356,4 +364,21 @@ const styles = StyleSheet.create({
         lineHeight: 11,
     },
     rowsBox: { marginTop: 'auto', borderWidth: 1, borderColor: CARD_EDGE },
+    appliedVeil: {
+        ...StyleSheet.absoluteFillObject,
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        paddingTop: 3,
+        backgroundColor: 'rgba(134,168,33,0.16)',
+    },
+    appliedTag: {
+        fontFamily: FONTS.sans,
+        fontSize: 7,
+        letterSpacing: 1,
+        color: '#0c0a08',
+        backgroundColor: '#86a821',
+        paddingHorizontal: 4,
+        paddingVertical: 1,
+        overflow: 'hidden',
+    },
 });

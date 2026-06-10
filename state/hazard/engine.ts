@@ -117,10 +117,15 @@ function drawFromPile(
     return { drawn, drawPile: pile.slice(n), rng: r, uidCounter: uc };
 }
 
-/** Per-card {force, escape} contribution. Dead cards contribute nothing. */
+/**
+ * Per-card {force, escape} contribution. A card pays its numbers whether
+ * or not it also carries a utility (purple hybrids always pay their low
+ * dual number; gold cards pay nothing until a die is applied, since their
+ * free row is 0/0). Dead CRACK cards contribute nothing.
+ */
 export function hazardCardValue(entry: HazardHandEntry): { force: number; escape: number } {
     const def = getHazardCardDef(entry.cardId);
-    if (def.effect || def.dead) return { force: 0, escape: 0 };
+    if (def.dead) return { force: 0, escape: 0 };
     const powered = entry.dieId !== null;
     return {
         force: powered ? (def.fp ?? def.f) : def.f,
@@ -219,16 +224,23 @@ export function finishHazardRolling(s: HazardSessionState): HazardSessionState {
 // Card effects (draw / re-cast / convert)
 // ---------------------------------------------------------------------------
 
+/**
+ * Fires a card's utility once, in full, at the appropriate tier. The
+ * effect now fires on APPLY (not on stage/power), so this draws / recasts
+ * / converts the WHOLE amount for the tier rather than a powered delta.
+ * `major` is true when a die is attached OR the card is a gold
+ * `majorEffect` card (utility-first — always major, the die buys numbers).
+ */
 function applyUtilityEffect(
     s: HazardSessionState,
     def: HazardCardDef,
     powered: boolean,
     deckBag: readonly string[],
 ): HazardSessionState {
+    const major = powered || def.majorEffect === true;
     if (def.effect === 'draw') {
         const base = def.drawBase ?? 1;
-        const poweredN = def.drawPowered ?? base;
-        const n = powered ? poweredN - base : base;
+        const n = major ? (def.drawPowered ?? base) : base;
         if (n <= 0) return s;
         const draw = drawFromPile(s.rng, s.uidCounter, s.drawPile, deckBag, n);
         return {
@@ -249,7 +261,7 @@ function applyUtilityEffect(
             uc = roll.uidCounter;
             return roll.value;
         });
-        if (powered) {
+        if (major) {
             const extra = rollManaDie(rng, uc);
             rng = extra.rng;
             uc = extra.uidCounter;
@@ -263,7 +275,7 @@ function applyUtilityEffect(
         );
         let rng = s.rng;
         let uc = s.uidCounter;
-        if (powered) {
+        if (major) {
             const extra = rollManaDie(rng, uc, def.kind);
             rng = extra.rng;
             uc = extra.uidCounter;
@@ -278,37 +290,36 @@ function applyUtilityEffect(
 // Round play
 // ---------------------------------------------------------------------------
 
-/** Moves a hand card into the play area (max HAZARD_PLAY_MAX). */
+/**
+ * Moves a hand card into the play area (max HAZARD_PLAY_MAX). Number
+ * cards begin counting toward the meter immediately; utility effects do
+ * NOT fire here — they fire on APPLY.
+ */
 export function stageHazardCard(
     s: HazardSessionState,
     uid: string,
     deckBag: readonly string[],
 ): HazardSessionState {
+    void deckBag;
     if (s.phase !== 'playing') return s;
     if (s.play.length >= HAZARD_PLAY_MAX) return s;
     const card = s.hand.find((h) => h.uid === uid);
     if (!card) return s;
-    let ns: HazardSessionState = {
+    return {
         ...s,
         hand: s.hand.filter((h) => h.uid !== uid),
         play: [...s.play, card],
     };
-    const def = getHazardCardDef(card.cardId);
-    if (def.effect && !card.effectFired) {
-        ns = applyUtilityEffect(ns, def, false, deckBag);
-        ns = { ...ns, play: ns.play.map((p) => (p.uid === uid ? { ...p, effectFired: 'base' as const } : p)) };
-    }
-    return ns;
 }
 
 /**
- * Returns a staged card to hand. Frees its die. Utility effects already
- * fired stay fired (drawn cards remain — matches the prototype).
+ * Returns a staged card to hand and frees its die. Refused once the card
+ * has been APPLIED — applying is a one-way commit.
  */
 export function unstageHazardCard(s: HazardSessionState, uid: string): HazardSessionState {
     if (s.phase !== 'playing') return s;
     const card = s.play.find((p) => p.uid === uid);
-    if (!card) return s;
+    if (!card || card.applied) return s;
     let dice = s.dice;
     if (card.dieId) {
         dice = s.dice.map((d) => (d.id === card.dieId ? { ...d, state: 'available' as const } : d));
@@ -321,10 +332,20 @@ export function unstageHazardCard(s: HazardSessionState, uid: string): HazardSes
     };
 }
 
+/** True if `die` may power a card of colour `kind`: a matching-colour die,
+ *  or the WILD gold die (which powers any colour). Hex is never usable. */
+export function dieCanPower(dieKind: HazardDie['kind'], cardKind: HazardColor): boolean {
+    if (dieKind === 'hex') return false;
+    return dieKind === 'gold' || dieKind === cardKind;
+}
+
 /**
- * Drops a die onto a staged card to power its SURGE action. Colour
- * must match (gold cards therefore demand a gold die); hex dice are
- * blocked; dead cards reject all dice.
+ * Drops a die onto a staged card to arm its SURGE / numbers. A
+ * matching-colour die works, and the WILD gold die powers any colour
+ * (gold cards themselves still need a gold die — nothing else is gold).
+ * Hex dice are blocked; dead cards and already-applied cards reject
+ * everything. The utility effect does NOT fire here — that waits for
+ * APPLY.
  */
 export function powerHazardCard(
     s: HazardSessionState,
@@ -332,37 +353,55 @@ export function powerHazardCard(
     dieId: string,
     deckBag: readonly string[],
 ): HazardSessionState {
+    void deckBag;
     if (s.phase !== 'playing') return s;
     const card = s.play.find((p) => p.uid === uid);
     const die = s.dice.find((d) => d.id === dieId);
-    if (!card || !die) return s;
-    if (die.kind === 'hex' || die.state !== 'available') return s;
+    if (!card || !die || card.applied) return s;
+    if (die.state !== 'available') return s;
     const def = getHazardCardDef(card.cardId);
     if (def.dead) return s;
-    if (def.kind !== die.kind) return s;
+    if (!dieCanPower(die.kind, def.kind)) return s;
     let dice = s.dice.map((d) => (d.id === dieId ? { ...d, state: 'spent' as const } : d));
     if (card.dieId) {
         dice = dice.map((d) => (d.id === card.dieId ? { ...d, state: 'available' as const } : d));
     }
-    let ns: HazardSessionState = {
+    return {
         ...s,
         dice,
         play: s.play.map((p) => (p.uid === uid ? { ...p, dieId } : p)),
     };
-    if (def.effect && card.effectFired !== 'powered') {
-        ns = applyUtilityEffect(ns, def, true, deckBag);
-        ns = {
-            ...ns,
-            play: ns.play.map((p) => (p.uid === uid ? { ...p, dieId, effectFired: 'powered' as const } : p)),
-        };
+}
+
+/**
+ * APPLIES a staged card: fires its utility effect once (powered tier if a
+ * die is attached, else base — gold `majorEffect` cards are always major)
+ * and locks the card. Applied cards can no longer be unstaged, re-powered,
+ * or discarded. A no-op if the card is missing or already applied.
+ */
+export function applyHazardCard(
+    s: HazardSessionState,
+    uid: string,
+    deckBag: readonly string[],
+): HazardSessionState {
+    if (s.phase !== 'playing') return s;
+    const card = s.play.find((p) => p.uid === uid);
+    if (!card || card.applied) return s;
+    let ns: HazardSessionState = {
+        ...s,
+        play: s.play.map((p) => (p.uid === uid ? { ...p, applied: true } : p)),
+    };
+    const def = getHazardCardDef(card.cardId);
+    if (def.effect && !def.dead) {
+        ns = applyUtilityEffect(ns, def, card.dieId !== null, deckBag);
     }
     return ns;
 }
 
 /**
- * Drags a card to the trash bin. Works from hand or play (a staged
- * card refunds its die first). The card leaves the round for its
- * SALVAGE benefit, when it has one:
+ * Drags a HAND card to the trash bin (staged cards must be returned to
+ * hand first; applied cards can never be binned). The card leaves the
+ * round for its SALVAGE benefit, when it has one:
  *  - progress salvage rides `progressBase`, so it counts THIS round
  *    only (the round advance overwrites the base with momentum);
  *  - mana salvage conjures a temporary die of the card's colour.
@@ -371,19 +410,11 @@ export function powerHazardCard(
  */
 export function discardHazardCard(s: HazardSessionState, uid: string): HazardSessionState {
     if (s.phase !== 'playing') return s;
-    const inHand = s.hand.find((h) => h.uid === uid);
-    const inPlay = s.play.find((p) => p.uid === uid);
-    const card = inHand ?? inPlay;
+    const card = s.hand.find((h) => h.uid === uid);
     if (!card) return s;
-    let dice = s.dice;
-    if (inPlay?.dieId) {
-        dice = dice.map((d) => (d.id === inPlay.dieId ? { ...d, state: 'available' as const } : d));
-    }
     let ns: HazardSessionState = {
         ...s,
-        dice,
         hand: s.hand.filter((h) => h.uid !== uid),
-        play: s.play.filter((p) => p.uid !== uid),
         discardPile: [...s.discardPile, card.cardId],
     };
     const def = getHazardCardDef(card.cardId);
@@ -412,10 +443,19 @@ function momentumCarry(value: number, need: number, cleared: boolean, lastRound:
     return Math.min(HAZARD_MOMENTUM_CAP, Math.floor(surplus / 2));
 }
 
-/** Commits the staged set, judges the round, enters `resolve-flash`. */
-export function resolveHazardRound(s: HazardSessionState): HazardSessionState {
+/**
+ * Commits the staged set, judges the round, enters `resolve-flash`.
+ * Every staged card must be APPLIED first — the UI enforces this by
+ * gating the PLAY button, and this function applies any stragglers as a
+ * safety net (firing their utilities) so the engine never judges an
+ * un-committed card.
+ */
+export function resolveHazardRound(s: HazardSessionState, deckBag: readonly string[] = []): HazardSessionState {
     if (s.phase !== 'playing') return s;
     if (s.play.length === 0) return s;
+    for (const p of s.play) {
+        if (!p.applied) s = applyHazardCard(s, p.uid, deckBag);
+    }
     const def = getHazardDef(s.hazardId);
     const p = hazardProjectedProgress(s);
     const lastRound = s.round >= s.totalRounds;

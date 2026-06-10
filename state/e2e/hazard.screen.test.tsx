@@ -167,7 +167,7 @@ describe('hazard screen — round play board', () => {
         expect(screen.getByLabelText('Blocked hex die, blocked')).toBeTruthy();
     });
 
-    it('PLAY is gated until a card is staged; staged cards appear in the play area and resolve stamps the round', () => {
+    it('PLAY is gated until every staged card is applied; resolve stamps the round', () => {
         const { store, actions } = mountHazard();
         toPlaying(actions, 'safe');
         act(() => {
@@ -181,6 +181,13 @@ describe('hazard screen — round play board', () => {
             actions.stageHazardCard('h1');
         });
         expect(screen.getByTestId('hazard-staged-h1')).toBeTruthy();
+        // staged but not applied — PLAY is still gated
+        expect(screen.getByText('APPLY 1 MORE')).toBeTruthy();
+        fireEvent.press(screen.getByTestId('hazard-play-button'));
+        expect(store.getState().hazard.session?.phase).toBe('playing'); // still gated
+
+        // apply the card (taps the per-card APPLY button) → PLAY unlocks
+        fireEvent.press(screen.getByTestId('hazard-apply-h1'));
         expect(screen.getByText('RESOLVE')).toBeTruthy();
         fireEvent.press(screen.getByTestId('hazard-play-button'));
         expect(store.getState().hazard.session?.phase).toBe('resolve-flash');

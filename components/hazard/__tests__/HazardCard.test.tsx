@@ -20,6 +20,7 @@ const mockCardVM: HazardCardVM = {
     keywords: [],
     dieAvailable: true,
     poweredByDieId: null,
+    applied: false,
     salvageLabel: null,
 };
 
@@ -72,8 +73,9 @@ describe('HazardCard', () => {
             <HazardCard card={utilityCard} mode="detail" />
         );
         
-        expect(getByText('Heal 2')).toBeTruthy();
-        expect(getByText('Heal 4')).toBeTruthy();
+        // Hybrid detail rows show the effect with a ⬡ glyph prefix.
+        expect(getByText(/Heal 2/)).toBeTruthy();
+        expect(getByText(/Heal 4/)).toBeTruthy();
     });
 
     it('displays rarity indicator', () => {

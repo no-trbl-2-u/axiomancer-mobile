@@ -86,6 +86,7 @@ import { EMPTY_EVENT_SLICE, type AppStore } from './store';
 import {
     abandonHazardAction,
     acknowledgeHazardOutcomeAction,
+    applyHazardCardAction,
     beginHazardAction,
     claimHazardRewardsAction,
     continueHazardAfterResolveAction,
@@ -353,8 +354,10 @@ export interface AppActions {
     unstageHazardCard: (uid: string) => void;
     /** Drag a card to the trash bin — discard it for its SALVAGE benefit. */
     discardHazardCard: (uid: string) => void;
-    /** Drop a matching-colour die on a staged card's SURGE socket. */
+    /** Drop a matching-colour (or wild gold) die on a staged card. */
     powerHazardCard: (uid: string, dieId: string) => void;
+    /** Apply a staged card: fire its utility and lock it in (one-way). */
+    applyHazardCard: (uid: string) => void;
     /** Commit the staged set; the engine stamps O or X. */
     resolveHazardRound: () => void;
     /** Dismiss the resolve flash; advances the round or computes the outcome. */
@@ -898,6 +901,7 @@ export function createAppActions(store: AppStore): AppActions {
         unstageHazardCard: (uid) => unstageHazardCardAction(store, uid),
         discardHazardCard: (uid) => discardHazardCardAction(store, uid),
         powerHazardCard: (uid, dieId) => powerHazardCardAction(store, uid, dieId),
+        applyHazardCard: (uid) => applyHazardCardAction(store, uid),
         resolveHazardRound: () => resolveHazardRoundAction(store),
         continueHazardAfterResolve: () => continueHazardAfterResolveAction(store),
         acknowledgeHazardOutcome: () => acknowledgeHazardOutcomeAction(store),

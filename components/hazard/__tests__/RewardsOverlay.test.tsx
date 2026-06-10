@@ -54,6 +54,7 @@ const mockRewardsVM: HazardRewardsVM = {
             keywords: [],
             dieAvailable: true,
             poweredByDieId: null,
+            applied: false,
             salvageLabel: null,
         },
         {
@@ -72,6 +73,7 @@ const mockRewardsVM: HazardRewardsVM = {
             keywords: [],
             dieAvailable: true,
             poweredByDieId: null,
+            applied: false,
             salvageLabel: null,
         },
     ],

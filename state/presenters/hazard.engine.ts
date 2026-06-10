@@ -12,7 +12,7 @@ import {
     HAZARD_KEYWORDS,
     HAZARD_REWARDS,
 } from '@/state/hazard/content';
-import { hazardProjectedProgress } from '@/state/hazard/engine';
+import { dieCanPower, hazardProjectedProgress } from '@/state/hazard/engine';
 import type { AppStoreState } from '@/state/store';
 import {
     HAZARD_PLAY_MAX,
@@ -58,10 +58,12 @@ export interface HazardCardVM {
     poweredEffectLabel: string | null;
     flavor: string;
     keywords: { id: string; name: string; desc: string }[];
-    /** A matching available die exists on the board right now. */
+    /** A usable die (matching colour or the wild gold die) is on the board. */
     dieAvailable: boolean;
     /** Powered by which die (staged cards only). */
     poweredByDieId: string | null;
+    /** Applied = locked in (staged cards only): no undo, no die, no bin. */
+    applied: boolean;
     /** Discard benefit copy for the trash bin, e.g. "+1 FORCE this round". */
     salvageLabel: string | null;
 }
@@ -175,15 +177,17 @@ const DIE_WORD: Record<HazardDieKind, string> = {
     red: 'Red blade',
     blue: 'Blue eye',
     purple: 'Purple crescent',
-    gold: 'Gold sun',
+    gold: 'Yellow wild sun',
     hex: 'Blocked hex',
 };
 
 function effectLabel(def: HazardCardDef, powered: boolean): string | null {
     if (!def.effect) return null;
-    if (def.effect === 'draw') return `DRAW ${powered ? def.drawPowered ?? 3 : def.drawBase ?? 1}`;
-    if (def.effect === 'convert') return powered ? 'CONVERT ✕ +DIE' : 'CONVERT ✕';
-    if (def.effect === 'recast') return powered ? 'RE-CAST +DIE' : 'RE-CAST';
+    // Gold cards are major-tier even on the free row (the die buys numbers).
+    const major = powered || def.majorEffect === true;
+    if (def.effect === 'draw') return `DRAW ${major ? def.drawPowered ?? def.drawBase ?? 1 : def.drawBase ?? 1}`;
+    if (def.effect === 'convert') return major ? 'CONVERT ✕ +DIE' : 'CONVERT ✕';
+    if (def.effect === 'recast') return major ? 'RE-CAST +DIE' : 'RE-CAST';
     return null;
 }
 
@@ -191,7 +195,7 @@ const DIE_LABEL: Record<HazardColor, string> = {
     red: 'RED',
     blue: 'BLUE',
     purple: 'PURPLE',
-    gold: 'GOLD',
+    gold: 'YELLOW',
 };
 
 function salvageLabelOf(def: HazardCardDef): string | null {
@@ -209,7 +213,7 @@ function cardVM(entry: HazardHandEntry, session: HazardSessionState): HazardCard
     const def = getHazardCardDef(entry.cardId);
     const dieAvailable =
         !def.dead &&
-        session.dice.some((d) => d.kind === def.kind && d.state === 'available');
+        session.dice.some((d) => d.state === 'available' && dieCanPower(d.kind, def.kind));
     return {
         uid: entry.uid,
         cardId: entry.cardId,
@@ -226,6 +230,7 @@ function cardVM(entry: HazardHandEntry, session: HazardSessionState): HazardCard
         keywords: keywordsOf(def),
         dieAvailable,
         poweredByDieId: entry.dieId,
+        applied: entry.applied === true,
         salvageLabel: salvageLabelOf(def),
     };
 }
@@ -247,6 +252,7 @@ function offerCardVM(def: HazardCardDef): HazardCardVM {
         keywords: keywordsOf(def),
         dieAvailable: false,
         poweredByDieId: null,
+        applied: false,
         salvageLabel: salvageLabelOf(def),
     };
 }
@@ -454,7 +460,12 @@ export function selectHazardViewModel(state: Pick<AppStoreState, 'hazard'>): Haz
           }
         : null;
 
-    const canResolve = session.phase === 'playing' && session.play.length > 0;
+    const staged = session.play.length;
+    const appliedCount = session.play.filter((p) => p.applied).length;
+    const allApplied = staged > 0 && appliedCount === staged;
+    const canResolve = session.phase === 'playing' && allApplied;
+    const resolveSubLabel =
+        staged === 0 ? 'STAGE A CARD' : allApplied ? 'RESOLVE' : `APPLY ${staged - appliedCount} MORE`;
 
     return {
         active: true,
@@ -485,7 +496,7 @@ export function selectHazardViewModel(state: Pick<AppStoreState, 'hazard'>): Haz
         thresholdLadder,
         resolveEnabled: canResolve,
         resolveLabel: 'PLAY',
-        resolveSubLabel: canResolve ? 'RESOLVE' : 'STAGE A CARD',
+        resolveSubLabel,
         resolveFlash,
         outcome: outcomeVM,
         rewards: session.phase === 'rewards' || session.phase === 'done' ? rewardsVM : null,

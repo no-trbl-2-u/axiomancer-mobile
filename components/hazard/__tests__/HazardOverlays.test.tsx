@@ -47,6 +47,7 @@ const mockCard: HazardCardVM = {
     keywords: [],
     dieAvailable: true,
     poweredByDieId: null,
+    applied: false,
     salvageLabel: null,
 };
 

@@ -52,11 +52,12 @@ function shortfall(s: HazardSessionState): number {
     return Math.max(0, need.needF - p.force) + Math.max(0, need.needE - p.escape);
 }
 
-/** Value of a card's FREE row toward whatever is still needed. */
+/** Value of a card's FREE row toward whatever is still needed. Hybrids
+ *  (purple/gold) count their numbers too — gold's free row is 0/0, so it
+ *  contributes nothing until a die is applied. */
 function freeValueToward(s: HazardSessionState, cardId: string): number {
     const def = getHazardCardDef(cardId);
     if (def.dead) return 0;
-    if (def.effect) return 0;
     const need = roundNeed(s);
     const p = hazardProjectedProgress(s);
     if (need.combined) return def.f + def.e;
@@ -120,7 +121,10 @@ function playGreedyRound(s: HazardSessionState, bag: readonly string[]): HazardS
             if (e.dieId) continue;
             const def = getHazardCardDef(e.cardId);
             if (def.dead) continue;
-            const die = s.dice.find((d) => d.kind === def.kind && d.state === 'available');
+            // Prefer an exact-colour die; fall back to the wild gold die.
+            const die =
+                s.dice.find((d) => d.kind === def.kind && d.state === 'available') ??
+                s.dice.find((d) => d.kind === 'gold' && d.state === 'available');
             if (!die) continue;
             const free = hazardCardValue(e);
             const powered = { force: def.fp ?? def.f, escape: def.ep ?? def.e };
@@ -170,13 +174,14 @@ export function simulateHazard(
         s = finishHazardRolling(selectHazardRoute(s, route, bag));
         while (s.phase === 'playing') {
             s = playGreedyRound(s, bag);
-            const resolved = resolveHazardRound(s);
+            // resolveHazardRound auto-applies any un-applied staged cards.
+            const resolved = resolveHazardRound(s, bag);
             // A round with nothing stageable still has to resolve: stage the
             // least-bad card so the engine can judge it.
             if (resolved === s) {
                 if (s.hand.length > 0) {
                     s = stageHazardCard(s, s.hand[0].uid, bag);
-                    s = resolveHazardRound(s);
+                    s = resolveHazardRound(s, bag);
                 } else {
                     break;
                 }

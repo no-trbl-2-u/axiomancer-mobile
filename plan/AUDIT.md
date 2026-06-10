@@ -5,7 +5,7 @@
 > LEDGER encounter/node display (F09/F10), disabled-ITEM combat tooltip (F12).
 > Conducted by: /iterate autonomous audit
 
-> **Fresh audit (2026-06-10).** New comprehensive audit examining external critique pending items, content/data gaps, SEO/discoverability, link integrity, accessibility, test coverage, and performance across entire codebase following skills/iterate.md methodology.
+> **Fresh audit (2026-06-10).** Comprehensive audit examining external critique pending items, content/data gaps, SEO/discoverability, link integrity, accessibility, test coverage, and performance across entire codebase following skills/iterate.md methodology.
 
 ## Top 5 findings (scored)
 
@@ -81,6 +81,58 @@
 - issue: #337
 - addressed: 2026-06-10 via commit 7c650cb
 - fix: Added React.memo to HazardCard, HazardBoard, HazardDie, CardArt, SkillRow, and RollBar components. Implemented useMemo for expensive threshold ladder text calculation in HazardBoard. These optimizations reduce unnecessary re-renders during combat and hazard interactions, improving UX smoothness in complex component trees.
+
+### [x] [3.0] Node version requirement lacks specificity guidance for fresh maintainers
+- category: external-critique
+- impact: 4
+- ease: 8
+- base-score: 3.2
+- user-source-bump: 0.0 (external source)
+- ux-bias-multiplier: 1.0
+- final-score: 3.0 (capped at 10)
+- next: Add brief comment in package.json engines section explaining recommended Node version alignment
+- evidence: package.json specifies "node": ">=20.0.0" but scripts/dev-server-container.sh uses "node:20-alpine" container
+- observation: Package.json specifies "node": ">=20.0.0" but dev scripts reference node:20-alpine container, potentially creating confusion about exact version requirements for fresh maintainers
+- source: external-critique
+- issue: #340
+- addressed: 2026-06-10 via commit 636127e
+- fix: Added _engineNotes field to package.json explaining that while local development accepts any Node >=20.0.0, the development container uses node:20-alpine for consistency. Resolves confusion between flexible local requirement and pinned container version.
+
+### [ ] [2.7] Large TypeScript files may impact development performance and maintainability
+- category: perf
+- impact: 3
+- ease: 6
+- base-score: 1.8
+- ux-bias-multiplier: 1.5 (affects development UX)
+- final-score: 2.7
+- next: Consider refactoring state/actions.ts (1677 lines) and state/presenters/combat.engine.ts (1473 lines) into smaller, focused modules
+- evidence: state/actions.ts at 1677 lines, state/presenters/combat.engine.ts at 1473 lines
+- observation: Several core files exceed 1000 lines, which can slow IDE performance, increase cognitive load, and make code navigation difficult for maintainers
+- source: audit
+
+### [ ] [2.4] Node.js bundle size at 506MB suggests potential dependency weight
+- category: perf
+- impact: 3
+- ease: 5
+- base-score: 1.5
+- ux-bias-multiplier: 1.5 (affects development UX)
+- final-score: 2.3
+- next: Review node_modules for potential optimization opportunities, though significant reduction may not be feasible given React Native requirements
+- evidence: node_modules directory is 506MB (previous audit addressed unused dependencies)
+- observation: While previous dependency cleanup was completed, the substantial bundle size suggests ongoing monitoring for development performance impact
+- source: audit
+
+### [ ] [2.0] Missing accessibility patterns across React Native components
+- category: a11y
+- impact: 5
+- ease: 4
+- base-score: 2.0
+- ux-bias-multiplier: 1.5 (accessibility is UX-critical)
+- final-score: 3.0 (but lowered to 2.0 due to limited React Native a11y tooling)
+- next: Audit React Native accessibility props (accessibilityLabel, accessibilityRole) across interactive components, starting with primary user flows
+- evidence: No accessibility-related props found in TypeScript files via grep search
+- observation: React Native components may lack accessibility attributes for screen readers and assistive technologies
+- source: audit
 
 ## Previously addressed findings
 

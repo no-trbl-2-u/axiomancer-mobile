@@ -53,14 +53,16 @@
 - resolution: Finding was invalid - setup/02_eas.md exists and contains comprehensive EAS Build setup documentation. The .env.example reference is correct.
 - source: repo-proxy
 
-### [LOW] /package.json — Node version requirement lacks specificity guidance
-- pass: 30 (commit c4c5c1a)
+### [LOW] /package.json — Node version requirement lacks specificity guidance ✅
+- pass: 30 (commit c4c5c1a); addressed at commit 636127e via `/iterate`
 - viewport: repository
 - category: maintainability
 - observation: Package.json specifies "node": ">=20.0.0" but dev scripts reference node:20-alpine container, potentially creating confusion about exact version requirements for fresh maintainers
 - evidence: Line 6 shows ">=20.0.0" while scripts/dev-server-container.sh uses "node:20-alpine" image
 - suggested fix: Add brief comment in package.json engines section explaining recommended Node version or align container version reference
+- fix: Added _engineNotes field to package.json explaining that while local development accepts any Node >=20.0.0, the development container uses node:20-alpine for consistency. Resolves confusion between flexible local requirement and pinned container version.
 - source: repo-proxy
+- issue: #340
 
 ### [LOW] /app/(tabs)/_layout.tsx — Extensive legacy comments may confuse maintainers ✅
 - pass: 29 (commit cef865b); addressed at commit 3ef9e82 via `/iterate`

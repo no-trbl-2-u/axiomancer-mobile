@@ -1,11 +1,11 @@
-# Site audit — 2026-06-09
+# Site audit — 2026-06-10
 
 > Bias: UX gaps (re-affirmed via oversight 2026-06-04)
 > /iterate weights UX-gap findings 1.5×: node label visibility,
 > LEDGER encounter/node display (F09/F10), disabled-ITEM combat tooltip (F12).
 > Conducted by: /iterate autonomous audit
 
-> **Fresh comprehensive audit (2026-06-09).** Examined external critique pending items, content/data gaps, SEO/discoverability, link integrity, accessibility, test coverage, and performance across entire codebase following skills/iterate.md methodology.
+> **Updated audit (2026-06-10).** Addressed top external critique finding. Previous comprehensive audit (2026-06-09) examined external critique pending items, content/data gaps, SEO/discoverability, link integrity, accessibility, test coverage, and performance across entire codebase following skills/iterate.md methodology.
 
 ## Top 5 findings (scored)
 
@@ -23,6 +23,20 @@
 - issue: #323
 - addressed: 2026-06-09 via commit bca3771
 - fix: Enhanced README.md introduction to explain Axiomancer as a philosophical tabletop RPG system exploring moral choice through tactical combat and character alignment. This provides essential context for new maintainers to understand the game genre and contribute meaningfully to UI/UX decisions.
+
+### [x] [4.2] Specs README dependency information contradicts completion status
+- category: external-critique
+- impact: 6
+- ease: 7
+- base-score: 4.2
+- ux-bias-multiplier: 1.0
+- final-score: 4.2
+- next: Update /specs/README.md line 72 to reflect current status since Spec 09 is complete
+- evidence: Line 72: 'Engine Spec 08 (world) is done; this screen waits on Spec 09 store/orchestration + a pinned narrative contract (see spec body)' vs line 73: '09-asyncstorage-persistence.md [DONE]'
+- observation: Creates confusion about implementation order for fresh maintainers trying to understand dependencies
+- source: external-critique
+- addressed: 2026-06-10 via commit c93eef3
+- fix: Fixed Spec 08 description to reflect that Spec 09 (store/orchestration) is complete, eliminating confusion about implementation order for fresh maintainers.
 
 ### [x] [4.5] Missing component documentation in complex presenter modules
 - category: tests

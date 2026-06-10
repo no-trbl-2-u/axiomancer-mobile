@@ -33,15 +33,6 @@
      examined README.md, specs/README.md, docs/, app/ structure,
      SVG_ASSET_SPEC.md. 4 findings filed below. -->
 
-### [MED] /specs/README.md — Spec dependency information contradicts completion status
-- pass: 29 (commit cef865b)
-- viewport: repository
-- category: comprehension
-- observation: Specs README shows 'Spec 8 waits on Spec 09 store/orchestration' but Spec 09 is marked as DONE, creating confusion about implementation order
-- evidence: Line 72: 'Engine Spec 08 (world) is done; this screen waits on Spec 09 store/orchestration + a pinned narrative contract (see spec body)' vs line 73: '09-asyncstorage-persistence.md [DONE]'
-- suggested fix: Update spec 8 description to reflect current status since spec 09 is complete
-- source: repo-proxy
-
 ### [LOW] /app/(tabs)/_layout.tsx — Extensive legacy comments may confuse maintainers
 - pass: 29 (commit cef865b)
 - viewport: repository
@@ -396,6 +387,16 @@
 <!-- Drained from ## Pending via /oversight 2026-06-08 (queue-drained
      call): addressed-✅ findings moved here so the open-findings
      signal /iterate reads is accurate. -->
+
+### [MED] /specs/README.md — Spec dependency information contradicts completion status ✅
+- pass: 29 (commit cef865b); addressed at commit c93eef3 via `/iterate`
+- viewport: repository
+- category: comprehension
+- observation: Specs README shows 'Spec 8 waits on Spec 09 store/orchestration' but Spec 09 is marked as DONE, creating confusion about implementation order
+- evidence: Line 72: 'Engine Spec 08 (world) is done; this screen waits on Spec 09 store/orchestration + a pinned narrative contract (see spec body)' vs line 73: '09-asyncstorage-persistence.md [DONE]'
+- suggested fix: Update spec 8 description to reflect current status since spec 09 is complete
+- fix: Fixed Spec 08 description to reflect that Spec 09 (store/orchestration) is complete, eliminating confusion about implementation order for fresh maintainers
+- source: repo-proxy
 
 ### [MED] /README.md — VISION.md reference lacks context for maintainer navigation ✅
 - pass: 29 (commit cef865b); addressed at commit eb8b431 via `/iterate`

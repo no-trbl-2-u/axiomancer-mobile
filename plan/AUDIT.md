@@ -5,83 +5,24 @@
 > LEDGER encounter/node display (F09/F10), disabled-ITEM combat tooltip (F12).
 > Conducted by: /iterate autonomous audit
 
-> **Updated audit (2026-06-10).** Addressed top external critique finding. Previous comprehensive audit (2026-06-09) examined external critique pending items, content/data gaps, SEO/discoverability, link integrity, accessibility, test coverage, and performance across entire codebase following skills/iterate.md methodology.
+> **Fresh audit (2026-06-10).** New comprehensive audit examining external critique pending items, content/data gaps, SEO/discoverability, link integrity, accessibility, test coverage, and performance across entire codebase following skills/iterate.md methodology.
 
 ## Top 5 findings (scored)
 
-### [x] [5.4] README.md lacks context about what Axiomancer is as a game genre
+### [x] [2.4] Extensive legacy comments may confuse maintainers in tab layout
 - category: external-critique
-- impact: 6
-- ease: 9
-- base-score: 5.4
-- ux-bias-multiplier: 1.0
-- final-score: 5.4
-- next: Add brief description of Axiomancer as a philosophical TTRPG system in README.md introduction
-- evidence: README.md line 1 states "Axiomancer Mobile is the React Native client for the Axiomancer TTRPG" but provides no context about what Axiomancer is as a game genre
-- observation: Fresh maintainers need basic understanding of what kind of game this is to contribute meaningfully to UI/UX decisions
-- source: external-critique
-- issue: #323
-- addressed: 2026-06-09 via commit bca3771
-- fix: Enhanced README.md introduction to explain Axiomancer as a philosophical tabletop RPG system exploring moral choice through tactical combat and character alignment. This provides essential context for new maintainers to understand the game genre and contribute meaningfully to UI/UX decisions.
-
-### [x] [4.2] Specs README dependency information contradicts completion status
-- category: external-critique
-- impact: 6
-- ease: 7
-- base-score: 4.2
-- ux-bias-multiplier: 1.0
-- final-score: 4.2
-- next: Update /specs/README.md line 72 to reflect current status since Spec 09 is complete
-- evidence: Line 72: 'Engine Spec 08 (world) is done; this screen waits on Spec 09 store/orchestration + a pinned narrative contract (see spec body)' vs line 73: '09-asyncstorage-persistence.md [DONE]'
-- observation: Creates confusion about implementation order for fresh maintainers trying to understand dependencies
-- source: external-critique
-- addressed: 2026-06-10 via commit c93eef3
-- fix: Fixed Spec 08 description to reflect that Spec 09 (store/orchestration) is complete, eliminating confusion about implementation order for fresh maintainers.
-
-### [x] [4.5] Missing component documentation in complex presenter modules
-- category: tests
-- impact: 5
-- ease: 9
-- base-score: 4.5
-- ux-bias-multiplier: 1.0
-- final-score: 4.5
-- next: Add JSDoc comments to state/presenters/combat.engine.ts explaining the presenter pattern contract
-- evidence: state/presenters/combat.engine.ts contains complex view-model transformation logic without inline documentation
-- observation: Presenter modules are core to the architecture but lack documentation for future maintainers
-- source: audit
-- issue: #324
-- addressed: 2026-06-09 via commit 8cfed60
-- fix: Added comprehensive JSDoc documentation to combat presenter explaining the presenter pattern contract, view-model transformations, and React integration. Documented core functions like selectCombatViewModel, useCombatViewModel, buildPhaseStack, and buildStanceOptions with detailed explanations of how raw engine state transforms into structured view-models for UI components.
-
-### [x] [3.6] Inconsistent error handling in async operations
-- category: perf
-- impact: 6
-- ease: 6
-- base-score: 3.6
-- ux-bias-multiplier: 1.0
-- final-score: 3.6
-- next: Add consistent try-catch blocks in state/actions.ts async operations
-- evidence: state/actions.ts contains async operations without uniform error handling patterns
-- observation: Unhandled promise rejections can impact user experience during state updates
-- source: audit
-- issue: #326
-- addressed: 2026-06-09 via commit d06479c
-- fix: Added comprehensive try-catch error handling to async action functions. Wrapped debugSeedAction, populateAllItemsAction, applyCharacterPresetAction, changeMapAction, resolveCurrentMapEventAction, and pickEventChoiceAction with proper error boundaries. All operations now log errors gracefully and continue where possible, preventing unhandled promise rejections from impacting user experience during state updates.
-
-### [x] [3.2] README.md development setup instructions could be clearer
-- category: external-critique
-- impact: 4
+- impact: 3
 - ease: 8
-- base-score: 3.2
+- base-score: 2.4
 - ux-bias-multiplier: 1.0
-- final-score: 3.2
-- next: Expand README.md Quick Start section with more detailed step-by-step development workflow
-- evidence: README.md Quick Start section is brief and may not provide enough guidance for first-time React Native developers
-- observation: Better onboarding reduces time-to-first-contribution for new maintainers
+- final-score: 2.4
+- next: Consolidate historical comments in app/(tabs)/_layout.tsx into single brief comment explaining current tab configuration
+- evidence: Lines 83-91 contain detailed historical context about retired WILDS↔STRIFE tab mutex and lines 177-182 explain permanently hidden STRIFE tab
+- observation: Tab layout component contains extensive legacy comments about Phase 63d combat tab behavior that may confuse new maintainers about current state
 - source: external-critique
-- issue: #327
-- addressed: 2026-06-09 via commit 50cf1ad
-- fix: Enhanced README.md Quick Start section with Prerequisites subsection listing Node.js 18+, Expo CLI, and platform requirements. Added numbered Development workflow steps with clear explanations and verification reminder. Included first-time setup guidance with links to Expo environment setup docs. This provides better onboarding for first-time React Native developers and reduces time-to-first-contribution for new maintainers.
+- issue: #330
+- addressed: 2026-06-10 via commit 3ef9e82
+- fix: Simplified extensive historical comments in app/(tabs)/_layout.tsx to brief explanations. Consolidated 9 lines of Phase 63d details into 2 concise comments explaining current tab configuration. Improves maintainer comprehension without losing essential context.
 
 ### [ ] [2.8] Potential optimization in component re-render patterns
 - category: perf

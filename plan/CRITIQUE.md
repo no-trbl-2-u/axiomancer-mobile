@@ -33,22 +33,25 @@
      examined README.md, specs/README.md, docs/, app/ structure,
      SVG_ASSET_SPEC.md. 4 findings filed below. -->
 
-### [LOW] /app/(tabs)/_layout.tsx — Extensive legacy comments may confuse maintainers
-- pass: 29 (commit cef865b)
+### [LOW] /app/(tabs)/_layout.tsx — Extensive legacy comments may confuse maintainers ✅
+- pass: 29 (commit cef865b); addressed at commit 3ef9e82 via `/iterate`
 - viewport: repository
 - category: maintainability
 - observation: Tab layout component contains extensive legacy comments about Phase 63d combat tab behavior that may confuse new maintainers about current state
 - evidence: Lines 83-91 contain detailed historical context about retired WILDS↔STRIFE tab mutex and lines 177-182 explain permanently hidden STRIFE tab
 - suggested fix: Consolidate historical comments into single brief comment explaining current tab configuration
+- fix: Simplified extensive historical comments in app/(tabs)/_layout.tsx to brief explanations. Consolidated 9 lines of Phase 63d details into 2 concise comments explaining current tab configuration. Improves maintainer comprehension without losing essential context.
 - source: repo-proxy
+- issue: #330
 
-### [LOW] /.env.example — References non-existent setup documentation
-- pass: 29 (commit cef865b)
+### [LOW] /.env.example — References non-existent setup documentation ✅ [INVALID]
+- pass: 29 (commit cef865b); marked invalid during `/iterate` 2026-06-10
 - viewport: repository
 - category: comprehension
 - observation: Environment example file references setup docs that don't exist yet, creating dead-end navigation path
 - evidence: Line 17: 'See setup/02_eas.md for detailed configuration steps.' but setup/ directory does not exist in repository
 - suggested fix: Either create the referenced setup docs or update comment to point to existing documentation
+- resolution: Finding was invalid - setup/02_eas.md exists and contains comprehensive EAS Build setup documentation. The .env.example reference is correct.
 - source: repo-proxy
 
 <!-- Pass 27 (2026-06-09, commit 8da116b): repo-proxy pass —

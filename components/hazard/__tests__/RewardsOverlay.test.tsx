@@ -54,6 +54,7 @@ const mockRewardsVM: HazardRewardsVM = {
             keywords: [],
             dieAvailable: true,
             poweredByDieId: null,
+            salvageLabel: null,
         },
         {
             uid: 'offer-2',
@@ -71,6 +72,7 @@ const mockRewardsVM: HazardRewardsVM = {
             keywords: [],
             dieAvailable: true,
             poweredByDieId: null,
+            salvageLabel: null,
         },
     ],
     offerSubLabel: 'Choose one card',
@@ -95,14 +97,16 @@ describe('RewardsOverlay', () => {
     });
 
     it('renders reward items', () => {
-        const { getByText } = render(<RewardsOverlay {...mockProps} />);
-        expect(getByText('+5 Vitae')).toBeTruthy();
-        expect(getByText('+10 XP')).toBeTruthy();
+        // Boon chips show only their icon; the name/desc live on the
+        // accessibility label (and in the tap tooltip).
+        const { getByLabelText } = render(<RewardsOverlay {...mockProps} />);
+        expect(getByLabelText('+5 Vitae. Health restored')).toBeTruthy();
+        expect(getByLabelText('+10 XP. Experience gained')).toBeTruthy();
     });
 
     it('renders consequence items', () => {
-        const { getByText } = render(<RewardsOverlay {...mockProps} />);
-        expect(getByText('-1 Alignment')).toBeTruthy();
+        const { getByLabelText } = render(<RewardsOverlay {...mockProps} />);
+        expect(getByLabelText('-1 Alignment. Moral cost')).toBeTruthy();
     });
 
     it('renders card offers', () => {
@@ -131,7 +135,7 @@ describe('RewardsOverlay', () => {
 
     it('renders reserve note when present', () => {
         const { getByText } = render(<RewardsOverlay {...mockProps} />);
-        expect(getByText('+2 VITAE — unspent dice')).toBeTruthy();
+        expect(getByText(/\+2 VITAE — unspent dice/)).toBeTruthy();
     });
 
     it('handles penalty note when present', () => {

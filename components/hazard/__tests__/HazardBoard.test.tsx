@@ -17,35 +17,44 @@ jest.mock('react-native-reanimated', () => {
     return Reanimated;
 });
 
-// Mock expo-haptics
+// Mock expo-haptics (calls are promise-chained with .catch)
 jest.mock('expo-haptics', () => ({
-    impactAsync: jest.fn(),
-    ImpactFeedbackStyle: {
-        Light: 'light',
-        Medium: 'medium', 
-        Heavy: 'heavy',
-    },
+    impactAsync: jest.fn(() => Promise.resolve()),
+    notificationAsync: jest.fn(() => Promise.resolve()),
+    ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
+    NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
 }));
 
-// Mock react-native-gesture-handler
-jest.mock('react-native-gesture-handler', () => ({
-    Gesture: {
-        Pan: () => ({
-            onStart: () => ({}),
-            onUpdate: () => ({}),
-            onEnd: () => ({}),
-            onFinalize: () => ({}),
-        }),
-    },
-    GestureDetector: ({ children }: { children: React.ReactNode }) => children,
-}));
+// Mock react-native-gesture-handler with a chainable builder — the real
+// Gesture API returns `this` from every configurator (minDistance,
+// enabled, maxDistance, onStart, …), so a partial object breaks render.
+jest.mock('react-native-gesture-handler', () => {
+    const chainable = () => {
+        const gesture: Record<string, unknown> = {};
+        for (const method of [
+            'minDistance', 'maxDistance', 'enabled',
+            'onStart', 'onUpdate', 'onEnd', 'onFinalize',
+        ]) {
+            gesture[method] = () => gesture;
+        }
+        return gesture;
+    };
+    return {
+        Gesture: {
+            Pan: chainable,
+            Tap: chainable,
+            Exclusive: (...gestures: unknown[]) => gestures[0],
+        },
+        GestureDetector: ({ children }: { children: React.ReactNode }) => children,
+    };
+});
 
 const mockHazardViewModel: HazardViewModel = {
     active: true,
     phase: 'playing',
     title: 'Forest Ambush',
     scenario: 'Bandits block your path',
-    boardHeadline: 'Round 1',
+    boardHeadline: 'The Ambush Springs',
     boardNote: 'Cast your dice',
     roundLabel: 'Round 1',
     roundRoman: 'I',
@@ -71,6 +80,7 @@ const mockHazardViewModel: HazardViewModel = {
             keywords: [],
             dieAvailable: true,
             poweredByDieId: null,
+            salvageLabel: null,
         },
     ],
     play: [],
@@ -83,7 +93,7 @@ const mockHazardViewModel: HazardViewModel = {
     ],
     resolveEnabled: true,
     resolveLabel: 'CAST DICE',
-    resolveSubLabel: 'Round 1',
+    resolveSubLabel: 'RESOLVE',
     resolveFlash: null,
     outcome: null,
     dice: [
@@ -128,6 +138,7 @@ describe('HazardBoard', () => {
         onStage: jest.fn(),
         onUnstage: jest.fn(),
         onPower: jest.fn(),
+        onDiscard: jest.fn(),
         onResolve: jest.fn(),
         onInspect: jest.fn(),
     };
@@ -153,7 +164,9 @@ describe('HazardBoard', () => {
 
     it('renders resolve button when enabled', () => {
         const { getByText } = render(<HazardBoard {...mockProps} />);
-        expect(getByText('CAST DICE')).toBeTruthy();
+        // The button face is fixed PLAY copy; the VM drives the sub-label.
+        expect(getByText('PLAY')).toBeTruthy();
+        expect(getByText('RESOLVE')).toBeTruthy();
     });
 
     it('renders progress meters', () => {

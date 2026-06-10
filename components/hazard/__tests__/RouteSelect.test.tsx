@@ -43,6 +43,7 @@ const mockViewModel: HazardViewModel = {
             keywords: [],
             dieAvailable: true,
             poweredByDieId: null,
+            salvageLabel: null,
         },
         {
             uid: 'hand-2',
@@ -60,6 +61,7 @@ const mockViewModel: HazardViewModel = {
             keywords: [],
             dieAvailable: true,
             poweredByDieId: null,
+            salvageLabel: null,
         },
     ],
     play: [],

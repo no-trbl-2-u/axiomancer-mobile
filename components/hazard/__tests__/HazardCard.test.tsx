@@ -20,6 +20,7 @@ const mockCardVM: HazardCardVM = {
     keywords: [],
     dieAvailable: true,
     poweredByDieId: null,
+    salvageLabel: null,
 };
 
 describe('HazardCard', () => {

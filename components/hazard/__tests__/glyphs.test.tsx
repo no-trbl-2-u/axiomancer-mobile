@@ -61,7 +61,7 @@ describe('LedgerMark', () => {
 });
 
 describe('BoonIcon', () => {
-    const boonTypes = ['hand', 'die', 'vitae', 'align', 'xp', 'item'] as const;
+    const boonTypes = ['chest', 'relic', 'heart', 'paradox', 'tokens', 'deadcard', 'maxhp', 'minhp', 'curse'] as const;
 
     it('renders all boon icon types', () => {
         boonTypes.forEach(icon => {
@@ -71,7 +71,7 @@ describe('BoonIcon', () => {
     });
 
     it('renders with custom size', () => {
-        const { root } = render(<BoonIcon icon="vitae" size={28} />);
+        const { root } = render(<BoonIcon icon="heart" size={28} />);
         expect(root).toBeTruthy();
     });
 });

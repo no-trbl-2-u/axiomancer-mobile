@@ -60,7 +60,8 @@ The mobile surface should mirror the mechanics state machine:
 - The player knows their opening hand before route choice.
 - The player does **not** know mana dice before route choice.
 - Dice roll once for the hazard and persist as board objects.
-- Dice do not auto-refresh between rounds.
+- Safe route: dice do not auto-refresh between rounds.
+- Risk route (harder, dual-meter): dice are re-cast/rerolled between rounds as an expected compensating mechanic. Exhausted dice do not persist across advanced rounds after a valid resolve.
 - Top actions are always playable unless card text says otherwise.
 - Bottom actions require visible available mana.
 - X dice are blocked unless an X-interaction card or enchantment says otherwise.
@@ -129,9 +130,11 @@ Before route selection:
 
 - Top: hazard title + scenario.
 - Middle: 5-card opening hand preview.
-- Bottom: two route cards side by side or stacked:
-  - Safe Route: progress type, thresholds, reward, failure penalty.
-  - Risk Route: different progress type, thresholds, better reward, harsher failure.
+- Bottom: two route cards stacked vertically, each panel full-width (or near-full-width):
+  - Safe Route: single-meter requirement. Progress type, threshold ladder, reward, failure penalty.
+  - Risk Route: dual "BOTH REQUIRED" meters. Both progress types, threshold ladders, better reward, harsher failure penalty.
+
+Side-by-side layout is not preferred for phone UX. Vertical stacking gives each route panel real estate for thresholds, reward/penalty chips, progress info, and explanatory copy.
 
 Route cards must show that top and bottom routes are not just different numbers. If both routes appear identical except threshold size, the mobile presentation has failed even if the underlying hazard is valid.
 
@@ -144,6 +147,10 @@ During round play:
 - Cards dragged into the play area appear as a small staged ledger of up to 6 cards.
 - Dice states update in place: available, spent, exhausted, locked, preserved, temporary.
 - The `PLAY` button commits the staged set; before that point, card placement and die assignment are reversible UI intent.
+
+#### PLAY Button Visual Style
+
+The PLAY button retains its original translucent/sulfur-glow visual style. Hit-testing fixes and touch-target improvements must not materially alter its appearance.
 
 ### Complete Layout
 
@@ -203,19 +210,22 @@ States:
 
 ### `HazardRouteChoice`
 
-Two selectable route panels:
+Two selectable route panels, stacked vertically at full width. Each panel needs room for thresholds, reward/penalty chips, progress info, and explanatory copy.
 
-- Safe/top route.
-- Risk/bottom route.
+**Route identity:**
+
+- **Safe Route** — single-meter requirement. One progress type; player must clear that threshold each round.
+- **Risk Route** — dual "BOTH REQUIRED" meters. Two progress types; the player must satisfy **both** in the same round to score the round objective. Cards must visually and functionally contribute to one meter or the other; only explicitly dual/utility cards may contribute to both.
 
 Each route panel displays:
 
-- Progress type(s).
-- Threshold ladder: e.g. `6 / 6 / 8`.
+- Progress type(s) and meter count (single / BOTH REQUIRED).
+- Threshold ladder: e.g. `6 / 6 / 8` per progress type.
 - Round count.
 - Reward.
 - Failure penalty.
 - Badge: `SAFER` or `BETTER REWARD`.
+- Risk route additionally shows the between-round dice recast affordance.
 
 ### `HazardManaBoard`
 
@@ -232,32 +242,33 @@ Die visual states:
 | `locked` | Chain/lock overlay; cannot be converted or spent. |
 | `preserved` | Gold/bone rim; carries forward as available. |
 
-Color mapping should reuse AXM tokens and must not rely on color alone. Every die color needs a glyph or pip pattern:
+Only four mana colors exist: Red, Blue, Purple, Gold. Every die face needs a glyph or pip pattern. Color mapping should reuse AXM tokens and must not rely on color alone.
 
-- Red: blade / jagged pip.
-- Green: arrow / path pip.
-- Blue: eye / wave pip.
-- Yellow: ration / sun pip.
-- Purple: crescent / curse pip.
-- X: black blocked mark, not just gray.
+Die faces (six total):
+- Red (one face): blade / jagged pip.
+- Blue (one face): eye / wave pip.
+- Purple (one face): crescent / curse pip.
+- Gold (one face): crown / sun pip.
+- Wild/X (two faces per die): black blocked mark, not just gray. Two wild faces per die reflect the four-color constrained pool.
 
 ### `HazardProgressMeter`
 
 Displays per-progress-type accumulation.
 
-Single requirement:
+Single requirement (Safe Route):
 
 ```text
 Stability 5 / 6
 ```
 
-Dual requirement:
+Dual requirement (Risk Route — BOTH REQUIRED):
 
 ```text
+BOTH REQUIRED
 Escape 5 / 5   Force 3 / 5
 ```
 
-Dual requirements must clearly show that **both** bars must clear. Do not sum them visually unless the route is the special H07 player-choice case.
+Dual requirements must show a clear "BOTH REQUIRED" label and two independent bars. Do not sum them visually unless the route is the special H07 player-choice case. Partial satisfaction (one bar cleared, one not) still fails the round — the player must clear both in the same round to score `O`.
 
 ### `HazardActionCard`
 
@@ -269,10 +280,12 @@ Recommended card structure:
 - Verb class icon.
 - Top/free action row.
 - Bottom/mana action row with a single cost pip.
-- Subtle card-stock tint keyed to the single mana color the bottom action can consume.
+- Subtle card-stock tint keyed to the card's color identity (Red / Blue / Purple / Gold).
+- Gold cards have a distinct premium treatment; their bottom action requires a Gold die (no substitution).
 - Affordability state:
   - bottom action bright when affordable;
   - dimmed when unaffordable;
+  - Gold cards additionally dim if no Gold die is available;
   - X-related cards highlight blocked dice they can affect.
 
 Touch model:
@@ -496,7 +509,7 @@ Observed current local mechanics gaps:
 - Many mana conversion/creation/draw card effects are placeholders (`noOpEffect`).
 - `hazard.engine.ts` currently resolves single-progress thresholds only; doctrine permits dual requirements.
 - `hazard.engine.ts` leaves penalties in `resolveRound` as TODO; CLI applies ledger penalties separately.
-- `advanceToNextRound` uses current dice refresh behavior from code; doctrine says no automatic refresh unless card/enchantment permits it.
+- `advanceToNextRound` uses current dice refresh behavior from code; doctrine now says Safe route has no auto-refresh, while Risk route performs a dice re-cast between rounds as a compensating mechanic.
 - Mobile depends on published `axiomancer-mechanics` `^0.15.1`, so hazard minigame availability must be checked during implementation.
 
 Design implication: build mobile presenter/components against stable doctrine concepts, but gate implementation behind actual package exports and tests.
@@ -513,13 +526,26 @@ Hazard should feel like a crisis board laid across the phone.
 - Less theatrical than combat; more like reading a hostile map.
 - Dice and cards are physical tokens in a bad place.
 
-### Color Use
+### Card and Dice Color System
+
+Only four card/dice/mana colors exist. These are design identities, not just UI tints.
+
+| Color | Rarity / Power | Progress tendency | Pip glyph | Notes |
+|---|---|---|---|---|
+| **Red** | Common | Commonly high Type A (Force, Stability); sometimes low Type B | Blade / jagged | Often aggressive |
+| **Blue** | Common | Commonly high Type B (Escape, Supply); sometimes low Type A | Eye / wave | Often evasive |
+| **Purple** | Uncommon | Mid in either type (each card commits to one) | Crescent / curse | Flexible but never dominant in either |
+| **Gold** | Rare / most powerful | Uncommitted; strongest raw values | Crown / sun | Can only be powered by Gold mana/dice |
+
+All colors may include utility cards (draw, convert X dice, reroll/refresh, etc.).
+
+Each die has six faces: one Red, one Blue, one Purple, one Gold, and **two wild/X faces**. The two wild faces reflect the constrained four-color pool.
+
+### UI Palette (independent of card/dice color identity)
 
 - Rust: danger, Force, damage risk.
 - Bone/parchment: readable card panels and safe route labels.
-- Sulfur/yellow: Supply and warning highlights.
-- Blue: Focus and mana manipulation.
-- Purple: curse/X interaction.
+- Sulfur/yellow: warning highlights, PLAY button glow (see PLAY Button Visual Style, §3).
 - Ash/black: spent, exhausted, blocked, failed.
 
 ### Motion
@@ -633,10 +659,18 @@ Do not require network, real timers, real fonts, or actual random rolls. Stub en
 - [ ] Mobile hazard flow follows doctrine phase order.
 - [ ] Opening hand is visible before route choice.
 - [ ] Route choice is visibly binding and reward/risk legible.
+- [ ] Route panels are stacked vertically at full width; side-by-side is not used.
+- [ ] Safe route shows a single progress meter.
+- [ ] Risk route shows dual "BOTH REQUIRED" meters; both must clear in the same round for `O`.
+- [ ] Cards are colored Red, Blue, Purple, or Gold only; Gold cards accept only Gold mana/dice.
+- [ ] Each die shows four color faces (Red, Blue, Purple, Gold) plus two wild/X faces.
+- [ ] Safe route: dice persist between rounds (no auto-refresh).
+- [ ] Risk route: dice are re-cast between rounds; exhausted dice do not persist after a valid resolve.
+- [ ] PLAY button retains its original translucent/sulfur-glow style after any hit-testing fix.
 - [ ] Dice board shows color and state without color-only dependence.
 - [ ] X dice are visibly blocked unless enabled by card/enchantment.
 - [ ] Top/free and bottom/mana actions are visually distinct.
-- [ ] Progress meter supports single and dual requirements.
+- [ ] Progress meter supports single and dual requirements with "BOTH REQUIRED" label on dual.
 - [ ] Round ledger clearly shows `O` and `X` marks.
 - [ ] Final score displays `count(O) - count(X)`.
 - [ ] Presenter tests cover phase mapping and key affordability states.

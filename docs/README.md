@@ -29,6 +29,7 @@ latest explicit decisions.
 
 | File | Coverage |
 |------|----------|
+| [`../design/hazard-minigame-mobile.md`](../design/hazard-minigame-mobile.md) | Hazard minigame mobile design brief (route layout, color system, dual-meter rules, dice behavior) |
 | [`claude-design-prompt-2026-05-16.md`](./claude-design-prompt-2026-05-16.md) | Design handoff documentation |
 | [`combat.md`](./combat.md) | Combat system documentation |
 | [`early-combat-ux.md`](./early-combat-ux.md) | UX evolution notes |

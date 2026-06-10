@@ -2135,14 +2135,24 @@ exploration `moveToAction` migration to engine `revealAdjacent` /
 - conflicts: none
 
 ### [ ] [score 4.0] Hazard minigame mobile implementation
-- proposed: 2026-06-10, expand pass 66
+- proposed: 2026-06-10, expand pass 66; doctrine updated 2026-06-10 (T decisions)
 - source signals:
-  - **Design landing signal** — design/hazard-minigame-mobile.md updated 2026-06-09 with comprehensive implementation brief
-  - **Feature gap** — Design brief exists but no corresponding implementation phase in build plan
-- rationale: New design brief landed for hazard minigame mobile implementation with comprehensive spec including UI wireframes, mechanics integration, and mobile-specific constraints. This represents a new game feature ready for implementation.
-- proposed scope: 2 phases - UI component implementation phase + engine integration phase for complete hazard minigame system
+  - **Design brief** — `design/hazard-minigame-mobile.md` (updated 2026-06-10) with full UX wireframes, mechanics integration, and mobile-specific constraints
+  - **Engine surface** — `docs/engine-upgrade-0.15.1-to-0.16.0.md` documents the `axiomancer-mechanics@0.16.0` Hazard consumer API
+  - **Feature gap** — No corresponding implementation phase in build plan
+- T design decisions (2026-06-10, captured in design brief):
+  - Route panels must be **stacked vertically, full-width** — side-by-side is not phone UX.
+  - **Safe route**: single-meter requirement.
+  - **Risk route**: dual "BOTH REQUIRED" meters — player must satisfy both in the same round to score `O`; cards contribute to one meter unless explicitly dual/utility.
+  - **Risk route dice**: re-cast/rerolled between rounds as compensating mechanic; exhausted dice do not persist after a valid resolve. Safe route dice persist (no auto-refresh).
+  - **Color system**: only Red, Blue, Purple, Gold cards/dice/mana. Gold is rarest/most powerful and requires Gold mana/dice. Red commonly high Type A / sometimes low Type B. Blue commonly high Type B / sometimes low Type A. Purple mid in either type. All colors may include utility cards.
+  - **Die faces**: four color faces + two wild/X faces per die.
+  - **PLAY button**: retains original translucent/sulfur-glow visual style; hit-testing fixes must not change its appearance.
+- proposed scope: 2 phases
+  - Phase A — Hazard presenter + route reveal/selection UI (stacked vertical panels, single/dual meter identity, passive-hazard fallback guard)
+  - Phase B — Mana board, round play, dice behavior (4-color system, per-route dice rules), round/final ledger, engine action wiring
 - estimated phases: 2
-- conflicts: none
+- conflicts: `[needs-engine-release]` — gated on `axiomancer-mechanics@^0.16.0` hazard exports being fully wired to `GameState`. v0 caveats documented in `docs/engine-upgrade-0.15.1-to-0.16.0.md`.
 
 ### [ ] [score 3.0] Large component extraction refactor
 - proposed: 2026-06-10, expand pass 66

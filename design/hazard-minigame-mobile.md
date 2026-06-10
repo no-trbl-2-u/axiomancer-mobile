@@ -617,3 +617,7 @@ Do not require network, real timers, real fonts, or actual random rolls. Stub en
 - [ ] Presenter tests cover phase mapping and key affordability states.
 - [ ] Screen tests cover route choice, dice board, card play, and round resolve dispatch.
 - [ ] Current passive hazard event remains safe fallback until mechanics package support is confirmed.
+
+---
+
+Follow-up note: This document is the mobile implementation brief for the Hazard minigame and should stay aligned with mechanics source-of-truth changes.

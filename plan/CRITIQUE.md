@@ -33,22 +33,24 @@
      README.md, package.json, .env.example, docs/, recent commits.
      3 findings filed below. -->
 
-### [MED] /README.md — Engine upgrade docs reference outdated versions
-- pass: 30 (commit c4c5c1a)
+### [MED] /README.md — Engine upgrade docs reference outdated versions ✅
+- pass: 30 (commit c4c5c1a); addressed at commit 8e9dd9e via `/iterate`
 - viewport: repository
 - category: comprehension
 - observation: README mentions engine upgrade guides for 0.14.0→0.15.0 and 0.15.0→0.15.1 but package.json shows axiomancer-mechanics ^0.16.0, creating confusion about which upgrade guide applies
 - evidence: README lines 208-217 reference 0.15.0 and 0.15.1 upgrade docs while package.json line 37 shows "axiomancer-mechanics": "^0.16.0"
 - suggested fix: Update README engine upgrade references to reflect current 0.16.0 version or add 0.15.1→0.16.0 upgrade documentation
+- fix: Updated engine upgrade documentation references to reflect current axiomancer-mechanics ^0.16.0 package version, added reference to docs/engine-upgrade-0.15.1-to-0.16.0.md, and reorganized previous version references for clarity.
 - source: repo-proxy
 
-### [MED] /.env.example — References non-existent EAS setup documentation
-- pass: 30 (commit c4c5c1a)
+### [MED] /.env.example — References non-existent EAS setup documentation ✅ [INVALID]
+- pass: 30 (commit c4c5c1a); marked invalid during `/iterate` 2026-06-10
 - viewport: repository
 - category: navigation
 - observation: .env.example references setup/02_eas.md for EAS Build configuration steps but this file does not exist, creating broken guidance for new contributors
 - evidence: Line 17: "See setup/02_eas.md for detailed configuration steps" but setup/ directory contains no 02_eas.md file
 - suggested fix: Create setup/02_eas.md with EAS configuration steps or update reference to point to existing documentation
+- resolution: Finding was invalid - setup/02_eas.md exists and contains comprehensive EAS Build setup documentation. The .env.example reference is correct.
 - source: repo-proxy
 
 ### [LOW] /package.json — Node version requirement lacks specificity guidance

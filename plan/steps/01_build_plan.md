@@ -92,7 +92,7 @@ commit that ships the phase.
       (no behavior change expected); add render/coverage tests for
       any newly-extracted component lacking one. Shipped in commit 1e44988.
 
-- [ ] Phase 118 — Combat encounter re-trigger fix (issue #191, HIGH gameplay bug).
+- [x] Phase 118 — Combat encounter re-trigger fix (issue #191, HIGH gameplay bug) `[027c657]`.
       Promoted via `/oversight` 2026-06-11 from phase candidate [9.0] (expand
       pass 68). Subsequent combat encounters fail to trigger after the first
       encounter is resolved — a core gameplay blocker spotted during actual

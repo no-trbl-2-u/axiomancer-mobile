@@ -1,59 +1,30 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { useTooltip } from '@/hooks/useTooltip';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, {
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming,
-    Easing,
-} from 'react-native-reanimated';
-import Svg, { Path, Circle, G } from 'react-native-svg';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { AXM, FONTS } from '@/theme/axm';
 import { ScreenBg } from '@/components/ScreenBg';
 import { StatusCard } from '@/components/StatusCard';
 import { SectionLabel } from '@/components/SectionLabel';
-import { NodeMark } from '@/components/NodeMark';
-import { ActionIcon } from '@/components/ActionIcon';
-import { Splatter } from '@/components/Splatter';
 import { ExplorationCodexHeader } from '@/components/ExplorationCodexHeader';
+import { MapCanvas } from '@/components/exploration/MapCanvas';
+import { NodeGrid } from '@/components/exploration/NodeGrid';
+import { OptionsList } from '@/components/exploration/OptionsList';
+import { EventBadge } from '@/components/exploration/EventBadge';
+import { NodeToast } from '@/components/exploration/NodeToast';
+import { MapOverlays } from '@/components/exploration/MapOverlays';
 import { useAesthetic } from '@/state/aesthetic-mode';
 import { useCombatMode } from '@/state/combat-mode';
 import { selectExplorationCodexHeader } from '@/state/presenters/exploration.codex.engine';
-import { useGameActions, useGameState, useGameStore } from '@/state/GameStoreProvider';
+import { useGameActions, useGameState } from '@/state/GameStoreProvider';
 import {
     selectExplorationViewModel,
     type ExplorationNode,
     type ExplorationOption,
-    type NodeType,
 } from '@/state/presenters/exploration.engine';
 import {
     selectEventViewModel,
     selectHasActiveEvent,
 } from '@/state/presenters/event.engine';
 import { EncounterModalOverlay } from '@/components/event/EncounterModalOverlay';
-
-const EVENT_BADGE: Record<NodeType, { c: string; label: string }> = {
-    encounter: { c: AXM.blood, label: 'ENCOUNTER' },
-    treasure: { c: AXM.sulfur, label: 'TREASURE' },
-    boss: { c: AXM.blood, label: 'BOSS' },
-    quest: { c: AXM.sulfur, label: 'QUEST' },
-    rest: { c: AXM.rust, label: 'REST' },
-    gather: { c: AXM.bone, label: 'GATHER' },
-    current: { c: AXM.sulfur, label: 'HERE' },
-    hazard: { c: AXM.rust, label: 'HAZARD' },
-};
-
-const OPTION_ICON: Record<NodeType, string> = {
-    rest: 'flame',
-    gather: 'bag',
-    current: 'eye',
-    encounter: 'flee',
-    treasure: 'scroll',
-    boss: 'sword',
-    quest: 'scroll',
-    hazard: 'arcane',
-};
 
 export default function ExplorationScreen() {
     const {
@@ -65,41 +36,26 @@ export default function ExplorationScreen() {
         recordDeepestNode,
     } = useCombatMode();
     const { mode: aesthetic } = useAesthetic();
-    const store = useGameStore();
-    const actions = useGameActions();
-    // Per the design's prototype.jsx flow, tapping a non-available node
-    // surfaces a brief lowercase-ritual toast then auto-clears. Local
-    // UI state; not on the presenter contract — pure feedback.
     const [nodeTip, setNodeTip] = useState<string | null>(null);
+
     useEffect(() => {
-        if (nodeTip === null) return;
-        const handle = setTimeout(() => setNodeTip(null), 1600);
-        return () => clearTimeout(handle);
+        if (nodeTip !== null) {
+            const t = setTimeout(() => setNodeTip(null), 2000);
+            return () => clearTimeout(t);
+        }
     }, [nodeTip]);
-    // Subscribe to the world slice so the screen re-renders on moves
-    // and map transitions. The selector pattern is the same as inventory.
-    const world = useGameState((s) => (s as unknown as { world: unknown }).world);
-    const eventSlice = useGameState((s) => s.event);
+
+    const actions = useGameActions();
+    const eventVm = useGameState(selectEventViewModel);
+    const vm = useGameState(selectExplorationViewModel);
     const combat = useGameState((s) => s.combat);
-    const quests = useGameState((s) => s.quests);
-    const flags = useGameState((s) => s.flags);
-    const vm = useMemo(
-        () => selectExplorationViewModel(store.getState()),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [store, world],
-    );
-    // Encounter-modal overlay state (Phase 32 design-handoff port).
-    // The overlay mounts when the engine has a pending combat-prelude
-    // event and combat hasn't started yet. Same VM the standalone
-    // `app/event` route reads; this is a second consumer of it.
-    const eventVm = useMemo(
-        () => selectEventViewModel({ event: eventSlice, combat, quests, flags } as never),
-        [eventSlice, combat, quests, flags],
-    );
-    const hasEvent = useMemo(
-        () => selectHasActiveEvent({ event: eventSlice, combat } as never),
-        [eventSlice, combat],
-    );
+
+    // Phase 63c — the modal mount lifecycle. Skip `state.hasEvent` hook
+    // (state shape; would re-render on every engine call), read the 
+    // presenter shape directly. The encounter modal mounts on the
+    // first combat-prelude event and stays mounted until aftermath
+    // dismissal completes (via the combat-mode hook above).
+    const hasEvent = useGameState(selectHasActiveEvent);
     // Phase 63c — the modal mount lifecycle now spans the full
     // encounter session (prelude → combat → aftermath), not just
     // the moment `selectHasActiveEvent` returns true. Once combat
@@ -136,56 +92,11 @@ export default function ExplorationScreen() {
         }
     }, [inEncounterModal, preludeReady, combat, lastOutcome, closeEncounterModal]);
 
-    const nodeById = useMemo(() => {
-        const m = new Map<string, ExplorationNode>();
-        for (const n of vm.nodes) m.set(n.id, n);
-        return m;
-    }, [vm.nodes]);
-
     // Phase 107 — Create set of node IDs that should show labels
     // (only unvisited available nodes that are currently shown as options)
     const labeledNodeIds = useMemo(() => {
         return new Set(vm.options.slice(0, 4).map(opt => opt.nodeId));
     }, [vm.options]);
-
-    // Pinch + pan over the map view (Q2=B). Reanimated shared values
-    // drive a single transform; gestures compose simultaneously so the
-    // user can zoom and drag at once.
-    const scale = useSharedValue(1);
-    const savedScale = useSharedValue(1);
-    const tx = useSharedValue(0);
-    const ty = useSharedValue(0);
-    const savedTx = useSharedValue(0);
-    const savedTy = useSharedValue(0);
-
-    const pinch = Gesture.Pinch()
-        .onUpdate((e) => {
-            const next = savedScale.value * e.scale;
-            scale.value = Math.min(3, Math.max(0.6, next));
-        })
-        .onEnd(() => {
-            savedScale.value = scale.value;
-        });
-
-    const pan = Gesture.Pan()
-        .onUpdate((e) => {
-            tx.value = savedTx.value + e.translationX;
-            ty.value = savedTy.value + e.translationY;
-        })
-        .onEnd(() => {
-            savedTx.value = tx.value;
-            savedTy.value = ty.value;
-        });
-
-    const composed = Gesture.Simultaneous(pinch, pan);
-
-    const mapTransform = useAnimatedStyle(() => ({
-        transform: [
-            { translateX: tx.value },
-            { translateY: ty.value },
-            { scale: scale.value },
-        ],
-    }));
 
     const onNodePress = (node: ExplorationNode) => {
         // Per the prototype.jsx flow (design handoff 2026-05-19 entry
@@ -241,7 +152,7 @@ export default function ExplorationScreen() {
     };
 
     const onOptionPress = (option: ExplorationOption) => {
-        const node = nodeById.get(option.nodeId);
+        const node = vm.nodes.find(n => n.id === option.nodeId);
         if (!node) return;
         onNodePress(node);
     };
@@ -265,129 +176,25 @@ export default function ExplorationScreen() {
             </View>
 
             {/* Node Graph */}
-            <View style={styles.graphWrap}>
-                <View style={[StyleSheet.absoluteFillObject, styles.graphBackground]} />
-                <Splatter color={AXM.blood} size={170} seed={3} style={styles.bloodSplatter} />
-                <Splatter color={AXM.sulfur} size={130} seed={9} style={styles.sulfurSplatter} />
+            <MapCanvas nodes={vm.nodes} edges={vm.edges}>
+                <MapOverlays legend={vm.legend} />
+                <NodeGrid
+                    nodes={vm.nodes}
+                    onNodePress={onNodePress}
+                    labeledNodeIds={labeledNodeIds}
+                />
+            </MapCanvas>
 
-                {/* Compass */}
-                <Text style={styles.compass}>N ↑ · scale: leagues</Text>
-                <Text style={styles.nodeGraphLabel}>NODE GRAPH</Text>
-
-                <GestureDetector gesture={composed}>
-                    <Animated.View style={[StyleSheet.absoluteFillObject, mapTransform]}>
-                        {/* SVG edges */}
-                        <Svg viewBox="0 0 360 400" width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
-                            {vm.edges.map((e, i) => {
-                                const A = nodeById.get(e.fromId);
-                                const B = nodeById.get(e.toId);
-                                if (!A || !B) return null;
-                                const mx = (A.x + B.x) / 2 + Math.sin(i * 3) * 12;
-                                const my = (A.y + B.y) / 2 + Math.cos(i * 5) * 10;
-                                return (
-                                    <G key={`${e.fromId}|${e.toId}`}>
-                                        <Path
-                                            d={`M ${A.x} ${A.y} Q ${mx} ${my} ${B.x} ${B.y}`}
-                                            stroke={e.traveled ? AXM.parchment : (e.locked ? AXM.ash : AXM.bone)}
-                                            strokeWidth={e.traveled ? 2.5 : 1.6}
-                                            strokeDasharray={e.locked ? '4 4' : undefined}
-                                            fill="none"
-                                            opacity={e.traveled ? 0.9 : 0.6}
-                                            strokeLinecap="round"
-                                        />
-                                        {e.traveled && <Circle cx={mx} cy={my} r={2} fill={AXM.sulfur} />}
-                                    </G>
-                                );
-                            })}
-                            <G opacity={0.4} stroke={AXM.bone} strokeWidth={1} fill="none">
-                                <Path d="M40 250 q 20 -20 40 -10 q 10 12 -10 18 q -22 4 -30 -8 z" />
-                                <Path d="M250 280 q 30 -20 60 -5 q 8 18 -20 22 q -38 -2 -40 -17 z" />
-                            </G>
-                        </Svg>
-
-                        {/* Node markers */}
-                        {vm.nodes.map((n) => (
-                            <MapNodeMarker 
-                                key={n.id} 
-                                node={n} 
-                                onNodePress={onNodePress} 
-                                shouldShowLabel={labeledNodeIds.has(n.id)} 
-                            />
-                        ))}
-                    </Animated.View>
-                </GestureDetector>
-
-                {vm.eventCallout && (
-                    <View style={styles.eventCallout}>
-                        <View style={styles.eventCalloutRow}>
-                            <ActionIcon kind={vm.eventCallout.iconKey} size={20} color={AXM.blood} />
-                            <SectionLabel size={9} color={AXM.blood}>NEW EVENT</SectionLabel>
-                        </View>
-                        <Text style={styles.eventCalloutText}>{vm.eventCallout.title}</Text>
-                    </View>
-                )}
-
-                <View style={styles.legend}>
-                    <Text style={styles.legendText}>{vm.legend.left}</Text>
-                    <Text style={styles.legendText}>{vm.legend.right}</Text>
-                </View>
-            </View>
+            {vm.eventCallout && (
+                <EventBadge eventCallout={vm.eventCallout} />
+            )}
 
             {/* Node options drawer (Q6) — available next steps with thematic blurb */}
-            <View style={styles.drawer}>
-                <View style={styles.drawerHeader}>
-                    <SectionLabel size={10}>{vm.drawerCopy.title}</SectionLabel>
-                </View>
-                {vm.options.length === 0 ? (
-                    <View style={styles.drawerEmpty} testID="options-empty">
-                        <Text style={styles.drawerEmptyText}>{vm.drawerCopy.emptyMessage}</Text>
-                    </View>
-                ) : (
-                    <ScrollView
-                        showsVerticalScrollIndicator={false}
-                        contentContainerStyle={styles.stepCardScroll}
-                    >
-                        {vm.options.slice(0, 4).map((opt) => {
-                            const accent =
-                                opt.type === 'encounter' || opt.type === 'boss'
-                                    ? AXM.blood
-                                    : opt.type === 'treasure'
-                                      ? AXM.sulfur
-                                      : AXM.parchment;
-                            return (
-                                <TouchableOpacity
-                                    key={opt.nodeId}
-                                    style={[styles.stepCard, { borderLeftColor: accent }]}
-                                    onPress={() => onOptionPress(opt)}
-                                    accessibilityRole="button"
-                                    accessibilityLabel={`Travel to ${opt.label}, ${opt.leagues} leagues away`}
-                                    testID={`option-${opt.nodeId}`}
-                                >
-                                    <View style={[styles.stepCardIconBox, { borderColor: AXM.bone }]}>
-                                        <ActionIcon
-                                            kind={OPTION_ICON[opt.type]}
-                                            size={18}
-                                            color={accent}
-                                        />
-                                    </View>
-                                    <View style={styles.stepCardMid}>
-                                        <Text style={styles.stepCardTitle} numberOfLines={1}>
-                                            {opt.label}
-                                        </Text>
-                                        <Text style={styles.stepCardHint} numberOfLines={1}>
-                                            {opt.description.toUpperCase()}
-                                        </Text>
-                                    </View>
-                                    <View style={styles.stepCardLeagues}>
-                                        <Text style={styles.stepCardLeaguesLabel}>{vm.drawerCopy.leaguesLabel}</Text>
-                                        <Text style={styles.stepCardLeaguesNum}>{opt.leagues}</Text>
-                                    </View>
-                                </TouchableOpacity>
-                            );
-                        })}
-                    </ScrollView>
-                )}
-            </View>
+            <OptionsList
+                options={vm.options}
+                onOptionPress={onOptionPress}
+                drawerCopy={vm.drawerCopy}
+            />
 
             {showEncounterModal && (
                 <EncounterModalOverlay
@@ -405,95 +212,6 @@ export default function ExplorationScreen() {
               * on the exploration screen — the seal dismisses
               * silently in those cases. */}
         </ScreenBg>
-    );
-}
-
-/**
- * Locked / consumed node feedback toast with a fade-in entrance.
- * Phase 44 port from prototype.jsx:633-637 `@keyframes fade`
- * (opacity 0 → 1, 200ms). The parent unmounts the toast on
- * timeout (the existing useEffect at line 60-65); this component
- * handles the mount-time fade-in only.
- */
-/**
- * MapNodeMarker — per-node touch target on the exploration map.
- *
- * Single-tap commits movement (existing onNodePress behaviour);
- * long-press fires the kind:'map-node' tooltip (Phase 74 follow-up
- * walkthrough — Exploration Tick 1). Mirrors the Phase 75
- * skill-row pattern: tap is reserved for the action, long-press
- * for the explanation. Extracted from the parent's map() body so
- * each node owns its own measure ref.
- */
-function MapNodeMarker({
-    node: n,
-    onNodePress,
-    shouldShowLabel,
-}: {
-    node: ExplorationNode;
-    onNodePress: (n: ExplorationNode) => void;
-    shouldShowLabel: boolean;
-}) {
-    const tooltip = useTooltip();
-    const ref = useRef<View | null>(null);
-    const ev = EVENT_BADGE[n.type] ?? EVENT_BADGE.encounter;
-    const left = (n.x - 18) / 360 * 100;
-    const top = (n.y - 18) / 400 * 100;
-    const dim = n.kind === 'locked';
-    return (
-        <TouchableOpacity
-            ref={ref}
-            accessibilityRole="button"
-            accessibilityLabel={`${n.label}, ${
-                n.kind === 'locked' ? 'sealed'
-                    : n.kind === 'completed' ? 'walked'
-                        : n.kind === 'current' ? 'here'
-                            : 'open'
-            }`}
-            accessibilityHint="hold to read node type description"
-            accessibilityState={{ disabled: n.kind !== 'available' }}
-            onPress={() => onNodePress(n)}
-            onLongPress={() => tooltip.show({ kind: 'map-node', id: n.type, anchorRef: ref })}
-            activeOpacity={n.kind === 'available' ? 0.7 : 1}
-            testID={`node-${n.id}`}
-            style={[
-                styles.nodeWrap,
-                { left: `${left}%` as unknown as number, top: `${top}%` as unknown as number },
-                dim && styles.nodeWrapLocked,
-            ]}
-        >
-            <NodeMark kind={n.kind} size={36} />
-            {n.kind === 'available' && shouldShowLabel && (
-                <View style={[styles.nodeLabel, { backgroundColor: AXM.nodeBg }]}>
-                    <Text style={[styles.nodeLabelText, { color: dim ? AXM.bone : AXM.parchment }]}>
-                        {n.label}
-                    </Text>
-                </View>
-            )}
-            {n.kind === 'available' && shouldShowLabel && (
-                <View style={[styles.nodeTypeBadge, { backgroundColor: ev.c }]}>
-                    <Text style={styles.nodeTypeBadgeText}>{ev.label}</Text>
-                </View>
-            )}
-        </TouchableOpacity>
-    );
-}
-
-function NodeToast({ tip }: { tip: string }) {
-    const opacity = useSharedValue(0);
-    useEffect(() => {
-        opacity.value = withTiming(1, { duration: 200, easing: Easing.out(Easing.ease) });
-    }, [opacity]);
-    const animStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
-
-    return (
-        <Animated.View
-            pointerEvents="none"
-            style={[styles.nodeToast, animStyle]}
-            testID="exploration-node-toast"
-        >
-            <Text style={styles.nodeToastText}>{tip}</Text>
-        </Animated.View>
     );
 }
 
@@ -520,217 +238,7 @@ const styles = StyleSheet.create({
         fontStyle: 'italic',
         marginTop: 1,
     },
-    graphWrap: {
-        marginHorizontal: 10,
-        marginVertical: 6,
-        height: 400,
-        position: 'relative',
-        overflow: 'hidden',
-    },
-    compass: {
-        position: 'absolute',
-        top: 10,
-        left: 10,
-        fontFamily: FONTS.mono,
-        fontSize: 9,
-        color: AXM.bone,
-        letterSpacing: 1,
-        zIndex: 2,
-    },
-    nodeGraphLabel: {
-        position: 'absolute',
-        top: 10,
-        right: 12,
-        fontFamily: FONTS.gothic,
-        fontSize: 14,
-        color: AXM.parchment,
-        opacity: 0.6,
-        letterSpacing: 2,
-        zIndex: 2,
-    },
-    nodeWrap: {
-        position: 'absolute',
-        width: 36,
-        alignItems: 'center',
-        zIndex: 3,
-    },
-    nodeWrapLocked: {
-        opacity: 0.45,
-    },
-    nodeLabel: {
-        marginTop: 2,
-        paddingHorizontal: 4,
-        paddingVertical: 1,
-        backgroundColor: AXM.nodeBg,
-    },
-    nodeLabelText: {
-        fontFamily: FONTS.sans,
-        fontSize: 9,
-        letterSpacing: 1.4,
-        textTransform: 'uppercase',
-    },
-    nodeTypeBadge: {
-        marginTop: 1,
-        paddingHorizontal: 3,
-        paddingVertical: 1,
-    },
-    nodeTypeBadgeText: {
-        fontFamily: FONTS.sans,
-        fontSize: 8,
-        letterSpacing: 1,
-        color: AXM.bg,
-    },
-    eventCallout: {
-        position: 'absolute',
-        top: 50,
-        right: 12,
-        width: 130,
-        backgroundColor: AXM.bg,
-        borderWidth: 1,
-        borderColor: AXM.blood,
-        padding: 8,
-        zIndex: 4,
-    },
-    eventCalloutRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-    },
-    eventCalloutText: {
-        fontFamily: FONTS.gothic,
-        fontSize: 13,
-        color: AXM.parchment,
-        marginTop: 2,
-        lineHeight: 15,
-    },
-    legend: {
-        position: 'absolute',
-        bottom: 8,
-        left: 12,
-        right: 12,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        zIndex: 2,
-    },
-    legendText: {
-        fontFamily: FONTS.mono,
-        fontSize: 8,
-        color: AXM.bone,
-        letterSpacing: 1,
-    },
-    drawer: {
-        paddingHorizontal: 10,
-        paddingBottom: 8,
-    },
-    drawerHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'baseline',
-        paddingHorizontal: 4,
-        paddingBottom: 4,
-    },
-    drawerEmpty: {
-        marginHorizontal: 4,
-        paddingVertical: 18,
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: AXM.ash,
-        borderStyle: 'dashed',
-    },
-    drawerEmptyText: {
-        fontFamily: FONTS.serifItalic,
-        fontSize: 13,
-        color: AXM.bone,
-    },
-    stepCardScroll: {
-        gap: 6,
-        paddingVertical: 2,
-    },
-    stepCard: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-        paddingVertical: 10,
-        paddingHorizontal: 12,
-        backgroundColor: AXM.panelBg,
-        borderWidth: 1,
-        borderColor: AXM.divider,
-        borderLeftWidth: 2,
-    },
-    stepCardIconBox: {
-        width: 28,
-        height: 28,
-        borderWidth: 1,
-        backgroundColor: AXM.bg,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    stepCardMid: {
-        flex: 1,
-        minWidth: 0,
-    },
-    stepCardTitle: {
-        fontFamily: FONTS.serif,
-        fontSize: 14,
-        color: AXM.parchment,
-        lineHeight: 16,
-    },
-    stepCardHint: {
-        fontFamily: FONTS.sans,
-        fontSize: 9,
-        color: AXM.bone,
-        letterSpacing: 1.6,
-        marginTop: 3,
-    },
-    stepCardLeagues: {
-        alignItems: 'flex-end',
-        gap: 2,
-    },
-    stepCardLeaguesLabel: {
-        fontFamily: FONTS.mono,
-        fontSize: 9,
-        color: AXM.bone,
-    },
-    stepCardLeaguesNum: {
-        fontFamily: FONTS.mono,
-        fontSize: 18,
-        color: AXM.parchment,
-    },
-    // Locked / consumed node feedback toast (port design spec — design's
-    // prototype.jsx flow). Bottom-center, brief auto-dismiss, parchment
-    // text over an ash-bordered panel.
-    nodeToast: {
-        position: 'absolute',
-        bottom: 32,
-        left: 24,
-        right: 24,
-        backgroundColor: AXM.panelBg,
-        borderWidth: 1,
-        borderColor: AXM.bone,
-        padding: 10,
-        alignItems: 'center',
-    },
-    nodeToastText: {
-        fontFamily: FONTS.serifItalic,
-        fontSize: 12,
-        color: AXM.parchment,
-    },
     continentLabel: {
         color: AXM.bone,
-    },
-    graphBackground: {
-        backgroundColor: AXM.deepBg,
-    },
-    bloodSplatter: {
-        position: 'absolute',
-        top: -10,
-        right: -10,
-        opacity: 0.35,
-    },
-    sulfurSplatter: {
-        position: 'absolute',
-        bottom: 30,
-        left: -20,
-        opacity: 0.18,
     },
 });

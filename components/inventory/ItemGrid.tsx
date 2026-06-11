@@ -1,0 +1,108 @@
+import React, { useMemo } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
+import { AXM, FONTS } from '@/theme/axm';
+import { SectionLabel } from '@/components/SectionLabel';
+import { CATEGORY_ORDER, groupByCategory, ItemCard } from '@/components/inventory/ItemCard';
+import type { InventoryItemRow } from '@/state/presenters/inventory.engine';
+
+interface EmptySackProps {
+    message: string;
+}
+
+function EmptySack({ message }: EmptySackProps) {
+    return (
+        <View style={styles.emptyOuter} testID="inventory-empty">
+            <Svg viewBox="0 0 64 64" width={64} height={64} fill="none" stroke={AXM.bone} strokeWidth={2}>
+                <Path d="M14 18 L 50 18 L 54 56 H 10 Z" fill={AXM.bg} fillOpacity={0.6} />
+                <Path d="M22 18 V 12 A 10 10 0 0 1 42 12 V 18" />
+                <Path d="M22 30 Q 32 22 42 30" strokeLinecap="round" />
+            </Svg>
+            <Text style={styles.emptyText}>{message}</Text>
+        </View>
+    );
+}
+
+interface ItemGridProps {
+    items: readonly InventoryItemRow[];
+    categoryHeaders: Record<string, string>;
+    emptyMessage: string;
+    isEmpty: boolean;
+    expandedItemId: string | null;
+    onItemTap: (itemId: string) => void;
+    onUseOrEquip: (itemId: string) => void;
+    onDiscard: (itemId: string) => void;
+}
+
+export function ItemGrid({
+    items,
+    categoryHeaders,
+    emptyMessage,
+    isEmpty,
+    expandedItemId,
+    onItemTap,
+    onUseOrEquip,
+    onDiscard,
+}: ItemGridProps) {
+    // vm.items already accounts for slot-filter vs tab-filter on the
+    // presenter side (sub-tick F lifted the inline SLOT_KEY_TO_SUB map
+    // onto the presenter as `filterRowsBySlot`). Screen consumes
+    // vm.items unconditionally now.
+    const grouped = useMemo(() => groupByCategory(items), [items]);
+
+    if (isEmpty) {
+        return <EmptySack message={emptyMessage} />;
+    }
+
+    return (
+        <View style={styles.gridOuter}>
+            {CATEGORY_ORDER.filter((cat) => grouped[cat].length > 0).map((cat) => (
+                <View key={cat} style={styles.categorySection}>
+                    <SectionLabel size={10}>{categoryHeaders[cat]}</SectionLabel>
+                    <View style={styles.grid}>
+                        {grouped[cat].map((it) => (
+                            <ItemCard
+                                key={it.id}
+                                item={it}
+                                expanded={expandedItemId === it.id}
+                                onTap={() => onItemTap(it.id)}
+                                onUseOrEquip={() => onUseOrEquip(it.id)}
+                                onDiscard={() => onDiscard(it.id)}
+                            />
+                        ))}
+                    </View>
+                </View>
+            ))}
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    emptyOuter: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 40,
+        gap: 12,
+    },
+    emptyText: {
+        fontFamily: FONTS.serifItalic,
+        fontSize: 13,
+        color: AXM.bone,
+        textAlign: 'center',
+    },
+    gridOuter: {
+        flex: 1,
+        paddingHorizontal: 10,
+        paddingBottom: 10,
+    },
+    categorySection: {
+        marginBottom: 16,
+    },
+    grid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 6,
+        marginTop: 6,
+    },
+});

@@ -23,7 +23,7 @@ and below T's latest explicit decision / company CDRs.
 
 ### Prerequisites
 
-- **Node.js 18+** — the React Native toolchain requires modern Node.js
+- **Node.js 20+** — the React Native toolchain requires modern Node.js
 - **Expo CLI** — install globally with `npm install -g @expo/cli`
 - **Target platforms:**
   - **iOS:** Xcode (Mac only) or Expo Go app

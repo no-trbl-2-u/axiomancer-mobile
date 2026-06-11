@@ -77,7 +77,7 @@
 - addressed: 2026-06-11 via commit 6a5e58a
 - fix: Added clear current engine version indicator (axiomancer-mechanics ^0.16.0) and clarified that fresh checkouts include latest version with upgrade docs only needed for specific version migrations. Fresh maintainers can now easily determine if upgrade documentation applies.
 
-### [ ] [5.0] Testing prerequisite unclear for fresh maintainers
+### [x] [5.0] Testing prerequisite unclear for fresh maintainers
 - category: external-critique
 - impact: 5
 - ease: 10
@@ -90,6 +90,9 @@
 - evidence: README.md line 66 shows '| `npm test` | Run Jest (requires Spec 01 setup first). |'
 - suggested fix: Clarify that Spec 01 test harness setup is already complete or provide verification command to check setup status
 - source: external-critique
+- issue: #351
+- addressed: 2026-06-11 via commit 39012e2
+- fix: Updated README.md npm test description from 'requires Spec 01 setup first' to 'test harness already configured' to clarify current status for fresh maintainers
 
 ### [ ] [2.7] Large TypeScript files may impact development performance and maintainability
 - category: perf

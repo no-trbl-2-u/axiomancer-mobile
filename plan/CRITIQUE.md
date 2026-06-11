@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-11 at commit fb5d297
-> Pass count: 32
+> Last pass: 2026-06-11 at commit 07b4068
+> Pass count: 33
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -25,6 +25,67 @@
 > keep this header actionable.
 
 ## Pending
+
+<!-- Pass 33 (2026-06-11, commit 07b4068): repo-proxy pass —
+     Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
+     critique reads docs/specs/artifacts as the "fresh maintainer"
+     proxy. Focus on onboarding experience, documentation structure,
+     development workflow clarity. Examined README.md, setup/,
+     docs/, package.json, testing patterns. 5 findings filed below. -->
+
+### [HIGH] /setup/ — Referenced setup documentation missing, blocking onboarding
+- pass: 33 (commit 07b4068)
+- viewport: repository
+- category: navigation
+- observation: Setup documentation referenced throughout README but missing critical setup files, creating broken onboarding path
+- evidence: README line 90 references setup/02_eas.md, 03_store_setup.md, 04_claude_playtest.md but only partial content exists - setup process appears incomplete
+- suggested fix: Complete all setup documentation or remove references to non-existent setup guides
+- source: repo-analysis
+
+### [MED] /README.md — Repository structure navigation unclear for new maintainers
+- pass: 33 (commit 07b4068)
+- viewport: repository
+- category: comprehension
+- observation: Repository README jumps immediately from project overview into technical quick start without explaining repository structure or how different documentation areas relate to each other
+- evidence: Lines 14-21 reference VISION.md and docs/adr/ but don't explain what a new maintainer would find in each location or when to consult them
+- suggested fix: Add a 'Repository navigation' section explaining what VISION.md, docs/adr/, specs/, and plan/ contain and when to use each
+- source: repo-analysis
+
+### [MED] /docs/ — Extensive documentation lacks index for maintainer navigation
+- pass: 33 (commit 07b4068)
+- viewport: repository
+- category: navigation
+- observation: Extensive docs/ folder with 40+ files but no index or navigation guide for maintainers to find relevant documentation
+- evidence: Glob shows numerous specialized docs (engine-upgrade-*.md, mechanics-ui-audit-*.md, adr/*.md) but no docs/README.md or clear categorization
+- suggested fix: Add docs/README.md organizing documentation by category and purpose
+- source: repo-analysis
+
+### [MED] /package.json — Specialized development scripts lack documentation
+- pass: 33 (commit 07b4068)
+- viewport: repository
+- category: comprehension
+- observation: Package scripts include specialized commands for containerized development and visual testing but lack documentation about when to use them
+- evidence: Scripts like 'web:container', 'verify:visual', 'e2e:hazard', 'baseline:approve' are present but not explained in README workflow section
+- suggested fix: Expand README scripts table to include all specialized commands with usage context
+- source: repo-analysis
+
+### [MED] /docs/testing.md — Testing standard lacks clear compliance examples
+- pass: 33 (commit 07b4068)
+- viewport: repository
+- category: comprehension
+- observation: Testing standard requires hermetic e2e tests but provides complex requirements without clear examples of what constitutes minimal compliance
+- evidence: Lines 112-128 list 4 required test categories but the canonical reference tests mentioned (combat-hud.engine.test.ts, combat.engine.test.ts) are not easily discoverable
+- suggested fix: Add direct links to canonical test examples and provide a minimal passing test template
+- source: repo-analysis
+
+### [LOW] /README.md — Voice guidelines scope unclear between in-game and technical documentation
+- pass: 33 (commit 07b4068)
+- viewport: repository
+- category: voice
+- observation: Project voice inconsistency between terse archaic game voice and modern technical documentation voice creates confusion about target tone
+- evidence: bearings.md specifies 'terse, archaic, ritual' voice but README uses modern technical writing throughout, creating unclear voice expectations
+- suggested fix: Clarify in README that voice guidelines apply to in-game content only, not technical documentation
+- source: repo-analysis
 
 <!-- Pass 32 (2026-06-11, commit fb5d297): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,

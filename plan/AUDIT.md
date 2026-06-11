@@ -20,7 +20,7 @@
 - source: external-critique
 - issue: #353
 
-### [ ] [6.8] Package.json specialized development scripts lack documentation  
+### [x] [6.8] Package.json specialized development scripts lack documentation  
 - category: external-critique
 - impact: 5
 - ease: 9
@@ -29,6 +29,9 @@
 - evidence: Scripts like 'web:container', 'verify:visual', 'e2e:hazard', 'baseline:approve' are present but not explained in README workflow section
 - suggested fix: Expand README scripts table to include all specialized commands with usage context
 - source: external-critique
+- issue: #358
+- addressed: 2026-06-11 via commit f73a839
+- fix: Added missing specialized scripts to README table: test:watch (Jest in watch mode) and e2e:hazard (browser-driven hazard minigame playthrough) to improve maintainer documentation coverage
 
 ### [ ] [6.8] Repository structure navigation unclear for fresh maintainers
 - category: external-critique

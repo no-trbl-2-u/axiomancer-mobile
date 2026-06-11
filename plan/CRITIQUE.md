@@ -52,15 +52,6 @@
 - suggested fix: Add docs/README.md organizing documentation by category and purpose
 - source: repo-analysis
 
-### [MED] /package.json — Specialized development scripts lack documentation
-- pass: 33 (commit 07b4068)
-- viewport: repository
-- category: comprehension
-- observation: Package scripts include specialized commands for containerized development and visual testing but lack documentation about when to use them
-- evidence: Scripts like 'web:container', 'verify:visual', 'e2e:hazard', 'baseline:approve' are present but not explained in README workflow section
-- suggested fix: Expand README scripts table to include all specialized commands with usage context
-- source: repo-analysis
-
 ### [MED] /docs/testing.md — Testing standard lacks clear compliance examples
 - pass: 33 (commit 07b4068)
 - viewport: repository
@@ -572,6 +563,16 @@
 <!-- Drained from ## Pending via /oversight 2026-06-08 (queue-drained
      call): addressed-✅ findings moved here so the open-findings
      signal /iterate reads is accurate. -->
+
+### [x] [MED] /package.json — Specialized development scripts lack documentation
+- pass: 33 (commit 07b4068)
+- viewport: repository
+- category: comprehension
+- observation: Package scripts include specialized commands for containerized development and visual testing but lack documentation about when to use them
+- evidence: Scripts like 'web:container', 'verify:visual', 'e2e:hazard', 'baseline:approve' are present but not explained in README workflow section
+- suggested fix: Expand README scripts table to include all specialized commands with usage context
+- source: repo-analysis
+- addressed: 2026-06-11 via commit f73a839
 
 ### [x] [HIGH] /setup/ — Referenced setup documentation missing, blocking onboarding (commit 735d52b)
 - pass: 33 (commit 07b4068)

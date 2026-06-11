@@ -18,13 +18,20 @@ export const SkillPhase = React.memo(function SkillPhase({
     totalCount,
     onPick,
 }: SkillPhaseProps) {
-    const available = useMemo(() => skills.filter((s) => s.enabled), [skills]);
+    // Skills bound to another stance stay hidden (the stance choice is
+    // committed by this phase); skills of the current stance all show,
+    // with unaffordable ones greyed out so the player can see what
+    // their next tokens would buy.
+    const visible = useMemo(
+        () => skills.filter((s) => s.disabledReason !== 'wrong-stance'),
+        [skills],
+    );
     return (
         <View style={styles.list}>
-            {available.map((s) => (
+            {visible.map((s) => (
                 <SkillRow key={s.id} skill={s} onPick={onPick} />
             ))}
-            {available.length === 0 && (
+            {visible.length === 0 && (
                 <Text style={styles.emptyHint}>none open · stance bound.</Text>
             )}
             <Text style={styles.availHint}>

@@ -18,6 +18,7 @@ import { isDevToolsEnabled } from '@/lib/buildProfile';
 const DebugChaosToggle = lazy(() => import('@/components/DebugChaosToggle').then(m => ({ default: m.DebugChaosToggle })));
 const DebugCombatButton = lazy(() => import('@/components/DebugCombatButton').then(m => ({ default: m.DebugCombatButton })));
 const DebugHazardButton = lazy(() => import('@/components/DebugHazardButton').then(m => ({ default: m.DebugHazardButton })));
+const DebugHazardDeckRandomize = lazy(() => import('@/components/DebugHazardDeckRandomize').then(m => ({ default: m.DebugHazardDeckRandomize })));
 const DebugAlignmentShift = lazy(() => import('@/components/DebugAlignmentShift').then(m => ({ default: m.DebugAlignmentShift })));
 const DebugCurrencyControl = lazy(() => import('@/components/DebugCurrencyControl').then(m => ({ default: m.DebugCurrencyControl })));
 const DebugDialogueJump = lazy(() => import('@/components/DebugDialogueJump').then(m => ({ default: m.DebugDialogueJump })));
@@ -61,6 +62,7 @@ export function DebugComponentsLazy() {
       <DebugTriggerEncounter />
       <DebugCombatButton />
       <DebugHazardButton />
+      <DebugHazardDeckRandomize />
       <DebugMapResetButton />
       <DebugChaosToggle />
       <DebugPresetPicker />

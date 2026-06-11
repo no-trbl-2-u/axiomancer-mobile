@@ -93,6 +93,7 @@ import {
     discardHazardCardAction,
     finishHazardRollingAction,
     powerHazardCardAction,
+    randomizeHazardDeckAction,
     resolveHazardRoundAction,
     selectHazardRouteAction,
     stageHazardCardAction,
@@ -372,6 +373,12 @@ export interface AppActions {
     claimHazardRewards: (cardId: string | null) => ClaimHazardRewardsResult;
     /** Clear the session without rewards or penalties (dev / escape hatch). */
     abandonHazard: () => void;
+    /**
+     * Dev tool — replace the acquired-card flags with a random pull
+     * from every defined hazard card (starter + reward pool). Returns
+     * the granted card ids.
+     */
+    randomizeHazardDeck: () => string[];
 }
 
 export interface UseItemResult {
@@ -592,6 +599,7 @@ export function summarizeRoundEvents(
             const reasonProse =
                 ev.reason === 'unknown-skill' ? 'the skill is not in your repertoire.'
                 : ev.reason === 'not-equipped' ? 'you have not equipped that skill.'
+                : ev.reason === 'not-known' ? 'you have not learned that skill.'
                 : 'you lack the resources to cast it.';
             logLines.push({
                 severity: 'system',
@@ -764,8 +772,24 @@ export function createAppActions(store: AppStore): AppActions {
             const hpPlayerBefore = combat.player.health;
             const friendshipBefore = combat.friendshipCounter ?? 0;
 
+            // The engine refuses skills missing from the in-combat
+            // player's `knownSkills` (blocked: 'not-known'), but the
+            // mobile picker treats the whole library as learned (Phase
+            // 97) — without this bridge every library skill resolved to
+            // NOTHING. The picker is the gate (stance + token cost), so
+            // grant the chosen skill on the combat-slice copy only; the
+            // persistent `state.player` is untouched.
+            const knownSkills = combat.player.knownSkills ?? [];
+            const combatForResolve: CombatState =
+                skillId !== undefined && !knownSkills.includes(skillId)
+                    ? {
+                          ...combat,
+                          player: { ...combat.player, knownSkills: [...knownSkills, skillId] },
+                      }
+                    : combat;
+
             const resolution = resolveCombatRound(
-                combat,
+                combatForResolve,
                 playerCombatAction,
                 enemyAction,
                 skillLookup,
@@ -907,6 +931,7 @@ export function createAppActions(store: AppStore): AppActions {
         acknowledgeHazardOutcome: () => acknowledgeHazardOutcomeAction(store),
         claimHazardRewards: (cardId) => claimHazardRewardsAction(store, cardId),
         abandonHazard: () => abandonHazardAction(store),
+        randomizeHazardDeck: () => randomizeHazardDeckAction(store),
     };
 }
 

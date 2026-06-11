@@ -48,12 +48,35 @@ function rigHand(store: AppStore, cards: { uid: string; cardId: string }[]): voi
     store.setState({ hazard: { session: { ...s, hand, play: [] } } });
 }
 
+describe('hazard screen — danger intro', () => {
+    it('shows the grim danger modal first; FACE IT hands off to route select', () => {
+        const { actions } = mountHazard();
+        act(() => {
+            actions.beginHazard({ seed: 7, hazardId: 'cracked-cliff' });
+        });
+        // The intro modal owns the screen — route select is held back.
+        expect(screen.getByTestId('hazard-intro-overlay')).toBeTruthy();
+        expect(screen.queryByTestId('hazard-route-select')).toBeNull();
+        expect(screen.getAllByText('CRACKED CLIFF PATH').length).toBeGreaterThan(0);
+        // grim copy ends on the player's only out
+        expect(screen.getByText(/Unless…/)).toBeTruthy();
+        fireEvent.press(screen.getByTestId('hazard-intro-continue'));
+        expect(screen.queryByTestId('hazard-intro-overlay')).toBeNull();
+        expect(screen.getByTestId('hazard-route-select')).toBeTruthy();
+    });
+});
+
 describe('hazard screen — route select', () => {
+    function dismissIntro() {
+        fireEvent.press(screen.getByTestId('hazard-intro-continue'));
+    }
+
     it('renders the reveal: title, scenario, opening hand, both stacked route panels with thresholds', () => {
         const { actions } = mountHazard();
         act(() => {
             actions.beginHazard({ seed: 7, hazardId: 'cracked-cliff' });
         });
+        dismissIntro();
         expect(screen.getByTestId('hazard-route-select')).toBeTruthy();
         expect(screen.getAllByText('CRACKED CLIFF PATH').length).toBeGreaterThan(0);
         expect(screen.getByTestId('hazard-opening-hand')).toBeTruthy();
@@ -70,6 +93,7 @@ describe('hazard screen — route select', () => {
         act(() => {
             actions.beginHazard({ seed: 7, hazardId: 'cracked-cliff' });
         });
+        dismissIntro();
         fireEvent.press(screen.getByTestId('hazard-route-risk'));
         expect(store.getState().hazard.session?.route).toBe('risk');
         expect(store.getState().hazard.session?.phase).toBe('rolling');
@@ -167,7 +191,7 @@ describe('hazard screen — round play board', () => {
         expect(screen.getByLabelText('Blocked hex die, blocked')).toBeTruthy();
     });
 
-    it('PLAY is gated until every staged card is applied; resolve stamps the round', () => {
+    it('PLAY arms on staging and auto-applies the set; resolve stamps the round', () => {
         const { store, actions } = mountHazard();
         toPlaying(actions, 'safe');
         act(() => {
@@ -181,15 +205,11 @@ describe('hazard screen — round play board', () => {
             actions.stageHazardCard('h1');
         });
         expect(screen.getByTestId('hazard-staged-h1')).toBeTruthy();
-        // staged but not applied — PLAY is still gated
-        expect(screen.getByText('APPLY 1 MORE')).toBeTruthy();
-        fireEvent.press(screen.getByTestId('hazard-play-button'));
-        expect(store.getState().hazard.session?.phase).toBe('playing'); // still gated
-
-        // apply the card (taps the per-card APPLY button) → PLAY unlocks
-        fireEvent.press(screen.getByTestId('hazard-apply-h1'));
+        // staged — PLAY arms immediately; no per-card APPLY required
         expect(screen.getByText('RESOLVE')).toBeTruthy();
         fireEvent.press(screen.getByTestId('hazard-play-button'));
+        // the un-applied card was auto-committed on resolve
+        expect(store.getState().hazard.session?.play.every((p) => p.applied)).toBe(true);
         expect(store.getState().hazard.session?.phase).toBe('resolve-flash');
         expect(screen.getByTestId('hazard-resolve-flash')).toBeTruthy();
         // 1×IRON GRIP (5) < threshold → FALLEN

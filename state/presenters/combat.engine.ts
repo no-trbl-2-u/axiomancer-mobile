@@ -24,11 +24,14 @@
 
 import {
     FRIENDSHIP_COUNTER_MAX,
+    calculateSkillDamage,
     determineAdvantage,
+    getSkillById,
     lookupEffect,
     resolveEffectiveAdvantage,
     type ActiveEffect,
     type Advantage,
+    type Character,
     type DerivedStats,
     type Stance,
 } from 'axiomancer-mechanics';
@@ -38,6 +41,8 @@ import { useMemo } from 'react';
 
 import {
     COMBAT_SKILLS,
+    skillCostText,
+    skillEffectText,
     type SkillCategoryKey,
 } from '@/state/selectors/combat-skills';
 import { useGameState } from '../GameStoreProvider';
@@ -219,6 +224,14 @@ export interface SkillOption {
     category: SkillCategoryKey;
     stance: StanceKey;
     manaCost: number;
+    /**
+     * Compact effect line shown in place of the prose description —
+     * estimated damage/heal (engine formula, live player stats) plus
+     * the status effects the skill applies, e.g. `"12 DMG · BLEED 2 (3R)"`.
+     */
+    effectText: string;
+    /** Compact per-resource cost line, e.g. `"2 BOD · 1 PRX"`. */
+    costText: string;
     /** False = greyed out (wrong stance or insufficient resources). */
     enabled: boolean;
     disabledReason: 'wrong-stance' | 'insufficient-resources' | null;
@@ -931,9 +944,28 @@ function canAffordSkill(cost: { body?: number; mind?: number; heart?: number; fa
         && (cost.paradox ?? 0) <= pool.paradox;
 }
 
+/**
+ * Estimated damage/heal for the picker's effect line. Uses the engine's
+ * own `calculateSkillDamage` with the live caster (no target, so no
+ * resistance is applied — it's an honest pre-roll estimate). Falls back
+ * to the skill's base power when the caster shape is incomplete (e.g.
+ * the no-combat empty VM path).
+ */
+function estimateSkillDamage(skillId: string, basePower: number, caster: Character | null): number {
+    if (caster === null) return Math.max(0, basePower);
+    const engineSkill = getSkillById(skillId);
+    if (!engineSkill) return Math.max(0, basePower);
+    try {
+        return calculateSkillDamage(caster, engineSkill);
+    } catch {
+        return Math.max(0, basePower);
+    }
+}
+
 function buildSkillPicker(
     stance: StanceKey,
     resources: ResourcePool,
+    caster: Character | null = null,
     equippedSkills?: readonly string[],
 ): SkillPickerSlice {
     const pool = equippedSkills
@@ -952,6 +984,8 @@ function buildSkillPicker(
             category: s.category,
             stance: s.stance,
             manaCost: s.manaCost,
+            effectText: skillEffectText(s, estimateSkillDamage(s.id, s.basePower, caster)),
+            costText: skillCostText(s.resourceCost),
             enabled: !wrongStance && !tooExpensive,
             disabledReason,
         };
@@ -1336,7 +1370,11 @@ export function selectCombatViewModel(
     // be available in combat. The picker shows all COMBAT_SKILLS (treated as
     // learned skills) and disables only those that are wrong stance or too
     // expensive, not those that are "not equipped".
-    const skillPicker = buildSkillPicker(previewStance ?? 'heart', resources);
+    const skillPicker = buildSkillPicker(
+        previewStance ?? 'heart',
+        resources,
+        playerEntity as Character,
+    );
 
     const phaseIndex: number = phase === 'ended' ? -1 : PHASE_ORDER.indexOf(phase);
     const friendshipCounter = Number(c.friendshipCounter ?? 0);

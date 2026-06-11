@@ -24,7 +24,6 @@ import {
 } from './engine';
 import { getHazardCardDef, getHazardDef } from './content';
 import {
-    HAZARD_PLAY_MAX,
     type HazardOutcomeTier,
     type HazardRouteKey,
     type HazardSessionState,
@@ -69,7 +68,6 @@ function freeValueToward(s: HazardSessionState, cardId: string): number {
 function playGreedyRound(s: HazardSessionState, bag: readonly string[]): HazardSessionState {
     // 1. Fire free draw utilities first — more options.
     for (const h of s.hand.slice()) {
-        if (s.play.length >= HAZARD_PLAY_MAX) break;
         const def = getHazardCardDef(h.cardId);
         if (def.effect === 'draw') s = stageHazardCard(s, h.uid, bag);
     }
@@ -77,7 +75,6 @@ function playGreedyRound(s: HazardSessionState, bag: readonly string[]): HazardS
     const hexCount = s.dice.filter((d) => d.kind === 'hex' && d.state === 'available').length;
     if (hexCount > 0) {
         for (const h of s.hand.slice()) {
-            if (s.play.length >= HAZARD_PLAY_MAX) break;
             const def = getHazardCardDef(h.cardId);
             if (def.effect === 'convert') {
                 const holdsColour = s.hand.some((x) => {
@@ -88,9 +85,10 @@ function playGreedyRound(s: HazardSessionState, bag: readonly string[]): HazardS
             }
         }
     }
-    // 3. Stage value cards, best contribution first.
+    // 3. Stage value cards, best contribution first (the play area is
+    //    uncapped; the guard only bounds the loop).
     let guard = 0;
-    while (s.play.length < HAZARD_PLAY_MAX && guard++ < 20) {
+    while (guard++ < 20) {
         const candidates = s.hand
             .map((h) => ({ h, v: freeValueToward(s, h.cardId) }))
             .filter((c) => c.v > 0)

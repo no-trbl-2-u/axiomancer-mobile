@@ -8,7 +8,7 @@
  * read.
  *
  * Grouped by what they affect:
- *  - `round`    — the shape of a round (dice, hand, play area, momentum).
+ *  - `round`    — the shape of a round (dice, hand, momentum).
  *  - `deck`     — draw-bag sizing (the starter deck size multiplier).
  *  - `dice`     — the die-face bag, i.e. colour spread + hex (✕) odds.
  *  - `cards`    — per-colour number bands + utility base/powered amounts.
@@ -29,8 +29,6 @@ export const HAZARD_TUNING = {
         diceCount: 4,
         /** Cards drawn at the start of every round. */
         handSize: 5,
-        /** Maximum cards stageable in the play area per round. */
-        playMax: 6,
         /** Momentum cap: carried surplus per meter never exceeds this. */
         momentumCap: 3,
     },
@@ -49,10 +47,11 @@ export const HAZARD_TUNING = {
     dice: {
         /**
          * The die-face bag. Hex (✕) frequency is
-         * (count of 'hex') / faces.length. Default 2/6 ≈ 33% hostile.
-         * Gold is the wild face — a gold die powers a card of any colour.
+         * (count of 'hex') / faces.length. Default 1/6 ≈ 17% hostile.
+         * Gold is the wild face — a gold die powers a card of any colour;
+         * two gold faces make the wild meaningfully more common.
          */
-        faces: ['red', 'blue', 'purple', 'gold', 'hex', 'hex'] as HazardDieKind[],
+        faces: ['red', 'blue', 'purple', 'gold', 'gold', 'hex'] as HazardDieKind[],
     },
 
     // -- card stat bands ---------------------------------------------------
@@ -118,7 +117,6 @@ export const HAZARD_TUNING = {
 
 export const HAZARD_DICE_COUNT = HAZARD_TUNING.round.diceCount;
 export const HAZARD_HAND_SIZE = HAZARD_TUNING.round.handSize;
-export const HAZARD_PLAY_MAX = HAZARD_TUNING.round.playMax;
 export const HAZARD_MOMENTUM_CAP = HAZARD_TUNING.round.momentumCap;
 
 /** Die faces: colours + hostile ✕. Gold is wild. */

@@ -28,13 +28,15 @@ import {
 import {
     HAZARD_CACHE_SHILLINGS,
     HAZARD_CRACK_CARD,
+    HAZARD_DECK,
     HAZARD_LIBRARY,
     HAZARD_MAXHP_SCAR,
     HAZARD_MINHP_LOSS,
     HAZARD_RELIC_SHILLINGS,
+    HAZARD_REWARD_CARDS,
     HAZARD_VITAE_REWARD,
 } from './content';
-import { appendAcquiredCard, hazardDeckBag } from './deck-flags';
+import { appendAcquiredCard, HAZARD_CARD_FLAG_PREFIX, hazardDeckBag } from './deck-flags';
 import type { HazardRouteKey, HazardSessionState } from './types';
 import type { AppStore } from '../store';
 
@@ -283,4 +285,28 @@ export function claimHazardRewardsAction(store: AppStore, cardId: string | null)
 /** Clears the session without rewards or penalties (dev / navigation escape). */
 export function abandonHazardAction(store: AppStore): void {
     setSession(store, null);
+}
+
+/** Acquired cards granted by the dev deck-randomizer. */
+const RANDOMIZE_ACQUIRED_COUNT = 10;
+
+/**
+ * Dev tool — rebuilds the player's acquired hazard cards as a random
+ * selection from EVERY defined card (starter deck + the reward pool),
+ * so dev sessions surface cards normal play rarely reaches. Existing
+ * `hazard-card:` flags are dropped first; the implicit starter bag is
+ * untouched. Returns the granted card ids (with duplicates).
+ */
+export function randomizeHazardDeckAction(store: AppStore): string[] {
+    const state = store.getState() as unknown as GameState;
+    const pool = [...HAZARD_DECK, ...HAZARD_REWARD_CARDS];
+    let flags = (state.flags ?? []).filter((f) => !f.startsWith(HAZARD_CARD_FLAG_PREFIX));
+    const granted: string[] = [];
+    for (let i = 0; i < RANDOMIZE_ACQUIRED_COUNT; i++) {
+        const card = pool[Math.floor(Math.random() * pool.length)];
+        flags = appendAcquiredCard(flags, card.id);
+        granted.push(card.id);
+    }
+    store.setState({ flags } as never);
+    return granted;
 }

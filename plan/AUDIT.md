@@ -9,7 +9,7 @@
 
 ## Top 5 findings (scored)
 
-### [ ] [8.0] Current development status unclear for fresh maintainers in specs documentation
+### [x] [8.0] Current development status unclear for fresh maintainers in specs documentation
 - category: external-critique
 - impact: 8
 - ease: 10
@@ -23,6 +23,8 @@
 - suggested fix: Add current development status summary or 'What to work on next' section to specs/README.md
 - source: external-critique
 - issue: #341
+- addressed: 2026-06-11 via commit 4831d15
+- fix: Added current development status summary section clearly indicating specs 1-9 are complete and specs 10-12 are ready for parallel work. Corrected table marking spec 8 as DONE to resolve fresh maintainer confusion about project state.
 
 ### [ ] [5.0] Node.js version mismatch between package.json and README.md
 - category: external-critique

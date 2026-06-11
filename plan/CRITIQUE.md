@@ -33,8 +33,8 @@
      README.md, package.json, .env.example, docs/, specs/, app.json.
      6 findings filed below. -->
 
-### [HIGH] /specs/README.md — Current development status unclear for fresh maintainers
-- pass: 31 (commit 94326ac)
+### [HIGH] /specs/README.md — Current development status unclear for fresh maintainers ✅
+- pass: 31 (commit 94326ac); addressed at commit 4831d15 via `/iterate`
 - viewport: repository
 - category: comprehension
 - observation: Specs documentation shows most work as DONE but fresh maintainer cannot easily determine current development status or next recommended tasks without reading all 12 spec files

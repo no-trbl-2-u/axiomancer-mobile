@@ -118,7 +118,7 @@ commit that ships the phase.
       refactor. Brief: draft via `/plan-a-phase phase 119` (or flesh inline
       at ship time). Verification: existing suites stay green + `npm run verify`.
 
-- [ ] Phase 120 — Starting-map enemy composition tuning (difficulty entry fix). Promoted via
+- [x] Phase 120 — Starting-map enemy composition tuning (difficulty entry fix). Promoted via
       `/oversight` 2026-06-11. User identified that the opening experience is too punishing
       because fishing-village enemies rubber-band to the player level — a level-1 player
       faces enemies that feel immediately overwhelming. The engine controls global level
@@ -132,7 +132,7 @@ commit that ships the phase.
       (or flesh inline at ship time). Verification: hermetic test pins that the
       first fishing-village encounter node resolves a starter-tier enemy across 20
       seeded RNG samples; manual confirm that level-1 play feels survivable.
-      Pairs with CRITIQUE [MED] difficulty row.
+      Pairs with CRITIQUE [MED] difficulty row. Shipped in commit c7a7d3d.
 
 - [ ] Phase 121 — Mobile playthrough integration harness. Promoted via `/oversight` 2026-06-11.
       User observed that mechanical unit tests (Jest presenter/action suites) report

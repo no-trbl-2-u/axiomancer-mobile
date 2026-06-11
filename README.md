@@ -88,6 +88,7 @@ eas login                     # one-time browser auth
 ```
 
 For detailed setup instructions, see the `setup/` directory:
+- [`setup/01_repository.md`](setup/01_repository.md) — Repository setup and development environment
 - [`setup/02_eas.md`](setup/02_eas.md) — EAS Build configuration
 - [`setup/03_store_setup.md`](setup/03_store_setup.md) — Store setup guide  
 - [`setup/04_claude_playtest.md`](setup/04_claude_playtest.md) — AI testing walkthrough

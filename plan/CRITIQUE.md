@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-11 at commit 94326ac
-> Pass count: 31
+> Last pass: 2026-06-11 at commit fb5d297
+> Pass count: 32
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -26,12 +26,48 @@
 
 ## Pending
 
-<!-- Pass 31 (2026-06-11, commit 94326ac): repo-proxy pass —
+<!-- Pass 32 (2026-06-11, commit fb5d297): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
      critique reads docs/specs/artifacts as the "fresh maintainer"
      proxy. Focus on general fresh maintainer experience. Examined
-     README.md, package.json, .env.example, docs/, specs/, app.json.
-     6 findings filed below. -->
+     README.md, specs/, docs/, app/ components, testing patterns.
+     4 findings filed below. -->
+
+### [HIGH] /specs/12-accessibility-and-theming.md — Accessibility spec unimplemented despite interactive elements
+- pass: 32 (commit fb5d297)
+- viewport: repository
+- category: a11y
+- observation: Accessibility spec remains unimplemented despite app having interactive elements — most components lack required accessibilityRole and accessibilityLabel props
+- evidence: Spec 12 shows current state as 'No accessibilityLabel / accessibilityRole props in the screens' and grep found only 15 accessibility references across entire codebase
+- suggested fix: Implement Spec 12 to add systematic accessibility support before wider distribution
+- source: repo-proxy
+
+### [MED] /specs/README.md — Spec completion guidance creates inconsistent tracking
+- pass: 32 (commit fb5d297)
+- viewport: repository
+- category: comprehension
+- observation: Spec completion guidance mentions 'mark the spec [DONE] in this file' but the actual completion pattern shown is editing the spec header, creating inconsistent completion tracking
+- evidence: Line 50: 'mark the spec [DONE] in this file' vs example showing header modification with [DONE on YYYY-MM-DD — see PR #N]
+- suggested fix: Clarify spec completion pattern to use consistent header modification approach
+- source: repo-proxy
+
+### [MED] /app/(tabs)/_layout.tsx — Tab accessibility during modal states unclear
+- pass: 32 (commit fb5d297)
+- viewport: repository
+- category: a11y
+- observation: Tab icons have accessibility labels but tab navigation during encounter modal lockdown may confuse screen readers — tabs are visually hidden but accessibility tree unclear
+- evidence: Lines 118-121: encounter modal hides tab bar via 'display: none' and nulls hrefs, but accessibility implications not addressed
+- suggested fix: Add accessibilityElementsHidden or similar screen reader guidance during modal states
+- source: repo-proxy
+
+### [MED] /README.md — Setup documentation references non-existent files
+- pass: 32 (commit fb5d297)
+- viewport: repository
+- category: navigation
+- observation: Setup documentation references non-existent setup/ directory files — links to setup/02_eas.md, setup/03_store_setup.md, setup/04_claude_playtest.md that are not present in repository
+- evidence: Lines 92-94: Links to setup files that glob search confirms do not exist in the repository
+- suggested fix: Remove references to missing setup documentation or create the referenced files
+- source: repo-proxy
 
 ### [HIGH] /specs/README.md — Current development status unclear for fresh maintainers ✅
 - pass: 31 (commit 94326ac); addressed at commit 4831d15 via `/iterate`

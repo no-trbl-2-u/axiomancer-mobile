@@ -43,7 +43,7 @@
 - addressed: 2026-06-11 via commit e7051c1
 - fix: Updated README.md line 26 to specify Node.js 20+ requirement to match package.json engines specification, resolving version requirement confusion for new maintainers.
 
-### [ ] [5.0] Setup documentation not linked from main README
+### [x] [5.0] Setup documentation not linked from main README
 - category: external-critique  
 - impact: 5
 - ease: 10
@@ -56,6 +56,9 @@
 - evidence: .env.example line 17 references 'See setup/02_eas.md for detailed configuration steps' but this file is not mentioned in main README workflow
 - suggested fix: Add reference to setup/ directory documentation in README.md Quick start or Deploy environment sections
 - source: external-critique
+- issue: #344
+- addressed: 2026-06-11 via commit 2db3fc7
+- fix: Added reference to setup/ directory in Deploy environment section with links to setup/02_eas.md, setup/03_store_setup.md, and setup/04_claude_playtest.md. Fresh maintainers can now discover critical setup documentation referenced in .env.example.
 
 ### [ ] [5.0] Engine upgrade documentation lacks current context
 - category: external-critique

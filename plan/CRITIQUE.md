@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-10 at commit c4c5c1a
-> Pass count: 30
+> Last pass: 2026-06-11 at commit 94326ac
+> Pass count: 31
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -25,6 +25,67 @@
 > keep this header actionable.
 
 ## Pending
+
+<!-- Pass 31 (2026-06-11, commit 94326ac): repo-proxy pass —
+     Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
+     critique reads docs/specs/artifacts as the "fresh maintainer"
+     proxy. Focus on general fresh maintainer experience. Examined
+     README.md, package.json, .env.example, docs/, specs/, app.json.
+     6 findings filed below. -->
+
+### [HIGH] /specs/README.md — Current development status unclear for fresh maintainers
+- pass: 31 (commit 94326ac)
+- viewport: repository
+- category: comprehension
+- observation: Specs documentation shows most work as DONE but fresh maintainer cannot easily determine current development status or next recommended tasks without reading all 12 spec files
+- evidence: specs/README.md shows '[DONE]' for specs 1-9 but spec 8 shows as incomplete, creating confusion about actual current state vs recommended order
+- suggested fix: Add current development status summary or 'What to work on next' section to specs/README.md
+- source: repo-proxy
+
+### [MED] /package.json — Node.js version mismatch with README.md
+- pass: 31 (commit 94326ac)
+- viewport: repository
+- category: comprehension
+- observation: Package.json engines section specifies Node >=20.0.0 but README.md Quick start says 'Node.js 18+' creating version requirement confusion for new maintainers
+- evidence: package.json line 6 shows "node": ">=20.0.0" while README.md line 26 says "Node.js 18+" requirement
+- suggested fix: Update README.md to specify Node.js 20+ to match package.json engines requirement
+- source: repo-proxy
+
+### [MED] /.env.example — Setup documentation not linked from main README
+- pass: 31 (commit 94326ac)
+- viewport: repository
+- category: navigation
+- observation: Environment setup references setup/02_eas.md for detailed configuration but fresh maintainer needs to discover this file exists and contains critical EAS Build setup instructions
+- evidence: .env.example line 17 references 'See setup/02_eas.md for detailed configuration steps' but this file is not mentioned in main README workflow
+- suggested fix: Add reference to setup/ directory documentation in README.md Quick start or Deploy environment sections
+- source: repo-proxy
+
+### [MED] /README.md — Engine upgrade documentation lacks current context
+- pass: 31 (commit 94326ac)
+- viewport: repository
+- category: navigation
+- observation: README mentions multiple critical engine upgrade docs in AI workflow section but fresh maintainer would not know which version they need to follow or if upgrades are current
+- evidence: README.md lines 207-221 list multiple engine upgrade paths (0.14.0, 0.15.0, 0.15.1, 0.16.0) without indicating which applies to current repo state
+- suggested fix: Add current engine version indicator and clarify which upgrade docs are needed for fresh checkout vs specific version migrations
+- source: repo-proxy
+
+### [MED] /README.md — Testing prerequisite unclear for fresh maintainers
+- pass: 31 (commit 94326ac)
+- viewport: repository
+- category: comprehension
+- observation: Testing prerequisite section mentions 'Spec 01 setup first' for npm test but fresh maintainer unclear what this setup entails or if already completed
+- evidence: README.md line 66 shows '| `npm test` | Run Jest (requires Spec 01 setup first). |'
+- suggested fix: Clarify that Spec 01 test harness setup is already complete or provide verification command to check setup status
+- source: repo-proxy
+
+### [MED] /docs — Documentation lacks index for fresh maintainer navigation
+- pass: 31 (commit 94326ac)
+- viewport: repository
+- category: navigation
+- observation: Repository contains 35+ documentation files in docs/ but no clear index or entry point for fresh maintainer to understand documentation hierarchy and reading order
+- evidence: docs/ contains ADRs, engine upgrades, testing guides, UI audits, and various other files without clear navigation structure
+- suggested fix: Create docs/README.md with categorized index and recommended reading order for new contributors
+- source: repo-proxy
 
 <!-- Pass 30 (2026-06-10, commit c4c5c1a): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,

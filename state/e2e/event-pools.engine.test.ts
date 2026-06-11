@@ -221,6 +221,67 @@ describe('multi-entry encounter pools (Phase 55)', () => {
     });
 });
 
+describe('fishing village starter-tier enemy bias (Phase 120)', () => {
+    it('first encounter node (fv-3) favors starter-tier enemies across 20 seeded resolves', () => {
+        // Phase 120 rebalanced fishing-village encounter weights from 3:3:1:1
+        // to 5:5:1:1 (simple:simple:normal:normal) for gentler new-player experience.
+        // With the new weights, ~83% of encounters should be starter-tier
+        // (tidepool-crab or sea-mist-wisp).
+        const starterTierIds = new Set([
+            'enemy-tidepool-crab',
+            'enemy-sea-mist-wisp',
+        ]);
+        
+        let starterCount = 0;
+        const totalSamples = 20;
+        
+        for (let i = 0; i < totalSamples; i++) {
+            const state = stateAt('fishing-village', 'fv-3');
+            const result = resolveMapEvent(state);
+            expect(result.event.kind).toBe('encounter');
+            
+            if (result.event.kind === 'encounter') {
+                const enemyId = result.event.encounter.enemies[0].id;
+                if (starterTierIds.has(enemyId)) {
+                    starterCount++;
+                }
+            }
+        }
+        
+        // With 5:5:1:1 weights (10:2 ratio), expect at least 12/20 = 60% starter-tier
+        // to account for RNG variance while still validating the bias exists.
+        expect(starterCount).toBeGreaterThanOrEqual(12);
+        expect(starterCount / totalSamples).toBeGreaterThanOrEqual(0.6);
+    });
+
+    it('all fishing-village encounter enemies are still from the expected roster (weight change only)', () => {
+        // Ensure the weight change in Phase 120 didn't accidentally introduce
+        // new enemies - the roster should remain the same, only weights changed.
+        const EXPECTED_FV_ROSTER = new Set([
+            'enemy-tidepool-crab',
+            'enemy-sea-mist-wisp', 
+            'enemy-wet-hound',
+            'enemy-mournful-gull',
+        ]);
+        
+        const sampledIds = new Set<string>();
+        for (let i = 0; i < 30; i++) {
+            const state = stateAt('fishing-village', 'fv-3');
+            const result = resolveMapEvent(state);
+            if (result.event.kind === 'encounter') {
+                sampledIds.add(result.event.encounter.enemies[0].id);
+            }
+        }
+        
+        for (const id of sampledIds) {
+            expect(EXPECTED_FV_ROSTER.has(id)).toBe(true);
+        }
+        
+        // Should still sample multiple varieties (not just starter-tier)
+        expect(sampledIds.size).toBeGreaterThanOrEqual(2);
+    });
+});
+
 describe('per-quest-node NPC wiring (Phase 56)', () => {
     it('fv-6 (Ash Mire) resolves to an interaction with the boy-priest', () => {
         const state = stateAt('fishing-village', 'fv-6');

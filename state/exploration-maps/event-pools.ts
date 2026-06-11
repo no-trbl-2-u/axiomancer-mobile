@@ -347,16 +347,19 @@ const NORTHERN_FOREST_GATHER: ReadonlyArray<Item> = [
 
 /**
  * Per-map encounter rosters — sourced from
- * `EnemiesByMap[mapName]` in the engine 0.10.0 library. Simple-
- * difficulty foes weighted 3×; normal-difficulty foes weighted 1×
- * so the encounter feel matches the locale's level curve while
+ * `EnemiesByMap[mapName]` in the engine 0.10.0 library. 
+ * Fishing-village: simple-difficulty foes weighted 5×; normal-difficulty 
+ * foes weighted 1× for gentler new-player experience (Phase 120).
+ * Northern-forest: simple-difficulty foes weighted 3×; normal-difficulty
+ * foes weighted 1× for balanced mid-game progression.
+ * Encounter feel matches each locale's intended difficulty curve while
  * keeping variety in every visit. Elite / boss enemies stay out
  * of the standard encounter pool — they ship through the
  * dedicated boss-pool overrides on boss-typed nodes.
  */
 const FISHING_VILLAGE_ENCOUNTERS: ReadonlyArray<WeightedEnemy> = [
-    { slug: 'tidepool-crab', weight: 3 },   // simple
-    { slug: 'sea-mist-wisp', weight: 3 },   // simple
+    { slug: 'tidepool-crab', weight: 5 },   // simple
+    { slug: 'sea-mist-wisp', weight: 5 },   // simple
     { slug: 'wet-hound', weight: 1 },       // normal
     { slug: 'mournful-gull', weight: 1 },   // normal
 ];

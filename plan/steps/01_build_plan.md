@@ -92,6 +92,32 @@ commit that ships the phase.
       (no behavior change expected); add render/coverage tests for
       any newly-extracted component lacking one. Shipped in commit 1e44988.
 
+- [ ] Phase 118 — Combat encounter re-trigger fix (issue #191, HIGH gameplay bug).
+      Promoted via `/oversight` 2026-06-11 from phase candidate [9.0] (expand
+      pass 68). Subsequent combat encounters fail to trigger after the first
+      encounter is resolved — a core gameplay blocker spotted during actual
+      play on 2026-05-25. Investigate encounter state persistence/reset logic:
+      trace how `inEncounterModal`, `combat-mode`, and the event-pool/node
+      consumed-state interact after combat resolution; identify whether the
+      node is being permanently marked consumed, the encounter-modal session
+      flag is not clearing, or event-pool selection is silently skipping
+      already-seen nodes. Fix the root cause without re-introducing local
+      mechanics simulation. Brief: `plan/phases/phase_118_combat_encounter_retrigger.md`.
+      Verification: hermetic encounter-lifecycle Jest (encounter fires once →
+      resolves → second encounter node fires) + `npm run verify`.
+      Single commit closes issue #191 (`Closes #191`).
+
+- [ ] Phase 119 — Large-component extraction continuation (exploration + inventory).
+      Promoted via `/oversight` 2026-06-11 from phase candidate [6.0] (expand
+      pass 64). Following Phase 117's successful PhaseBottom extraction,
+      two remaining screens still exceed the guardrail: `app/(tabs)/exploration/index.tsx`
+      (~717 lines) and `app/(tabs)/inventory/index.tsx` (~709 lines). Extract
+      focused subcomponents/helpers into their own files per the Phase 117
+      pattern while preserving current behavior, accessibility, and existing
+      test coverage. No engine-boundary or mechanics changes; pure structural
+      refactor. Brief: draft via `/plan-a-phase phase 119` (or flesh inline
+      at ship time). Verification: existing suites stay green + `npm run verify`.
+
 - [x] Phase 1 — Adopt nexus methodology. Shipped in commit
       `a703908` ("chore: adopt nexus methodology"); closed out
       in this commit.

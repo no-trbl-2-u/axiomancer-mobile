@@ -67,16 +67,6 @@
 - proposed scope: 1-phase systematic replacement with proper typing in combat test suite
 - estimated phases: 1
 - conflicts: none
-### [ ] [score 6.0] Large component extraction continuation (exploration + inventory)
-- proposed: 2026-06-09, expand pass 64
-- source signals:
-  - **File-length outliers**: app/(tabs)/exploration/index.tsx (717 lines), app/(tabs)/inventory/index.tsx (709 lines)
-  - **Follow-up to shipped Phase 117**: PhaseBottom.tsx extraction was successful, establishing pattern
-  - **Build-plan style guardrail**: "Prefer 5 small files over 1 dense file" remains violated
-- rationale: Phase 117 successfully extracted PhaseBottom subcomponents. Two remaining large files exceed folder median by >2× and create maintenance debt. Signal multiplicity from file-length outlier smell plus established extraction pattern.
-- proposed scope: 1-phase extraction of focused subcomponents from exploration and inventory screens, following Phase 117 pattern
-- estimated phases: 1
-- conflicts: none
 ### [ ] [score 3.5] Development bundle size optimization audit
 - proposed: 2026-06-09, expand pass 64
 - source signals:
@@ -108,16 +98,6 @@
 - estimated phases: 1
 - conflicts: none
 
-### [ ] [score 9.0] Combat encounters stop triggering after first encounter fix
-- proposed: 2026-06-10, expand pass 68
-- source signals:
-  - **GitHub issue #191**: HIGH severity user-spotted bug (triage:loop-queued)
-  - **Core gameplay blocker**: Subsequent combat encounters fail to trigger after first completion
-  - **User jot source**: Spotted during actual gameplay (2026-05-25)
-- rationale: Critical gameplay bug that blocks core combat mechanic progression. HIGH severity user-spotted issue with clear reproduction case. Signal multiplicity from GitHub triage + user feedback.
-- proposed scope: 1-phase investigation and fix of encounter state persistence/reset logic
-- estimated phases: 1
-- conflicts: none
 
 ### [ ] [score 6.0] Hazard minigame hex-literal token migration
 - proposed: 2026-06-10, expand pass 68
@@ -909,6 +889,23 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted → status Phase 118] [score 9.0] Combat encounters stop triggering after first encounter fix
+
+- moved from ## Pending via /oversight 2026-06-11, assigned Phase 118.
+  HIGH severity gameplay blocker (issue #191, user-spotted 2026-05-25): subsequent
+  combat encounters fail to trigger after the first encounter resolves. Promoted
+  immediately — highest-scoring pending candidate and core-mechanic blocker.
+  Investigate encounter state persistence/reset (inEncounterModal, consumed-node
+  logic, event-pool selection). Brief: `plan/phases/phase_118_combat_encounter_retrigger.md`.
+
+### [promoted → status Phase 119] [score 6.0] Large component extraction continuation (exploration + inventory)
+
+- moved from ## Pending via /oversight 2026-06-11, assigned Phase 119.
+  Follow-up to shipped Phase 117: `app/(tabs)/exploration/index.tsx` (717 lines)
+  and `app/(tabs)/inventory/index.tsx` (709 lines) still exceed the 2× folder-median
+  guardrail. Pure structural refactor following the Phase 117 extraction pattern.
+  Brief: draft via `/plan-a-phase phase 119` or flesh inline at ship time.
 
 ### [promoted → status Phase 117] [score 3.5] Large-component extraction refactor
 

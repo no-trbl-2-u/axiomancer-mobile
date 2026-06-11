@@ -64,8 +64,10 @@ npm run verify         # Runs lint + typecheck + test
 | `npm run lint`      | `expo lint` (ESLint with Expo's config).                     |
 | `npm run typecheck` | Type-check with TypeScript.                                  |
 | `npm test`          | Run Jest (test harness already configured).                  |
+| `npm run test:watch` | Run Jest in watch mode for interactive development.         |
 | `npm run verify`    | Run lint + typecheck + test. Development quality gate.       |
 | `npm run verify:visual` | Visual smoke tests — generate and compare screenshots.   |
+| `npm run e2e:hazard`    | Browser-driven end-to-end hazard minigame playthrough.       |
 | `npm run smoke:bundler` | Smoke test for bundler configuration.                    |
 | `npm run baseline:approve` | Approve new visual baselines after UI changes.        |
 | `npm run deploy:check` | Check EAS Build status for current commit.                |

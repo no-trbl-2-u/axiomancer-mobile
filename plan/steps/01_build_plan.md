@@ -107,7 +107,7 @@ commit that ships the phase.
       resolves → second encounter node fires) + `npm run verify`.
       Single commit closes issue #191 (`Closes #191`).
 
-- [ ] Phase 119 — Large-component extraction continuation (exploration + inventory).
+- [x] Phase 119 — Large-component extraction continuation (exploration + inventory) `[67943ab]`.
       Promoted via `/oversight` 2026-06-11 from phase candidate [6.0] (expand
       pass 64). Following Phase 117's successful PhaseBottom extraction,
       two remaining screens still exceed the guardrail: `app/(tabs)/exploration/index.tsx`

@@ -6,6 +6,7 @@
 import {
     acknowledgeHazardOutcome,
     applyHazardCard,
+    chooseHazardCardKey,
     claimHazardRewards,
     continueHazardAfterResolve,
     createHazardSession,
@@ -13,6 +14,7 @@ import {
     finishHazardRolling,
     hazardCardValue,
     hazardProjectedProgress,
+    hazardStagedProgress,
     hazardTierOf,
     powerHazardCard,
     resolveHazardRound,
@@ -293,7 +295,7 @@ describe('utility card effects (fire on APPLY, not on stage/power)', () => {
         expect(s.dice.find((d) => d.temporary)?.kind).not.toBe('hex');
     });
 
-    it('READ THE WIND converts hex dice to its own colour on apply', () => {
+    it('READ THE WIND minor-converts ONE hex die to GOLD on a base apply', () => {
         let s = playingSession();
         s = rig(s, {
             hand: [entry('h1', 'windread')],
@@ -305,9 +307,47 @@ describe('utility card effects (fire on APPLY, not on stage/power)', () => {
             ],
         });
         s = stageHazardCard(s, 'h1', BAG);
-        s = applyHazardCard(s, 'h1', BAG);
-        expect(s.dice.filter((d) => d.kind === 'purple')).toHaveLength(2);
+        s = applyHazardCard(s, 'h1', BAG); // base/minor: exactly one ✕ → gold
+        expect(s.dice.filter((d) => d.kind === 'gold')).toHaveLength(1);
+        expect(s.dice.filter((d) => d.kind === 'hex')).toHaveLength(1);
         expect(s.dice.find((d) => d.id === 'd3')?.kind).toBe('blue');
+    });
+
+    it('READ THE WIND major-converts ALL hex dice to GOLD when powered', () => {
+        let s = playingSession();
+        s = rig(s, {
+            hand: [entry('h1', 'windread')],
+            play: [],
+            dice: [
+                { id: 'd1', kind: 'hex', state: 'available' },
+                { id: 'd2', kind: 'hex', state: 'available' },
+                { id: 'dp', kind: 'purple', state: 'available' },
+            ],
+        });
+        s = stageHazardCard(s, 'h1', BAG);
+        s = powerHazardCard(s, 'h1', 'dp', BAG); // a purple die → major tier
+        s = applyHazardCard(s, 'h1', BAG);
+        // both ✕ become gold; >1 converted, so no floating bonus die
+        expect(s.dice.filter((d) => d.kind === 'gold')).toHaveLength(2);
+        expect(s.dice.filter((d) => d.kind === 'hex')).toHaveLength(0);
+    });
+
+    it('major CONVERT with ≤1 hex adds a floating GOLD die so major beats minor', () => {
+        let s = playingSession();
+        s = rig(s, {
+            hand: [entry('h1', 'windread')],
+            play: [],
+            dice: [
+                { id: 'd1', kind: 'hex', state: 'available' },
+                { id: 'dp', kind: 'purple', state: 'available' },
+            ],
+        });
+        s = stageHazardCard(s, 'h1', BAG);
+        s = powerHazardCard(s, 'h1', 'dp', BAG);
+        s = applyHazardCard(s, 'h1', BAG);
+        // the single ✕ converts to gold AND a floating gold die is conjured
+        expect(s.dice.filter((d) => d.kind === 'gold')).toHaveLength(2);
+        expect(s.dice.some((d) => d.kind === 'gold' && d.temporary)).toBe(true);
     });
 
     it('gold OATH: major draw fires for free; its dual number pays only when powered', () => {
@@ -698,5 +738,150 @@ describe('content integrity', () => {
             if (c.kind === 'red' && !c.effect) expect(c.f).toBeGreaterThan(c.e);
             if (c.kind === 'blue' && !c.effect) expect(c.e).toBeGreaterThan(c.f);
         }
+    });
+
+    it('expansion roster is reward-pool only (never in the starter bag)', () => {
+        const starterIds = new Set(HAZARD_DECK.map((c) => c.id));
+        const expansionIds = [
+            'r_pivot', 'r_drop', 'r_last', 'r_heave', 'r_skitter', 'r_path', 'r_windcall',
+            'r_stone', 'r_tide', 'r_aggr', 'r_swift', 'r_zeal', 'r_martyr', 'r_relic',
+            'r_vow', 'r_serk', 'r_bolt', 'r_warcry', 'r_blood', 'r_pwrath', 'r_twin', 'r_saint',
+        ];
+        for (const id of expansionIds) {
+            expect(starterIds.has(id)).toBe(false);
+            expect(getHazardCardDef(id).id).toBe(id); // resolves through the registry
+        }
+    });
+
+    it('two-tone cards are uncommon or rare, never common', () => {
+        for (const c of HAZARD_REWARD_CARDS) {
+            if (c.colors && c.colors.length > 1) expect(c.rarity).not.toBe('common');
+        }
+    });
+});
+
+describe('expansion mechanics', () => {
+    it('two-tone pivot accepts EITHER a red or a blue die and swaps meters', () => {
+        for (const dieKind of ['red', 'blue'] as const) {
+            let s = playingSession();
+            s = rig(s, { hand: [entry('h1', 'r_pivot')], play: [], dice: [{ id: 'dx', kind: dieKind, state: 'available' }] });
+            s = stageHazardCard(s, 'h1', BAG);
+            expect(hazardCardValue(s.play[0])).toEqual({ force: 4, escape: 0 }); // free → FORCE
+            s = powerHazardCard(s, 'h1', 'dx', BAG);
+            expect(s.play[0].dieId).toBe('dx');
+            expect(hazardCardValue(s.play[0])).toEqual({ force: 0, escape: 7 }); // surge → ESCAPE
+        }
+    });
+
+    it('two-tone pivot rejects an off-colour (purple) die', () => {
+        let s = playingSession();
+        s = rig(s, { hand: [entry('h1', 'r_pivot')], play: [], dice: [{ id: 'dp', kind: 'purple', state: 'available' }] });
+        s = stageHazardCard(s, 'h1', BAG);
+        expect(powerHazardCard(s, 'h1', 'dp', BAG)).toBe(s);
+    });
+
+    it('AGGRESSION enchants every FORCE card with +2 for the rest of the hazard', () => {
+        let s = playingSession();
+        s = rig(s, { hand: [entry('a', 'r_aggr'), entry('g', 'grip')], play: [], dice: [] });
+        s = stageHazardCard(s, 'a', BAG);
+        s = stageHazardCard(s, 'g', BAG);
+        s = applyHazardCard(s, 'a', BAG); // sets auraForce +2
+        expect(s.modifiers.auraForce).toBe(2);
+        // r_aggr free 3 (+2) = 5; IRON GRIP free 5 (+2) = 7 → 12 force, no escape
+        const proj = hazardProjectedProgress(s);
+        expect(proj.force).toBe(12);
+        expect(proj.escape).toBe(0);
+    });
+
+    it('RELIC OF FURY lifts only POWERED contributions by +2', () => {
+        let s = playingSession();
+        s = rig(s, {
+            hand: [entry('r', 'r_relic'), entry('g', 'grip')],
+            play: [],
+            dice: [{ id: 'dr', kind: 'red', state: 'available' }],
+        });
+        s = stageHazardCard(s, 'r', BAG);
+        s = stageHazardCard(s, 'g', BAG);
+        s = applyHazardCard(s, 'r', BAG); // gold majorEffect → surge +2 for free
+        expect(s.modifiers.surgeForce).toBe(2);
+        expect(hazardStagedProgress(s).force).toBe(5); // grip UNPOWERED 5, no surge boost
+        s = powerHazardCard(s, 'g', 'dr', BAG);
+        expect(hazardStagedProgress(s).force).toBe(11); // grip powered 9 + surge 2
+    });
+
+    it('BERSERK bursts +5 FORCE this round (and +8 when powered)', () => {
+        let s = playingSession(5, 'safe');
+        s = rig(s, { hand: [entry('b', 'r_serk')], play: [], dice: [], progressBase: { force: 0, escape: 0 } });
+        s = stageHazardCard(s, 'b', BAG);
+        s = applyHazardCard(s, 'b', BAG);
+        expect(s.progressBase.force).toBe(5);
+
+        let p = playingSession(5, 'safe');
+        p = rig(p, { hand: [entry('b', 'r_serk')], play: [], dice: [{ id: 'dr', kind: 'red', state: 'available' }], progressBase: { force: 0, escape: 0 } });
+        p = stageHazardCard(p, 'b', BAG);
+        p = powerHazardCard(p, 'b', 'dr', BAG);
+        p = applyHazardCard(p, 'b', BAG);
+        expect(p.progressBase.force).toBe(8);
+    });
+
+    it('WAR-CRY bursts +1 FORCE per unspent non-hex die', () => {
+        let s = playingSession(5, 'safe');
+        s = rig(s, {
+            hand: [entry('w', 'r_warcry')],
+            play: [],
+            dice: [
+                { id: 'd1', kind: 'red', state: 'available' },
+                { id: 'd2', kind: 'blue', state: 'available' },
+                { id: 'd3', kind: 'hex', state: 'available' },
+                { id: 'd4', kind: 'gold', state: 'spent' },
+            ],
+            progressBase: { force: 0, escape: 0 },
+        });
+        s = stageHazardCard(s, 'w', BAG);
+        s = applyHazardCard(s, 'w', BAG);
+        expect(s.progressBase.force).toBe(2); // d1 + d2 only
+    });
+
+    it('BLOODPRICE bursts +8 FORCE and accrues a VITAE cost', () => {
+        let s = playingSession(5, 'safe');
+        s = rig(s, { hand: [entry('b', 'r_blood')], play: [], dice: [], progressBase: { force: 0, escape: 0 } });
+        s = stageHazardCard(s, 'b', BAG);
+        s = applyHazardCard(s, 'b', BAG);
+        expect(s.progressBase.force).toBe(8);
+        expect(s.vitaeCost).toBe(4);
+    });
+
+    it('GILDED VOW rides the next GOLD die for +7/+7, once', () => {
+        let s = playingSession();
+        s = rig(s, { hand: [entry('v', 'r_vow'), entry('g', 'grip')], play: [], dice: [{ id: 'dg', kind: 'gold', state: 'available' }] });
+        s = stageHazardCard(s, 'v', BAG);
+        s = applyHazardCard(s, 'v', BAG);
+        expect(s.goldVow).toEqual({ force: 7, escape: 7 });
+        s = stageHazardCard(s, 'g', BAG);
+        s = powerHazardCard(s, 'g', 'dg', BAG);
+        expect(s.goldVow).toBeNull(); // consumed
+        // IRON GRIP powered by wild gold = 9 force; +7/+7 vow → 16 / 7
+        expect(hazardCardValue(s.play.find((p) => p.cardId === 'grip')!)).toEqual({ force: 16, escape: 7 });
+    });
+
+    it('TWIN PATHS feeds the chosen meter when powered by a gold die', () => {
+        let s = playingSession();
+        s = rig(s, { hand: [entry('t', 'r_twin')], play: [], dice: [{ id: 'dg', kind: 'gold', state: 'available' }] });
+        s = stageHazardCard(s, 't', BAG);
+        s = powerHazardCard(s, 't', 'dg', BAG);
+        expect(hazardCardValue(s.play[0])).toEqual({ force: 8, escape: 0 }); // default FORCE
+        s = chooseHazardCardKey(s, 't', 'escape');
+        expect(hazardCardValue(s.play[0])).toEqual({ force: 0, escape: 8 });
+    });
+
+    it("SAINT'S PATIENCE raises the momentum cap by 2 and draws 2", () => {
+        let s = playingSession();
+        expect(s.momentumCap).toBe(HAZARD_MOMENTUM_CAP);
+        s = rig(s, { hand: [entry('p', 'r_saint')], play: [], dice: [] });
+        s = stageHazardCard(s, 'p', BAG);
+        const before = s.hand.length;
+        s = applyHazardCard(s, 'p', BAG);
+        expect(s.momentumCap).toBe(HAZARD_MOMENTUM_CAP + 2);
+        expect(s.hand.length).toBe(before + 2);
     });
 });

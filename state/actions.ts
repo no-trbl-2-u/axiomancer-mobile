@@ -102,6 +102,7 @@ import {
     HAZARD_TOKEN_FLAG_PREFIX,
     applyHazardCardAction,
     beginHazardAction,
+    chooseHazardCardKeyAction,
     claimHazardRewardsAction,
     continueHazardAfterResolveAction,
     discardHazardCardAction,
@@ -115,7 +116,7 @@ import {
     type BeginHazardOptions,
     type ClaimHazardRewardsResult,
 } from './hazard/store-actions';
-import type { HazardRouteKey } from './hazard/types';
+import type { HazardProgressKey, HazardRouteKey } from './hazard/types';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -373,6 +374,8 @@ export interface AppActions {
     powerHazardCard: (uid: string, dieId: string) => void;
     /** Apply a staged card: fire its utility and lock it in (one-way). */
     applyHazardCard: (uid: string) => void;
+    /** CHOOSE card (TWIN PATHS): pick which meter its surge value feeds. */
+    chooseHazardCardKey: (uid: string, key: HazardProgressKey) => void;
     /** Commit the staged set; the engine stamps O or X. */
     resolveHazardRound: () => void;
     /** Dismiss the resolve flash; advances the round or computes the outcome. */
@@ -1232,6 +1235,7 @@ export function createAppActions(store: AppStore): AppActions {
         discardHazardCard: (uid) => discardHazardCardAction(store, uid),
         powerHazardCard: (uid, dieId) => powerHazardCardAction(store, uid, dieId),
         applyHazardCard: (uid) => applyHazardCardAction(store, uid),
+        chooseHazardCardKey: (uid, key) => chooseHazardCardKeyAction(store, uid, key),
         resolveHazardRound: () => resolveHazardRoundAction(store),
         continueHazardAfterResolve: () => continueHazardAfterResolveAction(store),
         acknowledgeHazardOutcome: () => acknowledgeHazardOutcomeAction(store),

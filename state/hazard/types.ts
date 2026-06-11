@@ -46,7 +46,13 @@ export interface HazardDie {
 
 export type HazardCardRarity = 'common' | 'uncommon' | 'rare';
 
-export type HazardUtilityEffect = 'draw' | 'recast' | 'convert';
+export type HazardUtilityEffect =
+    | 'draw'
+    | 'recast'
+    | 'convert'
+    | 'aura'
+    | 'burst'
+    | 'goldvow';
 
 export type HazardKeywordId =
     | 'surge'
@@ -57,7 +63,38 @@ export type HazardKeywordId =
     | 'recast'
     | 'gilded'
     | 'salvage'
-    | 'crack';
+    | 'crack'
+    | 'twotone'
+    | 'enchant'
+    | 'burst'
+    | 'rally'
+    | 'sacrifice'
+    | 'vow'
+    | 'choose';
+
+/**
+ * Persistent enchantment modifiers (auras). Accumulated on the session by
+ * `effect: 'aura'` cards and applied to every qualifying card contribution
+ * for the rest of the hazard.
+ *  - `auraForce`/`auraEscape`: +X to EVERY played card that contributes that
+ *    meter (per card — the user's framing: "added to every card played that
+ *    generates that specific value").
+ *  - `surgeForce`/`surgeEscape`: +X to every POWERED card's contribution of
+ *    that meter (RELIC OF FURY — buffs the surge row, not the meter total).
+ */
+export interface HazardModifiers {
+    auraForce: number;
+    auraEscape: number;
+    surgeForce: number;
+    surgeEscape: number;
+}
+
+export const EMPTY_HAZARD_MODIFIERS: HazardModifiers = Object.freeze({
+    auraForce: 0,
+    auraEscape: 0,
+    surgeForce: 0,
+    surgeEscape: 0,
+});
 
 /**
  * Salvage — the discard benefit. Dragging a card to the trash bin
@@ -74,8 +111,15 @@ export type HazardSalvage =
 export interface HazardCardDef {
     id: string;
     name: string;
-    /** Card colour — also the single die colour that can power it. */
+    /** Card colour — primary identity (display tint, salvage colour). For a
+     *  two-tone card it is also the FIRST of its `colors`. */
     kind: HazardColor;
+    /**
+     * Die colours (besides the wild gold die) that can power this card.
+     * Omitted = `[kind]`. Two-tone cards list two colours — e.g. a red/blue
+     * pivot powered by EITHER a red or a blue die.
+     */
+    colors?: HazardColor[];
     rarity: HazardCardRarity;
     /** Relative frequency in the starter draw pile (reward cards omit it). */
     weight?: number;
@@ -85,6 +129,12 @@ export interface HazardCardDef {
     /** MANA (bottom / SURGE) action values, used once a die is applied. */
     fp?: number;
     ep?: number;
+    /**
+     * CHOOSE card: when powered, the single powered value (`fp` === `ep`)
+     * feeds ONE meter the player picks at apply-time. `entry.chosenKey`
+     * carries the choice (default 'force').
+     */
+    choose?: boolean;
     /**
      * Optional utility, fired once when the card is APPLIED (powered tier
      * if a die is attached, else base). A card may carry BOTH numbers and
@@ -102,6 +152,28 @@ export interface HazardCardDef {
     majorEffect?: boolean;
     drawBase?: number;
     drawPowered?: number;
+    /**
+     * ENCHANT (`effect: 'aura'`) payload. `auraBase` is added to the session
+     * modifiers at the minor tier; `auraPowered` at the major tier (powered,
+     * or a gold `majorEffect` card). Persists for the rest of the hazard.
+     */
+    auraBase?: Partial<HazardModifiers>;
+    auraPowered?: Partial<HazardModifiers>;
+    /**
+     * BURST (`effect: 'burst'`) payload — progress added to THIS round only
+     * (rides `progressBase`). `burstPowered` is the bigger powered tier.
+     */
+    burstBase?: { force?: number; escape?: number };
+    burstPowered?: { force?: number; escape?: number };
+    /** WAR-CRY: +force per unspent non-hex die in the pool, fired on apply. */
+    burstPerUnspentDieForce?: number;
+    /** SACRIFICE (BLOODPRICE): VITAE spent on apply (accrues to session). */
+    vitaeCost?: number;
+    /** GILDED VOW (`effect: 'goldvow'`): one-shot bonus primed onto the next
+     *  gold die the player spends powering any card. */
+    goldVow?: { force: number; escape: number };
+    /** Rider: raise the session momentum cap on apply (SAINT'S PATIENCE). */
+    momentumBonus?: number;
     /**
      * Dead cards (consequence CRACK cards) cannot be powered and
      * contribute nothing — they only clog the hand.
@@ -126,6 +198,10 @@ export interface HazardHandEntry {
      * resolved once every staged card is applied.
      */
     applied?: boolean;
+    /** CHOOSE card: which meter the powered value feeds (default 'force'). */
+    chosenKey?: HazardProgressKey;
+    /** GILDED VOW bonus locked onto this card when a gold die powered it. */
+    vowBonus?: { force: number; escape: number };
 }
 
 // ---------------------------------------------------------------------------
@@ -229,6 +305,8 @@ export interface HazardOutcome {
     reserveBonus: number;
     /** Vitae lost to the route penalty: penaltyVitae × lost rounds. */
     penaltyVitae: number;
+    /** Vitae spent in-run by SACRIFICE cards (BLOODPRICE), applied at claim. */
+    vitaeCost: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -260,6 +338,14 @@ export interface HazardSessionState {
     dice: HazardDie[];
     /** Momentum carried into the current round (REC#1). */
     progressBase: { force: number; escape: number };
+    /** Persistent enchantment modifiers (auras) — rest-of-hazard. */
+    modifiers: HazardModifiers;
+    /** Primed one-shot bonus consumed by the next gold die used to power. */
+    goldVow: { force: number; escape: number } | null;
+    /** Per-session momentum cap (starts at HAZARD_MOMENTUM_CAP; cards raise it). */
+    momentumCap: number;
+    /** VITAE spent by sacrifice cards this hazard, applied at claim. */
+    vitaeCost: number;
     resolveInfo: HazardResolveInfo | null;
     outcome: HazardOutcome | null;
     /** Reward card picked in the rewards phase (null = skipped / none). */

@@ -108,6 +108,7 @@ export default function HazardScreen() {
                     onPower={(uid, dieId) => actions.powerHazardCard(uid, dieId)}
                     onApply={(uid) => actions.applyHazardCard(uid)}
                     onDiscard={(uid) => actions.discardHazardCard(uid)}
+                    onChoose={(uid, key) => actions.chooseHazardCardKey(uid, key)}
                     onResolve={() => actions.resolveHazardRound()}
                     onInspect={setDetailCard}
                 />

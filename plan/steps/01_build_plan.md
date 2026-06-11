@@ -118,6 +118,44 @@ commit that ships the phase.
       refactor. Brief: draft via `/plan-a-phase phase 119` (or flesh inline
       at ship time). Verification: existing suites stay green + `npm run verify`.
 
+- [ ] Phase 120 — Starting-map enemy composition tuning (difficulty entry fix). Promoted via
+      `/oversight` 2026-06-11. User identified that the opening experience is too punishing
+      because fishing-village enemies rubber-band to the player level — a level-1 player
+      faces enemies that feel immediately overwhelming. The engine controls global level
+      derivation, but mobile controls the *which* enemies appear via the event-pool
+      registration in `state/exploration-maps/event-pools.ts`. Fix: weight the
+      fishing-village encounter pool toward explicitly weak/introductory enemy slugs
+      (e.g. `tidepool-crab` more heavily, reduce `coastal-tyrant` weight or restrict
+      it to later nodes). Optionally per-node enemy overrides for the opening 2-3
+      encounter nodes so the first fight is always a starter. Northern-forest can
+      stay as-is or get a similar gentler pass. Brief: draft via `/plan-a-phase phase 120`
+      (or flesh inline at ship time). Verification: hermetic test pins that the
+      first fishing-village encounter node resolves a starter-tier enemy across 20
+      seeded RNG samples; manual confirm that level-1 play feels survivable.
+      Pairs with CRITIQUE [MED] difficulty row.
+
+- [ ] Phase 121 — Mobile playthrough integration harness. Promoted via `/oversight` 2026-06-11.
+      User observed that mechanical unit tests (Jest presenter/action suites) report
+      everything green but manual play reveals integration gaps — the test harness
+      doesn't catch wiring problems between engine state, presenter output, and UI
+      rendering. Goal: scripted integration scenarios that exercise the *full player
+      journey* end-to-end, from title screen detection through map movement,
+      encounter trigger, combat action selection, round resolution, and aftermath,
+      asserting observable state at each step rather than just presenter shape.
+      Scope (one phase, multi-tick if needed):
+      - Tick A: "new player journey" script — title screen shows for fresh state;
+        first move on map fires an event; encounter trigger arms the modal.
+      - Tick B: "combat lifecycle" script — prelude → FIGHT → round resolution
+        (action + stance committed) → round advances → victory/defeat aftermath
+        → modal closes → exploration resumes. Assert engine state *and*
+        presenter output at each step.
+      - Tick C: "re-trigger" script — second encounter node fires after first
+        resolves; combat modal re-arms cleanly. (Regression guard for Phase 118.)
+      Build on the `withAllProviders` harness from Phase 64; add a `simulatePlayerAction`
+      helper that fires store actions and flushes React updates. Brief: draft via
+      `/plan-a-phase phase 121` (or flesh inline at ship time).
+      Verification: all scripted scenarios green + `npm run verify`.
+
 - [x] Phase 1 — Adopt nexus methodology. Shipped in commit
       `a703908` ("chore: adopt nexus methodology"); closed out
       in this commit.

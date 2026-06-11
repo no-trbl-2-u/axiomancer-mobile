@@ -1,8 +1,8 @@
 # Site audit — 2026-06-11
 
-> Bias: onboarding/docs (set via oversight 2026-06-11 — supersedes UX-gap bias from 2026-06-04)
-> /iterate weights onboarding/docs findings 1.5×: specs/README.md status clarity,
-> docs/ index, .env.example refs, engine upgrade doc context, testing prereqs.
+> Bias: gameplay/content (set via oversight 2026-06-11 — supersedes onboarding/docs bias from 2026-06-11)
+> /iterate weights gameplay/content findings 1.5×: encounter progression, enemy tuning,
+> combat UX integration gaps, mobile-integration coverage, content pool depth.
 > Conducted by: /iterate autonomous audit
 
 > **Fresh audit (2026-06-11).** Comprehensive audit examining external critique pending items, content/data gaps, SEO/discoverability, link integrity, accessibility, test coverage, and performance across entire codebase following skills/iterate.md methodology.

@@ -411,6 +411,7 @@
 - source: user
 - engine-gated: tagged `[needs-engine-release]` via /oversight 2026-06-02 (52nd call). Enemy level derivation / progression curve lives in `axiomancer-mechanics`; the mobile repo only surfaces it and cannot fix the balance here. Row stays OPEN so the next /oversight re-surfaces it for an engine-side decision.
 - re-affirmed deferred via /oversight 2026-06-08 (queue-drained call). User reviewed and chose to **keep deferred** — no GitHub engine issue filed yet. Remains the only live gameplay blocker; re-surface again next oversight for the file-an-engine-issue / accept-as-is decision.
+- mobile-actionable solution identified via /oversight 2026-06-11: user directed to solve this from the mobile side by setting **reasonable starting-map enemies** (fishing-village pool weighted toward lower-difficulty foes appropriate for level-1). Phase 120 filed. This approach keeps engine rubber-banding in place but makes the entry experience feel graduated rather than punishing. Row remains open until Phase 120 ships and user confirms the start feels right.
 
 ### [MED] /dev — Add two seeded test playthroughs (level-1-easy + max-level endgame) to Dev Menu [PROMOTED → Phase 100 via /oversight 2026-06-02]
 - pass: user-jot (commit ff2b8ae)

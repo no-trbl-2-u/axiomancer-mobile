@@ -941,6 +941,24 @@ warranted a full phase promotion:
 
 ## Promoted
 
+### [promoted → Phase 120] Starting-map enemy composition tuning
+
+- moved from user-directive (not a prior candidate) to ## Promoted via /oversight 2026-06-11,
+  assigned Phase 120. User directed: solve the difficulty/rubber-band problem from the mobile
+  side by setting reasonable starting-map enemies in the fishing-village pool. Engine controls
+  global level derivation; mobile controls which enemies appear via event-pool registration.
+  Pairs with CRITIQUE [MED] difficulty row (`[needs-engine-release]`). Brief lives in
+  `plan/steps/01_build_plan.md` Status block.
+
+### [promoted → Phase 121] Mobile playthrough integration harness
+
+- moved from user-directive (not a prior candidate) to ## Promoted via /oversight 2026-06-11,
+  assigned Phase 121. User observed that mechanical unit tests report green while manual play
+  reveals integration gaps. Goal: scripted end-to-end integration scenarios covering the full
+  player journey (title → map move → encounter trigger → combat lifecycle → aftermath →
+  re-trigger). Builds on Phase 64's `withAllProviders` harness. Brief lives in
+  `plan/steps/01_build_plan.md` Status block.
+
 ### [promoted → status Phase 118] [score 9.0] Combat encounters stop triggering after first encounter fix
 
 - moved from ## Pending via /oversight 2026-06-11, assigned Phase 118.

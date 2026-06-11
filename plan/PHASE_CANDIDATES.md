@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-10 at commit 3406fea
-> Pass count: 68
+> Last pass: 2026-06-11 at commit 25db604
+> Pass count: 69
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -140,6 +140,57 @@
   - **Maintenance burden**: Bundle size monitoring for future optimization opportunities
 - rationale: Substantial bundle size warrants investigation for optimization opportunities. Audit finding suggests potential for development performance improvement.
 - proposed scope: 1-phase dependency analysis and lightweight optimization where feasible
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 3.2] Accessibility implementation systematic rollout (Spec 12)
+- proposed: 2026-06-11, expand pass 69
+- source signals:
+  - **HIGH critique finding**: Accessibility spec unimplemented despite interactive elements (pass 32, commit fb5d297)
+  - **MED critique finding**: Tab accessibility during modal states unclear (pass 32)
+  - **Spec readiness**: Spec 12 exists but remains unimplemented per critique evidence
+- rationale: High-priority critique finding on accessibility with concrete spec already authored but never implemented. Multiple accessibility issues surfacing in critique indicating systematic gap rather than isolated issue.
+- proposed scope: 1-phase implementation of Spec 12
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 2.9] Setup documentation completion and validation
+- proposed: 2026-06-11, expand pass 69
+- source signals:
+  - **MED critique finding**: Setup documentation references non-existent files (pass 32)
+  - **Documentation gap**: .env.example references missing setup/02_eas.md, setup/03_store_setup.md, setup/04_claude_playtest.md
+- rationale: Multiple critique passes flagging missing setup documentation that is referenced but not delivered. Fresh maintainer onboarding gap.
+- proposed scope: 1-phase documentation completion
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 2.7] Hex-literal color token migration continuation
+- proposed: 2026-06-11, expand pass 69
+- source signals:
+  - **Code smell**: 5+ untouched hex literals in hazard components (#0c0a08, #100d0a, #0a0908, #17150f, #12110b)
+  - **Contract violation**: Existing theme token system in theme/axm.ts per bearings.md contract
+- rationale: Aggressive posture smell detection found hex color leakage violating theme token contract. Existing AXM token system provides proper abstraction.
+- proposed scope: 1-phase targeted migration of hazard component hex literals
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 2.6] Spec completion workflow standardization
+- proposed: 2026-06-11, expand pass 69
+- source signals:
+  - **MED critique finding**: Spec completion guidance creates inconsistent tracking (pass 32)
+  - **Documentation inconsistency**: Line 50 guidance conflicts with actual completion pattern shown
+- rationale: Fresh maintainer confusion about how to properly mark spec completion, impacting onboarding workflow consistency.
+- proposed scope: 1-phase documentation standardization
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 2.5] Large component boundary review (HazardBoard extraction)
+- proposed: 2026-06-11, expand pass 69
+- source signals:
+  - **Code smell**: HazardBoard.tsx at 683 lines (file-length outlier, 1.8× median component size)
+  - **AUDIT [2.7]**: Large TypeScript files impact on maintainability
+- rationale: Aggressive posture file-length outlier detection flags HazardBoard.tsx as significantly larger than typical components. Aligns with pending audit finding about large TypeScript file impacts.
+- proposed scope: 1-phase sub-component extraction
 - estimated phases: 1
 - conflicts: none
 

@@ -118,6 +118,15 @@
 - observation: While previous dependency cleanup was completed, the substantial bundle size suggests ongoing monitoring for development performance impact
 - source: audit
 
+### [ ] [user-issue #350] [MED] Testing prerequisite unclear for fresh maintainers
+- category: external-issue
+- impact: 5
+- ease: 8
+- next: /iterate will pick up; reference #350 in commit body.
+- observation: Testing prerequisite section mentions 'Spec 01 setup first' for npm test but fresh maintainer unclear what this setup entails or if already completed
+- evidence: README.md line 66 shows '| `npm test` | Run Jest (requires Spec 01 setup first). |'
+- suggested fix: Clarify that Spec 01 test harness setup is already complete or provide verification command to check setup status
+
 ### [ ] [2.0] Missing accessibility patterns across React Native components
 - category: a11y
 - impact: 5

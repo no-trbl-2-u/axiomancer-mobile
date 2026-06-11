@@ -63,7 +63,7 @@ npm run verify         # Runs lint + typecheck + test
 | `npm run web:container:down` | Stop and remove the container. |
 | `npm run lint`      | `expo lint` (ESLint with Expo's config).                     |
 | `npm run typecheck` | Type-check with TypeScript.                                  |
-| `npm test`          | Run Jest (requires Spec 01 setup first).                     |
+| `npm test`          | Run Jest (test harness already configured).                  |
 | `npm run verify`    | Run lint + typecheck + test. Development quality gate.       |
 | `npm run verify:visual` | Visual smoke tests — generate and compare screenshots.   |
 | `npm run smoke:bundler` | Smoke test for bundler configuration.                    |

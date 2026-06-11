@@ -134,7 +134,7 @@ commit that ships the phase.
       seeded RNG samples; manual confirm that level-1 play feels survivable.
       Pairs with CRITIQUE [MED] difficulty row. Shipped in commit c7a7d3d.
 
-- [ ] Phase 121 — Mobile playthrough integration harness. Promoted via `/oversight` 2026-06-11.
+- [x] Phase 121 — Mobile playthrough integration harness. Promoted via `/oversight` 2026-06-11.
       User observed that mechanical unit tests (Jest presenter/action suites) report
       everything green but manual play reveals integration gaps — the test harness
       doesn't catch wiring problems between engine state, presenter output, and UI
@@ -154,7 +154,7 @@ commit that ships the phase.
       Build on the `withAllProviders` harness from Phase 64; add a `simulatePlayerAction`
       helper that fires store actions and flushes React updates. Brief: draft via
       `/plan-a-phase phase 121` (or flesh inline at ship time).
-      Verification: all scripted scenarios green + `npm run verify`.
+      Verification: all scripted scenarios green + `npm run verify`. Shipped in commit 7b04698.
 
 - [x] Phase 1 — Adopt nexus methodology. Shipped in commit
       `a703908` ("chore: adopt nexus methodology"); closed out

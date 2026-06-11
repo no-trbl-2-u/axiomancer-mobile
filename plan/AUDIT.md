@@ -26,7 +26,7 @@
 - addressed: 2026-06-11 via commit 4831d15
 - fix: Added current development status summary section clearly indicating specs 1-9 are complete and specs 10-12 are ready for parallel work. Corrected table marking spec 8 as DONE to resolve fresh maintainer confusion about project state.
 
-### [ ] [5.0] Node.js version mismatch between package.json and README.md
+### [x] [5.0] Node.js version mismatch between package.json and README.md
 - category: external-critique
 - impact: 5
 - ease: 10
@@ -39,6 +39,9 @@
 - evidence: package.json line 6 shows "node": ">=20.0.0" while README.md line 26 says "Node.js 18+" requirement
 - suggested fix: Update README.md to specify Node.js 20+ to match package.json engines requirement
 - source: external-critique
+- issue: #343
+- addressed: 2026-06-11 via commit e7051c1
+- fix: Updated README.md line 26 to specify Node.js 20+ requirement to match package.json engines specification, resolving version requirement confusion for new maintainers.
 
 ### [ ] [5.0] Setup documentation not linked from main README
 - category: external-critique  

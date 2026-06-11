@@ -9,6 +9,59 @@
 
 ## Top 5 findings (scored)
 
+### [x] [7.2] Setup documentation references missing files blocking fresh maintainer onboarding
+- category: external-critique 
+- impact: 8
+- ease: 9
+- next: Complete missing setup documentation files or update README references to match existing files
+- observation: Setup documentation referenced throughout README but missing critical setup files, creating broken onboarding path
+- evidence: README line 90 references setup/02_eas.md, 03_store_setup.md, 04_claude_playtest.md but only partial content exists - setup process appears incomplete
+- suggested fix: Complete all setup documentation or remove references to non-existent setup guides
+- source: external-critique
+- issue: #353
+
+### [ ] [6.8] Package.json specialized development scripts lack documentation  
+- category: external-critique
+- impact: 5
+- ease: 9
+- next: Expand README scripts table to document web:container, verify:visual, e2e:hazard, baseline:approve commands
+- observation: Package scripts include specialized commands for containerized development and visual testing but lack documentation about when to use them
+- evidence: Scripts like 'web:container', 'verify:visual', 'e2e:hazard', 'baseline:approve' are present but not explained in README workflow section
+- suggested fix: Expand README scripts table to include all specialized commands with usage context
+- source: external-critique
+
+### [ ] [6.8] Repository structure navigation unclear for fresh maintainers
+- category: external-critique
+- impact: 5  
+- ease: 9
+- next: Add 'Repository navigation' section to README explaining VISION.md, docs/adr/, specs/, plan/ contents and usage
+- observation: Repository README jumps immediately from project overview into technical quick start without explaining repository structure or how different documentation areas relate to each other
+- evidence: Lines 14-21 reference VISION.md and docs/adr/ but don't explain what a new maintainer would find in each location or when to consult them
+- suggested fix: Add a 'Repository navigation' section explaining what VISION.md, docs/adr/, specs/, and plan/ contain and when to use each
+- source: external-critique
+
+### [ ] [6.0] Extensive documentation lacks index for maintainer navigation
+- category: external-critique
+- impact: 5
+- ease: 8  
+- next: Create docs/README.md organizing 40+ documentation files by category and purpose
+- observation: Extensive docs/ folder with 40+ files but no index or navigation guide for maintainers to find relevant documentation
+- evidence: Glob shows numerous specialized docs (engine-upgrade-*.md, mechanics-ui-audit-*.md, adr/*.md) but no docs/README.md or clear categorization
+- suggested fix: Add docs/README.md organizing documentation by category and purpose
+- source: external-critique
+
+### [ ] [5.9] Component test coverage gaps - 70 components without tests
+- category: tests
+- impact: 7
+- ease: 8.5
+- next: Prioritize adding tests for core components like MercyChoiceModal, LevelUpModal, CombatPanel
+- observation: 70 out of 118 components (59%) lack colocated tests, violating testing standards
+- evidence: Major test coverage gap affecting code quality and maintainability
+- suggested fix: Add hermetic tests for core components starting with modals and combat panels
+- source: audit
+
+## Previously addressed findings
+
 ### [x] [8.0] Current development status unclear for fresh maintainers in specs documentation
 - category: external-critique
 - impact: 8
@@ -51,106 +104,11 @@
 - user-source-bump: 0.0 (external source)
 - ux-bias-multiplier: 1.0
 - final-score: 5.0
-- next: Add reference to setup/ directory documentation in README.md Quick start or Deploy environment sections
-- observation: Environment setup references setup/02_eas.md for detailed configuration but fresh maintainer needs to discover this file exists and contains critical EAS Build setup instructions
-- evidence: .env.example line 17 references 'See setup/02_eas.md for detailed configuration steps' but this file is not mentioned in main README workflow
-- suggested fix: Add reference to setup/ directory documentation in README.md Quick start or Deploy environment sections
+- next: Add setup/ directory link in README quick start or troubleshooting section
+- observation: Setup documentation exists in setup/ directory but is not linked from main README, making it hard to discover for fresh maintainers
+- evidence: setup/ directory contains 01_repository.md, 02_eas.md files but README.md has no link to setup process
+- suggested fix: Add setup/ directory link in README quick start or troubleshooting section
 - source: external-critique
 - issue: #344
-- addressed: 2026-06-11 via commit 2db3fc7
-- fix: Added reference to setup/ directory in Deploy environment section with links to setup/02_eas.md, setup/03_store_setup.md, and setup/04_claude_playtest.md. Fresh maintainers can now discover critical setup documentation referenced in .env.example.
-
-### [x] [5.0] Engine upgrade documentation lacks current context
-- category: external-critique
-- impact: 5
-- ease: 10
-- base-score: 5.0
-- user-source-bump: 0.0 (external source)
-- ux-bias-multiplier: 1.0
-- final-score: 5.0
-- next: Add current engine version indicator and clarify which upgrade docs are needed for fresh checkout vs specific version migrations
-- observation: README mentions multiple critical engine upgrade docs in AI workflow section but fresh maintainer would not know which version they need to follow or if upgrades are current
-- evidence: README.md lines 207-221 list multiple engine upgrade paths (0.14.0, 0.15.0, 0.15.1, 0.16.0) without indicating which applies to current repo state
-- suggested fix: Add current engine version indicator and clarify which upgrade docs are needed for fresh checkout vs specific version migrations
-- source: external-critique
-- issue: #349
-- addressed: 2026-06-11 via commit 6a5e58a
-- fix: Added clear current engine version indicator (axiomancer-mechanics ^0.16.0) and clarified that fresh checkouts include latest version with upgrade docs only needed for specific version migrations. Fresh maintainers can now easily determine if upgrade documentation applies.
-
-### [x] [5.0] Testing prerequisite unclear for fresh maintainers
-- category: external-critique
-- impact: 5
-- ease: 10
-- base-score: 5.0
-- user-source-bump: 0.0 (external source)
-- ux-bias-multiplier: 1.0
-- final-score: 5.0
-- next: Clarify that Spec 01 test harness setup is already complete or provide verification command to check setup status
-- observation: Testing prerequisite section mentions 'Spec 01 setup first' for npm test but fresh maintainer unclear what this setup entails or if already completed
-- evidence: README.md line 66 shows '| `npm test` | Run Jest (requires Spec 01 setup first). |'
-- suggested fix: Clarify that Spec 01 test harness setup is already complete or provide verification command to check setup status
-- source: external-critique
-- issue: #351
-- addressed: 2026-06-11 via commit 39012e2
-- fix: Updated README.md npm test description from 'requires Spec 01 setup first' to 'test harness already configured' to clarify current status for fresh maintainers
-
-### [ ] [2.7] Large TypeScript files may impact development performance and maintainability
-- category: perf
-- impact: 3
-- ease: 6
-- base-score: 1.8
-- ux-bias-multiplier: 1.5 (affects development UX)
-- final-score: 2.7
-- next: Consider refactoring state/actions.ts (1677 lines) and state/presenters/combat.engine.ts (1473 lines) into smaller, focused modules
-- evidence: state/actions.ts at 1677 lines, state/presenters/combat.engine.ts at 1473 lines
-- observation: Several core files exceed 1000 lines, which can slow IDE performance, increase cognitive load, and make code navigation difficult for maintainers
-- source: audit
-
-### [ ] [2.4] Node.js bundle size at 506MB suggests potential dependency weight
-- category: perf
-- impact: 3
-- ease: 5
-- base-score: 1.5
-- ux-bias-multiplier: 1.5 (affects development UX)
-- final-score: 2.3
-- next: Review node_modules for potential optimization opportunities, though significant reduction may not be feasible given React Native requirements
-- evidence: node_modules directory is 506MB (previous audit addressed unused dependencies)
-- observation: While previous dependency cleanup was completed, the substantial bundle size suggests ongoing monitoring for development performance impact
-- source: audit
-
-### [ ] [user-issue #350] [MED] Testing prerequisite unclear for fresh maintainers
-- category: external-issue
-- impact: 5
-- ease: 8
-- next: /iterate will pick up; reference #350 in commit body.
-- observation: Testing prerequisite section mentions 'Spec 01 setup first' for npm test but fresh maintainer unclear what this setup entails or if already completed
-- evidence: README.md line 66 shows '| `npm test` | Run Jest (requires Spec 01 setup first). |'
-- suggested fix: Clarify that Spec 01 test harness setup is already complete or provide verification command to check setup status
-
-### [ ] [2.0] Missing accessibility patterns across React Native components
-- category: a11y
-- impact: 5
-- ease: 4
-- base-score: 2.0
-- ux-bias-multiplier: 1.5 (accessibility is UX-critical)
-- final-score: 3.0 (but lowered to 2.0 due to limited React Native a11y tooling)
-- next: Audit React Native accessibility props (accessibilityLabel, accessibilityRole) across interactive components, starting with primary user flows
-- evidence: No accessibility-related props found in TypeScript files via grep search
-- observation: React Native components may lack accessibility attributes for screen readers and assistive technologies
-- source: audit
-
-## Previously addressed findings
-
-### [x] [8.4] Missing test coverage for hazard minigame components reduces quality assurance
-- category: tests
-- impact: 8
-- ease: 7
-- base-score: 5.6
-- ux-bias-multiplier: 1.5 (hazard UX is critical gameplay)
-- final-score: 8.4
-- next: Create test files for HazardBoard.tsx, HazardCard.tsx, HazardDie.tsx, HazardOverlays.tsx, RewardsOverlay.tsx, RouteSelect.tsx, and glyphs.tsx components
-- evidence: components/hazard/ directory contains 8 components without corresponding test files
-- observation: The new hazard minigame components (532 lines in HazardBoard.tsx alone) lack test coverage despite being critical for the v2 hazard system implementation
-- source: audit
-- addressed: 2026-06-10 via commit 27c324d
-- fix: Created comprehensive test files for all 7 hazard components with proper TypeScript interfaces and mocking. Tests cover render modes, states, interactions, and error conditions. Establishes surface-level test contracts following hermetic-test methodology.
+- addressed: 2026-06-11 via commit b4e4536
+- fix: Added setup documentation link in README Quick start section pointing to setup/01_repository.md for detailed setup process, improving discoverability for fresh maintainers.

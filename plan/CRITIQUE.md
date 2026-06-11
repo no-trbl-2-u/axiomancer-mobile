@@ -33,14 +33,6 @@
      development workflow clarity. Examined README.md, setup/,
      docs/, package.json, testing patterns. 5 findings filed below. -->
 
-### [HIGH] /setup/ — Referenced setup documentation missing, blocking onboarding
-- pass: 33 (commit 07b4068)
-- viewport: repository
-- category: navigation
-- observation: Setup documentation referenced throughout README but missing critical setup files, creating broken onboarding path
-- evidence: README line 90 references setup/02_eas.md, 03_store_setup.md, 04_claude_playtest.md but only partial content exists - setup process appears incomplete
-- suggested fix: Complete all setup documentation or remove references to non-existent setup guides
-- source: repo-analysis
 
 ### [MED] /README.md — Repository structure navigation unclear for new maintainers
 - pass: 33 (commit 07b4068)
@@ -579,6 +571,15 @@
 <!-- Drained from ## Pending via /oversight 2026-06-08 (queue-drained
      call): addressed-✅ findings moved here so the open-findings
      signal /iterate reads is accurate. -->
+
+### [x] [HIGH] /setup/ — Referenced setup documentation missing, blocking onboarding (commit 735d52b)
+- pass: 33 (commit 07b4068)
+- viewport: repository
+- category: navigation
+- observation: Setup documentation referenced throughout README but missing critical setup files, creating broken onboarding path
+- evidence: README line 90 references setup/02_eas.md, 03_store_setup.md, 04_claude_playtest.md but only partial content exists - setup process appears incomplete
+- suggested fix: Complete all setup documentation or remove references to non-existent setup guides
+- source: repo-analysis
 
 ### [MED] /specs/README.md — Spec dependency information contradicts completion status ✅
 - pass: 29 (commit cef865b); addressed at commit c93eef3 via `/iterate`

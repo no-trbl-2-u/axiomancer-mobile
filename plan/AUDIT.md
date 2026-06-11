@@ -60,7 +60,7 @@
 - addressed: 2026-06-11 via commit 2db3fc7
 - fix: Added reference to setup/ directory in Deploy environment section with links to setup/02_eas.md, setup/03_store_setup.md, and setup/04_claude_playtest.md. Fresh maintainers can now discover critical setup documentation referenced in .env.example.
 
-### [ ] [5.0] Engine upgrade documentation lacks current context
+### [x] [5.0] Engine upgrade documentation lacks current context
 - category: external-critique
 - impact: 5
 - ease: 10
@@ -73,6 +73,9 @@
 - evidence: README.md lines 207-221 list multiple engine upgrade paths (0.14.0, 0.15.0, 0.15.1, 0.16.0) without indicating which applies to current repo state
 - suggested fix: Add current engine version indicator and clarify which upgrade docs are needed for fresh checkout vs specific version migrations
 - source: external-critique
+- issue: #349
+- addressed: 2026-06-11 via commit 6a5e58a
+- fix: Added clear current engine version indicator (axiomancer-mechanics ^0.16.0) and clarified that fresh checkouts include latest version with upgrade docs only needed for specific version migrations. Fresh maintainers can now easily determine if upgrade documentation applies.
 
 ### [ ] [5.0] Testing prerequisite unclear for fresh maintainers
 - category: external-critique

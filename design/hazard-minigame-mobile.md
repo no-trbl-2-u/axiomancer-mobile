@@ -366,7 +366,10 @@ The screen should answer the immediate question first: **what do I need, what ca
 
 - Enter a die-selection mode.
 - Valid dice glow; invalid dice remain visible but disabled.
-- Confirm target color with a compact color wheel/sheet.
+- **Implemented (2026-06-11):** convert always mints WILD GOLD dice (no target-colour
+  choice — that made re-cast strictly better). Minor converts one hostile ✕; major
+  converts all (plus a floating gold die when ≤1 was converted). The old "confirm
+  target colour" sheet is therefore unnecessary.
 
 ### Mana Creation
 
@@ -406,6 +409,29 @@ The screen should answer the immediate question first: **what do I need, what ca
 - Place active ENCHANT cards in a persistent zone above the hand.
 - Between rounds, animate or list their effect.
 - ENCHANT cards must not appear in discard/deck UI once played.
+- **Implemented (2026-06-11):** the `aura` effect adds session `modifiers` for the
+  rest of the hazard; the board renders an `ENCHANTMENTS` strip (chips) below the
+  meter listing each active modifier, plus a primed gold-VOW chip. See
+  `docs/hazard-card-expansion-2026-06-11-spec.md`.
+
+### Two-Tone (Multi-Colour) — added 2026-06-11
+
+- Cards that accept either of two die colours (plus the wild gold die). Mostly rare,
+  a few uncommon, never common; reward-pool only.
+- Show both power colours on the card (badge / split accent) so the player knows
+  either colour's die fits the mana socket.
+
+### Choose — added 2026-06-11
+
+- A powered card whose value feeds ONE meter the player picks (e.g. TWIN PATHS:
+  8 FORCE or 8 ESCAPE). Render a compact FORCE / ESCAPE toggle under the staged card
+  while it is powered and unapplied; the engine action is `chooseHazardCardKey`.
+
+### Sacrifice / Burst — added 2026-06-11
+
+- BURST cards add progress to the current round only; SACRIFICE (BLOODPRICE) shows
+  its VITAE cost up front (`−4♥`) and settles it at claim. Matches the "show the
+  cost before play" rule above.
 
 ---
 

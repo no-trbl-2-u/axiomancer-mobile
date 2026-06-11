@@ -80,6 +80,55 @@ export const HAZARD_TUNING = {
             /** Gold's free draw is already "major" and does not grow on power. */
             drawMajor: 2,
         },
+        /**
+         * Reward-pool EXPANSION magnitudes (2026-06-11 roster). These cards
+         * are acquired, never in the starter bag, so they do not move the
+         * balance sim — but they still read every number from here.
+         */
+        expansion: {
+            /** Two-tone pivots: free one meter, surge the other (bigger). */
+            pivot: { uncFree: 4, uncPowered: 7, rareFree: 5, rarePowered: 10 },
+            /** Lopsided purple duals (strong/weak meter split). */
+            dual: { strong: 5, strongPowered: 7, weak: 2, weakPowered: 3 },
+            /** Number+utility hybrids. */
+            hybrid: {
+                /** PATHFINDER / WINDCALLER: flat number, die upgrades the utility. */
+                flatNumber: 5,
+                /** STONE/TIDEREADER: number grows on power, draw grows too. */
+                drawFree: 3,
+                drawPowered: 5,
+            },
+            /** Enchantments (auras). */
+            aura: {
+                redBlueFree: 3,
+                redBluePowered: 6,
+                redBlueAmount: 2,
+                purpleNumber: 2,
+                purpleMinor: 1,
+                purpleMajor: 2,
+                goldNumber: 6,
+                goldAmount: 3,
+                /** RELIC OF FURY surge-row boost. */
+                surgeBoost: 2,
+            },
+            /** Bursts (this-round-only). */
+            burst: {
+                base: 5,
+                powered: 8,
+                warcryPerDie: 1,
+                bloodForce: 8,
+                bloodPowered: 12,
+                bloodVitae: 4,
+                goldDual: 4,
+                goldNumber: 6,
+            },
+            /** GILDED VOW one-shot. */
+            vow: { force: 7, escape: 7 },
+            /** TWIN PATHS choose value. */
+            choose: 8,
+            /** SAINT'S PATIENCE. */
+            saint: { number: 3, draw: 2, momentum: 2 },
+        },
     },
 
     // -- rewards & consequences -------------------------------------------

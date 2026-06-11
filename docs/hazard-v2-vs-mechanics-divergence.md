@@ -1,7 +1,7 @@
 # Hazard Minigame: Mobile v2 Engine vs `axiomancer-mechanics` — Divergence Catalogue
 
 Date: 2026-06-11
-Status: Authoritative for current mobile `state/hazard/`; refreshed after comparing latest mobile and mechanics `main`.
+Status: Authoritative for current mobile `state/hazard/`; refreshed after the 2026-06-11 card-expansion (two-tone cards, enchantments, bursts, gold vow, choose, convert→gold). Roster + mechanics spec: `docs/hazard-card-expansion-2026-06-11-spec.md`.
 
 ## Why this document exists
 
@@ -54,6 +54,7 @@ Primary mechanics comparison files:
 - Die faces are six slots: `red`, `blue`, `purple`, `gold`, `gold`, `hex`.
 - Gold is wild for powering non-gold cards: a gold die can power any card colour.
 - Gold cards still require gold dice because no non-gold die can satisfy a gold card.
+- TWO-TONE cards (reward pool) declare `colors: HazardColor[]`; either listed colour's die — or the wild gold die — powers them (`dieCanPowerCard`). `kind` stays the primary identity.
 - Four dice are cast once at route selection.
 - Dice do not automatically re-cast or refresh between rounds.
 - Spent dice stay spent across rounds.
@@ -64,7 +65,7 @@ Primary mechanics comparison files:
 ### Cards, apply step, and hand economy
 
 - Starter deck has 11 authored cards with weights; starter draw bag total is 25 card ids at `starterWeightScale = 1`.
-- Reward pool has 8 cards.
+- Reward pool has 30 cards (8 original + 22 in the 2026-06-11 expansion). The expansion is reward-pool ONLY — the starter bag and its balance sim are unchanged.
 - CRACK is a dead card added by consequence.
 - `HAZARD_HAND_SIZE = 5`.
 - There is no current play-area cap; the whole hand can be staged.
@@ -86,7 +87,12 @@ Primary mechanics comparison files:
 - Current utility effects are:
   - `draw`: draw `drawBase` cards, or `drawPowered`/major amount at major tier.
   - `recast`: re-roll only currently available dice; major tier also adds one temporary non-hex mana die.
-  - `convert`: convert all available `hex` dice to the card colour; major tier also adds one temporary die of that colour.
+  - `convert`: mint WILD GOLD dice (never the card colour — otherwise re-cast is strictly better). Minor (unpowered) turns exactly ONE available `hex` die to gold; major (powered, or gold `majorEffect`) turns them ALL, and conjures one floating gold die when ≤1 was converted so major always beats minor.
+  - `aura` (ENCHANT, expansion): adds persistent session `modifiers` for the rest of the hazard — `auraForce`/`auraEscape` (+X to EVERY played card contributing that meter) and `surgeForce`/`surgeEscape` (+X to every POWERED card's contribution). Red/blue auras upgrade their NUMBER on power, aura flat; purple auras keep the number flat and upgrade the AURA; gold auras fire major for free and the die buys numbers.
+  - `burst` (expansion): adds progress to the CURRENT round only (rides `progressBase`). `burstPerUnspentDieForce` adds force per unspent non-hex die (WAR-CRY); `vitaeCost` accrues a VITAE cost settled at claim (BLOODPRICE).
+  - `goldvow` (expansion): primes a one-shot `session.goldVow` consumed by the next gold die spent powering a card; the bonus rides that card as `vowBonus`.
+- CHOOSE cards (`choose: true`, e.g. TWIN PATHS) feed their single powered value into ONE meter the player picks (`entry.chosenKey`, default `force`), set via `chooseHazardCardKey`.
+- The `momentumBonus` rider raises the per-session momentum cap (`momentumCap`, default 3) on apply (SAINT'S PATIENCE).
 - Utility effects fire once per card because application locks the card.
 - CRACK is dead: contributes nothing, cannot be powered, and only clogs the hand unless discarded.
 
@@ -143,7 +149,8 @@ Starter cards:
 
 Reward/consequence cards:
 
-- Reward cards: `r_grip`, `r_wind`, `r_even`, `r_conv`, `r_seer`, `r_gale`, `r_oath`, `r_crown`.
+- Reward cards (original): `r_grip`, `r_wind`, `r_even`, `r_conv`, `r_seer`, `r_gale`, `r_oath`, `r_crown`.
+- Reward cards (2026-06-11 expansion): two-tone pivots `r_pivot`, `r_drop`, `r_last`; lopsided duals `r_heave`, `r_skitter`; number+utility hybrids `r_path`, `r_windcall`, `r_stone`, `r_tide`; enchantments `r_aggr`, `r_swift`, `r_zeal`, `r_martyr`, `r_relic`; gold vow `r_vow`; bursts `r_serk`, `r_bolt`, `r_warcry`, `r_blood`, `r_pwrath`; choose `r_twin`; tempo `r_saint`.
 - Consequence card: `crack`.
 
 Hazards:
@@ -155,7 +162,7 @@ Hazards:
   - Safe thresholds: `[18, 21, 24]`, penalty VITAE 2.
   - Risk thresholds: `[[8, 10], [9, 11], [10, 12]]`, penalty VITAE 4.
 - `ashfall-crossing`
-  - Safe thresholds: `[20, 20, 22]`, penalty VITAE 2.
+  - Safe thresholds: `[21, 21, 23]`, penalty VITAE 2. (Raised from `[20, 20, 22]` on 2026-06-11: the convert→gold buff lifted safe perfect rate to ~0.80, over the 0.78 band.)
   - Risk thresholds: `[[10, 8], [10, 10], [12, 10]]`, penalty VITAE 4.
 - `famine-march`
   - Safe thresholds: `[19, 21, 23]`, penalty VITAE 2.
@@ -164,7 +171,7 @@ Hazards:
   - Safe thresholds: `[18, 21, 24]`, penalty VITAE 2.
   - Risk thresholds: `[[8, 10], [9, 11], [10, 12]]`, penalty VITAE 4.
 - `fever-rot`
-  - Safe thresholds: `[20, 20, 22]`, penalty VITAE 2.
+  - Safe thresholds: `[21, 21, 23]`, penalty VITAE 2. (Raised from `[20, 20, 22]` on 2026-06-11, same reason as `ashfall-crossing`.)
   - Risk thresholds: `[[10, 8], [10, 10], [12, 10]]`, penalty VITAE 4.
 
 Reward/consequence constants:
@@ -204,7 +211,8 @@ But it remains incompatible with mobile in important ways:
 - Mechanics card identity/content is `A01`...`A14`, `R01`...`R06`, `CRACK`; mobile uses named ids like `steps`, `footing`, `r_crown`, `crack`.
 - Mechanics hazard identity/content is `H01`, `H02`, `H03`, `H08`, `H12`, `H15`; mobile uses six named hazards listed above.
 - Mechanics dice distribution is still `red`, `blue`, `purple`, `gold`, `x`, `x`; mobile is `red`, `blue`, `purple`, `gold`, `gold`, `hex`.
-- Mechanics uses exact colour costs only; mobile treats gold dice as wild for non-gold cards.
+- Mechanics uses exact colour costs only; mobile treats gold dice as wild for non-gold cards AND supports two-tone cards powered by either of two colours.
+- Mechanics convert (where present) targets the card colour; mobile convert mints wild gold dice (minor one / major all + floating). Mobile also adds enchantment (`aura`), `burst`, `goldvow`, and `choose` card behaviours mechanics has no equivalent for.
 - Mechanics has a coarser play model: card ids move directly from hand to discard. Mobile has staged card instances, die attachment, explicit apply/lock, unstage, re-power, discard/salvage, and auto-apply at resolve.
 - Mechanics utility effects are mostly card-id special cases on powered play; mobile utilities fire on apply and support major/free gold effects, temporary dice, and full salvage behavior.
 - Mechanics has no mobile-equivalent persistent deck flag helpers or claim adapter contract matching mobile's GameState flags.
@@ -269,5 +277,5 @@ Risk route:
 
 - The v2 design descends from the 2026-06-10 Claude Design handoff, especially the four-colour redesign.
 - The no-between-round-recast doctrine is user-confirmed and supersedes both the prototype's every-round re-cast and any safe/risk split recast idea.
-- Enchantments are not part of current mobile v2.
+- Enchantments (persistent auras) ARE part of mobile v2 as of the 2026-06-11 expansion (the `aura` effect + session `modifiers`); see `docs/hazard-card-expansion-2026-06-11-spec.md`. This supersedes the earlier "enchantments are not part of mobile v2" note.
 - Old CDR-0006 docs should be treated as historical until rewritten.

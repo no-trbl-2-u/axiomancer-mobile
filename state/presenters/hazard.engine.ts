@@ -12,7 +12,7 @@ import {
     HAZARD_KEYWORDS,
     HAZARD_REWARDS,
 } from '@/state/hazard/content';
-import { dieCanPower, hazardProjectedProgress } from '@/state/hazard/engine';
+import { dieCanPowerCard, hazardCardPowerColors, hazardProjectedProgress } from '@/state/hazard/engine';
 import type { AppStoreState } from '@/state/store';
 import {
     type HazardCardDef,
@@ -47,6 +47,9 @@ export interface HazardCardVM {
     cardId: string;
     name: string;
     kind: HazardColor;
+    /** Die colours that can power this card (besides the wild gold die). A
+     *  two-tone card lists two — the board lets either land. */
+    powerColors: HazardColor[];
     rarity: 'common' | 'uncommon' | 'rare';
     dead: boolean;
     utility: boolean;
@@ -65,6 +68,12 @@ export interface HazardCardVM {
     applied: boolean;
     /** Discard benefit copy for the trash bin, e.g. "+1 FORCE this round". */
     salvageLabel: string | null;
+    /** CHOOSE card: true when the player must pick a meter for the surge value. */
+    choose: boolean;
+    /** The chosen meter for a powered CHOOSE card (default 'force'). */
+    chosenKey: 'force' | 'escape' | null;
+    /** GILDED VOW bonus riding this staged card, when any. */
+    vowBonus: { force: number; escape: number } | null;
 }
 
 export interface HazardMeterVM {
@@ -127,6 +136,8 @@ export interface HazardRewardsVM {
     reserveNote: string | null;
     /** e.g. "−8 VITAE — route penalty"; null when zero. */
     penaltyNote: string | null;
+    /** e.g. "−4 VITAE — sacrifice" from BLOODPRICE-style cards; null when zero. */
+    sacrificeNote: string | null;
 }
 
 export interface HazardViewModel {
@@ -157,6 +168,10 @@ export interface HazardViewModel {
     /** Safe-route helper line: per-type split of the combined meter. */
     meterDetail: string | null;
     momentumNote: string | null;
+    /** Active persistent enchantments (auras) — the "ENCHANTMENTS" strip. */
+    enchantments: { id: string; label: string }[];
+    /** Primed GILDED VOW awaiting the next gold die, when any. */
+    goldVowNote: string | null;
     hand: HazardCardVM[];
     play: HazardCardVM[];
     deckCount: number;
@@ -190,9 +205,49 @@ function effectLabel(def: HazardCardDef, powered: boolean): string | null {
     // Gold cards are major-tier even on the free row (the die buys numbers).
     const major = powered || def.majorEffect === true;
     if (def.effect === 'draw') return `DRAW ${major ? def.drawPowered ?? def.drawBase ?? 1 : def.drawBase ?? 1}`;
-    if (def.effect === 'convert') return major ? 'CONVERT ✕ +DIE' : 'CONVERT ✕';
+    if (def.effect === 'convert') return major ? 'CONVERT ✕→◆ ALL' : 'CONVERT 1 ✕→◆';
     if (def.effect === 'recast') return major ? 'RE-CAST +DIE' : 'RE-CAST';
+    if (def.effect === 'aura') {
+        const p = (major ? def.auraPowered ?? def.auraBase : def.auraBase) ?? {};
+        const segs: string[] = [];
+        if (p.auraForce) segs.push(`+${p.auraForce} FOR/card`);
+        if (p.auraEscape) segs.push(`+${p.auraEscape} ESC/card`);
+        if (p.surgeForce || p.surgeEscape) segs.push(`+${p.surgeForce ?? p.surgeEscape} surge`);
+        return `ENCHANT ${segs.join(' ')}`.trim();
+    }
+    if (def.effect === 'burst') {
+        if (def.burstPerUnspentDieForce) return `RALLY +${def.burstPerUnspentDieForce} FOR / die`;
+        const pl = major ? def.burstPowered ?? def.burstBase : def.burstBase;
+        const segs: string[] = [];
+        if (pl?.force) segs.push(`+${pl.force} FOR`);
+        if (pl?.escape) segs.push(`+${pl.escape} ESC`);
+        const cost = def.vitaeCost ? `−${def.vitaeCost}♥ ` : '';
+        return `${cost}BURST ${segs.join(' ')}`.trim();
+    }
+    if (def.effect === 'goldvow') {
+        return def.goldVow ? `VOW +${def.goldVow.force}/+${def.goldVow.escape} on gold` : null;
+    }
     return null;
+}
+
+/** Powered-row display numbers, honouring CHOOSE (only the chosen meter shows)
+ *  and the GILDED VOW bonus riding a staged card. */
+function poweredDisplay(def: HazardCardDef, entry: HazardHandEntry): { force: number; escape: number } {
+    let force: number;
+    let escape: number;
+    if (def.choose) {
+        const key = entry.chosenKey ?? 'force';
+        force = key === 'escape' ? 0 : def.fp ?? 0;
+        escape = key === 'escape' ? def.ep ?? 0 : 0;
+    } else {
+        force = def.fp ?? def.f;
+        escape = def.ep ?? def.e;
+    }
+    if (entry.vowBonus) {
+        force += entry.vowBonus.force;
+        escape += entry.vowBonus.escape;
+    }
+    return { force, escape };
 }
 
 const DIE_LABEL: Record<HazardColor, string> = {
@@ -217,17 +272,18 @@ function cardVM(entry: HazardHandEntry, session: HazardSessionState): HazardCard
     const def = getHazardCardDef(entry.cardId);
     const dieAvailable =
         !def.dead &&
-        session.dice.some((d) => d.state === 'available' && dieCanPower(d.kind, def.kind));
+        session.dice.some((d) => d.state === 'available' && dieCanPowerCard(d.kind, def));
     return {
         uid: entry.uid,
         cardId: entry.cardId,
         name: def.name,
         kind: def.kind,
+        powerColors: hazardCardPowerColors(def),
         rarity: def.rarity,
         dead: def.dead === true,
         utility: def.effect !== undefined,
         free: { force: def.f, escape: def.e },
-        powered: { force: def.fp ?? def.f, escape: def.ep ?? def.e },
+        powered: poweredDisplay(def, entry),
         freeEffectLabel: effectLabel(def, false),
         poweredEffectLabel: effectLabel(def, true),
         flavor: def.flavor,
@@ -236,6 +292,9 @@ function cardVM(entry: HazardHandEntry, session: HazardSessionState): HazardCard
         poweredByDieId: entry.dieId,
         applied: entry.applied === true,
         salvageLabel: salvageLabelOf(def),
+        choose: def.choose === true,
+        chosenKey: def.choose ? entry.chosenKey ?? 'force' : null,
+        vowBonus: entry.vowBonus ?? null,
     };
 }
 
@@ -245,11 +304,12 @@ function offerCardVM(def: HazardCardDef): HazardCardVM {
         cardId: def.id,
         name: def.name,
         kind: def.kind,
+        powerColors: hazardCardPowerColors(def),
         rarity: def.rarity,
         dead: def.dead === true,
         utility: def.effect !== undefined,
         free: { force: def.f, escape: def.e },
-        powered: { force: def.fp ?? def.f, escape: def.ep ?? def.e },
+        powered: poweredDisplay(def, { uid: '', cardId: def.id, dieId: null }),
         freeEffectLabel: effectLabel(def, false),
         poweredEffectLabel: effectLabel(def, true),
         flavor: def.flavor,
@@ -258,6 +318,9 @@ function offerCardVM(def: HazardCardDef): HazardCardVM {
         poweredByDieId: null,
         applied: false,
         salvageLabel: salvageLabelOf(def),
+        choose: def.choose === true,
+        chosenKey: null,
+        vowBonus: null,
     };
 }
 
@@ -339,6 +402,8 @@ const EMPTY_VM: HazardViewModel = Object.freeze({
     meters: [],
     meterDetail: null,
     momentumNote: null,
+    enchantments: [],
+    goldVowNote: null,
     hand: [],
     play: [],
     deckCount: 0,
@@ -404,6 +469,16 @@ export function selectHazardViewModel(state: Pick<AppStoreState, 'hazard'>): Haz
             ? `MOMENTUM +${momentum.force + momentum.escape} carried in`
             : null;
 
+    const m = session.modifiers;
+    const enchantments: { id: string; label: string }[] = [];
+    if (m.auraForce) enchantments.push({ id: 'auraForce', label: `+${m.auraForce} FORCE / card` });
+    if (m.auraEscape) enchantments.push({ id: 'auraEscape', label: `+${m.auraEscape} ESCAPE / card` });
+    if (m.surgeForce || m.surgeEscape)
+        enchantments.push({ id: 'surge', label: `+${m.surgeForce || m.surgeEscape} to surge numbers` });
+    const goldVowNote = session.goldVow
+        ? `VOW PRIMED — next gold die +${session.goldVow.force}/+${session.goldVow.escape}`
+        : null;
+
     const flash = session.resolveInfo;
     const resolveFlash: HazardResolveFlashVM | null = flash
         ? {
@@ -463,6 +538,8 @@ export function selectHazardViewModel(state: Pick<AppStoreState, 'hazard'>): Haz
                       : null,
               penaltyNote:
                   outcome.penaltyVitae > 0 ? `−${outcome.penaltyVitae} VITAE — route penalty` : null,
+              sacrificeNote:
+                  outcome.vitaeCost > 0 ? `−${outcome.vitaeCost} VITAE — sacrifice` : null,
           }
         : null;
 
@@ -496,6 +573,8 @@ export function selectHazardViewModel(state: Pick<AppStoreState, 'hazard'>): Haz
         meters,
         meterDetail,
         momentumNote,
+        enchantments,
+        goldVowNote,
         hand: session.hand.map((h) => cardVM(h, session)),
         play: session.play.map((p) => cardVM(p, session)),
         deckCount: session.drawPile.length,

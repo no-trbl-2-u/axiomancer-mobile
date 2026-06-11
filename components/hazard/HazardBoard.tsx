@@ -73,10 +73,11 @@ function rectContains(rect: Rect | null, x: number, y: number, pad = 0): boolean
     );
 }
 
-/** A die of colour `dieKind` can power a card of colour `cardKind` when the
- *  colours match or the die is the wild gold die. (Mirrors the engine.) */
-function dieFits(dieKind: HazardDieVM['kind'], cardKind: HazardCardVM['kind']): boolean {
-    return dieKind === 'gold' || dieKind === cardKind;
+/** A die of colour `dieKind` can power `card` when the die is the wild gold
+ *  die or its colour is one of the card's power colours (two-tone cards list
+ *  two). Mirrors `dieCanPowerCard` in the engine. */
+function dieFits(dieKind: HazardDieVM['kind'], card: HazardCardVM): boolean {
+    return dieKind === 'gold' || card.powerColors.includes(dieKind as HazardCardVM['kind']);
 }
 
 type MeasurableRef = React.RefObject<View | null>;
@@ -248,6 +249,62 @@ function ApplyButton({ card, onApply }: { card: HazardCardVM; onApply: (uid: str
 }
 
 // ---------------------------------------------------------------------------
+// CHOOSE toggle — under a powered CHOOSE card (TWIN PATHS). Picks the meter
+// its surge value feeds. Hidden once applied.
+// ---------------------------------------------------------------------------
+
+function ChooseToggle({ card, onChoose }: { card: HazardCardVM; onChoose: (uid: string, key: 'force' | 'escape') => void }) {
+    if (!card.choose || card.poweredByDieId === null || card.applied) return null;
+    const opt = (key: 'force' | 'escape', label: string) => {
+        const on = card.chosenKey === key;
+        const accent = TYPE_ACCENT[key];
+        return (
+            <Pressable
+                key={key}
+                onPress={() => {
+                    Haptics.selectionAsync().catch(() => undefined);
+                    onChoose(card.uid, key);
+                }}
+                accessibilityRole="button"
+                accessibilityState={{ selected: on }}
+                accessibilityLabel={`Send TWIN PATHS into ${label}${on ? ', selected' : ''}`}
+                testID={`hazard-choose-${card.uid}-${key}`}
+                style={[styles.chooseBtn, { borderColor: on ? accent : AXM.ash, backgroundColor: on ? `${accent}28` : 'rgba(0,0,0,0.4)' }]}
+            >
+                <Text style={[styles.chooseText, { color: on ? accent : AXM.bone }]}>{label}</Text>
+            </Pressable>
+        );
+    };
+    return (
+        <View style={styles.chooseRow} testID={`hazard-choose-${card.uid}`}>
+            {opt('force', 'FOR')}
+            {opt('escape', 'ESC')}
+        </View>
+    );
+}
+
+// ---------------------------------------------------------------------------
+// ENCHANTMENTS strip — persistent auras + a primed gold VOW (design §6).
+// ---------------------------------------------------------------------------
+
+function EnchantStrip({ vm }: { vm: HazardViewModel }) {
+    if (vm.enchantments.length === 0 && vm.goldVowNote === null) return null;
+    return (
+        <View style={styles.enchantPanel} testID="hazard-enchantments">
+            <Text style={styles.enchantHead}>✦ ENCHANTMENTS</Text>
+            <View style={styles.enchantRow}>
+                {vm.enchantments.map((e) => (
+                    <Text key={e.id} style={styles.enchantChip}>{e.label}</Text>
+                ))}
+                {vm.goldVowNote !== null && (
+                    <Text style={[styles.enchantChip, styles.vowChip]}>{vm.goldVowNote}</Text>
+                )}
+            </View>
+        </View>
+    );
+}
+
+// ---------------------------------------------------------------------------
 // PLAY button — translucent sulfur glow, pulsing when armed.
 // ---------------------------------------------------------------------------
 
@@ -297,11 +354,12 @@ export interface HazardBoardProps {
     onPower: (uid: string, dieId: string) => void;
     onApply: (uid: string) => void;
     onDiscard: (uid: string) => void;
+    onChoose: (uid: string, key: 'force' | 'escape') => void;
     onResolve: () => void;
     onInspect: (card: HazardCardVM) => void;
 }
 
-export const HazardBoard = React.memo(function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onApply, onDiscard, onResolve, onInspect }: HazardBoardProps) {
+export const HazardBoard = React.memo(function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onApply, onDiscard, onChoose, onResolve, onInspect }: HazardBoardProps) {
     const playAreaRef = useRef<View | null>(null);
     const trashRef = useRef<View | null>(null);
     const stagedRefs = useRef(new Map<string, View | null>());
@@ -353,14 +411,14 @@ export const HazardBoard = React.memo(function HazardBoard({ vm, drag, onStage, 
                     const playRect = await measureRect(playAreaRef);
                     if (rectContains(playRect, x, y)) {
                         const takers = vm.play.filter(
-                            (p) => !p.applied && dieFits(payload.die.kind, p.kind),
+                            (p) => !p.applied && dieFits(payload.die.kind, p),
                         );
                         if (takers.length === 1) onCard = takers[0].uid;
                     }
                 }
                 if (onCard !== null) {
                     const target = vm.play.find((p) => p.uid === onCard);
-                    const ok = target && !target.applied && dieFits(payload.die.kind, target.kind);
+                    const ok = target && !target.applied && dieFits(payload.die.kind, target);
                     if (ok) {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => undefined);
                         onPower(onCard, payload.dieId);
@@ -463,6 +521,8 @@ export const HazardBoard = React.memo(function HazardBoard({ vm, drag, onStage, 
 
             <LiveMeter vm={vm} />
 
+            <EnchantStrip vm={vm} />
+
             {/* dice tray */}
             <View style={styles.tray}>
                 <View style={styles.trayHead}>
@@ -527,6 +587,7 @@ export const HazardBoard = React.memo(function HazardBoard({ vm, drag, onStage, 
                                     </Animated.View>
                                 </GestureDetector>
                                 <ApplyButton card={card} onApply={onApply} />
+                                <ChooseToggle card={card} onChoose={onChoose} />
                             </View>
                         ))}
                     </View>
@@ -648,6 +709,14 @@ const styles = StyleSheet.create({
     applyText: { fontFamily: FONTS.sans, fontSize: 9, letterSpacing: 1.6, color: AXM.parchment },
     applyLocked: { borderColor: HZ.acidDim, backgroundColor: 'rgba(134,168,33,0.16)' },
     applyLockedText: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1.2, color: HZ.acid },
+    chooseRow: { flexDirection: 'row', gap: 3, width: 70 },
+    chooseBtn: { flex: 1, borderWidth: 1, paddingVertical: 2, alignItems: 'center', justifyContent: 'center' },
+    chooseText: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1 },
+    enchantPanel: { paddingHorizontal: 12, paddingVertical: 5, backgroundColor: 'rgba(138,87,189,0.12)', borderBottomWidth: 1, borderBottomColor: AXM.ash },
+    enchantHead: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1.4, color: HZ.purple, marginBottom: 3 },
+    enchantRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 5 },
+    enchantChip: { fontFamily: FONTS.mono, fontSize: 8, letterSpacing: 0.4, color: AXM.parchment, backgroundColor: 'rgba(138,87,189,0.28)', borderWidth: 1, borderColor: `${HZ.purple}77`, paddingHorizontal: 5, paddingVertical: 1, overflow: 'hidden' },
+    vowChip: { color: HZ.gold, backgroundColor: 'rgba(194,161,78,0.22)', borderColor: `${HZ.gold}88` },
     playHint: { fontFamily: FONTS.mono, fontSize: 7, color: AXM.bone, letterSpacing: 1, textAlign: 'center', marginTop: 4 },
     dock: { height: 148, borderTopWidth: 1, borderTopColor: AXM.ash },
     trashBin: {

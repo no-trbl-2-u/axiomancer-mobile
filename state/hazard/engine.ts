@@ -26,6 +26,7 @@ import {
 } from './content';
 import { nextFloat, nextInt, seedRng, shuffle, type HazardRngState } from './rng';
 import {
+    EMPTY_HAZARD_MODIFIERS,
     HAZARD_DICE_COUNT,
     HAZARD_HAND_SIZE,
     HAZARD_MOMENTUM_CAP,
@@ -35,13 +36,30 @@ import {
     type HazardDie,
     type HazardHandEntry,
     type HazardMark,
+    type HazardModifiers,
     type HazardOutcome,
     type HazardOutcomeTier,
+    type HazardProgressKey,
     type HazardResolveInfo,
     type HazardRewardId,
     type HazardRouteKey,
     type HazardSessionState,
 } from './types';
+
+/** Card colours (besides the wild gold die) whose dice can power `def`. */
+export function hazardCardPowerColors(def: HazardCardDef): HazardColor[] {
+    return def.colors ?? [def.kind];
+}
+
+/** Accumulate an enchantment payload onto the session modifiers. */
+function addModifiers(m: HazardModifiers, p: Partial<HazardModifiers>): HazardModifiers {
+    return {
+        auraForce: m.auraForce + (p.auraForce ?? 0),
+        auraEscape: m.auraEscape + (p.auraEscape ?? 0),
+        surgeForce: m.surgeForce + (p.surgeForce ?? 0),
+        surgeEscape: m.surgeEscape + (p.surgeEscape ?? 0),
+    };
+}
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -126,18 +144,45 @@ export function hazardCardValue(entry: HazardHandEntry): { force: number; escape
     const def = getHazardCardDef(entry.cardId);
     if (def.dead) return { force: 0, escape: 0 };
     const powered = entry.dieId !== null;
-    return {
-        force: powered ? (def.fp ?? def.f) : def.f,
-        escape: powered ? (def.ep ?? def.e) : def.e,
-    };
+    let force: number;
+    let escape: number;
+    if (def.choose && powered) {
+        // CHOOSE: the powered value feeds ONE chosen meter (default FORCE).
+        const amount = entry.chosenKey === 'escape' ? (def.ep ?? def.fp ?? 0) : (def.fp ?? 0);
+        force = entry.chosenKey === 'escape' ? 0 : amount;
+        escape = entry.chosenKey === 'escape' ? amount : 0;
+    } else {
+        force = powered ? (def.fp ?? def.f) : def.f;
+        escape = powered ? (def.ep ?? def.e) : def.e;
+    }
+    if (entry.vowBonus) {
+        force += entry.vowBonus.force;
+        escape += entry.vowBonus.escape;
+    }
+    return { force, escape };
 }
 
-/** Staged progress (play area only — excludes momentum base). */
+/**
+ * Staged progress (play area only — excludes momentum base). Applies the
+ * session's persistent enchantment modifiers per card:
+ *  - surge boost (RELIC OF FURY) lifts a POWERED card's contributions;
+ *  - aura (AGGRESSION / SWIFTNESS / ZEAL / MARTYR'S) lifts EVERY card that
+ *    contributes a given meter — the user's "+X to every card that generates
+ *    that value" framing.
+ */
 export function hazardStagedProgress(s: HazardSessionState): { force: number; escape: number } {
+    const m = s.modifiers;
     return s.play.reduce(
         (acc, e) => {
             const v = hazardCardValue(e);
-            return { force: acc.force + v.force, escape: acc.escape + v.escape };
+            const powered = e.dieId !== null;
+            let f = v.force;
+            let escape = v.escape;
+            if (powered && f > 0) f += m.surgeForce;
+            if (powered && escape > 0) escape += m.surgeEscape;
+            if (f > 0) f += m.auraForce;
+            if (escape > 0) escape += m.auraEscape;
+            return { force: acc.force + f, escape: acc.escape + escape };
         },
         { force: 0, escape: 0 },
     );
@@ -184,6 +229,10 @@ export function createHazardSession(
         play: [],
         dice: [],
         progressBase: { force: 0, escape: 0 },
+        modifiers: { ...EMPTY_HAZARD_MODIFIERS },
+        goldVow: null,
+        momentumCap: HAZARD_MOMENTUM_CAP,
+        vitaeCost: 0,
         resolveInfo: null,
         outcome: null,
         pickedRewardCardId: null,
@@ -269,18 +318,66 @@ function applyUtilityEffect(
         return { ...s, dice, rng, uidCounter: uc };
     }
     if (def.effect === 'convert') {
-        let dice = s.dice.map((d) =>
-            d.kind === 'hex' ? { ...d, kind: def.kind, state: 'available' as const } : d,
-        );
+        // CONVERT always mints WILD GOLD dice (so it is never strictly worse
+        // than re-cast). Minor turns ONE hostile ✕; major turns them ALL, and
+        // — when ≤1 was converted — conjures a floating gold die so a major
+        // convert is always strictly better than a minor one.
+        const hexIds = s.dice.filter((d) => d.kind === 'hex' && d.state === 'available').map((d) => d.id);
         let rng = s.rng;
         let uc = s.uidCounter;
+        let dice: HazardDie[];
+        let convertedCount: number;
         if (major) {
-            const extra = rollManaDie(rng, uc, def.kind);
-            rng = extra.rng;
-            uc = extra.uidCounter;
-            dice = [...dice, extra.value];
+            dice = s.dice.map((d) =>
+                d.kind === 'hex' ? { ...d, kind: 'gold' as const, state: 'available' as const } : d,
+            );
+            convertedCount = hexIds.length;
+            if (convertedCount <= 1) {
+                const extra = rollManaDie(rng, uc, 'gold');
+                rng = extra.rng;
+                uc = extra.uidCounter;
+                dice = [...dice, extra.value];
+            }
+        } else {
+            const targetId = hexIds[0];
+            dice = targetId
+                ? s.dice.map((d) =>
+                      d.id === targetId ? { ...d, kind: 'gold' as const, state: 'available' as const } : d,
+                  )
+                : s.dice;
+            convertedCount = targetId ? 1 : 0;
         }
+        void convertedCount;
         return { ...s, dice, rng, uidCounter: uc };
+    }
+    if (def.effect === 'aura') {
+        const payload = (major ? def.auraPowered ?? def.auraBase : def.auraBase) ?? undefined;
+        if (!payload) return s;
+        return { ...s, modifiers: addModifiers(s.modifiers, payload) };
+    }
+    if (def.effect === 'burst') {
+        // One-round shove: rides progressBase (the round advance overwrites it).
+        const payload = major ? def.burstPowered ?? def.burstBase : def.burstBase;
+        let force = (payload?.force ?? 0);
+        let escape = (payload?.escape ?? 0);
+        if (def.burstPerUnspentDieForce) {
+            const unspent = s.dice.filter((d) => d.kind !== 'hex' && d.state === 'available').length;
+            force += unspent * def.burstPerUnspentDieForce;
+        }
+        const vitaeCost = s.vitaeCost + (def.vitaeCost ?? 0);
+        if (force === 0 && escape === 0 && vitaeCost === s.vitaeCost) return s;
+        return {
+            ...s,
+            progressBase: {
+                force: s.progressBase.force + force,
+                escape: s.progressBase.escape + escape,
+            },
+            vitaeCost,
+        };
+    }
+    if (def.effect === 'goldvow') {
+        if (!def.goldVow) return s;
+        return { ...s, goldVow: { ...def.goldVow } };
     }
     return s;
 }
@@ -337,6 +434,14 @@ export function dieCanPower(dieKind: HazardDie['kind'], cardKind: HazardColor): 
     return dieKind === 'gold' || dieKind === cardKind;
 }
 
+/** Card-aware variant: honours two-tone `colors` (either of two colours, plus
+ *  the wild gold die). Use this everywhere a card def is in hand. */
+export function dieCanPowerCard(dieKind: HazardDie['kind'], def: HazardCardDef): boolean {
+    if (dieKind === 'hex') return false;
+    if (dieKind === 'gold') return true;
+    return hazardCardPowerColors(def).includes(dieKind as HazardColor);
+}
+
 /**
  * Drops a die onto a staged card to arm its SURGE / numbers. A
  * matching-colour die works, and the WILD gold die powers any colour
@@ -359,16 +464,45 @@ export function powerHazardCard(
     if (die.state !== 'available') return s;
     const def = getHazardCardDef(card.cardId);
     if (def.dead) return s;
-    if (!dieCanPower(die.kind, def.kind)) return s;
+    if (!dieCanPowerCard(die.kind, def)) return s;
     let dice = s.dice.map((d) => (d.id === dieId ? { ...d, state: 'spent' as const } : d));
     if (card.dieId) {
         dice = dice.map((d) => (d.id === card.dieId ? { ...d, state: 'available' as const } : d));
     }
+    // GILDED VOW rides the FIRST gold die spent powering a card; re-powering
+    // off a gold die drops the (already-spent) vow bonus so it never lingers.
+    let goldVow = s.goldVow;
+    let vowBonus = card.vowBonus;
+    if (die.kind === 'gold' && goldVow != null) {
+        vowBonus = { ...goldVow };
+        goldVow = null;
+    } else if (die.kind !== 'gold') {
+        vowBonus = undefined;
+    }
     return {
         ...s,
         dice,
-        play: s.play.map((p) => (p.uid === uid ? { ...p, dieId } : p)),
+        goldVow,
+        play: s.play.map((p) =>
+            p.uid === uid
+                ? { ...p, dieId, vowBonus, chosenKey: def.choose ? p.chosenKey ?? 'force' : p.chosenKey }
+                : p,
+        ),
     };
+}
+
+/** CHOOSE card: pick which meter its powered value feeds (force | escape). */
+export function chooseHazardCardKey(
+    s: HazardSessionState,
+    uid: string,
+    key: HazardProgressKey,
+): HazardSessionState {
+    if (s.phase !== 'playing') return s;
+    const card = s.play.find((p) => p.uid === uid);
+    if (!card || card.applied) return s;
+    const def = getHazardCardDef(card.cardId);
+    if (!def.choose) return s;
+    return { ...s, play: s.play.map((p) => (p.uid === uid ? { ...p, chosenKey: key } : p)) };
 }
 
 /**
@@ -390,8 +524,10 @@ export function applyHazardCard(
         play: s.play.map((p) => (p.uid === uid ? { ...p, applied: true } : p)),
     };
     const def = getHazardCardDef(card.cardId);
-    if (def.effect && !def.dead) {
-        ns = applyUtilityEffect(ns, def, card.dieId !== null, deckBag);
+    if (!def.dead) {
+        if (def.effect) ns = applyUtilityEffect(ns, def, card.dieId !== null, deckBag);
+        // Riders fire alongside the main effect (SAINT'S PATIENCE: draw + cap).
+        if (def.momentumBonus) ns = { ...ns, momentumCap: ns.momentumCap + def.momentumBonus };
     }
     return ns;
 }
@@ -435,10 +571,10 @@ export function discardHazardCard(s: HazardSessionState, uid: string): HazardSes
 // Resolve
 // ---------------------------------------------------------------------------
 
-function momentumCarry(value: number, need: number, cleared: boolean, lastRound: boolean): number {
+function momentumCarry(value: number, need: number, cleared: boolean, lastRound: boolean, cap: number): number {
     if (!cleared || lastRound) return 0;
     const surplus = Math.max(0, value - need);
-    return Math.min(HAZARD_MOMENTUM_CAP, Math.floor(surplus / 2));
+    return Math.min(cap, Math.floor(surplus / 2));
 }
 
 /**
@@ -469,8 +605,8 @@ export function resolveHazardRound(s: HazardSessionState, deckBag: readonly stri
             escape: p.escape,
             needF: nF,
             needE: nE,
-            carryForce: momentumCarry(p.force, nF, cleared, lastRound),
-            carryEscape: momentumCarry(p.escape, nE, cleared, lastRound),
+            carryForce: momentumCarry(p.force, nF, cleared, lastRound, s.momentumCap),
+            carryEscape: momentumCarry(p.escape, nE, cleared, lastRound, s.momentumCap),
         };
     } else {
         const need = def.safe.thresholds[s.round - 1];
@@ -486,7 +622,7 @@ export function resolveHazardRound(s: HazardSessionState, deckBag: readonly stri
             escape: p.escape,
             combined,
             need,
-            carryForce: momentumCarry(combined, need, cleared, lastRound),
+            carryForce: momentumCarry(combined, need, cleared, lastRound, s.momentumCap),
             carryEscape: 0,
         };
     }
@@ -578,6 +714,7 @@ function computeOutcome(s: HazardSessionState): { outcome: HazardOutcome; rng: H
         canSkip: tier === 'perfect',
         reserveBonus,
         penaltyVitae: route.penaltyVitae * losses,
+        vitaeCost: s.vitaeCost,
     };
     return { outcome, rng };
 }

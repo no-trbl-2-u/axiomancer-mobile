@@ -171,6 +171,11 @@ export const HazardCard = React.memo(function HazardCard({
     const c = DIE[card.kind];
     const rar = RARITY_UI[card.rarity];
     const powered = card.poweredByDieId !== null;
+    // Two-tone cards can be powered by either of two colours — surface both.
+    const powerLabel =
+        card.powerColors.length > 1
+            ? card.powerColors.map((k) => DIE[k].label).join(' / ')
+            : DIE[card.kind].label;
     const W = mode === 'detail' ? 234 : mode === 'play' ? 70 : mode === 'offer' ? 96 : 90;
     const H = mode === 'detail' ? 330 : mode === 'play' ? 96 : mode === 'offer' ? 132 : 122;
 
@@ -258,7 +263,7 @@ export const HazardCard = React.memo(function HazardCard({
                     {card.dead
                         ? 'Dead weight. It does nothing, and nothing can power it.'
                         : bottom
-                          ? `SURGE — spend a ${DIE[card.kind].label} die ${card.utility ? 'for the stronger effect.' : 'for these values.'}`
+                          ? `SURGE — spend a ${powerLabel} die ${card.utility ? 'for the stronger effect.' : 'for these values.'}`
                           : card.utility
                             ? 'Play free — no die needed.'
                             : 'Gain these — always available.'}
@@ -274,7 +279,7 @@ export const HazardCard = React.memo(function HazardCard({
                             {rar.label}
                         </Text>
                         <Text style={{ fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1.5, color: c.dark, borderWidth: 1, borderColor: c.c, paddingHorizontal: 7, paddingVertical: 1 }}>
-                            {DIE[card.kind].label}
+                            {powerLabel}
                         </Text>
                     </View>
                     <Text style={{ fontFamily: FONTS.gothic, fontSize: 22, lineHeight: 23, letterSpacing: 0.5, color: CARD_INK, textAlign: 'center' }}>

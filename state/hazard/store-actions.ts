@@ -14,6 +14,7 @@ import type { GameState } from 'axiomancer-mechanics';
 import {
     acknowledgeHazardOutcome as engineAcknowledgeOutcome,
     applyHazardCard as engineApplyCard,
+    chooseHazardCardKey as engineChooseCardKey,
     claimHazardRewards as engineClaimRewards,
     continueHazardAfterResolve as engineContinueAfterResolve,
     createHazardSession,
@@ -37,7 +38,7 @@ import {
     HAZARD_VITAE_REWARD,
 } from './content';
 import { appendAcquiredCard, HAZARD_CARD_FLAG_PREFIX, hazardDeckBag } from './deck-flags';
-import type { HazardRouteKey, HazardSessionState } from './types';
+import type { HazardProgressKey, HazardRouteKey, HazardSessionState } from './types';
 import type { AppStore } from '../store';
 
 export interface MobileHazardSlice {
@@ -136,6 +137,12 @@ export function applyHazardCardAction(store: AppStore, uid: string): void {
     const s = store.getState().hazard?.session;
     if (!s) return;
     setSession(store, engineApplyCard(s, uid, currentBag(store)));
+}
+
+export function chooseHazardCardKeyAction(store: AppStore, uid: string, key: HazardProgressKey): void {
+    const s = store.getState().hazard?.session;
+    if (!s) return;
+    setSession(store, engineChooseCardKey(s, uid, key));
 }
 
 export function resolveHazardRoundAction(store: AppStore): void {
@@ -242,6 +249,8 @@ export function claimHazardRewardsAction(store: AppStore, cardId: string | null)
         }
     }
     vitaeDelta -= outcome.penaltyVitae;
+    // SACRIFICE cards (BLOODPRICE) spent VITAE mid-run; settle it at claim.
+    vitaeDelta -= outcome.vitaeCost;
 
     if (done.pickedRewardCardId) {
         flags = appendAcquiredCard(flags, done.pickedRewardCardId);

@@ -159,6 +159,12 @@ export interface HazardDef {
     id: string;
     title: string;
     scenario: string;
+    /**
+     * Grim intro copy for the danger modal shown the moment the hazard
+     * triggers — short, hopeless, ending on the player's only out.
+     * The modal pairs it with the title and the hazard's intro art.
+     */
+    intro: string;
     /** Dramatic headline on the play board's scene strip. */
     boardHeadline: string;
     /** One-line route flavor shown on the play board. */
@@ -271,5 +277,4 @@ export {
     HAZARD_DICE_COUNT,
     HAZARD_HAND_SIZE,
     HAZARD_MOMENTUM_CAP,
-    HAZARD_PLAY_MAX,
 } from './tuning';

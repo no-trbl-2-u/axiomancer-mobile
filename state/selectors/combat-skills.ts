@@ -20,7 +20,15 @@
  *     (body + mind + heart + fallacy + paradox; missing keys 0)
  */
 
-import { skillLibrary, getSkillById, type Skill, type ResourceCost } from 'axiomancer-mechanics';
+import {
+    skillLibrary,
+    getSkillById,
+    type Skill,
+    type ResourceCost,
+    type SkillCombatEffects,
+    type SkillTarget,
+    type SkillsStatType,
+} from 'axiomancer-mechanics';
 
 import type { StanceKey } from '@/state/presenters/combat.engine';
 
@@ -41,6 +49,56 @@ export interface CombatSkill {
     manaCost: number;
     /** Per-resource cost from the engine. */
     resourceCost: ResourceCost;
+    /** Engine damage inputs — the presenter derives the effect line. */
+    basePower: number;
+    scalingStat: SkillsStatType;
+    scalingMultiplier?: number;
+    /** 'enemy' = damage; 'self' = heal. */
+    targetType: SkillTarget;
+    /** Status effects the skill applies on cast. */
+    combatEffects: readonly SkillCombatEffects[];
+}
+
+/** Short resource labels — match the crucible-token shorts in the HUD. */
+const RESOURCE_SHORT: Record<keyof ResourceCost, string> = {
+    body: 'BOD',
+    mind: 'MND',
+    heart: 'HRT',
+    fallacy: 'FAL',
+    paradox: 'PRX',
+};
+
+/** Compact cost line, e.g. `"2 BOD · 1 PRX"`; `"FREE"` when costless. */
+export function skillCostText(cost: ResourceCost): string {
+    const parts: string[] = [];
+    for (const key of Object.keys(RESOURCE_SHORT) as (keyof ResourceCost)[]) {
+        const n = cost[key] ?? 0;
+        if (n > 0) parts.push(`${n} ${RESOURCE_SHORT[key]}`);
+    }
+    return parts.length > 0 ? parts.join(' · ') : 'FREE';
+}
+
+/** Prettify an engine effect id for the stat line: 'mind-static' → 'MIND STATIC'. */
+function effectName(effectId: string): string {
+    return effectId.replace(/[-_]/g, ' ').toUpperCase();
+}
+
+/**
+ * Compact effect line for the picker row, e.g.
+ * `"12 DMG · BLEED 2 (3R)"` or `"9 HEAL · CLARITY (2R)"`.
+ * `damage` comes from the engine's `calculateSkillDamage` with the
+ * live player's stats (no target resistance — it's an estimate).
+ */
+export function skillEffectText(skill: CombatSkill, damage: number): string {
+    const parts: string[] = [];
+    if (damage > 0) parts.push(`${damage} ${skill.targetType === 'self' ? 'HEAL' : 'DMG'}`);
+    for (const fx of skill.combatEffects) {
+        let label = effectName(fx.effectId);
+        if (fx.intensity !== undefined) label += ` ${fx.intensity}`;
+        if (fx.duration !== undefined) label += ` (${fx.duration}R)`;
+        parts.push(label);
+    }
+    return parts.length > 0 ? parts.join(' · ') : 'NO DIRECT EFFECT';
 }
 
 function totalResourceCost(skill: Skill): number {
@@ -57,6 +115,11 @@ function toCombatSkill(skill: Skill): CombatSkill {
         stance: skill.philosophicalAspect,
         manaCost: totalResourceCost(skill),
         resourceCost: skill.resourceCost,
+        basePower: skill.basePower,
+        scalingStat: skill.scalingStat,
+        scalingMultiplier: skill.scalingMultiplier,
+        targetType: skill.targetType,
+        combatEffects: skill.combatEffects ?? [],
     };
 }
 

@@ -54,6 +54,9 @@ const mockHazardViewModel: HazardViewModel = {
     phase: 'playing',
     title: 'Forest Ambush',
     scenario: 'Bandits block your path',
+    intro: 'They were waiting. They were always waiting. Unless…',
+    hazardId: 'bandit-hunt',
+    sessionSeed: 7,
     boardHeadline: 'The Ambush Springs',
     boardNote: 'Cast your dice',
     roundLabel: 'Round 1',
@@ -85,7 +88,6 @@ const mockHazardViewModel: HazardViewModel = {
         },
     ],
     play: [],
-    playMax: 3,
     deckCount: 10,
     discardCount: 2,
     thresholdLadder: [

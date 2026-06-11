@@ -33,7 +33,6 @@ import {
     HAZARD_DICE_COUNT,
     HAZARD_HAND_SIZE,
     HAZARD_MOMENTUM_CAP,
-    HAZARD_PLAY_MAX,
     type HazardHandEntry,
     type HazardSessionState,
 } from '../types';
@@ -115,14 +114,14 @@ describe('staging and unstaging', () => {
         expect(ns.hand.map((h) => h.uid)).not.toContain(uid);
     });
 
-    it('caps the play area at HAZARD_PLAY_MAX', () => {
+    it('the play area is uncapped — the whole hand can be staged', () => {
         let s = playingSession();
         // rig a 7-card hand of plain cards
         const hand = Array.from({ length: 7 }, (_, i) => entry(`h${i}`, 'steps'));
         s = rig(s, { hand, play: [] });
         for (const h of hand) s = stageHazardCard(s, h.uid, BAG);
-        expect(s.play).toHaveLength(HAZARD_PLAY_MAX);
-        expect(s.hand).toHaveLength(1);
+        expect(s.play).toHaveLength(7);
+        expect(s.hand).toHaveLength(0);
     });
 
     it('unstage returns the card and frees its die', () => {

@@ -172,18 +172,18 @@ describe('hazard presenter — resolve and ledger', () => {
         return resolveHazardRound(s);
     }
 
-    it('PLAY stays disabled until every staged card is APPLIED', () => {
+    it('PLAY arms as soon as a card is staged (auto-applies on resolve)', () => {
         const idle = vmOf(playingSession('safe'));
         expect(idle.resolveEnabled).toBe(false);
         expect(idle.resolveSubLabel).toBe('STAGE A CARD');
         let s = playingSession('safe');
         s = { ...s, hand: entries('steps', 1), play: [] };
         s = stageHazardCard(s, 'h0', BAG);
-        // staged but not applied — still locked
+        // staged — armed immediately; PLAY commits un-applied cards itself
         const staged = vmOf(s);
-        expect(staged.resolveEnabled).toBe(false);
-        expect(staged.resolveSubLabel).toBe('APPLY 1 MORE');
-        // apply it — now armed
+        expect(staged.resolveEnabled).toBe(true);
+        expect(staged.resolveSubLabel).toBe('RESOLVE');
+        // an explicit per-card APPLY keeps the same armed state
         s = applyHazardCard(s, 'h0', BAG);
         const armed = vmOf(s);
         expect(armed.resolveEnabled).toBe(true);

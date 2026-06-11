@@ -21,6 +21,7 @@ import {
     OutcomeOverlay,
     ResolveFlashOverlay,
 } from '@/components/hazard/HazardOverlays';
+import { HazardIntroOverlay } from '@/components/hazard/HazardIntroOverlay';
 import { RewardsOverlay } from '@/components/hazard/RewardsOverlay';
 import { RouteSelect } from '@/components/hazard/RouteSelect';
 import { useGameActions, useGameState } from '@/state/GameStoreProvider';
@@ -35,6 +36,11 @@ export default function HazardScreen() {
     const router = useRouter();
 
     const [detailCard, setDetailCard] = useState<HazardCardVM | null>(null);
+
+    // Danger-intro modal: shown once per session (keyed by seed) before
+    // route select — for map-triggered AND dev-triggered hazards alike.
+    const [introAckSeed, setIntroAckSeed] = useState<number | null>(null);
+    const showIntro = vm.active && vm.phase === 'route-select' && introAckSeed !== vm.sessionSeed;
 
     // ── screen-level drag controller ──
     const [dragActive, setDragActive] = useState<DragPayload | null>(null);
@@ -107,8 +113,17 @@ export default function HazardScreen() {
                 />
             )}
 
-            {vm.phase === 'route-select' && (
+            {vm.phase === 'route-select' && !showIntro && (
                 <RouteSelect vm={vm} onPick={(route) => actions.selectHazardRoute(route)} />
+            )}
+
+            {showIntro && (
+                <HazardIntroOverlay
+                    hazardId={vm.hazardId}
+                    title={vm.title}
+                    intro={vm.intro}
+                    onContinue={() => setIntroAckSeed(vm.sessionSeed)}
+                />
             )}
 
             {vm.phase === 'rolling' && vm.routeKey !== null && (

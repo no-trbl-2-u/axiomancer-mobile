@@ -29,7 +29,6 @@ import {
     HAZARD_DICE_COUNT,
     HAZARD_HAND_SIZE,
     HAZARD_MOMENTUM_CAP,
-    HAZARD_PLAY_MAX,
     type HazardCardDef,
     type HazardColor,
     type HazardConsequenceId,
@@ -291,9 +290,9 @@ function applyUtilityEffect(
 // ---------------------------------------------------------------------------
 
 /**
- * Moves a hand card into the play area (max HAZARD_PLAY_MAX). Number
- * cards begin counting toward the meter immediately; utility effects do
- * NOT fire here — they fire on APPLY.
+ * Moves a hand card into the play area (no cap — the player may stage
+ * their whole hand). Number cards begin counting toward the meter
+ * immediately; utility effects do NOT fire here — they fire on APPLY.
  */
 export function stageHazardCard(
     s: HazardSessionState,
@@ -302,7 +301,6 @@ export function stageHazardCard(
 ): HazardSessionState {
     void deckBag;
     if (s.phase !== 'playing') return s;
-    if (s.play.length >= HAZARD_PLAY_MAX) return s;
     const card = s.hand.find((h) => h.uid === uid);
     if (!card) return s;
     return {
@@ -445,10 +443,10 @@ function momentumCarry(value: number, need: number, cleared: boolean, lastRound:
 
 /**
  * Commits the staged set, judges the round, enters `resolve-flash`.
- * Every staged card must be APPLIED first — the UI enforces this by
- * gating the PLAY button, and this function applies any stragglers as a
- * safety net (firing their utilities) so the engine never judges an
- * un-committed card.
+ * Any staged card not yet APPLIED is applied here (firing its utility)
+ * — PLAY auto-commits the whole set, so the engine never judges an
+ * un-committed card. The per-card APPLY button remains for players who
+ * want a utility (draw / re-cast / convert) to fire mid-round.
  */
 export function resolveHazardRound(s: HazardSessionState, deckBag: readonly string[] = []): HazardSessionState {
     if (s.phase !== 'playing') return s;

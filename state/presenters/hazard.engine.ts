@@ -15,7 +15,6 @@ import {
 import { dieCanPower, hazardProjectedProgress } from '@/state/hazard/engine';
 import type { AppStoreState } from '@/state/store';
 import {
-    HAZARD_PLAY_MAX,
     type HazardCardDef,
     type HazardColor,
     type HazardDieKind,
@@ -135,6 +134,12 @@ export interface HazardViewModel {
     phase: HazardPhase;
     title: string;
     scenario: string;
+    /** Grim danger-intro copy for the modal shown when the hazard triggers. */
+    intro: string;
+    /** Hazard def id — keys the intro modal's per-danger art. */
+    hazardId: string;
+    /** Session seed — lets the screen show the intro once per session. */
+    sessionSeed: number;
     boardHeadline: string;
     boardNote: string;
     roundLabel: string;
@@ -154,7 +159,6 @@ export interface HazardViewModel {
     momentumNote: string | null;
     hand: HazardCardVM[];
     play: HazardCardVM[];
-    playMax: number;
     deckCount: number;
     discardCount: number;
     /** Current route's full per-round threshold ladder (REC#2). */
@@ -316,6 +320,9 @@ const EMPTY_VM: HazardViewModel = Object.freeze({
     phase: 'route-select',
     title: '',
     scenario: '',
+    intro: '',
+    hazardId: '',
+    sessionSeed: 0,
     boardHeadline: '',
     boardNote: '',
     roundLabel: '',
@@ -334,7 +341,6 @@ const EMPTY_VM: HazardViewModel = Object.freeze({
     momentumNote: null,
     hand: [],
     play: [],
-    playMax: HAZARD_PLAY_MAX,
     deckCount: 0,
     discardCount: 0,
     thresholdLadder: [],
@@ -460,18 +466,20 @@ export function selectHazardViewModel(state: Pick<AppStoreState, 'hazard'>): Haz
           }
         : null;
 
+    // PLAY arms as soon as anything is staged — pressing it auto-applies
+    // every staged card (the engine fires their utilities) and resolves.
     const staged = session.play.length;
-    const appliedCount = session.play.filter((p) => p.applied).length;
-    const allApplied = staged > 0 && appliedCount === staged;
-    const canResolve = session.phase === 'playing' && allApplied;
-    const resolveSubLabel =
-        staged === 0 ? 'STAGE A CARD' : allApplied ? 'RESOLVE' : `APPLY ${staged - appliedCount} MORE`;
+    const canResolve = session.phase === 'playing' && staged > 0;
+    const resolveSubLabel = staged === 0 ? 'STAGE A CARD' : 'RESOLVE';
 
     return {
         active: true,
         phase: session.phase,
         title: def.title,
         scenario: def.scenario,
+        intro: def.intro,
+        hazardId: session.hazardId,
+        sessionSeed: session.seed,
         boardHeadline: def.boardHeadline,
         boardNote: isRisk ? def.riskBoardNote : def.safeBoardNote,
         roundLabel: `ROUND ${ROMAN[session.round - 1]} / ${ROMAN[session.totalRounds - 1]}`,
@@ -490,7 +498,6 @@ export function selectHazardViewModel(state: Pick<AppStoreState, 'hazard'>): Haz
         momentumNote,
         hand: session.hand.map((h) => cardVM(h, session)),
         play: session.play.map((p) => cardVM(p, session)),
-        playMax: HAZARD_PLAY_MAX,
         deckCount: session.drawPile.length,
         discardCount: session.discardPile.length,
         thresholdLadder,

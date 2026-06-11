@@ -35,7 +35,6 @@ import { AXM, FONTS } from '@/theme/axm';
 import { useAesthetic } from '@/state/aesthetic-mode';
 import { useCombatMode } from '@/state/combat-mode';
 import { useGameActions, useGameState } from '@/state/GameStoreProvider';
-import { createMockEncounterEnemy } from '@/state/mocks/combat.mock';
 import {
     useCombatViewModel,
     type ActionOption,
@@ -165,9 +164,18 @@ export function CombatPanel() {
     const [toast, setToast] = useState<string | null>(null);
 
     useEffect(() => {
-        if (combat === null) {
-            actions.startCombat(createMockEncounterEnemy());
-        } else if (combat && vm.phase === 'ended' && vm.enemy.hp <= 0 && !vm.isInCombat) {
+        // The pre-Phase-110 auto-bootstrap (`combat === null` →
+        // startCombat(mock)) is GONE: inside the encounter modal it
+        // re-fired the moment a victorious `actions.endCombat()`
+        // nulled the slice, leaving a phantom mock combat in the
+        // store after the modal closed. A non-null `state.combat`
+        // short-circuits `resolveCurrentMapEvent` AND
+        // `selectHasActiveEvent`, so every later encounter/hazard
+        // node silently did nothing — "a successful encounter breaks
+        // the map." With no combat active, the panel now renders the
+        // loading view; dev entry points (DebugCombatButton /
+        // DebugTriggerEncounter) start combats explicitly.
+        if (combat && vm.phase === 'ended' && vm.enemy.hp <= 0 && !vm.isInCombat) {
             // Phase 97 — Fix re-trigger after victory. If combat state exists but
             // VM shows combat ended with enemy defeated and not in combat anymore,
             // force clear the combat state to allow re-trigger.

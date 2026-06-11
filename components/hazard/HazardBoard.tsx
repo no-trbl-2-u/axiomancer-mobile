@@ -268,7 +268,7 @@ function PlayButton({ enabled, subLabel, onPress }: { enabled: boolean; subLabel
                 onPress={onPress}
                 accessibilityRole="button"
                 accessibilityState={{ disabled: !enabled }}
-                accessibilityLabel={enabled ? 'Play — resolve the round' : 'Play, disabled. Apply every staged card first.'}
+                accessibilityLabel={enabled ? 'Play — commit every staged card and resolve the round' : 'Play, disabled. Stage at least one card first.'}
                 testID="hazard-play-button"
                 style={[
                     styles.playBtn,
@@ -492,7 +492,7 @@ export const HazardBoard = React.memo(function HazardBoard({ vm, drag, onStage, 
             >
                 <View style={styles.playHead}>
                     <Text style={[styles.playLabel, { color: vm.play.length ? HZ.acid : AXM.bone }]}>
-                        PLAY AREA — {vm.play.length} / {vm.playMax}
+                        PLAY AREA — {vm.play.length} STAGED
                     </Text>
                     <Text style={styles.deckCounts} testID="hazard-deck-counts">
                         DECK {vm.deckCount} · DISCARD {vm.discardCount}
@@ -531,7 +531,7 @@ export const HazardBoard = React.memo(function HazardBoard({ vm, drag, onStage, 
                         ))}
                     </View>
                 )}
-                <Text style={styles.playHint}>drop a die on a card, then APPLY each to lock your set</Text>
+                <Text style={styles.playHint}>drop dice to power cards — PLAY commits and resolves the whole set</Text>
             </View>
 
             {/* hand dock + trash bin + PLAY button */}

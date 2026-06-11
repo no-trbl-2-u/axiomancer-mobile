@@ -39,14 +39,13 @@ export interface AftermathLootEntry {
 }
 
 /**
- * Currency reward strip cell. Tick A ships placeholder values (the
- * engine doesn't surface combat currency yet) — the field stays
- * nullable so the panel can collapse the strip when there's nothing
- * to render.
+ * Currency reward strip cell — the felled foe's purse. Populated by
+ * the one-economy pass (`actions.grantVictorySpoils()`); stays
+ * nullable so the panel collapses the cell when a snapshot predates
+ * the pass.
  */
 export interface AftermathCurrency {
-    vitae: number;
-    sigils: number;
+    shillings: number;
 }
 
 export interface AftermathRewards {
@@ -183,8 +182,14 @@ export function selectAftermathViewModel(
             finalBlowPhrase: deriveFinalBlowPhrase(data),
             rewards: {
                 xp: data.xpReward,
-                currency: null,
-                loot: [],
+                currency:
+                    data.shillings !== undefined && data.shillings !== null
+                        ? { shillings: data.shillings }
+                        : null,
+                loot:
+                    data.lootCard !== undefined && data.lootCard !== null
+                        ? [{ name: data.lootCard.name, slot: 'hazard card', rarity: data.lootCard.rarity }]
+                        : [],
             },
         };
     }

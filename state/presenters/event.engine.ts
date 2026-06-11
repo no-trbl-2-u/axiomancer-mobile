@@ -129,6 +129,13 @@ export interface PreludeChrome {
      * truth for the "no retreat" copy across modal variants.
      */
     fleeDisabledHint: string;
+    /**
+     * One-doom-grammar pass — the grim hopeless line every threat
+     * modal carries (matches the hazard danger intro's register),
+     * always ending on the player's only out: "Unless…". Rendered in
+     * italic between the body prose and the choice rows.
+     */
+    doomLine: string;
 }
 
 /**
@@ -285,6 +292,10 @@ function withPreludeChrome(vm: Omit<EventViewModel, 'preludeChrome' | 'sourceNod
             sashLabel: 'STRIFE STIRS',
             sealLabel: 'SEALED · NO RETREAT',
             fleeDisabledHint: 'no retreat from this one.',
+            doomLine:
+                vm.variant === 'boss'
+                    ? 'This is the thing the road was leading to. It has ended every pilgrim it has met, and it will end him the same — without hurry, without malice. Unless…'
+                    : 'It has done this before. The ditch beside the road is full of those it did it to. He will not be the exception. Unless…',
         },
     };
 }

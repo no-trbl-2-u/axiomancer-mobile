@@ -69,9 +69,9 @@ describe('CombatVictoryPanel: render contract', () => {
         const tree = render(<CombatVictoryPanel vm={BASE_VM} onContinue={() => {}} />);
         const strip = tree.queryByTestId('combat-victory-panel-rewards');
         expect(strip).not.toBeNull();
-        // Column labels are static; XP / VITAE · SIGILS / LOOT.
+        // Column labels are static; XP / SHILLINGS / LOOT.
         expect(tree.queryByText('EXPERIENCE')).not.toBeNull();
-        expect(tree.queryByText('VITAE · SIGILS')).not.toBeNull();
+        expect(tree.queryByText('SHILLINGS')).not.toBeNull();
         expect(tree.queryByText('LOOT')).not.toBeNull();
     });
 

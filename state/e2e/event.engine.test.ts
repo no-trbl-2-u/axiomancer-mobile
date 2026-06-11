@@ -400,6 +400,7 @@ describe('selectEventViewModel: preludeChrome contract', () => {
             eyebrow: 'ENCOUNTER',
             sashLabel: 'STRIFE STIRS',
             sealLabel: 'SEALED · NO RETREAT',
+            doomLine: expect.stringContaining('Unless…'),
             fleeDisabledHint: 'no retreat from this one.',
         });
     });
@@ -413,6 +414,7 @@ describe('selectEventViewModel: preludeChrome contract', () => {
             eyebrow: 'BOSS · ENCOUNTER',
             sashLabel: 'STRIFE STIRS',
             sealLabel: 'SEALED · NO RETREAT',
+            doomLine: expect.stringContaining('Unless…'),
             fleeDisabledHint: 'no retreat from this one.',
         });
     });

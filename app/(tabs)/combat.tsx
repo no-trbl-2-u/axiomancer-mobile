@@ -309,6 +309,10 @@ export function CombatPanel() {
             // is unused in practice (encounters always open the
             // modal), but the branch stays for the /combat tab's
             // direct-mount harness pass.
+            // One-economy pass — pay out the felled foe's purse and the
+            // hazard-card drop BEFORE endCombat clears the slice; the
+            // spoils ride the snapshot into the victory panel.
+            const spoils = actions.grantVictorySpoils();
             const aftermathSnapshot = combat !== null
                 ? {
                       variant: 'victory' as const,
@@ -321,6 +325,10 @@ export function CombatPanel() {
                       },
                       finalBlow: buildFinalBlowSnapshot(combat),
                       xpReward: combat.enemy.xpReward ?? null,
+                      shillings: spoils?.shillings ?? null,
+                      lootCard: spoils?.card
+                          ? { name: spoils.card.name, rarity: spoils.card.rarity }
+                          : null,
                   }
                 : undefined;
             actions.endCombat();

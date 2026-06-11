@@ -1364,16 +1364,21 @@ export function selectCombatViewModel(
         canConfirm: phase === 'choosing_stance',
     };
 
-    // Phase 97 — Fix skill filtering per CRITIQUE [HIGH]. Drop the equipped-gate
-    // for learned skills; show all learned skills but filter only by usability
-    // (right stance + sufficient resources). Once a skill is learned it should
-    // be available in combat. The picker shows all COMBAT_SKILLS (treated as
-    // learned skills) and disables only those that are wrong stance or too
-    // expensive, not those that are "not equipped".
+    // Learn-skill pass — the picker shows LEARNED skills only (the
+    // in-combat snapshot's `knownSkills`: preset starters + level-up
+    // picks). The level-up learn modal is how the moveset grows.
+    // Back-compat: a snapshot with an empty/missing list (engine-direct
+    // test rigs, pre-pass saves) falls back to the whole library so the
+    // picker never renders dead-empty; the resolveRound known-skill
+    // bridge keeps those casts functional.
+    const knownSkills: readonly string[] | undefined = Array.isArray(playerEntity.knownSkills)
+        ? (playerEntity.knownSkills as string[])
+        : undefined;
     const skillPicker = buildSkillPicker(
         previewStance ?? 'heart',
         resources,
         playerEntity as Character,
+        knownSkills !== undefined && knownSkills.length > 0 ? knownSkills : undefined,
     );
 
     const phaseIndex: number = phase === 'ended' ? -1 : PHASE_ORDER.indexOf(phase);

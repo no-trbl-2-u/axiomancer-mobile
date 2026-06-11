@@ -31,9 +31,7 @@ export function CombatFriendshipPanel({ vm, onContinue }: CombatFriendshipPanelP
     const lootCount = vm.rewards.loot.length;
     const xpDisplay = vm.rewards.xp === null ? '—' : String(vm.rewards.xp);
     const currencyDisplay =
-        vm.rewards.currency === null
-            ? '—'
-            : `${vm.rewards.currency.vitae}·${vm.rewards.currency.sigils}`;
+        vm.rewards.currency === null ? '—' : String(vm.rewards.currency.shillings);
     const lootDisplay = lootCount === 0 ? '—' : String(lootCount);
 
     return (
@@ -82,7 +80,7 @@ export function CombatFriendshipPanel({ vm, onContinue }: CombatFriendshipPanelP
                     <RewardCell label="EXPERIENCE" value={xpDisplay} tint={AXM.parchment} />
                     <View style={styles.rewardDivider} />
                     <RewardCell
-                        label="VITAE · SIGILS"
+                        label="SHILLINGS"
                         value={currencyDisplay}
                         tint={AXM.rust}
                     />

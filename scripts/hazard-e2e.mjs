@@ -3,13 +3,14 @@
 //
 // Hazard minigame — browser-driven end-to-end playthrough.
 //
-// Boots the exported web build, opens the dev entry, and PLAYS the
-// minigame with real pointer gestures: drags cards from the fanned
-// hand into the play area, drags mana dice onto staged cards, presses
-// PLAY, taps through the O/X stamps, the outcome modal, and the
-// rewards ledger — for BOTH routes. Asserts the no-re-cast doctrine
-// (identical die ids across all three rounds) and the full phase
-// order along the way.
+// Boots the exported web build, opens the dev entry, dismisses the
+// danger-intro modal, and PLAYS the minigame with real pointer
+// gestures: drags cards from the fanned hand into the play area
+// (uncapped — the whole hand can stage), drags mana dice onto staged
+// cards, presses PLAY (which auto-applies the staged set), taps
+// through the O/X stamps, the outcome modal, and the rewards ledger —
+// for BOTH routes. Asserts the no-re-cast doctrine (identical die ids
+// across all three rounds) and the full phase order along the way.
 //
 // Deterministic: the hazard RNG seed + hazard id are pinned through
 // the dev hooks (`globalThis.__AXM_HAZARD_SEED__` / `__AXM_HAZARD_ID__`)
@@ -205,10 +206,10 @@ async function playOneRound(page, round) {
         log(`round ${round}: scrapped a card to the bin (discard ${after})`)
     }
 
-    // Stage every hand card (up to the 6-card cap) by dragging it into
-    // the play area.
+    // Stage the whole hand (the play area is uncapped) by dragging
+    // each card into the play area.
     let guard = 0
-    while ((await stagedCount(page)) < 6 && guard++ < 12) {
+    while (guard++ < 12) {
         const handCards = page.locator('[data-testid^="hazard-hand-"]')
         const n = await handCards.count()
         if (n === 0) break
@@ -254,7 +255,8 @@ async function playOneRound(page, round) {
         }
     }
 
-    // Commit the set.
+    // Commit the set — PLAY arms as soon as anything is staged and
+    // auto-applies every staged card (utilities fire engine-side).
     await page.getByTestId('hazard-play-button').click()
     await page.getByTestId('hazard-resolve-flash').waitFor({ state: 'visible', timeout: 5000 })
     const verdict = (await page.getByTestId('hazard-resolve-flash').innerText()).includes('PASSED')
@@ -298,6 +300,15 @@ async function playHazard(page, baseUrl, route, seed) {
     await page.getByTestId('dev-menu-header').click()
     await page.getByTestId('debug-hazard-button').waitFor({ state: 'visible', timeout: 15000 })
     await page.getByTestId('debug-hazard-button').click()
+
+    // Phase: danger intro — the grim modal owns the screen until the
+    // player faces it (shows for dev-triggered hazards too).
+    await page.getByTestId('hazard-intro-overlay').waitFor({ state: 'visible', timeout: 15000 })
+    const introText = await page.getByTestId('hazard-intro-overlay').innerText()
+    if (!introText.includes('Unless')) fail('danger intro is missing its "Unless…" doom copy')
+    await shot(page, `${route}-danger-intro`)
+    await page.getByTestId('hazard-intro-continue').click()
+    await page.getByTestId('hazard-intro-overlay').waitFor({ state: 'hidden', timeout: 5000 })
 
     // Phase: route select — opening hand before dice.
     await page.getByTestId('hazard-route-select').waitFor({ state: 'visible', timeout: 15000 })

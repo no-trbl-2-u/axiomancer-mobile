@@ -51,6 +51,15 @@ export type AftermathData =
           };
           finalBlow: { skillName: string | null; damage: number; descriptor: string | null } | null;
           xpReward: number | null;
+          /**
+           * One-economy pass — victory spoils granted by
+           * `actions.grantVictorySpoils()` at exit time. Optional so
+           * older snapshots stay valid; the aftermath presenter
+           * collapses the rows when absent.
+           */
+          shillings?: number | null;
+          /** Hazard card folded into the persistent deck on this win. */
+          lootCard?: { name: string; rarity: 'common' | 'uncommon' | 'rare' } | null;
       }
     | {
           variant: 'parley';

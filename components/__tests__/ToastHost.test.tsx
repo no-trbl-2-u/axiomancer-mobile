@@ -19,7 +19,7 @@ import React from 'react';
 
 import { ToastHost } from '@/components/ToastHost';
 import { GameStoreProvider } from '@/state/GameStoreProvider';
-import { createAppStore, type AppStore } from '@/state/store';
+import { createAppStore, getEmitterForStore, type AppStore } from '@/state/store';
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
 
 const TOAST_TTL_MS = 3000;
@@ -137,6 +137,63 @@ describe('ToastHost: race protection', () => {
             jest.advanceTimersByTime(TOAST_TTL_MS);
         });
         expect(tree.queryByText('Unequipped.')).toBeNull();
+    });
+});
+
+describe('ToastHost: emitter path', () => {
+    it('shows a toast when an inventory:changed event fires with an item name', () => {
+        const store = makeStore();
+        const emitter = getEmitterForStore(store);
+        const tree = render(withProvider(store, <ToastHost />));
+
+        act(() => {
+            emitter?.emit({
+                type: 'inventory:changed',
+                payload: { item: { id: 'healing-potion-1', name: 'Healing Potion' }, state: {} } as never,
+            });
+        });
+
+        expect(tree.queryByText('Picked up Healing Potion.')).not.toBeNull();
+    });
+
+    it('does not throw or loop when four inventory:changed events fire in rapid succession', () => {
+        const store = makeStore();
+        const emitter = getEmitterForStore(store);
+        const tree = render(withProvider(store, <ToastHost />));
+
+        // Simulate 4 items added synchronously (the DevAutoSeed / chest scenario
+        // that previously caused "Maximum update depth exceeded").
+        expect(() => {
+            act(() => {
+                for (let i = 1; i <= 4; i++) {
+                    emitter?.emit({
+                        type: 'inventory:changed',
+                        payload: { item: { id: `item-${i}`, name: `Item ${i}` }, state: {} } as never,
+                    });
+                }
+            });
+        }).not.toThrow();
+
+        // Last toast wins — the id has incremented but the component is stable.
+        expect(store.getState().notifications?.toast?.id).toBe(4);
+        expect(tree.toJSON()).not.toBeNull();
+    });
+
+    it('stays silent for inventory:changed events without an item name', () => {
+        const store = makeStore();
+        const emitter = getEmitterForStore(store);
+        const tree = render(withProvider(store, <ToastHost />));
+
+        act(() => {
+            // removeItem path — no item name in payload
+            emitter?.emit({
+                type: 'inventory:changed',
+                payload: { state: {} } as never,
+            });
+        });
+
+        expect(tree.toJSON()).toBeNull();
+        expect(store.getState().notifications?.toast?.text).toBeNull();
     });
 });
 

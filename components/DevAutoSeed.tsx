@@ -23,12 +23,19 @@ import { useEffect, useRef } from 'react';
 import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useGameActions, useGameState } from '@/state/GameStoreProvider';
 
+declare const __DEV__: boolean | undefined;
+
 export function DevAutoSeed() {
     const actions = useGameActions();
     const inventoryLength = useGameState((s) => s.player.inventory?.length ?? 0);
     const seeded = useRef(false);
 
     useEffect(() => {
+        // Hard-stop: production bundles have __DEV__=false — never seed.
+        // This guards against app.config.ts misconfiguration (e.g. a build
+        // made without EAS_BUILD_PROFILE inadvertently receiving
+        // devToolsEnabled=true from the config's buildProfile logic).
+        if (typeof __DEV__ !== 'undefined' && !__DEV__) return;
         if (!isDevToolsEnabled()) return;
         if (seeded.current) return;
         if (inventoryLength > 0) {

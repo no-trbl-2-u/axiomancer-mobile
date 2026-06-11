@@ -249,7 +249,26 @@ const FALLBACK_VM: ExplorationViewModel = {
     legend: { left: '● TRODDEN  ◌ OPEN  ✕ SHUT', right: '' },
 };
 
+// Referential-stability memo (1-entry, keyed by the `world` slice this
+// selector reads). `useGameState` subscribes via Zustand `useStore`, whose
+// `getSnapshot` is the bare selector call — React's `useSyncExternalStore`
+// then requires it to return a STABLE reference for unchanged state, or it
+// loops ("getSnapshot should be cached → Maximum update depth exceeded").
+// The other presenters dodge this by returning frozen singletons; this one
+// builds a fresh frozen VM, so we cache it against the immutable `world`
+// reference (Zustand replaces it only when the world actually changes).
+let _expWorldRef: unknown;
+let _expVm: ExplorationViewModel | null = null;
+
 export function selectExplorationViewModel(state: GameStore): ExplorationViewModel {
+    if (state.world === _expWorldRef && _expVm !== null) return _expVm;
+    const vm = computeExplorationViewModel(state);
+    _expWorldRef = state.world;
+    _expVm = vm;
+    return vm;
+}
+
+function computeExplorationViewModel(state: GameStore): ExplorationViewModel {
     // Engine `GameStore = GameState & GameActions`; `GameState.world:
     // WorldState` is typed cleanly (engine
     // `axiomancer-mechanics/dist/Game/types.d.ts:GameState`). The

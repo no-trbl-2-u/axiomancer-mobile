@@ -65,6 +65,7 @@ function makePreludeVm(overrides: Partial<EventViewModel> = {}): EventViewModel 
             sashLabel: 'STRIFE STIRS',
             sealLabel: 'SEALED · NO RETREAT',
             fleeDisabledHint: 'no retreat from this one.',
+            doomLine: 'It has done this before. Unless…',
         },
         chrome: {
             reckoningEyebrow: '✠ A RECKONING',

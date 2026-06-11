@@ -76,6 +76,11 @@ export function EncounterPreludeContent({
                 <Text style={styles.bodyText} numberOfLines={3}>
                     {vm.body}
                 </Text>
+                {/* One-doom-grammar pass — the same hopeless register
+                  * as the hazard danger intro, ending on "Unless…". */}
+                <Text style={styles.doomLine} numberOfLines={3} testID="encounter-modal-doom-line">
+                    {vm.preludeChrome!.doomLine}
+                </Text>
             </View>
 
             <View style={styles.choices}>
@@ -210,6 +215,14 @@ const styles = StyleSheet.create({
         color: AXM.parchment,
         lineHeight: 16,
         fontStyle: 'italic',
+    },
+    doomLine: {
+        fontFamily: FONTS.serifItalic,
+        fontStyle: 'italic',
+        fontSize: 11,
+        color: AXM.bone,
+        lineHeight: 15,
+        marginTop: 8,
     },
     choices: { padding: 12, gap: 6 },
     choiceRow: {

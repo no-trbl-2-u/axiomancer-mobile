@@ -21,7 +21,13 @@
 import {
     appendLog as combatAppendLog,
     applyDialogueChoice,
+    applyEffect as engineApplyEffect,
     buildCharacterFromPreset,
+    calculateSkillDamage,
+    defaultAlignment,
+    getAvailableSkills,
+    learnSkill as engineLearnSkill,
+    lookupEffect,
     setPhase as combatSetPhase,
     setPlayerAction as combatSetPlayerAction,
     setPlayerStance as combatSetPlayerStance,
@@ -68,8 +74,10 @@ import {
     type Item,
     type MapName,
     type MapState,
+    type PhilosophicalAlignment,
     type ResolveMapEventResult,
     type RoundEvent,
+    type Skill,
     type Stance,
     type WorldState,
 } from 'axiomancer-mechanics';
@@ -79,13 +87,19 @@ import { getMapLayout } from '@/state/exploration-maps';
 import {
     COMBAT_SKILLS,
     getCombatSkillById,
+    skillCostText,
+    skillEffectText,
     type CombatSkill,
 } from '@/state/selectors/combat-skills';
 import { templateToEquipment } from '@/state/selectors/equipment';
 import { EMPTY_EVENT_SLICE, type AppStore } from './store';
+import { HAZARD_REWARD_CARDS } from './hazard/content';
+import { appendAcquiredCard } from './hazard/deck-flags';
 import {
     abandonHazardAction,
     acknowledgeHazardOutcomeAction,
+    HAZARD_HEXED_FLAG,
+    HAZARD_TOKEN_FLAG_PREFIX,
     applyHazardCardAction,
     beginHazardAction,
     claimHazardRewardsAction,
@@ -379,6 +393,28 @@ export interface AppActions {
      * the granted card ids.
      */
     randomizeHazardDeck: () => string[];
+
+    // -----------------------------------------------------------------
+    // One-economy + skill-learning pass.
+    // -----------------------------------------------------------------
+
+    /**
+     * Victory payout (call BEFORE `endCombat`, while the enemy is
+     * still on the slice): shillings scaled by enemy level + a
+     * rarity-weighted hazard card folded into the persistent deck.
+     * Returns the spoils for the aftermath snapshot; null when no
+     * combat is live.
+     */
+    grantVictorySpoils: () => VictorySpoils | null;
+    /**
+     * Rolls up to `count` (default 3) level-up skill offers from
+     * everything the player currently qualifies for (engine
+     * `getAvailableSkills`, alignment-gated). Empty = nothing new to
+     * learn; the caller skips the modal.
+     */
+    getLearnableSkillOffers: (count?: number) => LearnableSkillOffer[];
+    /** Learns a skill through the engine (requirement-checked). */
+    learnSkill: (skillId: string) => boolean;
 }
 
 export interface UseItemResult {
@@ -426,6 +462,268 @@ function burnCombatMana(store: AppStore, cost: number): void {
 
 function findSkill(skillId: string): CombatSkill | null {
     return getCombatSkillById(skillId);
+}
+
+// ---------------------------------------------------------------------------
+// Hazard ⇄ combat bridges (one-economy pass)
+//
+// Hazards and combat share one economy: what a hazard leaves behind
+// (a curse, banked tokens) lands in the next combat, what a combat
+// leaves behind (unspent tokens, spoils) feeds the run. All of it
+// rides `GameState.flags`, so it persists with the save like the
+// hazard deck does.
+// ---------------------------------------------------------------------------
+
+/** Flag carrying half of the previous combat's unspent tokens:
+ *  `combat-tokens-carried:<body>:<mind>:<heart>:<fallacy>:<paradox>`. */
+export const TOKEN_CARRY_FLAG_PREFIX = 'combat-tokens-carried:';
+
+const RESOURCE_KEYS = ['body', 'mind', 'heart', 'fallacy', 'paradox'] as const;
+type ResourceKey = (typeof RESOURCE_KEYS)[number];
+type ResourceMap = Record<ResourceKey, number>;
+
+function parseTokenCarryFlag(flag: string): ResourceMap {
+    const parts = flag.slice(TOKEN_CARRY_FLAG_PREFIX.length).split(':');
+    const out = { body: 0, mind: 0, heart: 0, fallacy: 0, paradox: 0 };
+    RESOURCE_KEYS.forEach((key, i) => {
+        const n = Number(parts[i]);
+        out[key] = Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0;
+    });
+    return out;
+}
+
+/**
+ * Fires once per combat, right after the engine's `startCombat`
+ * snapshots the player. Consumes the pending hazard omens and the
+ * previous combat's token carry, applying them to the live combat
+ * slice:
+ *
+ *  - `hazard-hexed` → Allais' Curse (`debuff_hex`) opens on the
+ *    player. The hazard's curse consequence finally lands where its
+ *    catalogue copy always promised: "Begin your next combat with a
+ *    hostile Curse die."
+ *  - `hazard-token-banked:*` → +1 PARADOX each in `combatResources`.
+ *  - `combat-tokens-carried:*` → half the previous combat's unspent
+ *    tokens, pre-halved at bank time.
+ */
+function applyCombatStartBridges(store: AppStore): void {
+    const state = store.getState();
+    const combat = state.combat;
+    if (!combat) return;
+    const flags = ((state as unknown as GameState).flags ?? []).slice();
+
+    const hexed = flags.includes(HAZARD_HEXED_FLAG);
+    const bankedParadox = flags.filter((f) => f.startsWith(HAZARD_TOKEN_FLAG_PREFIX)).length;
+    const carryFlag = flags.find((f) => f.startsWith(TOKEN_CARRY_FLAG_PREFIX));
+    if (!hexed && bankedParadox === 0 && carryFlag === undefined) return;
+
+    const carried: ResourceMap = carryFlag
+        ? parseTokenCarryFlag(carryFlag)
+        : { body: 0, mind: 0, heart: 0, fallacy: 0, paradox: 0 };
+
+    let next: CombatState = combat;
+
+    if (hexed) {
+        const hex = lookupEffect('debuff_hex');
+        if (hex) {
+            const applied = engineApplyEffect(next.player.effects ?? [], hex, next.round ?? 1);
+            next = { ...next, player: { ...next.player, effects: applied.activeEffects } };
+            next = pushLog(
+                next,
+                'effect',
+                "The hazard's hex followed you here — Allais' Curse settles on your shoulders.",
+            );
+        }
+    }
+
+    const tokenGain = { ...carried, paradox: carried.paradox + bankedParadox };
+    const anyTokens = RESOURCE_KEYS.some((k) => tokenGain[k] > 0);
+    if (anyTokens) {
+        const resources = { ...next.combatResources };
+        for (const key of RESOURCE_KEYS) resources[key] += tokenGain[key];
+        next = { ...next, combatResources: resources };
+        if (bankedParadox > 0) {
+            next = pushLog(next, 'system', `Banked paradox answers the call — +${bankedParadox} PARADOX.`);
+        }
+        const carryTotal = RESOURCE_KEYS.reduce((sum, k) => sum + carried[k], 0);
+        if (carryTotal > 0) {
+            next = pushLog(next, 'system', `Embers of the last strife — ${carryTotal} token${carryTotal > 1 ? 's' : ''} carried in.`);
+        }
+    }
+
+    const nextFlags = flags.filter(
+        (f) =>
+            f !== HAZARD_HEXED_FLAG &&
+            !f.startsWith(HAZARD_TOKEN_FLAG_PREFIX) &&
+            !f.startsWith(TOKEN_CARRY_FLAG_PREFIX),
+    );
+    store.setState({ combat: next, flags: nextFlags } as never);
+}
+
+/**
+ * Banks half of the combat's unspent tokens (floored, per pool) into
+ * a carry flag for the next combat. Called just before the engine's
+ * `endCombat` clears the slice — any outcome carries.
+ */
+function bankCombatTokenCarry(store: AppStore): void {
+    const state = store.getState();
+    const combat = state.combat;
+    if (!combat?.combatResources) return;
+    const halved = RESOURCE_KEYS.map((k) => Math.floor((combat.combatResources[k] ?? 0) / 2));
+    if (halved.every((n) => n <= 0)) return;
+    const flags = ((state as unknown as GameState).flags ?? []).filter(
+        (f) => !f.startsWith(TOKEN_CARRY_FLAG_PREFIX),
+    );
+    store.setState({
+        flags: [...flags, `${TOKEN_CARRY_FLAG_PREFIX}${halved.join(':')}`],
+    } as never);
+}
+
+/** Spoils granted by `grantVictorySpoils` — surfaced on the victory panel. */
+export interface VictorySpoils {
+    shillings: number;
+    /** Hazard card folded into the persistent hazard deck. */
+    card: { id: string; name: string; rarity: 'common' | 'uncommon' | 'rare' } | null;
+}
+
+/** Base + per-enemy-level shilling purse for a combat victory. */
+const VICTORY_SHILLINGS_BASE = 4;
+const VICTORY_SHILLINGS_PER_LEVEL = 3;
+
+/**
+ * One-economy pass: a felled foe pays out like a cleared hazard —
+ * shillings scaled by its level, plus a hazard card folded into the
+ * player's persistent deck (rarity-weighted from the reward pool).
+ * Call BEFORE `endCombat` so the enemy is still on the slice. The
+ * caller threads the result into the victory aftermath snapshot.
+ */
+function grantVictorySpoilsAction(store: AppStore): VictorySpoils | null {
+    const state = store.getState();
+    const combat = state.combat;
+    if (!combat) return null;
+    const enemyLevel = Math.max(1, Number(combat.enemy.level ?? 1));
+    const shillings = VICTORY_SHILLINGS_BASE + VICTORY_SHILLINGS_PER_LEVEL * enemyLevel;
+
+    const roll = Math.random();
+    const rarity: 'common' | 'uncommon' | 'rare' =
+        roll < 0.5 ? 'common' : roll < 0.85 ? 'uncommon' : 'rare';
+    const pool = HAZARD_REWARD_CARDS.filter((c) => c.rarity === rarity);
+    const card = pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : null;
+
+    const gameState = state as unknown as GameState;
+    const flags = card ? appendAcquiredCard(gameState.flags ?? [], card.id) : gameState.flags;
+    store.setState({
+        player: { ...gameState.player, currency: gameState.player.currency + shillings },
+        flags,
+    } as never);
+
+    return {
+        shillings,
+        card: card ? { id: card.id, name: card.name, rarity: card.rarity } : null,
+    };
+}
+
+// ---------------------------------------------------------------------------
+// Skill learning (level-up picks)
+// ---------------------------------------------------------------------------
+
+/**
+ * Starter repertoire — the engine's tier-1 set (mirrors the preset
+ * baseline). New games create the player with `knownSkills: []` and
+ * the normal flow never applies a preset, so the first combat / first
+ * level-up seeds these. `engineLearnSkill` enforces requirements, so
+ * anything the level-1 player doesn't qualify for is skipped.
+ */
+const STARTER_SKILL_IDS = [
+    'ad-hominem-strike',
+    'false-dilemma',
+    'appeal-to-pity',
+    'achilles-gambit',
+    'liars-echo',
+    'ship-of-theseus',
+    'befriend',
+];
+
+function currentAlignment(store: AppStore): PhilosophicalAlignment {
+    const state = store.getState() as unknown as GameState;
+    return state.philosophicalAlignment ?? defaultAlignment();
+}
+
+/** Seeds the tier-1 starter skills when the player knows nothing yet. */
+function ensureStarterSkills(store: AppStore): void {
+    const player = store.getState().player;
+    if (!player || (player.knownSkills?.length ?? 0) > 0) return;
+    const alignment = currentAlignment(store);
+    let next = player;
+    for (const id of STARTER_SKILL_IDS) {
+        next = engineLearnSkill(next, id, alignment);
+    }
+    if (next !== player) store.setState({ player: next });
+}
+
+/** One learnable-skill offer row for the level-up learn modal. */
+export interface LearnableSkillOffer {
+    id: string;
+    name: string;
+    description: string;
+    stance: 'body' | 'mind' | 'heart';
+    category: 'fallacy' | 'paradox';
+    tier: number;
+    /** Compact effect line — same format as the combat picker rows. */
+    effectText: string;
+    /** Compact per-resource cost line. */
+    costText: string;
+}
+
+function toLearnableOffer(store: AppStore, skill: Skill): LearnableSkillOffer {
+    const player = store.getState().player;
+    const combatSkill = getCombatSkillById(skill.id);
+    let damage = Math.max(0, skill.basePower);
+    try {
+        damage = calculateSkillDamage(player, skill);
+    } catch {
+        // incomplete caster shape — keep the base-power estimate
+    }
+    return {
+        id: skill.id,
+        name: skill.name.toUpperCase(),
+        description: skill.description,
+        stance: skill.philosophicalAspect,
+        category: skill.category,
+        tier: skill.tier,
+        effectText: combatSkill
+            ? skillEffectText(combatSkill, damage)
+            : 'NO DIRECT EFFECT',
+        costText: skillCostText(skill.resourceCost),
+    };
+}
+
+/**
+ * Rolls the level-up skill offers: up to `count` random picks from
+ * everything the player currently qualifies for (engine
+ * `getAvailableSkills`, alignment-gated). Empty when nothing new is
+ * learnable — the caller skips the modal.
+ */
+function getLearnableSkillOffersAction(store: AppStore, count = 3): LearnableSkillOffer[] {
+    ensureStarterSkills(store);
+    const player = store.getState().player;
+    if (!player) return [];
+    const pool = getAvailableSkills(player, currentAlignment(store)).slice();
+    for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    return pool.slice(0, count).map((s) => toLearnableOffer(store, s));
+}
+
+/** Learns a skill through the engine (requirement-checked). */
+function learnSkillAction(store: AppStore, skillId: string): boolean {
+    const player = store.getState().player;
+    if (!player) return false;
+    const next = engineLearnSkill(player, skillId, currentAlignment(store));
+    if (next === player) return false;
+    store.setState({ player: next });
+    return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -671,15 +969,23 @@ function setLastResolution(combat: CombatState, summary: ResolutionSummary): Mob
 export function createAppActions(store: AppStore): AppActions {
     return {
         startCombat: (enemy) => {
+            // Starter skills must exist BEFORE the engine snapshots the
+            // player into the combat slice — the picker and the engine
+            // both read the snapshot's knownSkills.
+            ensureStarterSkills(store);
             store.getState().startCombat(enemy);
             // Phase 60d — seed mobile-only mana slice rather than
             // mutating Character. Idempotent; subsequent re-entries
             // during the same combat keep the prior current value.
             if (store.getState().combat !== null) {
                 seedCombatMana(store);
+                applyCombatStartBridges(store);
             }
         },
         endCombat: () => {
+            // One-economy pass — bank half the unspent tokens for the
+            // next combat before the engine clears the slice.
+            bankCombatTokenCarry(store);
             // Phase 78 — surface the engine `CombatEndReport` so
             // callers can read post-combat metadata (codex unlock,
             // alignment shift, narrative). Engine returns a stub
@@ -932,6 +1238,9 @@ export function createAppActions(store: AppStore): AppActions {
         claimHazardRewards: (cardId) => claimHazardRewardsAction(store, cardId),
         abandonHazard: () => abandonHazardAction(store),
         randomizeHazardDeck: () => randomizeHazardDeckAction(store),
+        grantVictorySpoils: () => grantVictorySpoilsAction(store),
+        getLearnableSkillOffers: (count) => getLearnableSkillOffersAction(store, count),
+        learnSkill: (skillId) => learnSkillAction(store, skillId),
     };
 }
 
@@ -1524,12 +1833,14 @@ function pickEventChoiceAction(store: AppStore, choiceId: string): void {
                     // dated back to Phase 60b's migration; the engine type
                     // exposes `.enemies` directly today.
                     const enemy = processed.encounter.enemies[0];
+                    ensureStarterSkills(store);
                     store.getState().startCombat(enemy);
                     // Phase 60d — seed mobile-only mana slice after the
                     // encounter-prelude path starts combat. Matches the
                     // direct `actions.startCombat` branch above.
                     if (store.getState().combat !== null) {
                         seedCombatMana(store);
+                        applyCombatStartBridges(store);
                     }
                     clearEventSlice(store);
                 } catch (error) {

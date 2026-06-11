@@ -2225,3 +2225,13 @@ exploration `moveToAction` migration to engine `revealAdjacent` /
 - proposed scope: 1 phase to explore and integrate new 0.16.0 features, ensure full consumption of engine capabilities
 - estimated phases: 1
 - conflicts: none
+
+### [ ] [score 4.0] Fail forward, never reset (scar-based defeat)
+- proposed: 2026-06-11, user-direct (one-loop design session) — APPROVED AS DEFERRED, do not implement until the user green-lights it
+- source signals:
+  - **User-direct**: "I like it, let's not implement it now, but leave it as a deferred idea" — explicit deferred approval during the one-loop economy review
+  - **Template exists**: the hazard consequence system (CRACK cards, max-vitae scars, token loss, curses) already models exactly this failure shape
+- rationale: Replace defeat-restarts with hazard-style scars so death becomes content, not a game over: wake at the last rest node with a CRACK card shuffled into the hazard deck, a max-vitae scar, and the killer foe now patrolling a node. Keeps the "no hope… unless" grammar honest — the *unless* always exists.
+- proposed scope: 1-2 phases — defeat-branch rework in the aftermath flow (CombatDefeatPanel gains a "RISE, SCARRED" path beside BEGIN AGAIN), scar application via the existing hazard-consequence appliers, killer-foe node placement on the current map
+- estimated phases: 2
+- conflicts: touches CombatDefeatPanel + resetRun flow; coordinate with any onboarding-flow phase

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { AXM, FONTS } from '@/theme/axm';
 import { TooltipTarget } from '@/components/tooltip/TooltipTarget';
 import { AscendStrip } from '@/components/levelup/AscendStrip';
+import { LearnSkillModal } from '@/components/levelup/LearnSkillModal';
 import { LevelReadyStrip } from '@/components/levelup/LevelReadyStrip';
 import { LevelUpModal } from '@/components/levelup/LevelUpModal';
 import { DevMenu } from '@/components/DevMenu';
@@ -48,6 +49,50 @@ export default function CharacterScreen() {
   const [levelUpOpen, setLevelUpOpen] = useState<boolean>(false);
   const onOpenLevelUp = useCallback(() => setLevelUpOpen(true), []);
   const onCloseLevelUp = useCallback(() => setLevelUpOpen(false), []);
+
+  // Learn-skill pass — LEVEL UP opens the stat ledger with the
+  // learn-skill modal stacked on top: one pick of three qualifying
+  // skills per level gained (the engine applies stacked level-ups in
+  // one dispatch, so a multi-level XP dump queues multiple picks).
+  // Offers regenerate after each pick; FORGO spends a pick on nothing.
+  const [skillPicksRemaining, setSkillPicksRemaining] = useState<number>(0);
+  const [skillOffers, setSkillOffers] = useState<
+    ReturnType<typeof actions.getLearnableSkillOffers>
+  >([]);
+  const onLevelUp = useCallback(() => {
+    const before = store.getState().player?.level ?? 0;
+    actions.levelUp();
+    const after = store.getState().player?.level ?? before;
+    const gained = Math.max(0, after - before);
+    if (gained > 0) {
+      const offers = actions.getLearnableSkillOffers();
+      if (offers.length > 0) {
+        setSkillOffers(offers);
+        setSkillPicksRemaining(gained);
+      }
+    }
+    // The stat ledger opens beneath the learn modal — the user
+    // allocates points once the picks are spent.
+    setLevelUpOpen(true);
+  }, [actions, store]);
+  const advanceSkillPick = useCallback(() => {
+    setSkillPicksRemaining((remaining) => {
+      const next = remaining - 1;
+      if (next > 0) {
+        setSkillOffers(actions.getLearnableSkillOffers());
+      } else {
+        setSkillOffers([]);
+      }
+      return next;
+    });
+  }, [actions]);
+  const onPickSkillOffer = useCallback(
+    (skillId: string) => {
+      actions.learnSkill(skillId);
+      advanceSkillPick();
+    },
+    [actions, advanceSkillPick],
+  );
   const onCommitAllocation = useCallback(
     (spent: { heart: number; body: number; mind: number }) => {
       // Dispatch the engine action N times — once per allocated
@@ -98,7 +143,7 @@ export default function CharacterScreen() {
         {vm.pendingPoints === 0 && vm.levelUpReady && (
           <LevelReadyStrip
             level={vm.level}
-            onLevelUp={() => actions.levelUp()}
+            onLevelUp={onLevelUp}
           />
         )}
         <View style={styles.marginTop8}>
@@ -142,6 +187,17 @@ export default function CharacterScreen() {
           })()}
           onCommit={onCommitAllocation}
           onCancel={onCloseLevelUp}
+        />
+      )}
+
+      {/* Learn-skill modal — stacks above the stat ledger (zIndex 60
+          vs the LevelUpModal's 50) until every pick is spent. */}
+      {skillPicksRemaining > 0 && skillOffers.length > 0 && (
+        <LearnSkillModal
+          offers={skillOffers}
+          picksRemaining={skillPicksRemaining}
+          onPick={onPickSkillOffer}
+          onSkip={advanceSkillPick}
         />
       )}
 

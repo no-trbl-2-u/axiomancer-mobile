@@ -68,7 +68,7 @@ describe('CombatFriendshipPanel: render contract', () => {
         const tree = render(<CombatFriendshipPanel vm={BASE_VM} onContinue={() => {}} />);
         expect(tree.queryByTestId('combat-friendship-panel-rewards')).not.toBeNull();
         expect(tree.queryByText('EXPERIENCE')).not.toBeNull();
-        expect(tree.queryByText('VITAE · SIGILS')).not.toBeNull();
+        expect(tree.queryByText('SHILLINGS')).not.toBeNull();
         expect(tree.queryByText('LOOT')).not.toBeNull();
     });
 

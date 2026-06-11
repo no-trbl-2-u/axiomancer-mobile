@@ -61,6 +61,7 @@ export default function ExplorationScreen() {
         inEncounterModal,
         openEncounterModal,
         closeEncounterModal,
+        lastOutcome,
         recordDeepestNode,
     } = useCombatMode();
     const { mode: aesthetic } = useAesthetic();
@@ -125,11 +126,15 @@ export default function ExplorationScreen() {
     // paths clear the event but leave inEncounterModal=true, subsequent
     // encounters can't open because the openEncounterModal effect above
     // won't fire when inEncounterModal is already true.
+    // Guard: a victory/parley/defeat exit ALSO nulls `combat` while the
+    // modal is showing the aftermath panel — `lastOutcome` is non-null
+    // in exactly that window and the panel's own CARRY ON drives the
+    // dismissal. Closing here would swallow the aftermath entirely.
     useEffect(() => {
-        if (inEncounterModal && !preludeReady && !combat) {
+        if (inEncounterModal && !preludeReady && !combat && lastOutcome === null) {
             closeEncounterModal();
         }
-    }, [inEncounterModal, preludeReady, combat, closeEncounterModal]);
+    }, [inEncounterModal, preludeReady, combat, lastOutcome, closeEncounterModal]);
 
     const nodeById = useMemo(() => {
         const m = new Map<string, ExplorationNode>();

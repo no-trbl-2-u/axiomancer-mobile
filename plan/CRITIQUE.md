@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-11 at commit 07b4068
-> Pass count: 33
+> Last pass: 2026-06-11 at commit 72f489d
+> Pass count: 34
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -26,13 +26,48 @@
 
 ## Pending
 
-<!-- Pass 33 (2026-06-11, commit 07b4068): repo-proxy pass —
+<!-- Pass 34 (2026-06-11, commit 72f489d): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
      critique reads docs/specs/artifacts as the "fresh maintainer"
-     proxy. Focus on onboarding experience, documentation structure,
-     development workflow clarity. Examined README.md, setup/,
-     docs/, package.json, testing patterns. 5 findings filed below. -->
+     proxy. Focus on general repo onboarding and mobile development
+     guidance. Examined README.md, setup/, docs/, state/presenters/,
+     package.json. 4 findings filed below. -->
 
+### [HIGH] /setup/01_repository.md — Setup documentation disconnected from main README creating confusing dual setup paths
+- pass: 34 (commit 72f489d)
+- viewport: repository
+- category: comprehension
+- observation: Setup documentation exists but is disconnected from main README, creating confusing dual setup paths for new maintainers
+- evidence: README.md provides quick start in lines 22-51 while setup/01_repository.md provides detailed setup guide, but neither cross-references the other
+- suggested fix: Cross-reference setup documentation in README and clarify when to use each path
+- source: repo-analysis
+
+### [MED] /README.md — Quick start prerequisites lack context for mobile development ecosystem
+- pass: 34 (commit 72f489d)
+- viewport: repository
+- category: comprehension
+- observation: Quick start section assumes familiarity with React Native/Expo ecosystem without explaining mobile development fundamentals or providing context for prerequisites
+- evidence: Lines 24-31 list Node.js 20+, Expo CLI, and platform requirements but don't explain why these specific versions are needed or what each platform option provides
+- suggested fix: Add brief explanation of mobile development context and why each prerequisite is required
+- source: repo-analysis
+
+### [MED] /state/presenters/ — Presenter layer architecture unclear for engine integration newcomers
+- pass: 34 (commit 72f489d)
+- viewport: repository
+- category: comprehension
+- observation: Presenter layer architecture is well-documented but the connection between engine integration and mobile-specific concerns is unclear for newcomers
+- evidence: combat.engine.ts shows complex engine integration but lacks clear explanation of how axiomancer-mechanics relates to mobile UI patterns
+- suggested fix: Add architectural overview explaining engine-to-mobile presentation layer translation
+- source: repo-analysis
+
+### [MED] /docs/testing.md — Testing standard lacks mobile-specific testing guidance
+- pass: 34 (commit 72f489d)
+- viewport: repository
+- category: mobile
+- observation: Testing standard focuses heavily on hermetic requirements but provides minimal guidance for mobile-specific testing challenges like device simulation and native modules
+- evidence: Lines 67-81 mention mocking expo-haptics and expo-font but don't explain mobile testing strategy beyond component render tests
+- suggested fix: Add mobile-specific testing guidance covering device simulation, native module mocking, and platform differences
+- source: repo-analysis
 
 ### [MED] /README.md — Repository structure navigation unclear for new maintainers
 - pass: 33 (commit 07b4068)

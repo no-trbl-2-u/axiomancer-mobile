@@ -60,6 +60,7 @@ export default function ExplorationScreen() {
         enterCombat,
         inEncounterModal,
         openEncounterModal,
+        closeEncounterModal,
         recordDeepestNode,
     } = useCombatMode();
     const { mode: aesthetic } = useAesthetic();
@@ -118,6 +119,17 @@ export default function ExplorationScreen() {
             openEncounterModal();
         }
     }, [preludeReady, inEncounterModal, openEncounterModal]);
+    // Phase 118 — Close encounter modal when encounter event is cleared.
+    // Fixes issue where subsequent encounters don't trigger after first
+    // encounter (issue #191). When user flees or other non-aftermath exit
+    // paths clear the event but leave inEncounterModal=true, subsequent
+    // encounters can't open because the openEncounterModal effect above
+    // won't fire when inEncounterModal is already true.
+    useEffect(() => {
+        if (inEncounterModal && !preludeReady && !combat) {
+            closeEncounterModal();
+        }
+    }, [inEncounterModal, preludeReady, combat, closeEncounterModal]);
 
     const nodeById = useMemo(() => {
         const m = new Map<string, ExplorationNode>();

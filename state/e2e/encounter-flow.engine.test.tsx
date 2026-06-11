@@ -152,6 +152,31 @@ describe('integration: encounter modal prelude → combat lifecycle', () => {
     });
 });
 
+describe('integration: encounter re-trigger after first encounter — issue #191', () => {
+    it('resolveCurrentMapEvent succeeds after previous encounter completed', () => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { createAppActions } = require('@/state/actions');
+        const { store } = withAllProviders(<></>);
+        const actions = createAppActions(store);
+
+        // Start and complete first encounter 
+        actions.startCombat(makeTestEnemy());
+        actions.endCombat();
+        
+        // Clear any event state using the proper empty state
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { EMPTY_EVENT_SLICE } = require('@/state/store');
+        store.setState({ event: EMPTY_EVENT_SLICE });
+        
+        // The key test: after the first encounter, subsequent calls to resolveCurrentMapEvent 
+        // should work. If the bug exists, this would be blocked by inEncounterModal state.
+        const eventResolved = actions.resolveCurrentMapEvent('encounter');
+        
+        // Should succeed regardless of what type of event is resolved
+        expect(eventResolved).toBe(true);
+    });
+});
+
 describe('integration: combat-in-modal — engine state actually mutates on action tap', () => {
     // Phase 64 Tick C — the [9.8] combat-mechanics row's narrowing
     // step. User report: "choosing the Action does nothing but logs

@@ -54,10 +54,21 @@ Every spec follows the same shape:
 If a spec turns out to be too big once you start, say so — the AI will
 split it into a follow-up spec rather than ploughing on.
 
+## Current development status
+
+**Specs 1-9 are complete.** The core engine integration, screens, and persistence are functional. 
+
+**Next recommended work:** Specs 10-12 remain open and are ready to start:
+- **Spec 10** — Navigation and app shell polish (deep links, back behavior, tab badges)
+- **Spec 11** — Asset pipeline (replace SVG placeholders with final assets) 
+- **Spec 12** — Accessibility and theming (screen reader support, font scaling)
+
+All three can be worked in parallel as they have no interdependencies.
+
 ## Recommended order
 
 The order below is historical and remains useful for dependency shape.
-**Spec 01 is already done** and the Jest/hermetic-e2e harness is live;
+**Specs 1-9 are complete** and the Jest/hermetic-e2e harness is live;
 new runtime specs must use it rather than treating tests as blocked.
 
 | # | Spec | Why this order |
@@ -69,7 +80,7 @@ new runtime specs must use it rather than treating tests as blocked.
 | 5 | [`05-character-screen-wiring.md`](./05-character-screen-wiring.md) | **[DONE]** Reads engine character data; informs the equipment slot story. |
 | 6 | [`06-inventory-screen-wiring.md`](./06-inventory-screen-wiring.md) | **[DONE]** Reads engine items; introduces `useConsumable` flows. |
 | 7 | [`07-exploration-screen-wiring.md`](./07-exploration-screen-wiring.md) | **[DONE]** Reads engine `WorldState`; node graph rendering. |
-| 8 | [`08-event-screen-wiring.md`](./08-event-screen-wiring.md) | Engine Spec 08 (world) is done; store/orchestration (Spec 09) is complete + a pinned narrative contract (see spec body). |
+| 8 | [`08-event-screen-wiring.md`](./08-event-screen-wiring.md) | **[DONE]** Engine Spec 08 (world) is done; store/orchestration (Spec 09) is complete + a pinned narrative contract (see spec body). |
 | 9 | [`09-asyncstorage-persistence.md`](./09-asyncstorage-persistence.md) | **[DONE]** Adds an `AsyncStorage` adapter so the game survives app restarts. Coordinates with engine Spec 12. |
 | 10 | [`10-navigation-and-app-shell.md`](./10-navigation-and-app-shell.md) | Polish on routing: deep links, back behaviour, tab badges. |
 | 11 | [`11-asset-pipeline.md`](./11-asset-pipeline.md) | Replaces SVG placeholders per `SVG_ASSET_SPEC.md`. |

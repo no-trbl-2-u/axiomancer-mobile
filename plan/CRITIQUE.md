@@ -39,8 +39,8 @@
      proxy. Focus on general repository comprehension. Examined
      README.md, specs/README.md, docs/, plan/bearings.md, package.json.
      4 findings filed below. -->
-### [MED] /README.md — Architecture diagram uses technical shorthand without explanation
-- pass: 36 (commit 17850b2)
+### [x] [MED] /README.md — Architecture diagram uses technical shorthand without explanation ✅
+- pass: 36 (commit 17850b2); addressed at commit 19bd545 via `/iterate`
 - viewport: desktop
 - auth_state: anonymous
 - category: comprehension
@@ -48,6 +48,8 @@
 - evidence: Architecture section shows data flow but doesn't explain the 'read upward, mutate downward' pattern until after the diagram
 - suggested fix: Add a brief explanation before the diagram defining 'read upward, mutate downward'
 - source: browser
+- addressed: 2026-06-12 via commit 19bd545
+- fix: Added brief explanation before architecture diagram defining 'read upward, mutate downward' pattern as data flowing up from engine to UI (read) while state changes flow down from actions to engine (mutate), clarifying the separation between business logic in engine and presentation logic in UI
 ### [MED] /docs/README.md — Documentation index doesn't prioritize essential reading
 - pass: 36 (commit 17850b2)
 - viewport: desktop

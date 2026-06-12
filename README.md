@@ -21,6 +21,8 @@ and below T's latest explicit decision / company CDRs.
 
 ## Quick start
 
+*For comprehensive repository setup including environment configuration, development tools, and troubleshooting, see [`setup/01_repository.md`](setup/01_repository.md). The quick start below covers the minimum steps to run the app.*
+
 ### Prerequisites
 
 - **Node.js 20+** — the React Native toolchain requires modern Node.js
@@ -89,8 +91,8 @@ npm install -g eas-cli        # if you don't already have it
 eas login                     # one-time browser auth
 ```
 
-For detailed setup instructions, see the `setup/` directory:
-- [`setup/01_repository.md`](setup/01_repository.md) — Repository setup and development environment
+For comprehensive setup beyond the quick start above, see the `setup/` directory:
+- [`setup/01_repository.md`](setup/01_repository.md) — Complete repository setup with environment configuration, development tools, and troubleshooting
 - [`setup/02_eas.md`](setup/02_eas.md) — EAS Build configuration
 - [`setup/03_store_setup.md`](setup/03_store_setup.md) — Store setup guide  
 - [`setup/04_claude_playtest.md`](setup/04_claude_playtest.md) — AI testing walkthrough

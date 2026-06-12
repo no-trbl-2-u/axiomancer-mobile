@@ -1,6 +1,8 @@
 # Repository Setup Guide
 
-This guide covers setting up the Axiomancer Mobile repository for development. Complete these steps before moving to EAS Build setup or store deployment.
+This guide provides comprehensive setup instructions for the Axiomancer Mobile repository, including environment configuration, development tools, and troubleshooting. For a quick start that covers the minimum steps to run the app, see the README.md quick start section first.
+
+Complete these comprehensive steps when you need full development environment setup, or if you encounter issues with the quick start process.
 
 ## Prerequisites
 

@@ -80,6 +80,55 @@ target the underlying presenter / engine function. The screen
 component test then becomes a thin "renders without crashing + shows
 expected text" check.
 
+## Mobile-specific testing considerations
+
+Since Axiomancer Mobile is a React Native / Expo app, tests must account for platform differences and native module behavior that differs from web environments:
+
+### Device simulation and platform differences
+
+- **Platform-specific components:** Use React Native Testing Library's platform utilities to test platform-conditional rendering. Mock `Platform.OS` when needed:
+  ```ts
+  import { Platform } from 'react-native';
+  jest.spyOn(Platform, 'select').mockReturnValue({ ios: 'iOS behavior', android: 'Android behavior' });
+  ```
+- **Screen dimensions:** Mock `Dimensions.get()` for layout-dependent components:
+  ```ts
+  import { Dimensions } from 'react-native';
+  jest.spyOn(Dimensions, 'get').mockReturnValue({ width: 375, height: 812 });
+  ```
+- **SafeAreaProvider:** Components using `useSafeAreaInsets` require wrapping in `<SafeAreaProvider>` during render tests.
+
+### Native module mocking strategy
+
+All Expo modules and React Native native modules must be mocked for hermetic testing. Current mocks in `jest.setup.ts` include:
+
+- **expo-haptics:** Mocked to prevent actual device vibration during tests
+- **expo-font:** Mocked to simulate font loading without real font files
+- **expo-splash-screen:** Mocked to prevent splash screen API calls
+- **AsyncStorage:** Use `@react-native-async-storage/async-storage/mock` for storage persistence tests
+
+When adding new native modules, follow this pattern:
+```ts
+// In jest.setup.ts
+jest.mock('expo-new-module', () => ({
+  functionName: jest.fn(),
+  CONSTANT_VALUE: 'mocked-value',
+}));
+```
+
+### React Native-specific test patterns
+
+- **Navigation testing:** Use `expo-router/testing-library` utilities for route navigation tests
+- **Animation mocking:** Reanimated animations are mocked via `react-native-reanimated/mock` - assert on final animated values, not intermediate frames
+- **Touch events:** Use `fireEvent.press()` instead of web-oriented `fireEvent.click()` for touchable components
+- **Text input:** React Native `TextInput` behavior differs from web inputs - use `fireEvent.changeText()` for text input simulation
+
+### Performance testing considerations
+
+- **Bundle size:** Metro bundler creates different artifacts than web bundlers - use `expo export` for realistic bundle analysis
+- **Memory usage:** Native memory constraints are platform-specific and not easily mocked - focus on algorithmic efficiency in tests rather than absolute memory consumption
+- **Startup time:** Test app initialization through `createGameStore()` lifecycle, not native app launch
+
 ## Browser playthroughs (the non-Jest tier)
 
 Real pointer gestures, phase orchestration, and reanimated overlays

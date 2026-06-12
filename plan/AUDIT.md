@@ -56,6 +56,7 @@
 - evidence: combat.engine.ts shows complex engine integration but lacks clear explanation of how axiomancer-mechanics relates to mobile UI patterns
 - suggested fix: Add architectural overview explaining engine-to-mobile presentation layer translation
 - source: external-critique
+- issue: #367
 
 ### [ ] [6.0] Mobile-specific testing guidance missing from testing standard
 - category: external-critique

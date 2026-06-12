@@ -127,13 +127,23 @@ export default function DefeatModal({
 
                         {/* Action buttons */}
                         <View style={styles.buttonSection}>
-                            <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
+                            <TouchableOpacity 
+                                style={styles.retryButton} 
+                                onPress={onRetry}
+                                accessibilityRole="button"
+                                accessibilityLabel="Begin again"
+                            >
                                 <Text style={[styles.retryButtonText, { fontFamily: FONTS.gothic }]}>
                                     ✠ BEGIN AGAIN
                                 </Text>
                             </TouchableOpacity>
                             
-                            <TouchableOpacity style={styles.abandonButton} onPress={onAbandon}>
+                            <TouchableOpacity 
+                                style={styles.abandonButton} 
+                                onPress={onAbandon}
+                                accessibilityRole="button"
+                                accessibilityLabel="Let the page close"
+                            >
                                 <Text style={[styles.abandonButtonText, { fontFamily: FONTS.serifItalic }]}>
                                     let the page close
                                 </Text>

@@ -173,7 +173,12 @@ export default function VictoryModal({
                     </View>
 
                     {/* Continue button */}
-                    <TouchableOpacity style={styles.continueButton} onPress={onContinue}>
+                    <TouchableOpacity 
+                        style={styles.continueButton} 
+                        onPress={onContinue}
+                        accessibilityRole="button"
+                        accessibilityLabel="Carry on"
+                    >
                         <Text style={[styles.buttonText, { fontFamily: FONTS.gothic }]}>
                             ✠ CARRY ON
                         </Text>

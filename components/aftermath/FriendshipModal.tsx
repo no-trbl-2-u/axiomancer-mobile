@@ -187,7 +187,12 @@ export default function FriendshipModal({
                     {renderJournalEntry()}
 
                     {/* Continue button */}
-                    <TouchableOpacity style={styles.continueButton} onPress={onContinue}>
+                    <TouchableOpacity 
+                        style={styles.continueButton} 
+                        onPress={onContinue}
+                        accessibilityRole="button"
+                        accessibilityLabel="Part as friends"
+                    >
                         <Text style={[styles.buttonText, { fontFamily: FONTS.gothic }]}>
                             ❦ PART AS FRIENDS
                         </Text>

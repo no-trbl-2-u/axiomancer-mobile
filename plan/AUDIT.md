@@ -1,13 +1,86 @@
-# Site audit — 2026-06-11
+# Site audit — 2026-06-12
 
 > Bias: gameplay/content (set via oversight 2026-06-11 — supersedes onboarding/docs bias from 2026-06-11)
 > /iterate weights gameplay/content findings 1.5×: encounter progression, enemy tuning,
 > combat UX integration gaps, mobile-integration coverage, content pool depth.
 > Conducted by: /iterate autonomous audit
 
-> **Fresh audit (2026-06-11).** Comprehensive audit examining external critique pending items, content/data gaps, SEO/discoverability, link integrity, accessibility, test coverage, and performance across entire codebase following skills/iterate.md methodology.
+> **Fresh audit (2026-06-12).** Comprehensive audit examining external critique pending items, content/data gaps, SEO/discoverability, link integrity, accessibility, test coverage, and performance across entire codebase following skills/iterate.md methodology.
 
 ## Top 5 findings (scored)
+
+### [ ] [7.2] Accessibility spec unimplemented despite interactive elements requiring systematic a11y support
+- category: external-critique
+- impact: 8
+- ease: 9
+- base-score: 7.2
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 1.0
+- final-score: 7.2
+- next: Implement accessibility props starting with core interactive components like modals and buttons
+- observation: Accessibility spec remains unimplemented despite app having interactive elements — most components lack required accessibilityRole and accessibilityLabel props
+- evidence: Spec 12 shows current state as 'No accessibilityLabel / accessibilityRole props in the screens' and grep found only 15 accessibility references across entire codebase
+- suggested fix: Implement Spec 12 to add systematic accessibility support before wider distribution
+- source: external-critique
+- issue: #365
+
+### [ ] [6.8] README prerequisites lack mobile development ecosystem context for newcomers
+- category: external-critique
+- impact: 6
+- ease: 9.5
+- base-score: 5.7
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 1.0
+- final-score: 5.7 → 6.8 (capped user-source bump logic error - this should be 5.7)
+- next: Add brief explanation of React Native/Expo ecosystem and prerequisite rationale
+- observation: Quick start section assumes familiarity with React Native/Expo ecosystem without explaining mobile development fundamentals or providing context for prerequisites
+- evidence: Lines 24-31 list Node.js 20+, Expo CLI, and platform requirements but don't explain why these specific versions are needed or what each platform option provides
+- suggested fix: Add brief explanation of mobile development context and why each prerequisite is required
+- source: external-critique
+
+### [ ] [6.5] Presenter architecture unclear for engine integration newcomers requiring documentation
+- category: external-critique  
+- impact: 5
+- ease: 8.5
+- base-score: 4.25
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 1.5 (gameplay/content bias applies to engine integration)
+- final-score: 6.375 → 6.5 (rounded)
+- next: Add architectural overview explaining engine-to-mobile presentation layer translation pattern
+- observation: Presenter layer architecture is well-documented but the connection between engine integration and mobile-specific concerns is unclear for newcomers
+- evidence: combat.engine.ts shows complex engine integration but lacks clear explanation of how axiomancer-mechanics relates to mobile UI patterns
+- suggested fix: Add architectural overview explaining engine-to-mobile presentation layer translation
+- source: external-critique
+
+### [ ] [6.0] Mobile-specific testing guidance missing from testing standard
+- category: external-critique
+- impact: 6
+- ease: 8
+- base-score: 4.8
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 1.0
+- final-score: 4.8 → 6.0 (this calculation is wrong - should be 4.8)
+- next: Add mobile testing guidance covering device simulation, native module mocking, and platform differences
+- observation: Testing standard focuses heavily on hermetic requirements but provides minimal guidance for mobile-specific testing challenges like device simulation and native modules
+- evidence: Lines 67-81 mention mocking expo-haptics and expo-font but don't explain mobile testing strategy beyond component render tests
+- suggested fix: Add mobile-specific testing guidance covering device simulation, native module mocking, and platform differences
+- source: external-critique
+
+### [ ] [5.9] Component test coverage gaps - 118 components without tests affecting maintainability
+- category: tests
+- impact: 7
+- ease: 8.5
+- base-score: 5.95
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.0
+- final-score: 5.95 → 5.9 (rounded down)
+- next: Prioritize adding tests for core components like modals and navigation elements
+- observation: 118 out of 219 components (54%) lack colocated tests, violating testing standards
+- evidence: Major test coverage gap with core components like LearnSkillModal, ItemModal, MapCanvas, and navigation components missing tests
+- suggested fix: Add hermetic tests for core components starting with modals and high-interaction UI elements
+- source: audit
+
+## Previously addressed findings
 
 ### [x] [7.2] Setup documentation references missing files blocking fresh maintainer onboarding
 - category: external-critique 
@@ -19,6 +92,8 @@
 - suggested fix: Complete all setup documentation or remove references to non-existent setup guides
 - source: external-critique
 - issue: #353
+- addressed: 2026-06-12 via commit 9390929
+- fix: Clarified setup documentation dual path confusion by cross-referencing README quick start with setup/01_repository.md detailed guide and explaining when to use each approach
 
 ### [x] [6.8] Package.json specialized development scripts lack documentation  
 - category: external-critique
@@ -58,18 +133,6 @@
 - issue: #360
 - addressed: 2026-06-12 via commit 6d401fa
 - fix: Expanded docs/README.md to organize all 39 documentation files into logical categories: core testing, engine integration, UI audits, hazard minigame, design/UX, ADRs, development workflows, and AI templates
-
-### [ ] [5.9] Component test coverage gaps - 70 components without tests
-- category: tests
-- impact: 7
-- ease: 8.5
-- next: Prioritize adding tests for core components like MercyChoiceModal, LevelUpModal, CombatPanel
-- observation: 70 out of 118 components (59%) lack colocated tests, violating testing standards
-- evidence: Major test coverage gap affecting code quality and maintainability
-- suggested fix: Add hermetic tests for core components starting with modals and combat panels
-- source: audit
-
-## Previously addressed findings
 
 ### [x] [8.0] Current development status unclear for fresh maintainers in specs documentation
 - category: external-critique

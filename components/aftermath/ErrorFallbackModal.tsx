@@ -87,6 +87,8 @@ export default function ErrorFallbackModal({
                                         copyPressed && styles.copyButtonPressed
                                     ]} 
                                     onPress={handleCopyPress}
+                                    accessibilityRole="button"
+                                    accessibilityLabel="Copy error details"
                                 >
                                     <Text style={[
                                         styles.copyButtonText, 
@@ -115,13 +117,23 @@ export default function ErrorFallbackModal({
 
                         {/* Action buttons */}
                         <View style={styles.buttonSection}>
-                            <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
+                            <TouchableOpacity 
+                                style={styles.retryButton} 
+                                onPress={onRetry}
+                                accessibilityRole="button"
+                                accessibilityLabel="Try again"
+                            >
                                 <Text style={[styles.retryButtonText, { fontFamily: FONTS.gothic }]}>
                                     ✠ TRY AGAIN
                                 </Text>
                             </TouchableOpacity>
                             
-                            <TouchableOpacity style={styles.homeButton} onPress={onReturnHome}>
+                            <TouchableOpacity 
+                                style={styles.homeButton} 
+                                onPress={onReturnHome}
+                                accessibilityRole="button"
+                                accessibilityLabel="Return to the hearth"
+                            >
                                 <Text style={[styles.homeButtonText, { fontFamily: FONTS.serifItalic }]}>
                                     return to the hearth
                                 </Text>

@@ -270,14 +270,133 @@ actions.resolveCombatRound();
 setPlayerHp(prev => Math.max(0, prev - damage));
 ```
 
+## Mobile Development Context for Engine Newcomers
+
+### Understanding the Mobile-Specific Challenge
+
+If you're coming from web development or engine work, React Native introduces unique constraints that affect how we integrate with `axiomancer-mechanics`:
+
+#### Touch vs Click Interfaces
+```typescript
+// Web: click handlers on small targets work fine
+<button onClick={handleStanceSelect}>Heart</button>
+
+// Mobile: need 44pt touch targets, visual feedback
+<TouchableOpacity 
+  onPress={handleStanceSelect}
+  style={{ minHeight: 44, minWidth: 44 }}
+  accessibilityRole="button"
+>
+  <StanceCard stance="heart" />
+</TouchableOpacity>
+```
+
+#### Screen Size Constraints
+```typescript
+// Engine: provides all available skills (could be 20+)
+const allSkills = engine.getPlayerSkills();
+
+// Mobile: must limit to fit screen real estate
+const visibleSkills = allSkills
+  .slice(0, MOBILE_SKILL_LIMIT)  // Show only 6 skills
+  .map(skill => ({
+    ...skill,
+    shortName: truncateForMobile(skill.name)  // "Lightning Bolt" → "Lightning"
+  }));
+```
+
+#### Performance Considerations
+```typescript
+// Engine: full game state updates every action
+const gameState = engine.getFullState();  // Large object with all data
+
+// Mobile: selective subscriptions to prevent re-renders
+const combatData = useGameState(state => ({
+  phase: state.combat?.phase,
+  playerHp: state.player.health,
+  // Only the data this component actually renders
+}));
+```
+
+#### Platform-Specific Adaptations
+```typescript
+// Engine: provides semantic game actions
+engine.executeSkill('lightning-bolt');
+
+// Mobile: adds haptic feedback, sound, platform-appropriate animations
+const handleSkillCast = (skillId: string) => {
+  // Platform-specific feedback
+  if (Platform.OS === 'ios') {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+  }
+  
+  // Engine action (platform-agnostic)
+  actions.executeSkill(skillId);
+  
+  // Mobile animation (React Native)
+  animateSkillCast();
+};
+```
+
+### Common Mobile Integration Patterns
+
+#### 1. Responsive Data Shaping
+```typescript
+// Engine gives us precise values
+const damage = 127;
+const maxDamage = 200;
+
+// Mobile adapts for different screen densities  
+const mobileDisplay = {
+  // iPhone SE: show abbreviated
+  short: "127",
+  // iPad: show full context
+  full: "127 / 200 damage",
+  // Screen reader: verbose description
+  a11y: "Dealt 127 out of maximum 200 damage points"
+};
+```
+
+#### 2. Touch Gesture Translation
+```typescript
+// Engine: discrete stance selection
+engine.selectStance('heart');
+
+// Mobile: gesture-driven card swapping
+const handleStanceSwipe = (gestureState: PanGestureHandlerStateChangeEvent) => {
+  const velocity = gestureState.velocityX;
+  
+  if (Math.abs(velocity) > SWIPE_THRESHOLD) {
+    const direction = velocity > 0 ? 'next' : 'prev';
+    const newStance = getAdjacentStance(currentStance, direction);
+    actions.selectStance(newStance);
+  }
+};
+```
+
+#### 3. Mobile State Coordination
+```typescript
+// Engine manages game flow
+const combatPhase = engine.getCombatPhase();
+
+// Mobile coordinates with navigation stack
+useEffect(() => {
+  if (combatPhase === 'victory') {
+    navigation.navigate('Aftermath', { type: 'victory' });
+  }
+}, [combatPhase, navigation]);
+```
+
 ## For Engine Integration Newcomers
 
 ### Quick Start Checklist
 
-1. **Read the presenter docs**: [`docs/presenters.md`](./presenters.md)
-2. **Examine a complete example**: [`state/presenters/combat.engine.ts`](../state/presenters/combat.engine.ts)
-3. **Follow the data flow**: Engine state → Presenter → Component
-4. **Test the boundary**: Every presenter has hermetic tests in `state/e2e/`
+1. **Understand mobile constraints first**: Touch targets, screen size, performance
+2. **Read the presenter docs**: [`docs/presenters.md`](./presenters.md)
+3. **Study mobile-specific adaptations**: Above patterns section
+4. **Examine a complete example**: [`state/presenters/combat.engine.ts`](../state/presenters/combat.engine.ts)
+5. **Follow the data flow**: Engine state → Mobile Presenter → React Native Component
+6. **Test the boundary**: Every presenter has hermetic tests in `state/e2e/`
 
 ### Key Files to Understand
 

@@ -514,6 +514,50 @@ describe('selectEventViewModel: chrome contract', () => {
     });
 });
 
+describe('selectEventViewModel: referential stability (Maximum-update-depth guard)', () => {
+    // Regression for the map-node-nav crash (2026-06-12): the exploration
+    // screen subscribes via `useGameState(selectEventViewModel)`, whose
+    // `getSnapshot` is the bare selector call. React's `useSyncExternalStore`
+    // requires a STABLE reference for unchanged state or it loops forever
+    // ("Maximum update depth exceeded"). Every active-event path composes a
+    // fresh frozen VM, so without the selector's 1-entry memo, the first
+    // non-empty event resolved on the map crashed the screen. Hazard slipped
+    // through because that path clears the slice back to the EMPTY_VM
+    // singleton. These tests pin the memo so the loop can't return.
+
+    it('returns the SAME reference across calls when the active event is unchanged', () => {
+        const store = makeStore();
+        setPending(store, makeRestResult(7));
+        const vm1 = selectEventViewModel(store.getState());
+        const vm2 = selectEventViewModel(store.getState());
+        expect(vm2).toBe(vm1);
+    });
+
+    it('returns the SAME reference for a combat-prelude across calls', () => {
+        const store = makeStore();
+        setPending(store, makeEncounterResult({ isBoss: false }));
+        const vm1 = selectEventViewModel(store.getState());
+        const vm2 = selectEventViewModel(store.getState());
+        expect(vm2).toBe(vm1);
+    });
+
+    it('returns the stable EMPTY_VM singleton across calls with no active event', () => {
+        const store = makeStore();
+        const vm1 = selectEventViewModel(store.getState());
+        const vm2 = selectEventViewModel(store.getState());
+        expect(vm2).toBe(vm1);
+    });
+
+    it('recomputes (new reference) when the event slice changes', () => {
+        const store = makeStore();
+        setPending(store, makeRestResult(7));
+        const vm1 = selectEventViewModel(store.getState());
+        setPending(store, makeRestResult(3));
+        const vm2 = selectEventViewModel(store.getState());
+        expect(vm2).not.toBe(vm1);
+    });
+});
+
 describe('selectEventViewModel: narrative-choice composition', () => {
     it('maps a rest event to a single-choice VM with heal consequence', () => {
         const store = makeStore();

@@ -50,8 +50,9 @@ jest.mock('expo-router', () => ({
 import { AestheticModeProvider } from '@/state/aesthetic-mode';
 import { CombatModeProvider } from '@/state/combat-mode';
 import { GameStoreProvider } from '@/state/GameStoreProvider';
-import { createAppStore, type AppStore } from '@/state/store';
+import { createAppStore, type AppStore, EMPTY_EVENT_SLICE } from '@/state/store';
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
+import type { ResolveMapEventResult } from 'axiomancer-mechanics';
 
 import CharacterScreen from '@/app/(tabs)/character';
 import InventoryScreen from '@/app/(tabs)/inventory';
@@ -67,6 +68,43 @@ afterEach(() => {
 function makeStore(): AppStore {
     return createAppStore({ adapter: createMemoryAdapter() });
 }
+
+/**
+ * Seed an active (non-empty) event slice so a screen renders the
+ * event-bearing branch. The empty-slice boot path returns the stable
+ * `EMPTY_VM` singleton from `selectEventViewModel`; only an active
+ * event composes a fresh frozen VM each call, which is what made the
+ * exploration screen's `useGameState(selectEventViewModel)` loop.
+ */
+function seedActiveEvent(store: AppStore, result: ResolveMapEventResult): void {
+    store.setState({ event: { ...EMPTY_EVENT_SLICE, pending: result } });
+}
+
+const REST_EVENT: ResolveMapEventResult = {
+    state: undefined as never,
+    event: { kind: 'rest', healed: 7 } as never,
+};
+
+const ENCOUNTER_EVENT: ResolveMapEventResult = {
+    state: undefined as never,
+    event: {
+        kind: 'encounter',
+        encounter: {
+            enemies: [
+                {
+                    id: 'cairn-rot',
+                    name: 'Cairn-rot',
+                    level: 3,
+                    baseStats: { heart: 2, body: 3, mind: 1 },
+                    health: 24,
+                    maxHealth: 24,
+                },
+            ],
+            origin: 'fishing-village:fv-3',
+        },
+        isBoss: false,
+    } as never,
+};
 
 function withProviders(store: AppStore, screen: React.ReactNode) {
     return (
@@ -256,5 +294,40 @@ describe('smoke-render: no template-string leaks in rendered output', () => {
         const store = makeStore();
         const api = render(withProviders(store, <EventScreen />));
         expectNoTemplateLeaks(collectVisibleStrings(api), 'event');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Active-event render guard (Maximum-update-depth regression)
+// ---------------------------------------------------------------------------
+//
+// Regression for the map-node-nav crash (2026-06-12). The fresh-boot
+// smoke renders above all run with an EMPTY event slice, where
+// `selectEventViewModel` returns the stable `EMPTY_VM` singleton — so
+// they never exercised the path that loops. The exploration screen
+// subscribes via `useGameState(selectEventViewModel)`; once a real
+// (non-empty) event resolved, the selector composed a fresh frozen VM
+// every render, React's `useSyncExternalStore` saw a new reference each
+// time, and the screen blew up with "Maximum update depth exceeded".
+// Hazard slipped through only because that resolve path clears the slice
+// back to EMPTY before routing away. These renders pin the screens
+// against an ACTIVE event so the loop can't come back unnoticed.
+describe('smoke-render: surfaces with an ACTIVE event (no infinite render loop)', () => {
+    it('renders the Exploration tab with an active narrative event without throwing', () => {
+        const store = makeStore();
+        seedActiveEvent(store, REST_EVENT);
+        expect(() => render(withProviders(store, <ExplorationScreen />))).not.toThrow();
+    });
+
+    it('renders the Exploration tab with an active combat-prelude without throwing', () => {
+        const store = makeStore();
+        seedActiveEvent(store, ENCOUNTER_EVENT);
+        expect(() => render(withProviders(store, <ExplorationScreen />))).not.toThrow();
+    });
+
+    it('renders the Event modal with an active narrative event without throwing', () => {
+        const store = makeStore();
+        seedActiveEvent(store, REST_EVENT);
+        expect(() => render(withProviders(store, <EventScreen />))).not.toThrow();
     });
 });

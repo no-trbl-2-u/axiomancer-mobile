@@ -80,6 +80,32 @@ target the underlying presenter / engine function. The screen
 component test then becomes a thin "renders without crashing + shows
 expected text" check.
 
+## Browser playthroughs (the non-Jest tier)
+
+Real pointer gestures, phase orchestration, and reanimated overlays
+are covered by Playwright playthroughs against the exported web build:
+
+- `npm run e2e:hazard` — `scripts/hazard-e2e.mjs`: both hazard routes,
+  drag gestures, the no-re-cast dice doctrine.
+- `npm run e2e:gathering` — `scripts/gathering-e2e.mjs`: both gleaning
+  stances, including a forced eruption.
+- `npm run e2e:minigames` — both, sharing one `expo export`.
+
+They are deterministic (seeds pinned through the `__AXM_*` dev hooks)
+and hermetic (everything runs against localhost). CI runs them in the
+`e2e-minigames` job of `.github/workflows/verify.yml`. When asserting
+on copy that mounts behind a reanimated `entering` delay, poll
+(`waitForCopy` in the scripts) instead of reading `innerText` once.
+
+## The hermeticity guard
+
+`state/e2e/hermeticity.audit.engine.test.ts` enforces this document
+mechanically: no `.only` lands, spies restore, minigame engines and
+presenters stay free of `Math.random()` / wall-clock reads, and only
+an explicit allowlist of tests may touch disk. If you legitimately
+need a new disk-reading guard test, add it to the allowlist in the
+same PR and say why.
+
 ---
 
 ## File and naming conventions

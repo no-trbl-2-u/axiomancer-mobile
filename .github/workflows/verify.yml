@@ -80,3 +80,38 @@ jobs:
           # is the per-export budget. Bumping to 8 min here gives the
           # cold-cache CI runner a wider window than a warm laptop.
           SMOKE_BUNDLER_TIMEOUT_MS: '480000'
+
+  e2e-minigames:
+    # Browser-driven playthroughs of both minigames against the exported
+    # web build (scripts/hazard-e2e.mjs + scripts/gathering-e2e.mjs).
+    # These were local-only until 2026-06-12; in CI they are the only
+    # gate that exercises real pointer gestures, the phase orchestration,
+    # and the reanimated overlays end-to-end. The hazard run exports
+    # .smoke-dist; the gathering run reuses it.
+    name: e2e-minigames (playwright playthroughs)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Hazard playthrough (both routes)
+        run: npm run e2e:hazard
+
+      - name: Gathering playthrough (both stances)
+        run: npm run e2e:gathering
+        env:
+          GATHER_E2E_REUSE_EXPORT: '1'

@@ -15,6 +15,7 @@ import {
     hazardCardValue,
     hazardProjectedProgress,
     hazardStagedProgress,
+    hazardSubquestStatus,
     hazardTierOf,
     powerHazardCard,
     resolveHazardRound,
@@ -29,13 +30,17 @@ import {
     HAZARD_DECK,
     HAZARD_LIBRARY,
     HAZARD_REWARD_CARDS,
+    HAZARD_SUBQUESTS,
 } from '../content';
+import { HAZARD_TUNING } from '../tuning';
 import { appendAcquiredCard, decodeAcquiredCards, hazardDeckBag, hazardStarterBag } from '../deck-flags';
 import {
+    EMPTY_HAZARD_QUEST_METRICS,
     HAZARD_DICE_COUNT,
     HAZARD_HAND_SIZE,
     HAZARD_MOMENTUM_CAP,
     type HazardHandEntry,
+    type HazardQuestMetrics,
     type HazardSessionState,
 } from '../types';
 
@@ -883,5 +888,182 @@ describe('expansion mechanics', () => {
         s = applyHazardCard(s, 'p', BAG);
         expect(s.momentumCap).toBe(HAZARD_MOMENTUM_CAP + 2);
         expect(s.hand.length).toBe(before + 2);
+    });
+});
+
+describe('enchant momentum (only when cards are played, never banked into carry)', () => {
+    it('a clear cleared by an aura carries only the RAW surplus forward', () => {
+        const def = getHazardDef(HAZARD_ID);
+        const need = def.safe.thresholds[0]; // 20
+        let s = playingSession(3, 'safe');
+        // +2 FORCE / card aura active; play 5 × IRON GRIP (raw 5F each = 25).
+        s = rig(s, {
+            hand: Array.from({ length: 5 }, (_, i) => entry(`g${i}`, 'grip')),
+            play: [],
+            modifiers: { auraForce: 2, auraEscape: 0, surgeForce: 0, surgeEscape: 0 },
+            progressBase: { force: 0, escape: 0 },
+        });
+        for (const h of s.hand.slice()) s = stageHazardCard(s, h.uid, BAG);
+        s = resolveHazardRound(s);
+        // The round is judged on the ENCHANTED total (25 raw + 5×2 aura = 35).
+        expect(s.resolveInfo?.combined).toBe(35);
+        expect(s.resolveInfo?.cleared).toBe(true);
+        // …but momentum carries the RAW surplus only: (25 − 20) / 2 = 2,
+        // NOT the enchanted (35 − 20) / 2 = 7 (capped 3). The aura is not
+        // re-counted in the next round's running total.
+        expect(s.resolveInfo?.carryForce).toBe(2);
+    });
+
+    it('risk-route carry also excludes the aura on each meter', () => {
+        const def = getHazardDef(HAZARD_ID);
+        const [nF] = def.risk.thresholds[0]; // 9
+        let s = playingSession(3, 'risk');
+        // Clear FORCE only with aura; ESCAPE stays 0 (round will not clear, but
+        // carry math is still computed per meter from the raw projected total).
+        s = rig(s, {
+            hand: Array.from({ length: 3 }, (_, i) => entry(`g${i}`, 'grip')),
+            play: [],
+            modifiers: { auraForce: 2, auraEscape: 0, surgeForce: 0, surgeEscape: 0 },
+            progressBase: { force: 0, escape: 0 },
+        });
+        for (const h of s.hand.slice()) s = stageHazardCard(s, h.uid, BAG);
+        s = resolveHazardRound(s);
+        // raw force = 15, enchanted = 21. Round fails (ESCAPE 0 < need), so carry
+        // is 0 regardless — but the force meter still reports the enchanted total.
+        expect(s.resolveInfo?.force).toBe(15 + 6);
+        expect(s.resolveInfo?.cleared).toBe(false);
+        expect(s.resolveInfo?.carryForce).toBe(0); // failed round → no carry
+        void nF;
+    });
+});
+
+describe('sub-quests — selection', () => {
+    it('rolls exactly pickCount distinct objectives from the catalogue', () => {
+        const s = freshSession();
+        expect(s.subquests).toHaveLength(HAZARD_TUNING.subquests.pickCount);
+        const ids = s.subquests.map((q) => q.id);
+        expect(new Set(ids).size).toBe(ids.length); // distinct
+        for (const id of ids) {
+            expect(HAZARD_SUBQUESTS.some((q) => q.id === id)).toBe(true);
+        }
+    });
+
+    it('is deterministic for a fixed seed and independent of the card stream', () => {
+        const a = createHazardSession(42, BAG, HAZARD_ID);
+        const b = createHazardSession(42, BAG, HAZARD_ID);
+        expect(a.subquests).toEqual(b.subquests);
+        // The opening hand is unchanged by quest selection (independent stream).
+        expect(a.hand.map((h) => h.cardId)).toEqual(b.hand.map((h) => h.cardId));
+    });
+});
+
+describe('sub-quests — metric accrual', () => {
+    it('counts salvaged, committed, and powered cards plus final dice', () => {
+        let s = playingSession(5, 'safe');
+        s = rig(s, {
+            hand: [entry('h1', 'steps'), entry('h2', 'grip')],
+            play: [],
+            dice: [{ id: 'dr', kind: 'red', state: 'available' }],
+            questMetrics: { ...EMPTY_HAZARD_QUEST_METRICS, roundsCleared: [] },
+        });
+        s = discardHazardCard(s, 'h1'); // salvage one
+        expect(s.questMetrics.cardsSalvaged).toBe(1);
+        s = stageHazardCard(s, 'h2', BAG);
+        s = powerHazardCard(s, 'h2', 'dr', BAG);
+        s = resolveHazardRound(s);
+        expect(s.questMetrics.cardsCommitted).toBe(1);
+        expect(s.questMetrics.cardsPowered).toBe(1);
+        expect(s.questMetrics.roundsCleared[0]).toBe(s.resolveInfo?.cleared);
+        expect(s.questMetrics.handEmptied).toBe(true); // hand was emptied at resolve
+    });
+
+    it('tallies re-cast / convert effects for STORMCALLER', () => {
+        let s = playingSession(5, 'safe');
+        s = rig(s, { hand: [entry('p', 'pole')], play: [], dice: [], questMetrics: { ...EMPTY_HAZARD_QUEST_METRICS, roundsCleared: [] } });
+        s = stageHazardCard(s, 'p', BAG); // BALANCE POLE — recast
+        s = applyHazardCard(s, 'p', BAG);
+        expect(s.questMetrics.recastConvertApplied).toBe(1);
+    });
+});
+
+describe('sub-quests — status logic', () => {
+    const Q = HAZARD_TUNING.subquests;
+    const m = (over: Partial<HazardQuestMetrics> = {}): HazardQuestMetrics => ({
+        ...EMPTY_HAZARD_QUEST_METRICS,
+        roundsCleared: [],
+        ...over,
+    });
+
+    it('TRAVEL LIGHT fails the moment the cap is exceeded', () => {
+        expect(hazardSubquestStatus('travel-light', m({ cardsCommitted: Q.travelLightCap }), 3, false)).toBe('active');
+        expect(hazardSubquestStatus('travel-light', m({ cardsCommitted: Q.travelLightCap + 1 }), 3, false)).toBe('failed');
+        expect(hazardSubquestStatus('travel-light', m({ cardsCommitted: 5 }), 3, true)).toBe('done');
+    });
+
+    it('SURGE MASTER is done as soon as the count is hit, else fails at the end', () => {
+        expect(hazardSubquestStatus('surge-master', m({ cardsPowered: Q.surgeMasterCount }), 3, false)).toBe('done');
+        expect(hazardSubquestStatus('surge-master', m({ cardsPowered: 1 }), 3, false)).toBe('active');
+        expect(hazardSubquestStatus('surge-master', m({ cardsPowered: 1 }), 3, true)).toBe('failed');
+    });
+
+    it('FLAWLESS fails on the first lost round; FINISHER tracks the last', () => {
+        expect(hazardSubquestStatus('flawless', m({ roundsCleared: [true, false] }), 3, false)).toBe('failed');
+        expect(hazardSubquestStatus('flawless', m({ roundsCleared: [true, true, true] }), 3, true)).toBe('done');
+        expect(hazardSubquestStatus('finisher', m({ roundsCleared: [true, true, true] }), 3, true)).toBe('done');
+        expect(hazardSubquestStatus('finisher', m({ roundsCleared: [true, true, false] }), 3, true)).toBe('failed');
+    });
+
+    it('DICE IN RESERVE is judged from the recorded final dice count', () => {
+        expect(hazardSubquestStatus('dice-reserve', m({ finalDiceAvailable: Q.diceReserveCount }), 3, true)).toBe('done');
+        expect(hazardSubquestStatus('dice-reserve', m({ finalDiceAvailable: 1 }), 3, true)).toBe('failed');
+        expect(hazardSubquestStatus('dice-reserve', m({ finalDiceAvailable: -1 }), 3, false)).toBe('active');
+    });
+});
+
+describe('sub-quests — outcome payout', () => {
+    it('pays a completed objective on a survived crossing', () => {
+        // SCAVENGER (salvage 2) — rig the metric mid-run by salvaging, then clear.
+        let s = playingSession(7, 'safe');
+        s = rig(s, { subquests: [{ id: 'scavenger' }] });
+        for (let round = 0; round < 3; round++) {
+            const need = getHazardDef(HAZARD_ID).safe.thresholds[round];
+            const copies = Math.ceil(need / 5) + 1;
+            const hand = [
+                ...Array.from({ length: copies }, (_, i) => entry(`r${round}-${i}`, 'grip')),
+                entry(`s${round}-a`, 'steps'),
+                entry(`s${round}-b`, 'steps'),
+            ];
+            s = rig(s, { hand, play: [] });
+            if (round === 0) {
+                s = discardHazardCard(s, `s0-a`);
+                s = discardHazardCard(s, `s0-b`);
+            }
+            for (const h of s.hand.filter((h) => h.cardId === 'grip')) s = stageHazardCard(s, h.uid, BAG);
+            s = resolveHazardRound(s);
+            s = continueHazardAfterResolve(s, BAG);
+        }
+        expect(s.phase).toBe('outcome');
+        expect(s.outcome?.tier).toBe('perfect');
+        const scav = s.outcome?.subquests.find((q) => q.id === 'scavenger');
+        expect(scav?.status).toBe('done');
+        expect(s.outcome?.questVitae).toBe(HAZARD_TUNING.subquests.vitae);
+    });
+
+    it('forfeits objective bonuses on a total failure', () => {
+        let s = playingSession(7, 'safe');
+        s = rig(s, { subquests: [{ id: 'scavenger' }] });
+        for (let round = 0; round < 3; round++) {
+            // salvage 2 each round (quest satisfied) but never clear a round.
+            s = rig(s, { hand: [entry(`s${round}-a`, 'steps'), entry(`s${round}-b`, 'steps'), entry(`c${round}`, HAZARD_CRACK_CARD.id)], play: [] });
+            s = discardHazardCard(s, `s${round}-a`);
+            s = discardHazardCard(s, `s${round}-b`);
+            s = stageHazardCard(s, `c${round}`, BAG); // CRACK = 0 → round fails
+            s = resolveHazardRound(s);
+            s = continueHazardAfterResolve(s, BAG);
+        }
+        expect(s.outcome?.tier).toBe('failure');
+        const scav = s.outcome?.subquests.find((q) => q.id === 'scavenger');
+        expect(scav?.status).toBe('done'); // achieved…
+        expect(s.outcome?.questVitae).toBe(0); // …but forfeit on a failure
     });
 });

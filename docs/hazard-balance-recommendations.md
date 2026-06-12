@@ -18,6 +18,28 @@ six are proposals.
 
 ---
 
+## Difficulty pass — 2026-06-12
+
+Playtest feedback: the crossings had grown too easy. Every authored threshold
+was raised one step (safe `+1/+2/+2` per round, risk `+0/+1/+1` per meter). In
+the greedy-bot Monte-Carlo this moved safe perfect ~60–70% → ~30–40% (still
+~99% at-least-one-win) and risk perfect ~20% → ~10% (failure ~10%+), leaving real
+headroom for a skilled player. Guard bands in `balance.sim.test.ts` were
+re-blessed to match (safe perfect 0.18–0.52 / failure ≤0.10; risk perfect
+0.03–0.22 / failure 0.03–0.25).
+
+Two companion changes shipped alongside:
+
+- **Enchant carry fix** — persistent auras now boost a card only in the round it
+  is PLAYED. Momentum carry is taken from the raw (un-enchanted) surplus, so an
+  aura is no longer banked into the carry and re-counted in later rounds'
+  totals. (`engine.ts` `hazardProjectedProgressRaw`.)
+- **Sub-quests** — each hazard rolls 3 of 10 optional objectives
+  (`HAZARD_SUBQUESTS`) that pay a bonus on a survived crossing. See the
+  divergence doc's "Sub-quests" section.
+
+---
+
 ## ✅ REC#1 — Momentum: cleared-round surplus carries forward (implemented)
 
 *Mage Knight's "wasted points feel terrible" lesson, inverted.* Overshooting a

@@ -232,6 +232,15 @@ export function claimHazardRewardsAction(store: AppStore, cardId: string | null)
     }
     vitaeDelta += outcome.reserveBonus;
 
+    // Sub-quest bonuses (0 on a failure, see computeOutcome) ride on top of
+    // the main spoils.
+    shillings += outcome.questShillings;
+    vitaeDelta += outcome.questVitae;
+    for (let i = 0; i < outcome.questTokens; i++) {
+        tokensBanked += 1;
+        flags = [...flags, `${HAZARD_TOKEN_FLAG_PREFIX}${Date.now()}-q${flags.length}`];
+    }
+
     for (const consequence of outcome.consequences) {
         if (consequence === 'minhp') vitaeDelta -= HAZARD_MINHP_LOSS;
         if (consequence === 'maxhp') maxVitaeDelta -= HAZARD_MAXHP_SCAR;

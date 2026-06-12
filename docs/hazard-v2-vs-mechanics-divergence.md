@@ -88,7 +88,7 @@ Primary mechanics comparison files:
   - `draw`: draw `drawBase` cards, or `drawPowered`/major amount at major tier.
   - `recast`: re-roll only currently available dice; major tier also adds one temporary non-hex mana die.
   - `convert`: mint WILD GOLD dice (never the card colour — otherwise re-cast is strictly better). Minor (unpowered) turns exactly ONE available `hex` die to gold; major (powered, or gold `majorEffect`) turns them ALL, and conjures one floating gold die when ≤1 was converted so major always beats minor.
-  - `aura` (ENCHANT, expansion): adds persistent session `modifiers` for the rest of the hazard — `auraForce`/`auraEscape` (+X to EVERY played card contributing that meter) and `surgeForce`/`surgeEscape` (+X to every POWERED card's contribution). Red/blue auras upgrade their NUMBER on power, aura flat; purple auras keep the number flat and upgrade the AURA; gold auras fire major for free and the die buys numbers.
+  - `aura` (ENCHANT, expansion): adds persistent session `modifiers` for the rest of the hazard — `auraForce`/`auraEscape` (+X to EVERY played card contributing that meter) and `surgeForce`/`surgeEscape` (+X to every POWERED card's contribution). Red/blue auras upgrade their NUMBER on power, aura flat; purple auras keep the number flat and upgrade the AURA; gold auras fire major for free and the die buys numbers. The aura boosts a card only in the round it is PLAYED: it lifts the round's clear check (`hazardProjectedProgress`), but momentum carry is computed from the RAW, un-enchanted total (`hazardProjectedProgressRaw`), so the aura is never banked into the surplus and re-counted in later rounds' totals (2026-06-12 fix).
   - `burst` (expansion): adds progress to the CURRENT round only (rides `progressBase`). `burstPerUnspentDieForce` adds force per unspent non-hex die (WAR-CRY); `vitaeCost` accrues a VITAE cost settled at claim (BLOODPRICE).
   - `goldvow` (expansion): primes a one-shot `session.goldVow` consumed by the next gold die spent powering a card; the bonus rides that card as `vowBonus`.
 - CHOOSE cards (`choose: true`, e.g. TWIN PATHS) feed their single powered value into ONE meter the player picks (`entry.chosenKey`, default `force`), set via `chooseHazardCardKey`.
@@ -108,11 +108,18 @@ Primary mechanics comparison files:
 ### Momentum and reserves
 
 - Cleared-round surplus carries half into the next round, capped at 3 per carried meter.
+- Carry is computed from the RAW (un-enchanted) round total, so persistent auras never compound across rounds via momentum — they only ever boost the round their cards are played in.
 - Safe route carry is based on combined surplus and is stored on `carryForce`, with `carryEscape = 0`.
 - Risk route carry is computed separately per meter.
 - No carry occurs on failed rounds or after the final round.
 - On Complete or Perfect, each unspent non-hex die grants +1 VITAE reserve bonus.
 - Failure grants no reserve bonus.
+
+### Sub-quests (optional objectives, 2026-06-12)
+
+- Each hazard rolls `HAZARD_TUNING.subquests.pickCount` (3) objectives from `HAZARD_SUBQUESTS` (10 total), off an INDEPENDENT seeded stream so selection never perturbs the card/dice RNG.
+- Rolling metrics (`session.questMetrics`) accrue at the resolve / discard / apply seams; objective pass/fail logic lives in `hazardSubquestStatus`. Invariant breaks (hand emptied, card cap exceeded, a round lost) fail immediately; "reach N by the end" objectives stay `active` until the final resolve.
+- Completing an objective on a SURVIVED crossing pays its bonus (`questShillings`/`questVitae`/`questTokens`) on top of the spoils; a total failure forfeits all objective bonuses. Bonuses are applied at claim alongside the main rewards.
 
 ### Outcomes, rewards, and consequences
 

@@ -12,7 +12,12 @@ import {
     HAZARD_KEYWORDS,
     HAZARD_REWARDS,
 } from '@/state/hazard/content';
-import { dieCanPowerCard, hazardCardPowerColors, hazardProjectedProgress } from '@/state/hazard/engine';
+import {
+    dieCanPowerCard,
+    hazardCardPowerColors,
+    hazardProjectedProgress,
+    hazardSubquestResults,
+} from '@/state/hazard/engine';
 import type { AppStoreState } from '@/state/store';
 import {
     type HazardCardDef,
@@ -24,6 +29,8 @@ import {
     type HazardPhase,
     type HazardRouteKey,
     type HazardSessionState,
+    type HazardSubquestReward,
+    type HazardSubquestStatus,
 } from '@/state/hazard/types';
 
 // ---------------------------------------------------------------------------
@@ -84,6 +91,15 @@ export interface HazardMeterVM {
     met: boolean;
 }
 
+export interface HazardSubquestVM {
+    id: string;
+    name: string;
+    desc: string;
+    status: HazardSubquestStatus;
+    /** e.g. "+9 shillings" — the bonus paid on a survived crossing. */
+    rewardLabel: string;
+}
+
 export interface HazardRouteChoiceVM {
     key: HazardRouteKey;
     name: string;
@@ -138,6 +154,10 @@ export interface HazardRewardsVM {
     penaltyNote: string | null;
     /** e.g. "−4 VITAE — sacrifice" from BLOODPRICE-style cards; null when zero. */
     sacrificeNote: string | null;
+    /** Rolled sub-quests with their final status + bonus copy. */
+    subquests: HazardSubquestVM[];
+    /** e.g. "+18 shillings · +1 token — objectives"; null when none paid. */
+    questBonusNote: string | null;
 }
 
 export interface HazardViewModel {
@@ -170,6 +190,8 @@ export interface HazardViewModel {
     momentumNote: string | null;
     /** Active persistent enchantments (auras) — the "ENCHANTMENTS" strip. */
     enchantments: { id: string; label: string }[];
+    /** Rolled sub-quests (optional objectives) with live status + bonus. */
+    subquests: HazardSubquestVM[];
     /** Primed GILDED VOW awaiting the next gold die, when any. */
     goldVowNote: string | null;
     hand: HazardCardVM[];
@@ -256,6 +278,12 @@ const DIE_LABEL: Record<HazardColor, string> = {
     purple: 'PURPLE',
     gold: 'YELLOW',
 };
+
+function subquestRewardLabel(r: HazardSubquestReward): string {
+    if (r.kind === 'shillings') return `+${r.amount} shillings`;
+    if (r.kind === 'vitae') return `+${r.amount} vitae`;
+    return `+${r.amount} paradox token${r.amount > 1 ? 's' : ''}`;
+}
 
 function salvageLabelOf(def: HazardCardDef): string | null {
     if (!def.salvage) return null;
@@ -403,6 +431,7 @@ const EMPTY_VM: HazardViewModel = Object.freeze({
     meterDetail: null,
     momentumNote: null,
     enchantments: [],
+    subquests: [],
     goldVowNote: null,
     hand: [],
     play: [],
@@ -479,6 +508,16 @@ export function selectHazardViewModel(state: Pick<AppStoreState, 'hazard'>): Haz
         ? `VOW PRIMED — next gold die +${session.goldVow.force}/+${session.goldVow.escape}`
         : null;
 
+    const questsFinal =
+        session.phase === 'outcome' || session.phase === 'rewards' || session.phase === 'done';
+    const subquests: HazardSubquestVM[] = hazardSubquestResults(session, questsFinal).map((q) => ({
+        id: q.id,
+        name: q.name,
+        desc: q.desc,
+        status: q.status,
+        rewardLabel: subquestRewardLabel(q.reward),
+    }));
+
     const flash = session.resolveInfo;
     const resolveFlash: HazardResolveFlashVM | null = flash
         ? {
@@ -540,6 +579,21 @@ export function selectHazardViewModel(state: Pick<AppStoreState, 'hazard'>): Haz
                   outcome.penaltyVitae > 0 ? `−${outcome.penaltyVitae} VITAE — route penalty` : null,
               sacrificeNote:
                   outcome.vitaeCost > 0 ? `−${outcome.vitaeCost} VITAE — sacrifice` : null,
+              subquests: outcome.subquests.map((q) => ({
+                  id: q.id,
+                  name: q.name,
+                  desc: q.desc,
+                  status: q.status,
+                  rewardLabel: subquestRewardLabel(q.reward),
+              })),
+              questBonusNote: ((): string | null => {
+                  const segs: string[] = [];
+                  if (outcome.questShillings > 0) segs.push(`+${outcome.questShillings} shillings`);
+                  if (outcome.questVitae > 0) segs.push(`+${outcome.questVitae} vitae`);
+                  if (outcome.questTokens > 0)
+                      segs.push(`+${outcome.questTokens} token${outcome.questTokens > 1 ? 's' : ''}`);
+                  return segs.length ? `${segs.join(' · ')} — objectives` : null;
+              })(),
           }
         : null;
 
@@ -574,6 +628,7 @@ export function selectHazardViewModel(state: Pick<AppStoreState, 'hazard'>): Haz
         meterDetail,
         momentumNote,
         enchantments,
+        subquests,
         goldVowNote,
         hand: session.hand.map((h) => cardVM(h, session)),
         play: session.play.map((p) => cardVM(p, session)),

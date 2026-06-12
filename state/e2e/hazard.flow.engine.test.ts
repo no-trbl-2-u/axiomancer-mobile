@@ -126,15 +126,19 @@ describe('hazard store flow', () => {
         expect(session(store).phase).toBe('outcome');
         expect(session(store).outcome?.tier).toBe('perfect');
         actions.acknowledgeHazardOutcome();
-        const offered = session(store).outcome!.offerCards[0];
+        const outcome = session(store).outcome!;
+        const offered = outcome.offerCards[0];
         const result = actions.claimHazardRewards(offered.id);
 
         expect(result.applied).toBe(true);
         const state = store.getState() as unknown as GameState;
         // safe perfect rewards: cache (+12 shillings) + vitae (+6) + token,
-        // plus 1 reserve die (d1; the hex never counts).
-        expect(state.player.currency).toBe(currencyBefore + 12);
-        expect(state.player.health).toBe(Math.min(state.player.maxHealth, 5 + 6 + 1));
+        // plus 1 reserve die (d1; the hex never counts), plus any completed
+        // sub-quest bonuses (objectives roll per seed).
+        expect(state.player.currency).toBe(currencyBefore + 12 + outcome.questShillings);
+        expect(state.player.health).toBe(
+            Math.min(state.player.maxHealth, 5 + 6 + 1 + outcome.questVitae),
+        );
         expect(state.flags.some((f) => f.startsWith('hazard-token-banked:'))).toBe(true);
         expect(decodeAcquiredCards(state.flags)).toContain(offered.id);
         expect(store.getState().hazard.session).toBeNull();

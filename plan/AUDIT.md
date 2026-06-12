@@ -46,7 +46,7 @@
 - addressed: 2026-06-12 via commit e2ff535
 - fix: Added Repository navigation section to README explaining what VISION.md, docs/adr/, specs/, plan/, docs/, and setup/ contain and when to use each, providing clear guidance for fresh maintainers
 
-### [ ] [6.0] Extensive documentation lacks index for maintainer navigation
+### [x] [6.0] Extensive documentation lacks index for maintainer navigation
 - category: external-critique
 - impact: 5
 - ease: 8  
@@ -55,6 +55,9 @@
 - evidence: Glob shows numerous specialized docs (engine-upgrade-*.md, mechanics-ui-audit-*.md, adr/*.md) but no docs/README.md or clear categorization
 - suggested fix: Add docs/README.md organizing documentation by category and purpose
 - source: external-critique
+- issue: #360
+- addressed: 2026-06-12 via commit 6d401fa
+- fix: Expanded docs/README.md to organize all 39 documentation files into logical categories: core testing, engine integration, UI audits, hazard minigame, design/UX, ADRs, development workflows, and AI templates
 
 ### [ ] [5.9] Component test coverage gaps - 70 components without tests
 - category: tests

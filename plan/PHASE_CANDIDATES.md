@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-12 at commit 087b994c
-> Pass count: 70
+> Last pass: 2026-06-12 at commit fc53b90
+> Pass count: 71
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -220,6 +220,38 @@
   - **AUDIT [5.9]**: Component test coverage gaps backing the extraction need
 - rationale: Signal multiplicity - file-length outlier stacks with test coverage audit finding; HazardBoard.tsx has grown significantly since previous measurement
 - proposed scope: 1 phase to extract subcomponents from HazardBoard.tsx
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 3.8] Minigame gating mechanics integration (issue #333)
+- proposed: 2026-06-12, expand pass 71
+- source signals:
+  - **GitHub issue #333**: Gate Hazard Minigame on mechanics package engine
+  - **Triage backlog pattern**: Issue filed represents engine-mobile boundary work
+  - **Aggressive posture bias**: Gameplay/content integration aligns with current bias
+- rationale: Open GitHub issue represents concrete user demand for mechanics package integration. Aligns with aggressive posture focus on gameplay/content work.
+- proposed scope: 1 phase to implement engine gating for hazard minigame
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 3.2] Large component extraction (HazardBoard continuation)
+- proposed: 2026-06-12, expand pass 71
+- source signals:
+  - **File-length outlier smell**: HazardBoard.tsx at 799 lines (significantly >2× median)
+  - **Phase 117/119 pattern**: Follows established large-component extraction pattern
+- rationale: File-length outlier following Phase 117 extraction pattern. HazardBoard.tsx largest file in codebase at 799 lines.
+- proposed scope: 1 phase to extract subcomponents from HazardBoard.tsx following Phase 117 pattern
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 2.8] Documentation navigation consolidation
+- proposed: 2026-06-12, expand pass 71
+- source signals:
+  - **Critique signal multiplicity**: Multiple MED findings on repository navigation/docs
+  - **CRITIQUE [MED]**: Repository structure navigation unclear
+  - **CRITIQUE [MED]**: Extensive documentation lacks index
+- rationale: Signal multiplicity - multiple independent critique findings on same documentation navigation theme
+- proposed scope: 1 phase to consolidate documentation navigation and add proper index structure
 - estimated phases: 1
 - conflicts: none
 

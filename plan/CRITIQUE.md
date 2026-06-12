@@ -26,16 +26,6 @@
 
 ## Pending
 
-### [MED] general — Switch to axiomancer-mechanics imports for gathering minigame
-- pass: user-jot (commit 38597ebcff7bbbe1b12297701191432e1646aa65)
-- viewport: unspecified
-- auth_state: anonymous
-- category: observation
-- observation: Switch to axiomancer-mechanics imports for the gathering minigame and clean up the duplicate code
-- evidence: user-spotted at 2026-06-12T16:33:38Z
-- suggested_fix: [user has not specified — iterate to determine]
-- source: user
-
 <!-- Pass 34 (2026-06-11, commit 72f489d): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
      critique reads docs/specs/artifacts as the "fresh maintainer"
@@ -662,6 +652,18 @@
 <!-- Drained from ## Pending via /oversight 2026-06-08 (queue-drained
      call): addressed-✅ findings moved here so the open-findings
      signal /iterate reads is accurate. -->
+
+### [x] [MED] general — Switch to axiomancer-mechanics imports for gathering minigame ✅
+- pass: user-jot (commit 38597ebcff7bbbe1b12297701191432e1646aa65); addressed at commit 38597eb via `/iterate`
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: Switch to axiomancer-mechanics imports for the gathering minigame and clean up the duplicate code
+- evidence: user-spotted at 2026-06-12T16:33:38Z
+- suggested_fix: [user has not specified — iterate to determine]
+- source: user
+- addressed: 2026-06-12 via commit 38597eb (axiomancer-mechanics 0.18.0 bump)
+- fix: Gathering minigame fully migrated to axiomancer-mechanics imports. Local rule files (state/gathering/{engine,types,content,tuning,rng,sim}.ts) were deleted and all imports now come from the package root. Only host glue (store-actions.ts) remains in state/gathering/.
 
 ### [x] [MED] /package.json — Specialized development scripts lack documentation
 - pass: 33 (commit 07b4068)

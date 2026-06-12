@@ -27,6 +27,7 @@ import { createAppStore, EMPTY_EVENT_SLICE, getEmitterForStore, type AppStore } 
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
 import type { ResolveMapEventResult } from 'axiomancer-mechanics';
 
+import DialogueScreen from '@/app/dialogue/index';
 import EventScreen from '@/app/event/index';
 
 afterEach(() => {
@@ -140,16 +141,19 @@ describe('EventScreen render', () => {
         expect(flee.props.accessibilityState?.disabled).toBe(true);
     });
 
-    it('shows consequence chips on a rest event (+heal HP)', () => {
+    // Phase 137 cleanup — rest events launch "The Night Watch" via the
+    // resolve interceptor and never reach this modal; a rest result in
+    // the slice renders the defensive empty composition (no choices).
+    it('renders a rest result as the empty composition (Phase 137)', () => {
         const store = makeStore();
         setPending(store, rest(7));
 
-        const { getByTestId } = render(
+        const { queryByTestId } = render(
             withProvider(store, <EventScreen />),
         );
 
-        const chips = getByTestId('event-consequence-chips');
-        expect(chips).toBeTruthy();
+        expect(queryByTestId('event-consequence-chips')).toBeNull();
+        expect(queryByTestId('event-choice-continue')).toBeNull();
     });
 
     it('shows the SKIP button when canSkip is true (cutscene)', () => {
@@ -197,31 +201,21 @@ describe('EventScreen render', () => {
         expect(getByTestId('event-choice-leave')).toBeTruthy();
     });
 
-    it('renders a hazard event with an ENDURE choice and damage consequence chip', () => {
+    // Phase 137 cleanup — hazard / loot-cache events launch their
+    // minigames via the resolve interceptor; results in the slice
+    // render the defensive empty composition (no choices, no chips).
+    it('renders hazard and loot-cache results as the empty composition (Phase 137)', () => {
         const store = makeStore();
-        setPending(store, hazard(4));
-
-        const { getByTestId, getByText } = render(
-            withProvider(store, <EventScreen />),
-        );
-
-        expect(getByText('ENDURE')).toBeTruthy();
-        expect(getByTestId('event-consequence-chips')).toBeTruthy();
-    });
-
-    it('renders a loot-cache event with a TAKE IT choice and item chips', () => {
-        const store = makeStore();
-        setPending(
-            store,
-            lootCache([{ id: 'coin', name: 'Tarnished coin' }], 5),
-        );
-
-        const { getByText, getByTestId } = render(
-            withProvider(store, <EventScreen />),
-        );
-
-        expect(getByText('TAKE IT')).toBeTruthy();
-        expect(getByTestId('event-consequence-chips')).toBeTruthy();
+        for (const result of [hazard(4), lootCache([{ id: 'coin', name: 'Tarnished coin' }], 5)]) {
+            setPending(store, result);
+            const { queryByTestId, queryByText, unmount } = render(
+                withProvider(store, <EventScreen />),
+            );
+            expect(queryByText('ENDURE')).toBeNull();
+            expect(queryByText('TAKE IT')).toBeNull();
+            expect(queryByTestId('event-consequence-chips')).toBeNull();
+            unmount();
+        }
     });
 
     it('renders an interaction event with a single SO BE IT choice and the npc name', () => {
@@ -288,21 +282,23 @@ describe('EventScreen choice dispatch', () => {
     });
 });
 
-describe('EventScreen dialogue confirmation flash (Phase 29 Tick C)', () => {
-    it('renders a ✓ next to the choice row that matches a dialogue:applied event', () => {
+// Phase 137 — the dialogue confirmation flash moved to /dialogue with
+// its kind (interactions no longer render in the generic modal).
+describe('DialogueScreen dialogue confirmation flash (ported Phase 29 Tick C)', () => {
+    it('renders a ✓ next to the reply row that matches a dialogue:applied event', () => {
         jest.useFakeTimers();
         const store = makeStore();
-        setPending(store, encounter(false));
+        setPending(store, interaction('A Stranger'));
 
         const { queryByTestId, getByTestId } = render(
-            withProvider(store, <EventScreen />),
+            withProvider(store, <DialogueScreen />),
         );
 
         // No confirmation before any dialogue:applied fires.
-        expect(queryByTestId('event-choice-fight-confirmed')).toBeNull();
+        expect(queryByTestId('dialogue-choice-acknowledge-confirmed')).toBeNull();
 
         // Fire dialogue:applied carrying a choice whose id matches a
-        // rendered choice row.
+        // rendered reply row.
         const emitter = getEmitterForStore(store);
         expect(emitter).not.toBeNull();
         act(() => {
@@ -311,7 +307,7 @@ describe('EventScreen dialogue confirmation flash (Phase 29 Tick C)', () => {
                 payload: {
                     action: {
                         type: 'APPLY_DIALOGUE',
-                        payload: { choice: { id: 'fight' } },
+                        payload: { choice: { id: 'acknowledge' } },
                     },
                     state: store.getState(),
                 } as never,
@@ -319,13 +315,13 @@ describe('EventScreen dialogue confirmation flash (Phase 29 Tick C)', () => {
         });
 
         // Flash should be visible immediately after the event.
-        expect(getByTestId('event-choice-fight-confirmed')).toBeTruthy();
+        expect(getByTestId('dialogue-choice-acknowledge-confirmed')).toBeTruthy();
 
         // Auto-clears after the 500ms TTL.
         act(() => {
             jest.advanceTimersByTime(600);
         });
-        expect(queryByTestId('event-choice-fight-confirmed')).toBeNull();
+        expect(queryByTestId('dialogue-choice-acknowledge-confirmed')).toBeNull();
 
         jest.useRealTimers();
     });

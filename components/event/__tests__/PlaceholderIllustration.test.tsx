@@ -3,11 +3,15 @@
  * slug-keyed SVG placeholder for non-encounter event kinds).
  *
  * The component is a single Svg with a deterministic background
- * (60-segment Line strip) plus one of seven kind-specific
+ * (60-segment Line strip) plus one of three kind-specific
  * groups rendered conditionally on `slug`. Per the file's
  * header, these are deliberate placeholders until the asset-
  * swap workflow ships real art. The branches still need pinning
  * so a refactor can't silently drop a kind's visual.
+ *
+ * Phase 137 cleanup: the rest / gathering / loot-cache / hazard
+ * branches left with their kinds (those events launch minigames and
+ * never reach the event modal).
  */
 
 import { describe, expect, it } from '@jest/globals';
@@ -22,29 +26,14 @@ describe('PlaceholderIllustration: always-on background', () => {
     it('renders the 60-segment Line grid regardless of slug', () => {
         // Cover the grid invariant across two arbitrary slugs to
         // confirm it's not conditional on any branch.
-        const treeRest = render(<PlaceholderIllustration slug="rest" />);
-        const treeHazard = render(<PlaceholderIllustration slug="hazard" />);
-        expect(treeRest.UNSAFE_getAllByType(Line)).toHaveLength(60);
-        expect(treeHazard.UNSAFE_getAllByType(Line)).toHaveLength(60);
+        const treeNpc = render(<PlaceholderIllustration slug="interaction-generic" />);
+        const treeVillage = render(<PlaceholderIllustration slug="village" />);
+        expect(treeNpc.UNSAFE_getAllByType(Line)).toHaveLength(60);
+        expect(treeVillage.UNSAFE_getAllByType(Line)).toHaveLength(60);
     });
 });
 
 describe('PlaceholderIllustration: kind-specific branches', () => {
-    it('rest: emits exactly 2 Paths (tent triangle + smile)', () => {
-        const tree = render(<PlaceholderIllustration slug="rest" />);
-        expect(tree.UNSAFE_getAllByType(Path)).toHaveLength(2);
-    });
-
-    it('gathering: emits 5 stalk Paths (one per of 5 stalks)', () => {
-        const tree = render(<PlaceholderIllustration slug="gathering" />);
-        expect(tree.UNSAFE_getAllByType(Path)).toHaveLength(5);
-    });
-
-    it('loot-cache: emits the chest body + lid line (2 Paths)', () => {
-        const tree = render(<PlaceholderIllustration slug="loot-cache" />);
-        expect(tree.UNSAFE_getAllByType(Path)).toHaveLength(2);
-    });
-
     it('interaction-generic: emits the figure body Path (1 Path)', () => {
         const tree = render(<PlaceholderIllustration slug="interaction-generic" />);
         expect(tree.UNSAFE_getAllByType(Path)).toHaveLength(1);
@@ -59,11 +48,6 @@ describe('PlaceholderIllustration: kind-specific branches', () => {
         const tree = render(<PlaceholderIllustration slug="cutscene" />);
         expect(tree.UNSAFE_getAllByType(Path)).toHaveLength(1);
     });
-
-    it('hazard: emits the warning triangle + exclamation (2 Paths)', () => {
-        const tree = render(<PlaceholderIllustration slug="hazard" />);
-        expect(tree.UNSAFE_getAllByType(Path)).toHaveLength(2);
-    });
 });
 
 describe('PlaceholderIllustration: accessibility labels', () => {
@@ -73,7 +57,7 @@ describe('PlaceholderIllustration: accessibility labels', () => {
         EVENT_ART_SLUGS.forEach((slug: EventArtSlug) => {
             const tree = render(<PlaceholderIllustration slug={slug} />);
             const svgElement = tree.getByLabelText(/illustration/i);
-            
+
             // Verify the SVG has an accessibility label that contains meaningful text
             expect(svgElement.props.accessibilityLabel).toBeTruthy();
             expect(svgElement.props.accessibilityLabel).not.toBe(`Event illustration for ${slug}`);
@@ -83,13 +67,9 @@ describe('PlaceholderIllustration: accessibility labels', () => {
     it('provides specific descriptive labels for each event type', () => {
         // Verify specific accessibility labels match expected patterns
         const expectedLabels: Record<EventArtSlug, string> = {
-            'rest': 'Rest location illustration showing a tent with campfire',
-            'gathering': 'Gathering spot illustration showing multiple resource nodes',
-            'loot-cache': 'Loot cache illustration showing a treasure chest',
             'interaction-generic': 'Generic interaction illustration showing a figure with speech elements',
             'village': 'Village illustration showing multiple buildings',
             'cutscene': 'Cutscene illustration showing narrative elements with circular focus',
-            'hazard': 'Hazard illustration showing warning symbols and danger markers',
             'encounter': 'Combat encounter illustration showing a creature among twisted trees and ground debris',
             'boss': 'Boss encounter illustration showing a crowned figure with glowing eyes and ornate robes on a throne'
         };
@@ -102,8 +82,8 @@ describe('PlaceholderIllustration: accessibility labels', () => {
     });
 
     it('sets proper accessibility role as image for screen readers', () => {
-        const tree = render(<PlaceholderIllustration slug="rest" />);
-        const svgElement = tree.getByLabelText('Rest location illustration showing a tent with campfire');
+        const tree = render(<PlaceholderIllustration slug="village" />);
+        const svgElement = tree.getByLabelText('Village illustration showing multiple buildings');
         expect(svgElement).toBeTruthy();
         expect(svgElement.props.accessibilityRole).toBe('image');
     });

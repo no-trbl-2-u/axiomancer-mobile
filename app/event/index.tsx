@@ -1,15 +1,27 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+/**
+ * /event — DEFENSIVE FALLBACK SHELL (Phase 137 cleanup).
+ *
+ * Every event kind now has a dedicated surface: interaction →
+ * /dialogue, village → /village, cutscene → /cutscene; rest /
+ * gathering / loot-cache / hazard / quest are intercepted in
+ * `resolveCurrentMapEventAction` and launch minigame sessions;
+ * encounters render via `<EncounterModalOverlay>` over the map. In
+ * production NOTHING routes here anymore — the screen survives only
+ * as the `selectPacedEventRoute` fallback so an unforeseen paced kind
+ * degrades to a readable generic modal instead of a dead end. The
+ * kind-specific chrome (category headers/sashes) and the dialogue-
+ * confirmation flash moved out with their kinds.
+ */
+
+import React, { useEffect, useMemo } from 'react';
 import { useRouter } from 'expo-router';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Svg, { Path as SvgPath } from 'react-native-svg';
-
-import { isDialogueAppliedEvent } from 'axiomancer-mechanics';
 
 import { ActionIcon } from '@/components/ActionIcon';
 import { ScreenBg } from '@/components/ScreenBg';
 import { SectionLabel } from '@/components/SectionLabel';
 import { Splatter } from '@/components/Splatter';
-import { useGameActions, useGameEvents, useGameState } from '@/state/GameStoreProvider';
+import { useGameActions, useGameState } from '@/state/GameStoreProvider';
 import {
     selectEventViewModel,
     selectHasActiveEvent,
@@ -20,18 +32,6 @@ import {
 import { AXM, FONTS } from '@/theme/axm';
 
 import { EventArt } from '@/components/event/EventArt';
-
-type CategoryChrome = { color: string; icon: string; label: string };
-
-const CATEGORY_CHROME: Record<string, CategoryChrome> = {
-    rest:                  { color: AXM.rust,      icon: '☽', label: 'REST'       },
-    gathering:             { color: AXM.bone,      icon: '✦', label: 'GATHER'     },
-    'loot-cache':          { color: AXM.sulfur,    icon: '◈', label: 'CACHE'      },
-    'interaction-generic': { color: AXM.parchment, icon: '◉', label: 'PARLEY'     },
-    village:               { color: AXM.parchment, icon: '⌂', label: 'SETTLEMENT' },
-    cutscene:              { color: AXM.sulfur,    icon: '▶', label: 'OMEN'       },
-    hazard:                { color: AXM.rust,      icon: '⚠', label: 'HAZARD'     },
-};
 
 function resolveAccent(key: ChoiceAccentKey): string {
     if (key === 'blood') return AXM.blood;
@@ -78,12 +78,10 @@ function ConsequenceChips({ consequences }: { consequences: readonly EventConseq
 function ChoiceRow({
     choice,
     isFirst,
-    confirmed,
     onPress,
 }: {
     choice: EventChoice;
     isFirst: boolean;
-    confirmed: boolean;
     onPress: () => void;
 }) {
     const accent = resolveAccent(choice.accentKey);
@@ -110,22 +108,10 @@ function ChoiceRow({
                 <Text style={styles.choiceSub}>{choice.description}</Text>
                 <ConsequenceChips consequences={choice.consequences} />
             </View>
-            {confirmed && (
-                <Text
-                    style={[styles.choiceConfirm, { color: accent }]}
-                    testID={`event-choice-${choice.id}-confirmed`}
-                    accessibilityLiveRegion="polite"
-                >
-                    ✓
-                </Text>
-            )}
             <Text style={[styles.choiceArrow, { color: accent }]}>›</Text>
         </TouchableOpacity>
     );
 }
-
-/** Tick C: how long the dialogue-confirmation ✓ stays visible. */
-const DIALOGUE_CONFIRM_TTL_MS = 500;
 
 export default function EventScreen() {
     // Subscribe to stable slices to avoid getSnapshot identity churn:
@@ -146,45 +132,6 @@ export default function EventScreen() {
     );
     const actions = useGameActions();
     const router = useRouter();
-
-    // Tick C: when the engine emits `dialogue:applied` (via the action
-    // layer's applyDialogue), briefly flash a ✓ next to the matching
-    // choice row so the player sees their pick land before the modal
-    // re-renders the next dialogue node. Component-local state, not a
-    // slice — the flash is intentionally ephemeral.
-    const [lastConfirmedChoiceId, setLastConfirmedChoiceId] =
-        useState<string | null>(null);
-    const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    useGameEvents((event) => {
-        if (!isDialogueAppliedEvent(event)) return;
-        // The engine dispatches APPLY_DIALOGUE with payload {tree, choice};
-        // the emitted event surfaces it via payload.action.payload.choice.
-        const payload = event.payload as unknown as {
-            action?: { payload?: { choice?: { id?: string } } };
-            choice?: { id?: string };
-        };
-        const choiceId: string | undefined =
-            payload?.action?.payload?.choice?.id ?? payload?.choice?.id;
-        if (typeof choiceId !== 'string' || choiceId.length === 0) return;
-        setLastConfirmedChoiceId(choiceId);
-        if (confirmTimerRef.current !== null) {
-            clearTimeout(confirmTimerRef.current);
-        }
-        confirmTimerRef.current = setTimeout(() => {
-            setLastConfirmedChoiceId(null);
-            confirmTimerRef.current = null;
-        }, DIALOGUE_CONFIRM_TTL_MS);
-    });
-
-    useEffect(
-        () => () => {
-            if (confirmTimerRef.current !== null) {
-                clearTimeout(confirmTimerRef.current);
-            }
-        },
-        [],
-    );
 
     const onPick = (choiceId: string) => {
         actions.pickEventChoice(choiceId);
@@ -210,10 +157,6 @@ export default function EventScreen() {
     const illustrationHeight = isBoss ? 360 : 320;
     const badgeAccent = resolveAccent(vm.badgeAccentKey);
     const preludeChrome = vm.preludeChrome;
-    const categoryChrome = preludeChrome === null
-        ? (CATEGORY_CHROME[vm.artSlug] ?? null)
-        : null;
-    const dropCapColor = categoryChrome?.color ?? AXM.blood;
 
     if (!hasEvent) {
         return (
@@ -244,21 +187,7 @@ export default function EventScreen() {
         <ScreenBg>
             {preludeChrome !== null && (
                 <View style={styles.preludeHeader} testID="event-prelude-header">
-                    <Svg width={10} height={10} viewBox="0 0 10 10">
-                        <SvgPath d="M5 1 L 7 7 L 3 7 Z" fill={AXM.blood} />
-                    </Svg>
-                    <Text style={styles.preludeHeaderText}>{preludeChrome.eyebrow}</Text>
-                </View>
-            )}
-            {preludeChrome === null && categoryChrome !== null && (
-                <View
-                    style={[styles.categoryHeader, { borderBottomColor: categoryChrome.color }]}
-                    testID="event-category-header"
-                >
-                    <Text style={[styles.categoryHeaderText, { color: categoryChrome.color }]}>
-                        {categoryChrome.icon}{' '}{categoryChrome.label}
-                        {vm.sourceNodeType === 'quest' ? ' · QUEST' : ''}
-                    </Text>
+                    <Text style={styles.preludeHeaderText}>▲ {preludeChrome.eyebrow}</Text>
                 </View>
             )}
             <View style={[styles.illustration, { height: illustrationHeight }]}>
@@ -267,15 +196,6 @@ export default function EventScreen() {
                 {preludeChrome !== null ? (
                     <View style={styles.strifeSash} testID="event-strife-sash">
                         <Text style={styles.strifeSashText}>{preludeChrome.sashLabel}</Text>
-                    </View>
-                ) : categoryChrome !== null ? (
-                    <View
-                        style={[styles.strifeSash, { backgroundColor: categoryChrome.color }]}
-                        testID="event-category-sash"
-                    >
-                        <Text style={styles.strifeSashText}>
-                            {categoryChrome.icon}{' '}{categoryChrome.label}
-                        </Text>
                     </View>
                 ) : (
                     <View style={styles.badge}>
@@ -306,7 +226,7 @@ export default function EventScreen() {
                 <Text style={styles.bodyText}>
                     {vm.body.length > 0 && (
                         <>
-                            <Text style={[styles.dropCap, { color: dropCapColor }]}>{vm.body[0]}</Text>
+                            <Text style={styles.dropCap}>{vm.body[0]}</Text>
                             {vm.body.slice(1)}
                         </>
                     )}
@@ -338,7 +258,6 @@ export default function EventScreen() {
                         key={choice.id}
                         choice={choice}
                         isFirst={i === 0}
-                        confirmed={lastConfirmedChoiceId === choice.id}
                         onPress={() => onPick(choice.id)}
                     />
                 ))}
@@ -363,18 +282,6 @@ const styles = StyleSheet.create({
         fontSize: 10,
         letterSpacing: 2.2,
         color: AXM.blood,
-    },
-    categoryHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 6,
-        paddingHorizontal: 14,
-        borderBottomWidth: 1,
-    },
-    categoryHeaderText: {
-        fontFamily: FONTS.sans,
-        fontSize: 10,
-        letterSpacing: 2.2,
     },
     strifeSash: {
         position: 'absolute',
@@ -474,11 +381,6 @@ const styles = StyleSheet.create({
         textTransform: 'uppercase',
     },
     choiceArrow: { fontFamily: FONTS.gothic, fontSize: 18 },
-    choiceConfirm: {
-        fontFamily: FONTS.gothic,
-        fontSize: 18,
-        marginRight: 4,
-    },
     chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
     chip: {
         fontFamily: FONTS.mono,

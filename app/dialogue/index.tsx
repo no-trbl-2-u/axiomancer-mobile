@@ -7,12 +7,14 @@
  * built for a conversation: nameplate, spoken text panel, replies.
  */
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import { isDialogueAppliedEvent } from 'axiomancer-mechanics';
+
 import { ScreenBg } from '@/components/ScreenBg';
-import { useGameActions, useGameState } from '@/state/GameStoreProvider';
+import { useGameActions, useGameEvents, useGameState } from '@/state/GameStoreProvider';
 import {
     selectEventViewModel,
     selectHasActiveEvent,
@@ -20,7 +22,19 @@ import {
 } from '@/state/presenters/event.engine';
 import { AXM, FONTS } from '@/theme/axm';
 
-function ReplyRow({ choice, onPress }: { choice: EventChoice; onPress: () => void }) {
+/** How long the dialogue-confirmation ✓ stays visible (ported from
+ *  the pre-Phase-137 event modal's Tick C). */
+const DIALOGUE_CONFIRM_TTL_MS = 500;
+
+function ReplyRow({
+    choice,
+    confirmed,
+    onPress,
+}: {
+    choice: EventChoice;
+    confirmed: boolean;
+    onPress: () => void;
+}) {
     return (
         <TouchableOpacity
             accessibilityRole="button"
@@ -38,6 +52,15 @@ function ReplyRow({ choice, onPress }: { choice: EventChoice; onPress: () => voi
                     <Text style={styles.replyDesc}>{choice.description}</Text>
                 )}
             </View>
+            {confirmed && (
+                <Text
+                    style={styles.replyConfirm}
+                    testID={`dialogue-choice-${choice.id}-confirmed`}
+                    accessibilityLiveRegion="polite"
+                >
+                    ✓
+                </Text>
+            )}
         </TouchableOpacity>
     );
 }
@@ -59,6 +82,44 @@ export default function DialogueScreen() {
     );
     const actions = useGameActions();
     const router = useRouter();
+
+    // When the engine emits `dialogue:applied`, briefly flash a ✓ next
+    // to the matching reply so the player sees their pick land before
+    // the next dialogue node renders. Component-local state — the
+    // flash is intentionally ephemeral. (Ported from the event modal.)
+    const [lastConfirmedChoiceId, setLastConfirmedChoiceId] =
+        useState<string | null>(null);
+    const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useGameEvents((event) => {
+        if (!isDialogueAppliedEvent(event)) return;
+        // The engine dispatches APPLY_DIALOGUE with payload {tree, choice};
+        // the emitted event surfaces it via payload.action.payload.choice.
+        const payload = event.payload as unknown as {
+            action?: { payload?: { choice?: { id?: string } } };
+            choice?: { id?: string };
+        };
+        const choiceId: string | undefined =
+            payload?.action?.payload?.choice?.id ?? payload?.choice?.id;
+        if (typeof choiceId !== 'string' || choiceId.length === 0) return;
+        setLastConfirmedChoiceId(choiceId);
+        if (confirmTimerRef.current !== null) {
+            clearTimeout(confirmTimerRef.current);
+        }
+        confirmTimerRef.current = setTimeout(() => {
+            setLastConfirmedChoiceId(null);
+            confirmTimerRef.current = null;
+        }, DIALOGUE_CONFIRM_TTL_MS);
+    });
+
+    useEffect(
+        () => () => {
+            if (confirmTimerRef.current !== null) {
+                clearTimeout(confirmTimerRef.current);
+            }
+        },
+        [],
+    );
 
     useEffect(() => {
         if (!hasEvent && router.canGoBack()) router.back();
@@ -84,6 +145,7 @@ export default function DialogueScreen() {
                     <ReplyRow
                         key={choice.id}
                         choice={choice}
+                        confirmed={lastConfirmedChoiceId === choice.id}
                         onPress={() => actions.pickEventChoice(choice.id)}
                     />
                 ))}
@@ -154,6 +216,7 @@ const styles = StyleSheet.create({
         marginBottom: 6,
     },
     replyMark: { fontFamily: FONTS.gothic, fontSize: 16, color: AXM.sulfur },
+    replyConfirm: { fontFamily: FONTS.gothic, fontSize: 16, color: AXM.sulfur, marginLeft: 4 },
     replyLabel: { fontFamily: FONTS.gothic, fontSize: 16, color: AXM.parchment, letterSpacing: 1 },
     replyDesc: {
         fontFamily: FONTS.mono,

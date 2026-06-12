@@ -14,13 +14,9 @@ import type { EventArtSlug } from '@/state/presenters/event-assets';
 export function PlaceholderIllustration({ slug }: { slug: EventArtSlug }) {
     const getAccessibilityLabel = (slug: EventArtSlug): string => {
         const labels: Record<EventArtSlug, string> = {
-            'rest': 'Rest location illustration showing a tent with campfire',
-            'gathering': 'Gathering spot illustration showing multiple resource nodes',
-            'loot-cache': 'Loot cache illustration showing a treasure chest',
             'interaction-generic': 'Generic interaction illustration showing a figure with speech elements', 
             'village': 'Village illustration showing multiple buildings',
             'cutscene': 'Cutscene illustration showing narrative elements with circular focus',
-            'hazard': 'Hazard illustration showing warning symbols and danger markers',
             'encounter': 'Combat encounter illustration showing a creature among twisted trees and ground debris',
             'boss': 'Boss encounter illustration showing a crowned figure with glowing eyes and ornate robes on a throne'
         };
@@ -41,31 +37,6 @@ export function PlaceholderIllustration({ slug }: { slug: EventArtSlug }) {
                     <Line key={i} x1={i * 7} y1={200 + (i % 4) * 3} x2={i * 7 + 10} y2={200 + (i % 4) * 3} />
                 ))}
             </G>
-            {slug === 'rest' && (
-                <G>
-                    <Path d="M120 220 L 187 130 L 254 220 Z" fill={AXM.bg} stroke={AXM.parchment} strokeWidth={2} />
-                    <Circle cx={187} cy={160} r={6} fill={AXM.sulfur} />
-                    <Path d="M170 200 q 17 -20 34 0" stroke={AXM.blood} strokeWidth={1.5} fill="none" />
-                </G>
-            )}
-            {slug === 'gathering' && (
-                <G>
-                    {[60, 120, 180, 240, 300].map((x, i) => (
-                        <G key={i}>
-                            <Path d={`M${x} 220 L ${x + 12} 180 L ${x + 24} 220 Z`} fill={AXM.parchment} opacity={0.7} />
-                            <Circle cx={x + 12} cy={170} r={3} fill={AXM.sulfur} />
-                        </G>
-                    ))}
-                </G>
-            )}
-            {slug === 'loot-cache' && (
-                <G transform="translate(187 170)">
-                    <Path d="M-40 -10 L -40 30 L 40 30 L 40 -10 L 30 -20 L -30 -20 Z"
-                        fill={AXM.panelBg} stroke={AXM.sulfur} strokeWidth={2} />
-                    <Circle cx={0} cy={10} r={5} fill={AXM.sulfur} />
-                    <Path d="M-40 -10 L 40 -10" stroke={AXM.sulfur} strokeWidth={1.5} />
-                </G>
-            )}
             {slug === 'interaction-generic' && (
                 <G transform="translate(187 170)">
                     <Ellipse cx={0} cy={-10} rx={18} ry={22} fill={AXM.bg} stroke={AXM.parchment} strokeWidth={2} />
@@ -89,12 +60,6 @@ export function PlaceholderIllustration({ slug }: { slug: EventArtSlug }) {
                     <Circle cx={0} cy={0} r={50} fill="none" stroke={AXM.sulfur} strokeWidth={1.5} opacity={0.6} />
                     <Circle cx={0} cy={0} r={30} fill="none" stroke={AXM.sulfur} strokeWidth={1} opacity={0.4} />
                     <Path d="M-10 0 L 10 0 M 0 -10 L 0 10" stroke={AXM.parchment} strokeWidth={1} />
-                </G>
-            )}
-            {slug === 'hazard' && (
-                <G transform="translate(187 180)">
-                    <Path d="M-50 30 L 0 -40 L 50 30 Z" fill="none" stroke={AXM.blood} strokeWidth={2} />
-                    <Path d="M0 -20 L 0 10 M 0 18 L 0 24" stroke={AXM.blood} strokeWidth={2} />
                 </G>
             )}
         </Svg>

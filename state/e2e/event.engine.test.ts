@@ -369,14 +369,16 @@ describe('selectEventViewModel: combat-prelude composition', () => {
         }
     });
 
-    // Phase 46 port — kind-meta eyebrows match the design's
-    // prototype.jsx:497-503 kindToMeta table.
-    it('paced rest event ships "A FIRE LOWERS" eyebrow + "THE STONE HEARTH" title (Phase 46)', () => {
+    // Phase 137 cleanup — rest events launch "The Night Watch"
+    // minigame via the resolve interceptor and never reach the modal;
+    // a rest result that somehow lands in the slice composes to the
+    // empty VM rather than the old "A FIRE LOWERS" hearth card.
+    it('a rest result in the slice composes to the empty VM (Phase 137)', () => {
         const store = makeStore();
         setPending(store, makeRestResult(5));
         const vm = selectEventViewModel(store.getState());
-        expect(vm.badge).toBe('A FIRE LOWERS');
-        expect(vm.title).toBe('THE STONE HEARTH');
+        expect(vm.badge).toBe('NO EVENT');
+        expect(vm.choices).toHaveLength(0);
     });
 });
 
@@ -559,43 +561,20 @@ describe('selectEventViewModel: referential stability (Maximum-update-depth guar
 });
 
 describe('selectEventViewModel: narrative-choice composition', () => {
-    it('maps a rest event to a single-choice VM with heal consequence', () => {
+    // Phase 137 cleanup — rest / gathering / loot-cache events are
+    // intercepted in resolveCurrentMapEventAction (they launch "The
+    // Night Watch" / "The Gleaning" / "The Reliquary") and never reach
+    // the modal. The composer treats them as dead-end kinds.
+    it('composes minigame-intercepted kinds (rest / gathering / loot-cache) to the empty VM', () => {
         const store = makeStore();
-        setPending(store, makeRestResult(7));
-        const vm = selectEventViewModel(store.getState());
-
-        expect(vm.kind).toBe('narrative-choice');
-        expect(vm.variant).toBe('rest');
-        expect(vm.artSlug).toBe('rest');
-        expect(vm.choices).toHaveLength(1);
-        expect(vm.choices[0]?.consequences).toEqual([{ kind: 'heal', amount: 7 }]);
-    });
-
-    it('maps a gathering event to an item-bag VM with item consequences', () => {
-        const store = makeStore();
-        setPending(store, makeGatheringResult());
-        const vm = selectEventViewModel(store.getState());
-
-        expect(vm.kind).toBe('narrative-choice');
-        expect(vm.variant).toBe('gather');
-        expect(vm.artSlug).toBe('gathering');
-        expect(vm.choices).toHaveLength(1);
-        const cons = vm.choices[0]?.consequences ?? [];
-        expect(cons).toContainEqual({ kind: 'item', label: 'Witherwort' });
-        expect(cons).toContainEqual({ kind: 'item', label: 'Flint shard' });
-    });
-
-    it('maps a loot-cache event to a quest-variant item-bag with currency', () => {
-        const store = makeStore();
-        setPending(store, makeLootCacheResult());
-        const vm = selectEventViewModel(store.getState());
-
-        expect(vm.kind).toBe('narrative-choice');
-        expect(vm.artSlug).toBe('loot-cache');
-        expect(vm.choices).toHaveLength(1);
-        const cons = vm.choices[0]?.consequences ?? [];
-        expect(cons).toContainEqual({ kind: 'item', label: 'Tarnished coin' });
-        expect(cons).toContainEqual({ kind: 'currency', amount: 5 });
+        for (const result of [makeRestResult(7), makeGatheringResult(), makeLootCacheResult()]) {
+            setPending(store, result);
+            const vm = selectEventViewModel(store.getState());
+            expect(vm.kind).toBe('narrative-choice');
+            expect(vm.badge).toBe('NO EVENT');
+            expect(vm.artSlug).toBe('interaction-generic');
+            expect(vm.choices).toHaveLength(0);
+        }
     });
 
     it('maps a village event to a single LEAVE choice (shop UI deferred)', () => {
@@ -622,15 +601,14 @@ describe('selectEventViewModel: narrative-choice composition', () => {
         expect(vm.canSkip).toBe(true);
     });
 
-    it('maps a hazard event to a damage-consequence single choice', () => {
+    it('composes a hazard event to the empty VM (minigame-intercepted — Phase 137)', () => {
         const store = makeStore();
         setPending(store, makeHazardResult(4));
         const vm = selectEventViewModel(store.getState());
 
         expect(vm.kind).toBe('narrative-choice');
-        expect(vm.artSlug).toBe('hazard');
-        expect(vm.choices).toHaveLength(1);
-        expect(vm.choices[0]?.consequences).toContainEqual({ kind: 'damage', amount: 4 });
+        expect(vm.badge).toBe('NO EVENT');
+        expect(vm.choices).toHaveLength(0);
     });
 
     it('maps an interaction (no dialogue) to a single SO BE IT choice', () => {

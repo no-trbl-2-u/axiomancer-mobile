@@ -227,7 +227,7 @@ assisted development. Pick up the loop here:
   — the operator's manual.
 - **Writing tests?** [`docs/testing.md`](./docs/testing.md) — hermetic
   e2e standard. Every implementation must land with at least one.
-- **Current engine version:** `axiomancer-mechanics ^0.16.0` (fresh
+- **Current engine version:** `axiomancer-mechanics ^0.20.0` (fresh
   checkout includes latest — no upgrade docs needed)
 - **Upgrading from mechanics `0.15.1`?**
   [`docs/engine-upgrade-0.15.1-to-0.16.0.md`](./docs/engine-upgrade-0.15.1-to-0.16.0.md)

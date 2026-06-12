@@ -7,6 +7,11 @@
  * test already pins the placeholder branches; this test pins the
  * dispatch contract so a future refactor can't silently re-route an
  * encounter slug to the placeholder (or vice-versa).
+ *
+ * Phase 137 cleanup: the rest / gathering / hazard slug cases left
+ * with their kinds (those events launch minigames and never reach the
+ * event modal); the live placeholder slugs are interaction-generic,
+ * village, and cutscene.
  */
 
 import { describe, expect, it } from '@jest/globals';
@@ -32,25 +37,23 @@ describe('EventArt: slug dispatch', () => {
         expect(tree.UNSAFE_getAllByType(Path).length).toBeGreaterThan(0);
     });
 
-    it("routes 'rest' to PlaceholderIllustration (60-segment grid + 2 placeholder Paths)", () => {
-        const tree = render(<EventArt slug="rest" />);
+    it("routes 'interaction-generic' to PlaceholderIllustration (60-segment grid)", () => {
+        const tree = render(<EventArt slug="interaction-generic" />);
         // PlaceholderIllustration always renders the 60-segment grid.
         expect(tree.UNSAFE_getAllByType(Line)).toHaveLength(60);
-        // The `rest` placeholder branch emits 2 Paths (tent + smile).
-        expect(tree.UNSAFE_getAllByType(Path)).toHaveLength(2);
     });
 
-    it("routes 'gathering' to PlaceholderIllustration (forwards the slug — 5 stalk Paths)", () => {
-        const tree = render(<EventArt slug="gathering" />);
+    it("routes 'village' to PlaceholderIllustration (forwards the slug — 8 hut Paths)", () => {
+        const tree = render(<EventArt slug="village" />);
         expect(tree.UNSAFE_getAllByType(Line)).toHaveLength(60);
-        // The `gathering` placeholder branch emits 5 stalk Paths —
+        // The `village` placeholder branch emits 4 huts × 2 Paths —
         // confirms EventArt forwards the slug, not a fallback default.
-        expect(tree.UNSAFE_getAllByType(Path)).toHaveLength(5);
+        expect(tree.UNSAFE_getAllByType(Path)).toHaveLength(8);
     });
 
-    it("routes 'hazard' to PlaceholderIllustration (forwards the slug — 2 warning Paths)", () => {
-        const tree = render(<EventArt slug="hazard" />);
+    it("routes 'cutscene' to PlaceholderIllustration (forwards the slug — 1 cross Path)", () => {
+        const tree = render(<EventArt slug="cutscene" />);
         expect(tree.UNSAFE_getAllByType(Line)).toHaveLength(60);
-        expect(tree.UNSAFE_getAllByType(Path)).toHaveLength(2);
+        expect(tree.UNSAFE_getAllByType(Path)).toHaveLength(1);
     });
 });

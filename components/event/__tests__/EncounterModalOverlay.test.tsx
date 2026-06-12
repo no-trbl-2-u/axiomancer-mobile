@@ -111,8 +111,8 @@ function makeCombatPreludeVm(overrides: Partial<EventViewModel> = {}): EventView
 function makeNarrativeChoiceVm(): EventViewModel {
     return makeCombatPreludeVm({
         kind: 'narrative-choice',
-        variant: 'rest',
-        artSlug: 'rest',
+        variant: 'npc',
+        artSlug: 'interaction-generic',
         preludeChrome: null,
     });
 }

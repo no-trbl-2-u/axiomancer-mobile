@@ -306,8 +306,17 @@ of Phase 40 (event-shell audit) or its own follow-up.
 
 ### 13. Paced-event kind-specific copy variants
 
+> **SUPERSEDED (Phase 137, 2026-06-12).** Rest / treasure / gather /
+> hazard / quest events no longer render in the paced event modal at
+> all — they launch dedicated minigames (`/rest`, `/cache`,
+> `/gathering`, `/hazard`, `/quest`), and interaction / village /
+> cutscene route to dedicated screens. The kind-meta variants below
+> shipped, then left with their kinds in the Phase 137 cleanup; the
+> generic modal survives only as a defensive fallback. Kept for
+> design history.
+
 **Source:** `prototype.jsx:497-503`. The paced event modal
-ships **five** distinct kind-meta variants:
+shipped **five** distinct kind-meta variants:
 
 | Node kind | Eyebrow | Title | Body |
 |---|---|---|---|
@@ -392,10 +401,12 @@ phases in `plan/steps/01_build_plan.md`:
   `PHASE_CANDIDATES.md` as `Phase 25` candidate; needs
   `/oversight` promotion when the user commits to that
   direction.
-- **Items 11, 12, 13** (prototype micro-interactions — modal
-  animations, action-button subtitles, paced-event kind-meta
-  variants): newly filed 2026-05-19, awaiting promotion to
-  Phases 45+ via `/oversight` or auto-promotion if `/expand`
+- **Items 11, 12** (prototype micro-interactions — modal
+  animations, action-button subtitles): newly filed 2026-05-19,
+  awaiting promotion to Phases 45+ via `/oversight` or
+  auto-promotion if `/expand`. **Item 13 is SUPERSEDED** — Phase
+  137's dedicated encounter screens removed those kinds from the
+  paced modal entirely; see the note on item 13 above.
   surfaces them as a cluster.
 - **Item 14** (day counter in exploration eyebrow):
   engine-gated; lives as a `[needs-engine-release]` row in

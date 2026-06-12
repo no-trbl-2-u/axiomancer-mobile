@@ -59,7 +59,7 @@ against. The game has no online accounts; everything is local.
 | Runtime | React 19.1, React Native 0.81 | Pinned by Expo 54. |
 | Routing | expo-router (file-based) | Standard Expo idiom. |
 | State (UI) | Local `useState` per screen → migrating to a `zustand` store wrapping `createGameStore` from `axiomancer-mechanics` (see spec 02). | Engine is the source of truth; the store is a thin reactive wrapper. |
-| Engine | `axiomancer-mechanics` npm package (pinned ^0.15.0) | Rules, RNG, reducers. **Never reimplemented in this repo.** |
+| Engine | `axiomancer-mechanics` npm package (pinned ^0.20.0) | Rules, RNG, reducers. **Never reimplemented in this repo.** |
 | Persistence | none yet → `AsyncStorage` adapter (spec 09) | Game state survives app restart. |
 | Test runner | Jest 29 + `jest-expo` + `@testing-library/react-native` | Already wired; canonical hermetic-e2e harness. |
 | Lint | `expo lint` (ESLint 9, `eslint-config-expo`) | Bundled with Expo. |
@@ -76,7 +76,7 @@ against. The game has no online accounts; everything is local.
 |---|---|---|---|---|
 | 01 | GitHub | `GH_TOKEN` in `.env` (sourced from `gh auth token`; scopes `repo`, `read:org`, `gist`, `workflow`) | OK | Repo at `no-trbl-2-u/axiomancer-mobile`. Used by `/triage` and `ship-a-phase` Step 2.5 (phase mirror). |
 | 02 | EAS Build (Expo) | _(not wired — see `[needs-user-call]` below)_ | STUB | `eas.json` exists with preview / production profiles. `EXPO_TOKEN` needed when the deploy gate stops being a stub. |
-| 03 | npm (engine package) | n/a | OK | `axiomancer-mechanics` consumed via `npm install`. Pinned **exact** (e.g. `^0.15.0`) after the 0.6 → 0.7 drift incident (`/oversight` 2026-05-15); bumps require an explicit edit + migration phase. **Lockfile workflow (locked 2026-05-23 after PR #153 EAS-build failure):** when bumping the pin, edit `package.json` AND run `npm install --package-lock-only` (NOT `pnpm install` — that produces `pnpm-lock.yaml` which `.gitignore` drops; `package-lock.json` would stay on the prior pin). Commit BOTH `package.json` + `package-lock.json` in the same bump commit so EAS's `npm ci --include=dev` doesn't abort with EUSAGE before any native build step runs. |
+| 03 | npm (engine package) | n/a | OK | `axiomancer-mechanics` consumed via `npm install`. Pinned **exact** (currently `^0.20.0`) after the 0.6 → 0.7 drift incident (`/oversight` 2026-05-15); bumps require an explicit edit + migration phase. **Lockfile workflow (locked 2026-05-23 after PR #153 EAS-build failure):** when bumping the pin, edit `package.json` AND run `npm install --package-lock-only` (NOT `pnpm install` — that produces `pnpm-lock.yaml` which `.gitignore` drops; `package-lock.json` would stay on the prior pin). Commit BOTH `package.json` + `package-lock.json` in the same bump commit so EAS's `npm ci --include=dev` doesn't abort with EUSAGE before any native build step runs. |
 | 04 | Claude Design | <https://claude.ai/design/p/019e0f5a-a0f0-753b-be1e-8939e6011384> | OK | Upstream design source for product features the user ships from. Examples: Token Crucible (commit `261a238`, retroactive Phase 17). When a `feat: … — port from design handoff` commit shows up, the design source is here. `/plan-a-phase` reads this URL when a design handoff is referenced. |
 
 The `setup/NN_*.md` runbooks are not yet authored — they're

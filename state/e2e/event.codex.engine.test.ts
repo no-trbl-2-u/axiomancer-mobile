@@ -51,8 +51,6 @@ describe('selectEventCodexHeader', () => {
             'encounter',
             'boss',
             'quest',
-            'rest',
-            'gather',
             'npc',
         ];
         for (const variant of variants) {
@@ -72,7 +70,7 @@ describe('selectEventCodexHeader', () => {
     });
 
     it('produces stable tokens — calling twice on the same VM gives identical output', () => {
-        const vm = makeVm({ kind: 'combat-prelude', variant: 'rest' });
+        const vm = makeVm({ kind: 'combat-prelude', variant: 'npc' });
         const first = selectEventCodexHeader(vm);
         const second = selectEventCodexHeader(vm);
         expect(first).toEqual(second);

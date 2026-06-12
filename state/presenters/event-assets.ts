@@ -15,16 +15,16 @@
 
 import type { ResolvedEvent } from 'axiomancer-mechanics';
 
+// Phase 137 cleanup: rest / gathering / loot-cache / hazard slugs were
+// removed — those kinds never reach the event modal anymore (their
+// resolve interceptors start minigame sessions instead), so only the
+// kinds the modal can actually render keep an art slug.
 export const EVENT_ART_SLUGS = [
     'encounter',
     'boss',
-    'rest',
-    'gathering',
-    'loot-cache',
     'interaction-generic',
     'village',
     'cutscene',
-    'hazard',
 ] as const;
 
 export type EventArtSlug = (typeof EVENT_ART_SLUGS)[number];
@@ -39,22 +39,19 @@ export function selectEventArtSlug(event: ResolvedEvent): EventArtSlug {
     switch (event.kind) {
         case 'encounter':
             return event.isBoss ? 'boss' : 'encounter';
-        case 'rest':
-            return 'rest';
-        case 'gathering':
-            return 'gathering';
-        case 'loot-cache':
-            return 'loot-cache';
         case 'interaction':
             return 'interaction-generic';
         case 'village':
             return 'village';
         case 'cutscene':
             return 'cutscene';
+        // Phase 137 cleanup: rest / gathering / loot-cache / hazard /
+        // quest never reach the event modal — their interceptors start
+        // minigame sessions instead. Generic fallback kept defensively.
+        case 'rest':
+        case 'gathering':
+        case 'loot-cache':
         case 'hazard':
-            return 'hazard';
-        // 'quest' never reaches the event modal (the interceptor starts
-        // a board session); slug kept for defensive completeness.
         case 'quest':
         case 'none':
             return 'interaction-generic';

@@ -1,5 +1,11 @@
 # Claude Design prompt — Axiomancer Mobile UI/UX rework
 
+> **HISTORICAL (2026-05-16).** Describes the pre-Phase-137 event
+> architecture (one generic modal for every paced kind). Since
+> 2026-06-12, every encounter kind has a dedicated surface; the
+> modal is a defensive fallback only. Kept as the design-handoff
+> record.
+
 > Authored 2026-05-16 to hand off to Claude Design
 > (<https://claude.ai/design/p/019e0f5a-a0f0-753b-be1e-8939e6011384>)
 > for the Phase 32 design refresh. Paste the section below into

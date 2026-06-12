@@ -1,5 +1,14 @@
 # Mechanics ↔ UI audit — event surface (2026-05-22)
 
+> **HISTORICAL — partially superseded by Phase 137 (2026-06-12).**
+> This audit predates the dedicated encounter screens. Since then:
+> rest / gathering / loot-cache / hazard / quest events are
+> intercepted and launch minigames (they never reach the event modal),
+> `EVENT_ART_SLUGS` shrank to the five modal-reachable slugs
+> (encounter / boss / interaction-generic / village / cutscene), and
+> EventGate routes paced kinds to `/dialogue`, `/village`,
+> `/cutscene`. Read row-level claims against today's code.
+
 > Filed by `/iterate` ([4.0] AUDIT row, oversight 27th).
 > Sibling of `mechanics-ui-audit-2026-05-21-combat.md` —
 > same template, applied to the event/dialogue/encounter

@@ -43,7 +43,9 @@ import { freezeViewModel } from './freeze';
 import { toRomanLower } from './roman';
 
 export type EventKind = 'combat-prelude' | 'narrative-choice';
-export type EventVariant = 'encounter' | 'boss' | 'quest' | 'rest' | 'gather' | 'npc';
+// Phase 137 cleanup: the 'rest' / 'gather' variants left with their
+// kinds — those events launch minigames and never reach this VM.
+export type EventVariant = 'encounter' | 'boss' | 'quest' | 'npc';
 export type ChoiceAccentKey = 'blood' | 'sulfur' | 'parchment' | 'bone' | 'rust';
 
 export type ConsequenceKind =
@@ -585,114 +587,30 @@ function composeNarrative(resolved: ResolvedEvent): Omit<EventViewModel, 'prelud
     const artSlug = selectEventArtSlug(resolved);
     const body = bodyFromPayload(resolved);
     switch (resolved.kind) {
-        case 'rest':
-            return {
-                kind: 'narrative-choice',
-                variant: 'rest',
-                artSlug,
-                // Phase 46 port: eyebrow matches the design's
-                // prototype.jsx:498 'A FIRE LOWERS'; title swaps from
-                // the old action-shaped 'THE FIRE LOWERS' (verb) to
-                // 'THE STONE HEARTH' (the place), per the design's
-                // 'The Stone Hearth' specimen.
-                badge: 'A FIRE LOWERS',
-                badgeAccentKey: 'parchment',
-                title: 'THE STONE HEARTH',
-                subtitle: '',
-                body,
-                choices: [
-                    {
-                        id: 'continue',
-                        label: 'WALK ON',
-                        description: 'Continue',
-                        consequences: [{ kind: 'heal', amount: resolved.healed }],
-                        iconKey: 'eye',
-                        accentKey: 'parchment',
-                        enabled: true,
-                        subtitle: null,
-                        decode: null,
-                    },
-                ],
-                lore: null,
-                canSkip: body.length > 240,
-            };
-        case 'gathering':
-            // Phase 46 port: design eyebrow 'A SMALL HARVEST' /
-            // title 'A STAND OF MIRE-MINT' (the specimen). Engine
-            // doesn't carry a plant name so the title stays generic;
-            // the design specimen reads as one possible flavor.
-            return composeItemBag('A SMALL HARVEST', 'A STAND OF MIRE-MINT', body, resolved.items, artSlug, 'gather');
-        case 'loot-cache':
-            // Phase 46 port: design eyebrow 'A FOUND THING' / title
-            // 'A BURIED CHEST'.
-            return composeItemBag(
-                'A FOUND THING',
-                'A BURIED CHEST',
-                body,
-                resolved.items,
-                artSlug,
-                'quest',
-                resolved.currency,
-            );
         case 'interaction':
             return composeInteraction(resolved.npcName, body, artSlug);
         case 'village':
             return composeVillage(resolved.villageName, resolved.merchants, body, artSlug);
         case 'cutscene':
             return composeCutscene(body, artSlug);
+        // Dead-end kinds (Phase 137 cleanup): rest / gathering /
+        // loot-cache / hazard / quest never reach the event slice —
+        // `resolveCurrentMapEventAction` intercepts them and starts
+        // their minigame sessions instead ("The Night Watch", "The
+        // Gleaning", "The Reliquary", the hazard board, "The Boy's
+        // Almanac"). 'encounter' renders through the combat-prelude
+        // path before composeNarrative is reached; 'none' is guarded
+        // by selectHasActiveEvent. All fall to the empty VM
+        // defensively.
+        case 'rest':
+        case 'gathering':
+        case 'loot-cache':
         case 'hazard':
-            return composeHazard(resolved.damage, resolved.effects, body, artSlug);
-        // 'quest' never reaches the event slice: the resolve interceptor
-        // starts a quest-board session instead (Phase 137). Falls through
-        // to the empty VM defensively.
         case 'quest':
         case 'encounter':
         case 'none':
             return EMPTY_VM;
     }
-}
-
-function composeItemBag(
-    badge: string,
-    title: string,
-    body: string,
-    items: ReadonlyArray<Item>,
-    artSlug: EventArtSlug,
-    variant: EventVariant,
-    currency?: number,
-): Omit<EventViewModel, 'preludeChrome' | 'chrome' | 'sourceNodeType'> {
-    const consequences: EventConsequence[] = items.map((item) => ({
-        kind: 'item',
-        label: item.name,
-    }));
-    if (typeof currency === 'number' && currency > 0) {
-        consequences.push({ kind: 'currency', amount: currency });
-    }
-    return {
-        kind: 'narrative-choice',
-        variant,
-        artSlug,
-        badge,
-        badgeAccentKey: 'sulfur',
-        title,
-        subtitle: '',
-        body,
-        choices: [
-            {
-                id: 'acknowledge',
-                label: 'TAKE IT',
-                description: 'Continue',
-                consequences,
-                iconKey: 'scroll',
-                accentKey: 'sulfur',
-                enabled: true,
-                subtitle: null,
-                decode: null,
-            },
-        ],
-        lore: null,
-        canSkip: body.length > 240,
-    };
 }
 
 function composeInteraction(npcName: string, body: string, artSlug: EventArtSlug): Omit<EventViewModel, 'preludeChrome' | 'chrome' | 'sourceNodeType'> {
@@ -796,54 +714,6 @@ function composeCutscene(body: string, artSlug: EventArtSlug): Omit<EventViewMod
         lore: null,
         // Cutscenes are often long; skip is always available.
         canSkip: true,
-    };
-}
-
-function composeHazard(
-    damage: number,
-    effects: ReadonlyArray<ActiveEffect>,
-    body: string,
-    artSlug: EventArtSlug,
-): Omit<EventViewModel, 'preludeChrome' | 'chrome' | 'sourceNodeType'> {
-    // Phase 60e — engine `ActiveEffect` carries `effectId`, not
-    // `id` / `name`. The prior `{ id?, name? }` parameter type
-    // always landed on the 'effect' fallback because neither field
-    // exists on the engine type. The label is now the engine's
-    // canonical `effectId` (e.g. 'bleed', 'mind-burn').
-    const consequences: EventConsequence[] = [];
-    if (damage > 0) {
-        consequences.push({ kind: 'damage', amount: damage });
-    }
-    for (const effect of effects) {
-        consequences.push({
-            kind: 'flag',
-            label: effect.effectId,
-        });
-    }
-    return {
-        kind: 'narrative-choice',
-        variant: 'quest',
-        artSlug,
-        badge: 'A HAZARD',
-        badgeAccentKey: 'blood',
-        title: 'THE AIR TURNS',
-        subtitle: '',
-        body,
-        choices: [
-            {
-                id: 'acknowledge',
-                label: 'ENDURE',
-                description: 'Continue',
-                consequences,
-                iconKey: 'eye',
-                accentKey: 'blood',
-                enabled: true,
-                subtitle: null,
-                decode: null,
-            },
-        ],
-        lore: null,
-        canSkip: body.length > 240,
     };
 }
 

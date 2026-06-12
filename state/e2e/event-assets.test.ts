@@ -33,16 +33,10 @@ describe('selectEventArtSlug', () => {
         expect(selectEventArtSlug(ev)).toBe('boss');
     });
 
-    it('maps rest to "rest"', () => {
-        expect(selectEventArtSlug({ kind: 'rest', healed: 5, healFraction: 1 })).toBe('rest');
-    });
-
-    it('maps gathering to "gathering"', () => {
-        expect(selectEventArtSlug({ kind: 'gathering', items: [] })).toBe('gathering');
-    });
-
-    it('maps loot-cache to "loot-cache"', () => {
-        expect(selectEventArtSlug({ kind: 'loot-cache', items: [], currency: 0 })).toBe('loot-cache');
+    it('maps minigame-intercepted kinds (rest / gathering / loot-cache) to the generic fallback — Phase 137', () => {
+        expect(selectEventArtSlug({ kind: 'rest', healed: 5, healFraction: 1 })).toBe('interaction-generic');
+        expect(selectEventArtSlug({ kind: 'gathering', items: [] })).toBe('interaction-generic');
+        expect(selectEventArtSlug({ kind: 'loot-cache', items: [], currency: 0 })).toBe('interaction-generic');
     });
 
     it('maps interaction to "interaction-generic"', () => {
@@ -57,8 +51,8 @@ describe('selectEventArtSlug', () => {
         expect(selectEventArtSlug({ kind: 'cutscene', lines: [] })).toBe('cutscene');
     });
 
-    it('maps hazard to "hazard"', () => {
-        expect(selectEventArtSlug({ kind: 'hazard', effects: [], damage: 0 })).toBe('hazard');
+    it('maps hazard to the generic fallback (minigame-intercepted — Phase 137)', () => {
+        expect(selectEventArtSlug({ kind: 'hazard', effects: [], damage: 0 })).toBe('interaction-generic');
     });
 
     it('maps none to "interaction-generic" (defensive fallback)', () => {

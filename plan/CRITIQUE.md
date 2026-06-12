@@ -33,8 +33,8 @@
      guidance. Examined README.md, setup/, docs/, state/presenters/,
      package.json. 4 findings filed below. -->
 
-### [HIGH] /setup/01_repository.md — Setup documentation disconnected from main README creating confusing dual setup paths
-- pass: 34 (commit 72f489d)
+### [HIGH] /setup/01_repository.md — Setup documentation disconnected from main README creating confusing dual setup paths ✅
+- pass: 34 (commit 72f489d); addressed at commit 9390929 via `/iterate`
 - viewport: repository
 - category: comprehension
 - observation: Setup documentation exists but is disconnected from main README, creating confusing dual setup paths for new maintainers

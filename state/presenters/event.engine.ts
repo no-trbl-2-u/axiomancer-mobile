@@ -316,11 +316,49 @@ function withChrome(
     return { ...vm, chrome: EVENT_CHROME };
 }
 
+// Referential-stability memo (1-entry), mirroring the sibling memo in
+// `exploration.engine.ts::selectExplorationViewModel`. `useGameState`
+// subscribes via Zustand `useStore`, whose `getSnapshot` is the bare
+// selector call — React's `useSyncExternalStore` then requires a STABLE
+// reference for unchanged state, or it loops ("getSnapshot should be
+// cached → Maximum update depth exceeded"). The empty-state path returns
+// the frozen `EMPTY_VM` singleton, but every active-event path composes a
+// fresh frozen VM, so a direct subscriber (e.g. the exploration screen's
+// `useGameState(selectEventViewModel)`, which mounts `<EncounterModalOverlay>`)
+// would re-render forever once an event resolved. We cache the computed VM
+// against the immutable slices it reads — `event`, `combat`, `quests`,
+// `flags` — which Zustand replaces only when they actually change. These
+// are exactly the deps the `/event` screen already memoizes on.
+let _evtEventRef: unknown;
+let _evtCombatRef: unknown;
+let _evtQuestsRef: unknown;
+let _evtFlagsRef: unknown;
+let _evtVm: EventViewModel | null = null;
+
 /**
  * Returns the event view-model. When no event is active, returns the
  * empty-state VM (the screen shows "no event in progress").
  */
 export function selectEventViewModel(state: AppStoreState): EventViewModel {
+    if (
+        _evtVm !== null &&
+        state.event === _evtEventRef &&
+        state.combat === _evtCombatRef &&
+        state.quests === _evtQuestsRef &&
+        state.flags === _evtFlagsRef
+    ) {
+        return _evtVm;
+    }
+    const vm = computeEventViewModel(state);
+    _evtEventRef = state.event;
+    _evtCombatRef = state.combat;
+    _evtQuestsRef = state.quests;
+    _evtFlagsRef = state.flags;
+    _evtVm = vm;
+    return vm;
+}
+
+function computeEventViewModel(state: AppStoreState): EventViewModel {
     if (!selectHasActiveEvent(state)) {
         return freezeViewModel(EMPTY_VM);
     }

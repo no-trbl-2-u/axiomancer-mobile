@@ -60,7 +60,7 @@
 - addressed: 2026-06-12 via commit d5aa031
 - fix: Created comprehensive docs/engine-integration-architecture.md explaining engine-to-mobile presentation layer translation patterns, data flow, mobile-specific concerns, React Native adaptations, and architectural boundaries to clarify presenter architecture for newcomers
 
-### [ ] [6.0] Mobile-specific testing guidance missing from testing standard
+### [x] [6.0] Mobile-specific testing guidance missing from testing standard
 - category: external-critique
 - impact: 6
 - ease: 8
@@ -73,6 +73,9 @@
 - evidence: Lines 67-81 mention mocking expo-haptics and expo-font but don't explain mobile testing strategy beyond component render tests
 - suggested fix: Add mobile-specific testing guidance covering device simulation, native module mocking, and platform differences
 - source: external-critique
+- issue: #368
+- addressed: 2026-06-12 via commit a46baae
+- fix: Added comprehensive mobile-specific testing section covering platform-specific component testing, device simulation, native module mocking strategy, React Native-specific test patterns, and mobile performance testing considerations
 
 ### [ ] [5.9] Component test coverage gaps - 118 components without tests affecting maintainability
 - category: tests

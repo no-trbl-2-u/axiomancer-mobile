@@ -179,6 +179,8 @@ SVG_ASSET_SPEC.md          contract for replacing every placeholder SVG
 
 ## Architecture
 
+This app follows a **"read upward, mutate downward"** pattern: data flows up from the engine to the UI (read), while state changes flow down from actions to the engine (mutate). This separation keeps business logic in the engine and presentation logic in the UI.
+
 ```
 ┌────────────────────────────┐
 │        UI screens          │  app/(tabs)/*.tsx
@@ -205,8 +207,7 @@ SVG_ASSET_SPEC.md          contract for replacing every placeholder SVG
 └────────────────────────────┘
 ```
 
-Read upward, mutate downward. The screens never reach past the
-presenter; the presenter never mutates state. 
+The screens never reach past the presenter; the presenter never mutates state. 
 
 **Presenters** are pure functions `(state) → ViewModel` that map engine 
 state to screen-specific **view-models** (data objects containing exactly 

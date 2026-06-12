@@ -26,7 +26,7 @@
 - addressed: 2026-06-12 via commit b0572aa
 - fix: Added accessibility props to aftermath modal buttons - VictoryModal, FriendshipModal, DefeatModal, and ErrorFallbackModal now have proper accessibilityRole="button" and descriptive accessibilityLabel props for all TouchableOpacity components
 
-### [ ] [6.8] README prerequisites lack mobile development ecosystem context for newcomers
+### [x] [6.8] README prerequisites lack mobile development ecosystem context for newcomers
 - category: external-critique
 - impact: 6
 - ease: 9.5
@@ -39,6 +39,9 @@
 - evidence: Lines 24-31 list Node.js 20+, Expo CLI, and platform requirements but don't explain why these specific versions are needed or what each platform option provides
 - suggested fix: Add brief explanation of mobile development context and why each prerequisite is required
 - source: external-critique
+- issue: #366
+- addressed: 2026-06-12 via commit a6af6ee
+- fix: Added brief explanation of React Native (cross-platform mobile framework) and Expo (development toolchain) to Prerequisites section, explaining the role of each prerequisite in the mobile development pipeline
 
 ### [ ] [6.5] Presenter architecture unclear for engine integration newcomers requiring documentation
 - category: external-critique  

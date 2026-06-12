@@ -130,6 +130,39 @@ export function RewardsOverlay({
                     <Text style={styles.tapHint}>TAP AN ICON TO READ IT</Text>
                 </View>
 
+                {/* sub-quest objectives ledger */}
+                {rewards.subquests.length > 0 && (
+                    <View style={styles.questLedger} testID="hazard-rewards-subquests">
+                        <Text style={[styles.ledgerLabel, { color: AXM.sulfur }]}>✷ OBJECTIVES</Text>
+                        {rewards.subquests.map((q) => {
+                            const tone =
+                                q.status === 'done' ? HZ.acid : q.status === 'failed' ? AXM.bone : AXM.parchment;
+                            return (
+                                <View key={q.id} style={styles.questLine} testID={`hazard-rewards-subquest-${q.id}`}>
+                                    <Text style={[styles.questMark, { color: tone }]}>
+                                        {q.status === 'done' ? '✓' : '✕'}
+                                    </Text>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={[styles.questLineName, { color: tone }]}>{q.name}</Text>
+                                        <Text style={styles.questLineDesc}>{q.desc}</Text>
+                                    </View>
+                                    <Text
+                                        style={[
+                                            styles.questLineReward,
+                                            { color: q.status === 'done' ? HZ.gold : AXM.ash },
+                                        ]}
+                                    >
+                                        {q.rewardLabel}
+                                    </Text>
+                                </View>
+                            );
+                        })}
+                        {rewards.questBonusNote !== null && (
+                            <Text style={styles.questBonus}>✦ {rewards.questBonusNote}</Text>
+                        )}
+                    </View>
+                )}
+
                 {/* card reward pick */}
                 <View style={{ paddingHorizontal: 12, paddingTop: 10 }}>
                     {hasOffer ? (
@@ -223,6 +256,13 @@ const styles = StyleSheet.create({
     tooltip: { position: 'absolute', bottom: '108%', left: -60, width: 168, zIndex: 5, backgroundColor: 'rgba(6,5,5,0.98)', borderWidth: 1, paddingHorizontal: 9, paddingVertical: 7 },
     tooltipName: { fontFamily: FONTS.sans, fontSize: 9.5, letterSpacing: 1.4 },
     tooltipDesc: { fontFamily: FONTS.serif, fontSize: 11.5, color: AXM.parchment, lineHeight: 15, marginTop: 2 },
+    questLedger: { marginHorizontal: 14, marginTop: 10, paddingHorizontal: 12, paddingVertical: 10, backgroundColor: 'rgba(0,0,0,0.4)', borderWidth: 1, borderColor: AXM.ash },
+    questLine: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
+    questMark: { fontFamily: FONTS.gothic, fontSize: 14, width: 16, textAlign: 'center' },
+    questLineName: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 0.8 },
+    questLineDesc: { fontFamily: FONTS.mono, fontSize: 8, color: AXM.bone, letterSpacing: 0.2, marginTop: 1 },
+    questLineReward: { fontFamily: FONTS.mono, fontSize: 8.5, letterSpacing: 0.4 },
+    questBonus: { fontFamily: FONTS.mono, fontSize: 9, color: HZ.gold, letterSpacing: 0.8, marginTop: 4 },
     reserveNote: { fontFamily: FONTS.mono, fontSize: 9, color: HZ.gold, letterSpacing: 0.8, marginTop: 8 },
     penaltyNote: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.blood, letterSpacing: 0.8, marginTop: 8 },
     flawless: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 11, color: HZ.acid, marginTop: 4 },

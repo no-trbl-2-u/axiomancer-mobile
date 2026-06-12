@@ -21,12 +21,16 @@
 import {
     getHazardCardDef,
     getHazardDef,
+    getHazardSubquestDef,
     HAZARD_DIE_FACES,
     HAZARD_REWARD_CARDS,
+    HAZARD_SUBQUESTS,
 } from './content';
+import { HAZARD_TUNING } from './tuning';
 import { nextFloat, nextInt, seedRng, shuffle, type HazardRngState } from './rng';
 import {
     EMPTY_HAZARD_MODIFIERS,
+    EMPTY_HAZARD_QUEST_METRICS,
     HAZARD_DICE_COUNT,
     HAZARD_HAND_SIZE,
     HAZARD_MOMENTUM_CAP,
@@ -40,10 +44,14 @@ import {
     type HazardOutcome,
     type HazardOutcomeTier,
     type HazardProgressKey,
+    type HazardQuestMetrics,
     type HazardResolveInfo,
     type HazardRewardId,
     type HazardRouteKey,
     type HazardSessionState,
+    type HazardSubquestResult,
+    type HazardSubquestState,
+    type HazardSubquestStatus,
 } from './types';
 
 /** Card colours (besides the wild gold die) whose dice can power `def`. */
@@ -188,9 +196,34 @@ export function hazardStagedProgress(s: HazardSessionState): { force: number; es
     );
 }
 
-/** Projected round progress: momentum base + staged cards. */
+/** Projected round progress: momentum base + staged cards (enchants applied). */
 export function hazardProjectedProgress(s: HazardSessionState): { force: number; escape: number } {
     const staged = hazardStagedProgress(s);
+    return {
+        force: s.progressBase.force + staged.force,
+        escape: s.progressBase.escape + staged.escape,
+    };
+}
+
+/**
+ * RAW staged progress — the bare card numbers, with NO persistent enchant
+ * modifiers applied. Momentum carry is computed from this so an enchant only
+ * ever boosts the round its cards are PLAYED in; it never gets banked into the
+ * surplus carried forward and re-counted in later rounds' totals.
+ */
+function hazardStagedProgressRaw(s: HazardSessionState): { force: number; escape: number } {
+    return s.play.reduce(
+        (acc, e) => {
+            const v = hazardCardValue(e);
+            return { force: acc.force + v.force, escape: acc.escape + v.escape };
+        },
+        { force: 0, escape: 0 },
+    );
+}
+
+/** RAW projected progress (momentum base + raw staged), used for carry only. */
+function hazardProjectedProgressRaw(s: HazardSessionState): { force: number; escape: number } {
+    const staged = hazardStagedProgressRaw(s);
     return {
         force: s.progressBase.force + staged.force,
         escape: s.progressBase.escape + staged.escape,
@@ -200,6 +233,20 @@ export function hazardProjectedProgress(s: HazardSessionState): { force: number;
 // ---------------------------------------------------------------------------
 // Session lifecycle
 // ---------------------------------------------------------------------------
+
+/**
+ * Rolls the hazard's sub-quests off an INDEPENDENT seeded stream (branched
+ * from the session seed) so objective selection never perturbs the card /
+ * dice RNG — the play stream stays byte-for-byte identical to a quest-less
+ * session, keeping the balance sim and deterministic tests stable.
+ */
+function rollSubquests(seed: number): HazardSubquestState[] {
+    const rng = seedRng((seed ^ 0x5175e57) >>> 0);
+    const ids = HAZARD_SUBQUESTS.map((q) => q.id);
+    const shuffled = shuffle(rng, ids).value;
+    const n = Math.min(HAZARD_TUNING.subquests.pickCount, shuffled.length);
+    return shuffled.slice(0, n).map((id) => ({ id }));
+}
 
 /**
  * Creates a fresh session in `route-select`: opening hand drawn (the
@@ -230,6 +277,8 @@ export function createHazardSession(
         dice: [],
         progressBase: { force: 0, escape: 0 },
         modifiers: { ...EMPTY_HAZARD_MODIFIERS },
+        subquests: rollSubquests(seed),
+        questMetrics: { ...EMPTY_HAZARD_QUEST_METRICS, roundsCleared: [] },
         goldVow: null,
         momentumCap: HAZARD_MOMENTUM_CAP,
         vitaeCost: 0,
@@ -528,6 +577,16 @@ export function applyHazardCard(
         if (def.effect) ns = applyUtilityEffect(ns, def, card.dieId !== null, deckBag);
         // Riders fire alongside the main effect (SAINT'S PATIENCE: draw + cap).
         if (def.momentumBonus) ns = { ...ns, momentumCap: ns.momentumCap + def.momentumBonus };
+        // STORMCALLER sub-quest: tally re-cast / convert effects as they fire.
+        if (def.effect === 'recast' || def.effect === 'convert') {
+            ns = {
+                ...ns,
+                questMetrics: {
+                    ...ns.questMetrics,
+                    recastConvertApplied: ns.questMetrics.recastConvertApplied + 1,
+                },
+            };
+        }
     }
     return ns;
 }
@@ -550,6 +609,7 @@ export function discardHazardCard(s: HazardSessionState, uid: string): HazardSes
         ...s,
         hand: s.hand.filter((h) => h.uid !== uid),
         discardPile: [...s.discardPile, card.cardId],
+        questMetrics: { ...s.questMetrics, cardsSalvaged: s.questMetrics.cardsSalvaged + 1 },
     };
     const def = getHazardCardDef(card.cardId);
     if (def.salvage?.type === 'progress') {
@@ -592,6 +652,10 @@ export function resolveHazardRound(s: HazardSessionState, deckBag: readonly stri
     }
     const def = getHazardDef(s.hazardId);
     const p = hazardProjectedProgress(s);
+    // Carry is computed from the RAW (un-enchanted) total: enchants boost the
+    // round their cards are played in, but never bank into the surplus that
+    // carries forward — so they are not re-counted in later rounds' totals.
+    const praw = hazardProjectedProgressRaw(s);
     const lastRound = s.round >= s.totalRounds;
     let info: HazardResolveInfo;
     if (s.route === 'risk') {
@@ -605,8 +669,8 @@ export function resolveHazardRound(s: HazardSessionState, deckBag: readonly stri
             escape: p.escape,
             needF: nF,
             needE: nE,
-            carryForce: momentumCarry(p.force, nF, cleared, lastRound, s.momentumCap),
-            carryEscape: momentumCarry(p.escape, nE, cleared, lastRound, s.momentumCap),
+            carryForce: momentumCarry(praw.force, nF, cleared, lastRound, s.momentumCap),
+            carryEscape: momentumCarry(praw.escape, nE, cleared, lastRound, s.momentumCap),
         };
     } else {
         const need = def.safe.thresholds[s.round - 1];
@@ -622,13 +686,29 @@ export function resolveHazardRound(s: HazardSessionState, deckBag: readonly stri
             escape: p.escape,
             combined,
             need,
-            carryForce: momentumCarry(combined, need, cleared, lastRound, s.momentumCap),
+            carryForce: momentumCarry(praw.force + praw.escape, need, cleared, lastRound, s.momentumCap),
             carryEscape: 0,
         };
     }
     const marks = s.marks.slice();
     marks[s.round - 1] = info.cleared ? 'O' : 'X';
-    return { ...s, phase: 'resolve-flash', marks, resolveInfo: info };
+
+    // Accrue sub-quest metrics for this resolved round (display + outcome).
+    const roundsCleared = s.questMetrics.roundsCleared.slice();
+    roundsCleared[s.round - 1] = info.cleared;
+    const questMetrics: typeof s.questMetrics = {
+        ...s.questMetrics,
+        cardsCommitted: s.questMetrics.cardsCommitted + s.play.length,
+        cardsPowered: s.questMetrics.cardsPowered + s.play.filter((e) => e.dieId !== null).length,
+        handEmptied: s.questMetrics.handEmptied || s.hand.length === 0,
+        momentumCarries:
+            s.questMetrics.momentumCarries + (info.carryForce + info.carryEscape > 0 ? 1 : 0),
+        roundsCleared,
+        finalDiceAvailable: lastRound
+            ? s.dice.filter((d) => d.kind !== 'hex' && d.state === 'available').length
+            : s.questMetrics.finalDiceAvailable,
+    };
+    return { ...s, phase: 'resolve-flash', marks, resolveInfo: info, questMetrics };
 }
 
 // ---------------------------------------------------------------------------
@@ -640,6 +720,70 @@ export function hazardTierOf(marks: readonly HazardMark[]): HazardOutcomeTier {
     if (wins === marks.length) return 'perfect';
     if (wins >= 1) return 'complete';
     return 'failure';
+}
+
+/**
+ * Judges a single sub-quest against the rolling metrics. `final` is true once
+ * the hazard is over (outcome/rewards) — only then can a "reach N by the end"
+ * objective be declared failed; mid-hazard such an objective stays `active`
+ * (still reachable). Invariant breaks (hand emptied, cap exceeded, a round
+ * lost) flip to `failed` the moment they happen, so the board can grey them out.
+ */
+export function hazardSubquestStatus(
+    id: string,
+    metrics: HazardQuestMetrics,
+    totalRounds: number,
+    final: boolean,
+): HazardSubquestStatus {
+    const Q = HAZARD_TUNING.subquests;
+    const cleared = metrics.roundsCleared;
+    const reachable = (met: boolean): HazardSubquestStatus => (met ? 'done' : final ? 'failed' : 'active');
+    switch (id) {
+        case 'travel-light':
+            if (metrics.cardsCommitted > Q.travelLightCap) return 'failed';
+            return final ? 'done' : 'active';
+        case 'dice-reserve':
+            if (!final) return 'active';
+            return metrics.finalDiceAvailable >= Q.diceReserveCount ? 'done' : 'failed';
+        case 'steady-hand':
+            if (metrics.handEmptied) return 'failed';
+            return final ? 'done' : 'active';
+        case 'flawless':
+            if (cleared.some((c) => c === false)) return 'failed';
+            return final ? 'done' : 'active';
+        case 'surge-master':
+            return reachable(metrics.cardsPowered >= Q.surgeMasterCount);
+        case 'stormcaller':
+            return reachable(metrics.recastConvertApplied >= Q.stormcallerCount);
+        case 'scavenger':
+            return reachable(metrics.cardsSalvaged >= Q.scavengerCount);
+        case 'momentum':
+            return reachable(metrics.momentumCarries >= 1);
+        case 'fast-start':
+            if (cleared[0] === true) return 'done';
+            if (cleared[0] === false) return 'failed';
+            return 'active';
+        case 'finisher':
+            if (cleared[totalRounds - 1] === true) return 'done';
+            if (cleared[totalRounds - 1] === false) return 'failed';
+            return final ? 'failed' : 'active';
+        default:
+            return 'active';
+    }
+}
+
+/** Judges every rolled sub-quest for the rewards ledger. */
+export function hazardSubquestResults(s: HazardSessionState, final: boolean): HazardSubquestResult[] {
+    return s.subquests.map((q) => {
+        const def = getHazardSubquestDef(q.id);
+        return {
+            id: q.id,
+            name: def.name,
+            desc: def.desc,
+            status: hazardSubquestStatus(q.id, s.questMetrics, s.totalRounds, final),
+            reward: def.reward,
+        };
+    });
 }
 
 function rollRewardCards(
@@ -704,6 +848,21 @@ function computeOutcome(s: HazardSessionState): { outcome: HazardOutcome; rng: H
             ? 0
             : s.dice.filter((d) => d.kind !== 'hex' && d.state === 'available').length;
     const route = routeKey === 'risk' ? def.risk : def.safe;
+    // Sub-quests: judged at the end; bonuses pay out only on a survived
+    // crossing (a total failure forfeits them along with the spoils).
+    const subquests = hazardSubquestResults(s, true);
+    const survived = tier !== 'failure';
+    let questShillings = 0;
+    let questVitae = 0;
+    let questTokens = 0;
+    if (survived) {
+        for (const q of subquests) {
+            if (q.status !== 'done') continue;
+            if (q.reward.kind === 'shillings') questShillings += q.reward.amount;
+            else if (q.reward.kind === 'vitae') questVitae += q.reward.amount;
+            else if (q.reward.kind === 'token') questTokens += q.reward.amount;
+        }
+    }
     const outcome: HazardOutcome = {
         tier,
         wins,
@@ -715,6 +874,10 @@ function computeOutcome(s: HazardSessionState): { outcome: HazardOutcome; rng: H
         reserveBonus,
         penaltyVitae: route.penaltyVitae * losses,
         vitaeCost: s.vitaeCost,
+        subquests,
+        questShillings,
+        questVitae,
+        questTokens,
     };
     return { outcome, rng };
 }

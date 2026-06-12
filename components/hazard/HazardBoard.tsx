@@ -305,6 +305,44 @@ function EnchantStrip({ vm }: { vm: HazardViewModel }) {
 }
 
 // ---------------------------------------------------------------------------
+// OBJECTIVES strip — the rolled sub-quests with live status + bonus.
+// ---------------------------------------------------------------------------
+
+const QUEST_GLYPH: Record<string, string> = { active: '○', done: '✓', failed: '✕' };
+
+function SubquestStrip({ vm }: { vm: HazardViewModel }) {
+    if (vm.subquests.length === 0) return null;
+    return (
+        <View style={styles.questPanel} testID="hazard-subquests">
+            <Text style={styles.questHead}>✷ OBJECTIVES — BONUS ON A CLEAR</Text>
+            <View style={styles.questRow}>
+                {vm.subquests.map((q) => {
+                    const tone =
+                        q.status === 'done' ? HZ.acid : q.status === 'failed' ? AXM.ash : AXM.bone;
+                    return (
+                        <View
+                            key={q.id}
+                            style={[styles.questChip, { borderColor: `${tone}77` }]}
+                            testID={`hazard-subquest-${q.id}`}
+                            accessible
+                            accessibilityLabel={`Objective: ${q.desc} Reward ${q.rewardLabel}. ${q.status}.`}
+                        >
+                            <Text style={[styles.questName, { color: tone }]}>
+                                {QUEST_GLYPH[q.status]} {q.name}
+                            </Text>
+                            <Text style={styles.questDesc} numberOfLines={2}>{q.desc}</Text>
+                            <Text style={[styles.questReward, { color: q.status === 'failed' ? AXM.ash : HZ.gold }]}>
+                                {q.rewardLabel}
+                            </Text>
+                        </View>
+                    );
+                })}
+            </View>
+        </View>
+    );
+}
+
+// ---------------------------------------------------------------------------
 // PLAY button — translucent sulfur glow, pulsing when armed.
 // ---------------------------------------------------------------------------
 
@@ -523,6 +561,8 @@ export const HazardBoard = React.memo(function HazardBoard({ vm, drag, onStage, 
 
             <EnchantStrip vm={vm} />
 
+            <SubquestStrip vm={vm} />
+
             {/* dice tray */}
             <View style={styles.tray}>
                 <View style={styles.trayHead}>
@@ -717,6 +757,13 @@ const styles = StyleSheet.create({
     enchantRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 5 },
     enchantChip: { fontFamily: FONTS.mono, fontSize: 8, letterSpacing: 0.4, color: AXM.parchment, backgroundColor: 'rgba(138,87,189,0.28)', borderWidth: 1, borderColor: `${HZ.purple}77`, paddingHorizontal: 5, paddingVertical: 1, overflow: 'hidden' },
     vowChip: { color: HZ.gold, backgroundColor: 'rgba(194,161,78,0.22)', borderColor: `${HZ.gold}88` },
+    questPanel: { paddingHorizontal: 12, paddingVertical: 5, backgroundColor: 'rgba(212,192,38,0.07)', borderBottomWidth: 1, borderBottomColor: AXM.ash },
+    questHead: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1.4, color: AXM.sulfur, marginBottom: 3 },
+    questRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 5 },
+    questChip: { flexGrow: 1, flexBasis: '30%', borderWidth: 1, backgroundColor: 'rgba(0,0,0,0.35)', paddingHorizontal: 5, paddingVertical: 3 },
+    questName: { fontFamily: FONTS.sans, fontSize: 8.5, letterSpacing: 0.8 },
+    questDesc: { fontFamily: FONTS.mono, fontSize: 7, color: AXM.bone, letterSpacing: 0.2, marginTop: 1 },
+    questReward: { fontFamily: FONTS.mono, fontSize: 7.5, letterSpacing: 0.4, marginTop: 2 },
     playHint: { fontFamily: FONTS.mono, fontSize: 7, color: AXM.bone, letterSpacing: 1, textAlign: 'center', marginTop: 4 },
     dock: { height: 148, borderTopWidth: 1, borderTopColor: AXM.ash },
     trashBin: {

@@ -82,6 +82,8 @@ const mockRewardsVM: HazardRewardsVM = {
     reserveNote: '+2 VITAE — unspent dice',
     penaltyNote: null,
         sacrificeNote: null,
+        subquests: [],
+        questBonusNote: null,
 };
 
 describe('RewardsOverlay', () => {

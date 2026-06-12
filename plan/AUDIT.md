@@ -33,7 +33,7 @@
 - addressed: 2026-06-11 via commit f73a839
 - fix: Added missing specialized scripts to README table: test:watch (Jest in watch mode) and e2e:hazard (browser-driven hazard minigame playthrough) to improve maintainer documentation coverage
 
-### [ ] [6.8] Repository structure navigation unclear for fresh maintainers
+### [x] [6.8] Repository structure navigation unclear for fresh maintainers
 - category: external-critique
 - impact: 5  
 - ease: 9
@@ -42,6 +42,9 @@
 - evidence: Lines 14-21 reference VISION.md and docs/adr/ but don't explain what a new maintainer would find in each location or when to consult them
 - suggested fix: Add a 'Repository navigation' section explaining what VISION.md, docs/adr/, specs/, and plan/ contain and when to use each
 - source: external-critique
+- issue: #359
+- addressed: 2026-06-12 via commit e2ff535
+- fix: Added Repository navigation section to README explaining what VISION.md, docs/adr/, specs/, plan/, docs/, and setup/ contain and when to use each, providing clear guidance for fresh maintainers
 
 ### [ ] [6.0] Extensive documentation lacks index for maintainer navigation
 - category: external-critique

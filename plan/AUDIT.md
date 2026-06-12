@@ -77,7 +77,7 @@
 - addressed: 2026-06-12 via commit a46baae
 - fix: Added comprehensive mobile-specific testing section covering platform-specific component testing, device simulation, native module mocking strategy, React Native-specific test patterns, and mobile performance testing considerations
 
-### [ ] [5.9] Component test coverage gaps - 118 components without tests affecting maintainability
+### [x] [5.9] Component test coverage gaps - 118 components without tests affecting maintainability
 - category: tests
 - impact: 7
 - ease: 8.5
@@ -90,6 +90,9 @@
 - evidence: Major test coverage gap with core components like LearnSkillModal, ItemModal, MapCanvas, and navigation components missing tests
 - suggested fix: Add hermetic tests for core components starting with modals and high-interaction UI elements
 - source: audit
+- issue: #369
+- addressed: 2026-06-12 via commit 5e98615
+- fix: Added comprehensive hermetic tests for LearnSkillModal component including mount contract, header copy validation, skill offer rendering, callback testing, voice register compliance, and accessibility labels
 
 ## Previously addressed findings
 

@@ -25,12 +25,14 @@ and below T's latest explicit decision / company CDRs.
 
 ### Prerequisites
 
-- **Node.js 20+** — the React Native toolchain requires modern Node.js
-- **Expo CLI** — install globally with `npm install -g @expo/cli`
+This mobile app uses **React Native** (cross-platform mobile framework) with **Expo** (toolchain that simplifies React Native development). Each prerequisite serves a specific role in the mobile development pipeline:
+
+- **Node.js 20+** — React Native's JavaScript bundler (Metro) and development tools require modern Node.js versions for performance and compatibility
+- **Expo CLI** — the command-line interface for Expo's development tools; install globally with `npm install -g @expo/cli`
 - **Target platforms:**
-  - **iOS:** Xcode (Mac only) or Expo Go app
-  - **Android:** Android Studio or Expo Go app  
-  - **Web:** Any modern browser
+  - **iOS:** Xcode (Mac only) for iOS Simulator, or Expo Go app for testing on physical devices
+  - **Android:** Android Studio for Android Emulator, or Expo Go app for testing on physical devices  
+  - **Web:** Any modern browser — Expo supports web compilation for development and testing
 
 ### Development workflow
 

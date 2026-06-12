@@ -26,6 +26,16 @@
 
 ## Pending
 
+### [MED] general — Switch to axiomancer-mechanics imports for gathering minigame
+- pass: user-jot (commit 38597ebcff7bbbe1b12297701191432e1646aa65)
+- viewport: unspecified
+- auth_state: anonymous
+- category: observation
+- observation: Switch to axiomancer-mechanics imports for the gathering minigame and clean up the duplicate code
+- evidence: user-spotted at 2026-06-12T16:33:38Z
+- suggested_fix: [user has not specified — iterate to determine]
+- source: user
+
 <!-- Pass 34 (2026-06-11, commit 72f489d): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
      critique reads docs/specs/artifacts as the "fresh maintainer"

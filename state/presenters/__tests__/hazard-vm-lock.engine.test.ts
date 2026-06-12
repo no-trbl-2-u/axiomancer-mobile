@@ -18,9 +18,9 @@ import {
     finishHazardRolling,
     selectHazardRoute,
     createHazardSession,
-} from '@/state/hazard/engine';
-import { hazardStarterBag } from '@/state/hazard/deck-flags';
-import type { HazardSessionState } from '@/state/hazard/types';
+} from 'axiomancer-mechanics';
+import { hazardStarterBag } from 'axiomancer-mechanics';
+import type { HazardSessionState } from 'axiomancer-mechanics';
 import { selectHazardViewModel } from '@/state/presenters/hazard.engine';
 
 const BAG = hazardStarterBag();

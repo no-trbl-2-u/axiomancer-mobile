@@ -2,7 +2,8 @@
  * Hazard minigame screen — full-screen tactical surface (design
  * handoff 2026-06-10, `Hazard Minigame Prototype.html`).
  *
- * Phase orchestration only: the v2 engine (state/hazard/) owns rules,
+ * Phase orchestration only: the engine (axiomancer-mechanics
+ * World/Hazard) owns rules,
  * the presenter owns mapping, this screen renders the VM, hosts the
  * screen-level drag ghost, and dispatches store actions.
  */

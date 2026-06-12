@@ -30,7 +30,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import type { HazardCardVM, HazardDieVM, HazardMeterVM, HazardViewModel } from '@/state/presenters/hazard.engine';
-import { HAZARD_TUNING } from '@/state/hazard/tuning';
+import { HAZARD_TUNING } from 'axiomancer-mechanics';
 import { AXM, FONTS } from '@/theme/axm';
 
 import { HazardCard } from './HazardCard';

@@ -1,6 +1,6 @@
 /**
  * Hazard minigame presenter — maps the v2 engine session
- * (`state/hazard/`) onto a render-ready view-model. Pure: no store
+ * (`axiomancer-mechanics` World/Hazard) onto a render-ready view-model. Pure: no store
  * writes, no dice rolls, no rule decisions. The screen renders this VM
  * and dispatches store actions only.
  */
@@ -11,13 +11,13 @@ import {
     HAZARD_CONSEQUENCES,
     HAZARD_KEYWORDS,
     HAZARD_REWARDS,
-} from '@/state/hazard/content';
+} from 'axiomancer-mechanics';
 import {
     dieCanPowerCard,
     hazardCardPowerColors,
     hazardProjectedProgress,
     hazardSubquestResults,
-} from '@/state/hazard/engine';
+} from 'axiomancer-mechanics';
 import type { AppStoreState } from '@/state/store';
 import {
     type HazardCardDef,
@@ -31,7 +31,7 @@ import {
     type HazardSessionState,
     type HazardSubquestReward,
     type HazardSubquestStatus,
-} from '@/state/hazard/types';
+} from 'axiomancer-mechanics';
 
 // ---------------------------------------------------------------------------
 // VM shapes

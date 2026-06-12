@@ -2,7 +2,7 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 
 import { HazardDie } from '../HazardDie';
-import type { HazardDieKind } from '@/state/hazard/types';
+import type { HazardDieKind } from 'axiomancer-mechanics';
 
 describe('HazardDie', () => {
     const dieTypes: HazardDieKind[] = ['red', 'blue', 'purple', 'gold', 'hex'];

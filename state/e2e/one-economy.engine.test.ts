@@ -22,7 +22,7 @@ import { createEnemy } from 'axiomancer-mechanics';
 
 import { createAppStore } from '../store';
 import { createAppActions, TOKEN_CARRY_FLAG_PREFIX, type AppActions } from '../actions';
-import { HAZARD_CARD_FLAG_PREFIX } from '../hazard/deck-flags';
+import { HAZARD_CARD_FLAG_PREFIX } from 'axiomancer-mechanics';
 import {
     HAZARD_HEXED_FLAG,
     HAZARD_TOKEN_FLAG_PREFIX,

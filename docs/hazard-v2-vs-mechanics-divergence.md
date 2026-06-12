@@ -1,11 +1,13 @@
 # Hazard Minigame: Mobile v2 Engine vs `axiomancer-mechanics` — Divergence Catalogue
 
 Date: 2026-06-11
-Status: Authoritative for current mobile `state/hazard/`; refreshed after the 2026-06-11 card-expansion (two-tone cards, enchantments, bursts, gold vow, choose, convert→gold). Roster + mechanics spec: `docs/hazard-card-expansion-2026-06-11-spec.md`.
+Status: **RESOLVED 2026-06-12.** The divergence is closed: `axiomancer-mechanics@0.17.x` carries a byte-faithful port of the mobile v2 rules (`src/World/Hazard/`, parity-guarded by `audit/e2e/parity.audit.test.ts`), and mobile deleted its local engine at the 0.17.1 bump — `state/hazard/` retains only the host glue (`store-actions.ts`); every rule import now comes from the package root. The catalogue below is kept as the historical record of what was upstreamed. The "what applies live vs. flags" sections further down still describe current claim-time behaviour.
 
-## Why this document exists
+Historical header (2026-06-11): refreshed after the card-expansion (two-tone cards, enchantments, bursts, gold vow, choose, convert→gold). Roster + mechanics spec: `docs/hazard-card-expansion-2026-06-11-spec.md`.
 
-Mobile still carries the living Hazard v2 rules locally. `axiomancer-mechanics` now contains a partial v2 Hazard implementation, but it is not equivalent to mobile and cannot yet replace the mobile engine. This document is the upstreaming checklist: mechanics must either port each current mobile rule below or explicitly reject it with rationale before mobile deletes its local engine and consumes package exports again.
+## Why this document existed
+
+Mobile carried the living Hazard v2 rules locally while `axiomancer-mechanics` held an older, partial implementation. This document was the upstreaming checklist: mechanics had to either port each mobile rule below or explicitly reject it with rationale before mobile deleted its local engine and consumed package exports again. That bar was met by the 2026-06-12 port + parity audit.
 
 Primary mobile source files:
 

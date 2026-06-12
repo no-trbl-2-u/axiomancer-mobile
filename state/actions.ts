@@ -93,8 +93,8 @@ import {
 } from '@/state/selectors/combat-skills';
 import { templateToEquipment } from '@/state/selectors/equipment';
 import { EMPTY_EVENT_SLICE, type AppStore } from './store';
-import { HAZARD_REWARD_CARDS } from './hazard/content';
-import { appendAcquiredCard } from './hazard/deck-flags';
+import { HAZARD_REWARD_CARDS } from 'axiomancer-mechanics';
+import { appendAcquiredCard } from 'axiomancer-mechanics';
 import {
     abandonHazardAction,
     acknowledgeHazardOutcomeAction,
@@ -116,7 +116,7 @@ import {
     type BeginHazardOptions,
     type ClaimHazardRewardsResult,
 } from './hazard/store-actions';
-import type { HazardProgressKey, HazardRouteKey } from './hazard/types';
+import type { HazardProgressKey, HazardRouteKey } from 'axiomancer-mechanics';
 import {
     abandonGatheringAction,
     acknowledgeGatheringOutcomeAction,
@@ -368,7 +368,7 @@ export interface AppActions {
     exploitMercyChoice: () => void;
 
     // -----------------------------------------------------------------
-    // Hazard minigame (v2 local engine — see state/hazard/). The pure
+    // Hazard minigame (engine: axiomancer-mechanics World/Hazard). The pure
     // engine owns every rule; these wrappers thread the session through
     // the `hazard` slice. Phase order: route-select → rolling → playing
     // → resolve-flash → … → outcome → rewards → done.

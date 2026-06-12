@@ -13,7 +13,7 @@ import React from 'react';
 import { View } from 'react-native';
 import Svg, { Defs, Line, Polygon, RadialGradient, Rect, Stop } from 'react-native-svg';
 
-import type { HazardDieKind } from '@/state/hazard/types';
+import type { HazardDieKind } from 'axiomancer-mechanics';
 import { AXM } from '@/theme/axm';
 
 import { DIE } from './palette';

@@ -8,7 +8,7 @@
  */
 
 import { AXM } from '@/theme/axm';
-import type { HazardDieKind } from '@/state/hazard/types';
+import type { HazardDieKind } from 'axiomancer-mechanics';
 
 export const HZ = {
     acid: '#86a821',

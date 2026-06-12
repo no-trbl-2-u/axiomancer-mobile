@@ -12,10 +12,10 @@ import type { GameState } from 'axiomancer-mechanics';
 
 import { createAppActions, type AppActions } from '@/state/actions';
 import { createAppStore, type AppStore } from '@/state/store';
-import { HAZARD_CRACK_CARD, getHazardDef } from '@/state/hazard/content';
-import { decodeAcquiredCards } from '@/state/hazard/deck-flags';
+import { HAZARD_CRACK_CARD, getHazardDef } from 'axiomancer-mechanics';
+import { decodeAcquiredCards } from 'axiomancer-mechanics';
 import { HAZARD_HEXED_FLAG } from '@/state/hazard/store-actions';
-import type { HazardHandEntry, HazardSessionState } from '@/state/hazard/types';
+import type { HazardHandEntry, HazardSessionState } from 'axiomancer-mechanics';
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
 
 afterEach(() => {

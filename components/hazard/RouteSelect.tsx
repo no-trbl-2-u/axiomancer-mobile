@@ -11,7 +11,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
 
 import type { HazardRouteChoiceVM, HazardViewModel } from '@/state/presenters/hazard.engine';
-import type { HazardRouteKey } from '@/state/hazard/types';
+import type { HazardRouteKey } from 'axiomancer-mechanics';
 import { AXM, FONTS } from '@/theme/axm';
 
 import { HazardCard } from './HazardCard';

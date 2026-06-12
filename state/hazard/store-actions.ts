@@ -1,7 +1,8 @@
 /**
  * Hazard minigame — store action implementations.
  *
- * The pure engine (`state/hazard/engine.ts`) owns every rule; these
+ * The pure engine lives in `axiomancer-mechanics` (World/Hazard —
+ * decoupled 2026-06-12 at 0.17.1; mobile owns UI only); these
  * wrappers thread the session through the mobile store slice and, at
  * claim time, apply the outcome to the real engine `GameState`
  * (VITAE, max VITAE, currency, deck flags). See
@@ -25,7 +26,7 @@ import {
     selectHazardRoute as engineSelectRoute,
     stageHazardCard as engineStageCard,
     unstageHazardCard as engineUnstageCard,
-} from './engine';
+} from 'axiomancer-mechanics';
 import {
     HAZARD_CACHE_SHILLINGS,
     HAZARD_CRACK_CARD,
@@ -36,9 +37,9 @@ import {
     HAZARD_RELIC_SHILLINGS,
     HAZARD_REWARD_CARDS,
     HAZARD_VITAE_REWARD,
-} from './content';
-import { appendAcquiredCard, HAZARD_CARD_FLAG_PREFIX, hazardDeckBag } from './deck-flags';
-import type { HazardProgressKey, HazardRouteKey, HazardSessionState } from './types';
+} from 'axiomancer-mechanics';
+import { appendAcquiredCard, HAZARD_CARD_FLAG_PREFIX, hazardDeckBag } from 'axiomancer-mechanics';
+import type { HazardProgressKey, HazardRouteKey, HazardSessionState } from 'axiomancer-mechanics';
 import type { AppStore } from '../store';
 
 export interface MobileHazardSlice {

@@ -14,7 +14,7 @@ import {
 } from 'axiomancer-mechanics';
 
 import type { GatheringSessionState } from './gathering/types';
-import type { HazardSessionState } from './hazard/types';
+import type { HazardSessionState } from 'axiomancer-mechanics';
 
 /**
  * Mobile-only state slice for the event modal. The engine returns
@@ -87,10 +87,11 @@ export interface DevOverridesSlice {
 
 /**
  * Mobile-only Hazard minigame slice. Holds the active v2 hazard
- * session (see `state/hazard/`) — `null` outside a hazard. Sessions
- * are transient by design: abandoning mid-hazard forfeits progress.
- * The persistent piece (the player's hazard action deck) rides
- * `GameState.flags` instead — see `state/hazard/deck-flags.ts`.
+ * session (engine: `axiomancer-mechanics` World/Hazard; mobile glue:
+ * `state/hazard/store-actions.ts`) — `null` outside a hazard.
+ * Sessions are transient by design: abandoning mid-hazard forfeits
+ * progress. The persistent piece (the player's hazard action deck)
+ * rides `GameState.flags` via the package's deck-flags codec.
  */
 export interface MobileHazardSlice {
     session: HazardSessionState | null;

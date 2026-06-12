@@ -4,9 +4,10 @@
  * The engine threads explicit RNG state through every transition so a
  * session is fully reproducible from its seed — hermetic Jest suites
  * pin seeds instead of stubbing Math.random. The engine NEVER calls
- * Math.random directly. (Same doctrine as `state/hazard/rng.ts`; kept
- * as a sibling copy so `state/gathering/` stays one self-contained,
- * migration-ready directory.)
+ * Math.random directly. (Same doctrine as the
+ * `axiomancer-mechanics` Hazard RNG; kept as a sibling copy so
+ * `state/gathering/` stays one self-contained, migration-ready
+ * directory.)
  */
 
 export interface GatheringRngState {

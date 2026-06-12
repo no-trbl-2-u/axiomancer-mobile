@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-11 at commit 25db604
-> Pass count: 69
+> Last pass: 2026-06-12 at commit 087b994c
+> Pass count: 70
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -191,6 +191,35 @@
   - **AUDIT [2.7]**: Large TypeScript files impact on maintainability
 - rationale: Aggressive posture file-length outlier detection flags HazardBoard.tsx as significantly larger than typical components. Aligns with pending audit finding about large TypeScript file impacts.
 - proposed scope: 1-phase sub-component extraction
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 4.0] Comprehensive test coverage expansion 
+- proposed: 2026-06-12, expand pass 70
+- source signals:
+  - **AUDIT [5.9]**: Component test coverage gaps - 70 components without tests
+  - **GitHub issue #350**: Testing prerequisite unclear for fresh maintainers
+- rationale: Signal multiplicity - both audit finding and GitHub issue point to test coverage and testing documentation gaps that block fresh maintainer onboarding
+- proposed scope: 2-3 phases to systematically add tests and clarify testing docs
+- estimated phases: 2-3
+- conflicts: none
+
+### [ ] [score 3.5] Type safety audit phase
+- proposed: 2026-06-12, expand pass 70
+- source signals:
+  - **Code smell**: 178 `as any|as unknown` type casts across state/app/components folders
+- rationale: Aggressive posture smell detection - 178 unsafe type casts suggests significant type safety gaps requiring systematic audit and remediation
+- proposed scope: 1-2 phases to audit and replace unsafe casts with proper typing
+- estimated phases: 1-2
+- conflicts: none
+
+### [ ] [score 3.0] Large component extraction (HazardBoard focus)
+- proposed: 2026-06-12, expand pass 70
+- source signals:
+  - **Code smell**: HazardBoard.tsx at 799 lines (2× folder median)
+  - **AUDIT [5.9]**: Component test coverage gaps backing the extraction need
+- rationale: Signal multiplicity - file-length outlier stacks with test coverage audit finding; HazardBoard.tsx has grown significantly since previous measurement
+- proposed scope: 1 phase to extract subcomponents from HazardBoard.tsx
 - estimated phases: 1
 - conflicts: none
 

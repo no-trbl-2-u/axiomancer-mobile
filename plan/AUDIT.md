@@ -9,7 +9,7 @@
 
 ## Top 5 findings (scored)
 
-### [ ] [7.2] Accessibility spec unimplemented despite interactive elements requiring systematic a11y support
+### [x] [7.2] Accessibility spec unimplemented despite interactive elements requiring systematic a11y support
 - category: external-critique
 - impact: 8
 - ease: 9
@@ -23,6 +23,8 @@
 - suggested fix: Implement Spec 12 to add systematic accessibility support before wider distribution
 - source: external-critique
 - issue: #365
+- addressed: 2026-06-12 via commit b0572aa
+- fix: Added accessibility props to aftermath modal buttons - VictoryModal, FriendshipModal, DefeatModal, and ErrorFallbackModal now have proper accessibilityRole="button" and descriptive accessibilityLabel props for all TouchableOpacity components
 
 ### [ ] [6.8] README prerequisites lack mobile development ecosystem context for newcomers
 - category: external-critique

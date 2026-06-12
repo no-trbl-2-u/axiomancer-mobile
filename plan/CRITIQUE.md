@@ -112,8 +112,8 @@
      README.md, specs/, docs/, app/ components, testing patterns.
      4 findings filed below. -->
 
-### [HIGH] /specs/12-accessibility-and-theming.md — Accessibility spec unimplemented despite interactive elements
-- pass: 32 (commit fb5d297)
+### [HIGH] /specs/12-accessibility-and-theming.md — Accessibility spec unimplemented despite interactive elements ✅
+- pass: 32 (commit fb5d297); addressed at commit b0572aa via `/iterate`
 - viewport: repository
 - category: a11y
 - observation: Accessibility spec remains unimplemented despite app having interactive elements — most components lack required accessibilityRole and accessibilityLabel props

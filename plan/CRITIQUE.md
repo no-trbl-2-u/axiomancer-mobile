@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-12 at commit 87b994c
-> Pass count: 35
+> Last pass: 2026-06-12 at commit 17850b2
+> Pass count: 36
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -33,6 +33,48 @@
      guidance. Examined README.md, setup/, docs/, state/presenters/,
      package.json. 4 findings filed below. -->
 
+<!-- Pass 36 (2026-06-12, commit 17850b2): repo-proxy pass —
+     Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
+     critique reads docs/specs/artifacts as the "fresh maintainer"
+     proxy. Focus on general repository comprehension. Examined
+     README.md, specs/README.md, docs/, plan/bearings.md, package.json.
+     4 findings filed below. -->
+### [MED] /README.md — Architecture diagram uses technical shorthand without explanation
+- pass: 36 (commit 17850b2)
+- viewport: desktop
+- auth_state: anonymous
+- category: comprehension
+- observation: Architecture diagram uses technical shorthand 'read upward, mutate downward' pattern that may confuse newcomers without context
+- evidence: Architecture section shows data flow but doesn't explain the 'read upward, mutate downward' pattern until after the diagram
+- suggested fix: Add a brief explanation before the diagram defining 'read upward, mutate downward'
+- source: browser
+### [MED] /docs/README.md — Documentation index doesn't prioritize essential reading
+- pass: 36 (commit 17850b2)
+- viewport: desktop
+- auth_state: anonymous
+- category: navigation
+- observation: Documentation index doesn't clearly distinguish between essential vs optional reading for new maintainers
+- evidence: All files listed with equal weight - testing.md marked REQUIRED but other critical files like presenters.md not prioritized
+- suggested fix: Add priority indicators (ESSENTIAL/HELPFUL/REFERENCE) to file descriptions
+- source: browser
+### [LOW] /plan/bearings.md — Stack decisions table mixes current state with migration notes
+- pass: 36 (commit 17850b2)
+- viewport: desktop
+- auth_state: anonymous
+- category: comprehension
+- observation: Stack decisions table mixes current state with migration notes in a way that could confuse present vs future state
+- evidence: State management row shows 'Local useState per screen → migrating to a zustand store' mixing current and target state
+- suggested fix: Separate current state from target state or mark migration items with clear temporal indicators
+- source: browser
+### [LOW] /specs/README.md — Spec completion table doesn't highlight next steps for contributors
+- pass: 36 (commit 17850b2)
+- viewport: desktop
+- auth_state: anonymous
+- category: navigation
+- observation: Recommended order table shows 'DONE' status for specs 1-9 but doesn't indicate current active work clearly for new contributors
+- evidence: Table shows historical completion status but next steps require reading dense prose above
+- suggested fix: Add a 'Status' column showing DONE/READY/BLOCKED and highlight next recommended spec
+- source: browser
 ### [HIGH] /setup/01_repository.md — Setup documentation disconnected from main README creating confusing dual setup paths ✅
 - pass: 34 (commit 72f489d); addressed at commit 9390929 via `/iterate`
 - viewport: repository

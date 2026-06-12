@@ -81,7 +81,7 @@ function makeEncounterResult(opts: { isBoss?: boolean } = {}): ResolveMapEventRe
 function makeRestResult(healed: number): ResolveMapEventResult {
     return {
         state: undefined as never,
-        event: { kind: 'rest', healed },
+        event: { kind: 'rest', healed, healFraction: 1 },
     };
 }
 

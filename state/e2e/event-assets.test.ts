@@ -34,7 +34,7 @@ describe('selectEventArtSlug', () => {
     });
 
     it('maps rest to "rest"', () => {
-        expect(selectEventArtSlug({ kind: 'rest', healed: 5 })).toBe('rest');
+        expect(selectEventArtSlug({ kind: 'rest', healed: 5, healFraction: 1 })).toBe('rest');
     });
 
     it('maps gathering to "gathering"', () => {
@@ -69,7 +69,7 @@ describe('selectEventArtSlug', () => {
         const cases: ResolvedEvent[] = [
             { kind: 'encounter', encounter: { enemies: [{ name: 'x' }], origin: 'fishing-village:fv-3' } as never, isBoss: false },
             { kind: 'encounter', encounter: { enemies: [{ name: 'x' }], origin: 'fishing-village:fv-3' } as never, isBoss: true },
-            { kind: 'rest', healed: 1 },
+            { kind: 'rest', healed: 1, healFraction: 1 },
             { kind: 'gathering', items: [] },
             { kind: 'loot-cache', items: [], currency: 0 },
             { kind: 'interaction', npcName: 'X' },
@@ -86,7 +86,7 @@ describe('selectEventArtSlug', () => {
 
 describe('defaultBodyForEvent', () => {
     it('returns a non-empty string for kinds that need a default', () => {
-        expect(defaultBodyForEvent({ kind: 'rest', healed: 1 })).not.toBe('');
+        expect(defaultBodyForEvent({ kind: 'rest', healed: 1, healFraction: 1 })).not.toBe('');
         expect(defaultBodyForEvent({ kind: 'gathering', items: [] })).not.toBe('');
         expect(defaultBodyForEvent({ kind: 'village', villageName: 'X', merchants: [] })).not.toBe('');
     });

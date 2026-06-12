@@ -27,9 +27,12 @@ import { CorruptSaveModal } from '@/components/CorruptSaveModal';
 import { DevAutoSeed } from '@/components/DevAutoSeed';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { HardwareBackHandler } from '@/components/HardwareBackHandler';
+import { CacheGate } from '@/components/CacheGate';
 import { EventGate } from '@/components/EventGate';
 import { GatheringGate } from '@/components/GatheringGate';
 import { HazardGate } from '@/components/HazardGate';
+import { QuestGate } from '@/components/QuestGate';
+import { RestGate } from '@/components/RestGate';
 import { ToastHost } from '@/components/ToastHost';
 
 SplashScreen.preventAutoHideAsync();
@@ -162,6 +165,9 @@ export default function RootLayout() {
             <EventGate />
             <HazardGate />
             <GatheringGate />
+            <QuestGate />
+            <RestGate />
+            <CacheGate />
             <ToastHost />
             <DevAutoSeed />
             <Stack screenOptions={{ headerShown: false }}>
@@ -178,6 +184,30 @@ export default function RootLayout() {
               <Stack.Screen
                 name="gathering/index"
                 options={{ headerShown: false, presentation: 'fullScreenModal', gestureEnabled: false }}
+              />
+              <Stack.Screen
+                name="quest/index"
+                options={{ headerShown: false, presentation: 'fullScreenModal', gestureEnabled: false }}
+              />
+              <Stack.Screen
+                name="rest/index"
+                options={{ headerShown: false, presentation: 'fullScreenModal', gestureEnabled: false }}
+              />
+              <Stack.Screen
+                name="cache/index"
+                options={{ headerShown: false, presentation: 'fullScreenModal', gestureEnabled: false }}
+              />
+              <Stack.Screen
+                name="village/index"
+                options={{ headerShown: false, presentation: 'fullScreenModal' }}
+              />
+              <Stack.Screen
+                name="dialogue/index"
+                options={{ headerShown: false, presentation: 'fullScreenModal' }}
+              />
+              <Stack.Screen
+                name="cutscene/index"
+                options={{ headerShown: false, presentation: 'fullScreenModal' }}
               />
             </Stack>
           </TooltipProvider>

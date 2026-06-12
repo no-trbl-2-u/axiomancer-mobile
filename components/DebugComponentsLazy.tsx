@@ -20,6 +20,7 @@ const DebugCombatButton = lazy(() => import('@/components/DebugCombatButton').th
 const DebugHazardButton = lazy(() => import('@/components/DebugHazardButton').then(m => ({ default: m.DebugHazardButton })));
 const DebugHazardDeckRandomize = lazy(() => import('@/components/DebugHazardDeckRandomize').then(m => ({ default: m.DebugHazardDeckRandomize })));
 const DebugGatheringButton = lazy(() => import('@/components/DebugGatheringButton').then(m => ({ default: m.DebugGatheringButton })));
+const DebugEncounterButtons = lazy(() => import('@/components/DebugEncounterButtons').then(m => ({ default: m.DebugEncounterButtons })));
 const DebugAlignmentShift = lazy(() => import('@/components/DebugAlignmentShift').then(m => ({ default: m.DebugAlignmentShift })));
 const DebugCurrencyControl = lazy(() => import('@/components/DebugCurrencyControl').then(m => ({ default: m.DebugCurrencyControl })));
 const DebugDialogueJump = lazy(() => import('@/components/DebugDialogueJump').then(m => ({ default: m.DebugDialogueJump })));
@@ -65,6 +66,7 @@ export function DebugComponentsLazy() {
       <DebugHazardButton />
       <DebugHazardDeckRandomize />
       <DebugGatheringButton />
+      <DebugEncounterButtons />
       <DebugMapResetButton />
       <DebugChaosToggle />
       <DebugPresetPicker />

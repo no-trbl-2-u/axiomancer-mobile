@@ -101,6 +101,40 @@ function questPoolIdFor(mapId: string, nodeId: string): string {
     return `quest-${mapId}-${nodeId}`;
 }
 
+/**
+ * Phase 137 — per-quest-node BOARD mapping. Quest nodes listed here
+ * launch the Quest Board minigame ("The Boy's Almanac") instead of a
+ * generic NPC interaction; the board id names an authored board in
+ * `axiomancer-mechanics` World/QuestBoard. Takes precedence over
+ * `QUEST_NPCS` in `poolIdForNode`.
+ *
+ * Key format: `<continent>:<mapId>:<nodeId>` → boardId.
+ */
+const QUEST_BOARDS_BY_NODE: Record<string, string> = {
+    // fv-15 "Sea Cave": "A cave that breathes with the tide." Where a
+    // boy would lay a keel out of the weather — the story's first main
+    // quest, "Boy must build boat" (content/story/story-overview.md).
+    'coastal-continent:fishing-village:fv-15': 'build-the-boat',
+};
+
+/** Pool id for a specific quest-board node. */
+function questBoardPoolIdFor(mapId: string, nodeId: string): string {
+    return `quest-board-${mapId}-${nodeId}`;
+}
+
+function questBoardPool(id: string, boardId: string): MapEventPool {
+    return {
+        id,
+        entries: [
+            {
+                kind: 'quest',
+                weight: 1,
+                payload: { kind: 'quest', boardId },
+            },
+        ],
+    };
+}
+
 function encounterPool(id: string, enemySlug: EnemySlug, isBoss = false): MapEventPool {
     return {
         id,
@@ -382,6 +416,17 @@ const QUEST_POOLS: ReadonlyArray<MapEventPool> = (() => {
     return out;
 })();
 
+/** Phase 137 — per-quest-node board pools sourced from QUEST_BOARDS_BY_NODE. */
+const QUEST_BOARD_POOLS: ReadonlyArray<MapEventPool> = (() => {
+    const out: MapEventPool[] = [];
+    for (const key of Object.keys(QUEST_BOARDS_BY_NODE)) {
+        const [_continent, mapId, nodeId] = key.split(':');
+        const boardId = QUEST_BOARDS_BY_NODE[key];
+        out.push(questBoardPool(questBoardPoolIdFor(mapId, nodeId), boardId));
+    }
+    return out;
+})();
+
 /** All pools the mobile loop registers with the engine. */
 const POOLS: ReadonlyArray<MapEventPool> = [
     restPool(POOL_IDS.restCommon),
@@ -394,6 +439,7 @@ const POOLS: ReadonlyArray<MapEventPool> = [
     treasurePool(POOL_IDS.treasureNorthernForest, NORTHERN_FOREST_TREASURE, 10),
     questPool(POOL_IDS.questCommon),
     ...QUEST_POOLS,
+    ...QUEST_BOARD_POOLS,
     // Hazard pool — fires the environmental hazard minigame on
     // `hazard`-typed nodes (e.g. fishing-village's Tide Pool).
     hazardPool(POOL_IDS.hazardCommon),
@@ -428,8 +474,13 @@ export function poolIdForNode(mapId: string, nodeId: string, nodeType: NodeType)
             if (mapId === 'northern-forest') return POOL_IDS.treasureNorthernForest;
             return POOL_IDS.treasureCommon;
         case 'quest': {
-            const npcKey = `${CONTINENT}:${mapId}:${nodeId}`;
-            if (QUEST_NPCS[npcKey]) {
+            const nodeKey = `${CONTINENT}:${mapId}:${nodeId}`;
+            // Phase 137 — a quest BOARD mapping outranks the NPC
+            // interaction fallback: these nodes are story beats.
+            if (QUEST_BOARDS_BY_NODE[nodeKey]) {
+                return questBoardPoolIdFor(mapId, nodeId);
+            }
+            if (QUEST_NPCS[nodeKey]) {
                 return questPoolIdFor(mapId, nodeId);
             }
             return POOL_IDS.questCommon;

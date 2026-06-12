@@ -15,6 +15,7 @@ import {
 
 import type { GatheringSessionState } from 'axiomancer-mechanics';
 import type { HazardSessionState } from 'axiomancer-mechanics';
+import type { Item, LootCacheSession, QuestBoardSession, RestSession } from 'axiomancer-mechanics';
 
 /**
  * Mobile-only state slice for the event modal. The engine returns
@@ -108,10 +109,44 @@ export interface MobileGatheringSlice {
     tutorial: boolean;
 }
 
+/**
+ * Mobile-only Quest Board minigame slice ("The Boy's Almanac").
+ * Holds the active board session (engine: `axiomancer-mechanics`
+ * World/QuestBoard) — `null` outside a quest. Fully sandboxed by
+ * design: only the completion record (board id + tier) flows back to
+ * `GameState.flags` at claim.
+ */
+export interface MobileQuestSlice {
+    session: QuestBoardSession | null;
+}
+
+/**
+ * Mobile-only Rest encounter slice ("The Night Watch"). Holds the
+ * active night (engine: World/Rest) — `null` outside a rest. The dawn
+ * outcome (heal, cleanse, keepsakes) applies to the player at claim.
+ */
+export interface MobileRestSlice {
+    session: RestSession | null;
+}
+
+/**
+ * Mobile-only Loot-cache encounter slice ("The Reliquary"). Holds the
+ * active cache (engine: World/LootCache) — `null` outside one. The
+ * engine deals in item REFS; `stash` keeps the real `Item`s behind
+ * those refs (keyed by ref uid) so claim can map kept uids back.
+ */
+export interface MobileCacheSlice {
+    session: LootCacheSession | null;
+    stash: Readonly<Record<string, Item>>;
+}
+
 export type AppStoreState = GameStore & {
     event: MobileEventSlice;
     hazard: MobileHazardSlice;
     gathering: MobileGatheringSlice;
+    quest: MobileQuestSlice;
+    rest: MobileRestSlice;
+    cache: MobileCacheSlice;
     notifications: MobileNotificationsSlice;
     /** @deprecated Phase 105 — replaced with engine CombatState.combatResources. Remove in follow-up. */
     combatMana?: { current: number; max: number } | null;
@@ -145,6 +180,15 @@ export const EMPTY_HAZARD_SLICE: MobileHazardSlice = Object.freeze({ session: nu
 export const EMPTY_GATHERING_SLICE: MobileGatheringSlice = Object.freeze({
     session: null,
     tutorial: false,
+});
+
+export const EMPTY_QUEST_SLICE: MobileQuestSlice = Object.freeze({ session: null });
+
+export const EMPTY_REST_SLICE: MobileRestSlice = Object.freeze({ session: null });
+
+export const EMPTY_CACHE_SLICE: MobileCacheSlice = Object.freeze({
+    session: null,
+    stash: Object.freeze({}),
 });
 
 /**
@@ -229,6 +273,9 @@ export function createAppStore(options: CreateAppStoreOptions = {}): AppStore {
         event: EMPTY_EVENT_SLICE,
         hazard: EMPTY_HAZARD_SLICE,
         gathering: EMPTY_GATHERING_SLICE,
+        quest: EMPTY_QUEST_SLICE,
+        rest: EMPTY_REST_SLICE,
+        cache: EMPTY_CACHE_SLICE,
         notifications: DEFAULT_NOTIFICATIONS_SLICE,
         combatMana: null,
         devOverrides: DEFAULT_DEV_OVERRIDES_SLICE,

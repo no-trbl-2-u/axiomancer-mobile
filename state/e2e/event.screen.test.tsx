@@ -70,7 +70,7 @@ function encounter(isBoss = false): ResolveMapEventResult {
 function rest(healed = 6): ResolveMapEventResult {
     return {
         state: undefined as never,
-        event: { kind: 'rest', healed },
+        event: { kind: 'rest', healed, healFraction: 1 },
     };
 }
 

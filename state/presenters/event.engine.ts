@@ -257,6 +257,26 @@ export function selectHasActivePacedEvent(state: AppStoreState): boolean {
     return vm.kind === 'narrative-choice';
 }
 
+/** Route targets for paced events (Phase 137 dedicated screens). */
+export type PacedEventRoute = '/event' | '/village' | '/dialogue' | '/cutscene';
+
+/**
+ * Which full-screen route the active paced event should mount.
+ * Phase 137 gave interaction / village / cutscene dedicated screens;
+ * everything else paced keeps the generic `/event` shell. Returns
+ * `null` when no paced event is active (rest / loot-cache / quest /
+ * hazard / gathering never reach the event slice anymore — their
+ * interceptors start minigame sessions instead).
+ */
+export function selectPacedEventRoute(state: AppStoreState): PacedEventRoute | null {
+    if (!selectHasActivePacedEvent(state)) return null;
+    const kind = state.event.pending?.event.kind;
+    if (kind === 'interaction') return '/dialogue';
+    if (kind === 'village') return '/village';
+    if (kind === 'cutscene') return '/cutscene';
+    return '/event';
+}
+
 /**
  * Returns `true` when the engine has an active **combat-adjacent**
  * event (kind `'combat-prelude'`) — the kind that mounts
@@ -622,6 +642,10 @@ function composeNarrative(resolved: ResolvedEvent): Omit<EventViewModel, 'prelud
             return composeCutscene(body, artSlug);
         case 'hazard':
             return composeHazard(resolved.damage, resolved.effects, body, artSlug);
+        // 'quest' never reaches the event slice: the resolve interceptor
+        // starts a quest-board session instead (Phase 137). Falls through
+        // to the empty VM defensively.
+        case 'quest':
         case 'encounter':
         case 'none':
             return EMPTY_VM;

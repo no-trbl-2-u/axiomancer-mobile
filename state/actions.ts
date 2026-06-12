@@ -21,6 +21,7 @@
 import {
     appendLog as combatAppendLog,
     applyDialogueChoice,
+    buyItem as engineBuyItem,
     applyEffect as engineApplyEffect,
     buildCharacterFromPreset,
     calculateSkillDamage,
@@ -92,6 +93,7 @@ import {
     type CombatSkill,
 } from '@/state/selectors/combat-skills';
 import { templateToEquipment } from '@/state/selectors/equipment';
+import { resolveWareItem } from '@/state/presenters/village.engine';
 import { EMPTY_EVENT_SLICE, type AppStore } from './store';
 import { HAZARD_REWARD_CARDS } from 'axiomancer-mechanics';
 import { appendAcquiredCard } from 'axiomancer-mechanics';
@@ -135,6 +137,42 @@ import {
     type ClaimGatheringSpoilsResult,
 } from './gathering/store-actions';
 import type { GatherApproachKey, GatherToolId } from 'axiomancer-mechanics';
+import {
+    abandonQuestBoardAction,
+    acknowledgeQuestDuskAction,
+    beginQuestBoardAction,
+    chooseQuestSpaceOptionAction,
+    claimQuestBoardCompletionAction,
+    continueQuestSpaceAction,
+    rollQuestBoneAction,
+    startQuestBoardPlayAction,
+    useQuestCharmAction,
+    type BeginQuestBoardOptions,
+    type ClaimQuestBoardResult,
+} from './quest/store-actions';
+import type { QuestCharmId, RestPosture } from 'axiomancer-mechanics';
+import {
+    abandonRestAction,
+    beginRestAction,
+    chooseRestOptionAction,
+    chooseRestPostureAction,
+    claimRestOutcomeAction,
+    continueRestWatchAction,
+    type BeginRestOptions,
+    type ClaimRestOutcomeResult,
+} from './rest/store-actions';
+import {
+    abandonLootCacheAction,
+    beginLootCacheAction,
+    claimLootCacheOutcomeAction,
+    continueLootCacheCardAction,
+    delveLootCacheAction,
+    probeLootCacheAction,
+    sealLootCacheAction,
+    startLootCacheDelvingAction,
+    type BeginLootCacheOptions,
+    type ClaimLootCacheResult,
+} from './cache/store-actions';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -450,6 +488,78 @@ export interface AppActions {
     abandonGathering: () => void;
     /** Mark the guided first gleaning done (completed or skipped) and persist. */
     completeGatheringTutorial: (skipped: boolean) => void;
+
+    // -----------------------------------------------------------------
+    // Quest Board minigame ("The Boy's Almanac" — see state/quest/).
+    // Fully sandboxed: only the completion record flows back. Phase
+    // order: intro → idle ⇄ space → dusk → … → outcome → done.
+    // -----------------------------------------------------------------
+
+    /** Start a quest board (first board unless pinned). Returns false if one is on the table. */
+    beginQuestBoard: (options?: BeginQuestBoardOptions) => boolean;
+    /** Board-reveal overlay acknowledged: intro → idle. */
+    startQuestBoardPlay: () => void;
+    /** Cast the bone die: move the piece, fit parts at the slipway, open the space. */
+    rollQuestBone: () => void;
+    /** Prime a one-use charm (idle only; consumed by its trigger). */
+    useQuestCharm: (charmId: QuestCharmId) => void;
+    /** Pick an option on the open space (market stalls stay open until LEAVE). */
+    chooseQuestSpaceOption: (optionId: string) => void;
+    /** Acknowledge the space's result card; dusk or the bone die follows. */
+    continueQuestSpace: () => void;
+    /** Dusk acknowledged: a new day dawns with supper. */
+    acknowledgeQuestDusk: () => void;
+    /** Confirm the outcome ledger; records the completion flag and persists. */
+    claimQuestBoardCompletion: () => ClaimQuestBoardResult;
+    /** Clear the board without a record (dev / escape hatch). */
+    abandonQuestBoard: () => void;
+
+    // -----------------------------------------------------------------
+    // Rest encounter ("The Night Watch" — see state/rest/). Phase
+    // order: posture → watch ×3 → outcome → done.
+    // -----------------------------------------------------------------
+
+    /** Start a night at camp. Returns false if one is underway. */
+    beginRest: (options?: BeginRestOptions) => boolean;
+    /** Choose how to lie: deep / doze / watch. */
+    chooseRestPosture: (posture: RestPosture) => void;
+    /** Pick an option on the open watch card (embers, dreams). */
+    chooseRestOption: (optionId: string) => void;
+    /** Acknowledge the watch's result; the next watch or dawn follows. */
+    continueRestWatch: () => void;
+    /** Confirm the dawn ledger; applies heal/cleanse/keepsakes and persists. */
+    claimRestOutcome: () => ClaimRestOutcomeResult;
+    /** Clear the night without a heal (dev / escape hatch). */
+    abandonRest: () => void;
+
+    // -----------------------------------------------------------------
+    // Loot-cache encounter ("The Reliquary" — see state/cache/). Phase
+    // order: intro → delving ⇄ card → outcome → done.
+    // -----------------------------------------------------------------
+
+    /** Start a cache from the authored payload. Returns false if one is open. */
+    beginLootCache: (options?: BeginLootCacheOptions) => boolean;
+    /** The find acknowledged: intro → delving. */
+    startLootCacheDelving: () => void;
+    /** Open the next layer (a sealed trap fires unconditionally). */
+    delveLootCache: () => void;
+    /** Spend the one probe to reveal the next layer's fate. */
+    probeLootCache: () => void;
+    /** Walk away with everything lifted so far. */
+    sealLootCache: () => void;
+    /** Acknowledge the open card; delving, or the ledger, follows. */
+    continueLootCacheCard: () => void;
+    /** Confirm the ledger; applies items/currency/bite and persists. */
+    claimLootCacheOutcome: () => ClaimLootCacheResult;
+    /** Clear the cache without loot or bites (dev / escape hatch). */
+    abandonLootCache: () => void;
+
+    /**
+     * Buy a ware from the pending village event's shop (Phase 137
+     * dedicated village screen). Engine `buyItem` owns the rules
+     * (affordability, cloning); returns success.
+     */
+    buyVillageWare: (itemId: string) => boolean;
 
     // -----------------------------------------------------------------
     // One-economy + skill-learning pass.
@@ -1308,6 +1418,30 @@ export function createAppActions(store: AppStore): AppActions {
         claimGatheringSpoils: () => claimGatheringSpoilsAction(store),
         abandonGathering: () => abandonGatheringAction(store),
         completeGatheringTutorial: (skipped) => completeGatheringTutorialAction(store, skipped),
+        beginQuestBoard: (options) => beginQuestBoardAction(store, options),
+        startQuestBoardPlay: () => startQuestBoardPlayAction(store),
+        rollQuestBone: () => rollQuestBoneAction(store),
+        useQuestCharm: (charmId) => useQuestCharmAction(store, charmId),
+        chooseQuestSpaceOption: (optionId) => chooseQuestSpaceOptionAction(store, optionId),
+        continueQuestSpace: () => continueQuestSpaceAction(store),
+        acknowledgeQuestDusk: () => acknowledgeQuestDuskAction(store),
+        claimQuestBoardCompletion: () => claimQuestBoardCompletionAction(store),
+        abandonQuestBoard: () => abandonQuestBoardAction(store),
+        beginRest: (options) => beginRestAction(store, options),
+        chooseRestPosture: (posture) => chooseRestPostureAction(store, posture),
+        chooseRestOption: (optionId) => chooseRestOptionAction(store, optionId),
+        continueRestWatch: () => continueRestWatchAction(store),
+        claimRestOutcome: () => claimRestOutcomeAction(store),
+        abandonRest: () => abandonRestAction(store),
+        beginLootCache: (options) => beginLootCacheAction(store, options),
+        startLootCacheDelving: () => startLootCacheDelvingAction(store),
+        delveLootCache: () => delveLootCacheAction(store),
+        probeLootCache: () => probeLootCacheAction(store),
+        sealLootCache: () => sealLootCacheAction(store),
+        continueLootCacheCard: () => continueLootCacheCardAction(store),
+        claimLootCacheOutcome: () => claimLootCacheOutcomeAction(store),
+        abandonLootCache: () => abandonLootCacheAction(store),
+        buyVillageWare: (itemId) => buyVillageWareAction(store, itemId),
         grantVictorySpoils: () => grantVictorySpoilsAction(store),
         getLearnableSkillOffers: (count) => getLearnableSkillOffersAction(store, count),
         learnSkill: (skillId) => learnSkillAction(store, skillId),
@@ -1875,6 +2009,52 @@ function resolveCurrentMapEventAction(store: AppStore, sourceNodeType?: string):
             return true;
         }
 
+        // Quest events launch the board-game minigame ("The Boy's
+        // Almanac"). The engine handler is a validated pass-through —
+        // nothing to restore. `<QuestGate>` routes to /quest when the
+        // slice fills.
+        if (result.event.kind === 'quest') {
+            store.setState({
+                ...resolvedState,
+                event: EMPTY_EVENT_SLICE,
+            });
+            beginQuestBoardAction(store, { boardId: result.event.boardId });
+            return true;
+        }
+
+        // Rest events launch "The Night Watch" instead of the legacy
+        // silent heal. The engine's resolveMapEvent already applied the
+        // passive heal to `result.state`; restore the pre-event player so
+        // the night's dawn outcome is the only thing that touches VITAE.
+        // `<RestGate>` routes to /rest when the slice fills.
+        if (result.event.kind === 'rest') {
+            store.setState({
+                ...resolvedState,
+                player: gameState.player,
+                event: EMPTY_EVENT_SLICE,
+            });
+            beginRestAction(store, { healFraction: result.event.healFraction });
+            return true;
+        }
+
+        // Loot-cache events launch "The Reliquary" instead of the legacy
+        // passive grant. The engine already appended the payload items +
+        // currency to `result.state`; restore the pre-event player so the
+        // cache's claim is the only thing that touches the inventory.
+        // `<CacheGate>` routes to /cache when the slice fills.
+        if (result.event.kind === 'loot-cache') {
+            store.setState({
+                ...resolvedState,
+                player: gameState.player,
+                event: EMPTY_EVENT_SLICE,
+            });
+            beginLootCacheAction(store, {
+                items: result.event.items,
+                currency: result.event.currency,
+            });
+            return true;
+        }
+
         // Spread the advanced state onto the store. `event` is mobile-only
         // and survives because `result.state` does not include it.
         const nextEvent = {
@@ -2045,6 +2225,32 @@ function pickEventChoiceAction(store: AppStore, choiceId: string): void {
 
 function dismissEventAction(store: AppStore): void {
     clearEventSlice(store);
+}
+
+/**
+ * Buys a ware off the pending village event's shop (Phase 137). The
+ * engine reducer owns affordability and item cloning; a no-op result
+ * (can't afford, unknown ware) returns false so the screen can leave
+ * the row enabled-but-inert rather than crash.
+ */
+function buyVillageWareAction(store: AppStore, itemId: string): boolean {
+    try {
+        const state = store.getState();
+        const pending = state.event?.pending;
+        if (!pending || pending.event.kind !== 'village') return false;
+        const ware = pending.event.shop?.wares.find(w => w.itemId === itemId);
+        if (!ware) return false;
+        const item = resolveWareItem(ware);
+        if (!item) return false;
+        const player = (state as unknown as GameState).player;
+        const next = engineBuyItem(player, item, ware.price);
+        if (next === player) return false;
+        store.setState({ player: next } as never);
+        return true;
+    } catch (error) {
+        console.error('Failed to buy village ware:', error);
+        return false;
+    }
 }
 
 // ---------------------------------------------------------------------------

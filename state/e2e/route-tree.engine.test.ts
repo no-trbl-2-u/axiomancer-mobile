@@ -91,6 +91,16 @@ const EXPECTED_ROUTE_FILES: ReadonlySet<string> = new Set([
     './hazard/index.tsx',
     // Gathering minigame — "The Gleaning" (Forage archetype).
     './gathering/index.tsx',
+    // Phase 137 — dedicated encounter screens: the Quest Board
+    // ("The Boy's Almanac"), Rest ("The Night Watch"), Loot Cache
+    // ("The Reliquary"), and the paced-event splits (village /
+    // dialogue / cutscene).
+    './quest/index.tsx',
+    './rest/index.tsx',
+    './cache/index.tsx',
+    './village/index.tsx',
+    './dialogue/index.tsx',
+    './cutscene/index.tsx',
     './(tabs)/_layout.tsx',
     './(tabs)/character/index.tsx',
     './(tabs)/combat.tsx',

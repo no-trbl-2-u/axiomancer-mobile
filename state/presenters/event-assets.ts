@@ -53,6 +53,9 @@ export function selectEventArtSlug(event: ResolvedEvent): EventArtSlug {
             return 'cutscene';
         case 'hazard':
             return 'hazard';
+        // 'quest' never reaches the event modal (the interceptor starts
+        // a board session); slug kept for defensive completeness.
+        case 'quest':
         case 'none':
             return 'interaction-generic';
     }
@@ -72,6 +75,7 @@ const DEFAULT_BODY_BY_KIND: Record<ResolvedEvent['kind'], string> = {
     cutscene: '',
     hazard: 'The air turns.',
     'loot-cache': 'Forgotten goods.',
+    quest: 'A plan, drawn as a game.',
     none: '',
 };
 

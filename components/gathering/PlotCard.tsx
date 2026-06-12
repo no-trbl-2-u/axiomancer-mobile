@@ -60,7 +60,7 @@ function WrathChip({ cost, size = 12, isBreath }: { cost: number; size?: number;
                 {relief ? `${cost}` : cost === 0 ? 'free' : `+${cost}`}
             </Text>
             {isBreath && relief && (
-                <Text style={{ fontFamily: FONTS.sans, fontSize: size - 3, letterSpacing: 0.5, color }}>WRATH</Text>
+                <Text style={{ fontFamily: FONTS.sans, fontSize: Math.max(10, size - 1), letterSpacing: 0.5, color }}>WRATH</Text>
             )}
         </View>
     );
@@ -146,7 +146,7 @@ export const PlotCard = React.memo(function PlotCard({
     return (
         <View style={frame}>
             {overlays}
-            <Text numberOfLines={2} style={[styles.name, { fontSize: compact ? 10 : 11.5, minHeight: compact ? 20 : 23 }]}>
+            <Text numberOfLines={2} style={[styles.name, { fontSize: compact ? 12 : 13, minHeight: compact ? 26 : 28 }]}>
                 {plot.name}
             </Text>
             <View style={{ alignItems: 'center', marginVertical: compact ? 2 : 4 }}>
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
         color: CARD_INK,
         letterSpacing: 0.2,
         textAlign: 'center',
-        lineHeight: 11.5,
+        lineHeight: 13,
     },
     rowsBox: { marginTop: 'auto', borderWidth: 1, borderColor: CARD_EDGE },
     yieldRow: {
@@ -201,8 +201,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255,255,255,0.08)',
         minHeight: 18,
     },
-    familyMini: { fontFamily: FONTS.sans, fontSize: 7, letterSpacing: 0.8 },
-    breathText: { fontFamily: FONTS.sans, fontSize: 9, letterSpacing: 1.4, color: '#34527a' },
+    familyMini: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 0.8 },
+    breathText: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 1.4, color: '#34527a' },
     priceRow: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     },
     tag: {
         fontFamily: FONTS.sans,
-        fontSize: 8,
+        fontSize: 11,
         letterSpacing: 1.5,
         paddingHorizontal: 7,
         paddingVertical: 1,
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 6,
         paddingVertical: 1,
     },
-    traitTagText: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1.5 },
+    traitTagText: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1.5 },
     detailName: {
         fontFamily: FONTS.gothic,
         fontSize: 22,
@@ -257,12 +257,12 @@ const styles = StyleSheet.create({
         paddingHorizontal: 9,
         marginBottom: 6,
     },
-    detailRowLabel: { fontFamily: FONTS.sans, fontSize: 9, letterSpacing: 1.2, color: CARD_INK2 },
-    detailRowValue: { fontFamily: FONTS.serif, fontSize: 12, color: CARD_INK },
+    detailRowLabel: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 1.2, color: CARD_INK2 },
+    detailRowValue: { fontFamily: FONTS.serif, fontSize: 14, color: CARD_INK },
     detailFlavor: {
         fontFamily: FONTS.serifItalic,
         fontStyle: 'italic',
-        fontSize: 11.5,
+        fontSize: 13,
         color: CARD_INK2,
         marginTop: 8,
         lineHeight: 15,

@@ -70,8 +70,8 @@ export function SatchelTray({
 const styles = StyleSheet.create({
     root: { paddingHorizontal: 12, paddingVertical: 6 },
     header: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 5 },
-    title: { fontFamily: FONTS.sans, fontSize: 9, letterSpacing: 1.6, color: AXM.parchment },
-    sub: { fontFamily: FONTS.mono, fontSize: 8, color: AXM.bone, letterSpacing: 0.4 },
+    title: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 1.6, color: AXM.parchment, flexShrink: 0, marginRight: 8 },
+    sub: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone, letterSpacing: 0.4, flexShrink: 1, textAlign: 'right' },
     stacks: { flexDirection: 'row', gap: 6 },
     stack: {
         flex: 1,
@@ -84,13 +84,13 @@ const styles = StyleSheet.create({
     },
     stackTop: { flexDirection: 'row', alignItems: 'center', gap: 5 },
     count: { fontFamily: FONTS.gothic, fontSize: 16, lineHeight: 17 },
-    familyLabel: { fontFamily: FONTS.sans, fontSize: 7, letterSpacing: 1 },
+    familyLabel: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1 },
     progressTrack: { alignSelf: 'stretch', height: 3, backgroundColor: 'rgba(0,0,0,0.5)', marginTop: 2 },
     progressFill: { height: 3 },
-    progressText: { fontFamily: FONTS.mono, fontSize: 7, color: AXM.bone },
+    progressText: { fontFamily: FONTS.mono, fontSize: 10, color: AXM.bone },
     setBadge: {
         fontFamily: FONTS.sans,
-        fontSize: 7,
+        fontSize: 10,
         letterSpacing: 1.4,
         color: '#0c0a08',
         paddingHorizontal: 5,

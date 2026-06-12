@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     },
     headerSub: {
         fontFamily: FONTS.sans,
-        fontSize: 10,
+        fontSize: 12,
         letterSpacing: 2.2,
         color: AXM.bone,
         marginTop: 2,
@@ -215,16 +215,16 @@ const styles = StyleSheet.create({
     },
     resource: {
         fontFamily: FONTS.sans,
-        fontSize: 12,
+        fontSize: 14,
         letterSpacing: 1.5,
         color: AXM.parchment,
     },
     pipRow: { flexDirection: 'row', gap: 3, marginLeft: 'auto' },
-    pip: { color: AXM.sulfur, fontSize: 10 },
+    pip: { color: AXM.sulfur, fontSize: 12 },
     wellParts: { alignItems: 'flex-start', gap: 1 },
     partLine: {
         fontFamily: FONTS.mono,
-        fontSize: 9,
+        fontSize: 12,
         letterSpacing: 0.5,
         color: AXM.bone,
     },
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     },
     sectionLabel: {
         fontFamily: FONTS.sans,
-        fontSize: 10,
+        fontSize: 12,
         letterSpacing: 2.2,
         color: AXM.bone,
         marginTop: 12,
@@ -273,14 +273,14 @@ const styles = StyleSheet.create({
     },
     charmDesc: {
         fontFamily: FONTS.mono,
-        fontSize: 8,
+        fontSize: 11,
         color: AXM.bone,
         marginTop: 2,
     },
     vowStrip: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, paddingHorizontal: 6 },
     vowChip: {
         fontFamily: FONTS.sans,
-        fontSize: 10,
+        fontSize: 12,
         letterSpacing: 1.5,
         color: AXM.bone,
         borderWidth: 1,
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
     abandon: { alignSelf: 'center', marginTop: 18, padding: 6 },
     abandonText: {
         fontFamily: FONTS.mono,
-        fontSize: 9,
+        fontSize: 12,
         letterSpacing: 2,
         color: AXM.ash,
     },

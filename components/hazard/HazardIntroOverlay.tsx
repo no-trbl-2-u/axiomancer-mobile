@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     },
     eyebrow: {
         fontFamily: FONTS.sans,
-        fontSize: 9,
+        fontSize: 12,
         letterSpacing: 3,
         color: AXM.blood,
     },

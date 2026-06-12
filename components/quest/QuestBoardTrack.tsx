@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
         bottom: 1,
         right: 3,
         fontFamily: FONTS.gothic,
-        fontSize: 12,
+        fontSize: 14,
         color: AXM.sulfur,
     },
     well: {

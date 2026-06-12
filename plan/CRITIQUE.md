@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-11 at commit 72f489d
-> Pass count: 34
+> Last pass: 2026-06-12 at commit 87b994c
+> Pass count: 35
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -592,6 +592,60 @@
 - evidence: Lines 49-58 show current implementation but bearings.md references legacy pattern FONTS.{pirata, fell, fellItalic, bebas, mono}
 - suggested fix: Update plan/bearings.md to reference current theme token names or add legacy aliases for backward compatibility
 - source: file-read
+
+### [MED] /README.md — Mobile-specific context missing for React Native newcomers in prerequisites section
+- pass: 35 (commit 87b994c)
+- viewport: repository
+- category: comprehension
+- observation: Mobile-specific context missing for React Native newcomers in prerequisites section
+- evidence: Lines 24-31 list 'Node.js 20+, Expo CLI' but don't explain React Native/Expo ecosystem or why these versions matter for mobile development
+- suggested fix: Add 2-3 sentences explaining React Native compilation requirements and mobile development ecosystem context
+- source: web-fetch
+
+### [MED] /setup/01_repository.md — Setup documentation creates dual paths without clear routing guidance
+- pass: 35 (commit 87b994c)
+- viewport: repository
+- category: navigation
+- observation: Setup documentation creates dual paths without clear routing guidance
+- evidence: README quick start (lines 22-51) and setup/01_repository.md detailed guide exist independently with no cross-reference or guidance on when to use each
+- suggested fix: Cross-reference setup docs in README with clear routing (quick start vs detailed setup)
+- source: web-fetch
+
+### [MED] /docs/testing.md — Hermetic testing standard lacks mobile-native testing patterns
+- pass: 35 (commit 87b994c)
+- viewport: repository
+- category: mobile
+- observation: Hermetic testing standard lacks mobile-native testing patterns
+- evidence: Lines 67-81 mention mocking expo-haptics/expo-font but missing guidance for device simulation, platform differences, native module testing
+- suggested fix: Add mobile-specific testing section covering device viewport testing, native module mocking strategies, platform-specific test patterns
+- source: web-fetch
+
+### [MED] /specs/README.md — Spec workflow assumes engine knowledge without mobile implementation context
+- pass: 35 (commit 87b994c)
+- viewport: repository
+- category: comprehension
+- observation: Spec workflow assumes engine knowledge without mobile implementation context
+- evidence: Lines 22-35 describe spec conversation loop but presenter/engine integration pattern unclear for mobile developers unfamiliar with axiomancer-mechanics
+- suggested fix: Add brief engine-to-mobile architecture primer explaining state → presenter → view-model flow
+- source: web-fetch
+
+### [LOW] /package.json — EAS Build scripts lack mobile development context for maintainer onboarding
+- pass: 35 (commit 87b994c)
+- viewport: repository
+- category: mobile
+- observation: EAS Build scripts lack mobile development context for maintainer onboarding
+- evidence: Scripts deploy:preview/deploy:production reference EAS without explaining mobile binary distribution vs web deployment
+- suggested fix: Add script comments explaining EAS Build as mobile app store binary generation
+- source: web-fetch
+
+### [LOW] /VISION.md — Combat UX doctrine assumes knowledge of status-effect-centered gameplay
+- pass: 35 (commit 87b994c)
+- viewport: repository
+- category: voice
+- observation: Combat UX doctrine assumes knowledge of status-effect-centered gameplay
+- evidence: Lines 15-25 reference 'status effects exist and matter' but lack context for mobile developers unfamiliar with TTRPG mechanics
+- suggested fix: Add brief primer on status-effect gameplay before mobile UX requirements
+- source: web-fetch
 
 ## Done
 

@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     },
     eyebrow: {
         fontFamily: FONTS.sans,
-        fontSize: 10,
+        fontSize: 12,
         letterSpacing: 2.2,
         color: AXM.bone,
         marginBottom: 4,
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     },
     headline: {
         fontFamily: FONTS.sans,
-        fontSize: 12,
+        fontSize: 14,
         letterSpacing: 2,
         color: AXM.sulfur,
         marginBottom: 8,
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     },
     sectionLabel: {
         fontFamily: FONTS.sans,
-        fontSize: 10,
+        fontSize: 12,
         letterSpacing: 2.2,
         color: AXM.bone,
         marginTop: 10,
@@ -309,10 +309,10 @@ const styles = StyleSheet.create({
     vowRow: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },
     vowMark: { fontFamily: FONTS.gothic, fontSize: 14, color: AXM.bone, width: 14 },
     vowName: { fontFamily: FONTS.gothic, fontSize: 14, color: AXM.parchment, letterSpacing: 1 },
-    vowDesc: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone },
+    vowDesc: { fontFamily: FONTS.mono, fontSize: 12, color: AXM.bone },
     charmRow: { marginBottom: 6 },
     charmName: { fontFamily: FONTS.gothic, fontSize: 14, color: AXM.sulfur, letterSpacing: 1 },
-    charmDesc: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone },
+    charmDesc: { fontFamily: FONTS.mono, fontSize: 12, color: AXM.bone },
     optionRow: {
         borderWidth: 2,
         borderColor: AXM.bone,
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
     },
     optionDesc: {
         fontFamily: FONTS.mono,
-        fontSize: 9,
+        fontSize: 12,
         color: AXM.bone,
         marginTop: 2,
         textTransform: 'uppercase',
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
     chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
     chip: {
         fontFamily: FONTS.mono,
-        fontSize: 9,
+        fontSize: 12,
         letterSpacing: 1,
         color: AXM.parchment,
         borderWidth: 1,
@@ -352,11 +352,11 @@ const styles = StyleSheet.create({
         borderLeftWidth: 2,
         borderLeftColor: AXM.sulfur,
     },
-    ledgerLine: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.sulfur, lineHeight: 14 },
+    ledgerLine: { fontFamily: FONTS.mono, fontSize: 12, color: AXM.sulfur, lineHeight: 17 },
     statRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginVertical: 8 },
     stat: {
         fontFamily: FONTS.sans,
-        fontSize: 11,
+        fontSize: 13,
         letterSpacing: 1.5,
         color: AXM.parchment,
     },

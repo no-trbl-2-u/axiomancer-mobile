@@ -75,7 +75,7 @@ export function GatheringIntroOverlay({
 
 const styles = StyleSheet.create({
     root: { ...StyleSheet.absoluteFillObject, zIndex: 70, backgroundColor: '#070906' },
-    eyebrow: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 2, color: '#86a821', marginTop: 18 },
+    eyebrow: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 2, color: '#86a821', marginTop: 18 },
     title: {
         fontFamily: FONTS.gothic,
         fontSize: 34,

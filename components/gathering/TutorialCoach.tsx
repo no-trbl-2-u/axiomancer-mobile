@@ -72,7 +72,9 @@ const styles = StyleSheet.create({
         position: 'absolute',
         left: 0,
         right: 0,
-        bottom: 0,
+        // Sits above the board's fixed DESCEND / WITHDRAW row so the
+        // coach never covers the controls it is pointing the player at.
+        bottom: 80,
         zIndex: 55,
         paddingHorizontal: 10,
         paddingBottom: 8,
@@ -85,10 +87,10 @@ const styles = StyleSheet.create({
         paddingVertical: 9,
     },
     headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    eyebrow: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1.6, color: AXM.sulfur },
+    eyebrow: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1.6, color: AXM.sulfur },
     skip: { borderWidth: 1, borderColor: AXM.ash, paddingHorizontal: 8, paddingVertical: 2 },
-    skipText: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1.2, color: AXM.bone },
+    skipText: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1.2, color: AXM.bone },
     title: { fontFamily: FONTS.gothic, fontSize: 16, letterSpacing: 0.5, color: AXM.parchment, marginTop: 5 },
-    body: { fontFamily: FONTS.serif, fontSize: 11.5, lineHeight: 15, color: AXM.bone, marginTop: 3 },
-    lookFor: { fontFamily: FONTS.mono, fontSize: 8.5, letterSpacing: 0.6, color: AXM.sulfur, marginTop: 6 },
+    body: { fontFamily: FONTS.serif, fontSize: 13, lineHeight: 17, color: AXM.bone, marginTop: 3 },
+    lookFor: { fontFamily: FONTS.mono, fontSize: 11, letterSpacing: 0.6, color: AXM.sulfur, marginTop: 6 },
 });

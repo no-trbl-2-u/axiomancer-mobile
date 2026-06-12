@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     scroll: { padding: 14, paddingBottom: 24 },
     eyebrow: {
         fontFamily: FONTS.sans,
-        fontSize: 10,
+        fontSize: 12,
         letterSpacing: 2.2,
         color: AXM.bone,
         marginBottom: 4,
@@ -228,15 +228,15 @@ const styles = StyleSheet.create({
     },
     fireLabel: {
         fontFamily: FONTS.sans,
-        fontSize: 10,
+        fontSize: 12,
         letterSpacing: 1.5,
         color: AXM.bone,
     },
     pipRow: { flexDirection: 'row', gap: 2 },
-    pip: { fontSize: 12 },
+    pip: { fontSize: 14 },
     watchCount: {
         fontFamily: FONTS.sans,
-        fontSize: 11,
+        fontSize: 13,
         letterSpacing: 2,
         color: AXM.sulfur,
         marginBottom: 6,
@@ -257,9 +257,9 @@ const styles = StyleSheet.create({
     },
     postureHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
     postureName: { fontFamily: FONTS.gothic, fontSize: 18, color: AXM.parchment, letterSpacing: 1.2 },
-    postureHint: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.sulfur },
-    postureDesc: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone, marginTop: 3, textTransform: 'uppercase' },
-    postureFlavor: { fontFamily: FONTS.serifItalic, fontSize: 11, color: AXM.bone, marginTop: 4 },
+    postureHint: { fontFamily: FONTS.mono, fontSize: 12, color: AXM.sulfur },
+    postureDesc: { fontFamily: FONTS.mono, fontSize: 12, color: AXM.bone, marginTop: 3, textTransform: 'uppercase' },
+    postureFlavor: { fontFamily: FONTS.serifItalic, fontSize: 13, color: AXM.bone, marginTop: 4 },
     card: {
         borderWidth: 2,
         borderColor: AXM.ash,
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
     chip: {
         fontFamily: FONTS.mono,
-        fontSize: 9,
+        fontSize: 12,
         letterSpacing: 1,
         color: AXM.parchment,
         borderWidth: 1,
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
     },
     keepsake: {
         fontFamily: FONTS.serifItalic,
-        fontSize: 11,
+        fontSize: 13,
         color: AXM.sulfur,
         marginTop: 6,
     },
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     optionLabel: { fontFamily: FONTS.gothic, fontSize: 17, color: AXM.parchment, letterSpacing: 1.2 },
     optionDesc: {
         fontFamily: FONTS.mono,
-        fontSize: 9,
+        fontSize: 12,
         color: AXM.bone,
         marginTop: 2,
         textTransform: 'uppercase',
@@ -317,5 +317,5 @@ const styles = StyleSheet.create({
     },
     bigButtonText: { fontFamily: FONTS.gothic, fontSize: 18, letterSpacing: 2, color: AXM.sulfur },
     abandon: { alignSelf: 'center', marginTop: 18, padding: 6 },
-    abandonText: { fontFamily: FONTS.mono, fontSize: 9, letterSpacing: 2, color: AXM.ash },
+    abandonText: { fontFamily: FONTS.mono, fontSize: 12, letterSpacing: 2, color: AXM.ash },
 });

@@ -205,16 +205,16 @@ export function PlotDetailOverlay({
 
 const styles = StyleSheet.create({
     flashRoot: { ...StyleSheet.absoluteFillObject, zIndex: 58, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(4,4,2,0.94)', paddingHorizontal: 28 },
-    flashEyebrow: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 2, color: AXM.bone },
+    flashEyebrow: { fontFamily: FONTS.sans, fontSize: 13, letterSpacing: 2, color: AXM.bone },
     flashName: { fontFamily: FONTS.gothic, fontSize: 30, letterSpacing: 2, textAlign: 'center', textShadowColor: '#000', textShadowOffset: { width: 2, height: 2 }, textShadowRadius: 0 },
     flashDesc: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 13, color: AXM.parchment, marginTop: 10, textAlign: 'center', lineHeight: 18, maxWidth: 300 },
     flashDetail: { marginTop: 16, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 7, backgroundColor: 'rgba(0,0,0,0.5)' },
     flashDetailText: { fontFamily: FONTS.gothic, fontSize: 16, letterSpacing: 1 },
-    tapToContinue: { marginTop: 22, fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone, letterSpacing: 1.5, textAlign: 'center' },
+    tapToContinue: { marginTop: 22, fontFamily: FONTS.mono, fontSize: 12, color: AXM.bone, letterSpacing: 1.5, textAlign: 'center' },
 
     outcomeRoot: { ...StyleSheet.absoluteFillObject, zIndex: 60, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, backgroundColor: 'rgba(4,5,3,0.97)' },
     outcomeWord: { fontFamily: FONTS.gothic, fontSize: 52, letterSpacing: 3, lineHeight: 56, marginTop: 14, textShadowColor: '#000', textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 0 },
-    outcomeSub: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 2, color: AXM.bone, marginTop: 10, textAlign: 'center' },
+    outcomeSub: { fontFamily: FONTS.sans, fontSize: 13, letterSpacing: 2, color: AXM.bone, marginTop: 10, textAlign: 'center' },
     outcomeLine: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 13, color: AXM.parchment, marginTop: 16, textAlign: 'center', lineHeight: 18, maxWidth: 280 },
     outcomeCta: { marginTop: 30, paddingHorizontal: 28, paddingVertical: 11, borderWidth: 2, backgroundColor: AXM.bg },
     outcomeCtaText: { fontFamily: FONTS.gothic, fontSize: 17, letterSpacing: 2.5 },
@@ -222,8 +222,8 @@ const styles = StyleSheet.create({
     detailRoot: { ...StyleSheet.absoluteFillObject, zIndex: 62, backgroundColor: 'rgba(4,5,3,0.96)' },
     keyword: { paddingHorizontal: 11, paddingVertical: 8, backgroundColor: 'rgba(9,10,7,0.95)', borderWidth: 1, borderColor: AXM.ash, marginBottom: 6 },
     keywordName: { fontFamily: FONTS.gothic, fontSize: 14, letterSpacing: 1, color: AXM.sulfur },
-    keywordTag: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 2, color: AXM.bone },
-    keywordDesc: { fontFamily: FONTS.serif, fontSize: 12, color: AXM.parchment, lineHeight: 16, marginTop: 3 },
+    keywordTag: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 2, color: AXM.bone },
+    keywordDesc: { fontFamily: FONTS.serif, fontSize: 14, color: AXM.parchment, lineHeight: 18, marginTop: 3 },
     detailTake: { marginTop: 14, borderWidth: 2, borderColor: '#86a821', paddingHorizontal: 30, paddingVertical: 9, backgroundColor: 'rgba(134,168,33,0.1)' },
     detailTakeText: { fontFamily: FONTS.gothic, fontSize: 16, letterSpacing: 2, color: '#86a821' },
 });

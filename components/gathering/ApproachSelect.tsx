@@ -90,7 +90,7 @@ export function ApproachSelect({
         <Animated.View entering={FadeIn.duration(220)} style={styles.root} testID="gathering-approach-select">
             <View style={styles.topStrip}>
                 <Text style={styles.topStripSide}>❧ GATHERING</Text>
-                <Text style={styles.topStripMid}>THE PLACE IS WATCHING — CHOOSE HOW YOU TAKE</Text>
+                <Text style={styles.topStripMid}>CHOOSE HOW YOU TAKE</Text>
                 <Text style={styles.topStripSide}>❧</Text>
             </View>
             <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
@@ -143,23 +143,23 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: AXM.ash,
     },
-    topStripSide: { fontFamily: FONTS.mono, fontSize: 8, color: '#86a821', letterSpacing: 2 },
-    topStripMid: { fontFamily: FONTS.mono, fontSize: 8, color: AXM.bone, letterSpacing: 1.5 },
+    topStripSide: { fontFamily: FONTS.mono, fontSize: 11, color: '#86a821', letterSpacing: 2 },
+    topStripMid: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone, letterSpacing: 1.5 },
     header: { paddingHorizontal: 16, paddingTop: 14, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: AXM.ash },
-    headerEyebrow: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 2, color: '#86a821' },
+    headerEyebrow: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 2, color: '#86a821' },
     title: { fontFamily: FONTS.gothic, fontSize: 28, lineHeight: 29, color: AXM.parchment, letterSpacing: 0.5, marginTop: 6, textShadowColor: '#000', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 0 },
     scenario: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 13, color: AXM.bone, marginTop: 5, lineHeight: 17 },
-    spreadLabel: { fontFamily: FONTS.sans, fontSize: 9, letterSpacing: 1.6, color: AXM.bone, textAlign: 'center', marginTop: 12 },
+    spreadLabel: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 1.6, color: AXM.bone, textAlign: 'center', marginTop: 12 },
     spreadPreview: { flexDirection: 'row', justifyContent: 'center', alignItems: 'flex-end', gap: 8, paddingTop: 10, paddingBottom: 14, minHeight: 130 },
-    chooseLabel: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 2, color: AXM.parchment, textAlign: 'center', marginVertical: 8 },
+    chooseLabel: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 2, color: AXM.parchment, textAlign: 'center', marginVertical: 8 },
     panel: { borderWidth: 2, padding: 13, overflow: 'hidden' },
-    badge: { alignSelf: 'flex-start', fontFamily: FONTS.sans, fontSize: 9, letterSpacing: 1.6, color: AXM.bg, paddingHorizontal: 7, paddingVertical: 2, overflow: 'hidden' },
+    badge: { alignSelf: 'flex-start', fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 1.6, color: AXM.bg, paddingHorizontal: 7, paddingVertical: 2, overflow: 'hidden' },
     panelName: { fontFamily: FONTS.gothic, fontSize: 24, lineHeight: 25, color: AXM.parchment, letterSpacing: 0.5, marginTop: 7 },
-    panelDesc: { fontFamily: FONTS.serif, fontSize: 12, color: AXM.bone, lineHeight: 16, marginTop: 7 },
+    panelDesc: { fontFamily: FONTS.serif, fontSize: 14, color: AXM.bone, lineHeight: 18, marginTop: 7 },
     chipsRow: { flexDirection: 'row', gap: 6, marginTop: 10 },
     chip: { flex: 1, paddingHorizontal: 8, paddingVertical: 5, borderWidth: 1, gap: 1 },
-    chipLabel: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1 },
-    chipValue: { fontFamily: FONTS.serif, fontSize: 11, color: AXM.parchment },
+    chipLabel: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1 },
+    chipValue: { fontFamily: FONTS.serif, fontSize: 13, color: AXM.parchment },
     cta: { marginTop: 11, paddingVertical: 9, alignItems: 'center', borderWidth: 2 },
     ctaText: { fontFamily: FONTS.gothic, fontSize: 15, letterSpacing: 1.5 },
 });

@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
     scroll: { padding: 14, paddingBottom: 24 },
     eyebrow: {
         fontFamily: FONTS.sans,
-        fontSize: 10,
+        fontSize: 12,
         letterSpacing: 2.2,
         color: AXM.bone,
         marginBottom: 4,
@@ -244,9 +244,9 @@ const styles = StyleSheet.create({
     },
     layerHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
     layerName: { fontFamily: FONTS.gothic, fontSize: 16, color: AXM.parchment, letterSpacing: 1.2 },
-    layerReading: { fontFamily: FONTS.mono, fontSize: 9, letterSpacing: 1 },
-    layerFlavor: { fontFamily: FONTS.serifItalic, fontSize: 11, color: AXM.bone, marginTop: 4 },
-    layerLoot: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.sulfur, marginTop: 4 },
+    layerReading: { fontFamily: FONTS.mono, fontSize: 12, letterSpacing: 1 },
+    layerFlavor: { fontFamily: FONTS.serifItalic, fontSize: 13, color: AXM.bone, marginTop: 4 },
+    layerLoot: { fontFamily: FONTS.mono, fontSize: 12, color: AXM.sulfur, marginTop: 4 },
     decisions: { gap: 8 },
     card: {
         borderWidth: 2,
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
     chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
     chip: {
         fontFamily: FONTS.mono,
-        fontSize: 9,
+        fontSize: 12,
         letterSpacing: 1,
         color: AXM.parchment,
         borderWidth: 1,
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 5,
         paddingVertical: 2,
     },
-    keepsake: { fontFamily: FONTS.serifItalic, fontSize: 11, color: AXM.sulfur, marginTop: 6 },
+    keepsake: { fontFamily: FONTS.serifItalic, fontSize: 13, color: AXM.sulfur, marginTop: 6 },
     bigButton: {
         borderWidth: 2,
         borderColor: AXM.sulfur,
@@ -289,8 +289,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: AXM.bg,
     },
-    smallButtonText: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 2, color: AXM.bone },
+    smallButtonText: { fontFamily: FONTS.sans, fontSize: 13, letterSpacing: 2, color: AXM.bone },
     disabled: { opacity: 0.35 },
     abandon: { alignSelf: 'center', marginTop: 18, padding: 6 },
-    abandonText: { fontFamily: FONTS.mono, fontSize: 9, letterSpacing: 2, color: AXM.ash },
+    abandonText: { fontFamily: FONTS.mono, fontSize: 12, letterSpacing: 2, color: AXM.ash },
 });

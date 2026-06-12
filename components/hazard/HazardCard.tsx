@@ -3,8 +3,8 @@
  * (red / blue / purple / gold), with a FREE (top) row and a MANA /
  * SURGE (bottom) row. Four render modes:
  *
- *  hand   — compact, docked in the fan (90×122)
- *  play   — staged in the play area, shrunk (70×96)
+ *  hand   — compact, docked in the fan (90×136)
+ *  play   — staged in the play area, shrunk (70×112)
  *  detail — the tap-to-read view (234×330)
  *  offer  — rewards-modal pick (96 wide)
  *
@@ -140,13 +140,13 @@ function Row({
                 {bottom ? (
                     <ManaSocket kind={card.kind} filled={powered} size={compact ? 15 : 17} pulse={!powered && card.dieAvailable} />
                 ) : (
-                    <Text style={{ fontFamily: FONTS.sans, fontSize: compact ? 7 : 8, letterSpacing: 1, color: CARD_INK2 }}>FREE</Text>
+                    <Text style={{ fontFamily: FONTS.sans, fontSize: compact ? 10 : 11, letterSpacing: 1, color: CARD_INK2 }}>FREE</Text>
                 )}
             </View>
             {card.utility && effectLabel !== null && (
                 <Text
                     numberOfLines={1}
-                    style={{ fontFamily: FONTS.sans, fontSize: compact ? 7 : 8, letterSpacing: 0.4, color: bottom ? c.dark : CARD_INK, marginTop: 1 }}
+                    style={{ fontFamily: FONTS.sans, fontSize: compact ? 10 : 11, letterSpacing: 0.4, color: bottom ? c.dark : CARD_INK, marginTop: 1 }}
                 >
                     ⬡ {effectLabel}
                 </Text>
@@ -177,7 +177,7 @@ export const HazardCard = React.memo(function HazardCard({
             ? card.powerColors.map((k) => DIE[k].label).join(' / ')
             : DIE[card.kind].label;
     const W = mode === 'detail' ? 234 : mode === 'play' ? 70 : mode === 'offer' ? 96 : 90;
-    const H = mode === 'detail' ? 330 : mode === 'play' ? 96 : mode === 'offer' ? 132 : 122;
+    const H = mode === 'detail' ? 330 : mode === 'play' ? 112 : mode === 'offer' ? 132 : 136;
 
     const frame = [
         styles.frame,
@@ -209,7 +209,7 @@ export const HazardCard = React.memo(function HazardCard({
         return (
             <View style={frame}>
                 {overlays}
-                <Text numberOfLines={2} style={[styles.name, { fontSize: 9.5, lineHeight: 10, minHeight: 18 }]}>{card.name}</Text>
+                <Text numberOfLines={2} style={[styles.name, { fontSize: 12, lineHeight: 13, minHeight: 26 }]}>{card.name}</Text>
                 <View style={{ alignItems: 'center', marginVertical: 2 }}>
                     <CardArt kind={card.kind} size={20} />
                 </View>
@@ -253,13 +253,13 @@ export const HazardCard = React.memo(function HazardCard({
                         )}
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                        <Text style={{ fontFamily: FONTS.sans, fontSize: 9, letterSpacing: 1.2, color: bottom ? c.dark : CARD_INK2 }}>
+                        <Text style={{ fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 1.2, color: bottom ? c.dark : CARD_INK2 }}>
                             {bottom ? 'MANA' : 'FREE'}
                         </Text>
                         {bottom && <ManaSocket kind={card.kind} filled={powered} size={18} />}
                     </View>
                 </View>
-                <Text style={{ fontFamily: FONTS.serif, fontSize: 12, color: CARD_INK, lineHeight: 15, marginTop: 3 }}>
+                <Text style={{ fontFamily: FONTS.serif, fontSize: 14, color: CARD_INK, lineHeight: 17, marginTop: 3 }}>
                     {card.dead
                         ? 'Dead weight. It does nothing, and nothing can power it.'
                         : bottom
@@ -275,10 +275,10 @@ export const HazardCard = React.memo(function HazardCard({
                 {overlays}
                 <View style={{ alignItems: 'center', paddingTop: 11, paddingHorizontal: 14 }}>
                     <View style={{ flexDirection: 'row', gap: 6, marginBottom: 4 }}>
-                        <Text style={{ fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1.5, color: '#fff', backgroundColor: rar.c, paddingHorizontal: 7, paddingVertical: 1 }}>
+                        <Text style={{ fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1.5, color: '#fff', backgroundColor: rar.c, paddingHorizontal: 7, paddingVertical: 1 }}>
                             {rar.label}
                         </Text>
-                        <Text style={{ fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1.5, color: c.dark, borderWidth: 1, borderColor: c.c, paddingHorizontal: 7, paddingVertical: 1 }}>
+                        <Text style={{ fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1.5, color: c.dark, borderWidth: 1, borderColor: c.c, paddingHorizontal: 7, paddingVertical: 1 }}>
                             {powerLabel}
                         </Text>
                     </View>
@@ -294,13 +294,13 @@ export const HazardCard = React.memo(function HazardCard({
                     {section(true)}
                     {card.salvageLabel !== null && (
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, marginTop: 6, paddingVertical: 4, borderWidth: 1, borderStyle: 'dashed', borderColor: CARD_EDGE }}>
-                            <Text style={{ fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1.2, color: CARD_INK2 }}>SALVAGE</Text>
-                            <Text style={{ fontFamily: FONTS.serif, fontSize: 11, color: CARD_INK }}>
+                            <Text style={{ fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1.2, color: CARD_INK2 }}>SALVAGE</Text>
+                            <Text style={{ fontFamily: FONTS.serif, fontSize: 13, color: CARD_INK }}>
                                 scrap for {card.salvageLabel}
                             </Text>
                         </View>
                     )}
-                    <Text style={{ fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 11.5, color: CARD_INK2, marginTop: 8, lineHeight: 15, textAlign: 'center' }}>
+                    <Text style={{ fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 13, color: CARD_INK2, marginTop: 8, lineHeight: 17, textAlign: 'center' }}>
                         “{card.flavor}”
                     </Text>
                 </View>
@@ -311,17 +311,17 @@ export const HazardCard = React.memo(function HazardCard({
     if (mode === 'offer') {
         return (
             <View style={[frame, { paddingBottom: 6 }]}>
-                <Text style={{ fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1.5, color: '#0a0a0a', backgroundColor: rar.c, textAlign: 'center', paddingVertical: 2 }}>
+                <Text style={{ fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1.5, color: '#0a0a0a', backgroundColor: rar.c, textAlign: 'center', paddingVertical: 2 }}>
                     {rar.label}
                 </Text>
                 <View pointerEvents="none" style={[StyleSheet.absoluteFillObject, { backgroundColor: `${c.c}1c` }]} />
-                <Text numberOfLines={2} style={[styles.name, { fontSize: 12, lineHeight: 12, minHeight: 24, paddingTop: 4 }]}>{card.name}</Text>
+                <Text numberOfLines={2} style={[styles.name, { fontSize: 14, lineHeight: 15, minHeight: 30, paddingTop: 4 }]}>{card.name}</Text>
                 <View style={{ alignItems: 'center', marginVertical: 4 }}>
                     <CardArt kind={card.kind} size={42} />
                 </View>
                 <View style={{ alignItems: 'center', paddingBottom: 2 }}>
                     {card.utility ? (
-                        <Text style={{ fontFamily: FONTS.sans, fontSize: 9, letterSpacing: 0.6, color: c.dark }}>{card.freeEffectLabel}</Text>
+                        <Text style={{ fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 0.6, color: c.dark }}>{card.freeEffectLabel}</Text>
                     ) : (
                         <StatPair force={card.powered.force} escape={card.powered.escape} size={11} />
                     )}
@@ -334,7 +334,7 @@ export const HazardCard = React.memo(function HazardCard({
     return (
         <View style={frame}>
             {overlays}
-            <Text numberOfLines={2} style={[styles.name, { fontSize: 11, minHeight: 21 }]}>{card.name}</Text>
+            <Text numberOfLines={2} style={[styles.name, { fontSize: 13, minHeight: 28 }]}>{card.name}</Text>
             <View style={{ alignItems: 'center', marginVertical: 3 }}>
                 <CardArt kind={card.kind} size={30} />
             </View>
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
         color: CARD_INK,
         letterSpacing: 0.2,
         textAlign: 'center',
-        lineHeight: 11,
+        lineHeight: 14,
     },
     rowsBox: { marginTop: 'auto', borderWidth: 1, borderColor: CARD_EDGE },
     appliedVeil: {
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
     },
     appliedTag: {
         fontFamily: FONTS.sans,
-        fontSize: 7,
+        fontSize: 10,
         letterSpacing: 1,
         color: '#0c0a08',
         backgroundColor: '#86a821',

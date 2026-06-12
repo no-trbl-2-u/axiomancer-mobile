@@ -77,6 +77,23 @@
 - addressed: 2026-06-12 via commit a46baae
 - fix: Added comprehensive mobile-specific testing section covering platform-specific component testing, device simulation, native module mocking strategy, React Native-specific test patterns, and mobile performance testing considerations
 
+### [x] [6.0] Presenter layer architecture unclear for engine integration newcomers requiring documentation
+- category: external-critique  
+- impact: 5
+- ease: 8.5
+- base-score: 4.25
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 1.5 (gameplay/content bias applies to engine integration)
+- final-score: 6.375 → 6.0 (rounded down)
+- next: Add mobile development context section explaining React Native-specific challenges and integration patterns
+- observation: Presenter layer architecture is well-documented but the connection between engine integration and mobile-specific concerns is unclear for newcomers
+- evidence: combat.engine.ts shows complex engine integration but lacks clear explanation of how axiomancer-mechanics relates to mobile UI patterns
+- suggested fix: Add architectural overview explaining engine-to-mobile presentation layer translation with mobile-specific guidance
+- source: external-critique
+- issue: #371
+- addressed: 2026-06-12 via commit be50b69
+- fix: Added comprehensive mobile development context section to engine-integration-architecture.md explaining React Native-specific challenges, touch vs click interfaces, screen size constraints, performance considerations, platform adaptations, and practical code examples for mobile integration patterns
+
 ### [x] [5.9] Component test coverage gaps - 118 components without tests affecting maintainability
 - category: tests
 - impact: 7

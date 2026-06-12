@@ -9,6 +9,22 @@
 
 ## Top 5 findings (scored)
 
+### [x] [5.6] ItemModal component lacks test coverage affecting maintainability
+- category: tests
+- impact: 7
+- ease: 8
+- base-score: 5.6
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.0
+- final-score: 5.6
+- next: Add hermetic tests for ItemModal component following established patterns
+- observation: ItemModal component is missing test coverage, violating testing standards requirement for colocated tests
+- evidence: components/inventory/ItemModal.tsx exists but lacks corresponding __tests__/ItemModal.test.tsx file
+- suggested fix: Add comprehensive hermetic tests covering mount contract, callback behavior, accessibility, and conditional rendering
+- source: audit
+- addressed: 2026-06-12 via commit 4d52595
+- fix: Added comprehensive hermetic test suite for ItemModal component covering mount contract tests for consumable/equipment/view-only modals, callback testing for confirm/cancel actions, accessibility validation for ARIA labels and roles, and conditional rendering tests for empty states and stat delta formatting
+
 ### [x] [7.2] Accessibility spec unimplemented despite interactive elements requiring systematic a11y support
 - category: external-critique
 - impact: 8
@@ -76,40 +92,6 @@
 - issue: #368
 - addressed: 2026-06-12 via commit a46baae
 - fix: Added comprehensive mobile-specific testing section covering platform-specific component testing, device simulation, native module mocking strategy, React Native-specific test patterns, and mobile performance testing considerations
-
-### [x] [6.0] Presenter layer architecture unclear for engine integration newcomers requiring documentation
-- category: external-critique  
-- impact: 5
-- ease: 8.5
-- base-score: 4.25
-- user-source-bump: 0.0 (external source)
-- bias-multiplier: 1.5 (gameplay/content bias applies to engine integration)
-- final-score: 6.375 → 6.0 (rounded down)
-- next: Add mobile development context section explaining React Native-specific challenges and integration patterns
-- observation: Presenter layer architecture is well-documented but the connection between engine integration and mobile-specific concerns is unclear for newcomers
-- evidence: combat.engine.ts shows complex engine integration but lacks clear explanation of how axiomancer-mechanics relates to mobile UI patterns
-- suggested fix: Add architectural overview explaining engine-to-mobile presentation layer translation with mobile-specific guidance
-- source: external-critique
-- issue: #371
-- addressed: 2026-06-12 via commit be50b69
-- fix: Added comprehensive mobile development context section to engine-integration-architecture.md explaining React Native-specific challenges, touch vs click interfaces, screen size constraints, performance considerations, platform adaptations, and practical code examples for mobile integration patterns
-
-### [x] [5.9] Component test coverage gaps - 118 components without tests affecting maintainability
-- category: tests
-- impact: 7
-- ease: 8.5
-- base-score: 5.95
-- user-source-bump: 0.0 (audit source)
-- bias-multiplier: 1.0
-- final-score: 5.95 → 5.9 (rounded down)
-- next: Prioritize adding tests for core components like modals and navigation elements
-- observation: 118 out of 219 components (54%) lack colocated tests, violating testing standards
-- evidence: Major test coverage gap with core components like LearnSkillModal, ItemModal, MapCanvas, and navigation components missing tests
-- suggested fix: Add hermetic tests for core components starting with modals and high-interaction UI elements
-- source: audit
-- issue: #369
-- addressed: 2026-06-12 via commit 5e98615
-- fix: Added comprehensive hermetic tests for LearnSkillModal component including mount contract, header copy validation, skill offer rendering, callback testing, voice register compliance, and accessibility labels
 
 ## Previously addressed findings
 
@@ -215,3 +197,20 @@
 - issue: #344
 - addressed: 2026-06-11 via commit b4e4536
 - fix: Added setup documentation link in README Quick start section pointing to setup/01_repository.md for detailed setup process, improving discoverability for fresh maintainers.
+
+### [x] [5.9] Component test coverage gaps - 118 components without tests affecting maintainability
+- category: tests
+- impact: 7
+- ease: 8.5
+- base-score: 5.95
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.0
+- final-score: 5.95 → 5.9 (rounded down)
+- next: Prioritize adding tests for core components like modals and navigation elements
+- observation: 118 out of 219 components (54%) lack colocated tests, violating testing standards
+- evidence: Major test coverage gap with core components like LearnSkillModal, ItemModal, MapCanvas, and navigation components missing tests
+- suggested fix: Add hermetic tests for core components starting with modals and high-interaction UI elements
+- source: audit
+- issue: #369
+- addressed: 2026-06-12 via commit 5e98615
+- fix: Added comprehensive hermetic tests for LearnSkillModal component including mount contract, header copy validation, skill offer rendering, callback testing, voice register compliance, and accessibility labels

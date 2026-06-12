@@ -154,6 +154,10 @@ export interface HazardRewardsVM {
     penaltyNote: string | null;
     /** e.g. "−4 VITAE — sacrifice" from BLOODPRICE-style cards; null when zero. */
     sacrificeNote: string | null;
+    /** e.g. "+4 VITAE — mended" from MEND cards; null when zero. */
+    mendNote: string | null;
+    /** e.g. "+8 shillings — bounty" from BOUNTY cards; null when zero. */
+    bountyNote: string | null;
     /** Rolled sub-quests with their final status + bonus copy. */
     subquests: HazardSubquestVM[];
     /** e.g. "+18 shillings · +1 token — objectives"; null when none paid. */
@@ -248,6 +252,26 @@ function effectLabel(def: HazardCardDef, powered: boolean): string | null {
     }
     if (def.effect === 'goldvow') {
         return def.goldVow ? `VOW +${def.goldVow.force}/+${def.goldVow.escape} on gold` : null;
+    }
+    if (def.effect === 'purge') return major ? 'PURGE ALL CRACKS' : 'PURGE 1 CRACK';
+    if (def.effect === 'transmute') {
+        return major ? `TRANSMUTE ALL → ${DIE_LABEL[def.kind]}` : `TRANSMUTE 1 → ${DIE_LABEL[def.kind]}`;
+    }
+    if (def.effect === 'mend') {
+        const n = (major ? def.mendPowered ?? def.mendBase : def.mendBase) ?? 0;
+        return n > 0 ? `MEND +${n}♥ at claim` : null;
+    }
+    if (def.effect === 'bounty') {
+        const n = (major ? def.bountyPowered ?? def.bountyBase : def.bountyBase) ?? 0;
+        return n > 0 ? `BOUNTY +${n} shillings` : null;
+    }
+    if (def.effect === 'ward') {
+        const n = (major ? def.wardPowered ?? def.wardBase : def.wardBase) ?? 0;
+        return n > 0 ? `WARD −${n} penalty` : null;
+    }
+    if (def.effect === 'anchor') {
+        const n = (major ? def.anchorPowered ?? def.anchorBase : def.anchorBase) ?? 0;
+        return n > 0 ? `ANCHOR carry ≥ ${n}` : null;
     }
     return null;
 }
@@ -579,6 +603,12 @@ export function selectHazardViewModel(state: Pick<AppStoreState, 'hazard'>): Haz
                   outcome.penaltyVitae > 0 ? `−${outcome.penaltyVitae} VITAE — route penalty` : null,
               sacrificeNote:
                   outcome.vitaeCost > 0 ? `−${outcome.vitaeCost} VITAE — sacrifice` : null,
+              mendNote:
+                  outcome.vitaeRestore > 0 ? `+${outcome.vitaeRestore} VITAE — mended` : null,
+              bountyNote:
+                  outcome.bountyShillings > 0
+                      ? `+${outcome.bountyShillings} shillings — bounty`
+                      : null,
               subquests: outcome.subquests.map((q) => ({
                   id: q.id,
                   name: q.name,

@@ -384,6 +384,40 @@ async function playStrip(page, baseUrl) {
 }
 
 // ---------------------------------------------------------------------------
+// TUTORIAL — the guided first gleaning: coach rides the board, SKIP works.
+// ---------------------------------------------------------------------------
+
+async function playTutorial(page, baseUrl) {
+    log('=== TUTORIAL (the guided first gleaning) ===')
+    await page.goto(`${baseUrl}/character`, { waitUntil: 'networkidle' })
+    await page.getByTestId('dev-menu-header').click()
+    await page.getByTestId('debug-gathering-tutorial-button').waitFor({ state: 'visible', timeout: 15000 })
+    await page.getByTestId('debug-gathering-tutorial-button').click()
+
+    await page.getByTestId('gathering-intro').waitFor({ state: 'visible', timeout: 15000 })
+    await waitForCopy(page, 'gathering-intro', ['A PLACE THAT GIVES'])
+    await page.getByTestId('gathering-intro-continue').click()
+
+    // The coach owns step 1 over the approach screen.
+    await page.getByTestId('gathering-tutorial').waitFor({ state: 'visible', timeout: 10000 })
+    await waitForCopy(page, 'gathering-tutorial', ['THE PLACE IS WATCHING'])
+    await shot(page, 'tutorial-step1')
+
+    // Follow it one step: choose the tender hand → the TAKE step appears.
+    await page.getByTestId('gathering-approach-glean').click()
+    await waitForCopy(page, 'gathering-tutorial', ['TAKE SOMETHING'])
+    await shot(page, 'tutorial-step2')
+
+    // SKIP dismisses the coach for good; the session keeps running.
+    await page.getByTestId('gathering-tutorial-skip').click()
+    await page.getByTestId('gathering-tutorial').waitFor({ state: 'hidden', timeout: 5000 })
+    if (!(await page.getByTestId('gathering-board').isVisible())) {
+        fail('skipping the tutorial must leave the session running')
+    }
+    log('TUTORIAL: coached, advanced, and skipped clean ✅')
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -399,7 +433,7 @@ async function main() {
     }
     const browser = await chromium.launch(launchOptions)
     try {
-        for (const play of [playGlean, playStrip]) {
+        for (const play of [playGlean, playStrip, playTutorial]) {
             const context = await browser.newContext({ viewport: VIEWPORT, hasTouch: false })
             const page = await context.newPage()
             page.on('pageerror', (err) => console.error('gathering-e2e: pageerror', err.message))

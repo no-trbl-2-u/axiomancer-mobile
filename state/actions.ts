@@ -121,6 +121,8 @@ import {
     abandonGatheringAction,
     acknowledgeGatheringOutcomeAction,
     beginGatheringAction,
+    completeGatheringTutorialAction,
+    GATHERING_TUTORIAL_FLAG,
     claimGatheringSpoilsAction,
     continueGatheringAfterReprisalAction,
     descendGatheringAction,
@@ -132,7 +134,7 @@ import {
     type BeginGatheringOptions,
     type ClaimGatheringSpoilsResult,
 } from './gathering/store-actions';
-import type { GatherApproachKey, GatherToolId } from './gathering/types';
+import type { GatherApproachKey, GatherToolId } from 'axiomancer-mechanics';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -446,6 +448,8 @@ export interface AppActions {
     claimGatheringSpoils: () => ClaimGatheringSpoilsResult;
     /** Clear the session without spoils or penalties (dev / escape hatch). */
     abandonGathering: () => void;
+    /** Mark the guided first gleaning done (completed or skipped) and persist. */
+    completeGatheringTutorial: (skipped: boolean) => void;
 
     // -----------------------------------------------------------------
     // One-economy + skill-learning pass.
@@ -1303,6 +1307,7 @@ export function createAppActions(store: AppStore): AppActions {
         acknowledgeGatheringOutcome: () => acknowledgeGatheringOutcomeAction(store),
         claimGatheringSpoils: () => claimGatheringSpoilsAction(store),
         abandonGathering: () => abandonGatheringAction(store),
+        completeGatheringTutorial: (skipped) => completeGatheringTutorialAction(store, skipped),
         grantVictorySpoils: () => grantVictorySpoilsAction(store),
         getLearnableSkillOffers: (count) => getLearnableSkillOffersAction(store, count),
         learnSkill: (skillId) => learnSkillAction(store, skillId),
@@ -1862,7 +1867,11 @@ function resolveCurrentMapEventAction(store: AppStore, sourceNodeType?: string):
                 player: gameState.player,
                 event: EMPTY_EVENT_SLICE,
             });
-            beginGatheringAction(store);
+            // The first-ever gleaning runs as the guided tutorial (pinned
+            // seed + site, coach overlay); the persistent flag set on
+            // completion/skip keeps every later encounter organic.
+            const tutorialDone = (gameState.flags ?? []).includes(GATHERING_TUTORIAL_FLAG);
+            beginGatheringAction(store, tutorialDone ? {} : { tutorial: true });
             return true;
         }
 

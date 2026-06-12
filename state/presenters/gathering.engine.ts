@@ -1,6 +1,6 @@
 /**
  * Gathering minigame presenter — maps the engine session
- * (`state/gathering/`) onto a render-ready view-model. Pure: no store
+ * (`axiomancer-mechanics` World/Gathering) onto a render-ready view-model. Pure: no store
  * writes, no rolls, no rule decisions. The screen renders this VM and
  * dispatches store actions only.
  */
@@ -16,7 +16,7 @@ import {
     getGatherSiteDef,
     getGatherToolDef,
     type GatherKeywordId,
-} from '@/state/gathering/content';
+} from 'axiomancer-mechanics';
 import {
     canPayGatheringOffering,
     gatherApproachDef,
@@ -25,12 +25,12 @@ import {
     gatheringFamilyTotals,
     gatheringHarvestWrath,
     gatheringHarvestYield,
-} from '@/state/gathering/engine';
+} from 'axiomancer-mechanics';
 import {
     GATHER_WRATH_MAX,
     GATHER_WRATH_THRESHOLDS,
     GATHERING_TUNING,
-} from '@/state/gathering/tuning';
+} from 'axiomancer-mechanics';
 import type {
     GatherApproachKey,
     GatherBoonReward,
@@ -42,7 +42,7 @@ import type {
     GatherToolId,
     GatheringPhase,
     GatheringSessionState,
-} from '@/state/gathering/types';
+} from 'axiomancer-mechanics';
 import type { AppStoreState } from '@/state/store';
 
 // ---------------------------------------------------------------------------

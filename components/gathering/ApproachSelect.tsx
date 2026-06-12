@@ -11,7 +11,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
 
 import type { GatherApproachChoiceVM, GatheringViewModel } from '@/state/presenters/gathering.engine';
-import type { GatherApproachKey } from '@/state/gathering/types';
+import type { GatherApproachKey } from 'axiomancer-mechanics';
 import { AXM, FONTS } from '@/theme/axm';
 
 import { Roots } from './glyphs';

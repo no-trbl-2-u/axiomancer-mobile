@@ -19,7 +19,7 @@ import type {
     GatherToolVM,
     GatheringViewModel,
 } from '@/state/presenters/gathering.engine';
-import type { GatherToolId } from '@/state/gathering/types';
+import type { GatherToolId } from 'axiomancer-mechanics';
 import { AXM, FONTS } from '@/theme/axm';
 
 import { GraceMark, Roots, ToolGlyph } from './glyphs';

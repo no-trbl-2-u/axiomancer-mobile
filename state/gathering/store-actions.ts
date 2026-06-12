@@ -1,13 +1,13 @@
 /**
  * Gathering minigame — store action implementations.
  *
- * The pure engine (`state/gathering/engine.ts`) owns every rule; these
+ * The pure engine lives in `axiomancer-mechanics` (World/Gathering —
+ * fully migrated 2026-06-13 at 0.18.0; mobile owns UI only); these
  * wrappers thread the session through the mobile store slice and, at
  * claim time, apply the outcome to the real engine `GameState`
  * (inventory materials, VITAE, currency, flags). This file is the
- * mobile-host glue and is intentionally NOT part of the
- * migration-ready engine copy in `axiomancer-mechanics` —
- * affordability checks and item synthesis are host concerns.
+ * mobile-host glue — affordability checks, item synthesis, and the
+ * tutorial trigger are host concerns.
  */
 
 import type { GameState, Material } from 'axiomancer-mechanics';
@@ -24,26 +24,37 @@ import {
     selectGatheringApproach as engineSelectApproach,
     useGatheringTool as engineUseTool,
     withdrawFromGathering as engineWithdraw,
-} from './engine';
+} from 'axiomancer-mechanics';
 import {
     GATHER_SET_REFINEMENTS,
     GATHERING_SITES,
     getGatherOfferingDef,
     getGatherPlotDef,
-} from './content';
+} from 'axiomancer-mechanics';
 import type {
     GatherApproachKey,
     GatherPiece,
     GatherToolId,
     GatheringSessionState,
-} from './types';
+} from 'axiomancer-mechanics';
 import type { AppStore } from '../store';
 
 export interface MobileGatheringSlice {
     session: GatheringSessionState | null;
+    /**
+     * True while this session is the guided first gleaning. The coach
+     * overlay (`components/gathering/TutorialCoach.tsx`) renders on top
+     * of the normal board; completion/skip sets
+     * `GATHERING_TUTORIAL_FLAG`, which gates both the trigger and the
+     * coach's visibility.
+     */
+    tutorial: boolean;
 }
 
-export const EMPTY_GATHERING_SLICE: MobileGatheringSlice = Object.freeze({ session: null });
+export const EMPTY_GATHERING_SLICE: MobileGatheringSlice = Object.freeze({
+    session: null,
+    tutorial: false,
+});
 
 /** Flag set when a gleaning ends despoiled/routed — future faction hook. */
 export const GATHERING_SCAR_FLAG = 'gleaning-scar';
@@ -51,6 +62,17 @@ export const GATHERING_SCAR_FLAG = 'gleaning-scar';
 export const GATHERING_GRACE_FLAG = 'gleaning-grace';
 /** Flag prefix for banked paradox tokens granted by boons. */
 export const GATHERING_TOKEN_FLAG_PREFIX = 'gleaning-token-banked:';
+/** Flag set once the guided first gleaning is completed or skipped. */
+export const GATHERING_TUTORIAL_FLAG = 'gleaning-tutorial-done';
+
+/**
+ * The tutorial session is pinned so the coach script always matches the
+ * board: seed 14 on the mire-mint verge opens with a taking, a BREATH
+ * plot, and a second taking face-up; the rolled offerings include the
+ * always-payable BLOOD TITHE; the rolled tools include the bell.
+ */
+export const GATHERING_TUTORIAL_SEED = 14;
+export const GATHERING_TUTORIAL_SITE = 'mire-mint';
 
 /**
  * Dev/test seed override. Playwright / dev tooling sets
@@ -66,12 +88,15 @@ declare global {
 }
 
 function setSession(store: AppStore, session: GatheringSessionState | null): void {
-    store.setState({ gathering: { session } });
+    const prev = store.getState().gathering ?? EMPTY_GATHERING_SLICE;
+    store.setState({ gathering: { ...prev, session } });
 }
 
 export interface BeginGatheringOptions {
     siteId?: string;
     seed?: number;
+    /** Start the guided first gleaning (pinned seed + site unless overridden). */
+    tutorial?: boolean;
 }
 
 export function beginGatheringAction(store: AppStore, options: BeginGatheringOptions = {}): boolean {
@@ -80,15 +105,39 @@ export function beginGatheringAction(store: AppStore, options: BeginGatheringOpt
     const seed =
         options.seed ??
         globalThis.__AXM_GATHER_SEED__ ??
+        (options.tutorial ? GATHERING_TUTORIAL_SEED : undefined) ??
         // Non-deterministic by design outside tests: mix wall clock and
         // Math.random into a 32-bit seed.
         ((Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0);
-    let siteId = options.siteId ?? globalThis.__AXM_GATHER_SITE__;
+    let siteId =
+        options.siteId ??
+        globalThis.__AXM_GATHER_SITE__ ??
+        (options.tutorial ? GATHERING_TUTORIAL_SITE : undefined);
     if (!siteId) {
         siteId = GATHERING_SITES[Math.abs(seed) % GATHERING_SITES.length].id;
     }
-    setSession(store, createGatheringSession(seed, siteId));
+    store.setState({
+        gathering: { session: createGatheringSession(seed, siteId), tutorial: options.tutorial === true },
+    });
     return true;
+}
+
+/**
+ * Marks the guided first gleaning as done (completed or skipped): sets
+ * the persistent flag so the map trigger never re-runs it, and persists.
+ * The session (if any) keeps running as normal play.
+ */
+export function completeGatheringTutorialAction(store: AppStore, skipped: boolean): void {
+    const state = store.getState() as unknown as GameState;
+    if (!(state.flags ?? []).includes(GATHERING_TUTORIAL_FLAG)) {
+        store.setState({ flags: [...(state.flags ?? []), GATHERING_TUTORIAL_FLAG] } as never);
+        try {
+            store.getState().save();
+        } catch {
+            // Persistence failures must not strand the coach.
+        }
+    }
+    void skipped;
 }
 
 export function selectGatheringApproachAction(store: AppStore, approach: GatherApproachKey): void {
@@ -265,7 +314,7 @@ export function claimGatheringSpoilsAction(store: AppStore): ClaimGatheringSpoil
             inventory: [...player.inventory, ...materials],
         },
         flags,
-        gathering: { session: null },
+        gathering: EMPTY_GATHERING_SLICE,
     } as never);
 
     if (outcome.scarred) {

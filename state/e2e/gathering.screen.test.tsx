@@ -15,8 +15,8 @@ import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import GatheringScreen from '@/app/gathering/index';
 import { createAppActions, type AppActions } from '@/state/actions';
 import type { AppStore } from '@/state/store';
-import { GATHER_WRATH_MAX } from '@/state/gathering/tuning';
-import type { GatherPlotEntry, GatheringSessionState } from '@/state/gathering/types';
+import { GATHER_WRATH_MAX } from 'axiomancer-mechanics';
+import type { GatherPlotEntry, GatheringSessionState } from 'axiomancer-mechanics';
 import { withAllProviders } from '@/test-utils/withAllProviders';
 
 jest.mock('expo-router', () => ({
@@ -41,7 +41,7 @@ function mountGathering(): { store: AppStore; actions: AppActions } {
 function rigSession(store: AppStore, over: Partial<GatheringSessionState>): void {
     const s = store.getState().gathering.session;
     if (!s) throw new Error('no session');
-    store.setState({ gathering: { session: { ...s, ...over } } });
+    store.setState({ gathering: { ...store.getState().gathering, session: { ...s, ...over } } });
 }
 
 function plot(uid: string, plotId: string): GatherPlotEntry {
@@ -136,6 +136,48 @@ describe('gathering screen — the board', () => {
         fireEvent.press(screen.getByTestId('gathering-reprisal'));
         expect(screen.queryByTestId('gathering-reprisal')).toBeNull();
         expect(store.getState().gathering.session?.phase).toBe('foraging');
+    });
+});
+
+describe('gathering screen — the tutorial coach', () => {
+    it('rides the guided first gleaning and advances with play', () => {
+        const { store, actions } = mountGathering();
+        act(() => {
+            actions.beginGathering({ tutorial: true });
+        });
+        fireEvent.press(screen.getByTestId('gathering-intro-continue'));
+        // Step 1 coaches the approach choice over the approach screen.
+        expect(screen.getByTestId('gathering-tutorial')).toBeTruthy();
+        expect(screen.getByText('THE PLACE IS WATCHING')).toBeTruthy();
+        fireEvent.press(screen.getByTestId('gathering-approach-glean'));
+        // Step 2: TAKE.
+        expect(screen.getByText('TAKE SOMETHING')).toBeTruthy();
+        const taking = store
+            .getState()
+            .gathering.session!.spread.find((e) => e.plotId !== 'green-breath')!;
+        fireEvent.press(screen.getByTestId(`gathering-take-${taking.uid}`));
+        // Step 3: TEND.
+        expect(screen.getByText('WRATH — AND HOW TO BREATHE IT OUT')).toBeTruthy();
+    });
+
+    it('SKIP sets the persistent flag and dismisses the coach', () => {
+        const { store, actions } = mountGathering();
+        act(() => {
+            actions.beginGathering({ tutorial: true });
+        });
+        fireEvent.press(screen.getByTestId('gathering-intro-continue'));
+        fireEvent.press(screen.getByTestId('gathering-tutorial-skip'));
+        expect(screen.queryByTestId('gathering-tutorial')).toBeNull();
+        const flags = (store.getState() as unknown as { flags: string[] }).flags;
+        expect(flags).toContain('gleaning-tutorial-done');
+        // The session keeps running as normal play.
+        expect(store.getState().gathering.session).not.toBeNull();
+    });
+
+    it('never shows on a normal (non-tutorial) gleaning', () => {
+        const { store, actions } = mountGathering();
+        begin(store, actions, 'glean');
+        expect(screen.queryByTestId('gathering-tutorial')).toBeNull();
     });
 });
 

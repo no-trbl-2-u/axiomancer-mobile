@@ -17,8 +17,8 @@ import {
     GATHERING_SCAR_FLAG,
     GATHERING_GRACE_FLAG,
 } from '@/state/gathering/store-actions';
-import { GATHER_WRATH_MAX, GATHERING_TUNING } from '@/state/gathering/tuning';
-import type { GatherPiece, GatherPlotEntry, GatheringSessionState } from '@/state/gathering/types';
+import { GATHER_WRATH_MAX, GATHERING_TUNING } from 'axiomancer-mechanics';
+import type { GatherPiece, GatherPlotEntry, GatheringSessionState } from 'axiomancer-mechanics';
 import { selectGatheringViewModel } from '@/state/presenters/gathering.engine';
 import { createMemoryAdapter, type MemoryAdapter } from '@/test-utils/memoryAdapter';
 
@@ -41,7 +41,7 @@ function session(store: AppStore): GatheringSessionState {
 }
 
 function rigSession(store: AppStore, over: Partial<GatheringSessionState>): void {
-    store.setState({ gathering: { session: { ...session(store), ...over } } });
+    store.setState({ gathering: { ...store.getState().gathering, session: { ...session(store), ...over } } });
 }
 
 function plot(uid: string, plotId: string): GatherPlotEntry {

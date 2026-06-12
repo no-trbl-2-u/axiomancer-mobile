@@ -13,7 +13,7 @@ import {
     type TypedGameEvent,
 } from 'axiomancer-mechanics';
 
-import type { GatheringSessionState } from './gathering/types';
+import type { GatheringSessionState } from 'axiomancer-mechanics';
 import type { HazardSessionState } from 'axiomancer-mechanics';
 
 /**
@@ -101,9 +101,11 @@ export interface MobileHazardSlice {
  * Mobile-only Gathering minigame slice ("The Gleaning"). Holds the
  * active session (see `state/gathering/`) — `null` outside a gleaning.
  * Sessions are transient by design: abandoning forfeits the satchel.
+ * `tutorial` marks the guided first gleaning (the coach overlay).
  */
 export interface MobileGatheringSlice {
     session: GatheringSessionState | null;
+    tutorial: boolean;
 }
 
 export type AppStoreState = GameStore & {
@@ -140,7 +142,10 @@ export const EMPTY_EVENT_SLICE: MobileEventSlice = Object.freeze({
 
 export const EMPTY_HAZARD_SLICE: MobileHazardSlice = Object.freeze({ session: null });
 
-export const EMPTY_GATHERING_SLICE: MobileGatheringSlice = Object.freeze({ session: null });
+export const EMPTY_GATHERING_SLICE: MobileGatheringSlice = Object.freeze({
+    session: null,
+    tutorial: false,
+});
 
 /**
  * Default notifications slice. `levelUpAcknowledged: true` because a

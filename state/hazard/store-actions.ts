@@ -261,6 +261,10 @@ export function claimHazardRewardsAction(store: AppStore, cardId: string | null)
     vitaeDelta -= outcome.penaltyVitae;
     // SACRIFICE cards (BLOODPRICE) spent VITAE mid-run; settle it at claim.
     vitaeDelta -= outcome.vitaeCost;
+    // Codex (0.18.0): MEND restores VITAE and BOUNTY banks shillings on a
+    // survived crossing — the engine zeroes both on a failure.
+    vitaeDelta += outcome.vitaeRestore;
+    shillings += outcome.bountyShillings;
 
     if (done.pickedRewardCardId) {
         flags = appendAcquiredCard(flags, done.pickedRewardCardId);

@@ -1,7 +1,7 @@
 /**
  * Gathering minigame screen — full-screen foraging surface ("The
- * Gleaning"). Phase orchestration only: the engine (state/gathering/)
- * owns rules, the presenter owns mapping, this screen renders the VM
+ * Gleaning"). Phase orchestration only: the engine (axiomancer-mechanics
+ * World/Gathering) owns rules, the presenter owns mapping, this screen renders the VM
  * and dispatches store actions.
  */
 
@@ -10,6 +10,9 @@ import { StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { ApproachSelect } from '@/components/gathering/ApproachSelect';
+import { TutorialCoach } from '@/components/gathering/TutorialCoach';
+import { currentTutorialStep } from '@/components/gathering/tutorial-steps';
+import { GATHERING_TUTORIAL_FLAG } from '@/state/gathering/store-actions';
 import { GatheringBoard } from '@/components/gathering/GatheringBoard';
 import { GatheringIntroOverlay } from '@/components/gathering/GatheringIntroOverlay';
 import {
@@ -27,12 +30,25 @@ import {
 export default function GatheringScreen() {
     const gathering = useGameState((s) => s.gathering);
     const player = useGameState((s) => s.player);
+    const tutorialDone = useGameState((s) =>
+        ((s as unknown as { flags?: string[] }).flags ?? []).includes(GATHERING_TUTORIAL_FLAG),
+    );
     const vm = useMemo(
         () => selectGatheringViewModel({ gathering, player }),
         [gathering, player],
     );
     const actions = useGameActions();
     const router = useRouter();
+
+    // The coach rides the guided first gleaning until its script is done
+    // or skipped; the persistent flag gates it (and the map trigger).
+    const session = gathering?.session ?? null;
+    const coachActive = gathering?.tutorial === true && session !== null && !tutorialDone;
+    useEffect(() => {
+        if (coachActive && currentTutorialStep(session!, vm) === -1) {
+            actions.completeGatheringTutorial(false);
+        }
+    }, [coachActive, session, vm, actions]);
 
     const [detailPlot, setDetailPlot] = useState<GatherPlotVM | null>(null);
 
@@ -103,6 +119,14 @@ export default function GatheringScreen() {
                     onConfirm={() => {
                         actions.claimGatheringSpoils();
                     }}
+                />
+            )}
+
+            {coachActive && !showIntro && (
+                <TutorialCoach
+                    session={session!}
+                    vm={vm}
+                    onSkip={() => actions.completeGatheringTutorial(true)}
                 />
             )}
 

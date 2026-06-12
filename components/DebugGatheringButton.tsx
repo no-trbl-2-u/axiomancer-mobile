@@ -22,12 +22,28 @@ export function DebugGatheringButton() {
         // <GatheringGate> observes the slice and pushes /gathering.
     };
 
+    const onTutorial = () => {
+        // The pinned tutorial session (seed + site). The coach only
+        // shows while the done-flag is unset — once it is set, this is
+        // still useful as a reproducible session for layout work.
+        actions.beginGathering({ tutorial: true });
+    };
+
     return (
         <View style={styles.row}>
             <View style={styles.labelCol}>
                 <Text style={styles.label}>DEBUG · GATHERING</Text>
                 <Text style={styles.sub}>start the gleaning minigame</Text>
             </View>
+            <Pressable
+                style={[styles.button, styles.tutorialButton]}
+                onPress={onTutorial}
+                accessibilityRole="button"
+                accessibilityLabel="Start the gathering tutorial session"
+                testID="debug-gathering-tutorial-button"
+            >
+                <Text style={[styles.buttonLabel, styles.tutorialLabel]}>TUTORIAL</Text>
+            </Pressable>
             <Pressable
                 style={styles.button}
                 onPress={onPress}
@@ -62,4 +78,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(134,168,33,0.08)',
     },
     buttonLabel: { fontFamily: FONTS.gothic, fontSize: 14, letterSpacing: 2, color: '#86a821' },
+    tutorialButton: { borderColor: AXM.sulfur, backgroundColor: AXM.sulfurSubtle, marginRight: 6 },
+    tutorialLabel: { color: AXM.sulfur },
 });

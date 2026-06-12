@@ -8,7 +8,7 @@
  */
 
 import { AXM } from '@/theme/axm';
-import type { GatherFamily } from '@/state/gathering/types';
+import type { GatherFamily } from 'axiomancer-mechanics';
 
 export const GL = {
     moss: '#5a8a3a',

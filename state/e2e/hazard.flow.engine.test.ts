@@ -210,6 +210,51 @@ describe('hazard store flow', () => {
         expect(store.getState().hazard.session).toBeNull();
         expect((store.getState() as unknown as GameState).player.health).toBe(healthBefore);
     });
+
+    it('claim applies MEND vitae and BOUNTY shillings (codex 0.18.0)', () => {
+        const { store, actions } = makeStoreAndActions();
+        const before = store.getState() as unknown as GameState;
+        const player = before.player;
+        store.setState({
+            player: { ...player, health: Math.max(1, player.maxHealth - 10) },
+        } as never);
+        const healthBefore = (store.getState() as unknown as GameState).player.health;
+        const currencyBefore = player.currency;
+
+        actions.beginHazard({ seed: 9, hazardId: 'cracked-cliff' });
+        const s = session(store);
+        store.setState({
+            hazard: {
+                session: {
+                    ...s,
+                    phase: 'rewards',
+                    outcome: {
+                        tier: 'complete',
+                        wins: 1,
+                        losses: 2,
+                        rewards: [],
+                        consequences: [],
+                        offerCards: [],
+                        canSkip: false,
+                        reserveBonus: 0,
+                        penaltyVitae: 0,
+                        vitaeCost: 0,
+                        vitaeRestore: 4,
+                        bountyShillings: 8,
+                        subquests: [],
+                        questShillings: 0,
+                        questVitae: 0,
+                        questTokens: 0,
+                    },
+                },
+            },
+        });
+        const result = actions.claimHazardRewards(null);
+        expect(result.applied).toBe(true);
+        const after = store.getState() as unknown as GameState;
+        expect(after.player.health).toBe(healthBefore + 4);
+        expect(after.player.currency).toBe(currencyBefore + 8);
+    });
 });
 
 describe('hazard event interception', () => {

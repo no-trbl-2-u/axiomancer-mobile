@@ -132,6 +132,17 @@ When you set `DEPLOY_PROVIDER=eas` and provide `EXPO_TOKEN`, the same
 script polls the EAS Build API for the build matching the current HEAD
 commit and returns the real exit code.
 
+## Repository navigation
+
+This repository contains extensive documentation across multiple directories. Here's what each area contains and when to use it:
+
+- **[`VISION.md`](./VISION.md)** — T's game vision and UX doctrine guardrails. Read before major mobile UX, combat, mercy/friendship, alignment, or `/march` work.
+- **[`docs/adr/`](./docs/adr/)** — Architecture Decision Records. Durable mobile architecture and product decisions that sit above build-plan execution.
+- **[`specs/`](./specs/)** — Planning specifications. Start at [`specs/README.md`](./specs/README.md) for development workflow and implementation status.
+- **[`plan/`](./plan/)** — Build plan, audit findings, critique log, and phase briefs. Used by autonomous shipping skills.
+- **[`docs/`](./docs/)** — Technical documentation including testing standards, engine upgrade guides, and AI-assist prompt templates.
+- **[`setup/`](./setup/)** — Detailed setup guides for repository, EAS Build, store configuration, and AI testing.
+
 ## Project layout
 
 ```

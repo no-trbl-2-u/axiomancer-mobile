@@ -13,6 +13,7 @@ import {
     type TypedGameEvent,
 } from 'axiomancer-mechanics';
 
+import type { GatheringSessionState } from './gathering/types';
 import type { HazardSessionState } from './hazard/types';
 
 /**
@@ -95,9 +96,19 @@ export interface MobileHazardSlice {
     session: HazardSessionState | null;
 }
 
+/**
+ * Mobile-only Gathering minigame slice ("The Gleaning"). Holds the
+ * active session (see `state/gathering/`) — `null` outside a gleaning.
+ * Sessions are transient by design: abandoning forfeits the satchel.
+ */
+export interface MobileGatheringSlice {
+    session: GatheringSessionState | null;
+}
+
 export type AppStoreState = GameStore & {
     event: MobileEventSlice;
     hazard: MobileHazardSlice;
+    gathering: MobileGatheringSlice;
     notifications: MobileNotificationsSlice;
     /** @deprecated Phase 105 — replaced with engine CombatState.combatResources. Remove in follow-up. */
     combatMana?: { current: number; max: number } | null;
@@ -127,6 +138,8 @@ export const EMPTY_EVENT_SLICE: MobileEventSlice = Object.freeze({
 });
 
 export const EMPTY_HAZARD_SLICE: MobileHazardSlice = Object.freeze({ session: null });
+
+export const EMPTY_GATHERING_SLICE: MobileGatheringSlice = Object.freeze({ session: null });
 
 /**
  * Default notifications slice. `levelUpAcknowledged: true` because a
@@ -209,6 +222,7 @@ export function createAppStore(options: CreateAppStoreOptions = {}): AppStore {
         save: () => withPassthrough(engineSave),
         event: EMPTY_EVENT_SLICE,
         hazard: EMPTY_HAZARD_SLICE,
+        gathering: EMPTY_GATHERING_SLICE,
         notifications: DEFAULT_NOTIFICATIONS_SLICE,
         combatMana: null,
         devOverrides: DEFAULT_DEV_OVERRIDES_SLICE,

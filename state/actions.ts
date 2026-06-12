@@ -117,6 +117,22 @@ import {
     type ClaimHazardRewardsResult,
 } from './hazard/store-actions';
 import type { HazardProgressKey, HazardRouteKey } from './hazard/types';
+import {
+    abandonGatheringAction,
+    acknowledgeGatheringOutcomeAction,
+    beginGatheringAction,
+    claimGatheringSpoilsAction,
+    continueGatheringAfterReprisalAction,
+    descendGatheringAction,
+    harvestGatheringPlotAction,
+    payGatheringOfferingAction,
+    selectGatheringApproachAction,
+    useGatheringToolAction,
+    withdrawFromGatheringAction,
+    type BeginGatheringOptions,
+    type ClaimGatheringSpoilsResult,
+} from './gathering/store-actions';
+import type { GatherApproachKey, GatherToolId } from './gathering/types';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -396,6 +412,40 @@ export interface AppActions {
      * the granted card ids.
      */
     randomizeHazardDeck: () => string[];
+
+    // -----------------------------------------------------------------
+    // Gathering minigame ("The Gleaning" — see state/gathering/). The
+    // pure engine owns every rule; these wrappers thread the session
+    // through the `gathering` slice. Phase order: approach-select →
+    // foraging ⇄ reprisal → outcome → rewards → done.
+    // -----------------------------------------------------------------
+
+    /** Start a gleaning (random site unless pinned). Returns false if one is active. */
+    beginGathering: (options?: BeginGatheringOptions) => boolean;
+    /** Binding stance: GLEAN (restraint) or STRIP (greed). */
+    selectGatheringApproach: (approach: GatherApproachKey) => void;
+    /** Harvest a plot from the spread (a BREATH plot tends instead). */
+    harvestGatheringPlot: (uid: string) => void;
+    /** Descend one stratum (one-way; richer, angrier). */
+    descendGathering: () => void;
+    /** Pay an offering demand (affordability-gated). Returns success. */
+    payGatheringOffering: (offeringId: string) => boolean;
+    /** Use a one-shot field tool. */
+    useGatheringTool: (toolId: GatherToolId) => void;
+    /** Dismiss the current reprisal flash. */
+    continueGatheringAfterReprisal: () => void;
+    /** Walk away with the satchel — restraint is always available. */
+    withdrawFromGathering: () => void;
+    /** Outcome modal acknowledged → spoils ledger. */
+    acknowledgeGatheringOutcome: () => void;
+    /**
+     * Confirm the spoils and apply the outcome to live game state
+     * (inventory materials, VITAE, currency, flags). Clears the
+     * session and persists.
+     */
+    claimGatheringSpoils: () => ClaimGatheringSpoilsResult;
+    /** Clear the session without spoils or penalties (dev / escape hatch). */
+    abandonGathering: () => void;
 
     // -----------------------------------------------------------------
     // One-economy + skill-learning pass.
@@ -1242,6 +1292,17 @@ export function createAppActions(store: AppStore): AppActions {
         claimHazardRewards: (cardId) => claimHazardRewardsAction(store, cardId),
         abandonHazard: () => abandonHazardAction(store),
         randomizeHazardDeck: () => randomizeHazardDeckAction(store),
+        beginGathering: (options) => beginGatheringAction(store, options),
+        selectGatheringApproach: (approach) => selectGatheringApproachAction(store, approach),
+        harvestGatheringPlot: (uid) => harvestGatheringPlotAction(store, uid),
+        descendGathering: () => descendGatheringAction(store),
+        payGatheringOffering: (offeringId) => payGatheringOfferingAction(store, offeringId),
+        useGatheringTool: (toolId) => useGatheringToolAction(store, toolId),
+        continueGatheringAfterReprisal: () => continueGatheringAfterReprisalAction(store),
+        withdrawFromGathering: () => withdrawFromGatheringAction(store),
+        acknowledgeGatheringOutcome: () => acknowledgeGatheringOutcomeAction(store),
+        claimGatheringSpoils: () => claimGatheringSpoilsAction(store),
+        abandonGathering: () => abandonGatheringAction(store),
         grantVictorySpoils: () => grantVictorySpoilsAction(store),
         getLearnableSkillOffers: (count) => getLearnableSkillOffersAction(store, count),
         learnSkill: (skillId) => learnSkillAction(store, skillId),
@@ -1786,6 +1847,22 @@ function resolveCurrentMapEventAction(store: AppStore, sourceNodeType?: string):
                 event: EMPTY_EVENT_SLICE,
             });
             beginHazardAction(store);
+            return true;
+        }
+
+        // Gathering events launch "The Gleaning" minigame instead of the
+        // legacy passive item grant. The engine's resolveMapEvent already
+        // appended the payload items to the inventory in `result.state`;
+        // restore the pre-event player so the minigame's spoils are the
+        // only thing that touches the satchel, then start a session.
+        // `<GatheringGate>` routes to /gathering when the slice fills.
+        if (result.event.kind === 'gathering') {
+            store.setState({
+                ...resolvedState,
+                player: gameState.player,
+                event: EMPTY_EVENT_SLICE,
+            });
+            beginGatheringAction(store);
             return true;
         }
 

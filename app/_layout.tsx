@@ -28,6 +28,7 @@ import { DevAutoSeed } from '@/components/DevAutoSeed';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { HardwareBackHandler } from '@/components/HardwareBackHandler';
 import { EventGate } from '@/components/EventGate';
+import { GatheringGate } from '@/components/GatheringGate';
 import { HazardGate } from '@/components/HazardGate';
 import { ToastHost } from '@/components/ToastHost';
 
@@ -160,6 +161,7 @@ export default function RootLayout() {
             <HardwareBackHandler />
             <EventGate />
             <HazardGate />
+            <GatheringGate />
             <ToastHost />
             <DevAutoSeed />
             <Stack screenOptions={{ headerShown: false }}>
@@ -171,6 +173,10 @@ export default function RootLayout() {
               />
               <Stack.Screen
                 name="hazard/index"
+                options={{ headerShown: false, presentation: 'fullScreenModal', gestureEnabled: false }}
+              />
+              <Stack.Screen
+                name="gathering/index"
                 options={{ headerShown: false, presentation: 'fullScreenModal', gestureEnabled: false }}
               />
             </Stack>

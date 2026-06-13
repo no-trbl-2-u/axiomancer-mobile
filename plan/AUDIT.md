@@ -1,13 +1,30 @@
-# Site audit — 2026-06-12
+# Site audit — 2026-06-13
 
 > Bias: gameplay/content (set via oversight 2026-06-11 — supersedes onboarding/docs bias from 2026-06-11)
 > /iterate weights gameplay/content findings 1.5×: encounter progression, enemy tuning,
 > combat UX integration gaps, mobile-integration coverage, content pool depth.
 > Conducted by: /iterate autonomous audit
 
-> **Fresh audit (2026-06-12).** Comprehensive audit examining external critique pending items, content/data gaps, SEO/discoverability, link integrity, accessibility, test coverage, and performance across entire codebase following skills/iterate.md methodology.
+> **Latest audit (2026-06-13).** External critique priority findings addressed via /march dispatch to /iterate. Finding [5.4] documentation index prioritization addressed per critique pass 36.
 
 ## Top 5 findings (scored)
+
+### [x] [5.4] Documentation index lacks priority indicators for new maintainer navigation
+- category: external-critique
+- impact: 6 
+- ease: 9
+- base-score: 5.4
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 1.0
+- final-score: 5.4
+- next: Add priority indicators (ESSENTIAL/HELPFUL/REFERENCE) to docs/README.md file descriptions
+- observation: Documentation index doesn't clearly distinguish between essential vs optional reading for new maintainers
+- evidence: All files listed with equal weight - testing.md marked REQUIRED but other critical files like presenters.md not prioritized
+- suggested fix: Add priority indicators (ESSENTIAL/HELPFUL/REFERENCE) to file descriptions
+- source: external-critique
+- issue: #375
+- addressed: 2026-06-13 via commit 587761d  
+- fix: Added ESSENTIAL/HELPFUL/REFERENCE priority indicators across all sections in docs/README.md to help new maintainers distinguish between critical and optional reading. Reorganized tables by priority and added priority columns throughout.
 
 ### [x] [5.6] ItemModal component lacks test coverage affecting maintainability
 - category: tests

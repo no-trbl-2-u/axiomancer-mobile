@@ -50,8 +50,8 @@
 - source: browser
 - addressed: 2026-06-12 via commit 19bd545
 - fix: Added brief explanation before architecture diagram defining 'read upward, mutate downward' pattern as data flowing up from engine to UI (read) while state changes flow down from actions to engine (mutate), clarifying the separation between business logic in engine and presentation logic in UI
-### [MED] /docs/README.md — Documentation index doesn't prioritize essential reading
-- pass: 36 (commit 17850b2)
+### [x] [MED] /docs/README.md — Documentation index doesn't prioritize essential reading ✅
+- pass: 36 (commit 17850b2); addressed at commit 587761d via `/iterate`
 - viewport: desktop
 - auth_state: anonymous
 - category: navigation
@@ -59,6 +59,8 @@
 - evidence: All files listed with equal weight - testing.md marked REQUIRED but other critical files like presenters.md not prioritized
 - suggested fix: Add priority indicators (ESSENTIAL/HELPFUL/REFERENCE) to file descriptions
 - source: browser
+- addressed: 2026-06-13 via commit 587761d
+- fix: Added ESSENTIAL/HELPFUL/REFERENCE priority indicators across all sections in docs/README.md to help new maintainers distinguish between critical and optional reading. Reorganized ADR table by priority and added priority column to all tables.
 ### [LOW] /plan/bearings.md — Stack decisions table mixes current state with migration notes
 - pass: 36 (commit 17850b2)
 - viewport: desktop

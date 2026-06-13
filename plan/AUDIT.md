@@ -43,7 +43,7 @@
 - addressed: 2026-06-13 via commit a6af6ee (already completed)
 - fix: Previously addressed in commit a6af6ee which added React Native/Expo ecosystem context to Prerequisites section, explaining the role of each prerequisite in the mobile development pipeline
 
-### [ ] [4.2] ITEM action always disabled with no explanation (gameplay/content bias)
+### [x] [4.2] ITEM action always disabled with no explanation (gameplay/content bias)
 - category: external-critique
 - impact: 4
 - ease: 7
@@ -56,6 +56,9 @@
 - evidence: Combat modal shows greyed ITEM button but provides no feedback about disabled state
 - suggested fix: Add tooltip explaining item usage will be available in future update or current limitations
 - source: external-critique
+- issue: #384
+- addressed: 2026-06-13 via commit 529d4e5
+- fix: Updated tooltip content for disabled ITEM action to explain item usage will be available in future update, providing context about current limitations and setting expectations for future availability
 
 ### [ ] [4.2] Testing standard lacks mobile-specific testing guidance
 - category: external-critique

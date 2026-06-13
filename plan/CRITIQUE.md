@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-13 at commit f7112f9
-> Pass count: 38
+> Last pass: 2026-06-13 at commit ce00704
+> Pass count: 39
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -62,6 +62,47 @@
 - observation: Recommended order table shows 'DONE' status for specs 1-9 but doesn't indicate current active work clearly for new contributors
 - evidence: Table shows historical completion status but next steps require reading dense prose above table to understand specs 10-12 are ready to start
 - suggested fix: Add Status column showing DONE/READY/BLOCKED and highlight next recommended spec for new contributors
+- source: repo-analysis
+<!-- Pass 39 (2026-06-13, commit ce00704): repo-proxy pass —
+     Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
+     critique reads docs/specs/artifacts as the "fresh maintainer"
+     proxy. Focus on general repository comprehension for new
+     contributors. 4 findings filed below. -->
+### [MED] /specs/README.md — Spec completion status lacks required metadata format
+- pass: 39 (commit ce00704)
+- viewport: repository
+- auth_state: anonymous
+- category: navigation
+- observation: Specs status table shows all items 1-9 as [DONE] but lacks completion dates or PR references that the conventions section requires
+- evidence: Lines 76-84 show '[DONE]' status without the documented '> [DONE on YYYY-MM-DD — see PR #N]' format from line 96-97 conventions
+- suggested fix: Add completion dates and PR references to done specs per stated conventions
+- source: repo-analysis
+### [MED] /app/(tabs)/_layout.tsx — Technical comments drift from archaic voice consistency
+- pass: 39 (commit ce00704)
+- viewport: repository
+- auth_state: anonymous
+- category: voice
+- observation: Tab navigation code contains extensive implementation comments that drift from the archaic ritual voice toward modern development documentation style
+- evidence: Lines 83-117 contain detailed technical comments about Phase 63c+ changes and modal behavior using modern development terminology rather than maintaining voice consistency
+- suggested fix: Reduce verbose technical commentary or move to separate documentation to preserve voice register in code
+- source: repo-analysis
+### [LOW] /README.md — ASCII architecture diagram may break in some markdown renderers
+- pass: 39 (commit ce00704)
+- viewport: repository
+- auth_state: anonymous
+- category: visual
+- observation: README.md architecture diagram uses non-standard arrow notation and text formatting that may not render consistently across platforms
+- evidence: Lines 179-201 show ASCII box diagram with '▼' arrows and '└──────────────┬─────────────┘' borders that may break in some markdown renderers
+- suggested fix: Replace ASCII art with standard markdown table or mermaid diagram for better compatibility
+- source: repo-analysis
+### [LOW] /package.json — Non-standard field usage may confuse tooling
+- pass: 39 (commit ce00704)
+- viewport: repository
+- auth_state: anonymous
+- category: comprehension
+- observation: Package.json has undocumented _engineNotes field that serves as informal documentation but may confuse tooling or fresh contributors
+- evidence: Line 9 shows '_engineNotes' field with implementation notes rather than using standard package.json documentation approaches
+- suggested fix: Move engine notes to comments or separate documentation file to avoid non-standard package.json fields
 - source: repo-analysis
 
 <!-- Pass 34 (2026-06-11, commit 72f489d): repo-proxy pass —

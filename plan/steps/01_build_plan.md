@@ -54,6 +54,17 @@ commit that ships the phase.
 
 **Next up (autonomous loop's queue):**
 
+> **Queue-drained steering (set via oversight 2026-06-13).** As of this
+> date all 151 prior phases shipped and every pending `/expand` candidate
+> is sub-4.0 cleanup-tier. Direction chosen by the user: **playtest-driven
+> gameplay push.** Run Phase 122 (deep-playtest gameplay-gap discovery)
+> FIRST to surface real player-facing gaps and feed `/expand` gameplay
+> candidates *before* promoting any cleanup-tier candidate. (Phase 123,
+> the ITEM-action fix queued in the same pass, was already addressed on
+> main by `/iterate` in commit 529d4e5 — now marked [skipped].) Do not
+> promote sub-4.0 cleanup candidates until the playtest push has refilled
+> the queue with gameplay work.
+
 - [x] Phase 104 — Mercy modal consumes engine truth only. Promoted above all else by Glanton cleanup 2026-06-04 after doctrine-alignment audit. Replace local friendship-threshold/modal/spare/exploit simulation with mechanics-emitted mercy state/actions/report truth; remove hard-coded exploit damage; preserve modal UX and accessibility. Brief: `plan/phases/phase_104_mercy_modal_engine_truth.md`. Verification: focused Jest + `npm run verify`. Shipped in commit ce59115.
 
 - [x] Phase 105 — Engine-owned stat preview + combat resources. Promoted above normal queue by Glanton cleanup 2026-06-04. Replace local stat-preview math with mechanics `deriveStats` truth, remove/quarantine `lib/previewAllocation.ts`, and ensure combat resources/skill affordability read engine `CombatState.combatResources` rather than `combatMana` or local scaffolding. Brief: `plan/phases/phase_105_engine_stat_preview_and_resources.md`. Verification: focused level-up/combat presenter tests + `npm run verify`. Shipped in commit 9ec768a.
@@ -155,6 +166,31 @@ commit that ships the phase.
       helper that fires store actions and flushes React updates. Brief: draft via
       `/plan-a-phase phase 121` (or flesh inline at ship time).
       Verification: all scripted scenarios green + `npm run verify`. Shipped in commit 7b04698.
+
+- [ ] Phase 122 — Playtest-driven gameplay-gap discovery. Promoted via
+      `/oversight` 2026-06-13 as the queue-drained direction (see steering
+      note above). The build plan is fully shipped and remaining candidates
+      are all sub-4.0 cleanup; this phase refills the queue with *substance*
+      rather than polish. Run the `deep-playtest` agent (and/or `/critique`)
+      to play the actual game as a first-time player end-to-end — title →
+      map movement → encounter → combat lifecycle → aftermath → resume —
+      documenting player-facing friction, flow gaps, and content thinness to
+      `plan/PLAYTEST_REPORT.md`. Then file the surfaced gameplay gaps as
+      `/expand` gameplay/content candidates in `plan/PHASE_CANDIDATES.md`
+      (scored, with signals) so the next promotions are player-facing work,
+      not cleanup. Deliverable is the report + at least the highest-signal
+      gameplay candidates filed — NOT a code change. Brief: draft via
+      `/plan-a-phase phase 122` (or run the playtester inline at ship time).
+      Verification: `plan/PLAYTEST_REPORT.md` updated with this pass +
+      new scored gameplay candidates present in `plan/PHASE_CANDIDATES.md`.
+
+- [skipped] Phase 123 — ITEM-action disabled-state feedback (player-facing
+      gap). Promoted via `/oversight` 2026-06-13 from open AUDIT finding [4.2],
+      but ALREADY ADDRESSED on main by the `/iterate` loop in commit `529d4e5`
+      (issue #384) before this phase could ship — a tooltip on the disabled
+      ITEM action now explains item usage will be available in a future update.
+      AUDIT finding [4.2] is closed. Skipped to avoid duplicate work (skipped
+      via oversight 2026-06-13 — superseded by 529d4e5 during the same pass).
 
 - [x] Phase 1 — Adopt nexus methodology. Shipped in commit
       `a703908` ("chore: adopt nexus methodology"); closed out

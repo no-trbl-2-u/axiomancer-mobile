@@ -41,6 +41,7 @@ const createMockCombatVM = (actionOptions: ActionOption[]): CombatViewModel => (
     round: 1,
     enemy: {
         name: 'Test Enemy',
+        artKey: 'enemy-test',
         tier: '',
         hp: 10,
         hpMax: 10,

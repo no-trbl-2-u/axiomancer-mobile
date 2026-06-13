@@ -220,7 +220,7 @@ export default function CharacterScreen() {
               testID={`self-base-${r.stanceKey}`}
             >
               <View style={styles.baseCard}>
-                <StanceGlyph kind={r.stanceKey} size={28} color={AXM.parchment} />
+                <StanceGlyph kind={r.stanceKey} size={22} color={AXM.parchment} />
                 <Text style={styles.baseStatLabel}>{r.label}</Text>
                 <Text style={styles.baseStatValue}>{r.value}</Text>
               </View>
@@ -427,7 +427,7 @@ export default function CharacterScreen() {
       <View style={styles.section} accessible accessibilityLabel={vm.a11y.equipment}>
         <SectionLabel size={10}>✠ WORN &amp; WIELDED</SectionLabel>
         <View style={styles.equipRow}>
-          <BodyDiagram />
+          <BodyDiagram height={140} />
           <View style={styles.slotsGrid}>
             {vm.equipment.map((s) => (
               // Phase 74 follow-up walkthrough Tick 3: wrap each
@@ -504,64 +504,67 @@ export default function CharacterScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: { padding: 14, paddingBottom: 0 },
+  // Density pass (visual-audit 2026-06): tightened section spacing and
+  // hero-element sizes so the whole SELF tab fits a 390×844 screen
+  // without scrolling. Kept legible — only spacing/scale shrank.
+  header: { padding: 12, paddingBottom: 0 },
   headerRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
-  characterName: { fontFamily: FONTS.gothic, fontSize: 26, lineHeight: 28, color: AXM.parchment, marginTop: 2 },
-  levelBox: { width: 50, height: 50, borderWidth: 2, borderColor: AXM.parchment, backgroundColor: AXM.deepBg, alignItems: 'center', justifyContent: 'center' },
-  levelText: { fontFamily: FONTS.gothic, fontSize: 30, color: AXM.sulfur },
+  characterName: { fontFamily: FONTS.gothic, fontSize: 22, lineHeight: 24, color: AXM.parchment, marginTop: 2 },
+  levelBox: { width: 42, height: 42, borderWidth: 2, borderColor: AXM.parchment, backgroundColor: AXM.deepBg, alignItems: 'center', justifyContent: 'center' },
+  levelText: { fontFamily: FONTS.gothic, fontSize: 26, color: AXM.sulfur },
   xpRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 },
   xpLabel: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone, letterSpacing: 1 },
   xpValue: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.sulfur },
-  section: { padding: 10, paddingHorizontal: 14, paddingBottom: 0 },
-  baseRow: { flexDirection: 'row', gap: 6, marginTop: 6 },
-  baseCard: { flex: 1, padding: 8, paddingHorizontal: 6, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, alignItems: 'center' },
-  baseStatLabel: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 2, color: AXM.bone, marginTop: 2 },
-  baseStatValue: { fontFamily: FONTS.gothic, fontSize: 28, color: AXM.sulfur, lineHeight: 32 },
-  derivedTable: { marginTop: 4, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, padding: 6, paddingHorizontal: 8 },
+  section: { paddingTop: 6, paddingHorizontal: 12, paddingBottom: 0 },
+  baseRow: { flexDirection: 'row', gap: 6, marginTop: 3 },
+  baseCard: { flex: 1, paddingVertical: 5, paddingHorizontal: 6, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, alignItems: 'center' },
+  baseStatLabel: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 2, color: AXM.bone, marginTop: 1 },
+  baseStatValue: { fontFamily: FONTS.gothic, fontSize: 24, color: AXM.sulfur, lineHeight: 26 },
+  derivedTable: { marginTop: 3, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, padding: 5, paddingHorizontal: 8 },
   derivedRow: { flexDirection: 'row' },
-  derivedHeader: { borderBottomWidth: 1, borderBottomColor: AXM.ash, borderStyle: 'dashed', paddingBottom: 3, marginBottom: 0 },
-  derivedDataRow: { borderBottomWidth: 1, borderBottomColor: AXM.ash, paddingVertical: 3 },
+  derivedHeader: { borderBottomWidth: 1, borderBottomColor: AXM.ash, borderStyle: 'dashed', paddingBottom: 2, marginBottom: 0 },
+  derivedDataRow: { borderBottomWidth: 1, borderBottomColor: AXM.ash, paddingVertical: 2 },
   derivedCell: { flex: 1 },
   derivedRowLabel: { fontFamily: FONTS.sans, fontSize: 11, color: AXM.parchment, letterSpacing: 1.5, flex: 1.2 },
   derivedHeaderCell: { fontFamily: FONTS.mono, fontSize: 10, color: AXM.bone, textAlign: 'right', letterSpacing: 1 },
   derivedData: { fontFamily: FONTS.gothic, fontSize: 14, color: AXM.parchment, textAlign: 'right' },
-  luckRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
+  luckRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 },
   luckLabel: { fontFamily: FONTS.sans, fontSize: 11, color: AXM.bone, letterSpacing: 1.5 },
   luckValue: { fontFamily: FONTS.gothic, fontSize: 18, color: AXM.sulfur },
-  savesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
-  saveCell: { width: '31%', borderWidth: 1, borderColor: AXM.ash, borderStyle: 'dashed', padding: 3, paddingHorizontal: 5, flexDirection: 'row', justifyContent: 'space-between' },
+  savesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 3 },
+  saveCell: { width: '31%', borderWidth: 1, borderColor: AXM.ash, borderStyle: 'dashed', paddingVertical: 2, paddingHorizontal: 5, flexDirection: 'row', justifyContent: 'space-between' },
   saveKey: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone },
   saveVal: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.parchment },
-  alignmentCellName: { fontFamily: FONTS.gothic, fontSize: 14, color: AXM.parchment, letterSpacing: 1, marginTop: 4 },
-  alignmentAxesRow: { flexDirection: 'row', gap: 4, marginTop: 4 },
-  alignmentAxisChip: { flex: 1, borderWidth: 1, borderColor: AXM.ash, borderStyle: 'dashed', paddingVertical: 3, paddingHorizontal: 5 },
+  alignmentCellName: { fontFamily: FONTS.gothic, fontSize: 13, color: AXM.parchment, letterSpacing: 1, marginTop: 2 },
+  alignmentAxesRow: { flexDirection: 'row', gap: 4, marginTop: 3 },
+  alignmentAxisChip: { flex: 1, borderWidth: 1, borderColor: AXM.ash, borderStyle: 'dashed', paddingVertical: 2, paddingHorizontal: 5 },
   alignmentAxisLabel: { fontFamily: FONTS.mono, fontSize: 8, letterSpacing: 1, color: AXM.bone },
   alignmentAxisBucket: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.parchment, marginTop: 1 },
-  moraleRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8, marginTop: 4 },
+  moraleRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8, marginTop: 2 },
   moraleValue: { fontFamily: FONTS.gothic, fontSize: 18, color: AXM.parchment },
   moraleLabel: { fontFamily: FONTS.serif, fontSize: 11, color: AXM.bone, letterSpacing: 1 },
-  effectsList: { marginTop: 4, gap: 4 },
+  effectsList: { marginTop: 3, gap: 4 },
   emptyLabel: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.ash, letterSpacing: 1, textTransform: 'uppercase' },
   effectRow: { flexDirection: 'row', gap: 8, alignItems: 'center', borderWidth: 1, padding: 5, paddingHorizontal: 7 },
   effectTopRow: { flexDirection: 'row', justifyContent: 'space-between' },
   effectName: { fontFamily: FONTS.gothic, fontSize: 13, color: AXM.parchment, letterSpacing: 1 },
   effectMeta: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone },
   effectDesc: { fontFamily: FONTS.serif, fontSize: 10, color: AXM.bone, lineHeight: 13, marginTop: 1 },
-  equipRow: { flexDirection: 'row', gap: 10, marginTop: 6, alignItems: 'flex-start' },
+  equipRow: { flexDirection: 'row', gap: 10, marginTop: 4, alignItems: 'center' },
   slotsGrid: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 3 },
-  slotCell: { width: '48%', borderWidth: 1, borderColor: AXM.ash, padding: 3, paddingHorizontal: 5, minHeight: 32, backgroundColor: AXM.panelBg },
+  slotCell: { width: '48%', borderWidth: 1, borderColor: AXM.ash, paddingVertical: 2, paddingHorizontal: 5, minHeight: 28, backgroundColor: AXM.panelBg },
   slotEmpty: { backgroundColor: 'transparent', borderStyle: 'dashed' },
   slotName: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1.5, color: AXM.bone },
   slotItem: { fontFamily: FONTS.serif, fontSize: 11, color: AXM.parchment, lineHeight: 14 },
-  skillsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
+  skillsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 3 },
   boneText: { color: AXM.bone },
   bloodText: { color: AXM.blood },
   flexOne: { flex: 1 },
-  marginTop8: { marginTop: 8 },
+  marginTop8: { marginTop: 5 },
   skillCard: { width: '48%', borderWidth: 2, padding: 4, paddingHorizontal: 6, backgroundColor: AXM.bg, flexDirection: 'row', alignItems: 'center', gap: 6 },
   skillName: { fontFamily: FONTS.gothic, fontSize: 12, color: AXM.parchment, lineHeight: 14 },
   skillCat: { fontFamily: FONTS.mono, fontSize: 8, letterSpacing: 1 },
-  poolsCard: { marginTop: 4, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, padding: 10, paddingHorizontal: 12, gap: 6 },
+  poolsCard: { marginTop: 3, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, paddingVertical: 7, paddingHorizontal: 12, gap: 5 },
   poolRow: {},
   poolHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 2 },
   poolLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
@@ -572,11 +575,11 @@ const styles = StyleSheet.create({
   poolTrack: { position: 'relative' as const, height: 8, backgroundColor: AXM.deepBg, borderWidth: 1, borderColor: AXM.ash },
   poolFill: { position: 'absolute' as const, top: 1, bottom: 1, left: 1 },
   poolBreakTic: { position: 'absolute' as const, top: -2, bottom: -2, width: 1, backgroundColor: AXM.blood },
-  moraleLedger: { marginTop: 8, backgroundColor: AXM.deepBg, borderWidth: 1, borderColor: AXM.ash, padding: 10, paddingHorizontal: 12 },
-  ledgerGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 6 },
+  moraleLedger: { marginTop: 5, backgroundColor: AXM.deepBg, borderWidth: 1, borderColor: AXM.ash, paddingVertical: 7, paddingHorizontal: 12 },
+  ledgerGrid: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 8, rowGap: 2, marginTop: 4 },
   ledgerRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6, width: '48%' },
-  ledgerValue: { fontFamily: FONTS.mono, fontSize: 12, width: 22, textAlign: 'right' },
-  ledgerDesc: { fontFamily: FONTS.serif, fontSize: 11, color: AXM.parchment },
-  ledgerDivider: { height: 1, borderTopWidth: 1, borderTopColor: AXM.ash, borderStyle: 'dashed', marginTop: 8, marginBottom: 6 },
-  ledgerLore: { fontFamily: FONTS.serifItalic, fontSize: 11, color: AXM.bone, lineHeight: 14 },
+  ledgerValue: { fontFamily: FONTS.mono, fontSize: 11, width: 22, textAlign: 'right' },
+  ledgerDesc: { fontFamily: FONTS.serif, fontSize: 10, color: AXM.parchment },
+  ledgerDivider: { height: 1, borderTopWidth: 1, borderTopColor: AXM.ash, borderStyle: 'dashed', marginTop: 5, marginBottom: 4 },
+  ledgerLore: { fontFamily: FONTS.serifItalic, fontSize: 10, color: AXM.bone, lineHeight: 13 },
 });

@@ -16,6 +16,7 @@ import type { CombatViewModel } from '@/state/presenters/combat.engine';
 const mockCombatViewModel: Partial<CombatViewModel> = {
     enemy: {
         name: 'Test Enemy',
+        artKey: 'enemy-test',
         flavor: 'A fearsome foe',
         hp: 50,
         hpMax: 100,

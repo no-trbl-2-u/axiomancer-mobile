@@ -206,6 +206,26 @@ export function EldritchFigure() {
     );
 }
 
+/** Generic horned creature — the fallback when an enemy matches no archetype. */
+export function GenericFigure() {
+    return (
+        <G>
+            <Path
+                d="M-50 0 L -55 -20 L -40 -30 L -25 -10 L -10 -38 L 5 -22 L 25 -45 L 38 -25 L 50 -8 L 55 0 Z"
+                fill={BODY}
+                stroke={EDGE}
+                strokeWidth={1.5}
+            />
+            <G transform="translate(0 -54)">
+                <Ellipse cx={0} cy={0} rx={15} ry={20} fill={BODY} stroke={EDGE} strokeWidth={1.5} />
+                <Path d="M-10 -14 C -22 -28, -24 -40, -16 -50 M10 -14 C 22 -28, 24 -40, 16 -50" stroke={EDGE} strokeWidth={2} fill="none" />
+                <GlowEyes y={-2} sep={6} r={2} />
+                <Path d="M-7 8 L 7 8" stroke={AXM.blood} strokeWidth={1.5} />
+            </G>
+        </G>
+    );
+}
+
 /** Crowned tyrant (boss) — broad enthroned figure, spiked gold crown, glare. */
 export function TyrantFigure() {
     return (

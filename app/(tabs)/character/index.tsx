@@ -233,7 +233,7 @@ export default function CharacterScreen() {
         <View style={styles.poolsCard}>
           {[
             { label: 'VITAE', value: player?.health ?? 0, max: player?.maxHealth ?? 1, color: AXM.blood, gloss: 'flesh holds' },
-            { label: 'MORALE', value: Math.max(1, Math.min(10, Math.round((vm.morale + 100) / 20))), max: 10, color: AXM.sulfur, gloss: 'resolve to walk', isNew: true, breakAt: 2 },
+            { label: 'MORALE', value: Math.max(1, Math.min(10, Math.round(((Number.isFinite(vm.morale) ? vm.morale : 0) + 100) / 20))), max: 10, color: AXM.sulfur, gloss: 'resolve to walk', isNew: true, breakAt: 2 },
           ].map((pool) => (
             <View key={pool.label} style={styles.poolRow}>
               <View style={styles.poolHeader}>
@@ -383,7 +383,7 @@ export default function CharacterScreen() {
       <View style={styles.section}>
         <SectionLabel size={10}>✠ MORALE</SectionLabel>
         <View style={styles.moraleRow}>
-          <Text style={styles.moraleValue}>{vm.morale}</Text>
+          <Text style={styles.moraleValue}>{Number.isFinite(vm.morale) ? vm.morale : 0}</Text>
           <Text style={styles.moraleLabel}>willpower</Text>
         </View>
       </View>
@@ -523,8 +523,8 @@ const styles = StyleSheet.create({
   // 2026-06) — the freed space (no WORN & WIELDED, two columns) is spent
   // on legibility, not density.
   derivedRowLabel: { fontFamily: FONTS.sans, fontSize: 13, color: AXM.parchment, letterSpacing: 1, flex: 1.3 },
-  derivedHeaderCell: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone, textAlign: 'right', letterSpacing: 1 },
-  derivedData: { fontFamily: FONTS.gothic, fontSize: 18, color: AXM.parchment, textAlign: 'right' },
+  derivedHeaderCell: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone, textAlign: 'center', letterSpacing: 1 },
+  derivedData: { fontFamily: FONTS.gothic, fontSize: 18, color: AXM.parchment, textAlign: 'center' },
   luckRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 5, paddingTop: 4 },
   luckLabel: { fontFamily: FONTS.sans, fontSize: 12, color: AXM.bone, letterSpacing: 1 },
   luckValue: { fontFamily: FONTS.gothic, fontSize: 20, color: AXM.sulfur },

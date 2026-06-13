@@ -65,7 +65,7 @@
 - addressed: 2026-06-13 via commit d527710
 - fix: Added comprehensive hermetic test suite for OptionsList component covering rendering with multiple options, empty state handling, 4-option limit behavior, callback forwarding, custom drawer copy, key stability, and single option rendering. Follows established testing patterns per docs/testing.md for critical exploration navigation UI component. Verification: npm test OptionsList passes with 7 test cases.
 
-### [4.2] Setup documentation usage guidance unclear for fresh maintainers
+### [x] [4.2] Setup documentation usage guidance unclear for fresh maintainers
 - category: external-critique
 - impact: 3
 - ease: 8
@@ -78,6 +78,9 @@
 - evidence: README line 29 says 'For comprehensive repository setup see setup/01_repository.md' but doesn't explain when fresh maintainer should use comprehensive vs quick start workflow
 - suggested fix: Add usage guidance explaining when to use setup/ documentation vs README quick start based on developer needs
 - source: external-critique
+- issue: #393
+- addressed: 2026-06-13 via commit c4f5b77
+- fix: Added clear usage guidance explaining when to use comprehensive setup/ documentation vs README quick start based on developer needs. Navigation section now explains that comprehensive setup is for fresh development environments, troubleshooting issues, detailed configuration, or new maintainer context, while quick start is for experienced developers with existing React Native environments. Verification: npm run verify passes.
 
 ### [x] [3.6] Hazard gameplay components missing test coverage affecting minigame maintainability
 - category: tests

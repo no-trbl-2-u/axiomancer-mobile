@@ -5,7 +5,7 @@
 > combat UX integration gaps, mobile-integration coverage, content pool depth.
 > Conducted by: /iterate autonomous audit
 
-> **Latest audit (2026-06-13).** External critique priority findings addressed via /march dispatch to /iterate. Finding [4.2] component test coverage addressed. Fresh audit conducted 2026-06-13 identifying remaining external-critique and other category gaps.
+> **Latest audit update (2026-06-13).** External critique priority findings addressed via /march dispatch to /iterate. Fresh audit conducted 2026-06-13 identifying remaining test coverage gaps in high-priority production components.
 
 ## Top 5 findings (scored)
 
@@ -109,6 +109,23 @@
 - source: audit
 - addressed: 2026-06-13 via commit 4d8bdb1
 - fix: Added comprehensive hermetic test coverage for CacheGate component following EventGate patterns. Tests cover inactive session (no routing), active session at mount (routes /cache), state transition (no-session to active), stable session re-renders (no double routing), null render contract, and session clearing (no routing). Verification: npm test CacheGate passes.
+
+### [x] [4.8] Exploration UI components missing test coverage affecting maintainability
+- category: tests
+- impact: 6
+- ease: 8
+- base-score: 4.8
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.0 (no bias applied to tests category)
+- final-score: 4.8
+- next: Add hermetic test coverage for EventBadge component - simple UI component missing tests
+- observation: Several exploration UI components lack test coverage, including EventBadge which handles critical event notification display
+- evidence: components/exploration/EventBadge.tsx (49 lines), OptionsList.tsx, NodeGrid.tsx, MapOverlays.tsx missing .test.tsx files in components/exploration/__tests__/
+- suggested fix: Start with EventBadge component test following existing component test patterns, focus on props rendering and accessibility
+- source: audit
+- issue: #386
+- addressed: 2026-06-13 via commit 7501700
+- fix: Added comprehensive hermetic test coverage for EventBadge component following existing component test patterns. Tests cover basic rendering with props, event title display, NEW EVENT label, different icon keys, long titles, and empty title handling. EventBadge is a critical exploration UI component that displays event notifications. Verification: npm test EventBadge passes.
 
 ## Previously addressed findings
 

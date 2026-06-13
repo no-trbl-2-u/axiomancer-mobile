@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-12 at commit 17850b2
-> Pass count: 36
+> Last pass: 2026-06-13 at commit 396c9c7
+> Pass count: 37
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -692,6 +692,58 @@
 - evidence: Lines 15-25 reference 'status effects exist and matter' but lack context for mobile developers unfamiliar with TTRPG mechanics
 - suggested fix: Add brief primer on status-effect gameplay before mobile UX requirements
 - source: web-fetch
+
+<!-- Pass 37 (2026-06-13, commit 396c9c7): repo-proxy pass —
+     Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
+     critique reads docs/specs/artifacts as the "fresh maintainer"
+     proxy. Focus on general repository comprehension. Examined
+     README.md, specs/README.md, docs/testing.md, plan/bearings.md,
+     SVG_ASSET_SPEC.md. 5 findings filed below. -->
+
+### [MED] /README.md — Repository navigation section lacks priority indicators for fresh maintainer reading order
+- pass: 37 (commit 396c9c7)
+- viewport: repository
+- category: navigation
+- observation: Repository navigation section lists extensive documentation but lacks priority indicators for fresh maintainer reading order
+- evidence: Lines 139-149 list multiple documentation areas (VISION.md, docs/adr/, specs/, plan/, docs/, setup/) without indicating which to read first or prerequisites
+- suggested fix: Add priority markers (★ essential, ◆ implementation-focused, etc.) or numbered reading order
+- source: file-read
+
+### [MED] /plan/bearings.md — Operational setup scattered across multiple files without clear onboarding path
+- pass: 37 (commit 396c9c7)
+- viewport: repository
+- category: setup
+- observation: Critical operational information scattered across multiple files without clear onboarding path for fresh maintainer
+- evidence: Lines 82-84: 'setup/NN_*.md runbooks are not yet authored — they're queued in phase candidates. Until then, treat agents.md Operational secrets as the canonical config doc'
+- suggested fix: Create consolidated onboarding checklist or point to primary setup entry point
+- source: file-read
+
+### [LOW] /specs/README.md — Specs workflow consolidation needed for fresh maintainer focus
+- pass: 37 (commit 396c9c7)
+- viewport: repository
+- category: comprehension
+- observation: Specs workflow is well-documented but the recommended order table shows completed work without clear indication of what fresh maintainer should focus on
+- evidence: Lines 74-87 show Specs 1-9 marked [DONE] but fresh maintainer focus (Specs 10-12) mentioned separately at lines 60-66
+- suggested fix: Consolidate current status and next-recommended work in single prominent section
+- source: file-read
+
+### [LOW] /docs/testing.md — Testing entry point unclear among three different test types
+- pass: 37 (commit 396c9c7)
+- viewport: repository
+- category: comprehension
+- observation: Comprehensive testing standard but entry point for fresh maintainer unclear among three different test types mentioned
+- evidence: Document covers hermetic e2e (main requirement), browser playthroughs (scripts), and component tests (optional) but lacks 'getting started' section
+- suggested fix: Add 'Quick start for new tests' section with most common test pattern
+- source: file-read
+
+### [LOW] /SVG_ASSET_SPEC.md — Asset specification lacks clear integration point with development workflow
+- pass: 37 (commit 396c9c7)
+- viewport: repository
+- category: documentation
+- observation: Asset specification lacks clear integration point with development workflow
+- evidence: Lines 5-12 clarify this is for asset replacement not initial development, but no clear bridge to when/how maintainer would use this
+- suggested fix: Add reference to this file in README repository navigation section
+- source: file-read
 
 ## Done
 

@@ -82,13 +82,22 @@ figure.
 |---|---|
 | <img src="before/05-memoir.png" width="300"> | <img src="after/05-memoir.png" width="300"> |
 
-### Combat prelude — **new illustration**
-The headline art change: the placeholder creature scene is now an atmospheric
-moonlit clearing with a horned, glowing-eyed beast.
+### Combat prelude — **bespoke enemy art**
+The headline art change. The placeholder creature scene became an atmospheric
+moonlit clearing, and the foe is now drawn to match its identity: the
+**Salt-Gnaw Rat** prelude shows a *rat*, not a generic creature. Each of the
+40+ roster enemies maps onto a recognisable archetype (see gallery below) via
+`resolveEnemyArchetype`, with a generic fallback so coverage is total.
 
-| Before | After |
+| Before (generic placeholder) | After (bespoke rat) |
 |---|---|
 | <img src="before/06-combat-prelude.png" width="300"> | <img src="after/06-combat-prelude.png" width="300"> |
+
+### Bespoke enemy archetypes
+Ten distinct silhouettes drawn in a shared moonlit `CreatureScene`. A rat ≠ a
+crab ≠ a wraith ≠ a saint. (Dev gallery at `/devart`.)
+
+<img src="after/enemy-art-gallery.png" width="360">
 
 ### Combat — choose a stance  ⚠️ **layout bug fixed**
 The three stance cards were a fixed 160px and overflowed the 390px screen,
@@ -133,7 +142,10 @@ gold-glow CARRY ON.
 |---|---|
 | <img src="before/11-combat-aftermath.png" width="300"> | <img src="after/11-combat-aftermath.png" width="300"> |
 
-### Boss prelude
+### Boss prelude — **bespoke crowned tyrant**
+The Coastal Tyrant is now an enthroned, gold-crowned figure cohesive with the
+new art style (was a placeholder).
+
 | Before | After |
 |---|---|
 | <img src="before/12-boss-prelude.png" width="300"> | <img src="after/12-boss-prelude.png" width="300"> |
@@ -167,8 +179,11 @@ This pass landed the **foundation** (theming, global palette pop) + the
 every screen, but these had no individual layout/art pass yet — prioritised for
 the next round:
 
-- **Bespoke enemy / boss art** — the boss is still the older placeholder figure;
-  per-creature illustrations are the natural next "go big" step.
+- **Hand-tuned art for marquee enemies** — each foe now gets an archetype
+  illustration; the named bosses / signature fights could earn fully bespoke
+  one-off drawings beyond their archetype.
+- **In-combat enemy portrait** — the small avatar in `CombatEnemyPanel` is still
+  the generic hooded silhouette; it could reuse the archetype figures.
 - **Per-screen hierarchy passes** for Satchel, Memoir, Character, and the
   event/minigame screens (rest, gather, treasure, quest, gathering, cache,
   dialogue, village, cutscene).

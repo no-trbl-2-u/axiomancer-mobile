@@ -49,7 +49,7 @@ export function EncounterPreludeContent({
 
             <View style={styles.illustration}>
                 <View style={[StyleSheet.absoluteFillObject, { backgroundColor: AXM.deepBg }]} />
-                <EventArt slug={vm.artSlug} />
+                <EventArt slug={vm.artSlug} enemyArtKey={vm.enemyArtKey} />
                 <View style={styles.strifeSash} testID="encounter-modal-sash">
                     <Text style={styles.strifeSashText}>
                         {vm.preludeChrome!.sashLabel}

@@ -101,6 +101,9 @@ const EXPECTED_ROUTE_FILES: ReadonlySet<string> = new Set([
     './village/index.tsx',
     './dialogue/index.tsx',
     './cutscene/index.tsx',
+    // Dev-only enemy-art gallery (visual-audit 2026-06); gated by
+    // isDevToolsEnabled() so production renders an empty view.
+    './devart/index.tsx',
     './(tabs)/_layout.tsx',
     './(tabs)/character/index.tsx',
     './(tabs)/combat.tsx',

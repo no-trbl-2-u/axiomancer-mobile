@@ -47,6 +47,12 @@ const SCREENS = [
     { id: 'satchel', file: '04-satchel.png', drive: async (p) => { await goto(p, '/inventory') } },
     { id: 'memoir', file: '05-memoir.png', drive: async (p) => { await goto(p, '/memoir') } },
     {
+        id: 'devart', file: 'enemy-art-gallery.png', fullPage: true, drive: async (p) => {
+            await goto(p, '/devart')
+            await settle(p, 800)
+        },
+    },
+    {
         id: 'combat-prelude', file: '06-combat-prelude.png', drive: async (p) => {
             await triggerEncounter(p, 'encounter')
         },
@@ -188,7 +194,7 @@ async function main() {
         try {
             log(`→ ${screen.id}`)
             await screen.drive(page)
-            await page.screenshot({ path: resolve(OUT, screen.file) })
+            await page.screenshot({ path: resolve(OUT, screen.file), fullPage: screen.fullPage ?? false })
             captured++
         } catch (err) {
             console.error(`audit-capture: FAILED ${screen.id}: ${err.message}`)

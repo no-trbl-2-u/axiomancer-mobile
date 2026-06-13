@@ -108,10 +108,12 @@ const SCREENS = [
             await settle(p, 1600)
         },
     },
-    // Minigame + narrative screens reached via the dev trigger buttons.
-    { id: 'gathering', file: '20-gathering.png', drive: (p) => triggerMinigame(p, 'gather') },
-    { id: 'rest', file: '16-rest.png', drive: (p) => triggerMinigame(p, 'rest') },
-    { id: 'cache', file: '18-cache.png', drive: (p) => triggerMinigame(p, 'treasure') },
+    // Minigames launched via their dedicated debug buttons (real beginX()
+    // actions through the gates — like hazard), not the pending-event path.
+    { id: 'gathering', file: '20-gathering.png', drive: (p) => debugLaunch(p, 'debug-gathering-button', 1800) },
+    { id: 'rest', file: '16-rest.png', drive: (p) => debugLaunch(p, 'debug-rest-button', 1800) },
+    { id: 'cache', file: '18-cache.png', drive: (p) => debugLaunch(p, 'debug-cache-button', 1800) },
+    { id: 'quest-board', file: '25-quest-board.png', drive: (p) => debugLaunch(p, 'debug-quest-button', 1800) },
     { id: 'dialogue', file: '19-dialogue.png', drive: (p) => triggerMinigame(p, 'quest') },
     {
         id: 'hazard-board', file: '14-hazard-board.png', drive: async (p) => {
@@ -128,6 +130,17 @@ const SCREENS = [
         },
     },
 ]
+
+/** Open the dev menu and click a dedicated debug-launch button (real
+ *  beginX() action), then settle on the resulting minigame route. */
+async function debugLaunch(page, testId, settleMs) {
+    await goto(page, '/character')
+    await openDevMenu(page)
+    const btn = page.getByTestId(testId)
+    await btn.waitFor({ state: 'visible', timeout: 15000 })
+    await btn.click()
+    await settle(page, settleMs)
+}
 
 /** Open the dev menu and fire a trigger-encounter button, then settle on
  *  the resulting route (minigame intro / approach screen). */
@@ -212,6 +225,8 @@ async function main() {
     await context.addInitScript((t) => {
         globalThis.__AXM_HAZARD_SEED__ = 424242
         globalThis.__AXM_HAZARD_ID__ = 'cracked-cliff'
+        globalThis.__AXM_GATHER_SEED__ = 9090
+        globalThis.__AXM_GATHER_SITE__ = 'mire-mint'
         if (t) globalThis.__AXM_THEME__ = t
     }, theme)
     const page = await context.newPage()

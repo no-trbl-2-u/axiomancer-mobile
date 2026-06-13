@@ -58,7 +58,7 @@ against. The game has no online accounts; everything is local.
 | Language | TypeScript 5.9, strict | Catches presenter / view-model contract mismatches early. |
 | Runtime | React 19.1, React Native 0.81 | Pinned by Expo 54. |
 | Routing | expo-router (file-based) | Standard Expo idiom. |
-| State (UI) | `zustand` store wrapping `createGameStore` from `axiomancer-mechanics` (see spec 02). ~~Local `useState` per screen~~ | Engine is the source of truth; the store is a thin reactive wrapper. |
+| State (UI) | `zustand` store wrapping `createGameStore` from `axiomancer-mechanics` (see spec 02) | Engine is the source of truth; the store is a thin reactive wrapper. |
 | Engine | `axiomancer-mechanics` npm package (pinned ^0.20.0) | Rules, RNG, reducers. **Never reimplemented in this repo.** |
 | Persistence | none yet → `AsyncStorage` adapter (spec 09) | Game state survives app restart. |
 | Test runner | Jest 29 + `jest-expo` + `@testing-library/react-native` | Already wired; canonical hermetic-e2e harness. |

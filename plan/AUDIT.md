@@ -94,6 +94,22 @@
 - addressed: 2026-06-13 via commit eba47e7
 - fix: Updated State (UI) row in plan/bearings.md to show current zustand implementation with strikethrough for legacy useState approach, separating present state from migration notes for clearer temporal distinction
 
+### [x] [7.2] Gate components missing hermetic test coverage (gameplay/content bias)
+- category: tests
+- impact: 6
+- ease: 8
+- base-score: 4.8
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias - gate components control critical game state transitions)
+- final-score: 7.2
+- next: Add hermetic test coverage for CacheGate component following EventGate patterns
+- observation: CacheGate component lacks test coverage despite being a critical side-effect component that handles loot-cache session routing
+- evidence: Found CacheGate.tsx exists but no corresponding CacheGate.test.tsx file in components/__tests__/
+- suggested fix: Add hermetic test coverage for CacheGate component following existing EventGate test patterns
+- source: audit
+- addressed: 2026-06-13 via commit 4d8bdb1
+- fix: Added comprehensive hermetic test coverage for CacheGate component following EventGate patterns. Tests cover inactive session (no routing), active session at mount (routes /cache), state transition (no-session to active), stable session re-renders (no double routing), null render contract, and session clearing (no routing). Verification: npm test CacheGate passes.
+
 ## Previously addressed findings
 
 ### [x] [4.2] Component test coverage gaps - ApproachSelect and 8 other components lack test files

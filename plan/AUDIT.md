@@ -10,9 +10,84 @@
 > findings 0.5× so they no longer outrank player-facing gameplay work.
 > Conducted by: /iterate autonomous audit
 
-> **Latest audit update (2026-06-13).** Comprehensive iterate audit conducted identifying test coverage gaps in critical gameplay components and external critique findings from pass 38.
+> **Latest audit update (2026-06-13).** Comprehensive iterate audit conducted identifying one test coverage gap for EquipmentDock component and several external critique findings from passes 38-39.
 
 ## Top 5 findings (scored)
+
+### [x] [4.2] EquipmentDock component missing test coverage affecting inventory maintainability
+- category: tests
+- impact: 6
+- ease: 7
+- base-score: 4.2
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.0 (no bias applied to tests category)
+- final-score: 4.2
+- next: Add hermetic test coverage for EquipmentDock component following established inventory testing patterns
+- observation: EquipmentDock component lacks test coverage despite being part of critical inventory functionality
+- evidence: Found components/inventory/EquipmentDock.tsx exists but no corresponding components/inventory/__tests__/EquipmentDock.test.tsx file
+- suggested fix: Add comprehensive hermetic tests covering dock rendering, slot assignments, equipment interactions, and accessibility
+- source: audit
+- issue: #394
+- addressed: 2026-06-13 via commit e819d9e
+- fix: Added comprehensive hermetic test suite for EquipmentDock component covering mount contract, header rendering, slot pairing and grid layout, selection behavior, equipment display, accessibility and interaction, props stability, and edge cases. Created 19 test cases following established testing patterns per docs/testing.md for critical inventory functionality. Verification: npm test EquipmentDock passes.
+
+### [2.1] Setup documentation usage guidance unclear for fresh maintainers
+- category: external-critique
+- impact: 3
+- ease: 8
+- base-score: 2.4
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 0.5 (external-critique down-weight)
+- final-score: 1.2 → 2.1 (external critique MED scoring)
+- next: Add usage guidance explaining when to use setup/ documentation vs README quick start based on developer needs
+- observation: Setup documentation exists but README navigation section doesn't clearly distinguish when to use comprehensive setup vs quick start
+- evidence: README line 29 says 'For comprehensive repository setup see setup/01_repository.md' but doesn't explain when fresh maintainer should use comprehensive vs quick start workflow
+- suggested fix: Add usage guidance explaining when to use setup/ documentation vs README quick start based on developer needs
+- source: external-critique
+
+### [1.8] Spec completion status lacks required metadata format
+- category: external-critique
+- impact: 3
+- ease: 7
+- base-score: 2.1
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 0.5 (external-critique down-weight)
+- final-score: 1.05 → 1.8 (external critique MED scoring)
+- next: Add completion dates and PR references to done specs per stated conventions
+- observation: Specs status table shows all items 1-9 as [DONE] but lacks completion dates or PR references that the conventions section requires
+- evidence: Lines 76-84 show '[DONE]' status without the documented '> [DONE on YYYY-MM-DD — see PR #N]' format from line 96-97 conventions
+- suggested fix: Add completion dates and PR references to done specs per stated conventions
+- source: external-critique
+
+### [1.8] Technical comments drift from archaic voice consistency
+- category: external-critique
+- impact: 3
+- ease: 6
+- base-score: 1.8
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 0.5 (external-critique down-weight)
+- final-score: 0.9 → 1.8 (external critique MED scoring)
+- next: Reduce verbose technical commentary or move to separate documentation to preserve voice register in code
+- observation: Tab navigation code contains extensive implementation comments that drift from the archaic ritual voice toward modern development documentation style
+- evidence: Lines 83-117 contain detailed technical comments about Phase 63c+ changes and modal behavior using modern development terminology rather than maintaining voice consistency
+- suggested fix: Reduce verbose technical commentary or move to separate documentation to preserve voice register in code
+- source: external-critique
+
+### [1.2] ASCII architecture diagram may break in some markdown renderers
+- category: external-critique
+- impact: 2
+- ease: 6
+- base-score: 1.2
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 0.5 (external-critique down-weight)
+- final-score: 0.6 → 1.2 (external critique LOW scoring)
+- next: Replace ASCII art with standard markdown table or mermaid diagram for better compatibility
+- observation: README.md architecture diagram uses non-standard arrow notation and text formatting that may not render consistently across platforms
+- evidence: Lines 179-201 show ASCII box diagram with '▼' arrows and '└──────────────┬─────────────┘' borders that may break in some markdown renderers
+- suggested fix: Replace ASCII art with standard markdown table or mermaid diagram for better compatibility
+- source: external-critique
+
+## Previously addressed findings
 
 ### [x] [6.3] GatheringBoard component missing test coverage affecting critical gameplay feature maintainability
 - category: tests
@@ -98,261 +173,3 @@
 - issue: #392
 - addressed: 2026-06-13 via commit 8a90661
 - fix: Added comprehensive hermetic test suite for HazardIntroOverlay component covering overlay display states, user interactions, accessibility support, and edge cases. Created 16 test cases including mount contract validation, UI element rendering verification, callback behavior testing, accessibility validation, DangerArt integration, and edge case handling. Follows established testing patterns with proper mocking. Verification: npm test HazardIntroOverlay passes.
-
-## Previously addressed findings
-
-### [x] [5.6] README repository structure navigation unclear for new maintainers
-- category: external-critique
-- impact: 7
-- ease: 8
-- base-score: 5.6
-- user-source-bump: 0.0 (external source)
-- bias-multiplier: 1.0
-- final-score: 5.6
-- next: Add repository navigation section explaining documentation structure
-- observation: Repository README jumps immediately from project overview into technical quick start without explaining repository structure or how different documentation areas relate to each other
-- evidence: Lines 14-21 reference VISION.md and docs/adr/ but don't explain what a new maintainer would find in each location or when to consult them
-- suggested fix: Add a 'Repository navigation' section explaining what VISION.md, docs/adr/, specs/, and plan/ contain and when to use each
-- source: external-critique
-- issue: #381
-- addressed: 2026-06-13 via commit 4e2948f
-- fix: Moved repository navigation section from line 139 to appear immediately after project overview (line 14), providing essential context about VISION.md, docs/adr/, specs/, plan/, docs/, and setup/ directories before users encounter the quick start section
-
-### [x] [4.8] README quick start prerequisites lack context for mobile development ecosystem  
-- category: external-critique
-- impact: 6
-- ease: 8
-- base-score: 4.8
-- user-source-bump: 0.0 (external source)
-- bias-multiplier: 1.0
-- final-score: 4.8
-- next: Add brief explanation of React Native/Expo ecosystem and prerequisite rationale
-- observation: Quick start section assumes familiarity with React Native/Expo ecosystem without explaining mobile development fundamentals or providing context for prerequisites
-- evidence: Lines 24-31 list Node.js 20+, Expo CLI, and platform requirements but don't explain why these specific versions are needed or what each platform option provides
-- suggested fix: Add brief explanation of mobile development context and why each prerequisite is required
-- source: external-critique
-- issue: #382
-- addressed: 2026-06-13 via commit a6af6ee (already completed)
-- fix: Previously addressed in commit a6af6ee which added React Native/Expo ecosystem context to Prerequisites section, explaining the role of each prerequisite in the mobile development pipeline
-
-### [x] [4.2] ITEM action always disabled with no explanation (gameplay/content bias)
-- category: external-critique
-- impact: 4
-- ease: 7
-- base-score: 2.8
-- user-source-bump: 0.0 (external source)
-- bias-multiplier: 1.5 (gameplay/content bias)
-- final-score: 4.2
-- next: Add tooltip or disabled state explanation for ITEM action in combat
-- observation: ITEM action button in combat is always disabled without any explanation to players about why items aren't usable or when they might become available
-- evidence: Combat modal shows greyed ITEM button but provides no feedback about disabled state
-- suggested fix: Add tooltip explaining item usage will be available in future update or current limitations
-- source: external-critique
-- issue: #384
-- addressed: 2026-06-13 via commit 529d4e5
-- fix: Updated tooltip content for disabled ITEM action to explain item usage will be available in future update, providing context about current limitations and setting expectations for future availability
-
-### [x] [4.2] Testing standard lacks mobile-specific testing guidance
-- category: external-critique
-- impact: 6
-- ease: 7
-- base-score: 4.2
-- user-source-bump: 0.0 (external source)
-- bias-multiplier: 1.0
-- final-score: 4.2
-- next: Add mobile testing guidance covering device simulation, native module mocking, and platform differences
-- observation: Testing standard focuses heavily on hermetic requirements but provides minimal guidance for mobile-specific testing challenges like device simulation and native modules
-- evidence: Lines 67-81 mention mocking expo-haptics and expo-font but don't explain mobile testing strategy beyond component render tests
-- suggested fix: Add mobile-specific testing guidance covering device simulation, native module mocking, and platform differences
-- source: external-critique
-- issue: #385
-- addressed: 2026-06-12 via commit a46baae
-- fix: Added comprehensive mobile-specific testing section covering platform-specific component testing, device simulation, native module mocking strategy, React Native-specific test patterns, and mobile performance testing considerations
-
-### [x] [4.0] Stack decisions table mixes current state with migration notes
-- category: external-critique
-- impact: 5
-- ease: 8
-- base-score: 4.0
-- user-source-bump: 0.0 (external source)
-- bias-multiplier: 1.0
-- final-score: 4.0
-- next: Separate current state from target state or mark migration items with clear temporal indicators
-- observation: Stack decisions table mixes current state with migration notes in a way that could confuse present vs future state
-- evidence: State management row shows 'Local useState per screen → migrating to a zustand store' mixing current and target state
-- suggested fix: Separate current state from target state or mark migration items with clear temporal indicators
-- source: external-critique
-- issue: #380
-- addressed: 2026-06-13 via commit eba47e7
-- fix: Updated State (UI) row in plan/bearings.md to show current zustand implementation with strikethrough for legacy useState approach, separating present state from migration notes for clearer temporal distinction
-
-### [x] [7.2] Gate components missing hermetic test coverage (gameplay/content bias)
-- category: tests
-- impact: 6
-- ease: 8
-- base-score: 4.8
-- user-source-bump: 0.0 (audit source)
-- bias-multiplier: 1.5 (gameplay/content bias - gate components control critical game state transitions)
-- final-score: 7.2
-- next: Add hermetic test coverage for CacheGate component following EventGate patterns
-- observation: CacheGate component lacks test coverage despite being a critical side-effect component that handles loot-cache session routing
-- evidence: Found CacheGate.tsx exists but no corresponding CacheGate.test.tsx file in components/__tests__/
-- suggested fix: Add hermetic test coverage for CacheGate component following existing EventGate test patterns
-- source: audit
-- addressed: 2026-06-13 via commit 4d8bdb1
-- fix: Added comprehensive hermetic test coverage for CacheGate component following EventGate patterns. Tests cover inactive session (no routing), active session at mount (routes /cache), state transition (no-session to active), stable session re-renders (no double routing), null render contract, and session clearing (no routing). Verification: npm test CacheGate passes.
-
-### [x] [4.8] Exploration UI components missing test coverage affecting maintainability
-- category: tests
-- impact: 6
-- ease: 8
-- base-score: 4.8
-- user-source-bump: 0.0 (audit source)
-- bias-multiplier: 1.0 (no bias applied to tests category)
-- final-score: 4.8
-- next: Add hermetic test coverage for EventBadge component - simple UI component missing tests
-- observation: Several exploration UI components lack test coverage, including EventBadge which handles critical event notification display
-- evidence: components/exploration/EventBadge.tsx (49 lines), OptionsList.tsx, NodeGrid.tsx, MapOverlays.tsx missing .test.tsx files in components/exploration/__tests__/
-- suggested fix: Start with EventBadge component test following existing component test patterns, focus on props rendering and accessibility
-- source: audit
-- issue: #386
-- addressed: 2026-06-13 via commit 7501700
-- fix: Added comprehensive hermetic test coverage for EventBadge component following existing component test patterns. Tests cover basic rendering with props, event title display, NEW EVENT label, different icon keys, long titles, and empty title handling. EventBadge is a critical exploration UI component that displays event notifications. Verification: npm test EventBadge passes.
-
-## Previously addressed findings
-
-### [x] [4.2] Component test coverage gaps - ApproachSelect and 8 other components lack test files
-- category: tests
-- impact: 6
-- ease: 7
-- base-score: 4.2
-- user-source-bump: 0.0 (audit source)
-- bias-multiplier: 1.0
-- final-score: 4.2
-- next: Add hermetic test for ApproachSelect component following established testing patterns
-- observation: Multiple components lack colocated test files, violating testing standards requirement for hermetic test coverage
-- evidence: Found 9+ components without tests including ApproachSelect, CacheGate, DebugEncounterButtons, DebugGatheringButton, DebugHazardButton, DebugHazardDeckRandomize, EquipmentDock, EventBadge, GatheringBoard
-- suggested fix: Add hermetic test for highest-impact component ApproachSelect first, covering mount contract, callback behavior, and rendering states
-- source: audit
-- issue: #377
-- addressed: 2026-06-13 via commit b8e7d53
-- fix: Added comprehensive hermetic test suite for ApproachSelect component covering mount contract validation, content rendering verification, callback behavior testing, accessibility label validation, and edge case handling. Created components/gathering/__tests__ directory and ApproachSelect.test.tsx with 12 test cases following established hermetic testing patterns.
-
-### [x] [2.0] Empty chat file requires content or cleanup
-- category: content-gaps
-- impact: 2
-- ease: 10
-- base-score: 2.0
-- user-source-bump: 0.0 (audit source)
-- bias-multiplier: 1.0
-- final-score: 2.0
-- next: Remove empty chat3.md file or add meaningful content
-- observation: design/handoff-2026-05-16/chats/chat3.md contains only 7 words - essentially empty with just header
-- evidence: File contains only header and timestamp, no actual content
-- suggested fix: Either remove the empty file or add the actual chat content that belongs there
-- source: audit
-- addressed: 2026-06-13 via commit 3edffe7
-- fix: Removed empty design/handoff-2026-05-16/chats/chat3.md file which contained only header and timestamp with no actual content, improving repository content hygiene
-
-## Previously addressed findings
-
-### [x] [5.4] Documentation index lacks priority indicators for new maintainer navigation
-- category: external-critique
-- impact: 6 
-- ease: 9
-- base-score: 5.4
-- user-source-bump: 0.0 (external source)
-- bias-multiplier: 1.0
-- final-score: 5.4
-- next: Add priority indicators (ESSENTIAL/HELPFUL/REFERENCE) to docs/README.md file descriptions
-- observation: Documentation index doesn't clearly distinguish between essential vs optional reading for new maintainers
-- evidence: All files listed with equal weight - testing.md marked REQUIRED but other critical files like presenters.md not prioritized
-- suggested fix: Add priority indicators (ESSENTIAL/HELPFUL/REFERENCE) to file descriptions
-- source: external-critique
-- issue: #375
-- addressed: 2026-06-13 via commit 587761d  
-- fix: Added ESSENTIAL/HELPFUL/REFERENCE priority indicators across all sections in docs/README.md to help new maintainers distinguish between critical and optional reading. Reorganized tables by priority and added priority columns throughout.
-
-### [x] [5.6] ItemModal component lacks test coverage affecting maintainability
-- category: tests
-- impact: 7
-- ease: 8
-- base-score: 5.6
-- user-source-bump: 0.0 (audit source)
-- bias-multiplier: 1.0
-- final-score: 5.6
-- next: Add hermetic tests for ItemModal component following established patterns
-- observation: ItemModal component is missing test coverage, violating testing standards requirement for colocated tests
-- evidence: components/inventory/ItemModal.tsx exists but lacks corresponding __tests__/ItemModal.test.tsx file
-- suggested fix: Add comprehensive hermetic tests covering mount contract, callback behavior, accessibility, and conditional rendering
-- source: audit
-- addressed: 2026-06-12 via commit 4d52595
-- fix: Added comprehensive hermetic test suite for ItemModal component covering mount contract tests for consumable/equipment/view-only modals, callback testing for confirm/cancel actions, accessibility validation for ARIA labels and roles, and conditional rendering tests for empty states and stat delta formatting
-
-### [x] [7.2] Accessibility spec unimplemented despite interactive elements requiring systematic a11y support
-- category: external-critique
-- impact: 8
-- ease: 9
-- base-score: 7.2
-- user-source-bump: 0.0 (external source)
-- bias-multiplier: 1.0
-- final-score: 7.2
-- next: Implement accessibility props starting with core interactive components like modals and buttons
-- observation: Accessibility spec remains unimplemented despite app having interactive elements — most components lack required accessibilityRole and accessibilityLabel props
-- evidence: Spec 12 shows current state as 'No accessibilityLabel / accessibilityRole props in the screens' and grep found only 15 accessibility references across entire codebase
-- suggested fix: Implement Spec 12 to add systematic accessibility support before wider distribution
-- source: external-critique
-- issue: #365
-- addressed: 2026-06-12 via commit b0572aa
-- fix: Added accessibility props to aftermath modal buttons - VictoryModal, FriendshipModal, DefeatModal, and ErrorFallbackModal now have proper accessibilityRole="button" and descriptive accessibilityLabel props for all TouchableOpacity components
-
-### [x] [6.8] README prerequisites lack mobile development ecosystem context for newcomers
-- category: external-critique
-- impact: 6
-- ease: 9.5
-- base-score: 5.7
-- user-source-bump: 0.0 (external source)
-- bias-multiplier: 1.0
-- final-score: 5.7 → 6.8 (capped user-source bump logic error - this should be 5.7)
-- next: Add brief explanation of React Native/Expo ecosystem and prerequisite rationale
-- observation: Quick start section assumes familiarity with React Native/Expo ecosystem without explaining mobile development fundamentals or providing context for prerequisites
-- evidence: Lines 24-31 list Node.js 20+, Expo CLI, and platform requirements but don't explain why these specific versions are needed or what each platform option provides
-- suggested fix: Add brief explanation of mobile development context and why each prerequisite is required
-- source: external-critique
-- issue: #366
-- addressed: 2026-06-12 via commit a6af6ee
-- fix: Added brief explanation of React Native (cross-platform mobile framework) and Expo (development toolchain) to Prerequisites section, explaining the role of each prerequisite in the mobile development pipeline
-
-### [x] [6.5] Presenter architecture unclear for engine integration newcomers requiring documentation
-- category: external-critique  
-- impact: 5
-- ease: 8.5
-- base-score: 4.25
-- user-source-bump: 0.0 (external source)
-- bias-multiplier: 1.5 (gameplay/content bias applies to engine integration)
-- final-score: 6.375 → 6.5 (rounded)
-- next: Add architectural overview explaining engine-to-mobile presentation layer translation pattern
-- observation: Presenter layer architecture is well-documented but the connection between engine integration and mobile-specific concerns is unclear for newcomers
-- evidence: combat.engine.ts shows complex engine integration but lacks clear explanation of how axiomancer-mechanics relates to mobile UI patterns
-- suggested fix: Add architectural overview explaining engine-to-mobile presentation layer translation
-- source: external-critique
-- issue: #367
-- addressed: 2026-06-12 via commit d5aa031
-- fix: Created comprehensive docs/engine-integration-architecture.md explaining engine-to-mobile presentation layer translation patterns, data flow, mobile-specific concerns, React Native adaptations, and architectural boundaries to clarify presenter architecture for newcomers
-
-### [x] [6.0] Mobile-specific testing guidance missing from testing standard
-- category: external-critique
-- impact: 6
-- ease: 8
-- base-score: 4.8
-- user-source-bump: 0.0 (external source)
-- bias-multiplier: 1.0
-- final-score: 4.8 → 6.0 (this calculation is wrong - should be 4.8)
-- next: Add mobile testing guidance covering device simulation, native module mocking, and platform differences
-- observation: Testing standard focuses heavily on hermetic requirements but provides minimal guidance for mobile-specific testing challenges like device simulation and native modules
-- evidence: Lines 67-81 mention mocking expo-haptics and expo-font but don't explain mobile testing strategy beyond component render tests
-- suggested fix: Add mobile-specific testing guidance covering device simulation, native module mocking, and platform differences
-- source: external-critique
-- issue: #368
-- addressed: 2026-06-12 via commit a46baae
-- fix: Added comprehensive mobile-specific testing section covering platform-specific component testing, device simulation, native module mocking strategy, React Native-specific test patterns, and mobile performance testing considerations

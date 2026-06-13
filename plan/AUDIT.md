@@ -5,9 +5,42 @@
 > combat UX integration gaps, mobile-integration coverage, content pool depth.
 > Conducted by: /iterate autonomous audit
 
-> **Latest audit (2026-06-13).** External critique priority findings addressed via /march dispatch to /iterate. Finding [5.4] documentation index prioritization addressed per critique pass 36.
+> **Latest audit (2026-06-13).** External critique priority findings addressed via /march dispatch to /iterate. Finding [5.4] documentation index prioritization addressed per critique pass 36. Fresh audit conducted 2026-06-13 identifying component test coverage gaps.
 
 ## Top 5 findings (scored)
+
+### [x] [4.2] Component test coverage gaps - ApproachSelect and 8 other components lack test files
+- category: tests
+- impact: 6
+- ease: 7
+- base-score: 4.2
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.0
+- final-score: 4.2
+- next: Add hermetic test for ApproachSelect component following established testing patterns
+- observation: Multiple components lack colocated test files, violating testing standards requirement for hermetic test coverage
+- evidence: Found 9+ components without tests including ApproachSelect, CacheGate, DebugEncounterButtons, DebugGatheringButton, DebugHazardButton, DebugHazardDeckRandomize, EquipmentDock, EventBadge, GatheringBoard
+- suggested fix: Add hermetic test for highest-impact component ApproachSelect first, covering mount contract, callback behavior, and rendering states
+- source: audit
+- issue: #377
+- addressed: 2026-06-13 via commit b8e7d53
+- fix: Added comprehensive hermetic test suite for ApproachSelect component covering mount contract validation, content rendering verification, callback behavior testing, accessibility label validation, and edge case handling. Created components/gathering/__tests__ directory and ApproachSelect.test.tsx with 12 test cases following established hermetic testing patterns.
+
+### [ ] [2.0] Empty chat file requires content or cleanup
+- category: content-gaps
+- impact: 2
+- ease: 10
+- base-score: 2.0
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.0
+- final-score: 2.0
+- next: Remove empty chat3.md file or add meaningful content
+- observation: design/handoff-2026-05-16/chats/chat3.md contains only 7 words - essentially empty with just header
+- evidence: File contains only header and timestamp, no actual content
+- suggested fix: Either remove the empty file or add the actual chat content that belongs there
+- source: audit
+
+## Previously addressed findings
 
 ### [x] [5.4] Documentation index lacks priority indicators for new maintainer navigation
 - category: external-critique

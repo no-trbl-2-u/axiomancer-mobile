@@ -3,6 +3,11 @@
 > Bias: gameplay/content (set via oversight 2026-06-11 — supersedes onboarding/docs bias from 2026-06-11)
 > /iterate weights gameplay/content findings 1.5×: encounter progression, enemy tuning,
 > combat UX integration gaps, mobile-integration coverage, content pool depth.
+> **Docs/external-critique down-weight 0.5× (set via oversight 2026-06-13).** The last
+> 24h of velocity (36 commits) went almost entirely to README/onboarding/external-critique
+> polish while gameplay findings sat open. Until the playtest-driven gameplay push (build
+> plan Phase 122) refills the queue, /iterate weights external-critique/docs/onboarding
+> findings 0.5× so they no longer outrank player-facing gameplay work.
 > Conducted by: /iterate autonomous audit
 
 > **Latest audit update (2026-06-13).** External critique priority findings addressed via /march dispatch to /iterate. Fresh audit conducted 2026-06-13 identifying remaining test coverage gaps in high-priority production components.

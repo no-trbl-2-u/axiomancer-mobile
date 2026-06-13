@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-13 at commit ce00704
-> Pass count: 39
+> Last pass: 2026-06-13 at commit f270824
+> Pass count: 40
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -25,6 +25,55 @@
 > keep this header actionable.
 
 ## Pending
+
+<!-- Pass 40 (2026-06-13, commit f270824): repo-proxy pass —
+     Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
+     critique reads docs/specs/artifacts as the "fresh maintainer"
+     proxy. Focus on general repository comprehension for new
+     contributors. Examined README.md, VISION.md, docs/README.md,
+     specs/README.md, setup/, app/_layout.tsx, package.json, bearings.md.
+     4 findings filed below. -->
+
+
+### [HIGH] /VISION.md — Vision document uses inconsistent voice between archaic game language and modern technical language
+- pass: 40 (commit f270824)
+- viewport: repository
+- auth_state: anonymous
+- category: voice
+- observation: Vision document uses inconsistent voice between archaic game language and modern technical language within same sections
+- evidence: Lines 42-66 mix archaic terms like 'Befriend' and 'friendship counters' with modern technical language like 'modal when the engine emits the state' and 'status effect whose only purpose is qualifying future Befriend paths'
+- suggested fix: Maintain consistent archaic voice throughout vision document or clearly separate technical implementation details from game vision
+- source: repo-analysis
+
+### [MED] /README.md — Repository navigation section lacks clear priority guidance for new contributors
+- pass: 40 (commit f270824)
+- viewport: repository
+- auth_state: anonymous
+- category: comprehension
+- observation: Repository navigation section provides comprehensive directory coverage but doesn't clearly prioritize which documentation to read first for new contributors
+- evidence: Lines 16-24 list multiple documentation directories (VISION.md, docs/adr/, specs/, plan/, docs/, setup/) without clear guidance on essential vs optional reading for first-time contributors
+- suggested fix: Add priority indicators (ESSENTIAL/HELPFUL/REFERENCE) to repository navigation section consistent with docs/README.md approach
+- source: repo-analysis
+
+### [MED] /specs/README.md — Spec completion status claims inconsistent with visual completion indicators
+- pass: 40 (commit f270824)
+- viewport: repository
+- auth_state: anonymous
+- category: comprehension
+- observation: Spec completion status claims specs 1-9 are complete but doesn't provide clear visual completion indicators in the table
+- evidence: Line 59 states 'Specs 1-9 are complete' but the recommended order table uses [DONE] markers inconsistently - some entries show [DONE] while others don't despite being claimed complete
+- suggested fix: Add consistent [DONE] markers to all completed specs in the recommended order table to match the stated completion status
+- source: repo-analysis
+
+### [LOW] /README.md — Prerequisites section uses technical jargon without definitions for mobile development newcomers
+- pass: 40 (commit f270824)
+- viewport: repository
+- auth_state: anonymous
+- category: navigation
+- observation: Quick start prerequisites section explains React Native/Expo purpose but uses technical jargon that may be unclear to developers new to mobile development
+- evidence: Lines 40-47 contain detailed technical explanations like 'Metro bundler and development tools require modern Node.js versions for performance and compatibility' without defining Metro for newcomers
+- suggested fix: Simplify prerequisites explanations or add brief definitions for mobile development terms like Metro bundler
+- source: repo-analysis
 
 <!-- Pass 38 (2026-06-13, commit f7112f9): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,

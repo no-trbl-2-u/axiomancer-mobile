@@ -26,7 +26,7 @@
 - addressed: 2026-06-13 via commit 4e2948f
 - fix: Moved repository navigation section from line 139 to appear immediately after project overview (line 14), providing essential context about VISION.md, docs/adr/, specs/, plan/, docs/, and setup/ directories before users encounter the quick start section
 
-### [ ] [4.8] README quick start prerequisites lack context for mobile development ecosystem  
+### [x] [4.8] README quick start prerequisites lack context for mobile development ecosystem  
 - category: external-critique
 - impact: 6
 - ease: 8
@@ -39,6 +39,9 @@
 - evidence: Lines 24-31 list Node.js 20+, Expo CLI, and platform requirements but don't explain why these specific versions are needed or what each platform option provides
 - suggested fix: Add brief explanation of mobile development context and why each prerequisite is required
 - source: external-critique
+- issue: #382
+- addressed: 2026-06-13 via commit a6af6ee (already completed)
+- fix: Previously addressed in commit a6af6ee which added React Native/Expo ecosystem context to Prerequisites section, explaining the role of each prerequisite in the mobile development pipeline
 
 ### [ ] [4.2] ITEM action always disabled with no explanation (gameplay/content bias)
 - category: external-critique

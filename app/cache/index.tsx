@@ -62,8 +62,8 @@ export default function CacheScreen() {
     if (!vm.active) return <ScreenBg><View /></ScreenBg>;
 
     return (
-        <ScreenBg>
-            <ScrollView contentContainerStyle={styles.scroll}>
+        <ScreenBg scrollable={false}>
+            <ScrollView style={styles.scrollOuter} contentContainerStyle={styles.scroll}>
                 <Text style={styles.eyebrow}>THE RELIQUARY</Text>
                 <Text style={styles.title}>A CACHE, LONG UNCLAIMED</Text>
 
@@ -213,7 +213,11 @@ export default function CacheScreen() {
 }
 
 const styles = StyleSheet.create({
-    scroll: { padding: 14, paddingBottom: 24 },
+    scrollOuter: { flex: 1 },
+    // Centre the reliquary in the viewport so the short intro/card phases
+    // don't sit atop a sea of empty black (critic round: cache was the one
+    // encounter screen that never got dialogue's centring treatment).
+    scroll: { padding: 14, paddingBottom: 24, flexGrow: 1, justifyContent: 'center' },
     eyebrow: {
         fontFamily: FONTS.sans,
         fontSize: 12,
@@ -292,5 +296,5 @@ const styles = StyleSheet.create({
     smallButtonText: { fontFamily: FONTS.sans, fontSize: 13, letterSpacing: 2, color: AXM.bone },
     disabled: { opacity: 0.35 },
     abandon: { alignSelf: 'center', marginTop: 18, padding: 6 },
-    abandonText: { fontFamily: FONTS.mono, fontSize: 12, letterSpacing: 2, color: AXM.ash },
+    abandonText: { fontFamily: FONTS.mono, fontSize: 12, letterSpacing: 2, color: AXM.bone },
 });

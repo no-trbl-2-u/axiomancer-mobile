@@ -154,16 +154,19 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 2,
     },
+    // Legibility (critic round): BEATS/WEAK + ATN/SKL/DEF labels were
+    // ash (#46403a ≈ 2.1:1 on bg) at 7–8px — unreadable for low vision.
+    // Lift to bone (≈ 6.5:1) and nudge the 7px tokens to 8px.
     metaVerb: {
         fontFamily: FONTS.sans,
-        fontSize: 7,
-        color: AXM.ash,
+        fontSize: 8,
+        color: AXM.bone,
         width: 30,
         letterSpacing: 0.5,
     },
     metaTarget: {
         fontFamily: FONTS.sans,
-        fontSize: 7,
+        fontSize: 8,
         marginLeft: 4,
         textTransform: 'uppercase',
         letterSpacing: 0.5,
@@ -182,8 +185,8 @@ const styles = StyleSheet.create({
     },
     statKey: {
         fontFamily: FONTS.sans,
-        fontSize: 8,
-        color: AXM.ash,
+        fontSize: 9,
+        color: AXM.bone,
         letterSpacing: 0.5,
     },
     statVal: {

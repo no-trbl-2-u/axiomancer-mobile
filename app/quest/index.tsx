@@ -293,6 +293,6 @@ const styles = StyleSheet.create({
         fontFamily: FONTS.mono,
         fontSize: 12,
         letterSpacing: 2,
-        color: AXM.ash,
+        color: AXM.bone,
     },
 });

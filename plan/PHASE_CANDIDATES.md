@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-13 at commit ad48123
-> Pass count: 72
+> Last pass: 2026-06-13 at commit e7952ed
+> Pass count: 73
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -301,14 +301,57 @@
 - conflicts: none
 
 ### [ ] [score 2.8] Engine type cast reduction in critical state boundaries
-- proposed: 2026-06-13, expand pass 72  
+- proposed: 2026-06-13, expand pass 72
+
+### [ ] [score 3.8] State layer type cast refinement and typed wrapper expansion
+- proposed: 2026-06-13, expand pass 73
 - source signals:
-  - **Type cast smell clusters**: 144+ 'as any'/'as unknown' instances across codebase (aggressive posture smell)
-  - **Engine boundary concentration**: State/actions.ts, presenters, engine integration points show cast clustering  
-  - **Type safety erosion**: Cast clusters bypass TypeScript benefits in core game mechanics
-- rationale: 144+ cast instances represent significant type safety debt concentrated in critical engine boundaries. Aggressive posture accepts this smell pattern as primary signal for systematic reduction.
-- proposed scope: Multi-phase systematic cast reduction starting with highest-concentration state/presenter files
-- estimated phases: 2-3
+  - as any/as unknown cast cluster (130+ instances across state layer)
+  - state/actions.ts (20+ casts), state/**/store-actions.ts files (15+ casts)
+  - widespread e2e test cast usage pattern
+- rationale: Extends successful Phase 69 typed-wrapper pattern to state layer action files
+- proposed scope: 1-phase typed wrapper expansion for state layer boundaries
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 3.5] Exploration component test coverage completion
+- proposed: 2026-06-13, expand pass 73
+- source signals:
+  - AUDIT.md finding [4.5] exploration UI components missing test coverage
+  - Missing test files: OptionsList, MapOverlays, NodeGrid, NodeToast, MapCanvas
+- rationale: Complete test coverage for critical navigation UI components per audit finding
+- proposed scope: 1-phase test completion for exploration component family
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 3.2] Presenter boundary violation cleanup - useState drain
+- proposed: 2026-06-13, expand pass 73
+- source signals:
+  - useState smell in presenter screens (inventory 4, combat 2, character 3, exploration 1)
+  - Architectural drift from bearings.md presenter purity rule
+- rationale: Migrate local UI state to presenter layer per established architecture
+- proposed scope: 1-phase useState elimination from presenter-driven screens
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 2.8] Hex literal to AXM token migration completion
+- proposed: 2026-06-13, expand pass 73
+- source signals:
+  - Hex literal smell cluster (100+ instances gathering/*, hazard/*)
+  - Token leakage vs established AXM.* pattern
+- rationale: Complete systematic token migration per existing pattern
+- proposed scope: 1-phase hex literal cleanup for minigame components
+- estimated phases: 1
+- conflicts: none (ongoing /iterate drain work - may be better left to iterate)
+
+### [ ] [score 2.7] HazardBoard component extraction refactor
+- proposed: 2026-06-13, expand pass 73
+- source signals:
+  - File-length outlier smell (HazardBoard.tsx at 799 lines)
+  - Maintainability concern for complex component
+- rationale: Extract sub-components from large cohesive component for better maintainability
+- proposed scope: 1-phase sub-component extraction
+- estimated phases: 1
 - conflicts: none
 
 ## Drained / shipped

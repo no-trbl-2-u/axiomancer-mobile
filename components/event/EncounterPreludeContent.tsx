@@ -68,7 +68,7 @@ export function EncounterPreludeContent({
                     {vm.title}
                 </Text>
                 {vm.subtitle.length > 0 && (
-                    <Text style={styles.subtitle} numberOfLines={1}>— {vm.subtitle}</Text>
+                    <Text style={styles.subtitle} numberOfLines={2}>— {vm.subtitle}</Text>
                 )}
             </View>
 

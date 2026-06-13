@@ -54,8 +54,8 @@ export default function RestScreen() {
     const warmthPips = Array.from({ length: vm.warmthMax }, (_, i) => i < vm.warmth);
 
     return (
-        <ScreenBg>
-            <ScrollView contentContainerStyle={styles.scroll}>
+        <ScreenBg scrollable={false}>
+            <ScrollView style={styles.scrollOuter} contentContainerStyle={styles.scroll}>
                 <Text style={styles.eyebrow}>THE NIGHT WATCH</Text>
                 <Text style={styles.title}>A CAMP, A FIRE, THE DARK</Text>
 
@@ -201,7 +201,11 @@ export default function RestScreen() {
 }
 
 const styles = StyleSheet.create({
-    scroll: { padding: 14, paddingBottom: 24 },
+    scrollOuter: { flex: 1 },
+    // Centre the Night Watch in the viewport — the option stack left the
+    // bottom ~40% empty black (critic round, same treatment as cache /
+    // dialogue). Taller states still scroll.
+    scroll: { padding: 14, paddingBottom: 24, flexGrow: 1, justifyContent: 'center' },
     eyebrow: {
         fontFamily: FONTS.sans,
         fontSize: 12,

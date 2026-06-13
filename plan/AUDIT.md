@@ -48,7 +48,7 @@
 - addressed: 2026-06-13 via commit 663f457
 - fix: Cleaned up State (UI) row in plan/bearings.md to show only current implementation status without migration notation. Removed strikethrough text for legacy useState approach to eliminate confusion between current vs historical implementation. Verification: npm run verify passes.
 
-### [4.5] Exploration UI components missing test coverage - OptionsList and MapOverlays affecting maintainability
+### [x] [4.5] Exploration UI components missing test coverage - OptionsList and MapOverlays affecting maintainability
 - category: tests
 - impact: 6
 - ease: 7.5
@@ -61,6 +61,9 @@
 - evidence: components/exploration/OptionsList.tsx, MapOverlays.tsx, NodeGrid.tsx, MapCanvas.tsx, NodeToast.tsx missing .test.tsx files in components/exploration/__tests__/
 - suggested fix: Start with OptionsList component test covering option rendering, selection callbacks, and disabled states
 - source: audit
+- issue: #391
+- addressed: 2026-06-13 via commit d527710
+- fix: Added comprehensive hermetic test suite for OptionsList component covering rendering with multiple options, empty state handling, 4-option limit behavior, callback forwarding, custom drawer copy, key stability, and single option rendering. Follows established testing patterns per docs/testing.md for critical exploration navigation UI component. Verification: npm test OptionsList passes with 7 test cases.
 
 ### [4.2] Setup documentation usage guidance unclear for fresh maintainers
 - category: external-critique

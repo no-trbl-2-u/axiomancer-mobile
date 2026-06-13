@@ -90,13 +90,48 @@ moonlit clearing with a horned, glowing-eyed beast.
 |---|---|
 | <img src="before/06-combat-prelude.png" width="300"> | <img src="after/06-combat-prelude.png" width="300"> |
 
-### Combat — the fight
-Brighter stance/selection gold, richer vitae red, and skill-fuel chips
-(BODY/HEART/MIND/FALLACY/PARADOX) now track the theme accents.
+### Combat — choose a stance  ⚠️ **layout bug fixed**
+The three stance cards were a fixed 160px and overflowed the 390px screen,
+clipping both edges — **the MIND stance was unreachable**. Cards now flex to
+share the row, so all three stances (and their ADV/DIS badges) are visible and
+tappable. Plus the global palette lift on selection gold + vitae red.
+
+| Before (Mind clipped) | After (all three fit) |
+|---|---|
+| <img src="before/07-combat-fight.png" width="300"> | <img src="after/07-combat-fight.png" width="300"> |
+
+### Combat — DO (action menu)
+Stance locked in (collapses to a summary line); the Attack/Defend/Skill/Item
+2×2 grid was already responsive — it gets the palette lift.
 
 | Before | After |
 |---|---|
-| <img src="before/07-combat-fight.png" width="300"> | <img src="after/07-combat-fight.png" width="300"> |
+| <img src="before/08-combat-do.png" width="300"> | <img src="after/08-combat-do.png" width="300"> |
+
+### Combat — LET (strike resolves)
+The roll bars (you vs. foe), ripples, and COMMIT read with stronger gold/red
+contrast.
+
+| Before | After |
+|---|---|
+| <img src="before/09-combat-let.png" width="300"> | <img src="after/09-combat-let.png" width="300"> |
+
+### Combat — round 2 stance
+The clearest demonstration of the stance fix: all three stances visible with
+their ADV (gold) / DIS (red) badges, so the rock-paper-scissors read is legible.
+
+| Before (clipped) | After |
+|---|---|
+| <img src="before/10-combat-round2.png" width="300"> | <img src="after/10-combat-round2.png" width="300"> |
+
+### Combat — aftermath (victory)
+The win was anticlimactic: flat reward numbers, an empty middle. Now: larger
+glowing reward values, a ceremonial laurel watermark filling the void, and a
+gold-glow CARRY ON.
+
+| Before | After |
+|---|---|
+| <img src="before/11-combat-aftermath.png" width="300"> | <img src="after/11-combat-aftermath.png" width="300"> |
 
 ### Boss prelude
 | Before | After |
@@ -132,9 +167,6 @@ This pass landed the **foundation** (theming, global palette pop) + the
 every screen, but these had no individual layout/art pass yet — prioritised for
 the next round:
 
-- **Combat sub-phases** (DO / LET action menus, round 2, aftermath) — not
-  recaptured here; the in-combat interaction is fiddly to script. Layout rework
-  pending.
 - **Bespoke enemy / boss art** — the boss is still the older placeholder figure;
   per-creature illustrations are the natural next "go big" step.
 - **Per-screen hierarchy passes** for Satchel, Memoir, Character, and the

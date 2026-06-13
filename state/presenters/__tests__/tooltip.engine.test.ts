@@ -362,7 +362,7 @@ describe('selectTooltipContentFor', () => {
             const content = selectTooltipContentFor('disabled-action', 'item', EMPTY_STATE);
             expect(content).not.toBeNull();
             expect(content?.title).toBe('ITEM UNAVAILABLE');
-            expect(content?.body).toBe('no usable items in inventory.');
+            expect(content?.body).toBe('Item usage will be available in a future update. Currently no usable items in inventory.');
             expect(content?.accent).toBe('neutral');
         });
 

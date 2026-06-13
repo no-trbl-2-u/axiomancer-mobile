@@ -41,24 +41,48 @@ export function MapCanvas({ nodes, edges, children }: MapCanvasProps) {
     const savedTx = useSharedValue(0);
     const savedTy = useSharedValue(0);
 
-    // Centre the (larger) canvas in the viewport on first layout so the
-    // map opens on its middle rather than the top-left corner.
+    // Open the map framed on the nodes the player can actually act on
+    // right now — the current position plus its available next steps —
+    // rather than the geometric middle of the (much larger) spread
+    // canvas. We measure the viewport on layout, then centre once both
+    // the viewport and the node set are available.
     const initialized = React.useRef(false);
+    const [viewport, setViewport] = React.useState<{ w: number; h: number } | null>(null);
     const onWrapLayout = React.useCallback(
         (e: { nativeEvent: { layout: { width: number; height: number } } }) => {
-            if (initialized.current) return;
             const { width, height } = e.nativeEvent.layout;
             if (width === 0) return;
-            const cx = (width - CANVAS_W) / 2;
-            const cy = (height - CANVAS_H) / 2;
-            tx.value = cx;
-            ty.value = cy;
-            savedTx.value = cx;
-            savedTy.value = cy;
-            initialized.current = true;
+            setViewport((prev) => prev ?? { w: width, h: height });
         },
-        [tx, ty, savedTx, savedTy],
+        [],
     );
+
+    React.useEffect(() => {
+        if (initialized.current || !viewport || nodes.length === 0) return;
+        // The choosable nodes: where the player stands + the steps they
+        // can take from here. Fall back to the canvas centre if (somehow)
+        // none are flagged.
+        const focus = nodes.filter((n) => n.kind === 'available' || n.kind === 'current');
+        let cx: number;
+        let cy: number;
+        if (focus.length > 0) {
+            const ax = focus.reduce((s, n) => s + n.x, 0) / focus.length;
+            const ay = focus.reduce((s, n) => s + n.y, 0) / focus.length;
+            // Node canvas coords = engine coords × SPREAD; initial scale
+            // is 1, so placing the centroid at the viewport centre is a
+            // straight translate.
+            cx = viewport.w / 2 - ax * SPREAD;
+            cy = viewport.h / 2 - ay * SPREAD;
+        } else {
+            cx = (viewport.w - CANVAS_W) / 2;
+            cy = (viewport.h - CANVAS_H) / 2;
+        }
+        tx.value = cx;
+        ty.value = cy;
+        savedTx.value = cx;
+        savedTy.value = cy;
+        initialized.current = true;
+    }, [viewport, nodes, tx, ty, savedTx, savedTy]);
 
     const pinch = Gesture.Pinch()
         .onUpdate((e) => {

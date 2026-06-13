@@ -72,24 +72,31 @@ export function MapCanvas({ nodes, edges, children }: MapCanvasProps) {
                 <Animated.View style={[StyleSheet.absoluteFillObject, mapTransform]}>
                     {/* SVG edges */}
                     <Svg viewBox="0 0 360 400" width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
-                        {edges.map((e, i) => {
+                        {edges.map((e) => {
                             const A = nodeById.get(e.fromId);
                             const B = nodeById.get(e.toId);
                             if (!A || !B) return null;
-                            const mx = (A.x + B.x) / 2 + Math.sin(i * 3) * 12;
-                            const my = (A.y + B.y) / 2 + Math.cos(i * 5) * 10;
+                            // Straight node-to-node paths so the graph reads as
+                            // a connected route. A dark casing under the stroke
+                            // gives each path a defined "road" edge.
+                            const d = `M ${A.x} ${A.y} L ${B.x} ${B.y}`;
+                            const color = e.traveled ? AXM.parchment : (e.locked ? AXM.ash : AXM.bone);
+                            const w = e.traveled ? 3.5 : (e.locked ? 2 : 2.5);
+                            const mx = (A.x + B.x) / 2;
+                            const my = (A.y + B.y) / 2;
                             return (
                                 <G key={`${e.fromId}|${e.toId}`}>
+                                    <Path d={d} stroke={AXM.deepBg} strokeWidth={w + 3} fill="none" opacity={0.95} strokeLinecap="round" />
                                     <Path
-                                        d={`M ${A.x} ${A.y} Q ${mx} ${my} ${B.x} ${B.y}`}
-                                        stroke={e.traveled ? AXM.parchment : (e.locked ? AXM.ash : AXM.bone)}
-                                        strokeWidth={e.traveled ? 2.5 : 1.6}
-                                        strokeDasharray={e.locked ? '4 4' : undefined}
+                                        d={d}
+                                        stroke={color}
+                                        strokeWidth={w}
+                                        strokeDasharray={e.locked ? '5 5' : undefined}
                                         fill="none"
-                                        opacity={e.traveled ? 0.9 : 0.6}
+                                        opacity={e.traveled ? 0.95 : 0.7}
                                         strokeLinecap="round"
                                     />
-                                    {e.traveled && <Circle cx={mx} cy={my} r={2} fill={AXM.sulfur} />}
+                                    {e.traveled && <Circle cx={mx} cy={my} r={2.5} fill={AXM.sulfur} />}
                                 </G>
                             );
                         })}

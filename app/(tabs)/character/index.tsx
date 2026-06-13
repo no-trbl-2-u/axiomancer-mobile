@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { AXM, FONTS } from '@/theme/axm';
 import { TooltipTarget } from '@/components/tooltip/TooltipTarget';
 import { AscendStrip } from '@/components/levelup/AscendStrip';
@@ -13,7 +13,7 @@ import { SectionLabel } from '@/components/SectionLabel';
 import { StanceGlyph } from '@/components/StanceGlyph';
 import { EffectGlyph } from '@/components/EffectGlyph';
 import { XpChain } from '@/components/XpChain';
-import { BodyDiagram } from '@/components/BodyDiagram';
+import { PlayerPortrait } from '@/components/art/PlayerPortrait';
 import { useGameActions, useGameState, useGameStore } from '@/state/GameStoreProvider';
 import { selectCharacterViewModel } from '@/state/presenters/character.engine';
 
@@ -46,6 +46,9 @@ export default function CharacterScreen() {
   // commit / keep-deliberating dismisses. Snapshot the level + base
   // stat values at the moment the modal opens so it has the "before"
   // figures even if the engine mutates underneath us mid-allocation.
+  // Morale ledger is static reference (gain/loss rules); collapsed by
+  // default so the live sheet fits one screen. One tap reveals it.
+  const [ledgerOpen, setLedgerOpen] = useState<boolean>(false);
   const [levelUpOpen, setLevelUpOpen] = useState<boolean>(false);
   const onOpenLevelUp = useCallback(() => setLevelUpOpen(true), []);
   const onCloseLevelUp = useCallback(() => setLevelUpOpen(false), []);
@@ -108,52 +111,47 @@ export default function CharacterScreen() {
 
   return (
     <ScreenBg>
-      {/* Header */}
+      {/* Sheet header — portrait + identity, in the D&D character-sheet
+          idiom: bust top-left, name + alignment + XP centre, level box
+          top-right. */}
       <View
-        style={styles.header}
+        style={styles.sheetHeader}
         accessible
         accessibilityLabel={`${vm.a11y.characterName}. ${vm.a11y.level}. ${vm.a11y.experience}.`}
       >
-        <SectionLabel size={9} color={AXM.bone}>{vm.subtitle}</SectionLabel>
-        <View style={styles.headerRow}>
-          <Text style={styles.characterName}>{vm.displayName}</Text>
-          <View style={styles.levelBox}>
-            <Text style={styles.levelText}>{vm.level}</Text>
-          </View>
+        <View style={styles.portraitFrame}>
+          <PlayerPortrait width={70} height={86} />
         </View>
-        {/* Phase 73 — ASCEND strip mounts between the level box row
-            and the XP chain when the player has unspent stat-allocation
-            points. When pendingPoints === 0 the header is byte-identical
-            to pre-Phase-73. */}
-        {vm.pendingPoints > 0 && (
-          <AscendStrip
-            pendingPoints={vm.pendingPoints}
-            level={vm.level}
-            onOpen={onOpenLevelUp}
-          />
-        )}
-        {/* Phase 73 follow-up (user-jot 2026-05-24): the
-            LevelReadyStrip mounts when XP has crossed the threshold
-            but levelUp() has not yet been dispatched. Mutually
-            exclusive with the AscendStrip above — when both
-            conditions hold, AscendStrip takes priority (spend
-            before earning more). Tap dispatches actions.levelUp(),
-            engine drains XP into pending stat points, AscendStrip
-            replaces this strip next render. */}
-        {vm.pendingPoints === 0 && vm.levelUpReady && (
-          <LevelReadyStrip
-            level={vm.level}
-            onLevelUp={onLevelUp}
-          />
-        )}
-        <View style={styles.marginTop8}>
+        <View style={styles.identityCol}>
+          <SectionLabel size={9} color={AXM.bone}>{vm.subtitle}</SectionLabel>
+          <Text style={styles.characterName} numberOfLines={1}>{vm.displayName}</Text>
+          <Text style={styles.identityAlignment} numberOfLines={1}>{vm.alignment.cellName}</Text>
           <View style={styles.xpRow}>
-            <Text style={styles.xpLabel}>XP CHAIN TO LVL {vm.level + 1}</Text>
+            <Text style={styles.xpLabel}>XP · LVL {vm.level + 1}</Text>
             <Text style={styles.xpValue}>{vm.xp} / {vm.xpMax}</Text>
           </View>
           <XpChain value={vm.xp} max={vm.xpMax} />
         </View>
+        <View style={styles.levelBox}>
+          <Text style={styles.levelText}>{vm.level}</Text>
+          <Text style={styles.levelCaption}>LVL</Text>
+        </View>
       </View>
+
+      {/* Level-up strips sit full-width beneath the header. */}
+      {vm.pendingPoints > 0 && (
+        <AscendStrip
+          pendingPoints={vm.pendingPoints}
+          level={vm.level}
+          onOpen={onOpenLevelUp}
+        />
+      )}
+      {vm.pendingPoints === 0 && vm.levelUpReady && (
+        <LevelReadyStrip
+          level={vm.level}
+          onLevelUp={onLevelUp}
+        />
+      )}
 
       {/* Phase 73 — LevelUpModal overlays the SELF tab when the
           ASCEND strip is tapped. Non-tap-out-dismissible per the
@@ -203,7 +201,7 @@ export default function CharacterScreen() {
 
       {/* Base Stats */}
       <View style={styles.section} accessible accessibilityLabel={vm.a11y.baseStats}>
-        <SectionLabel size={10}>✠ BASE</SectionLabel>
+        <SectionLabel size={10}>✠ ABILITIES</SectionLabel>
         <View style={styles.baseRow}>
           {vm.base.map((r) => (
             // Phase 74 follow-up walkthrough Tick 1: wrap the base
@@ -256,33 +254,48 @@ export default function CharacterScreen() {
           ))}
         </View>
         <View style={styles.moraleLedger}>
-          <SectionLabel size={9} color={AXM.sulfur}>MORALE · LEDGER</SectionLabel>
-          <View style={styles.ledgerGrid}>
-            {[
-              { v: '+i', l: 'every victory', c: AXM.sulfur },
-              { v: '+ii', l: 'good rest at inn', c: AXM.sulfur },
-              { v: '+i', l: 'mercy granted', c: AXM.sulfur },
-              { v: '−ii', l: 'flee combat', c: AXM.blood },
-              { v: '−i', l: 'ally falls', c: AXM.blood },
-              { v: '−i', l: 'no rest in iii nights', c: AXM.blood },
-            ].map((r, i) => (
-              <View key={i} style={styles.ledgerRow}>
-                <Text style={[styles.ledgerValue, { color: r.c }]}>{r.v}</Text>
-                <Text style={styles.ledgerDesc}>{r.l}</Text>
+          <Pressable
+            style={styles.ledgerHeader}
+            onPress={() => setLedgerOpen((o) => !o)}
+            accessibilityRole="button"
+            accessibilityLabel={`Morale ledger, ${ledgerOpen ? 'expanded' : 'collapsed'}`}
+            testID="self-morale-ledger-toggle"
+          >
+            <SectionLabel size={9} color={AXM.sulfur}>MORALE · LEDGER</SectionLabel>
+            <Text style={styles.ledgerChevron}>{ledgerOpen ? '▾' : '▸'}</Text>
+          </Pressable>
+          {ledgerOpen && (
+            <>
+              <View style={styles.ledgerGrid}>
+                {[
+                  { v: '+i', l: 'every victory', c: AXM.sulfur },
+                  { v: '+ii', l: 'good rest at inn', c: AXM.sulfur },
+                  { v: '+i', l: 'mercy granted', c: AXM.sulfur },
+                  { v: '−ii', l: 'flee combat', c: AXM.blood },
+                  { v: '−i', l: 'ally falls', c: AXM.blood },
+                  { v: '−i', l: 'no rest in iii nights', c: AXM.blood },
+                ].map((r, i) => (
+                  <View key={i} style={styles.ledgerRow}>
+                    <Text style={[styles.ledgerValue, { color: r.c }]}>{r.v}</Text>
+                    <Text style={styles.ledgerDesc}>{r.l}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
-          </View>
-          <View style={styles.ledgerDivider} />
-          <Text style={styles.ledgerLore}>
-            {"At "}
-            <Text style={styles.bloodText}>ii or below</Text>
-            {" the road begins to lie. Maps shift. Nodes whisper wrong names."}
-          </Text>
+              <View style={styles.ledgerDivider} />
+              <Text style={styles.ledgerLore}>
+                {"At "}
+                <Text style={styles.bloodText}>ii or below</Text>
+                {" the road begins to lie. Maps shift. Nodes whisper wrong names."}
+              </Text>
+            </>
+          )}
         </View>
       </View>
 
-      {/* Derived Stats */}
-      <View style={styles.section} accessible accessibilityLabel={vm.a11y.derivedStats}>
+      {/* Derived + Saves — two columns (D&D character-sheet body) */}
+      <View style={styles.section}>
+       <View style={styles.twoCol}>
+        <View style={styles.colHalf} accessible accessibilityLabel={vm.a11y.derivedStats}>
         <SectionLabel size={10}>✠ DERIVED</SectionLabel>
         <View style={styles.derivedTable}>
           <View style={[styles.derivedRow, styles.derivedHeader]}>
@@ -310,10 +323,8 @@ export default function CharacterScreen() {
             <Text style={styles.luckValue}>{vm.luck}</Text>
           </View>
         </View>
-      </View>
-
-      {/* Saves & Tests */}
-      <View style={styles.section} accessible accessibilityLabel={vm.a11y.saves}>
+        </View>
+        <View style={styles.colHalf} accessible accessibilityLabel={vm.a11y.saves}>
         <SectionLabel size={10}>✠ SAVES &amp; TESTS</SectionLabel>
         <View style={styles.savesGrid}>
           {vm.saves.map((s) => (
@@ -337,6 +348,8 @@ export default function CharacterScreen() {
             </TooltipTarget>
           ))}
         </View>
+        </View>
+       </View>
       </View>
 
       {/* Philosophical Alignment (Phase 52, engine 0.10.0 Philosophy module) */}
@@ -423,36 +436,9 @@ export default function CharacterScreen() {
         </View>
       </View>
 
-      {/* Equipment */}
-      <View style={styles.section} accessible accessibilityLabel={vm.a11y.equipment}>
-        <SectionLabel size={10}>✠ WORN &amp; WIELDED</SectionLabel>
-        <View style={styles.equipRow}>
-          <BodyDiagram height={140} />
-          <View style={styles.slotsGrid}>
-            {vm.equipment.map((s) => (
-              // Phase 74 follow-up walkthrough Tick 3: wrap each
-              // slot cell in a TooltipTarget pointing at the new
-              // kind:'slot' content (7 engine slot ids). Tap
-              // explains the slot's gameplay role.
-              <TooltipTarget
-                key={s.slotKey}
-                kind="slot"
-                id={s.slotKey}
-                accessibilityLabel={`Explain ${s.name} slot`}
-                accessibilityHint="tap to read description"
-                testID={`self-slot-${s.slotKey}`}
-              >
-                <View style={[styles.slotCell, s.item === null && styles.slotEmpty]}>
-                  <Text style={styles.slotName}>{s.name.toUpperCase()}</Text>
-                  <Text style={[styles.slotItem, s.item === null && { color: AXM.ash }]}>
-                    {s.item ?? '—'}
-                  </Text>
-                </View>
-              </TooltipTarget>
-            ))}
-          </View>
-        </View>
-      </View>
+      {/* WORN & WIELDED removed from the SELF tab (visual-audit
+          2026-06) — equipment lives in the SATCHEL tab; the SELF sheet
+          keeps to identity + stats so it fits one screen. */}
 
       {/* Skills */}
       {vm.skills.length > 0 && (
@@ -507,11 +493,19 @@ const styles = StyleSheet.create({
   // Density pass (visual-audit 2026-06): tightened section spacing and
   // hero-element sizes so the whole SELF tab fits a 390×844 screen
   // without scrolling. Kept legible — only spacing/scale shrank.
-  header: { padding: 12, paddingBottom: 0 },
-  headerRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
-  characterName: { fontFamily: FONTS.gothic, fontSize: 22, lineHeight: 24, color: AXM.parchment, marginTop: 2 },
-  levelBox: { width: 42, height: 42, borderWidth: 2, borderColor: AXM.parchment, backgroundColor: AXM.deepBg, alignItems: 'center', justifyContent: 'center' },
-  levelText: { fontFamily: FONTS.gothic, fontSize: 26, color: AXM.sulfur },
+  // D&D character-sheet header: portrait bust + identity + level box.
+  sheetHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingHorizontal: 12, paddingTop: 12 },
+  portraitFrame: { width: 74, height: 90, borderWidth: 1, borderColor: AXM.ash, backgroundColor: AXM.deepBg, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  identityCol: { flex: 1, paddingTop: 2 },
+  identityAlignment: { fontFamily: FONTS.serifItalic, fontSize: 11, color: AXM.bone, marginTop: 1, marginBottom: 4 },
+  characterName: { fontFamily: FONTS.gothic, fontSize: 22, lineHeight: 24, color: AXM.parchment, marginTop: 1 },
+  levelBox: { width: 46, height: 52, borderWidth: 2, borderColor: AXM.parchment, backgroundColor: AXM.deepBg, alignItems: 'center', justifyContent: 'center' },
+  levelText: { fontFamily: FONTS.gothic, fontSize: 26, lineHeight: 28, color: AXM.sulfur },
+  levelCaption: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 2, color: AXM.bone },
+  twoCol: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
+  colHalf: { flex: 1 },
+  ledgerHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  ledgerChevron: { fontFamily: FONTS.mono, fontSize: 12, color: AXM.sulfur },
   xpRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 },
   xpLabel: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone, letterSpacing: 1 },
   xpValue: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.sulfur },

@@ -37,9 +37,12 @@ export function StancePhase({
 }
 
 const styles = StyleSheet.create({
+    // Cards flex to share the row so all three stances are visible and
+    // tappable on a 390px screen (no horizontal overflow / clipping).
     row: {
         flexDirection: 'row',
-        justifyContent: 'center',
+        alignItems: 'stretch',
         paddingHorizontal: 8,
+        gap: 6,
     },
 });

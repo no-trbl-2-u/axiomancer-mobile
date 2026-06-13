@@ -26,6 +26,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Path as SvgPath } from 'react-native-svg';
 
 import { Splatter } from '@/components/Splatter';
+import { VictoryWreath } from '@/components/art/VictoryWreath';
 import { AXM, FONTS } from '@/theme/axm';
 import type { AftermathVictoryViewModel } from '@/state/presenters/aftermath.engine';
 
@@ -131,9 +132,12 @@ export function CombatVictoryPanel({ vm, onContinue }: CombatVictoryPanelProps) 
                 <View style={styles.lootSection}>
                     <Text style={styles.lootHeader}>✠ SPOILS OF THE FELLED</Text>
                     {lootCount === 0 ? (
-                        <Text style={styles.lootEmpty} testID="combat-victory-panel-loot-empty">
-                            “no spoils. only quiet.”
-                        </Text>
+                        <View style={styles.lootEmptyWrap} testID="combat-victory-panel-loot-empty">
+                            <VictoryWreath size={104} />
+                            <Text style={styles.lootEmpty}>
+                                “no spoils. only quiet.”
+                            </Text>
+                        </View>
                     ) : (
                         <View style={styles.lootList}>
                             {vm.rewards.loot.map((it, i) => (
@@ -357,15 +361,19 @@ const styles = StyleSheet.create({
     rewardCell: {
         flex: 1,
         paddingHorizontal: 4,
-        paddingTop: 6,
-        paddingBottom: 8,
+        paddingTop: 10,
+        paddingBottom: 10,
         alignItems: 'center',
         justifyContent: 'flex-end',
     },
     rewardValue: {
         fontFamily: FONTS.mono,
-        fontSize: 18,
-        lineHeight: 20,
+        fontSize: 27,
+        lineHeight: 30,
+        // Lift the payoff numbers off the strip so a win reads as a reward.
+        textShadowColor: AXM.shadow,
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 10,
     },
     rewardLabel: {
         fontFamily: FONTS.sans,
@@ -381,11 +389,15 @@ const styles = StyleSheet.create({
         letterSpacing: 2,
         color: AXM.parchment,
     },
+    lootEmptyWrap: {
+        marginTop: 10,
+        alignItems: 'center',
+    },
     lootEmpty: {
         fontFamily: FONTS.serifItalic,
         fontSize: 13,
         color: AXM.bone,
-        marginTop: 8,
+        marginTop: 6,
         textAlign: 'center',
     },
     lootList: { marginTop: 6 },
@@ -431,9 +443,15 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         backgroundColor: AXM.silhouette,
         borderWidth: 2,
-        borderColor: AXM.parchment,
+        borderColor: AXM.sulfur,
         alignItems: 'center',
         justifyContent: 'center',
+        // Gold glow so the exit reads as the rewarding way forward.
+        shadowColor: AXM.sulfur,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.5,
+        shadowRadius: 12,
+        elevation: 6,
     },
     carryOnPressed: {
         opacity: 0.85,
@@ -441,7 +459,7 @@ const styles = StyleSheet.create({
     carryOnLabel: {
         fontFamily: FONTS.gothic,
         fontSize: 16,
-        color: AXM.parchment,
+        color: AXM.sulfur,
         letterSpacing: 2,
     },
 });

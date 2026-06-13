@@ -53,10 +53,40 @@ const SCREENS = [
     },
     {
         id: 'combat-fight', file: '07-combat-fight.png', drive: async (p) => {
-            await goto(p, '/character')
-            await openDevMenu(p)
-            await p.getByTestId('debug-combat-button').click()
-            await settle(p, 1400)
+            await enterFight(p) // round-1 stance picker (all three stances visible)
+        },
+    },
+    {
+        id: 'combat-do', file: '08-combat-do.png', drive: async (p) => {
+            await enterFight(p)
+            await tap(p, 'combat-stance-body')
+            await settle(p, 700)
+        },
+    },
+    {
+        id: 'combat-let', file: '09-combat-let.png', drive: async (p) => {
+            await enterFight(p)
+            await tap(p, 'combat-stance-body')
+            await tap(p, 'combat-action-attack')
+            await settle(p, 900)
+        },
+    },
+    {
+        id: 'combat-round2', file: '10-combat-round2.png', drive: async (p) => {
+            await enterFight(p)
+            await playRound(p)
+            await settle(p, 800)
+        },
+    },
+    {
+        id: 'combat-aftermath', file: '11-combat-aftermath.png', drive: async (p) => {
+            await enterFight(p)
+            // Play rounds until the victory panel surfaces (rat dies in ~2).
+            for (let i = 0; i < 6; i++) {
+                if (await isVisible(p, 'combat-victory-panel')) break
+                await playRound(p)
+            }
+            await settle(p, 800)
         },
     },
     {
@@ -73,6 +103,36 @@ const SCREENS = [
         },
     },
 ]
+
+async function tap(page, testId, timeout = 12000) {
+    const el = page.getByTestId(testId)
+    await el.waitFor({ state: 'visible', timeout })
+    await el.click()
+}
+
+async function isVisible(page, testId) {
+    return page.getByTestId(testId).first().isVisible().catch(() => false)
+}
+
+/** Trigger a combat encounter and step through the prelude into the
+ *  round-1 stance picker. */
+async function enterFight(page) {
+    await triggerEncounter(page, 'encounter')
+    await tap(page, 'encounter-modal-fight')
+    await settle(page, 900)
+}
+
+/** Play one full round: pick BODY stance, ATTACK, resolve, continue. */
+async function playRound(page) {
+    if (await isVisible(page, 'combat-stance-body')) {
+        await tap(page, 'combat-stance-body')
+    }
+    if (await isVisible(page, 'combat-action-attack')) {
+        await tap(page, 'combat-action-attack')
+    }
+    await tap(page, 'combat-resolve-continue')
+    await settle(page, 700)
+}
 
 async function triggerEncounter(page, kind) {
     await goto(page, '/character')

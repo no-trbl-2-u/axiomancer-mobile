@@ -25,11 +25,12 @@ export function StanceCard({
     const tooltip = useTooltip();
     const ref = useRef<View | null>(null);
     return (
-        <View ref={ref}>
+        <View ref={ref} style={styles.outer}>
             <TouchableOpacity
                 onPress={() => onPick(opt.key)}
                 onLongPress={(isAdv || isDis) ? () => tooltip.show({ kind: 'stance-chip', id: opt.key, anchorRef: ref }) : undefined}
                 style={styles.cardTouch}
+                testID={`combat-stance-${opt.key}`}
                 accessibilityRole="button"
                 accessibilityLabel={`${a11yLabel}${(isAdv || isDis) ? ` with ${isAdv ? 'advantage' : 'disadvantage'}` : ''}`}
                 accessibilityHint={(isAdv || isDis) ? 'hold to read advantage description' : undefined}
@@ -84,18 +85,23 @@ export function StanceCard({
 }
 
 const styles = StyleSheet.create({
+    // Each card flexes to share the row evenly so all three stances fit
+    // on a 390px screen (previously fixed at 160px, which overflowed and
+    // clipped the edge stances — the MIND stance was unreachable).
+    outer: {
+        flex: 1,
+    },
     cardTouch: {
-        width: 160,
-        height: 240,
+        width: '100%',
+        height: 234,
         borderRadius: 3,
-        marginHorizontal: 4,
     },
     card: {
         flex: 1,
         borderWidth: 1,
         borderRadius: 3,
         backgroundColor: AXM.bg,
-        padding: 10,
+        padding: 7,
         alignItems: 'center',
         position: 'relative',
     },
@@ -119,8 +125,8 @@ const styles = StyleSheet.create({
         letterSpacing: 0.5,
     },
     glyphWrap: {
-        marginTop: 16,
-        marginBottom: 8,
+        marginTop: 12,
+        marginBottom: 6,
     },
     stanceName: {
         fontFamily: FONTS.gothic,

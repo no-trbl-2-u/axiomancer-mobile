@@ -79,7 +79,7 @@
 - suggested fix: Add usage guidance explaining when to use setup/ documentation vs README quick start based on developer needs
 - source: external-critique
 
-### [3.6] Hazard gameplay components missing test coverage affecting minigame maintainability
+### [x] [3.6] Hazard gameplay components missing test coverage affecting minigame maintainability
 - category: tests
 - impact: 6
 - ease: 6
@@ -92,6 +92,9 @@
 - evidence: components/hazard/HazardIntroOverlay.tsx and danger-art.tsx missing corresponding .test.tsx files in components/hazard/__tests__/
 - suggested fix: Add comprehensive hermetic tests for HazardIntroOverlay covering overlay display, transition states, and user interaction handling
 - source: audit
+- issue: #392
+- addressed: 2026-06-13 via commit 8a90661
+- fix: Added comprehensive hermetic test suite for HazardIntroOverlay component covering overlay display states, user interactions, accessibility support, and edge cases. Created 16 test cases including mount contract validation, UI element rendering verification, callback behavior testing, accessibility validation, DangerArt integration, and edge case handling. Follows established testing patterns with proper mocking. Verification: npm test HazardIntroOverlay passes.
 
 ## Previously addressed findings
 

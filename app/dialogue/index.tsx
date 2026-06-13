@@ -128,8 +128,8 @@ export default function DialogueScreen() {
     if (!hasEvent) return <ScreenBg><View /></ScreenBg>;
 
     return (
-        <ScreenBg>
-            <ScrollView contentContainerStyle={styles.scroll}>
+        <ScreenBg scrollable={false}>
+            <ScrollView style={styles.scrollOuter} contentContainerStyle={styles.scroll}>
                 <Text style={styles.eyebrow}>◉ PARLEY</Text>
                 <View style={styles.nameplate} testID="dialogue-nameplate">
                     <Text style={styles.name}>{vm.title}</Text>
@@ -165,6 +165,7 @@ export default function DialogueScreen() {
 }
 
 const styles = StyleSheet.create({
+    scrollOuter: { flex: 1 },
     // Centre the conversation in the viewport so it doesn't sit in a sea
     // of empty black (critic round 1: narrative screens had huge dead space).
     scroll: { padding: 14, paddingBottom: 24, flexGrow: 1, justifyContent: 'center' },

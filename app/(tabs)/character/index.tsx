@@ -307,14 +307,14 @@ export default function CharacterScreen() {
           {vm.derived.map((row) => (
             <View key={row.label} style={[styles.derivedRow, styles.derivedDataRow]}>
               <Text style={[styles.derivedCell, styles.derivedRowLabel]}>{row.label}</Text>
-              <TooltipTarget kind="item-stat" id={row.attackId} accessibilityLabel={`Explain ${row.label} attack`} accessibilityHint="tap to read description" testID={`self-derived-${row.attackId}`}>
-                <Text style={[styles.derivedCell, styles.derivedData]}>{row.attack}</Text>
+              <TooltipTarget kind="item-stat" id={row.attackId} style={styles.derivedCell} accessibilityLabel={`Explain ${row.label} attack`} accessibilityHint="tap to read description" testID={`self-derived-${row.attackId}`}>
+                <Text style={styles.derivedData}>{row.attack}</Text>
               </TooltipTarget>
-              <TooltipTarget kind="item-stat" id={row.skillId} accessibilityLabel={`Explain ${row.label} skill`} accessibilityHint="tap to read description" testID={`self-derived-${row.skillId}`}>
-                <Text style={[styles.derivedCell, styles.derivedData]}>{row.skill}</Text>
+              <TooltipTarget kind="item-stat" id={row.skillId} style={styles.derivedCell} accessibilityLabel={`Explain ${row.label} skill`} accessibilityHint="tap to read description" testID={`self-derived-${row.skillId}`}>
+                <Text style={styles.derivedData}>{row.skill}</Text>
               </TooltipTarget>
-              <TooltipTarget kind="item-stat" id={row.defenseId} accessibilityLabel={`Explain ${row.label} defense`} accessibilityHint="tap to read description" testID={`self-derived-${row.defenseId}`}>
-                <Text style={[styles.derivedCell, styles.derivedData]}>{row.defense}</Text>
+              <TooltipTarget kind="item-stat" id={row.defenseId} style={styles.derivedCell} accessibilityLabel={`Explain ${row.label} defense`} accessibilityHint="tap to read description" testID={`self-derived-${row.defenseId}`}>
+                <Text style={styles.derivedData}>{row.defense}</Text>
               </TooltipTarget>
             </View>
           ))}

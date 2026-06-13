@@ -26,7 +26,14 @@ This repository contains extensive documentation across multiple directories. He
 
 ## Quick start
 
-*For comprehensive repository setup including environment configuration, development tools, and troubleshooting, see [`setup/01_repository.md`](setup/01_repository.md). The quick start below covers the minimum steps to run the app.*
+*For comprehensive repository setup including environment configuration, development tools, and troubleshooting, see [`setup/01_repository.md`](setup/01_repository.md). Use the comprehensive setup guide when:*
+
+*- You're setting up a **fresh development environment***
+*- You encounter **issues with the quick start** process*  
+*- You need **detailed environment configuration** or troubleshooting*
+*- You're a **new maintainer** who wants full context*
+
+*The quick start below covers the minimum steps to run the app for experienced developers with existing React Native environments.*
 
 ### Prerequisites
 

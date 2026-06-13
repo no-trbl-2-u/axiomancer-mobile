@@ -80,7 +80,18 @@ function runExpoExport() {
     const result = spawnSync(
         'npx',
         ['expo', 'export', '--platform', 'web', '--output-dir', EXPORT_DIR],
-        { cwd: REPO_ROOT, stdio: 'inherit' },
+        {
+            cwd: REPO_ROOT,
+            stdio: 'inherit',
+            // The harness drives the DEV MENU (dev-menu-header → the Debug*
+            // entry buttons), which only mounts when `isDevToolsEnabled()` is
+            // true. In an export build `__DEV__` is false, so we must bake
+            // `extra.devToolsEnabled=true` into the bundle — `app.config.ts`
+            // does that for any non-`production` BUILD_PROFILE. Without this
+            // the dev menu never renders and the playthrough times out
+            // waiting for `dev-menu-header`.
+            env: { ...process.env, BUILD_PROFILE: 'preview' },
+        },
     )
     if (result.status !== 0) {
         console.error('gathering-e2e: expo export failed')

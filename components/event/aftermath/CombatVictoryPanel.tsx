@@ -345,8 +345,12 @@ const styles = StyleSheet.create({
     },
     finalBlowDescriptor: {
         fontFamily: FONTS.mono,
-        fontSize: 8,
-        color: AXM.ash,
+        fontSize: 9,
+        // Was AXM.ash (~2.1:1 on the dock-bg box) at 8px — the "— felled
+        // the foe" caption read as near-black grime on the box edge.
+        // bone (~6.5:1) makes it legible without competing with the
+        // parchment phrase above it.
+        color: AXM.bone,
         letterSpacing: 1.4,
         marginTop: 8,
     },

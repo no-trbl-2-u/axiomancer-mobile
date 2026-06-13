@@ -130,6 +130,18 @@ const SCREENS = [
     { id: 'cache', file: '18-cache.png', drive: (p) => debugLaunch(p, 'debug-cache-button', 1800) },
     { id: 'quest-board', file: '25-quest-board.png', drive: (p) => debugLaunch(p, 'debug-quest-button', 1800) },
     { id: 'dialogue', file: '19-dialogue.png', drive: (p) => triggerMinigame(p, 'quest') },
+    // Paced narrative screens reached via <EventGate> (Phase 137 dedicated
+    // routes) — seeded by the village/cutscene dev triggers.
+    { id: 'village', file: '28-village.png', drive: (p) => triggerMinigame(p, 'village') },
+    {
+        id: 'cutscene', file: '29-cutscene.png', drive: async (p) => {
+            await triggerMinigame(p, 'cutscene')
+            // Reveal all lines (SKIP) so the full stacked scene is audited,
+            // not just the first line. SKIP doesn't dismiss; advance does.
+            if (await isVisible(p, 'cutscene-skip')) await tap(p, 'cutscene-skip')
+            await settle(p, 700)
+        },
+    },
     {
         id: 'hazard-board', file: '14-hazard-board.png', drive: async (p) => {
             await goto(p, '/character')

@@ -78,7 +78,7 @@ export default function VillageScreen() {
                                         <Text style={styles.wareDesc}>{ware.description}</Text>
                                     )}
                                 </View>
-                                <Text style={styles.warePrice}>{ware.price}s</Text>
+                                <Text style={[styles.warePrice, !ware.affordable && styles.warePriceUnaffordable]}>{ware.price}s</Text>
                             </TouchableOpacity>
                         ))}
                     </>
@@ -153,6 +153,10 @@ const styles = StyleSheet.create({
     wareName: { fontFamily: FONTS.gothic, fontSize: 16, color: AXM.parchment, letterSpacing: 1 },
     wareDesc: { fontFamily: FONTS.mono, fontSize: 8, color: AXM.bone, marginTop: 2, textTransform: 'uppercase' },
     warePrice: { fontFamily: FONTS.gothic, fontSize: 18, color: AXM.sulfur },
+    // Price tracks affordability, not just the row's opacity: value-gold
+    // is loud enough to survive the unaffordable dim, so mute the colour
+    // to bone when the player can't afford it (critic round).
+    warePriceUnaffordable: { color: AXM.bone },
     bigButton: {
         borderWidth: 2,
         borderColor: AXM.parchment,

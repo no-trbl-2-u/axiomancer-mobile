@@ -132,12 +132,9 @@ export function CombatVictoryPanel({ vm, onContinue }: CombatVictoryPanelProps) 
                 <View style={styles.lootSection}>
                     <Text style={styles.lootHeader}>✠ SPOILS OF THE FELLED</Text>
                     {lootCount === 0 ? (
-                        <View style={styles.lootEmptyWrap} testID="combat-victory-panel-loot-empty">
-                            <VictoryWreath size={104} />
-                            <Text style={styles.lootEmpty}>
-                                “no spoils. only quiet.”
-                            </Text>
-                        </View>
+                        <Text style={styles.lootEmpty} testID="combat-victory-panel-loot-empty">
+                            “no spoils. only quiet.”
+                        </Text>
                     ) : (
                         <View style={styles.lootList}>
                             {vm.rewards.loot.map((it, i) => (
@@ -158,7 +155,13 @@ export function CombatVictoryPanel({ vm, onContinue }: CombatVictoryPanelProps) 
                     )}
                 </View>
 
-                <View style={styles.spacer} />
+                {/* Ceremonial laurel watermark — fills the void above the
+                    CTA so a win always reads as an earned, framed beat. */}
+                <View style={styles.spacer}>
+                    <View style={styles.wreathWatermark} pointerEvents="none">
+                        <VictoryWreath size={132} />
+                    </View>
+                </View>
 
                 <Pressable
                     onPress={onContinue}
@@ -389,10 +392,6 @@ const styles = StyleSheet.create({
         letterSpacing: 2,
         color: AXM.parchment,
     },
-    lootEmptyWrap: {
-        marginTop: 10,
-        alignItems: 'center',
-    },
     lootEmpty: {
         fontFamily: FONTS.serifItalic,
         fontSize: 13,
@@ -438,7 +437,8 @@ const styles = StyleSheet.create({
     rarityRailUncommon: { backgroundColor: AXM.parchment, opacity: 0.7 },
     rarityRailRare: { backgroundColor: AXM.parchment },
     rarityRailUnique: { backgroundColor: AXM.sulfur },
-    spacer: { flex: 1, minHeight: 8 },
+    spacer: { flex: 1, minHeight: 8, alignItems: 'center', justifyContent: 'center' },
+    wreathWatermark: { opacity: 0.16 },
     carryOn: {
         paddingVertical: 12,
         backgroundColor: AXM.silhouette,

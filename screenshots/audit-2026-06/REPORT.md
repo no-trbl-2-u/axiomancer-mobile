@@ -52,25 +52,31 @@ and a glowing call-to-action.
 |---|---|
 | <img src="before/00-title.png" width="300"> | <img src="after/00-title.png" width="300"> |
 
-### Exploration (WILDS)
-Global palette lift: brighter gold tab + labels, richer vitae red, crisper
-parchment headings. The map reads with more contrast.
+### Exploration (WILDS) — **map revamp**
+Bigger, more-defined nodes (each glyph now sits on a backing disc with a bolder
+rim so it reads as a distinct *stop*); straight, road-cased node-to-node edges
+(replacing the faint wobbly curves) so the graph reads as a connected route.
+Still pinch/pan scrollable. Plus the global palette lift.
 
 | Before | After |
 |---|---|
 | <img src="before/01-exploration.png" width="300"> | <img src="after/01-exploration.png" width="300"> |
 
-### Character / SELF (top + scrolled)
-Stronger accent contrast on stat values, derived table, and the paper-doll
-figure.
+### Character / SELF — **complete revamp → D&D character sheet**
+Was a long full-width scroll with a wasteful full-width DERIVED table. Now a
+proper character sheet that **fits one screen, no scrolling**: hooded-pilgrim
+**portrait bust top-left** (new `PlayerPortrait`), identity + alignment + XP,
+level box top-right; boxed **ABILITIES**; **DERIVED and SAVES & TESTS side-by-side**
+in two columns; collapsible MORALE LEDGER; **WORN & WIELDED removed** (equipment
+lives in SATCHEL). The "before (mid)" shot below shows how far it used to scroll.
 
-| Before (top) | After (top) |
+| Before (top) | After (full sheet, one screen) |
 |---|---|
 | <img src="before/02-character-top.png" width="300"> | <img src="after/02-character-top.png" width="300"> |
 
-| Before (mid) | After (mid) |
+| Before (had to scroll this far) | — |
 |---|---|
-| <img src="before/03-character-mid.png" width="300"> | <img src="after/03-character-mid.png" width="300"> |
+| <img src="before/03-character-mid.png" width="300"> | |
 
 ### Satchel
 | Before | After |
@@ -108,6 +114,10 @@ tappable. Plus the global palette lift on selection gold + vitae red.
 | Before (Mind clipped) | After (all three fit) |
 |---|---|
 | <img src="before/07-combat-fight.png" width="300"> | <img src="after/07-combat-fight.png" width="300"> |
+
+> The top-left enemy portrait is now the **bespoke archetype figure** keyed to
+> the foe (a rat for the Salt-Gnaw Rat), matching the prelude — not the old
+> generic hooded silhouette.
 
 ### Combat — DO (action menu)
 Stance locked in (collapses to a summary line); the Attack/Defend/Skill/Item
@@ -155,6 +165,14 @@ new art style (was a placeholder).
 |---|---|
 | <img src="before/13-hazard.png" width="300"> | <img src="after/13-hazard.png" width="300"> |
 
+### Hazard board + Dialogue (newly captured)
+The hazard route-select board (colored route cards popping under the new palette)
+and the dedicated dialogue screen — neither had an after-capture before.
+
+| Hazard board | Dialogue |
+|---|---|
+| <img src="after/14-hazard-board.png" width="300"> | <img src="after/19-dialogue.png" width="300"> |
+
 ---
 
 ## Theme showcase (dev switcher)
@@ -179,13 +197,12 @@ This pass landed the **foundation** (theming, global palette pop) + the
 every screen, but these had no individual layout/art pass yet — prioritised for
 the next round:
 
-- **Hand-tuned art for marquee enemies** — each foe now gets an archetype
-  illustration; the named bosses / signature fights could earn fully bespoke
-  one-off drawings beyond their archetype.
-- **In-combat enemy portrait** — the small avatar in `CombatEnemyPanel` is still
-  the generic hooded silhouette; it could reuse the archetype figures.
-- **Per-screen hierarchy passes** for Satchel, Memoir, Character, and the
-  event/minigame screens (rest, gather, treasure, quest, gathering, cache,
-  dialogue, village, cutscene).
+- **Capture the remaining minigame boards** — gathering, rest, loot-cache, and
+  the quest board need proper e2e-style capture (seed injection + intro
+  dismissal, like `gathering-e2e.mjs`); the quick dev-trigger lands on an empty
+  event fallback. Village + cutscene also still lack after-captures.
+- **Hand-tuned art for marquee bosses** — beyond their archetype illustration.
+- **Per-screen hierarchy passes** for Satchel + Memoir (not yet individually
+  reworked — they have the global palette lift only).
 - **Tab-bar icon refresh** — serviceable today; could gain filled/glow active
   states.

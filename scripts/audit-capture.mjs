@@ -108,7 +108,37 @@ const SCREENS = [
             await settle(p, 1600)
         },
     },
+    // Minigame + narrative screens reached via the dev trigger buttons.
+    { id: 'gathering', file: '20-gathering.png', drive: (p) => triggerMinigame(p, 'gather') },
+    { id: 'rest', file: '16-rest.png', drive: (p) => triggerMinigame(p, 'rest') },
+    { id: 'cache', file: '18-cache.png', drive: (p) => triggerMinigame(p, 'treasure') },
+    { id: 'dialogue', file: '19-dialogue.png', drive: (p) => triggerMinigame(p, 'quest') },
+    {
+        id: 'hazard-board', file: '14-hazard-board.png', drive: async (p) => {
+            await goto(p, '/character')
+            await openDevMenu(p)
+            await p.getByTestId('debug-hazard-button').click()
+            await settle(p, 1600)
+            // Dismiss the danger intro to reach the board, if present.
+            const faceIt = p.getByText(/FACE IT/i)
+            if (await faceIt.count().catch(() => 0)) {
+                await faceIt.first().click().catch(() => {})
+                await settle(p, 1400)
+            }
+        },
+    },
 ]
+
+/** Open the dev menu and fire a trigger-encounter button, then settle on
+ *  the resulting route (minigame intro / approach screen). */
+async function triggerMinigame(page, kind) {
+    await goto(page, '/character')
+    await openDevMenu(page)
+    const btn = page.getByTestId(`debug-trigger-encounter-${kind}`)
+    await btn.waitFor({ state: 'visible', timeout: 15000 })
+    await btn.click()
+    await settle(page, 1600)
+}
 
 async function tap(page, testId, timeout = 12000) {
     const el = page.getByTestId(testId)

@@ -60,7 +60,7 @@
 - addressed: 2026-06-13 via commit 529d4e5
 - fix: Updated tooltip content for disabled ITEM action to explain item usage will be available in future update, providing context about current limitations and setting expectations for future availability
 
-### [ ] [4.2] Testing standard lacks mobile-specific testing guidance
+### [x] [4.2] Testing standard lacks mobile-specific testing guidance
 - category: external-critique
 - impact: 6
 - ease: 7
@@ -73,6 +73,9 @@
 - evidence: Lines 67-81 mention mocking expo-haptics and expo-font but don't explain mobile testing strategy beyond component render tests
 - suggested fix: Add mobile-specific testing guidance covering device simulation, native module mocking, and platform differences
 - source: external-critique
+- issue: #385
+- addressed: 2026-06-12 via commit a46baae
+- fix: Added comprehensive mobile-specific testing section covering platform-specific component testing, device simulation, native module mocking strategy, React Native-specific test patterns, and mobile performance testing considerations
 
 ### [x] [4.0] Stack decisions table mixes current state with migration notes
 - category: external-critique
@@ -110,7 +113,7 @@
 - addressed: 2026-06-13 via commit b8e7d53
 - fix: Added comprehensive hermetic test suite for ApproachSelect component covering mount contract validation, content rendering verification, callback behavior testing, accessibility label validation, and edge case handling. Created components/gathering/__tests__ directory and ApproachSelect.test.tsx with 12 test cases following established hermetic testing patterns.
 
-### [ ] [2.0] Empty chat file requires content or cleanup
+### [x] [2.0] Empty chat file requires content or cleanup
 - category: content-gaps
 - impact: 2
 - ease: 10
@@ -123,6 +126,8 @@
 - evidence: File contains only header and timestamp, no actual content
 - suggested fix: Either remove the empty file or add the actual chat content that belongs there
 - source: audit
+- addressed: 2026-06-13 via commit 3edffe7
+- fix: Removed empty design/handoff-2026-05-16/chats/chat3.md file which contained only header and timestamp with no actual content, improving repository content hygiene
 
 ## Previously addressed findings
 

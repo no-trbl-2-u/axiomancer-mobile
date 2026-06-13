@@ -16,6 +16,7 @@ import React from 'react';
 import { Path, Circle, Line, G, Ellipse } from 'react-native-svg';
 
 import { EncounterIllustration } from '@/components/event/EncounterIllustration';
+import { AXM } from '@/theme/axm';
 
 describe('EncounterIllustration', () => {
     it('renders with accessibility attributes', () => {
@@ -64,8 +65,8 @@ describe('EncounterIllustration', () => {
         const tree = render(<EncounterIllustration />);
         const circles = tree.UNSAFE_getAllByType(Circle);
         // Should have circular creature features (eyes, nodes, etc.)
-        const redCircles = circles.filter(circle => 
-            circle.props.fill === '#c0152a' // AXM.blood color
+        const redCircles = circles.filter(circle =>
+            circle.props.fill === AXM.blood // creature accent
         );
         expect(redCircles.length).toBeGreaterThan(0);
     });

@@ -16,7 +16,7 @@ export const GL = {
     rot: '#8a57bd',
     soil: '#14110c',
     soilHi: '#1f1a13',
-    ember: '#c0152a',
+    ember: AXM.blood,
 } as const;
 
 export interface FamilyColorway {

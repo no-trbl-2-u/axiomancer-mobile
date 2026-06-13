@@ -38,6 +38,7 @@ const DebugPopulateAllItems = lazy(() => import('@/components/DebugPopulateAllIt
 const DebugSeedButton = lazy(() => import('@/components/DebugSeedButton').then(m => ({ default: m.DebugSeedButton })));
 const DebugXpGrant = lazy(() => import('@/components/DebugXpGrant').then(m => ({ default: m.DebugXpGrant })));
 const AestheticDevToggle = lazy(() => import('@/components/AestheticDevToggle').then(m => ({ default: m.AestheticDevToggle })));
+const DebugThemeSwitcher = lazy(() => import('@/components/DebugThemeSwitcher').then(m => ({ default: m.DebugThemeSwitcher })));
 
 function LoadingFallback() {
   return (
@@ -59,6 +60,7 @@ export function DebugComponentsLazy() {
   return (
     <Suspense fallback={<LoadingFallback />}>
       <AestheticDevToggle />
+      <DebugThemeSwitcher />
       <DebugSeedButton />
       <DebugPopulateAllItems />
       <DebugTriggerEncounter />

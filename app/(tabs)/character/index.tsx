@@ -120,7 +120,7 @@ export default function CharacterScreen() {
         accessibilityLabel={`${vm.a11y.characterName}. ${vm.a11y.level}. ${vm.a11y.experience}.`}
       >
         <View style={styles.portraitFrame}>
-          <PlayerPortrait width={70} height={86} />
+          <PlayerPortrait width={100} height={122} />
         </View>
         <View style={styles.identityCol}>
           <SectionLabel size={9} color={AXM.bone}>{vm.subtitle}</SectionLabel>
@@ -218,7 +218,7 @@ export default function CharacterScreen() {
               testID={`self-base-${r.stanceKey}`}
             >
               <View style={styles.baseCard}>
-                <StanceGlyph kind={r.stanceKey} size={22} color={AXM.parchment} />
+                <StanceGlyph kind={r.stanceKey} size={28} color={AXM.parchment} />
                 <Text style={styles.baseStatLabel}>{r.label}</Text>
                 <Text style={styles.baseStatValue}>{r.value}</Text>
               </View>
@@ -495,7 +495,7 @@ const styles = StyleSheet.create({
   // without scrolling. Kept legible — only spacing/scale shrank.
   // D&D character-sheet header: portrait bust + identity + level box.
   sheetHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingHorizontal: 12, paddingTop: 12 },
-  portraitFrame: { width: 74, height: 90, borderWidth: 1, borderColor: AXM.ash, backgroundColor: AXM.deepBg, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  portraitFrame: { width: 104, height: 126, borderWidth: 1, borderColor: AXM.ash, backgroundColor: AXM.deepBg, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   identityCol: { flex: 1, paddingTop: 2 },
   identityAlignment: { fontFamily: FONTS.serifItalic, fontSize: 11, color: AXM.bone, marginTop: 1, marginBottom: 4 },
   characterName: { fontFamily: FONTS.gothic, fontSize: 22, lineHeight: 24, color: AXM.parchment, marginTop: 1 },
@@ -510,10 +510,10 @@ const styles = StyleSheet.create({
   xpLabel: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone, letterSpacing: 1 },
   xpValue: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.sulfur },
   section: { paddingTop: 6, paddingHorizontal: 12, paddingBottom: 0 },
-  baseRow: { flexDirection: 'row', gap: 6, marginTop: 3 },
-  baseCard: { flex: 1, paddingVertical: 5, paddingHorizontal: 6, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, alignItems: 'center' },
-  baseStatLabel: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 2, color: AXM.bone, marginTop: 1 },
-  baseStatValue: { fontFamily: FONTS.gothic, fontSize: 24, color: AXM.sulfur, lineHeight: 26 },
+  baseRow: { flexDirection: 'row', gap: 8, marginTop: 4 },
+  baseCard: { flex: 1, paddingVertical: 11, paddingHorizontal: 6, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, alignItems: 'center' },
+  baseStatLabel: { fontFamily: FONTS.sans, fontSize: 13, letterSpacing: 2, color: AXM.bone, marginTop: 3 },
+  baseStatValue: { fontFamily: FONTS.gothic, fontSize: 32, color: AXM.sulfur, lineHeight: 34, marginTop: 2 },
   derivedTable: { marginTop: 3, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, padding: 5, paddingHorizontal: 8 },
   derivedRow: { flexDirection: 'row' },
   derivedHeader: { borderBottomWidth: 1, borderBottomColor: AXM.ash, borderStyle: 'dashed', paddingBottom: 2, marginBottom: 0 },

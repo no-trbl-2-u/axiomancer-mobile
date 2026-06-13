@@ -66,3 +66,7 @@ app-example
 /android
 screenshots/hazard-e2e/
 bun.lock
+
+# visual-audit artifacts
+.audit-dist/
+.playwright-mcp/

@@ -9,7 +9,7 @@
 
 ## Top 5 findings (scored)
 
-### [ ] [5.6] README repository structure navigation unclear for new maintainers
+### [x] [5.6] README repository structure navigation unclear for new maintainers
 - category: external-critique
 - impact: 7
 - ease: 8
@@ -22,6 +22,9 @@
 - evidence: Lines 14-21 reference VISION.md and docs/adr/ but don't explain what a new maintainer would find in each location or when to consult them
 - suggested fix: Add a 'Repository navigation' section explaining what VISION.md, docs/adr/, specs/, and plan/ contain and when to use each
 - source: external-critique
+- issue: #381
+- addressed: 2026-06-13 via commit 4e2948f
+- fix: Moved repository navigation section from line 139 to appear immediately after project overview (line 14), providing essential context about VISION.md, docs/adr/, specs/, plan/, docs/, and setup/ directories before users encounter the quick start section
 
 ### [ ] [4.8] README quick start prerequisites lack context for mobile development ecosystem  
 - category: external-critique

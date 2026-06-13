@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-13 at commit 396c9c7
-> Pass count: 37
+> Last pass: 2026-06-13 at commit f7112f9
+> Pass count: 38
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -25,6 +25,44 @@
 > keep this header actionable.
 
 ## Pending
+
+<!-- Pass 38 (2026-06-13, commit f7112f9): repo-proxy pass —
+     Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
+     critique reads docs/specs/artifacts as the "fresh maintainer"
+     proxy. Focus on general repository comprehension for new
+     contributors. Examined README.md, VISION.md, docs/README.md,
+     specs/README.md, setup/, app/_layout.tsx, package.json, bearings.md.
+     3 findings filed below. -->
+
+### [MED] /plan/bearings.md — Stack decisions table mixes current state with migration notation
+- pass: 38 (commit f7112f9)
+- viewport: repository
+- auth_state: anonymous
+- category: comprehension
+- observation: Stack decisions table mixes current state with migration notes in State management row creating confusion about current vs historical implementation
+- evidence: Line 61 shows 'zustand store wrapping createGameStore from axiomancer-mechanics → Local useState per screen' with strikethrough, mixing current implementation with historical migration path
+- suggested fix: Clean up State management row to show only current implementation status without migration notation
+- source: repo-analysis
+
+### [MED] /setup/ — Setup documentation usage guidance unclear for fresh maintainers
+- pass: 38 (commit f7112f9)
+- viewport: repository
+- auth_state: anonymous
+- category: navigation
+- observation: Setup documentation exists but README navigation section doesn't clearly distinguish when to use comprehensive setup vs quick start
+- evidence: README line 29 says 'For comprehensive repository setup see setup/01_repository.md' but doesn't explain when fresh maintainer should use comprehensive vs quick start workflow
+- suggested fix: Add usage guidance explaining when to use setup/ documentation vs README quick start based on developer needs
+- source: repo-analysis
+
+### [LOW] /specs/README.md — Spec completion table doesn't highlight next steps for contributors
+- pass: 38 (commit f7112f9)
+- viewport: repository
+- auth_state: anonymous
+- category: navigation
+- observation: Recommended order table shows 'DONE' status for specs 1-9 but doesn't indicate current active work clearly for new contributors
+- evidence: Table shows historical completion status but next steps require reading dense prose above table to understand specs 10-12 are ready to start
+- suggested fix: Add Status column showing DONE/READY/BLOCKED and highlight next recommended spec for new contributors
+- source: repo-analysis
 
 <!-- Pass 34 (2026-06-11, commit 72f489d): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,

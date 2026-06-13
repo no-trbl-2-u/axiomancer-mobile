@@ -36,8 +36,21 @@ const SCREENS = [
     { id: 'title', file: '00-title.png', drive: async (p) => { await goto(p, '/') } },
     { id: 'exploration', file: '01-exploration.png', drive: async (p) => { await goto(p, '/exploration') } },
     { id: 'character-top', file: '02-character-top.png', drive: async (p) => { await goto(p, '/character') } },
+    {
+        id: 'character-mid', file: '03-character-mid.png', drive: async (p) => {
+            await goto(p, '/character')
+            await p.mouse.move(195, 422)
+            await p.mouse.wheel(0, 620)
+            await settle(p, 500)
+        },
+    },
     { id: 'satchel', file: '04-satchel.png', drive: async (p) => { await goto(p, '/inventory') } },
     { id: 'memoir', file: '05-memoir.png', drive: async (p) => { await goto(p, '/memoir') } },
+    {
+        id: 'combat-prelude', file: '06-combat-prelude.png', drive: async (p) => {
+            await triggerEncounter(p, 'encounter')
+        },
+    },
     {
         id: 'combat-fight', file: '07-combat-fight.png', drive: async (p) => {
             await goto(p, '/character')
@@ -46,7 +59,31 @@ const SCREENS = [
             await settle(p, 1400)
         },
     },
+    {
+        id: 'boss-prelude', file: '12-boss-prelude.png', drive: async (p) => {
+            await triggerEncounter(p, 'boss')
+        },
+    },
+    {
+        id: 'hazard', file: '13-hazard.png', drive: async (p) => {
+            await goto(p, '/character')
+            await openDevMenu(p)
+            await p.getByTestId('debug-hazard-button').click()
+            await settle(p, 1600)
+        },
+    },
 ]
+
+async function triggerEncounter(page, kind) {
+    await goto(page, '/character')
+    await openDevMenu(page)
+    const btn = page.getByTestId(`debug-trigger-encounter-${kind}`)
+    await btn.waitFor({ state: 'visible', timeout: 15000 })
+    await btn.click()
+    // Overlay mounts over the WILDS map.
+    await page.getByTestId('encounter-modal-overlay').waitFor({ state: 'visible', timeout: 15000 })
+    await settle(page, 1000)
+}
 
 async function goto(page, path) {
     await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle' })
@@ -72,6 +109,15 @@ async function main() {
         deviceScaleFactor: 1,
         reducedMotion: 'reduce',
     })
+    // Deterministic minigame seeds so re-captures are stable. An
+    // optional THEME env forces the colour theme (the boot resolver
+    // reads __AXM_THEME__ first) — used to showcase the theme system.
+    const theme = process.env.THEME ?? null
+    await context.addInitScript((t) => {
+        globalThis.__AXM_HAZARD_SEED__ = 424242
+        globalThis.__AXM_HAZARD_ID__ = 'cracked-cliff'
+        if (t) globalThis.__AXM_THEME__ = t
+    }, theme)
     const page = await context.newPage()
     const errors = []
     page.on('console', (msg) => { if (msg.type() === 'error') errors.push(msg.text()) })

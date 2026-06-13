@@ -34,15 +34,6 @@
      specs/README.md, setup/, app/_layout.tsx, package.json, bearings.md.
      3 findings filed below. -->
 
-### [MED] /plan/bearings.md — Stack decisions table mixes current state with migration notation
-- pass: 38 (commit f7112f9)
-- viewport: repository
-- auth_state: anonymous
-- category: comprehension
-- observation: Stack decisions table mixes current state with migration notes in State management row creating confusion about current vs historical implementation
-- evidence: Line 61 shows 'zustand store wrapping createGameStore from axiomancer-mechanics → Local useState per screen' with strikethrough, mixing current implementation with historical migration path
-- suggested fix: Clean up State management row to show only current implementation status without migration notation
-- source: repo-analysis
 
 ### [MED] /setup/ — Setup documentation usage guidance unclear for fresh maintainers
 - pass: 38 (commit f7112f9)
@@ -831,6 +822,17 @@
 <!-- Drained from ## Pending via /oversight 2026-06-08 (queue-drained
      call): addressed-✅ findings moved here so the open-findings
      signal /iterate reads is accurate. -->
+
+### [x] [MED] /plan/bearings.md — Stack decisions table mixes current state with migration notation ✅
+- pass: 38 (commit f7112f9)
+- viewport: repository
+- auth_state: anonymous
+- category: comprehension
+- observation: Stack decisions table mixes current state with migration notes in State management row creating confusion about current vs historical implementation
+- evidence: Line 61 shows 'zustand store wrapping createGameStore from axiomancer-mechanics → Local useState per screen' with strikethrough, mixing current implementation with historical migration path
+- suggested fix: Clean up State management row to show only current implementation status without migration notation
+- source: repo-analysis
+- addressed: 2026-06-13 via commit 663f457
 
 ### [x] [MED] general — Switch to axiomancer-mechanics imports for gathering minigame ✅
 - pass: user-jot (commit 38597ebcff7bbbe1b12297701191432e1646aa65); addressed at commit 38597eb via `/iterate`

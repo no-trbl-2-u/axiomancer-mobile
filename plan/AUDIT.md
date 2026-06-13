@@ -31,7 +31,7 @@
 - addressed: 2026-06-13 via commit 6dd9cec
 - fix: Added comprehensive hermetic test suite for GatheringBoard component covering mount contract, spread rendering, plot interactions, offerings/tools, action callbacks, accessibility labels, and conditional display states. Created 25 test cases following existing component test patterns ensuring component reliability and maintainability for critical gameplay feature. Verification: npm test GatheringBoard passes.
 
-### [5.6] Stack decisions table mixes current state with migration notation causing contributor confusion
+### [x] [5.6] Stack decisions table mixes current state with migration notation causing contributor confusion
 - category: external-critique
 - impact: 4
 - ease: 8
@@ -44,6 +44,9 @@
 - evidence: Line 61 shows 'zustand store wrapping createGameStore from axiomancer-mechanics → Local useState per screen' with strikethrough, mixing current implementation with historical migration path
 - suggested fix: Clean up State management row to show only current implementation status without migration notation
 - source: external-critique
+- issue: #390
+- addressed: 2026-06-13 via commit 663f457
+- fix: Cleaned up State (UI) row in plan/bearings.md to show only current implementation status without migration notation. Removed strikethrough text for legacy useState approach to eliminate confusion between current vs historical implementation. Verification: npm run verify passes.
 
 ### [4.5] Exploration UI components missing test coverage - OptionsList and MapOverlays affecting maintainability
 - category: tests

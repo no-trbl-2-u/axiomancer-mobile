@@ -215,9 +215,13 @@ const styles = StyleSheet.create({
     },
     damageLedger: {
         fontFamily: FONTS.mono,
-        fontSize: 9,
+        // Was AXM.ash (~2.1:1) at 9px — the killing-blow readout ("STRIKE
+        // · 6"), the single most important fact on a death screen, was the
+        // dimmest text on the panel. Lift to AXM.bone (~6.5:1) at 11px so a
+        // low-vision player can read what felled them.
+        fontSize: 11,
         letterSpacing: 1.4,
-        color: AXM.ash,
+        color: AXM.bone,
         marginTop: 6,
         textAlign: 'center',
     },

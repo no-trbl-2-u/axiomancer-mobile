@@ -104,6 +104,10 @@ const EXPECTED_ROUTE_FILES: ReadonlySet<string> = new Set([
     // Dev-only enemy-art gallery (visual-audit 2026-06); gated by
     // isDevToolsEnabled() so production renders an empty view.
     './devart/index.tsx',
+    // Dev-only aftermath-panel gallery (visual-audit 2026-06); same
+    // isDevToolsEnabled() gate — renders the defeat / parley panels
+    // that have no organic combat-capture path.
+    './devaftermath/index.tsx',
     './(tabs)/_layout.tsx',
     './(tabs)/character/index.tsx',
     './(tabs)/combat.tsx',

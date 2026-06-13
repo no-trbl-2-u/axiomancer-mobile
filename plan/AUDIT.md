@@ -1,13 +1,185 @@
-# Site audit — 2026-06-12
+# Site audit — 2026-06-13
 
 > Bias: gameplay/content (set via oversight 2026-06-11 — supersedes onboarding/docs bias from 2026-06-11)
 > /iterate weights gameplay/content findings 1.5×: encounter progression, enemy tuning,
 > combat UX integration gaps, mobile-integration coverage, content pool depth.
 > Conducted by: /iterate autonomous audit
 
-> **Fresh audit (2026-06-12).** Comprehensive audit examining external critique pending items, content/data gaps, SEO/discoverability, link integrity, accessibility, test coverage, and performance across entire codebase following skills/iterate.md methodology.
+> **Latest audit update (2026-06-13).** External critique priority findings addressed via /march dispatch to /iterate. Fresh audit conducted 2026-06-13 identifying remaining test coverage gaps in high-priority production components.
 
 ## Top 5 findings (scored)
+
+### [x] [5.6] README repository structure navigation unclear for new maintainers
+- category: external-critique
+- impact: 7
+- ease: 8
+- base-score: 5.6
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 1.0
+- final-score: 5.6
+- next: Add repository navigation section explaining documentation structure
+- observation: Repository README jumps immediately from project overview into technical quick start without explaining repository structure or how different documentation areas relate to each other
+- evidence: Lines 14-21 reference VISION.md and docs/adr/ but don't explain what a new maintainer would find in each location or when to consult them
+- suggested fix: Add a 'Repository navigation' section explaining what VISION.md, docs/adr/, specs/, and plan/ contain and when to use each
+- source: external-critique
+- issue: #381
+- addressed: 2026-06-13 via commit 4e2948f
+- fix: Moved repository navigation section from line 139 to appear immediately after project overview (line 14), providing essential context about VISION.md, docs/adr/, specs/, plan/, docs/, and setup/ directories before users encounter the quick start section
+
+### [x] [4.8] README quick start prerequisites lack context for mobile development ecosystem  
+- category: external-critique
+- impact: 6
+- ease: 8
+- base-score: 4.8
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 1.0
+- final-score: 4.8
+- next: Add brief explanation of React Native/Expo ecosystem and prerequisite rationale
+- observation: Quick start section assumes familiarity with React Native/Expo ecosystem without explaining mobile development fundamentals or providing context for prerequisites
+- evidence: Lines 24-31 list Node.js 20+, Expo CLI, and platform requirements but don't explain why these specific versions are needed or what each platform option provides
+- suggested fix: Add brief explanation of mobile development context and why each prerequisite is required
+- source: external-critique
+- issue: #382
+- addressed: 2026-06-13 via commit a6af6ee (already completed)
+- fix: Previously addressed in commit a6af6ee which added React Native/Expo ecosystem context to Prerequisites section, explaining the role of each prerequisite in the mobile development pipeline
+
+### [x] [4.2] ITEM action always disabled with no explanation (gameplay/content bias)
+- category: external-critique
+- impact: 4
+- ease: 7
+- base-score: 2.8
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 1.5 (gameplay/content bias)
+- final-score: 4.2
+- next: Add tooltip or disabled state explanation for ITEM action in combat
+- observation: ITEM action button in combat is always disabled without any explanation to players about why items aren't usable or when they might become available
+- evidence: Combat modal shows greyed ITEM button but provides no feedback about disabled state
+- suggested fix: Add tooltip explaining item usage will be available in future update or current limitations
+- source: external-critique
+- issue: #384
+- addressed: 2026-06-13 via commit 529d4e5
+- fix: Updated tooltip content for disabled ITEM action to explain item usage will be available in future update, providing context about current limitations and setting expectations for future availability
+
+### [x] [4.2] Testing standard lacks mobile-specific testing guidance
+- category: external-critique
+- impact: 6
+- ease: 7
+- base-score: 4.2
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 1.0
+- final-score: 4.2
+- next: Add mobile testing guidance covering device simulation, native module mocking, and platform differences
+- observation: Testing standard focuses heavily on hermetic requirements but provides minimal guidance for mobile-specific testing challenges like device simulation and native modules
+- evidence: Lines 67-81 mention mocking expo-haptics and expo-font but don't explain mobile testing strategy beyond component render tests
+- suggested fix: Add mobile-specific testing guidance covering device simulation, native module mocking, and platform differences
+- source: external-critique
+- issue: #385
+- addressed: 2026-06-12 via commit a46baae
+- fix: Added comprehensive mobile-specific testing section covering platform-specific component testing, device simulation, native module mocking strategy, React Native-specific test patterns, and mobile performance testing considerations
+
+### [x] [4.0] Stack decisions table mixes current state with migration notes
+- category: external-critique
+- impact: 5
+- ease: 8
+- base-score: 4.0
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 1.0
+- final-score: 4.0
+- next: Separate current state from target state or mark migration items with clear temporal indicators
+- observation: Stack decisions table mixes current state with migration notes in a way that could confuse present vs future state
+- evidence: State management row shows 'Local useState per screen → migrating to a zustand store' mixing current and target state
+- suggested fix: Separate current state from target state or mark migration items with clear temporal indicators
+- source: external-critique
+- issue: #380
+- addressed: 2026-06-13 via commit eba47e7
+- fix: Updated State (UI) row in plan/bearings.md to show current zustand implementation with strikethrough for legacy useState approach, separating present state from migration notes for clearer temporal distinction
+
+### [x] [7.2] Gate components missing hermetic test coverage (gameplay/content bias)
+- category: tests
+- impact: 6
+- ease: 8
+- base-score: 4.8
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias - gate components control critical game state transitions)
+- final-score: 7.2
+- next: Add hermetic test coverage for CacheGate component following EventGate patterns
+- observation: CacheGate component lacks test coverage despite being a critical side-effect component that handles loot-cache session routing
+- evidence: Found CacheGate.tsx exists but no corresponding CacheGate.test.tsx file in components/__tests__/
+- suggested fix: Add hermetic test coverage for CacheGate component following existing EventGate test patterns
+- source: audit
+- addressed: 2026-06-13 via commit 4d8bdb1
+- fix: Added comprehensive hermetic test coverage for CacheGate component following EventGate patterns. Tests cover inactive session (no routing), active session at mount (routes /cache), state transition (no-session to active), stable session re-renders (no double routing), null render contract, and session clearing (no routing). Verification: npm test CacheGate passes.
+
+### [x] [4.8] Exploration UI components missing test coverage affecting maintainability
+- category: tests
+- impact: 6
+- ease: 8
+- base-score: 4.8
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.0 (no bias applied to tests category)
+- final-score: 4.8
+- next: Add hermetic test coverage for EventBadge component - simple UI component missing tests
+- observation: Several exploration UI components lack test coverage, including EventBadge which handles critical event notification display
+- evidence: components/exploration/EventBadge.tsx (49 lines), OptionsList.tsx, NodeGrid.tsx, MapOverlays.tsx missing .test.tsx files in components/exploration/__tests__/
+- suggested fix: Start with EventBadge component test following existing component test patterns, focus on props rendering and accessibility
+- source: audit
+- issue: #386
+- addressed: 2026-06-13 via commit 7501700
+- fix: Added comprehensive hermetic test coverage for EventBadge component following existing component test patterns. Tests cover basic rendering with props, event title display, NEW EVENT label, different icon keys, long titles, and empty title handling. EventBadge is a critical exploration UI component that displays event notifications. Verification: npm test EventBadge passes.
+
+## Previously addressed findings
+
+### [x] [4.2] Component test coverage gaps - ApproachSelect and 8 other components lack test files
+- category: tests
+- impact: 6
+- ease: 7
+- base-score: 4.2
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.0
+- final-score: 4.2
+- next: Add hermetic test for ApproachSelect component following established testing patterns
+- observation: Multiple components lack colocated test files, violating testing standards requirement for hermetic test coverage
+- evidence: Found 9+ components without tests including ApproachSelect, CacheGate, DebugEncounterButtons, DebugGatheringButton, DebugHazardButton, DebugHazardDeckRandomize, EquipmentDock, EventBadge, GatheringBoard
+- suggested fix: Add hermetic test for highest-impact component ApproachSelect first, covering mount contract, callback behavior, and rendering states
+- source: audit
+- issue: #377
+- addressed: 2026-06-13 via commit b8e7d53
+- fix: Added comprehensive hermetic test suite for ApproachSelect component covering mount contract validation, content rendering verification, callback behavior testing, accessibility label validation, and edge case handling. Created components/gathering/__tests__ directory and ApproachSelect.test.tsx with 12 test cases following established hermetic testing patterns.
+
+### [x] [2.0] Empty chat file requires content or cleanup
+- category: content-gaps
+- impact: 2
+- ease: 10
+- base-score: 2.0
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.0
+- final-score: 2.0
+- next: Remove empty chat3.md file or add meaningful content
+- observation: design/handoff-2026-05-16/chats/chat3.md contains only 7 words - essentially empty with just header
+- evidence: File contains only header and timestamp, no actual content
+- suggested fix: Either remove the empty file or add the actual chat content that belongs there
+- source: audit
+- addressed: 2026-06-13 via commit 3edffe7
+- fix: Removed empty design/handoff-2026-05-16/chats/chat3.md file which contained only header and timestamp with no actual content, improving repository content hygiene
+
+## Previously addressed findings
+
+### [x] [5.4] Documentation index lacks priority indicators for new maintainer navigation
+- category: external-critique
+- impact: 6 
+- ease: 9
+- base-score: 5.4
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 1.0
+- final-score: 5.4
+- next: Add priority indicators (ESSENTIAL/HELPFUL/REFERENCE) to docs/README.md file descriptions
+- observation: Documentation index doesn't clearly distinguish between essential vs optional reading for new maintainers
+- evidence: All files listed with equal weight - testing.md marked REQUIRED but other critical files like presenters.md not prioritized
+- suggested fix: Add priority indicators (ESSENTIAL/HELPFUL/REFERENCE) to file descriptions
+- source: external-critique
+- issue: #375
+- addressed: 2026-06-13 via commit 587761d  
+- fix: Added ESSENTIAL/HELPFUL/REFERENCE priority indicators across all sections in docs/README.md to help new maintainers distinguish between critical and optional reading. Reorganized tables by priority and added priority columns throughout.
 
 ### [x] [5.6] ItemModal component lacks test coverage affecting maintainability
 - category: tests
@@ -92,125 +264,3 @@
 - issue: #368
 - addressed: 2026-06-12 via commit a46baae
 - fix: Added comprehensive mobile-specific testing section covering platform-specific component testing, device simulation, native module mocking strategy, React Native-specific test patterns, and mobile performance testing considerations
-
-## Previously addressed findings
-
-### [x] [7.2] Setup documentation references missing files blocking fresh maintainer onboarding
-- category: external-critique 
-- impact: 8
-- ease: 9
-- next: Complete missing setup documentation files or update README references to match existing files
-- observation: Setup documentation referenced throughout README but missing critical setup files, creating broken onboarding path
-- evidence: README line 90 references setup/02_eas.md, 03_store_setup.md, 04_claude_playtest.md but only partial content exists - setup process appears incomplete
-- suggested fix: Complete all setup documentation or remove references to non-existent setup guides
-- source: external-critique
-- issue: #353
-- addressed: 2026-06-12 via commit 9390929
-- fix: Clarified setup documentation dual path confusion by cross-referencing README quick start with setup/01_repository.md detailed guide and explaining when to use each approach
-
-### [x] [6.8] Package.json specialized development scripts lack documentation  
-- category: external-critique
-- impact: 5
-- ease: 9
-- next: Expand README scripts table to document web:container, verify:visual, e2e:hazard, baseline:approve commands
-- observation: Package scripts include specialized commands for containerized development and visual testing but lack documentation about when to use them
-- evidence: Scripts like 'web:container', 'verify:visual', 'e2e:hazard', 'baseline:approve' are present but not explained in README workflow section
-- suggested fix: Expand README scripts table to include all specialized commands with usage context
-- source: external-critique
-- issue: #358
-- addressed: 2026-06-11 via commit f73a839
-- fix: Added missing specialized scripts to README table: test:watch (Jest in watch mode) and e2e:hazard (browser-driven hazard minigame playthrough) to improve maintainer documentation coverage
-
-### [x] [6.8] Repository structure navigation unclear for fresh maintainers
-- category: external-critique
-- impact: 5  
-- ease: 9
-- next: Add 'Repository navigation' section to README explaining VISION.md, docs/adr/, specs/, plan/ contents and usage
-- observation: Repository README jumps immediately from project overview into technical quick start without explaining repository structure or how different documentation areas relate to each other
-- evidence: Lines 14-21 reference VISION.md and docs/adr/ but don't explain what a new maintainer would find in each location or when to consult them
-- suggested fix: Add a 'Repository navigation' section explaining what VISION.md, docs/adr/, specs/, and plan/ contain and when to use each
-- source: external-critique
-- issue: #359
-- addressed: 2026-06-12 via commit e2ff535
-- fix: Added Repository navigation section to README explaining what VISION.md, docs/adr/, specs/, plan/, docs/, and setup/ contain and when to use each, providing clear guidance for fresh maintainers
-
-### [x] [6.0] Extensive documentation lacks index for maintainer navigation
-- category: external-critique
-- impact: 5
-- ease: 8  
-- next: Create docs/README.md organizing 40+ documentation files by category and purpose
-- observation: Extensive docs/ folder with 40+ files but no index or navigation guide for maintainers to find relevant documentation
-- evidence: Glob shows numerous specialized docs (engine-upgrade-*.md, mechanics-ui-audit-*.md, adr/*.md) but no docs/README.md or clear categorization
-- suggested fix: Add docs/README.md organizing documentation by category and purpose
-- source: external-critique
-- issue: #360
-- addressed: 2026-06-12 via commit 6d401fa
-- fix: Expanded docs/README.md to organize all 39 documentation files into logical categories: core testing, engine integration, UI audits, hazard minigame, design/UX, ADRs, development workflows, and AI templates
-
-### [x] [8.0] Current development status unclear for fresh maintainers in specs documentation
-- category: external-critique
-- impact: 8
-- ease: 10
-- base-score: 8.0
-- user-source-bump: 0.0 (external source)
-- ux-bias-multiplier: 1.0
-- final-score: 8.0
-- next: Add current development status summary or 'What to work on next' section to specs/README.md
-- observation: Specs documentation shows most work as DONE but fresh maintainer cannot easily determine current development status or next recommended tasks without reading all 12 spec files
-- evidence: specs/README.md shows '[DONE]' for specs 1-9 but spec 8 shows as incomplete, creating confusion about actual current state vs recommended order
-- suggested fix: Add current development status summary or 'What to work on next' section to specs/README.md
-- source: external-critique
-- issue: #341
-- addressed: 2026-06-11 via commit 4831d15
-- fix: Added current development status summary section clearly indicating specs 1-9 are complete and specs 10-12 are ready for parallel work. Corrected table marking spec 8 as DONE to resolve fresh maintainer confusion about project state.
-
-### [x] [5.0] Node.js version mismatch between package.json and README.md
-- category: external-critique
-- impact: 5
-- ease: 10
-- base-score: 5.0
-- user-source-bump: 0.0 (external source)
-- ux-bias-multiplier: 1.0
-- final-score: 5.0
-- next: Update README.md to specify Node.js 20+ to match package.json engines requirement
-- observation: Package.json engines section specifies Node >=20.0.0 but README.md Quick start says 'Node.js 18+' creating version requirement confusion for new maintainers
-- evidence: package.json line 6 shows "node": ">=20.0.0" while README.md line 26 says "Node.js 18+" requirement
-- suggested fix: Update README.md to specify Node.js 20+ to match package.json engines requirement
-- source: external-critique
-- issue: #343
-- addressed: 2026-06-11 via commit e7051c1
-- fix: Updated README.md line 26 to specify Node.js 20+ requirement to match package.json engines specification, resolving version requirement confusion for new maintainers.
-
-### [x] [5.0] Setup documentation not linked from main README
-- category: external-critique  
-- impact: 5
-- ease: 10
-- base-score: 5.0
-- user-source-bump: 0.0 (external source)
-- ux-bias-multiplier: 1.0
-- final-score: 5.0
-- next: Add setup/ directory link in README quick start or troubleshooting section
-- observation: Setup documentation exists in setup/ directory but is not linked from main README, making it hard to discover for fresh maintainers
-- evidence: setup/ directory contains 01_repository.md, 02_eas.md files but README.md has no link to setup process
-- suggested fix: Add setup/ directory link in README quick start or troubleshooting section
-- source: external-critique
-- issue: #344
-- addressed: 2026-06-11 via commit b4e4536
-- fix: Added setup documentation link in README Quick start section pointing to setup/01_repository.md for detailed setup process, improving discoverability for fresh maintainers.
-
-### [x] [5.9] Component test coverage gaps - 118 components without tests affecting maintainability
-- category: tests
-- impact: 7
-- ease: 8.5
-- base-score: 5.95
-- user-source-bump: 0.0 (audit source)
-- bias-multiplier: 1.0
-- final-score: 5.95 → 5.9 (rounded down)
-- next: Prioritize adding tests for core components like modals and navigation elements
-- observation: 118 out of 219 components (54%) lack colocated tests, violating testing standards
-- evidence: Major test coverage gap with core components like LearnSkillModal, ItemModal, MapCanvas, and navigation components missing tests
-- suggested fix: Add hermetic tests for core components starting with modals and high-interaction UI elements
-- source: audit
-- issue: #369
-- addressed: 2026-06-12 via commit 5e98615
-- fix: Added comprehensive hermetic tests for LearnSkillModal component including mount contract, header copy validation, skill offer rendering, callback testing, voice register compliance, and accessibility labels

@@ -99,7 +99,7 @@ const STANCE_CHIP_CONTENT: Record<string, TooltipContent> = {
 const DISABLED_ACTION_CONTENT: Record<string, TooltipContent> = {
     item: {
         title: 'ITEM UNAVAILABLE',
-        body: 'no usable items in inventory.',
+        body: 'Item usage will be available in a future update. Currently no usable items in inventory.',
         accent: 'neutral',
     },
 };

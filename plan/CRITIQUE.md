@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-12 at commit 17850b2
-> Pass count: 36
+> Last pass: 2026-06-13 at commit f7112f9
+> Pass count: 38
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -25,6 +25,44 @@
 > keep this header actionable.
 
 ## Pending
+
+<!-- Pass 38 (2026-06-13, commit f7112f9): repo-proxy pass —
+     Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
+     critique reads docs/specs/artifacts as the "fresh maintainer"
+     proxy. Focus on general repository comprehension for new
+     contributors. Examined README.md, VISION.md, docs/README.md,
+     specs/README.md, setup/, app/_layout.tsx, package.json, bearings.md.
+     3 findings filed below. -->
+
+### [MED] /plan/bearings.md — Stack decisions table mixes current state with migration notation
+- pass: 38 (commit f7112f9)
+- viewport: repository
+- auth_state: anonymous
+- category: comprehension
+- observation: Stack decisions table mixes current state with migration notes in State management row creating confusion about current vs historical implementation
+- evidence: Line 61 shows 'zustand store wrapping createGameStore from axiomancer-mechanics → Local useState per screen' with strikethrough, mixing current implementation with historical migration path
+- suggested fix: Clean up State management row to show only current implementation status without migration notation
+- source: repo-analysis
+
+### [MED] /setup/ — Setup documentation usage guidance unclear for fresh maintainers
+- pass: 38 (commit f7112f9)
+- viewport: repository
+- auth_state: anonymous
+- category: navigation
+- observation: Setup documentation exists but README navigation section doesn't clearly distinguish when to use comprehensive setup vs quick start
+- evidence: README line 29 says 'For comprehensive repository setup see setup/01_repository.md' but doesn't explain when fresh maintainer should use comprehensive vs quick start workflow
+- suggested fix: Add usage guidance explaining when to use setup/ documentation vs README quick start based on developer needs
+- source: repo-analysis
+
+### [LOW] /specs/README.md — Spec completion table doesn't highlight next steps for contributors
+- pass: 38 (commit f7112f9)
+- viewport: repository
+- auth_state: anonymous
+- category: navigation
+- observation: Recommended order table shows 'DONE' status for specs 1-9 but doesn't indicate current active work clearly for new contributors
+- evidence: Table shows historical completion status but next steps require reading dense prose above table to understand specs 10-12 are ready to start
+- suggested fix: Add Status column showing DONE/READY/BLOCKED and highlight next recommended spec for new contributors
+- source: repo-analysis
 
 <!-- Pass 34 (2026-06-11, commit 72f489d): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
@@ -50,8 +88,8 @@
 - source: browser
 - addressed: 2026-06-12 via commit 19bd545
 - fix: Added brief explanation before architecture diagram defining 'read upward, mutate downward' pattern as data flowing up from engine to UI (read) while state changes flow down from actions to engine (mutate), clarifying the separation between business logic in engine and presentation logic in UI
-### [MED] /docs/README.md — Documentation index doesn't prioritize essential reading
-- pass: 36 (commit 17850b2)
+### [x] [MED] /docs/README.md — Documentation index doesn't prioritize essential reading ✅
+- pass: 36 (commit 17850b2); addressed at commit 587761d via `/iterate`
 - viewport: desktop
 - auth_state: anonymous
 - category: navigation
@@ -59,6 +97,8 @@
 - evidence: All files listed with equal weight - testing.md marked REQUIRED but other critical files like presenters.md not prioritized
 - suggested fix: Add priority indicators (ESSENTIAL/HELPFUL/REFERENCE) to file descriptions
 - source: browser
+- addressed: 2026-06-13 via commit 587761d
+- fix: Added ESSENTIAL/HELPFUL/REFERENCE priority indicators across all sections in docs/README.md to help new maintainers distinguish between critical and optional reading. Reorganized ADR table by priority and added priority column to all tables.
 ### [LOW] /plan/bearings.md — Stack decisions table mixes current state with migration notes
 - pass: 36 (commit 17850b2)
 - viewport: desktop
@@ -104,14 +144,16 @@
 - suggested fix: Add architectural overview explaining engine-to-mobile presentation layer translation
 - source: repo-analysis
 
-### [MED] /docs/testing.md — Testing standard lacks mobile-specific testing guidance
-- pass: 34 (commit 72f489d)
+### [x] [MED] /docs/testing.md — Testing standard lacks mobile-specific testing guidance ✅
+- pass: 34 (commit 72f489d); addressed at commit a46baae via `/iterate`
 - viewport: repository
 - category: mobile
 - observation: Testing standard focuses heavily on hermetic requirements but provides minimal guidance for mobile-specific testing challenges like device simulation and native modules
 - evidence: Lines 67-81 mention mocking expo-haptics and expo-font but don't explain mobile testing strategy beyond component render tests
 - suggested fix: Add mobile-specific testing guidance covering device simulation, native module mocking, and platform differences
 - source: repo-analysis
+- addressed: 2026-06-12 via commit a46baae
+- fix: Added comprehensive mobile-specific testing section covering platform-specific component testing, device simulation, native module mocking strategy, React Native-specific test patterns, and mobile performance testing considerations
 
 ### [MED] /README.md — Repository structure navigation unclear for new maintainers
 - pass: 33 (commit 07b4068)
@@ -690,6 +732,58 @@
 - evidence: Lines 15-25 reference 'status effects exist and matter' but lack context for mobile developers unfamiliar with TTRPG mechanics
 - suggested fix: Add brief primer on status-effect gameplay before mobile UX requirements
 - source: web-fetch
+
+<!-- Pass 37 (2026-06-13, commit 396c9c7): repo-proxy pass —
+     Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
+     critique reads docs/specs/artifacts as the "fresh maintainer"
+     proxy. Focus on general repository comprehension. Examined
+     README.md, specs/README.md, docs/testing.md, plan/bearings.md,
+     SVG_ASSET_SPEC.md. 5 findings filed below. -->
+
+### [MED] /README.md — Repository navigation section lacks priority indicators for fresh maintainer reading order
+- pass: 37 (commit 396c9c7)
+- viewport: repository
+- category: navigation
+- observation: Repository navigation section lists extensive documentation but lacks priority indicators for fresh maintainer reading order
+- evidence: Lines 139-149 list multiple documentation areas (VISION.md, docs/adr/, specs/, plan/, docs/, setup/) without indicating which to read first or prerequisites
+- suggested fix: Add priority markers (★ essential, ◆ implementation-focused, etc.) or numbered reading order
+- source: file-read
+
+### [MED] /plan/bearings.md — Operational setup scattered across multiple files without clear onboarding path
+- pass: 37 (commit 396c9c7)
+- viewport: repository
+- category: setup
+- observation: Critical operational information scattered across multiple files without clear onboarding path for fresh maintainer
+- evidence: Lines 82-84: 'setup/NN_*.md runbooks are not yet authored — they're queued in phase candidates. Until then, treat agents.md Operational secrets as the canonical config doc'
+- suggested fix: Create consolidated onboarding checklist or point to primary setup entry point
+- source: file-read
+
+### [LOW] /specs/README.md — Specs workflow consolidation needed for fresh maintainer focus
+- pass: 37 (commit 396c9c7)
+- viewport: repository
+- category: comprehension
+- observation: Specs workflow is well-documented but the recommended order table shows completed work without clear indication of what fresh maintainer should focus on
+- evidence: Lines 74-87 show Specs 1-9 marked [DONE] but fresh maintainer focus (Specs 10-12) mentioned separately at lines 60-66
+- suggested fix: Consolidate current status and next-recommended work in single prominent section
+- source: file-read
+
+### [LOW] /docs/testing.md — Testing entry point unclear among three different test types
+- pass: 37 (commit 396c9c7)
+- viewport: repository
+- category: comprehension
+- observation: Comprehensive testing standard but entry point for fresh maintainer unclear among three different test types mentioned
+- evidence: Document covers hermetic e2e (main requirement), browser playthroughs (scripts), and component tests (optional) but lacks 'getting started' section
+- suggested fix: Add 'Quick start for new tests' section with most common test pattern
+- source: file-read
+
+### [LOW] /SVG_ASSET_SPEC.md — Asset specification lacks clear integration point with development workflow
+- pass: 37 (commit 396c9c7)
+- viewport: repository
+- category: documentation
+- observation: Asset specification lacks clear integration point with development workflow
+- evidence: Lines 5-12 clarify this is for asset replacement not initial development, but no clear bridge to when/how maintainer would use this
+- suggested fix: Add reference to this file in README repository navigation section
+- source: file-read
 
 ## Done
 

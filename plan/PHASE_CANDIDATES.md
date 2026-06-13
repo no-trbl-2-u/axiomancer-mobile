@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-12 at commit fc53b90
-> Pass count: 71
+> Last pass: 2026-06-13 at commit ad48123
+> Pass count: 72
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -253,6 +253,62 @@
 - rationale: Signal multiplicity - multiple independent critique findings on same documentation navigation theme
 - proposed scope: 1 phase to consolidate documentation navigation and add proper index structure
 - estimated phases: 1
+- conflicts: none
+
+### [ ] [score 4.8] Hazard/Gathering hex literal token migration systematic cleanup
+- proposed: 2026-06-13, expand pass 72
+- source signals:
+  - **Hex literal smell clusters**: 15+ untouched hex literals in components/hazard/ directory ('as any' cast smell under aggressive posture)
+  - **Design system bypass**: Hardcoded colors '#0c0a08', '#8a57bd', '#17150f', '#86a821' in HazardCard, HazardDie, RouteSelect, gathering components 
+  - **Token system exists**: AXM design tokens established but inconsistently applied in minigame components
+- rationale: Concentrated hex-literal usage in newly shipped hazard/gathering minigame components bypasses established design token system. Aggressive posture accepts smell as primary signal with design consistency urgency.
+- proposed scope: 1-phase systematic replacement of hex literals with appropriate AXM tokens across hazard/gathering component families
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 4.2] External critique finding consolidation audit drain  
+- proposed: 2026-06-13, expand pass 72
+- source signals:
+  - **AUDIT [4.8]**: README prerequisites lack mobile development ecosystem context
+  - **AUDIT [4.2]**: ITEM action always disabled with no explanation (gameplay/content bias)
+  - **AUDIT [4.2]**: Testing standard lacks mobile-specific testing guidance
+  - **GitHub issue pattern**: #350 testing prerequisites unclear for maintainers
+- rationale: Signal multiplicity - 4 pending external-critique audit findings plus corroborating GitHub issue pattern suggest systemic user experience gaps requiring coordinated resolution rather than isolated fixes.
+- proposed scope: 1-phase systematic address of external critique findings with user experience focus
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 3.5] Large component extraction - HazardBoard.tsx refactor
+- proposed: 2026-06-13, expand pass 72
+- source signals:
+  - **File length outlier smell**: HazardBoard.tsx at 799 lines, significantly exceeding folder median
+  - **Development UX impact**: Large file affects IDE performance and maintainability
+  - **Recent minigame activity**: Hazard components under active development with accumulated complexity
+- rationale: HazardBoard.tsx has grown to development-impacting size (799 lines). File-length outlier smell under aggressive posture indicates extraction opportunity for better maintainability.
+- proposed scope: 1-phase extraction of focused sub-components from HazardBoard while preserving minigame behavior  
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 3.2] Minigame component test coverage expansion
+- proposed: 2026-06-13, expand pass 72
+- source signals:
+  - **Test coverage gaps**: Gathering/hazard components recently shipped but comprehensive test coverage incomplete
+  - **ApproachSelect addressed**: Recent test addition shows pattern but broader coverage needed
+  - **Component test requirement**: Testing standard requires hermetic coverage for all components
+- rationale: Recent minigame component shipments (gathering, hazard) established new component families but comprehensive test coverage remains incomplete. ApproachSelect test addition shows positive pattern requiring continuation.
+- proposed scope: 1-phase systematic test coverage expansion for minigame component families following established patterns
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 2.8] Engine type cast reduction in critical state boundaries
+- proposed: 2026-06-13, expand pass 72  
+- source signals:
+  - **Type cast smell clusters**: 144+ 'as any'/'as unknown' instances across codebase (aggressive posture smell)
+  - **Engine boundary concentration**: State/actions.ts, presenters, engine integration points show cast clustering  
+  - **Type safety erosion**: Cast clusters bypass TypeScript benefits in core game mechanics
+- rationale: 144+ cast instances represent significant type safety debt concentrated in critical engine boundaries. Aggressive posture accepts this smell pattern as primary signal for systematic reduction.
+- proposed scope: Multi-phase systematic cast reduction starting with highest-concentration state/presenter files
+- estimated phases: 2-3
 - conflicts: none
 
 ## Drained / shipped

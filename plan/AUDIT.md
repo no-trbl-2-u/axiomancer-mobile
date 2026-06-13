@@ -5,9 +5,84 @@
 > combat UX integration gaps, mobile-integration coverage, content pool depth.
 > Conducted by: /iterate autonomous audit
 
-> **Latest audit update (2026-06-13).** External critique priority findings addressed via /march dispatch to /iterate. Fresh audit conducted 2026-06-13 identifying remaining test coverage gaps in high-priority production components.
+> **Latest audit update (2026-06-13).** Comprehensive iterate audit conducted identifying test coverage gaps in critical gameplay components and external critique findings from pass 38.
 
 ## Top 5 findings (scored)
+
+### [x] [6.3] GatheringBoard component missing test coverage affecting critical gameplay feature maintainability
+- category: tests
+- impact: 7
+- ease: 6
+- base-score: 4.2
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias - gathering is core gameplay loop)
+- final-score: 6.3
+- next: Add hermetic test coverage for GatheringBoard component following established testing patterns
+- observation: GatheringBoard component lacks test coverage despite being a critical gameplay component that handles resource collection mechanics
+- evidence: Found components/gathering/GatheringBoard.tsx exists but no corresponding components/gathering/__tests__/GatheringBoard.test.tsx file
+- suggested fix: Add comprehensive hermetic tests covering gathering rules, plot selection, resource display, and user interactions
+- source: audit
+- issue: #388
+- addressed: 2026-06-13 via commit 6dd9cec
+- fix: Added comprehensive hermetic test suite for GatheringBoard component covering mount contract, spread rendering, plot interactions, offerings/tools, action callbacks, accessibility labels, and conditional display states. Created 25 test cases following existing component test patterns ensuring component reliability and maintainability for critical gameplay feature. Verification: npm test GatheringBoard passes.
+
+### [5.6] Stack decisions table mixes current state with migration notation causing contributor confusion
+- category: external-critique
+- impact: 4
+- ease: 8
+- base-score: 3.2
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 1.0
+- final-score: 3.2 → 5.6 (external critique MED scoring)
+- next: Clean up State management row to show only current implementation status without migration notation
+- observation: Stack decisions table mixes current state with migration notes in State management row creating confusion about current vs historical implementation
+- evidence: Line 61 shows 'zustand store wrapping createGameStore from axiomancer-mechanics → Local useState per screen' with strikethrough, mixing current implementation with historical migration path
+- suggested fix: Clean up State management row to show only current implementation status without migration notation
+- source: external-critique
+
+### [4.5] Exploration UI components missing test coverage - OptionsList and MapOverlays affecting maintainability
+- category: tests
+- impact: 6
+- ease: 7.5
+- base-score: 4.5
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.0
+- final-score: 4.5
+- next: Add hermetic test coverage for OptionsList component - handles encounter option selection UI
+- observation: Multiple exploration UI components lack test coverage, including OptionsList and MapOverlays which handle critical navigation interactions
+- evidence: components/exploration/OptionsList.tsx, MapOverlays.tsx, NodeGrid.tsx, MapCanvas.tsx, NodeToast.tsx missing .test.tsx files in components/exploration/__tests__/
+- suggested fix: Start with OptionsList component test covering option rendering, selection callbacks, and disabled states
+- source: audit
+
+### [4.2] Setup documentation usage guidance unclear for fresh maintainers
+- category: external-critique
+- impact: 3
+- ease: 8
+- base-score: 2.4
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 1.0
+- final-score: 2.4 → 4.2 (external critique MED scoring)
+- next: Add usage guidance explaining when to use setup/ documentation vs README quick start based on developer needs
+- observation: Setup documentation exists but README navigation section doesn't clearly distinguish when to use comprehensive setup vs quick start
+- evidence: README line 29 says 'For comprehensive repository setup see setup/01_repository.md' but doesn't explain when fresh maintainer should use comprehensive vs quick start workflow
+- suggested fix: Add usage guidance explaining when to use setup/ documentation vs README quick start based on developer needs
+- source: external-critique
+
+### [3.6] Hazard gameplay components missing test coverage affecting minigame maintainability
+- category: tests
+- impact: 6
+- ease: 6
+- base-score: 3.6
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.0
+- final-score: 3.6
+- next: Add hermetic test coverage for HazardIntroOverlay component following hazard testing patterns
+- observation: Key hazard gameplay components lack test coverage, including HazardIntroOverlay which handles minigame introduction flow
+- evidence: components/hazard/HazardIntroOverlay.tsx and danger-art.tsx missing corresponding .test.tsx files in components/hazard/__tests__/
+- suggested fix: Add comprehensive hermetic tests for HazardIntroOverlay covering overlay display, transition states, and user interaction handling
+- source: audit
+
+## Previously addressed findings
 
 ### [x] [5.6] README repository structure navigation unclear for new maintainers
 - category: external-critique

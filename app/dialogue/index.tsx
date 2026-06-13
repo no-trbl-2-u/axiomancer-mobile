@@ -165,7 +165,9 @@ export default function DialogueScreen() {
 }
 
 const styles = StyleSheet.create({
-    scroll: { padding: 14, paddingBottom: 24 },
+    // Centre the conversation in the viewport so it doesn't sit in a sea
+    // of empty black (critic round 1: narrative screens had huge dead space).
+    scroll: { padding: 14, paddingBottom: 24, flexGrow: 1, justifyContent: 'center' },
     eyebrow: {
         fontFamily: FONTS.sans,
         fontSize: 10,
@@ -185,7 +187,7 @@ const styles = StyleSheet.create({
         lineHeight: 34,
         color: AXM.parchment,
     },
-    subtitle: { fontFamily: FONTS.serifItalic, fontSize: 11, color: AXM.bone, marginTop: 2 },
+    subtitle: { fontFamily: FONTS.serifItalic, fontSize: 13, color: AXM.bone, marginTop: 2 },
     speech: {
         borderWidth: 1,
         borderColor: AXM.ash,
@@ -220,12 +222,12 @@ const styles = StyleSheet.create({
     replyLabel: { fontFamily: FONTS.gothic, fontSize: 16, color: AXM.parchment, letterSpacing: 1 },
     replyDesc: {
         fontFamily: FONTS.mono,
-        fontSize: 8,
+        fontSize: 10,
         color: AXM.bone,
-        marginTop: 2,
+        marginTop: 3,
         textTransform: 'uppercase',
     },
-    abandon: { alignSelf: 'center', marginTop: 14, padding: 6 },
-    abandonText: { fontFamily: FONTS.mono, fontSize: 9, letterSpacing: 2, color: AXM.ash },
+    abandon: { alignSelf: 'center', marginTop: 16, padding: 8 },
+    abandonText: { fontFamily: FONTS.mono, fontSize: 11, letterSpacing: 2, color: AXM.bone },
     flexOne: { flex: 1 },
 });

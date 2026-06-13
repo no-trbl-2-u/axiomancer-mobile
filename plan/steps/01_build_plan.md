@@ -167,7 +167,7 @@ commit that ships the phase.
       `/plan-a-phase phase 121` (or flesh inline at ship time).
       Verification: all scripted scenarios green + `npm run verify`. Shipped in commit 7b04698.
 
-- [ ] Phase 122 — Playtest-driven gameplay-gap discovery. Promoted via
+- [x] Phase 122 — Playtest-driven gameplay-gap discovery. Promoted via
       `/oversight` 2026-06-13 as the queue-drained direction (see steering
       note above). The build plan is fully shipped and remaining candidates
       are all sub-4.0 cleanup; this phase refills the queue with *substance*
@@ -182,7 +182,7 @@ commit that ships the phase.
       gameplay candidates filed — NOT a code change. Brief: draft via
       `/plan-a-phase phase 122` (or run the playtester inline at ship time).
       Verification: `plan/PLAYTEST_REPORT.md` updated with this pass +
-      new scored gameplay candidates present in `plan/PHASE_CANDIDATES.md`.
+      new scored gameplay candidates present in `plan/PHASE_CANDIDATES.md`. Shipped in commit cb26742.
 
 - [skipped] Phase 123 — ITEM-action disabled-state feedback (player-facing
       gap). Promoted via `/oversight` 2026-06-13 from open AUDIT finding [4.2],

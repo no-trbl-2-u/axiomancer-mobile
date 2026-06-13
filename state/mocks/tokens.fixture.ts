@@ -7,7 +7,15 @@
  * fixture is the consumer-side source of truth for the token UI.
  *
  * Ported from `axiomancer/project/screens/tokens.jsx` in the design handoff.
+ *
+ * Accent foregrounds track the active theme's AXM accents (body→blood,
+ * heart→rust, fallacy→parchment, paradox→sulfur) so the skill-fuel row
+ * stays consistent with the rest of the palette. `mind` keeps its own
+ * steel-blue (no AXM equivalent). The dark chip backgrounds are tuned
+ * per-token and stay fixed.
  */
+
+import { AXM } from '@/theme/axm';
 
 export type TokenKey = 'body' | 'mind' | 'heart' | 'fallacy' | 'paradox';
 
@@ -25,11 +33,11 @@ export interface TokenMeta {
 export const TOKEN_KEYS: readonly TokenKey[] = ['body', 'mind', 'heart', 'fallacy', 'paradox'] as const;
 
 export const TOKEN: Record<TokenKey, TokenMeta> = {
-    body:    { color: '#c0152a', bg: '#1a0808', label: 'BODY',    short: 'BDY' },
-    mind:    { color: '#6b8eb0', bg: '#0b1018', label: 'MIND',    short: 'MND' },
-    heart:   { color: '#9e3a1a', bg: '#1a0d08', label: 'HEART',   short: 'HRT' },
-    fallacy: { color: '#e8dfc8', bg: '#16140e', label: 'FALLACY', short: 'FAL' },
-    paradox: { color: '#d4c026', bg: '#16140a', label: 'PARADOX', short: 'PDX' },
+    body:    { color: AXM.blood,     bg: '#1a0808', label: 'BODY',    short: 'BDY' },
+    mind:    { color: '#6b8eb0',     bg: '#0b1018', label: 'MIND',    short: 'MND' },
+    heart:   { color: AXM.rust,      bg: '#1a0d08', label: 'HEART',   short: 'HRT' },
+    fallacy: { color: AXM.parchment, bg: '#16140e', label: 'FALLACY', short: 'FAL' },
+    paradox: { color: AXM.sulfur,    bg: '#16140a', label: 'PARADOX', short: 'PDX' },
 };
 
 export type TokenCounts = Record<TokenKey, number>;

@@ -65,6 +65,7 @@ export const ActionPhase = React.memo(function ActionPhase({
                             onPress={() => onPick(opt.key)}
                             disabled={!opt.enabled}
                             style={[styles.cardTouch, !opt.enabled && { opacity: 0.45 }]}
+                            testID={`combat-action-${opt.key}`}
                             accessibilityRole="button"
                             accessibilityLabel={`Action ${opt.label}`}
                             accessibilityState={{ disabled: !opt.enabled }}

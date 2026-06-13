@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { AXM, FONTS } from '@/theme/axm';
 import { TooltipTarget } from '@/components/tooltip/TooltipTarget';
 import { AscendStrip } from '@/components/levelup/AscendStrip';
@@ -13,7 +13,7 @@ import { SectionLabel } from '@/components/SectionLabel';
 import { StanceGlyph } from '@/components/StanceGlyph';
 import { EffectGlyph } from '@/components/EffectGlyph';
 import { XpChain } from '@/components/XpChain';
-import { BodyDiagram } from '@/components/BodyDiagram';
+import { PlayerPortrait } from '@/components/art/PlayerPortrait';
 import { useGameActions, useGameState, useGameStore } from '@/state/GameStoreProvider';
 import { selectCharacterViewModel } from '@/state/presenters/character.engine';
 
@@ -46,6 +46,9 @@ export default function CharacterScreen() {
   // commit / keep-deliberating dismisses. Snapshot the level + base
   // stat values at the moment the modal opens so it has the "before"
   // figures even if the engine mutates underneath us mid-allocation.
+  // Morale ledger is static reference (gain/loss rules); collapsed by
+  // default so the live sheet fits one screen. One tap reveals it.
+  const [ledgerOpen, setLedgerOpen] = useState<boolean>(false);
   const [levelUpOpen, setLevelUpOpen] = useState<boolean>(false);
   const onOpenLevelUp = useCallback(() => setLevelUpOpen(true), []);
   const onCloseLevelUp = useCallback(() => setLevelUpOpen(false), []);
@@ -108,52 +111,47 @@ export default function CharacterScreen() {
 
   return (
     <ScreenBg>
-      {/* Header */}
+      {/* Sheet header — portrait + identity, in the D&D character-sheet
+          idiom: bust top-left, name + alignment + XP centre, level box
+          top-right. */}
       <View
-        style={styles.header}
+        style={styles.sheetHeader}
         accessible
         accessibilityLabel={`${vm.a11y.characterName}. ${vm.a11y.level}. ${vm.a11y.experience}.`}
       >
-        <SectionLabel size={9} color={AXM.bone}>{vm.subtitle}</SectionLabel>
-        <View style={styles.headerRow}>
-          <Text style={styles.characterName}>{vm.displayName}</Text>
-          <View style={styles.levelBox}>
-            <Text style={styles.levelText}>{vm.level}</Text>
-          </View>
+        <View style={styles.portraitFrame}>
+          <PlayerPortrait width={132} height={160} />
         </View>
-        {/* Phase 73 — ASCEND strip mounts between the level box row
-            and the XP chain when the player has unspent stat-allocation
-            points. When pendingPoints === 0 the header is byte-identical
-            to pre-Phase-73. */}
-        {vm.pendingPoints > 0 && (
-          <AscendStrip
-            pendingPoints={vm.pendingPoints}
-            level={vm.level}
-            onOpen={onOpenLevelUp}
-          />
-        )}
-        {/* Phase 73 follow-up (user-jot 2026-05-24): the
-            LevelReadyStrip mounts when XP has crossed the threshold
-            but levelUp() has not yet been dispatched. Mutually
-            exclusive with the AscendStrip above — when both
-            conditions hold, AscendStrip takes priority (spend
-            before earning more). Tap dispatches actions.levelUp(),
-            engine drains XP into pending stat points, AscendStrip
-            replaces this strip next render. */}
-        {vm.pendingPoints === 0 && vm.levelUpReady && (
-          <LevelReadyStrip
-            level={vm.level}
-            onLevelUp={onLevelUp}
-          />
-        )}
-        <View style={styles.marginTop8}>
+        <View style={styles.identityCol}>
+          <SectionLabel size={9} color={AXM.bone}>{vm.subtitle}</SectionLabel>
+          <Text style={styles.characterName} numberOfLines={1}>{vm.displayName}</Text>
+          <Text style={styles.identityAlignment} numberOfLines={1}>{vm.alignment.cellName}</Text>
           <View style={styles.xpRow}>
-            <Text style={styles.xpLabel}>XP CHAIN TO LVL {vm.level + 1}</Text>
+            <Text style={styles.xpLabel}>XP · LVL {vm.level + 1}</Text>
             <Text style={styles.xpValue}>{vm.xp} / {vm.xpMax}</Text>
           </View>
           <XpChain value={vm.xp} max={vm.xpMax} />
         </View>
+        <View style={styles.levelBox}>
+          <Text style={styles.levelText}>{vm.level}</Text>
+          <Text style={styles.levelCaption}>LVL</Text>
+        </View>
       </View>
+
+      {/* Level-up strips sit full-width beneath the header. */}
+      {vm.pendingPoints > 0 && (
+        <AscendStrip
+          pendingPoints={vm.pendingPoints}
+          level={vm.level}
+          onOpen={onOpenLevelUp}
+        />
+      )}
+      {vm.pendingPoints === 0 && vm.levelUpReady && (
+        <LevelReadyStrip
+          level={vm.level}
+          onLevelUp={onLevelUp}
+        />
+      )}
 
       {/* Phase 73 — LevelUpModal overlays the SELF tab when the
           ASCEND strip is tapped. Non-tap-out-dismissible per the
@@ -203,7 +201,7 @@ export default function CharacterScreen() {
 
       {/* Base Stats */}
       <View style={styles.section} accessible accessibilityLabel={vm.a11y.baseStats}>
-        <SectionLabel size={10}>✠ BASE</SectionLabel>
+        <SectionLabel size={10}>✠ ABILITIES</SectionLabel>
         <View style={styles.baseRow}>
           {vm.base.map((r) => (
             // Phase 74 follow-up walkthrough Tick 1: wrap the base
@@ -235,7 +233,7 @@ export default function CharacterScreen() {
         <View style={styles.poolsCard}>
           {[
             { label: 'VITAE', value: player?.health ?? 0, max: player?.maxHealth ?? 1, color: AXM.blood, gloss: 'flesh holds' },
-            { label: 'MORALE', value: Math.max(1, Math.min(10, Math.round((vm.morale + 100) / 20))), max: 10, color: AXM.sulfur, gloss: 'resolve to walk', isNew: true, breakAt: 2 },
+            { label: 'MORALE', value: Math.max(1, Math.min(10, Math.round(((Number.isFinite(vm.morale) ? vm.morale : 0) + 100) / 20))), max: 10, color: AXM.sulfur, gloss: 'resolve to walk', isNew: true, breakAt: 2 },
           ].map((pool) => (
             <View key={pool.label} style={styles.poolRow}>
               <View style={styles.poolHeader}>
@@ -256,33 +254,48 @@ export default function CharacterScreen() {
           ))}
         </View>
         <View style={styles.moraleLedger}>
-          <SectionLabel size={9} color={AXM.sulfur}>MORALE · LEDGER</SectionLabel>
-          <View style={styles.ledgerGrid}>
-            {[
-              { v: '+i', l: 'every victory', c: AXM.sulfur },
-              { v: '+ii', l: 'good rest at inn', c: AXM.sulfur },
-              { v: '+i', l: 'mercy granted', c: AXM.sulfur },
-              { v: '−ii', l: 'flee combat', c: AXM.blood },
-              { v: '−i', l: 'ally falls', c: AXM.blood },
-              { v: '−i', l: 'no rest in iii nights', c: AXM.blood },
-            ].map((r, i) => (
-              <View key={i} style={styles.ledgerRow}>
-                <Text style={[styles.ledgerValue, { color: r.c }]}>{r.v}</Text>
-                <Text style={styles.ledgerDesc}>{r.l}</Text>
+          <Pressable
+            style={styles.ledgerHeader}
+            onPress={() => setLedgerOpen((o) => !o)}
+            accessibilityRole="button"
+            accessibilityLabel={`Morale ledger, ${ledgerOpen ? 'expanded' : 'collapsed'}`}
+            testID="self-morale-ledger-toggle"
+          >
+            <SectionLabel size={9} color={AXM.sulfur}>MORALE · LEDGER</SectionLabel>
+            <Text style={styles.ledgerChevron}>{ledgerOpen ? '▾' : '▸'}</Text>
+          </Pressable>
+          {ledgerOpen && (
+            <>
+              <View style={styles.ledgerGrid}>
+                {[
+                  { v: '+i', l: 'every victory', c: AXM.sulfur },
+                  { v: '+ii', l: 'good rest at inn', c: AXM.sulfur },
+                  { v: '+i', l: 'mercy granted', c: AXM.sulfur },
+                  { v: '−ii', l: 'flee combat', c: AXM.blood },
+                  { v: '−i', l: 'ally falls', c: AXM.blood },
+                  { v: '−i', l: 'no rest in iii nights', c: AXM.blood },
+                ].map((r, i) => (
+                  <View key={i} style={styles.ledgerRow}>
+                    <Text style={[styles.ledgerValue, { color: r.c }]}>{r.v}</Text>
+                    <Text style={styles.ledgerDesc}>{r.l}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
-          </View>
-          <View style={styles.ledgerDivider} />
-          <Text style={styles.ledgerLore}>
-            {"At "}
-            <Text style={styles.bloodText}>ii or below</Text>
-            {" the road begins to lie. Maps shift. Nodes whisper wrong names."}
-          </Text>
+              <View style={styles.ledgerDivider} />
+              <Text style={styles.ledgerLore}>
+                {"At "}
+                <Text style={styles.bloodText}>ii or below</Text>
+                {" the road begins to lie. Maps shift. Nodes whisper wrong names."}
+              </Text>
+            </>
+          )}
         </View>
       </View>
 
-      {/* Derived Stats */}
-      <View style={styles.section} accessible accessibilityLabel={vm.a11y.derivedStats}>
+      {/* Derived + Saves — two columns (D&D character-sheet body) */}
+      <View style={styles.section}>
+       <View style={styles.twoCol}>
+        <View style={styles.colHalf} accessible accessibilityLabel={vm.a11y.derivedStats}>
         <SectionLabel size={10}>✠ DERIVED</SectionLabel>
         <View style={styles.derivedTable}>
           <View style={[styles.derivedRow, styles.derivedHeader]}>
@@ -294,14 +307,14 @@ export default function CharacterScreen() {
           {vm.derived.map((row) => (
             <View key={row.label} style={[styles.derivedRow, styles.derivedDataRow]}>
               <Text style={[styles.derivedCell, styles.derivedRowLabel]}>{row.label}</Text>
-              <TooltipTarget kind="item-stat" id={row.attackId} accessibilityLabel={`Explain ${row.label} attack`} accessibilityHint="tap to read description" testID={`self-derived-${row.attackId}`}>
-                <Text style={[styles.derivedCell, styles.derivedData]}>{row.attack}</Text>
+              <TooltipTarget kind="item-stat" id={row.attackId} style={styles.derivedCell} accessibilityLabel={`Explain ${row.label} attack`} accessibilityHint="tap to read description" testID={`self-derived-${row.attackId}`}>
+                <Text style={styles.derivedData}>{row.attack}</Text>
               </TooltipTarget>
-              <TooltipTarget kind="item-stat" id={row.skillId} accessibilityLabel={`Explain ${row.label} skill`} accessibilityHint="tap to read description" testID={`self-derived-${row.skillId}`}>
-                <Text style={[styles.derivedCell, styles.derivedData]}>{row.skill}</Text>
+              <TooltipTarget kind="item-stat" id={row.skillId} style={styles.derivedCell} accessibilityLabel={`Explain ${row.label} skill`} accessibilityHint="tap to read description" testID={`self-derived-${row.skillId}`}>
+                <Text style={styles.derivedData}>{row.skill}</Text>
               </TooltipTarget>
-              <TooltipTarget kind="item-stat" id={row.defenseId} accessibilityLabel={`Explain ${row.label} defense`} accessibilityHint="tap to read description" testID={`self-derived-${row.defenseId}`}>
-                <Text style={[styles.derivedCell, styles.derivedData]}>{row.defense}</Text>
+              <TooltipTarget kind="item-stat" id={row.defenseId} style={styles.derivedCell} accessibilityLabel={`Explain ${row.label} defense`} accessibilityHint="tap to read description" testID={`self-derived-${row.defenseId}`}>
+                <Text style={styles.derivedData}>{row.defense}</Text>
               </TooltipTarget>
             </View>
           ))}
@@ -310,10 +323,8 @@ export default function CharacterScreen() {
             <Text style={styles.luckValue}>{vm.luck}</Text>
           </View>
         </View>
-      </View>
-
-      {/* Saves & Tests */}
-      <View style={styles.section} accessible accessibilityLabel={vm.a11y.saves}>
+        </View>
+        <View style={styles.colHalf} accessible accessibilityLabel={vm.a11y.saves}>
         <SectionLabel size={10}>✠ SAVES &amp; TESTS</SectionLabel>
         <View style={styles.savesGrid}>
           {vm.saves.map((s) => (
@@ -337,6 +348,8 @@ export default function CharacterScreen() {
             </TooltipTarget>
           ))}
         </View>
+        </View>
+       </View>
       </View>
 
       {/* Philosophical Alignment (Phase 52, engine 0.10.0 Philosophy module) */}
@@ -370,7 +383,7 @@ export default function CharacterScreen() {
       <View style={styles.section}>
         <SectionLabel size={10}>✠ MORALE</SectionLabel>
         <View style={styles.moraleRow}>
-          <Text style={styles.moraleValue}>{vm.morale}</Text>
+          <Text style={styles.moraleValue}>{Number.isFinite(vm.morale) ? vm.morale : 0}</Text>
           <Text style={styles.moraleLabel}>willpower</Text>
         </View>
       </View>
@@ -423,36 +436,9 @@ export default function CharacterScreen() {
         </View>
       </View>
 
-      {/* Equipment */}
-      <View style={styles.section} accessible accessibilityLabel={vm.a11y.equipment}>
-        <SectionLabel size={10}>✠ WORN &amp; WIELDED</SectionLabel>
-        <View style={styles.equipRow}>
-          <BodyDiagram />
-          <View style={styles.slotsGrid}>
-            {vm.equipment.map((s) => (
-              // Phase 74 follow-up walkthrough Tick 3: wrap each
-              // slot cell in a TooltipTarget pointing at the new
-              // kind:'slot' content (7 engine slot ids). Tap
-              // explains the slot's gameplay role.
-              <TooltipTarget
-                key={s.slotKey}
-                kind="slot"
-                id={s.slotKey}
-                accessibilityLabel={`Explain ${s.name} slot`}
-                accessibilityHint="tap to read description"
-                testID={`self-slot-${s.slotKey}`}
-              >
-                <View style={[styles.slotCell, s.item === null && styles.slotEmpty]}>
-                  <Text style={styles.slotName}>{s.name.toUpperCase()}</Text>
-                  <Text style={[styles.slotItem, s.item === null && { color: AXM.ash }]}>
-                    {s.item ?? '—'}
-                  </Text>
-                </View>
-              </TooltipTarget>
-            ))}
-          </View>
-        </View>
-      </View>
+      {/* WORN & WIELDED removed from the SELF tab (visual-audit
+          2026-06) — equipment lives in the SATCHEL tab; the SELF sheet
+          keeps to identity + stats so it fits one screen. */}
 
       {/* Skills */}
       {vm.skills.length > 0 && (
@@ -504,79 +490,95 @@ export default function CharacterScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: { padding: 14, paddingBottom: 0 },
-  headerRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
-  characterName: { fontFamily: FONTS.gothic, fontSize: 26, lineHeight: 28, color: AXM.parchment, marginTop: 2 },
-  levelBox: { width: 50, height: 50, borderWidth: 2, borderColor: AXM.parchment, backgroundColor: AXM.deepBg, alignItems: 'center', justifyContent: 'center' },
-  levelText: { fontFamily: FONTS.gothic, fontSize: 30, color: AXM.sulfur },
+  // Density pass (visual-audit 2026-06): tightened section spacing and
+  // hero-element sizes so the whole SELF tab fits a 390×844 screen
+  // without scrolling. Kept legible — only spacing/scale shrank.
+  // D&D character-sheet header: portrait bust + identity + level box.
+  sheetHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingHorizontal: 12, paddingTop: 12 },
+  portraitFrame: { width: 136, height: 164, borderWidth: 1, borderColor: AXM.ash, backgroundColor: AXM.deepBg, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  identityCol: { flex: 1, paddingTop: 2 },
+  identityAlignment: { fontFamily: FONTS.serifItalic, fontSize: 11, color: AXM.bone, marginTop: 1, marginBottom: 4 },
+  characterName: { fontFamily: FONTS.gothic, fontSize: 22, lineHeight: 24, color: AXM.parchment, marginTop: 1 },
+  levelBox: { width: 46, height: 52, borderWidth: 2, borderColor: AXM.parchment, backgroundColor: AXM.deepBg, alignItems: 'center', justifyContent: 'center' },
+  levelText: { fontFamily: FONTS.gothic, fontSize: 26, lineHeight: 28, color: AXM.sulfur },
+  levelCaption: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 2, color: AXM.bone },
+  twoCol: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
+  colHalf: { flex: 1 },
+  ledgerHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  ledgerChevron: { fontFamily: FONTS.mono, fontSize: 12, color: AXM.sulfur },
   xpRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 },
-  xpLabel: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone, letterSpacing: 1 },
-  xpValue: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.sulfur },
-  section: { padding: 10, paddingHorizontal: 14, paddingBottom: 0 },
-  baseRow: { flexDirection: 'row', gap: 6, marginTop: 6 },
-  baseCard: { flex: 1, padding: 8, paddingHorizontal: 6, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, alignItems: 'center' },
-  baseStatLabel: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 2, color: AXM.bone, marginTop: 2 },
-  baseStatValue: { fontFamily: FONTS.gothic, fontSize: 28, color: AXM.sulfur, lineHeight: 32 },
-  derivedTable: { marginTop: 4, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, padding: 6, paddingHorizontal: 8 },
+  xpLabel: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone, letterSpacing: 1 },
+  xpValue: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.sulfur },
+  section: { paddingTop: 6, paddingHorizontal: 12, paddingBottom: 0 },
+  baseRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4, justifyContent: 'space-evenly' },
+  baseCard: { width: 100, paddingVertical: 11, paddingHorizontal: 6, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, alignItems: 'center' },
+  baseStatLabel: { fontFamily: FONTS.sans, fontSize: 13, letterSpacing: 2, color: AXM.bone, marginTop: 3 },
+  baseStatValue: { fontFamily: FONTS.gothic, fontSize: 32, color: AXM.sulfur, lineHeight: 34, marginTop: 2 },
+  derivedTable: { marginTop: 3, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, padding: 5, paddingHorizontal: 8 },
   derivedRow: { flexDirection: 'row' },
-  derivedHeader: { borderBottomWidth: 1, borderBottomColor: AXM.ash, borderStyle: 'dashed', paddingBottom: 3, marginBottom: 0 },
-  derivedDataRow: { borderBottomWidth: 1, borderBottomColor: AXM.ash, paddingVertical: 3 },
+  derivedHeader: { borderBottomWidth: 1, borderBottomColor: AXM.ash, borderStyle: 'dashed', paddingBottom: 2, marginBottom: 0 },
+  derivedDataRow: { borderBottomWidth: 1, borderBottomColor: AXM.ash, paddingVertical: 2 },
   derivedCell: { flex: 1 },
-  derivedRowLabel: { fontFamily: FONTS.sans, fontSize: 11, color: AXM.parchment, letterSpacing: 1.5, flex: 1.2 },
-  derivedHeaderCell: { fontFamily: FONTS.mono, fontSize: 10, color: AXM.bone, textAlign: 'right', letterSpacing: 1 },
-  derivedData: { fontFamily: FONTS.gothic, fontSize: 14, color: AXM.parchment, textAlign: 'right' },
-  luckRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
-  luckLabel: { fontFamily: FONTS.sans, fontSize: 11, color: AXM.bone, letterSpacing: 1.5 },
-  luckValue: { fontFamily: FONTS.gothic, fontSize: 18, color: AXM.sulfur },
-  savesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
-  saveCell: { width: '31%', borderWidth: 1, borderColor: AXM.ash, borderStyle: 'dashed', padding: 3, paddingHorizontal: 5, flexDirection: 'row', justifyContent: 'space-between' },
-  saveKey: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone },
-  saveVal: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.parchment },
-  alignmentCellName: { fontFamily: FONTS.gothic, fontSize: 14, color: AXM.parchment, letterSpacing: 1, marginTop: 4 },
-  alignmentAxesRow: { flexDirection: 'row', gap: 4, marginTop: 4 },
-  alignmentAxisChip: { flex: 1, borderWidth: 1, borderColor: AXM.ash, borderStyle: 'dashed', paddingVertical: 3, paddingHorizontal: 5 },
-  alignmentAxisLabel: { fontFamily: FONTS.mono, fontSize: 8, letterSpacing: 1, color: AXM.bone },
-  alignmentAxisBucket: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.parchment, marginTop: 1 },
+  // Larger type across the sheet for low-vision readability (visual-audit
+  // 2026-06) — the freed space (no WORN & WIELDED, two columns) is spent
+  // on legibility, not density.
+  derivedRowLabel: { fontFamily: FONTS.sans, fontSize: 13, color: AXM.parchment, letterSpacing: 1, flex: 1.3 },
+  derivedHeaderCell: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone, textAlign: 'center', letterSpacing: 1 },
+  derivedData: { fontFamily: FONTS.gothic, fontSize: 18, color: AXM.parchment, textAlign: 'center' },
+  luckRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 5, paddingTop: 4 },
+  luckLabel: { fontFamily: FONTS.sans, fontSize: 12, color: AXM.bone, letterSpacing: 1 },
+  luckValue: { fontFamily: FONTS.gothic, fontSize: 20, color: AXM.sulfur },
+  // SAVES & TESTS — a clean single-column list (was a cramped 3-up grid of
+  // tiny chips): label left, value right, hairline-separated rows.
+  savesGrid: { marginTop: 4, borderWidth: 1, borderColor: AXM.ash, backgroundColor: AXM.panelBg, paddingHorizontal: 8 },
+  saveCell: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 5, borderBottomWidth: 1, borderBottomColor: AXM.ash, borderStyle: 'dashed' },
+  saveKey: { fontFamily: FONTS.sans, fontSize: 13, color: AXM.parchment, letterSpacing: 0.5 },
+  saveVal: { fontFamily: FONTS.gothic, fontSize: 17, color: AXM.sulfur },
+  alignmentCellName: { fontFamily: FONTS.gothic, fontSize: 17, color: AXM.parchment, letterSpacing: 1, marginTop: 3 },
+  alignmentAxesRow: { flexDirection: 'row', gap: 6, marginTop: 5 },
+  alignmentAxisChip: { flex: 1, borderWidth: 1, borderColor: AXM.ash, borderStyle: 'dashed', paddingVertical: 5, paddingHorizontal: 6 },
+  alignmentAxisLabel: { fontFamily: FONTS.mono, fontSize: 10, letterSpacing: 1, color: AXM.bone },
+  alignmentAxisBucket: { fontFamily: FONTS.mono, fontSize: 14, color: AXM.parchment, marginTop: 2 },
   moraleRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8, marginTop: 4 },
-  moraleValue: { fontFamily: FONTS.gothic, fontSize: 18, color: AXM.parchment },
-  moraleLabel: { fontFamily: FONTS.serif, fontSize: 11, color: AXM.bone, letterSpacing: 1 },
+  moraleValue: { fontFamily: FONTS.gothic, fontSize: 24, color: AXM.parchment },
+  moraleLabel: { fontFamily: FONTS.serif, fontSize: 14, color: AXM.bone, letterSpacing: 1 },
   effectsList: { marginTop: 4, gap: 4 },
-  emptyLabel: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.ash, letterSpacing: 1, textTransform: 'uppercase' },
+  emptyLabel: { fontFamily: FONTS.mono, fontSize: 12, color: AXM.bone, letterSpacing: 1, textTransform: 'uppercase' },
   effectRow: { flexDirection: 'row', gap: 8, alignItems: 'center', borderWidth: 1, padding: 5, paddingHorizontal: 7 },
   effectTopRow: { flexDirection: 'row', justifyContent: 'space-between' },
   effectName: { fontFamily: FONTS.gothic, fontSize: 13, color: AXM.parchment, letterSpacing: 1 },
   effectMeta: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone },
   effectDesc: { fontFamily: FONTS.serif, fontSize: 10, color: AXM.bone, lineHeight: 13, marginTop: 1 },
-  equipRow: { flexDirection: 'row', gap: 10, marginTop: 6, alignItems: 'flex-start' },
+  equipRow: { flexDirection: 'row', gap: 10, marginTop: 4, alignItems: 'center' },
   slotsGrid: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 3 },
-  slotCell: { width: '48%', borderWidth: 1, borderColor: AXM.ash, padding: 3, paddingHorizontal: 5, minHeight: 32, backgroundColor: AXM.panelBg },
+  slotCell: { width: '48%', borderWidth: 1, borderColor: AXM.ash, paddingVertical: 2, paddingHorizontal: 5, minHeight: 28, backgroundColor: AXM.panelBg },
   slotEmpty: { backgroundColor: 'transparent', borderStyle: 'dashed' },
   slotName: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 1.5, color: AXM.bone },
   slotItem: { fontFamily: FONTS.serif, fontSize: 11, color: AXM.parchment, lineHeight: 14 },
-  skillsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
+  skillsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 3 },
   boneText: { color: AXM.bone },
   bloodText: { color: AXM.blood },
   flexOne: { flex: 1 },
-  marginTop8: { marginTop: 8 },
+  marginTop8: { marginTop: 5 },
   skillCard: { width: '48%', borderWidth: 2, padding: 4, paddingHorizontal: 6, backgroundColor: AXM.bg, flexDirection: 'row', alignItems: 'center', gap: 6 },
   skillName: { fontFamily: FONTS.gothic, fontSize: 12, color: AXM.parchment, lineHeight: 14 },
   skillCat: { fontFamily: FONTS.mono, fontSize: 8, letterSpacing: 1 },
-  poolsCard: { marginTop: 4, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, padding: 10, paddingHorizontal: 12, gap: 6 },
+  poolsCard: { marginTop: 3, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, paddingVertical: 7, paddingHorizontal: 12, gap: 5 },
   poolRow: {},
   poolHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 2 },
   poolLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  poolLabel: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1.6 },
-  poolNewBadge: { fontFamily: FONTS.mono, fontSize: 7, color: AXM.bg, backgroundColor: AXM.sulfur, paddingHorizontal: 4, letterSpacing: 1, overflow: 'hidden' },
-  poolGloss: { fontFamily: FONTS.serifItalic, fontSize: 10, color: AXM.bone },
-  poolValue: { fontFamily: FONTS.mono, fontSize: 10, color: AXM.parchment },
-  poolTrack: { position: 'relative' as const, height: 8, backgroundColor: AXM.deepBg, borderWidth: 1, borderColor: AXM.ash },
+  poolLabel: { fontFamily: FONTS.sans, fontSize: 13, letterSpacing: 1.6 },
+  poolNewBadge: { fontFamily: FONTS.mono, fontSize: 8, color: AXM.bg, backgroundColor: AXM.sulfur, paddingHorizontal: 4, paddingVertical: 1, letterSpacing: 1, overflow: 'hidden' },
+  poolGloss: { fontFamily: FONTS.serifItalic, fontSize: 12, color: AXM.bone },
+  poolValue: { fontFamily: FONTS.mono, fontSize: 13, color: AXM.parchment },
+  poolTrack: { position: 'relative' as const, height: 10, backgroundColor: AXM.deepBg, borderWidth: 1, borderColor: AXM.ash },
   poolFill: { position: 'absolute' as const, top: 1, bottom: 1, left: 1 },
   poolBreakTic: { position: 'absolute' as const, top: -2, bottom: -2, width: 1, backgroundColor: AXM.blood },
-  moraleLedger: { marginTop: 8, backgroundColor: AXM.deepBg, borderWidth: 1, borderColor: AXM.ash, padding: 10, paddingHorizontal: 12 },
-  ledgerGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 6 },
+  moraleLedger: { marginTop: 5, backgroundColor: AXM.deepBg, borderWidth: 1, borderColor: AXM.ash, paddingVertical: 7, paddingHorizontal: 12 },
+  ledgerGrid: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 8, rowGap: 2, marginTop: 4 },
   ledgerRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6, width: '48%' },
-  ledgerValue: { fontFamily: FONTS.mono, fontSize: 12, width: 22, textAlign: 'right' },
-  ledgerDesc: { fontFamily: FONTS.serif, fontSize: 11, color: AXM.parchment },
-  ledgerDivider: { height: 1, borderTopWidth: 1, borderTopColor: AXM.ash, borderStyle: 'dashed', marginTop: 8, marginBottom: 6 },
-  ledgerLore: { fontFamily: FONTS.serifItalic, fontSize: 11, color: AXM.bone, lineHeight: 14 },
+  ledgerValue: { fontFamily: FONTS.mono, fontSize: 13, width: 24, textAlign: 'right' },
+  ledgerDesc: { fontFamily: FONTS.serif, fontSize: 12, color: AXM.parchment },
+  ledgerDivider: { height: 1, borderTopWidth: 1, borderTopColor: AXM.ash, borderStyle: 'dashed', marginTop: 5, marginBottom: 4 },
+  ledgerLore: { fontFamily: FONTS.serifItalic, fontSize: 12, color: AXM.bone, lineHeight: 15 },
 });

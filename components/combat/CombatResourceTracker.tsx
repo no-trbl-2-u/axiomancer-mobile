@@ -82,14 +82,14 @@ const styles = StyleSheet.create({
     },
     eyebrow: {
         fontFamily: FONTS.sans,
-        fontSize: 9,
+        fontSize: 11,
         color: AXM.bone,
         letterSpacing: 2,
     },
     subLabel: {
         fontFamily: FONTS.mono,
-        fontSize: 7,
-        color: AXM.ash,
+        fontSize: 9,
+        color: AXM.bone,
         letterSpacing: 1,
     },
     tokens: {
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     },
     short: {
         fontFamily: FONTS.sans,
-        fontSize: 8,
+        fontSize: 10,
         letterSpacing: 1,
     },
 });

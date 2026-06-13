@@ -22,6 +22,8 @@ import { FontProvider } from '@/hooks/useFontFallbacks';
 // the engine so walking onto encounter / rest / treasure / quest
 // nodes fires the appropriate event. See state/exploration-maps/event-pools.ts.
 import '@/state/exploration-maps/event-pools';
+// Side-effect: skin the web scrollbar to match the gothic chrome.
+import '@/theme/web-scrollbar';
 import { createAsyncStorageAdapter } from '@/state/persistence/asyncStorageAdapter';
 import { CorruptSaveModal } from '@/components/CorruptSaveModal';
 import { DevAutoSeed } from '@/components/DevAutoSeed';

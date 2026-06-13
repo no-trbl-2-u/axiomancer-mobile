@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { AXM, FONTS } from '@/theme/axm';
 import { SectionLabel } from '@/components/SectionLabel';
@@ -51,28 +51,41 @@ export function ItemGrid({
     const grouped = useMemo(() => groupByCategory(items), [items]);
 
     if (isEmpty) {
-        return <EmptySack message={emptyMessage} />;
+        return (
+            <View style={styles.panel}>
+                <EmptySack message={emptyMessage} />
+            </View>
+        );
     }
 
+    // Contained scroll: the list scrolls inside this bordered panel rather
+    // than scrolling the whole Satchel screen (visual-audit 2026-06).
     return (
-        <View style={styles.gridOuter}>
-            {CATEGORY_ORDER.filter((cat) => grouped[cat].length > 0).map((cat) => (
-                <View key={cat} style={styles.categorySection}>
-                    <SectionLabel size={10}>{categoryHeaders[cat]}</SectionLabel>
-                    <View style={styles.grid}>
-                        {grouped[cat].map((it) => (
-                            <ItemCard
-                                key={it.id}
-                                item={it}
-                                expanded={expandedItemId === it.id}
-                                onTap={() => onItemTap(it.id)}
-                                onUseOrEquip={() => onUseOrEquip(it.id)}
-                                onDiscard={() => onDiscard(it.id)}
-                            />
-                        ))}
+        <View style={styles.panel}>
+            <ScrollView
+                style={styles.scroll}
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator
+                testID="inventory-scroll"
+            >
+                {CATEGORY_ORDER.filter((cat) => grouped[cat].length > 0).map((cat) => (
+                    <View key={cat} style={styles.categorySection}>
+                        <SectionLabel size={11}>{categoryHeaders[cat]}</SectionLabel>
+                        <View style={styles.grid}>
+                            {grouped[cat].map((it) => (
+                                <ItemCard
+                                    key={it.id}
+                                    item={it}
+                                    expanded={expandedItemId === it.id}
+                                    onTap={() => onItemTap(it.id)}
+                                    onUseOrEquip={() => onUseOrEquip(it.id)}
+                                    onDiscard={() => onDiscard(it.id)}
+                                />
+                            ))}
+                        </View>
                     </View>
-                </View>
-            ))}
+                ))}
+            </ScrollView>
         </View>
     );
 }
@@ -91,10 +104,20 @@ const styles = StyleSheet.create({
         color: AXM.bone,
         textAlign: 'center',
     },
-    gridOuter: {
+    panel: {
         flex: 1,
-        paddingHorizontal: 10,
-        paddingBottom: 10,
+        marginHorizontal: 10,
+        marginTop: 8,
+        marginBottom: 8,
+        borderWidth: 1,
+        borderColor: AXM.ash,
+        backgroundColor: AXM.panelBg,
+    },
+    scroll: {
+        flex: 1,
+    },
+    scrollContent: {
+        padding: 10,
     },
     categorySection: {
         marginBottom: 16,

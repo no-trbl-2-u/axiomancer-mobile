@@ -113,6 +113,9 @@ export interface CombatEffectDisplay {
 
 export interface CombatEnemySummary {
     name: string;
+    /** Enemy id (e.g. `'enemy-coastal-tyrant'`) for bespoke portrait art;
+     * empty string when no combat. Routed via `resolveEnemyArchetype`. */
+    artKey: string;
     /** e.g. `'elite'`; empty string when no combat. */
     tier: string;
     hp: number;
@@ -656,6 +659,7 @@ const ACTION_DEFAULTS: readonly ActionOption[] = [
 
 const EMPTY_ENEMY: CombatEnemySummary = {
     name: '',
+    artKey: '',
     tier: '',
     hp: 0,
     hpMax: 0,
@@ -1312,6 +1316,7 @@ export function selectCombatViewModel(
 
     const enemy: CombatEnemySummary = {
         name: enemyName,
+        artKey: String(enemyEntity.id ?? ''),
         tier: String(enemyEntity.difficulty ?? ''),
         hp: enemyHp,
         hpMax: enemyHpMax,

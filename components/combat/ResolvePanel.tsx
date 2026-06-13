@@ -68,6 +68,7 @@ export function ResolvePanel({
             <TouchableOpacity
                 onPress={canContinue ? onContinue : onLeave}
                 style={[styles.letBtn, { borderColor: isFriend ? AXM.rust : AXM.sulfur }]}
+                testID="combat-resolve-continue"
                 accessibilityRole="button"
                 accessibilityLabel={canContinue ? 'Continue to next round' : 'Leave combat'}
             >

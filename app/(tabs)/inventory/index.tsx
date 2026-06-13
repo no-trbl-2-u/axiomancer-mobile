@@ -100,7 +100,9 @@ export default function InventoryScreen() {
     }, [vm.items, expandedItemId]);
 
     return (
-        <ScreenBg>
+        // Non-scrolling page — the header / dock / tabs stay fixed and only
+        // the item list scrolls, inside its own bordered panel (below).
+        <ScreenBg scrollable={false}>
             <View style={styles.header}>
                 <SectionLabel size={9} color={AXM.bone}>{vm.sectionHeader}</SectionLabel>
                 <View style={styles.headerRow}>
@@ -170,7 +172,7 @@ const styles = StyleSheet.create({
     headerRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
     title: { fontFamily: FONTS.gothic, fontSize: 28, lineHeight: 30, color: AXM.parchment, marginTop: 2 },
     shillingBox: { alignItems: 'flex-end' },
-    shillingLabel: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone, letterSpacing: 1 },
+    shillingLabel: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone, letterSpacing: 1 },
     shillingVal: { fontFamily: FONTS.gothic, fontSize: 22, color: AXM.sulfur, lineHeight: 24 },
     burdenSection: {
         marginTop: 8,

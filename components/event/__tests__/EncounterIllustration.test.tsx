@@ -16,11 +16,12 @@ import React from 'react';
 import { Path, Circle, Line, G, Ellipse } from 'react-native-svg';
 
 import { EncounterIllustration } from '@/components/event/EncounterIllustration';
+import { AXM } from '@/theme/axm';
 
 describe('EncounterIllustration', () => {
     it('renders with accessibility attributes', () => {
         const tree = render(<EncounterIllustration />);
-        const svg = tree.getByLabelText('Combat encounter illustration showing a creature among twisted trees and ground debris');
+        const svg = tree.getByLabelText('Combat encounter illustration showing a horned creature crouched in a moonlit clearing among twisted trees');
         expect(svg).toBeTruthy();
         expect(svg.props.accessibilityRole).toBe('image');
     });
@@ -64,8 +65,8 @@ describe('EncounterIllustration', () => {
         const tree = render(<EncounterIllustration />);
         const circles = tree.UNSAFE_getAllByType(Circle);
         // Should have circular creature features (eyes, nodes, etc.)
-        const redCircles = circles.filter(circle => 
-            circle.props.fill === '#c0152a' // AXM.blood color
+        const redCircles = circles.filter(circle =>
+            circle.props.fill === AXM.blood // creature accent
         );
         expect(redCircles.length).toBeGreaterThan(0);
     });
@@ -73,22 +74,21 @@ describe('EncounterIllustration', () => {
     it('renders moon/circle in background', () => {
         const tree = render(<EncounterIllustration />);
         const circles = tree.UNSAFE_getAllByType(Circle);
-        // Should have a moon circle
+        // Should have a moon outline circle
         const moonCircle = circles.find(circle =>
-            circle.props.cx === 60 && circle.props.cy === 50 && circle.props.r === 20
+            circle.props.cx === 290 && circle.props.cy === 66 && circle.props.r === 26 && circle.props.fill === 'none'
         );
         expect(moonCircle).toBeTruthy();
-        expect(moonCircle.props.fill).toBe('none'); // Outline only
     });
 
     it('renders ground debris scatter', () => {
         const tree = render(<EncounterIllustration />);
         const lines = tree.UNSAFE_getAllByType(Line);
-        // Should have many debris lines (60 from the Array.from pattern)
-        const debrisLines = lines.filter(line => 
+        // Should have many ground-mist hatch lines (40 from the Array.from pattern)
+        const debrisLines = lines.filter(line =>
             line.props.x1 !== undefined && line.props.x1 !== 0 // Exclude the horizon line
         );
-        expect(debrisLines.length).toBeGreaterThan(50); // Expect substantial ground debris
+        expect(debrisLines.length).toBeGreaterThan(30); // Expect substantial ground mist
     });
 
     it('has proper SVG structure with groups and transforms', () => {

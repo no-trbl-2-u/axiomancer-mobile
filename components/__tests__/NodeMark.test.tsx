@@ -16,33 +16,35 @@ import { NodeMark } from '@/components/NodeMark';
 import { AXM } from '@/theme/axm';
 
 describe('NodeMark: kind → SVG branch', () => {
-    it('completed renders 2 paths + 2 circles (skull glyph)', () => {
+    it('completed renders the skull glyph on a backing disc (1 path + 3 circles)', () => {
         const tree = render(<NodeMark kind="completed" />);
-        expect(tree.UNSAFE_getAllByType(Path)).toHaveLength(2);
-        expect(tree.UNSAFE_getAllByType(Circle)).toHaveLength(2);
+        expect(tree.UNSAFE_getAllByType(Path)).toHaveLength(1);
+        // backing disc + two eye sockets
+        expect(tree.UNSAFE_getAllByType(Circle)).toHaveLength(3);
     });
 
-    it('locked renders 1 circle + 1 path with AXM.blood stroke (X mark)', () => {
+    it('locked renders 2 circles + 1 path with AXM.blood stroke (X mark)', () => {
         const tree = render(<NodeMark kind="locked" />);
-        expect(tree.UNSAFE_getAllByType(Circle)).toHaveLength(1);
+        // backing disc + dashed seal ring
+        expect(tree.UNSAFE_getAllByType(Circle)).toHaveLength(2);
         const paths = tree.UNSAFE_getAllByType(Path);
         expect(paths).toHaveLength(1);
         expect(paths[0].props.stroke).toBe(AXM.blood);
     });
 
-    it('current renders 3 nested circles with sulfur accent', () => {
+    it('current renders nested circles with sulfur accent (incl. backing)', () => {
         const tree = render(<NodeMark kind="current" />);
         const circles = tree.UNSAFE_getAllByType(Circle);
-        expect(circles).toHaveLength(3);
-        // Middle (inner-fill) circle carries the sulfur accent.
+        expect(circles).toHaveLength(4);
+        // Inner-fill circle carries the sulfur accent.
         const sulfurCircle = circles.find((c) => c.props.fill === AXM.sulfur);
         expect(sulfurCircle).toBeDefined();
     });
 
-    it('available (default) renders 2 circles with parchment chrome', () => {
+    it('available (default) renders 3 circles with parchment chrome (incl. backing)', () => {
         const tree = render(<NodeMark />);
         const circles = tree.UNSAFE_getAllByType(Circle);
-        expect(circles).toHaveLength(2);
+        expect(circles).toHaveLength(3);
         // Outer ring uses parchment stroke; inner dot uses parchment fill.
         const strokeRing = circles.find((c) => c.props.stroke === AXM.parchment);
         const fillDot = circles.find((c) => c.props.fill === AXM.parchment);
@@ -52,7 +54,7 @@ describe('NodeMark: kind → SVG branch', () => {
 
     it('renders the same shape as available when kind is explicit', () => {
         const tree = render(<NodeMark kind="available" />);
-        expect(tree.UNSAFE_getAllByType(Circle)).toHaveLength(2);
+        expect(tree.UNSAFE_getAllByType(Circle)).toHaveLength(3);
         expect(tree.UNSAFE_queryAllByType(Path)).toHaveLength(0);
     });
 });

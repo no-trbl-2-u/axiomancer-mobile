@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     },
     tabText: {
         fontFamily: FONTS.sans,
-        fontSize: 9,
+        fontSize: 11,
         color: AXM.bone,
         letterSpacing: 1.4,
         textTransform: 'uppercase',
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     },
     tabCount: {
         fontFamily: FONTS.mono,
-        fontSize: 8,
+        fontSize: 10,
         color: AXM.ash,
         backgroundColor: AXM.deepBg,
         borderRadius: 6,

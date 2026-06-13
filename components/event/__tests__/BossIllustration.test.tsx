@@ -15,6 +15,7 @@ import React from 'react';
 import { Path, Circle, Line, G } from 'react-native-svg';
 
 import { BossIllustration } from '@/components/event/BossIllustration';
+import { AXM } from '@/theme/axm';
 
 describe('BossIllustration', () => {
     it('renders with accessibility attributes', () => {
@@ -46,8 +47,8 @@ describe('BossIllustration', () => {
         const tree = render(<BossIllustration />);
         const circles = tree.UNSAFE_getAllByType(Circle);
         // Should have glowing red eye dots (using AXM.blood color)
-        const redCircles = circles.filter(circle => 
-            circle.props.fill === '#c0152a' // AXM.blood color
+        const redCircles = circles.filter(circle =>
+            circle.props.fill === AXM.blood // glowing-eye accent
         );
         expect(redCircles.length).toBeGreaterThanOrEqual(2); // Two eyes
     });

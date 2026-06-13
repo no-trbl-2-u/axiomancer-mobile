@@ -4,9 +4,9 @@ import {
     Text,
     View,
 } from 'react-native';
-import Svg, { Path, Circle, Ellipse, Defs, RadialGradient, Stop } from 'react-native-svg';
 
 import { AXM, FONTS } from '@/theme/axm';
+import { EnemyPortrait } from '@/components/event/enemy-art/EnemyPortrait';
 import type { CombatViewModel, StanceKey } from '@/state/presenters/combat.engine';
 import { StatBar } from '@/components/StatBar';
 import { EffectChip } from '@/components/EffectChip';
@@ -39,36 +39,15 @@ export const CombatEnemyPanel = React.memo(function CombatEnemyPanel({ vm }: Com
             />
             <View style={styles.enemyRow}>
                 <View style={styles.enemyPortrait}>
-                    <Svg
-                        viewBox="0 0 200 200"
+                    {/* Bespoke archetype portrait keyed off the enemy id so the
+                        fight HUD matches the prelude art (visual-audit 2026-06). */}
+                    <EnemyPortrait
+                        enemyArtKey={vm.enemy.artKey}
+                        isBoss={vm.enemy.tier === 'boss'}
                         width={58}
                         height={70}
-                        accessibilityRole="image"
-                        accessibilityLabel={`Enemy portrait: ${vm.enemy.name || 'Unknown enemy'}`}
-                        // The detailed hooded silhouette renders smaller now;
-                        // the eye/mouth pixels become subtle marks rather than
-                        // the dominant chrome they were pre-Phase-72.
-                    >
-                        <Defs>
-                            <RadialGradient id="eg" cx="50%" cy="40%">
-                                <Stop offset="0%" stopColor={AXM.blood} stopOpacity={0.4} />
-                                <Stop offset="100%" stopColor={AXM.blood} stopOpacity={0} />
-                            </RadialGradient>
-                        </Defs>
-                        <Ellipse cx={100} cy={100} rx={90} ry={80} fill="url(#eg)" />
-                        <Path
-                            d="M100 30 C 60 30 40 70 50 130 L 30 200 L 170 200 L 150 130 C 160 70 140 30 100 30 Z"
-                            fill={AXM.deepBg}
-                            stroke={AXM.parchment}
-                            strokeWidth={1.5}
-                        />
-                        <Path
-                            d="M70 70 Q 100 50 130 70 L 130 110 Q 100 130 70 110 Z"
-                            fill={AXM.deepBg}
-                        />
-                        <Circle cx={85} cy={90} r={3.5} fill={AXM.blood} />
-                        <Circle cx={115} cy={90} r={3.5} fill={AXM.blood} />
-                    </Svg>
+                        label={`Enemy portrait: ${vm.enemy.name || 'Unknown enemy'}`}
+                    />
                 </View>
                 <View style={styles.enemyInfo}>
                     <View style={styles.enemyTopRow}>

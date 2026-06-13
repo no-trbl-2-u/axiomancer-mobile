@@ -32,7 +32,7 @@ describe('TitleScreen', () => {
     );
 
     expect(getByText('AXIOMANCER')).toBeTruthy();
-    expect(getByText('MOBILE')).toBeTruthy();
+    expect(getByText('· MOBILE ·')).toBeTruthy();
     expect(getByText(/You are a PILGRIM/)).toBeTruthy();
     expect(getByText(/fishing village/)).toBeTruthy();
   });

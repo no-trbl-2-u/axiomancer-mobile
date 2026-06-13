@@ -32,12 +32,18 @@ interface ExplorationNodeProps {
  * for the explanation. Extracted from the parent's map() body so
  * each node owns its own measure ref.
  */
+// Visual-audit 2026-06: larger, more-defined nodes. The wrap is centred
+// exactly on (n.x, n.y) via a percentage position + a half-node negative
+// margin (px), so centring is correct regardless of the canvas size the
+// map is spread across (see MapCanvas SPREAD).
+const NODE_SIZE = 44;
+
 export function ExplorationNode({ node: n, onNodePress, shouldShowLabel }: ExplorationNodeProps) {
     const tooltip = useTooltip();
     const ref = useRef<View | null>(null);
     const ev = EVENT_BADGE[n.type] ?? EVENT_BADGE.encounter;
-    const left = (n.x - 18) / 360 * 100;
-    const top = (n.y - 18) / 400 * 100;
+    const left = (n.x / 360) * 100;
+    const top = (n.y / 400) * 100;
     const dim = n.kind === 'locked';
     
     return (
@@ -62,7 +68,7 @@ export function ExplorationNode({ node: n, onNodePress, shouldShowLabel }: Explo
                 dim && styles.nodeWrapLocked,
             ]}
         >
-            <NodeMark kind={n.kind} size={36} />
+            <NodeMark kind={n.kind} size={NODE_SIZE} />
             {n.kind === 'available' && shouldShowLabel && (
                 <View style={[styles.nodeLabel, { backgroundColor: AXM.nodeBg }]}>
                     <Text style={[styles.nodeLabelText, { color: dim ? AXM.bone : AXM.parchment }]}>
@@ -82,7 +88,10 @@ export function ExplorationNode({ node: n, onNodePress, shouldShowLabel }: Explo
 const styles = StyleSheet.create({
     nodeWrap: {
         position: 'absolute',
-        width: 36,
+        width: NODE_SIZE,
+        // Pull back half a node so the glyph sits centred on (n.x, n.y).
+        marginLeft: -NODE_SIZE / 2,
+        marginTop: -NODE_SIZE / 2,
         alignItems: 'center',
         zIndex: 3,
     },

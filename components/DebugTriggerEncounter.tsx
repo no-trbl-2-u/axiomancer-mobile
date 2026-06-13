@@ -62,6 +62,59 @@ const ENCOUNTERS: readonly { kind: NodeType; label: string }[] = [
     { kind: 'quest', label: 'QUEST' },
 ];
 
+/** Paced narrative events that route to their own dedicated screens
+ * (Phase 137) rather than the generic /event shell — village + cutscene.
+ * Their `kind` isn't a NodeType, so they ride a separate button row; the
+ * seeded event drives <EventGate> to push /village or /cutscene. Sample
+ * payloads mirror the engine's ResolvedEvent shape (selectVillageVM reads
+ * merchants[].dialogueTree + shop.wares; the cutscene screen reads
+ * lines[]). Visual-audit 2026-06 — closes the village/cutscene capture
+ * gap so both screens can be eyeballed. */
+const PACED_EXTRAS: readonly { id: string; label: string; event: unknown }[] = [
+    {
+        id: 'village',
+        label: 'VILLAGE',
+        event: {
+            kind: 'village',
+            villageName: 'Saltmarsh Wend',
+            merchants: [
+                {
+                    name: 'Maren the Netwright',
+                    dialogueTree: {
+                        rootId: 'r',
+                        nodes: { r: { id: 'r', text: 'Rope and twine, pilgrim — cheaper than drowning.' } },
+                    },
+                },
+                {
+                    name: 'Old Coddle',
+                    dialogueTree: {
+                        rootId: 'r',
+                        nodes: { r: { id: 'r', text: 'Bread two days stale, honest as the tide.' } },
+                    },
+                },
+            ],
+            shop: {
+                wares: [
+                    { itemId: 'minor-healing-potion', price: 12 },
+                    { itemId: 'antidote', price: 8 },
+                ],
+            },
+        },
+    },
+    {
+        id: 'cutscene',
+        label: 'CUTSCENE',
+        event: {
+            kind: 'cutscene',
+            lines: [
+                'The tide goes out further than it should, and does not turn.',
+                'On the bared flats lies something the sea forgot to take back.',
+                'It does not move. It is waiting for you to.',
+            ],
+        },
+    },
+];
+
 /** A synthetic gather material — engine 0.16 doesn't ship a Material
  * library, so we construct one inline (same shape as the gather pools). */
 const SAMPLE_MATERIAL: Material = {
@@ -175,6 +228,15 @@ export function DebugTriggerEncounter() {
         fire(kind);
     };
 
+    const onPressPaced = (event: unknown) => {
+        // Same stacking discipline as onPress; <EventGate> observes the
+        // seeded village/cutscene event and pushes its dedicated route.
+        // `sourceNodeType` is metadata these screens don't read, so any
+        // valid NodeType is harmless — 'quest' stands in.
+        router.push('/(tabs)/exploration');
+        setPending(event, 'quest');
+    };
+
     return (
         <View style={styles.root}>
             <View style={styles.labelRow}>
@@ -190,6 +252,18 @@ export function DebugTriggerEncounter() {
                         accessibilityRole="button"
                         accessibilityLabel={`Trigger ${entry.label.toLowerCase()} encounter on the world tab`}
                         testID={`debug-trigger-encounter-${entry.kind}`}
+                    >
+                        <Text style={styles.buttonLabel}>{entry.label}</Text>
+                    </Pressable>
+                ))}
+                {PACED_EXTRAS.map((entry) => (
+                    <Pressable
+                        key={entry.id}
+                        style={styles.button}
+                        onPress={() => onPressPaced(entry.event)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Trigger ${entry.label.toLowerCase()} on the world tab`}
+                        testID={`debug-trigger-encounter-${entry.id}`}
                     >
                         <Text style={styles.buttonLabel}>{entry.label}</Text>
                     </Pressable>

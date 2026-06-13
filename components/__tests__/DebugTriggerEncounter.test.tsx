@@ -120,6 +120,10 @@ describe('DebugTriggerEncounter: non-combat triggers', () => {
         ['gather', 'gathering'],
         ['treasure', 'loot-cache'],
         ['quest', 'interaction'],
+        // Paced dedicated-route events (Phase 137) — <EventGate> routes
+        // these to /village and /cutscene (visual-audit capture rig).
+        ['village', 'village'],
+        ['cutscene', 'cutscene'],
     ])('%s seeds a %s narrative event', (button, eventKind) => {
         const store = makeStore();
         const tree = render(withProvider(store, <DebugTriggerEncounter />));

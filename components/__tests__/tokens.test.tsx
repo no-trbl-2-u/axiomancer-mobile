@@ -66,7 +66,7 @@ describe('TokenChip: count-driven palette', () => {
         const tree = render(<TokenChip kind="heart" count={0} />);
         const wrapper = tree.UNSAFE_getAllByType(View)[0];
         const style = flattenStyle(wrapper);
-        expect(style.backgroundColor).toBe('#0a0a0a');
+        expect(style.backgroundColor).toBe(AXM.bg);
         expect(style.borderColor).toBe(AXM.ash);
     });
 

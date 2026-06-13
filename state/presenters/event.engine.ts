@@ -182,6 +182,12 @@ export interface EventViewModel {
     kind: EventKind;
     variant: EventVariant;
     artSlug: EventArtSlug;
+    /**
+     * Enemy id (e.g. `"enemy-coastal-tyrant"`) for bespoke combat-prelude
+     * art routing. Present only on combat-prelude variants; the art layer
+     * maps it to an archetype illustration (see `enemy-art`).
+     */
+    enemyArtKey?: string | null;
     badge: string;
     badgeAccentKey: ChoiceAccentKey;
     title: string;
@@ -510,6 +516,7 @@ function composeCombatPrelude(encounter: Encounter, isBoss: boolean): Omit<Event
         kind: 'combat-prelude',
         variant: isBoss ? 'boss' : 'encounter',
         artSlug: isBoss ? 'boss' : 'encounter',
+        enemyArtKey: enemy.id,
         badge,
         badgeAccentKey: 'blood',
         title: enemy.name.toUpperCase(),

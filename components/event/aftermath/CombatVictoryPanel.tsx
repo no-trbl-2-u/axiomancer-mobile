@@ -26,6 +26,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Path as SvgPath } from 'react-native-svg';
 
 import { Splatter } from '@/components/Splatter';
+import { VictoryWreath } from '@/components/art/VictoryWreath';
 import { AXM, FONTS } from '@/theme/axm';
 import type { AftermathVictoryViewModel } from '@/state/presenters/aftermath.engine';
 
@@ -154,7 +155,13 @@ export function CombatVictoryPanel({ vm, onContinue }: CombatVictoryPanelProps) 
                     )}
                 </View>
 
-                <View style={styles.spacer} />
+                {/* Ceremonial laurel watermark — fills the void above the
+                    CTA so a win always reads as an earned, framed beat. */}
+                <View style={styles.spacer}>
+                    <View style={styles.wreathWatermark} pointerEvents="none">
+                        <VictoryWreath size={132} />
+                    </View>
+                </View>
 
                 <Pressable
                     onPress={onContinue}
@@ -338,8 +345,12 @@ const styles = StyleSheet.create({
     },
     finalBlowDescriptor: {
         fontFamily: FONTS.mono,
-        fontSize: 8,
-        color: AXM.ash,
+        fontSize: 9,
+        // Was AXM.ash (~2.1:1 on the dock-bg box) at 8px — the "— felled
+        // the foe" caption read as near-black grime on the box edge.
+        // bone (~6.5:1) makes it legible without competing with the
+        // parchment phrase above it.
+        color: AXM.bone,
         letterSpacing: 1.4,
         marginTop: 8,
     },
@@ -357,15 +368,19 @@ const styles = StyleSheet.create({
     rewardCell: {
         flex: 1,
         paddingHorizontal: 4,
-        paddingTop: 6,
-        paddingBottom: 8,
+        paddingTop: 10,
+        paddingBottom: 10,
         alignItems: 'center',
         justifyContent: 'flex-end',
     },
     rewardValue: {
         fontFamily: FONTS.mono,
-        fontSize: 18,
-        lineHeight: 20,
+        fontSize: 27,
+        lineHeight: 30,
+        // Lift the payoff numbers off the strip so a win reads as a reward.
+        textShadowColor: AXM.shadow,
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 10,
     },
     rewardLabel: {
         fontFamily: FONTS.sans,
@@ -385,7 +400,7 @@ const styles = StyleSheet.create({
         fontFamily: FONTS.serifItalic,
         fontSize: 13,
         color: AXM.bone,
-        marginTop: 8,
+        marginTop: 6,
         textAlign: 'center',
     },
     lootList: { marginTop: 6 },
@@ -426,14 +441,21 @@ const styles = StyleSheet.create({
     rarityRailUncommon: { backgroundColor: AXM.parchment, opacity: 0.7 },
     rarityRailRare: { backgroundColor: AXM.parchment },
     rarityRailUnique: { backgroundColor: AXM.sulfur },
-    spacer: { flex: 1, minHeight: 8 },
+    spacer: { flex: 1, minHeight: 8, alignItems: 'center', justifyContent: 'center' },
+    wreathWatermark: { opacity: 0.16 },
     carryOn: {
         paddingVertical: 12,
         backgroundColor: AXM.silhouette,
         borderWidth: 2,
-        borderColor: AXM.parchment,
+        borderColor: AXM.sulfur,
         alignItems: 'center',
         justifyContent: 'center',
+        // Gold glow so the exit reads as the rewarding way forward.
+        shadowColor: AXM.sulfur,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.5,
+        shadowRadius: 12,
+        elevation: 6,
     },
     carryOnPressed: {
         opacity: 0.85,
@@ -441,7 +463,7 @@ const styles = StyleSheet.create({
     carryOnLabel: {
         fontFamily: FONTS.gothic,
         fontSize: 16,
-        color: AXM.parchment,
+        color: AXM.sulfur,
         letterSpacing: 2,
     },
 });

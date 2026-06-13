@@ -33,15 +33,17 @@ interface ExplorationNodeProps {
  * each node owns its own measure ref.
  */
 // Visual-audit 2026-06: larger, more-defined nodes. The wrap is centred
-// on (n.x, n.y) by offsetting half the node size; the glyph fills it.
-const NODE_SIZE = 48;
+// exactly on (n.x, n.y) via a percentage position + a half-node negative
+// margin (px), so centring is correct regardless of the canvas size the
+// map is spread across (see MapCanvas SPREAD).
+const NODE_SIZE = 44;
 
 export function ExplorationNode({ node: n, onNodePress, shouldShowLabel }: ExplorationNodeProps) {
     const tooltip = useTooltip();
     const ref = useRef<View | null>(null);
     const ev = EVENT_BADGE[n.type] ?? EVENT_BADGE.encounter;
-    const left = (n.x - NODE_SIZE / 2) / 360 * 100;
-    const top = (n.y - NODE_SIZE / 2) / 400 * 100;
+    const left = (n.x / 360) * 100;
+    const top = (n.y / 400) * 100;
     const dim = n.kind === 'locked';
     
     return (
@@ -87,6 +89,9 @@ const styles = StyleSheet.create({
     nodeWrap: {
         position: 'absolute',
         width: NODE_SIZE,
+        // Pull back half a node so the glyph sits centred on (n.x, n.y).
+        marginLeft: -NODE_SIZE / 2,
+        marginTop: -NODE_SIZE / 2,
         alignItems: 'center',
         zIndex: 3,
     },

@@ -16,6 +16,14 @@ interface MapCanvasProps {
     children: React.ReactNode;
 }
 
+// The engine packs node coordinates into a 360×400 space; rendered 1:1
+// the nodes overlap and labels collide. We spread them across a larger
+// pannable canvas (SPREAD×) so each node has breathing room — the window
+// clips to a viewport the user pans/zooms around. (Visual-audit 2026-06.)
+const SPREAD = 2.6;
+const CANVAS_W = 360 * SPREAD;
+const CANVAS_H = 400 * SPREAD;
+
 export function MapCanvas({ nodes, edges, children }: MapCanvasProps) {
     const nodeById = React.useMemo(() => {
         const m = new Map<string, ExplorationNode>();
@@ -32,6 +40,25 @@ export function MapCanvas({ nodes, edges, children }: MapCanvasProps) {
     const ty = useSharedValue(0);
     const savedTx = useSharedValue(0);
     const savedTy = useSharedValue(0);
+
+    // Centre the (larger) canvas in the viewport on first layout so the
+    // map opens on its middle rather than the top-left corner.
+    const initialized = React.useRef(false);
+    const onWrapLayout = React.useCallback(
+        (e: { nativeEvent: { layout: { width: number; height: number } } }) => {
+            if (initialized.current) return;
+            const { width, height } = e.nativeEvent.layout;
+            if (width === 0) return;
+            const cx = (width - CANVAS_W) / 2;
+            const cy = (height - CANVAS_H) / 2;
+            tx.value = cx;
+            ty.value = cy;
+            savedTx.value = cx;
+            savedTy.value = cy;
+            initialized.current = true;
+        },
+        [tx, ty, savedTx, savedTy],
+    );
 
     const pinch = Gesture.Pinch()
         .onUpdate((e) => {
@@ -63,15 +90,15 @@ export function MapCanvas({ nodes, edges, children }: MapCanvasProps) {
     }));
 
     return (
-        <View style={styles.graphWrap}>
+        <View style={styles.graphWrap} onLayout={onWrapLayout}>
             <View style={[StyleSheet.absoluteFillObject, styles.graphBackground]} />
             <Splatter color={AXM.blood} size={170} seed={3} style={styles.bloodSplatter} />
             <Splatter color={AXM.sulfur} size={130} seed={9} style={styles.sulfurSplatter} />
 
             <GestureDetector gesture={composed}>
-                <Animated.View style={[StyleSheet.absoluteFillObject, mapTransform]}>
-                    {/* SVG edges */}
-                    <Svg viewBox="0 0 360 400" width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
+                <Animated.View style={[styles.canvas, mapTransform]}>
+                    {/* SVG edges — drawn across the spread canvas */}
+                    <Svg viewBox="0 0 360 400" width={CANVAS_W} height={CANVAS_H} style={StyleSheet.absoluteFillObject}>
                         {edges.map((e) => {
                             const A = nodeById.get(e.fromId);
                             const B = nodeById.get(e.toId);
@@ -120,6 +147,13 @@ const styles = StyleSheet.create({
         height: 400,
         position: 'relative',
         overflow: 'hidden',
+    },
+    canvas: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: CANVAS_W,
+        height: CANVAS_H,
     },
     graphBackground: {
         backgroundColor: AXM.deepBg,

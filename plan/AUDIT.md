@@ -48,7 +48,7 @@
 - addressed: 2026-06-14 via commit 07de432
 - fix: Added comprehensive test coverage for DebugEncounterButtons component including DEV gate functionality, action routing for quest/rest/cache encounters, and accessibility compliance following established debug component test patterns.
 
-### [ ] [2.0] Missing test coverage for DebugHazardButton component
+### [x] [2.0] Missing test coverage for DebugHazardButton component
 - category: tests
 - impact: 4
 - ease: 5
@@ -61,6 +61,9 @@
 - evidence: Component missing from components/__tests__/ directory
 - suggested fix: Create components/__tests__/DebugHazardButton.test.tsx following existing debug component test patterns
 - source: audit
+- issue: #409
+- addressed: 2026-06-14 via commit 76172e5
+- fix: Added comprehensive test coverage for DebugHazardButton component including DEV gate functionality, action routing for hazard session creation, and accessibility compliance following established debug component test patterns.
 
 ### [ ] [1.5] SVG_ASSET_SPEC.md unclear guidance for new maintainers
 - category: external-critique

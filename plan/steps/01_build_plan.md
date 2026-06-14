@@ -189,7 +189,7 @@ commit that ships the phase.
       AUDIT finding [4.2] is closed. Skipped to avoid duplicate work (skipped
       via oversight 2026-06-13 — superseded by 529d4e5 during the same pass).
 
-- [ ] Phase 124 — Mechanics 0.21.0 mobile catch-up. `axiomancer-mechanics@0.21.0`
+- [x] Phase 124 — Mechanics 0.21.0 mobile catch-up. `axiomancer-mechanics@0.21.0` `[ff48fcd]`
       is published to npm and tagged `v0.21.0`; mobile still depends on
       `^0.20.0`, which will not float to `0.21.0` under pre-1.0 semver. Bump the
       package, drain type/import drift from the new `quest` MapEvent kind and

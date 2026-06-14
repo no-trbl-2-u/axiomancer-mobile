@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-13 at commit e7952ed
-> Pass count: 73
+> Last pass: 2026-06-14 at commit b1c19b8
+> Pass count: 74
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -280,6 +280,26 @@
   - Architectural drift from bearings.md presenter purity rule
 - rationale: Migrate local UI state to presenter layer per established architecture
 - proposed scope: 1-phase useState elimination from presenter-driven screens
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 2.8] Testing prerequisites documentation clarification
+- proposed: 2026-06-14, expand pass 74
+- source signals:
+  - **GitHub issue #350** (triage:loop-queued) - "Testing prerequisite unclear for fresh maintainers"
+  - **Documentation gap**: Fresh maintainer setup friction identified via triage process
+- rationale: Specific issue filed identifying documentation clarity problem affecting new maintainers. Clear signal for targeted improvement rather than systemic problem.
+- proposed scope: 1-phase documentation improvement addressing testing setup prerequisites and clarification for fresh contributors
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 2.5] State presenter TypeScript cast boundary refinement
+- proposed: 2026-06-14, expand pass 74
+- source signals:
+  - **TypeScript cast clusters** (aggressive posture smell): 6 `as unknown` instances in state/presenters/ files
+  - **Specific evidence**: state/rest/store-actions.ts:104, state/presenters/inventory-feedback.engine.ts:46, state/presenters/combat.engine.ts:1293+1516
+- rationale: Concentrated cast pattern in presenter layer creates type safety gaps. Aggressive posture accepts this smell as primary signal for targeted cleanup.
+- proposed scope: 1-phase replacement of unsafe casts with proper typing in presenter boundary files
 - estimated phases: 1
 - conflicts: none
 

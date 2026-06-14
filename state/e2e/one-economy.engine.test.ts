@@ -6,8 +6,8 @@
  *  - hazard omens land in the next combat (hexed → Allais' Curse,
  *    banked paradox tokens → combatResources), consuming their flags;
  *  - half the unspent combat tokens carry to the next combat;
- *  - victory spoils pay shillings + fold a hazard card into the
- *    persistent deck flags;
+ *  - victory spoils are engine-owned: `endCombat()`'s report carries
+ *    the rolled loot + granted XP, already applied to the player;
  *  - starter skills seed an empty `knownSkills` before the engine
  *    snapshots the player into the combat slice;
  *  - level-up learn offers come alignment-gated from the engine and
@@ -22,7 +22,6 @@ import { createEnemy } from 'axiomancer-mechanics';
 
 import { createAppStore } from '../store';
 import { createAppActions, TOKEN_CARRY_FLAG_PREFIX, type AppActions } from '../actions';
-import { HAZARD_CARD_FLAG_PREFIX } from 'axiomancer-mechanics';
 import {
     HAZARD_HEXED_FLAG,
     HAZARD_TOKEN_FLAG_PREFIX,
@@ -147,33 +146,40 @@ describe('combat token carry (half, floored)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Victory spoils
+// Victory spoils — engine-owned (CombatEndReport)
 // ---------------------------------------------------------------------------
 
-describe('grantVictorySpoils', () => {
-    it('pays level-scaled shillings and folds a hazard card into the deck flags', () => {
+describe('victory spoils come from the engine endCombat report', () => {
+    it('endCombat surfaces xpGained + loot and applies them to the player', () => {
         actions.startCombat(makeEnemy(2));
-        const before = store.getState().player.currency;
-        const cardFlagsBefore = flags().filter((f) => f.startsWith(HAZARD_CARD_FLAG_PREFIX)).length;
+        const xpBefore = store.getState().player.experience;
+        const invBefore = store.getState().player.inventory.length;
 
-        const spoils = actions.grantVictorySpoils();
-        expect(spoils).not.toBeNull();
-        expect(spoils!.shillings).toBe(4 + 3 * 2);
-        expect(store.getState().player.currency).toBe(before + spoils!.shillings);
+        // Force the foe down so mechanics resolves a victory; the
+        // engine rolls loot + XP and applies them in END_COMBAT.
+        const live = store.getState();
+        live.updateCombat({ ...live.combat!, enemy: { ...live.combat!.enemy, health: 0 } });
 
-        const cardFlagsAfter = flags().filter((f) => f.startsWith(HAZARD_CARD_FLAG_PREFIX)).length;
-        if (spoils!.card !== null) {
-            expect(cardFlagsAfter).toBe(cardFlagsBefore + 1);
-            expect(
-                flags().some((f) => f.startsWith(`${HAZARD_CARD_FLAG_PREFIX}${spoils!.card!.id}:`)),
-            ).toBe(true);
-        }
+        const report = actions.endCombat();
+        expect(report).not.toBeNull();
+        expect(report!.outcome).toBe('victory');
+        expect(report!.xpGained).toBeGreaterThan(0);
+
+        const after = store.getState().player;
+        // XP from the report is the XP applied to the player — mobile
+        // adds nothing of its own.
+        expect(after.experience).toBe(xpBefore + report!.xpGained);
+        // Rolled loot lands in the inventory (length never shrinks;
+        // stacking may fold a drop into an existing stack).
+        expect(after.inventory.length).toBeGreaterThanOrEqual(invBefore);
     });
 
-    it('returns null outside combat and grants nothing', () => {
-        const before = store.getState().player.currency;
-        expect(actions.grantVictorySpoils()).toBeNull();
-        expect(store.getState().player.currency).toBe(before);
+    it('endCombat outside combat reports a flee and grants nothing', () => {
+        const xpBefore = store.getState().player.experience;
+        const report = actions.endCombat();
+        expect(report?.outcome).toBe('flee');
+        expect(report?.xpGained).toBe(0);
+        expect(store.getState().player.experience).toBe(xpBefore);
     });
 });
 

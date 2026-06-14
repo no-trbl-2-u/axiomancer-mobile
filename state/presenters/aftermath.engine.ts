@@ -23,6 +23,8 @@
  * generate per-enemy lines.
  */
 
+import { isEquipment, type Item } from 'axiomancer-mechanics';
+
 import type { AftermathData } from '@/state/combat-mode';
 import { getMapLayout } from '@/state/exploration-maps';
 
@@ -39,10 +41,22 @@ export interface AftermathLootEntry {
 }
 
 /**
- * Currency reward strip cell — the felled foe's purse. Populated by
- * the one-economy pass (`actions.grantVictorySpoils()`); stays
- * nullable so the panel collapses the cell when a snapshot predates
- * the pass.
+ * Maps an engine loot `Item` (from `CombatEndReport.loot`) into a
+ * spoils tile. Only `Equipment` carries an explicit slot + rarity;
+ * consumables / materials / quest items show their category as the
+ * slot and read as `common` (they have no rarity axis).
+ */
+function toAftermathLootEntry(item: Item): AftermathLootEntry {
+    return isEquipment(item)
+        ? { name: item.name, slot: item.slot, rarity: item.rarity }
+        : { name: item.name, slot: item.category, rarity: 'common' };
+}
+
+/**
+ * Currency reward strip cell. Combat spoils are engine-owned and
+ * item-based (`CombatEndReport.loot`), so victories no longer pay a
+ * separate purse — the cell stays nullable for the other aftermath
+ * variants and collapses when absent.
  */
 export interface AftermathCurrency {
     shillings: number;
@@ -182,14 +196,8 @@ export function selectAftermathViewModel(
             finalBlowPhrase: deriveFinalBlowPhrase(data),
             rewards: {
                 xp: data.xpReward,
-                currency:
-                    data.shillings !== undefined && data.shillings !== null
-                        ? { shillings: data.shillings }
-                        : null,
-                loot:
-                    data.lootCard !== undefined && data.lootCard !== null
-                        ? [{ name: data.lootCard.name, slot: 'hazard card', rarity: data.lootCard.rarity }]
-                        : [],
+                currency: null,
+                loot: (data.loot ?? []).map(toAftermathLootEntry),
             },
         };
     }

@@ -48,7 +48,7 @@
 - addressed: 2026-06-13 via commit e819d9e
 - fix: Added comprehensive hermetic test suite for EquipmentDock component covering mount contract, header rendering, slot pairing and grid layout, selection behavior, equipment display, accessibility and interaction, props stability, and edge cases. Created 19 test cases following established testing patterns per docs/testing.md for critical inventory functionality. Verification: npm test EquipmentDock passes.
 
-### [2.1] Setup documentation usage guidance unclear for fresh maintainers
+### [x] [2.1] Setup documentation usage guidance unclear for fresh maintainers
 - category: external-critique
 - impact: 3
 - ease: 8
@@ -61,6 +61,9 @@
 - evidence: README line 29 says 'For comprehensive repository setup see setup/01_repository.md' but doesn't explain when fresh maintainer should use comprehensive vs quick start workflow
 - suggested fix: Add usage guidance explaining when to use setup/ documentation vs README quick start based on developer needs
 - source: external-critique
+- issue: #397
+- addressed: 2026-06-14 via commit 43f079c
+- fix: Improved README.md setup guidance to be more specific about when to use comprehensive setup/ documentation vs quick start process. Added clear indicators for missing tools, React Native newcomers, error troubleshooting, deployment needs, and new maintainer onboarding scenarios. Verification: npm run verify passes.
 
 ### [x] [1.8] Spec completion status lacks required metadata format
 - category: external-critique

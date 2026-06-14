@@ -85,15 +85,6 @@
      3 findings filed below. -->
 
 
-### [MED] /setup/ — Setup documentation usage guidance unclear for fresh maintainers
-- pass: 38 (commit f7112f9)
-- viewport: repository
-- auth_state: anonymous
-- category: navigation
-- observation: Setup documentation exists but README navigation section doesn't clearly distinguish when to use comprehensive setup vs quick start
-- evidence: README line 29 says 'For comprehensive repository setup see setup/01_repository.md' but doesn't explain when fresh maintainer should use comprehensive vs quick start workflow
-- suggested fix: Add usage guidance explaining when to use setup/ documentation vs README quick start based on developer needs
-- source: repo-analysis
 
 ### [LOW] /specs/README.md — Spec completion table doesn't highlight next steps for contributors
 - pass: 38 (commit f7112f9)
@@ -872,6 +863,17 @@
 <!-- Drained from ## Pending via /oversight 2026-06-08 (queue-drained
      call): addressed-✅ findings moved here so the open-findings
      signal /iterate reads is accurate. -->
+
+### [x] [MED] /setup/ — Setup documentation usage guidance unclear for fresh maintainers ✅
+- pass: 38 (commit f7112f9)
+- viewport: repository
+- auth_state: anonymous
+- category: navigation
+- observation: Setup documentation exists but README navigation section doesn't clearly distinguish when to use comprehensive setup vs quick start
+- evidence: README line 29 says 'For comprehensive repository setup see setup/01_repository.md' but doesn't explain when fresh maintainer should use comprehensive vs quick start workflow
+- suggested fix: Add usage guidance explaining when to use setup/ documentation vs README quick start based on developer needs
+- source: repo-analysis
+- addressed: 2026-06-14 via commit 43f079c
 
 ### [x] [MED] /plan/bearings.md — Stack decisions table mixes current state with migration notation ✅
 - pass: 38 (commit f7112f9)

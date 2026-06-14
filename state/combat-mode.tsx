@@ -14,6 +14,8 @@
 
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
+import type { Item } from 'axiomancer-mechanics';
+
 export type CombatOutcome = 'victory' | 'defeat' | 'flee' | 'parley';
 
 /**
@@ -24,9 +26,9 @@ export type CombatOutcome = 'victory' | 'defeat' | 'flee' | 'parley';
  * the fields the panel needs and stashes them here for the modal
  * mode swap to consume.
  *
- * Tick A populates `enemy` + `finalBlow` only. Currency / loot
- * surface in later ticks once the engine exposes them; until then
- * the presenter renders `null` and the panel collapses those rows.
+ * Victory carries the engine `CombatEndReport` spoils (`xpGained`
+ * + rolled `loot`); the presenter maps the loot into the panel's
+ * spoils list and collapses the (now item-based) currency cell.
  *
  * Discriminated union so later ticks can extend without churn — the
  * `variant` field keys off the outcome class. Tick A ships
@@ -50,16 +52,17 @@ export type AftermathData =
               causeLines?: { brutal: string; broken: string; quiet: string };
           };
           finalBlow: { skillName: string | null; damage: number; descriptor: string | null } | null;
+          /** Engine-granted XP (`CombatEndReport.xpGained`). */
           xpReward: number | null;
           /**
-           * One-economy pass — victory spoils granted by
-           * `actions.grantVictorySpoils()` at exit time. Optional so
-           * older snapshots stay valid; the aftermath presenter
-           * collapses the rows when absent.
+           * Engine-granted loot from the combat-end report
+           * (`CombatEndReport.loot`) — rolled and already applied to
+           * the player's inventory by mechanics' END_COMBAT reducer.
+           * The aftermath presenter maps these into the spoils list.
+           * Optional so older snapshots stay valid; absent reads as
+           * an empty drop.
            */
-          shillings?: number | null;
-          /** Hazard card folded into the persistent deck on this win. */
-          lootCard?: { name: string; rarity: 'common' | 'uncommon' | 'rare' } | null;
+          loot?: Item[];
       }
     | {
           variant: 'parley';

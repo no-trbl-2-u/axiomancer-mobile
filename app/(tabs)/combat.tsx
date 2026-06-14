@@ -309,10 +309,15 @@ export function CombatPanel() {
             // is unused in practice (encounters always open the
             // modal), but the branch stays for the /combat tab's
             // direct-mount harness pass.
-            // One-economy pass — pay out the felled foe's purse and the
-            // hazard-card drop BEFORE endCombat clears the slice; the
-            // spoils ride the snapshot into the victory panel.
-            const spoils = actions.grantVictorySpoils();
+            // Combat spoils are engine-owned: `endCombat()`'s
+            // `CombatEndReport` carries the rolled `loot` + granted
+            // `xpGained`, already applied to the player by mechanics'
+            // END_COMBAT reducer (loot stacked into inventory, XP
+            // added to experience). Capture the report, then ride it
+            // into the victory snapshot. `combat` stays valid as a
+            // closure local after the slice clears — the same pattern
+            // the friendship branch above relies on.
+            const report = actions.endCombat();
             const aftermathSnapshot = combat !== null
                 ? {
                       variant: 'victory' as const,
@@ -324,14 +329,10 @@ export function CombatPanel() {
                           finalBlowLines: combat.enemy.finalBlowLines,
                       },
                       finalBlow: buildFinalBlowSnapshot(combat),
-                      xpReward: combat.enemy.xpReward ?? null,
-                      shillings: spoils?.shillings ?? null,
-                      lootCard: spoils?.card
-                          ? { name: spoils.card.name, rarity: spoils.card.rarity }
-                          : null,
+                      xpReward: report?.xpGained ?? null,
+                      loot: report?.outcome === 'victory' ? report.loot : [],
                   }
                 : undefined;
-            actions.endCombat();
             exitCombatWith('victory', aftermathSnapshot);
             if (!inEncounterModal) {
                 finalizeCombatExit();

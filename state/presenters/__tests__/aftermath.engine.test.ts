@@ -112,14 +112,42 @@ describe('selectAftermathViewModel', () => {
         expect(vm?.kind === 'victory' && vm.finalBlowPhrase).toContain('bell did not ring');
     });
 
-    it('threads xpReward through; loot empty by default until Tick B+', () => {
+    it('threads xpReward through; loot empty and currency null when no drop', () => {
         const vm = selectAftermathViewModel(VICTORY_SNAPSHOT);
         expect(vm?.kind === 'victory' && vm.rewards.xp).toBe(18);
         expect(vm?.kind === 'victory' && vm.rewards.loot).toEqual([]);
         expect(vm?.kind === 'victory' && vm.rewards.currency).toBeNull();
     });
 
-    it('nulls xpReward when the enemy has none', () => {
+    it('maps engine loot items into spoils tiles (equipment slot/rarity; other items by category)', () => {
+        const vm = selectAftermathViewModel({
+            ...VICTORY_SNAPSHOT,
+            loot: [
+                {
+                    id: 'eq-1',
+                    name: 'Rusted Cutlass',
+                    description: 'A pitted blade.',
+                    category: 'equipment',
+                    slot: 'weapon',
+                    rarity: 'uncommon',
+                    requiredLevel: 1,
+                },
+                {
+                    id: 'con-1',
+                    name: 'Minor Healing Potion',
+                    description: 'Restores a little vitae.',
+                    category: 'consumable',
+                    quantity: 1,
+                },
+            ] as never,
+        });
+        expect(vm?.kind === 'victory' && vm.rewards.loot).toEqual([
+            { name: 'Rusted Cutlass', slot: 'weapon', rarity: 'uncommon' },
+            { name: 'Minor Healing Potion', slot: 'consumable', rarity: 'common' },
+        ]);
+    });
+
+    it('nulls xpReward when the engine granted none', () => {
         const vm = selectAftermathViewModel({ ...VICTORY_SNAPSHOT, xpReward: null });
         expect(vm?.kind === 'victory' && vm.rewards.xp).toBeNull();
     });

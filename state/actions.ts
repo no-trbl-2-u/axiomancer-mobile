@@ -95,8 +95,6 @@ import {
 import { templateToEquipment } from '@/state/selectors/equipment';
 import { resolveWareItem } from '@/state/presenters/village.engine';
 import { EMPTY_EVENT_SLICE, type AppStore } from './store';
-import { HAZARD_REWARD_CARDS } from 'axiomancer-mechanics';
-import { appendAcquiredCard } from 'axiomancer-mechanics';
 import {
     abandonHazardAction,
     acknowledgeHazardOutcomeAction,
@@ -562,17 +560,9 @@ export interface AppActions {
     buyVillageWare: (itemId: string) => boolean;
 
     // -----------------------------------------------------------------
-    // One-economy + skill-learning pass.
+    // Skill-learning pass.
     // -----------------------------------------------------------------
 
-    /**
-     * Victory payout (call BEFORE `endCombat`, while the enemy is
-     * still on the slice): shillings scaled by enemy level + a
-     * rarity-weighted hazard card folded into the persistent deck.
-     * Returns the spoils for the aftermath snapshot; null when no
-     * combat is live.
-     */
-    grantVictorySpoils: () => VictorySpoils | null;
     /**
      * Rolls up to `count` (default 3) level-up skill offers from
      * everything the player currently qualifies for (engine
@@ -744,50 +734,6 @@ function bankCombatTokenCarry(store: AppStore): void {
     store.setState({
         flags: [...flags, `${TOKEN_CARRY_FLAG_PREFIX}${halved.join(':')}`],
     } as never);
-}
-
-/** Spoils granted by `grantVictorySpoils` — surfaced on the victory panel. */
-export interface VictorySpoils {
-    shillings: number;
-    /** Hazard card folded into the persistent hazard deck. */
-    card: { id: string; name: string; rarity: 'common' | 'uncommon' | 'rare' } | null;
-}
-
-/** Base + per-enemy-level shilling purse for a combat victory. */
-const VICTORY_SHILLINGS_BASE = 4;
-const VICTORY_SHILLINGS_PER_LEVEL = 3;
-
-/**
- * One-economy pass: a felled foe pays out like a cleared hazard —
- * shillings scaled by its level, plus a hazard card folded into the
- * player's persistent deck (rarity-weighted from the reward pool).
- * Call BEFORE `endCombat` so the enemy is still on the slice. The
- * caller threads the result into the victory aftermath snapshot.
- */
-function grantVictorySpoilsAction(store: AppStore): VictorySpoils | null {
-    const state = store.getState();
-    const combat = state.combat;
-    if (!combat) return null;
-    const enemyLevel = Math.max(1, Number(combat.enemy.level ?? 1));
-    const shillings = VICTORY_SHILLINGS_BASE + VICTORY_SHILLINGS_PER_LEVEL * enemyLevel;
-
-    const roll = Math.random();
-    const rarity: 'common' | 'uncommon' | 'rare' =
-        roll < 0.5 ? 'common' : roll < 0.85 ? 'uncommon' : 'rare';
-    const pool = HAZARD_REWARD_CARDS.filter((c) => c.rarity === rarity);
-    const card = pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : null;
-
-    const gameState = state as unknown as GameState;
-    const flags = card ? appendAcquiredCard(gameState.flags ?? [], card.id) : gameState.flags;
-    store.setState({
-        player: { ...gameState.player, currency: gameState.player.currency + shillings },
-        flags,
-    } as never);
-
-    return {
-        shillings,
-        card: card ? { id: card.id, name: card.name, rarity: card.rarity } : null,
-    };
 }
 
 // ---------------------------------------------------------------------------
@@ -1442,7 +1388,6 @@ export function createAppActions(store: AppStore): AppActions {
         claimLootCacheOutcome: () => claimLootCacheOutcomeAction(store),
         abandonLootCache: () => abandonLootCacheAction(store),
         buyVillageWare: (itemId) => buyVillageWareAction(store, itemId),
-        grantVictorySpoils: () => grantVictorySpoilsAction(store),
         getLearnableSkillOffers: (count) => getLearnableSkillOffersAction(store, count),
         learnSkill: (skillId) => learnSkillAction(store, skillId),
     };

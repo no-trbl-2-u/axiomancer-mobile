@@ -229,9 +229,9 @@ sudo chown -R $(whoami) node_modules/.cache .expo
 
 Once repository setup is complete:
 
-1. **For EAS Build setup:** See [`setup/02_eas.md`](./02_eas.md)
-2. **For store deployment:** See [`setup/03_store_setup.md`](./03_store_setup.md) 
-3. **For AI testing workflow:** See [`setup/04_claude_playtest.md`](./04_claude_playtest.md)
+1. **For EAS Build setup:** See [`setup/02_eas.md`](./02_eas.md) _(Coming Soon)_
+2. **For store deployment:** See [`setup/03_store_setup.md`](./03_store_setup.md) _(Coming Soon)_
+3. **For AI testing workflow:** See [`setup/04_claude_playtest.md`](./04_claude_playtest.md) _(Coming Soon)_
 
 ## Getting Help
 

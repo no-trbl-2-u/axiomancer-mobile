@@ -44,15 +44,6 @@
 - suggested fix: Update README.md line 233 to reflect actual engine version ^0.21.0
 - source: repo-proxy
 
-### [HIGH] /setup/01_repository.md — Setup guide references missing setup runbooks creating broken navigation
-- pass: 41 (commit a185532)
-- viewport: repository
-- auth_state: anonymous
-- category: navigation
-- observation: Setup guide references missing setup runbooks that are explicitly not authored yet, creating broken navigation paths for new maintainers
-- evidence: Lines 232-234 reference setup/02_eas.md, setup/03_store_setup.md, setup/04_claude_playtest.md but plan/bearings.md line 82-84 states 'The `setup/NN_*.md` runbooks are not yet authored'
-- suggested fix: Add clear 'TODO' or 'Coming Soon' annotations to setup guide references until runbooks are authored
-- source: repo-proxy
 
 ### [MED] /SVG_ASSET_SPEC.md — Asset specification unclear when relevant for new maintainers
 - pass: 41 (commit a185532)
@@ -956,6 +947,17 @@
 <!-- Drained from ## Pending via /oversight 2026-06-08 (queue-drained
      call): addressed-✅ findings moved here so the open-findings
      signal /iterate reads is accurate. -->
+
+### [x] [HIGH] /setup/01_repository.md — Setup guide references missing setup runbooks creating broken navigation
+- pass: 41 (commit a185532)
+- viewport: repository
+- auth_state: anonymous
+- category: navigation
+- observation: Setup guide references missing setup runbooks that are explicitly not authored yet, creating broken navigation paths for new maintainers
+- evidence: Lines 232-234 reference setup/02_eas.md, setup/03_store_setup.md, setup/04_claude_playtest.md but plan/bearings.md line 82-84 states 'The `setup/NN_*.md` runbooks are not yet authored'
+- suggested fix: Add clear 'TODO' or 'Coming Soon' annotations to setup guide references until runbooks are authored
+- source: repo-proxy
+- addressed: 2026-06-14 via commit e253c8d
 
 ### [x] [MED] /setup/ — Setup documentation usage guidance unclear for fresh maintainers ✅
 - pass: 38 (commit f7112f9)

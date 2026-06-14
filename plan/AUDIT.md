@@ -10,9 +10,26 @@
 > findings 0.5× so they no longer outrank player-facing gameplay work.
 > Conducted by: /iterate autonomous audit
 
-> **Latest audit update (2026-06-14).** Comprehensive /march iterate audit conducted identifying test coverage gaps for navigation gate components and debug utilities.
+> **Latest audit update (2026-06-14).** Comprehensive /iterate audit conducted identifying external-critique findings from fresh maintainer review and remaining test coverage gaps.
 
 ## Top 5 findings (scored)
+
+### [x] [2.8] Setup guide references missing setup runbooks creating broken navigation
+- category: external-critique
+- impact: 8
+- ease: 7
+- base-score: 5.6
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 0.5 (external-critique down-weight)
+- final-score: 2.8
+- next: Add clear 'TODO' or 'Coming Soon' annotations to setup guide references until runbooks are authored
+- observation: Setup guide references missing setup runbooks that are explicitly not authored yet, creating broken navigation paths for new maintainers
+- evidence: Lines 232-234 reference setup/02_eas.md, setup/03_store_setup.md, setup/04_claude_playtest.md but plan/bearings.md line 82-84 states 'The `setup/NN_*.md` runbooks are not yet authored'
+- suggested fix: Add clear 'TODO' or 'Coming Soon' annotations to setup guide references until runbooks are authored
+- source: external-critique
+- issue: #404
+- addressed: 2026-06-14 via commit e253c8d
+- fix: Added clear "Coming Soon" annotations to setup guide references (lines 232-234) for setup/02_eas.md, setup/03_store_setup.md, and setup/04_claude_playtest.md until runbooks are authored.
 
 ### [x] [4.8] GatheringGate component missing test coverage affecting navigation maintainability
 - category: tests  

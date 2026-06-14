@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-13 at commit f270824
-> Pass count: 40
+> Last pass: 2026-06-14 at commit a185532
+> Pass count: 41
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -25,6 +25,74 @@
 > keep this header actionable.
 
 ## Pending
+
+<!-- Pass 41 (2026-06-14, commit a185532): repo-proxy pass —
+     Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
+     critique reads docs/specs/artifacts as the "fresh maintainer"
+     proxy. Focus on general repository comprehension for new
+     contributors. Examined README.md, VISION.md, docs/README.md,
+     specs/README.md, setup/, app/_layout.tsx, package.json, bearings.md.
+     6 findings filed below. -->
+
+### [MED] /README.md — Engine version mismatch between documentation and package.json
+- pass: 41 (commit a185532)
+- viewport: repository
+- auth_state: anonymous
+- category: comprehension
+- observation: README.md has conflicting information about engine version - states 'axiomancer-mechanics ^0.20.0' in AI workflow section but package.json shows ^0.21.0
+- evidence: Line 233: 'Current engine version: `axiomancer-mechanics ^0.20.0`' vs package.json line 41: 'axiomancer-mechanics': '^0.21.0'
+- suggested fix: Update README.md line 233 to reflect actual engine version ^0.21.0
+- source: repo-proxy
+
+### [HIGH] /setup/01_repository.md — Setup guide references missing setup runbooks creating broken navigation
+- pass: 41 (commit a185532)
+- viewport: repository
+- auth_state: anonymous
+- category: navigation
+- observation: Setup guide references missing setup runbooks that are explicitly not authored yet, creating broken navigation paths for new maintainers
+- evidence: Lines 232-234 reference setup/02_eas.md, setup/03_store_setup.md, setup/04_claude_playtest.md but plan/bearings.md line 82-84 states 'The `setup/NN_*.md` runbooks are not yet authored'
+- suggested fix: Add clear 'TODO' or 'Coming Soon' annotations to setup guide references until runbooks are authored
+- source: repo-proxy
+
+### [MED] /SVG_ASSET_SPEC.md — Asset specification unclear when relevant for new maintainers
+- pass: 41 (commit a185532)
+- viewport: repository
+- auth_state: anonymous
+- category: comprehension
+- observation: SVG_ASSET_SPEC.md opens with warning for fresh maintainers but then provides complex asset replacement workflow without clear entry point for when this becomes relevant
+- evidence: Lines 5-12 warn fresh maintainers they 'likely don't need this file yet' but no guidance on when they WOULD need it or how to know when asset replacement phase begins
+- suggested fix: Add clear trigger conditions like 'Start using this when Spec 11 (asset pipeline) is ready to implement'
+- source: repo-proxy
+
+### [MED] /specs/README.md — Spec completion status lacks verification guidance for new contributors
+- pass: 41 (commit a185532)
+- viewport: repository
+- auth_state: anonymous
+- category: navigation
+- observation: Specs README claims 'Specs 1-9 are complete' but doesn't clearly explain what this means for new contributors or how to verify completion status
+- evidence: Lines 59-66 state completion but a new maintainer has no way to verify this claim or understand what 'complete' means in this context
+- suggested fix: Add verification instructions or link to committed evidence showing spec completion (like PR links)
+- source: repo-proxy
+
+### [MED] /docs/README.md — Documentation priority labels lack clear definitions
+- pass: 41 (commit a185532)
+- viewport: repository
+- auth_state: anonymous
+- category: navigation
+- observation: Documentation README uses inconsistent priority labeling (ESSENTIAL vs HELPFUL vs REFERENCE) without explaining what these categories mean for new maintainers
+- evidence: Priority column uses three levels but no legend explains whether ESSENTIAL means 'read first' or 'read before contributing' or something else
+- suggested fix: Add priority legend explaining what ESSENTIAL/HELPFUL/REFERENCE mean for different contributor goals
+- source: repo-proxy
+
+### [MED] /plan/bearings.md — Bearings file overwhelming for fresh maintainers seeking project overview
+- pass: 41 (commit a185532)
+- viewport: repository
+- auth_state: anonymous
+- category: comprehension
+- observation: Bearings file contains dense autonomous loop context that overwhelms fresh maintainers trying to understand basic project structure and contribution workflow
+- evidence: File mixes basic project info with advanced autonomous loop configuration, deploy gates, and operational secrets in a 348-line document without clear sections for different audience needs
+- suggested fix: Split into bearings-overview.md for new contributors and bearings-loop.md for autonomous operation details
+- source: repo-proxy
 
 <!-- Pass 40 (2026-06-13, commit f270824): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,

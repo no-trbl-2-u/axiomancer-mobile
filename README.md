@@ -26,14 +26,15 @@ This repository contains extensive documentation across multiple directories. He
 
 ## Quick start
 
-*For comprehensive repository setup including environment configuration, development tools, and troubleshooting, see [`setup/01_repository.md`](setup/01_repository.md). Use the comprehensive setup guide when:*
+*For comprehensive repository setup including environment configuration, development tools, and troubleshooting, see [`setup/01_repository.md`](setup/01_repository.md). **Use the comprehensive setup guide when you:***
 
-*- You're setting up a **fresh development environment***
-*- You encounter **issues with the quick start** process*  
-*- You need **detailed environment configuration** or troubleshooting*
-*- You're a **new maintainer** who wants full context*
+*- **Don't have Node.js, Expo CLI, or mobile development tools** installed yet*
+*- **Haven't worked with React Native/Expo before** and want step-by-step guidance*  
+*- **Encounter errors** during the quick start (dependency issues, build failures, etc.)*
+*- **Need deployment setup** (EAS builds, .env configuration, store publishing)*
+*- **Are joining as a new maintainer** and want full project context and troubleshooting resources*
 
-*The quick start below covers the minimum steps to run the app for experienced developers with existing React Native environments.*
+*The quick start below assumes you already have Node.js 20+, Expo CLI, and basic React Native familiarity.*
 
 ### Prerequisites
 

@@ -54,16 +54,13 @@ commit that ships the phase.
 
 **Next up (autonomous loop's queue):**
 
-> **Queue-drained steering (set via oversight 2026-06-13).** As of this
-> date all 151 prior phases shipped and every pending `/expand` candidate
-> is sub-4.0 cleanup-tier. Direction chosen by the user: **playtest-driven
-> gameplay push.** Run Phase 122 (deep-playtest gameplay-gap discovery)
-> FIRST to surface real player-facing gaps and feed `/expand` gameplay
-> candidates *before* promoting any cleanup-tier candidate. (Phase 123,
-> the ITEM-action fix queued in the same pass, was already addressed on
-> main by `/iterate` in commit 529d4e5 — now marked [skipped].) Do not
-> promote sub-4.0 cleanup candidates until the playtest push has refilled
-> the queue with gameplay work.
+> **Queue-drained steering (set via oversight 2026-06-13; updated via oversight 2026-06-14).**
+> Phase 122 (playtest-gap discovery) shipped [cb26742]. Phase 124 (mechanics 0.21 catch-up)
+> is next and ships immediately. **After Phase 124 ships, run `/deep-playtest` again** to
+> surface Quest Board, Rest, and Loot-cache UX gaps as the next batch of high-score
+> gameplay candidates (directed via oversight 2026-06-14). Do not promote sub-4.0 cleanup
+> candidates until that post-124 playtest refills the queue with player-facing work.
+> (Phase 123 was already addressed on main by `/iterate` in commit 529d4e5 — marked [skipped].)
 
 - [x] Phase 104 — Mercy modal consumes engine truth only. Promoted above all else by Glanton cleanup 2026-06-04 after doctrine-alignment audit. Replace local friendship-threshold/modal/spare/exploit simulation with mechanics-emitted mercy state/actions/report truth; remove hard-coded exploit damage; preserve modal UX and accessibility. Brief: `plan/phases/phase_104_mercy_modal_engine_truth.md`. Verification: focused Jest + `npm run verify`. Shipped in commit ce59115.
 

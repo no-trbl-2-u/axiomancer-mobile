@@ -50,17 +50,17 @@ Current doctrine from mechanics/company vision:
 
 Mobile obligation:
 
-- present the post-Befriend choice as a modal when the engine emits the state;
-- spare/befriend text may later vary by player philosophical alignment;
-- exploit/free-critical text must be clear and morally charged, not a neutral attack button;
-- consequence categories should be visible when engine exposes them: alignment, faction reputation, boss content, region state, reward changes, or future flags.
+- present the post-Befriend choice to the player when the moment arises;
+- spare/befriend language may later vary by player philosophical alignment;
+- exploit/free-critical language must be clear and morally charged, not a neutral attack;
+- consequence paths should be visible when they emerge: alignment shifts, faction standing, boss encounters, regional changes, reward alterations, or future opportunities.
 
-Anti-exploit doctrine mobile must represent when mechanics exposes it:
+Anti-exploit doctrine mobile must represent when revealed:
 
 - exploiting an elite/miniboss Befriend opening prevents the region boss from gathering friendship counters;
-- sparing that elite/miniboss makes the region boss begin with `open-minded`;
-- `open-minded` may be a status effect whose only purpose is qualifying future Befriend paths;
-- befriending a boss can trade reputation: lose standing with one faction, gain with another.
+- sparing that elite/miniboss grants the region boss the `open-minded` condition;
+- `open-minded` may be a condition whose sole purpose is enabling future Befriend attempts;
+- befriending a boss can shift reputation: lose standing with one faction, gain with another.
 
 ## Worker law
 

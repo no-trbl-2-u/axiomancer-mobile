@@ -230,7 +230,7 @@ assisted development. Pick up the loop here:
   — the operator's manual.
 - **Writing tests?** [`docs/testing.md`](./docs/testing.md) — hermetic
   e2e standard. Every implementation must land with at least one.
-- **Current engine version:** `axiomancer-mechanics ^0.20.0` (Phase 124 is queued to bump mobile to `0.21.0`)
+- **Current engine version:** `axiomancer-mechanics ^0.21.0`
 - **Upgrading from mechanics `0.20.0`?**
   [`docs/engine-upgrade-0.20.0-to-0.21.0.md`](./docs/engine-upgrade-0.20.0-to-0.21.0.md)
   — package bump, Quest Board micro-games, Rest / Night Watch, Loot-cache / Reliquary, and encounter verification guidance.

@@ -98,7 +98,21 @@
 - addressed: 2026-06-14 via commit c769fc1
 - fix: Added comprehensive test coverage for HazardGate component including no session, active at mount, state flip, no re-push, and side-effect-only behavior following EventGate test pattern with useGameState and router.push mocking.
 
-### [ ] [2.8] DebugGatheringButton component missing test coverage affecting debug maintainability
+### [ ] [2.7] Engine version mismatch between documentation and package.json affecting maintainer setup
+- category: external-critique
+- impact: 6
+- ease: 9
+- base-score: 5.4
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 0.5 (external-critique down-weight)
+- final-score: 2.7
+- next: Update README.md line 233 to reflect actual engine version ^0.21.0
+- observation: README.md has conflicting information about engine version - states 'axiomancer-mechanics ^0.20.0' in AI workflow section but package.json shows ^0.21.0
+- evidence: Line 233: 'Current engine version: `axiomancer-mechanics ^0.20.0`' vs package.json line 41: 'axiomancer-mechanics': '^0.21.0'
+- suggested fix: Update README.md line 233 to reflect actual engine version ^0.21.0
+- source: external-critique
+
+### [x] [2.8] DebugGatheringButton component missing test coverage affecting debug maintainability
 - category: tests
 - impact: 4
 - ease: 7
@@ -111,6 +125,9 @@
 - evidence: Component missing from components/__tests__/ directory while other debug components have coverage
 - suggested fix: Create components/__tests__/DebugGatheringButton.test.tsx following DebugCombatButton test pattern
 - source: audit
+- issue: #405
+- addressed: 2026-06-14 via commit df774ec
+- fix: Added comprehensive test coverage for DebugGatheringButton component including dev gate functionality, action routing for both normal and tutorial gathering modes, and accessibility compliance following established debug component test patterns.
 
 ## Historical findings (addressed)
 

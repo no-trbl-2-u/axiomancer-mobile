@@ -34,6 +34,29 @@
      specs/README.md, setup/, app/_layout.tsx, package.json, bearings.md.
      4 findings filed below. -->
 
+<!-- Kid daily playthrough (2026-06-14, commit 774760d): hazard encounter-learning ladder.
+     Filed transient play blockers from live browser evidence; durable play doctrine lives in
+     Hermes skill reference kid-encounter-agents/hazard.md. -->
+
+### [HIGH] Hazard debug entry can mount hidden hazard UI while SELF/WILDS remains visible
+- pass: Kid daily playthrough 2026-06-14 (commit 774760d)
+- viewport: live Expo web at http://127.0.0.1:8081/
+- auth_state: anonymous/dev menu
+- category: playthrough blocker
+- observation: Hazard debug entry intermittently leaves the player-visible screen on SELF or WILDS while hazard intro/test IDs are mounted behind it.
+- evidence: Five-run hazard ladder run 4 saw `SELF → DEV MENU → DEBUG · HAZARD → BRAVE IT` create `hazard-intro-overlay`/`hazard-intro-continue` DOM with `THE FAMINE MARCH` text while browser snapshot/vision still showed SELF; category trigger could return to WILDS with no visible minigame.
+- suggested fix: Reconcile debug encounter routing and route lifecycle so hazard entry produces a visibly rendered intro/route-select/board, not hidden mounted state behind the previous screen.
+- source: Kid encounter-learning ladder
+
+### [MED] Hazard dev trigger requires DOM/test-ID activation more reliably than player/accessibility click
+- pass: Kid daily playthrough 2026-06-14 (commit 774760d)
+- viewport: live Expo web at http://127.0.0.1:8081/
+- auth_state: anonymous/dev menu
+- category: accessibility/automation
+- observation: The documented `SELF → DEV MENU → DEBUG · TRIGGER ENCOUNTER → HAZARD` route sometimes does not visibly fire through accessibility-level browser clicks, while DOM/test-ID activation succeeds.
+- evidence: Ladder runs 1 and 5 both reported first-click or accessibility-click no visible transition; run 5 reached hazard after `document.querySelector('[data-testid="debug-trigger-encounter-hazard"]').click()`.
+- suggested fix: Make the debug hazard trigger a normal accessible control with reliable visible navigation, or document and expose the direct `DEBUG · HAZARD` fallback intentionally.
+- source: Kid encounter-learning ladder
 
 ### [x] [HIGH] /VISION.md — Vision document uses inconsistent voice between archaic game language and modern technical language ✅
 - pass: 40 (commit f270824)

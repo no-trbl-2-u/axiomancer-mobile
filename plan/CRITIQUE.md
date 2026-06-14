@@ -38,7 +38,7 @@
      Filed transient play blockers from live browser evidence; durable play doctrine lives in
      Hermes skill reference kid-encounter-agents/hazard.md. -->
 
-### [HIGH] Hazard debug entry can mount hidden hazard UI while SELF/WILDS remains visible
+### [x] [HIGH] Hazard debug entry can mount hidden hazard UI while SELF/WILDS remains visible ✅
 - pass: Kid daily playthrough 2026-06-14 (commit 774760d)
 - viewport: live Expo web at http://127.0.0.1:8081/
 - auth_state: anonymous/dev menu
@@ -47,6 +47,8 @@
 - evidence: Five-run hazard ladder run 4 saw `SELF → DEV MENU → DEBUG · HAZARD → BRAVE IT` create `hazard-intro-overlay`/`hazard-intro-continue` DOM with `THE FAMINE MARCH` text while browser snapshot/vision still showed SELF; category trigger could return to WILDS with no visible minigame.
 - suggested fix: Reconcile debug encounter routing and route lifecycle so hazard entry produces a visibly rendered intro/route-select/board, not hidden mounted state behind the previous screen.
 - source: Kid encounter-learning ladder
+- addressed: 2026-06-14 via commit 6c3b022
+- fix: Improved HazardGate navigation reliability with defensive timeout, error handling, and duplicate navigation prevention to ensure route transitions complete properly without mounting hidden UI behind previous screens.
 
 ### [MED] Hazard dev trigger requires DOM/test-ID activation more reliably than player/accessibility click
 - pass: Kid daily playthrough 2026-06-14 (commit 774760d)

@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-14 at commit a185532
-> Pass count: 41
+> Last pass: 2026-06-14 at commit 076dfb9
+> Pass count: 42
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -941,6 +941,42 @@
 - evidence: Lines 5-12 clarify this is for asset replacement not initial development, but no clear bridge to when/how maintainer would use this
 - suggested fix: Add reference to this file in README repository navigation section
 - source: file-read
+
+### [HIGH] /README.md — Repository navigation creates confusing hierarchy with overlapping documentation directories
+- pass: 42 (commit 076dfb9)
+- viewport: desktop
+- category: navigation
+- observation: Multiple documentation directories (docs/adr/, specs/, plan/, docs/, setup/) with overlapping purposes create unclear boundaries for new maintainers
+- evidence: Lines 16-24 list setup/ for 'detailed setup guides' while docs/ contains 'technical documentation' creating navigation confusion
+- suggested fix: Consolidate or clearly delineate the boundary between setup/, docs/, and other documentation directories with explicit routing guidance
+- source: repo-proxy
+
+### [MED] /VISION.md — Inconsistent terminology around mercy/friendship mechanics  
+- pass: 42 (commit 076dfb9)
+- viewport: desktop
+- category: voice
+- observation: Vision document alternates between 'Befriend' (capitalized) and 'friendship' (lowercase) without clear distinction creating implementation ambiguity
+- evidence: Lines 39-50 alternate between 'Befriend' as skill name and 'friendship' as concept without established capitalization rules
+- suggested fix: Establish clear capitalization rules: 'Befriend' for the skill action, 'friendship' for the concept/counter
+- source: repo-proxy
+
+### [MED] /docs/testing.md — Testing documentation lacks concrete examples for mobile patterns
+- pass: 42 (commit 076dfb9)
+- viewport: desktop  
+- category: comprehension
+- observation: Testing documentation covers mobile considerations extensively but only provides brief code snippets rather than complete working examples
+- evidence: Lines 84-131 cover mobile testing considerations but lack copy-paste examples new maintainers can modify
+- suggested fix: Add complete working test examples for common mobile patterns (navigation, touch events, platform differences)
+- source: repo-proxy
+
+### [LOW] /SVG_ASSET_SPEC.md — Asset specification uses inconsistent measurement units
+- pass: 42 (commit 076dfb9)
+- viewport: desktop
+- category: visual
+- observation: Asset swap specification mixes 'px' measurements with abstract 'size' props without clear conversion ratios
+- evidence: Lines 53, 87, 110 mix 'px' measurements (12-20 px) with abstract 'size' props (default 40) and rendered dimensions (180 × 200 px)
+- suggested fix: Standardize on px measurements throughout or provide clear conversion ratios between abstract sizes and pixel dimensions
+- source: repo-proxy
 
 ## Done
 

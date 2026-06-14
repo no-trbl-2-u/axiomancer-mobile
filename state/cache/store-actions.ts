@@ -22,6 +22,7 @@ import {
     sealLootCache as engineSeal,
 } from 'axiomancer-mechanics';
 import type { CacheItemRef, LootCacheOutcomeTier, LootCacheSession } from 'axiomancer-mechanics';
+import { resolveMinigameSeed } from '../minigame-seeds';
 import { EMPTY_CACHE_SLICE, type AppStore } from '../store';
 
 /** Flag prefix banking a keeper's keepsake. */
@@ -51,10 +52,7 @@ export interface BeginLootCacheOptions {
 export function beginLootCacheAction(store: AppStore, options: BeginLootCacheOptions = {}): boolean {
     const state = store.getState();
     if (state.cache?.session) return false; // one cache at a time
-    const seed =
-        options.seed ??
-        globalThis.__AXM_CACHE_SEED__ ??
-        ((Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0);
+    const seed = resolveMinigameSeed('cache', options.seed, globalThis.__AXM_CACHE_SEED__);
 
     const items = options.items ?? [];
     const stash: Record<string, Item> = {};

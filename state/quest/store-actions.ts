@@ -23,6 +23,7 @@ import {
     useQuestCharm as engineUseCharm,
 } from 'axiomancer-mechanics';
 import type { QuestBoardSession, QuestCharmId, QuestOutcomeTier } from 'axiomancer-mechanics';
+import { resolveMinigameSeed, resolveMinigameString } from '../minigame-seeds';
 import { EMPTY_QUEST_SLICE, type AppStore } from '../store';
 
 /** Flag prefix recording a finished board: `quest-board-done:<id>:<tier>`. */
@@ -61,15 +62,14 @@ export interface BeginQuestBoardOptions {
 export function beginQuestBoardAction(store: AppStore, options: BeginQuestBoardOptions = {}): boolean {
     const state = store.getState();
     if (state.quest?.session) return false; // one board on the table at a time
-    const seed =
-        options.seed ??
-        globalThis.__AXM_QUEST_SEED__ ??
-        // Non-deterministic by design outside tests.
-        ((Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0);
-    const boardId =
-        options.boardId ??
-        globalThis.__AXM_QUEST_BOARD__ ??
-        QUEST_BOARDS[0].id;
+    const seed = resolveMinigameSeed('quest', options.seed, globalThis.__AXM_QUEST_SEED__);
+    const boardId = resolveMinigameString(
+        'quest',
+        ['boardId', 'board'],
+        options.boardId,
+        globalThis.__AXM_QUEST_BOARD__,
+        QUEST_BOARDS[0].id,
+    )!;
     setSession(store, createQuestBoardSession(seed, boardId));
     return true;
 }

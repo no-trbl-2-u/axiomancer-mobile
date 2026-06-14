@@ -23,6 +23,7 @@ import { readFile, mkdir, copyFile, readdir, stat } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { resolve, dirname, join, extname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { injectMinigameSeeds } from './minigame-seed-injector.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(__dirname, '..')
@@ -233,6 +234,7 @@ async function captureAndDiff({ playwright, PNG, pixelmatch }, baseUrl) {
         deviceScaleFactor: 1,
         reducedMotion: 'reduce',
     })
+    await injectMinigameSeeds(context)
     const page = await context.newPage()
 
     const consoleErrors = []

@@ -38,6 +38,7 @@ import type {
     GatheringSessionState,
 } from 'axiomancer-mechanics';
 import type { AppStore } from '../store';
+import { resolveMinigameSeed, resolveMinigameString } from '../minigame-seeds';
 
 export interface MobileGatheringSlice {
     session: GatheringSessionState | null;
@@ -102,17 +103,19 @@ export interface BeginGatheringOptions {
 export function beginGatheringAction(store: AppStore, options: BeginGatheringOptions = {}): boolean {
     const state = store.getState();
     if (state.gathering?.session) return false; // one gleaning at a time
-    const seed =
-        options.seed ??
-        globalThis.__AXM_GATHER_SEED__ ??
-        (options.tutorial ? GATHERING_TUTORIAL_SEED : undefined) ??
-        // Non-deterministic by design outside tests: mix wall clock and
-        // Math.random into a 32-bit seed.
-        ((Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0);
-    let siteId =
-        options.siteId ??
-        globalThis.__AXM_GATHER_SITE__ ??
-        (options.tutorial ? GATHERING_TUTORIAL_SITE : undefined);
+    const seed = resolveMinigameSeed(
+        'gathering',
+        options.seed,
+        globalThis.__AXM_GATHER_SEED__,
+        options.tutorial ? GATHERING_TUTORIAL_SEED : undefined,
+    );
+    let siteId = resolveMinigameString(
+        'gathering',
+        ['siteId', 'site'],
+        options.siteId,
+        globalThis.__AXM_GATHER_SITE__,
+        options.tutorial ? GATHERING_TUTORIAL_SITE : undefined,
+    );
     if (!siteId) {
         siteId = GATHERING_SITES[Math.abs(seed) % GATHERING_SITES.length].id;
     }

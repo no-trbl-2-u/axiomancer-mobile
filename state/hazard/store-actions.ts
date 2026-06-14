@@ -40,6 +40,7 @@ import {
 } from 'axiomancer-mechanics';
 import { appendAcquiredCard, HAZARD_CARD_FLAG_PREFIX, hazardDeckBag } from 'axiomancer-mechanics';
 import type { HazardProgressKey, HazardRouteKey, HazardSessionState } from 'axiomancer-mechanics';
+import { resolveMinigameSeed, resolveMinigameString } from '../minigame-seeds';
 import type { AppStore } from '../store';
 
 export interface MobileHazardSlice {
@@ -83,13 +84,13 @@ export interface BeginHazardOptions {
 export function beginHazardAction(store: AppStore, options: BeginHazardOptions = {}): boolean {
     const state = store.getState();
     if (state.hazard?.session) return false; // one crisis at a time
-    const seed =
-        options.seed ??
-        globalThis.__AXM_HAZARD_SEED__ ??
-        // Non-deterministic by design outside tests: mix wall clock and
-        // Math.random into a 32-bit seed.
-        ((Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0);
-    let hazardId = options.hazardId ?? globalThis.__AXM_HAZARD_ID__;
+    const seed = resolveMinigameSeed('hazard', options.seed, globalThis.__AXM_HAZARD_SEED__);
+    let hazardId = resolveMinigameString(
+        'hazard',
+        ['hazardId', 'id'],
+        options.hazardId,
+        globalThis.__AXM_HAZARD_ID__,
+    );
     if (!hazardId) {
         hazardId = HAZARD_LIBRARY[Math.abs(seed) % HAZARD_LIBRARY.length].id;
     }

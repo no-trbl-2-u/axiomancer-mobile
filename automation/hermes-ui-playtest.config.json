@@ -11,6 +11,26 @@
     "killPolicy": "kill-only-if-started-by-harness",
     "preferredTerminalMode": "background-pty"
   },
+  "minigameSeeds": {
+    "hazard": {
+      "seed": 424242,
+      "hazardId": "cracked-cliff"
+    },
+    "gathering": {
+      "seed": 9090,
+      "siteId": "mire-mint"
+    },
+    "rest": {
+      "seed": 515151
+    },
+    "cache": {
+      "seed": 626262
+    },
+    "quest": {
+      "seed": 737373,
+      "boardId": "build-the-boat"
+    }
+  },
   "browser": {
     "viewport": {
       "width": 414,

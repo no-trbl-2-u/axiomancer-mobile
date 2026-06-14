@@ -20,6 +20,7 @@ import { chromium } from 'playwright'
 import { mkdir } from 'node:fs/promises'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { injectMinigameSeeds } from './minigame-seed-injector.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(__dirname, '..')
@@ -249,13 +250,7 @@ async function main() {
     // optional THEME env forces the colour theme (the boot resolver
     // reads __AXM_THEME__ first) — used to showcase the theme system.
     const theme = process.env.THEME ?? null
-    await context.addInitScript((t) => {
-        globalThis.__AXM_HAZARD_SEED__ = 424242
-        globalThis.__AXM_HAZARD_ID__ = 'cracked-cliff'
-        globalThis.__AXM_GATHER_SEED__ = 9090
-        globalThis.__AXM_GATHER_SITE__ = 'mire-mint'
-        if (t) globalThis.__AXM_THEME__ = t
-    }, theme)
+    await injectMinigameSeeds(context, { theme })
     const page = await context.newPage()
     const errors = []
     page.on('console', (msg) => { if (msg.type() === 'error') errors.push(msg.text()) })

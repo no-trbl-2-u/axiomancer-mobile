@@ -19,6 +19,7 @@ import {
     createRestSession,
 } from 'axiomancer-mechanics';
 import type { RestOutcomeTier, RestPosture, RestSession } from 'axiomancer-mechanics';
+import { resolveMinigameSeed } from '../minigame-seeds';
 import { EMPTY_REST_SLICE, type AppStore } from '../store';
 
 /** Flag prefix banking a held dream / watchful find. */
@@ -46,10 +47,7 @@ export interface BeginRestOptions {
 export function beginRestAction(store: AppStore, options: BeginRestOptions = {}): boolean {
     const state = store.getState();
     if (state.rest?.session) return false; // one night at a time
-    const seed =
-        options.seed ??
-        globalThis.__AXM_REST_SEED__ ??
-        ((Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0);
+    const seed = resolveMinigameSeed('rest', options.seed, globalThis.__AXM_REST_SEED__);
     setSession(store, createRestSession(seed, options.healFraction ?? 1.0));
     return true;
 }

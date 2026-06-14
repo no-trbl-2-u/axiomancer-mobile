@@ -74,6 +74,22 @@ describe('automation/hermes-ui-playtest.config.json contract', () => {
         ]));
     });
 
+    it('defines deterministic seeds for all five minigames', () => {
+        expect(Object.keys(config.minigameSeeds).sort()).toEqual([
+            'cache',
+            'gathering',
+            'hazard',
+            'quest',
+            'rest',
+        ]);
+        for (const key of ['hazard', 'gathering', 'rest', 'cache', 'quest']) {
+            expect(config.minigameSeeds[key].seed).toEqual(expect.any(Number));
+        }
+        expect(config.minigameSeeds.hazard.hazardId).toEqual(expect.any(String));
+        expect(config.minigameSeeds.gathering.siteId).toEqual(expect.any(String));
+        expect(config.minigameSeeds.quest.boardId).toEqual(expect.any(String));
+    });
+
     it('captures report schema fields needed for triage and Tobin review', () => {
         expect(config.report.requiredSections).toEqual(expect.arrayContaining([
             'verdict-ready summary',

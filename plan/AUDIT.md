@@ -10,9 +10,68 @@
 > findings 0.5× so they no longer outrank player-facing gameplay work.
 > Conducted by: /iterate autonomous audit
 
-> **Latest audit update (2026-06-14).** Comprehensive /iterate audit conducted identifying external-critique findings from fresh maintainer review and remaining test coverage gaps.
+> **Latest audit update (2026-06-14).** Comprehensive /iterate audit conducted identifying engine version inconsistencies and continuing test coverage gaps across multiple component categories.
 
 ## Top 5 findings (scored)
+
+### [x] [3.0] Engine version inconsistency in plan/bearings.md documentation
+- category: external-critique
+- impact: 6
+- ease: 10
+- base-score: 6.0
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 0.5 (external-critique down-weight)
+- final-score: 3.0
+- next: Update plan/bearings.md lines 62 and 79 to reflect current engine version ^0.21.0
+- observation: plan/bearings.md still references stale engine version ^0.20.0 in two places while package.json shows ^0.21.0
+- evidence: Line 62: '| Engine | `axiomancer-mechanics` npm package (pinned ^0.20.0)' and line 79: 'Pinned **exact** (currently `^0.20.0`)' vs package.json line 41: '"axiomancer-mechanics": "^0.21.0"'
+- suggested fix: Update bearings.md lines 62 and 79 from ^0.20.0 to ^0.21.0 to match actual package version
+- source: audit
+- issue: #407
+- addressed: 2026-06-14 via commit 00d8c70
+- fix: Updated plan/bearings.md lines 62 and 79 from ^0.20.0 to ^0.21.0 to match actual package.json engine version, resolving documentation consistency issue for maintainer setup.
+
+### [ ] [2.4] Missing test coverage for DebugEncounterButtons component
+- category: tests
+- impact: 4
+- ease: 6
+- base-score: 2.4
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.0 (no bias applied to tests category)
+- final-score: 2.4
+- next: Add hermetic test for DebugEncounterButtons component following existing debug component test patterns
+- observation: DebugEncounterButtons component at components/DebugEncounterButtons.tsx lacks test coverage
+- evidence: Component missing from components/__tests__/ directory; other debug components have test coverage
+- suggested fix: Create components/__tests__/DebugEncounterButtons.test.tsx following existing debug component test patterns
+- source: audit
+
+### [ ] [2.0] Missing test coverage for DebugHazardButton component
+- category: tests
+- impact: 4
+- ease: 5
+- base-score: 2.0
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.0 (no bias applied to tests category)
+- final-score: 2.0
+- next: Add hermetic test for DebugHazardButton component following existing debug component test patterns
+- observation: DebugHazardButton component at components/DebugHazardButton.tsx lacks test coverage
+- evidence: Component missing from components/__tests__/ directory
+- suggested fix: Create components/__tests__/DebugHazardButton.test.tsx following existing debug component test patterns
+- source: audit
+
+### [ ] [1.5] SVG_ASSET_SPEC.md unclear guidance for new maintainers
+- category: external-critique
+- impact: 6
+- ease: 5
+- base-score: 3.0
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 0.5 (external-critique down-weight)
+- final-score: 1.5
+- next: Add clear trigger conditions for when asset replacement becomes relevant
+- observation: SVG_ASSET_SPEC.md opens with warning for fresh maintainers but then provides complex asset replacement workflow without clear entry point for when this becomes relevant
+- evidence: Lines 5-12 warn fresh maintainers they 'likely don't need this file yet' but no guidance on when they WOULD need it or how to know when asset replacement phase begins
+- suggested fix: Add clear trigger conditions like 'Start using this when Spec 11 (asset pipeline) is ready to implement'
+- source: external-critique
 
 ### [x] [2.8] Setup guide references missing setup runbooks creating broken navigation
 - category: external-critique

@@ -164,16 +164,6 @@
 - estimated phases: 1
 - conflicts: none
 
-### [ ] [score 2.7] Hex-literal color token migration continuation
-- proposed: 2026-06-11, expand pass 69
-- source signals:
-  - **Code smell**: 5+ untouched hex literals in hazard components (#0c0a08, #100d0a, #0a0908, #17150f, #12110b)
-  - **Contract violation**: Existing theme token system in theme/axm.ts per bearings.md contract
-- rationale: Aggressive posture smell detection found hex color leakage violating theme token contract. Existing AXM token system provides proper abstraction.
-- proposed scope: 1-phase targeted migration of hazard component hex literals
-- estimated phases: 1
-- conflicts: none
-
 ### [ ] [score 2.6] Spec completion workflow standardization
 - proposed: 2026-06-11, expand pass 69
 - source signals:
@@ -181,16 +171,6 @@
   - **Documentation inconsistency**: Line 50 guidance conflicts with actual completion pattern shown
 - rationale: Fresh maintainer confusion about how to properly mark spec completion, impacting onboarding workflow consistency.
 - proposed scope: 1-phase documentation standardization
-- estimated phases: 1
-- conflicts: none
-
-### [ ] [score 2.5] Large component boundary review (HazardBoard extraction)
-- proposed: 2026-06-11, expand pass 69
-- source signals:
-  - **Code smell**: HazardBoard.tsx at 683 lines (file-length outlier, 1.8× median component size)
-  - **AUDIT [2.7]**: Large TypeScript files impact on maintainability
-- rationale: Aggressive posture file-length outlier detection flags HazardBoard.tsx as significantly larger than typical components. Aligns with pending audit finding about large TypeScript file impacts.
-- proposed scope: 1-phase sub-component extraction
 - estimated phases: 1
 - conflicts: none
 
@@ -213,16 +193,6 @@
 - estimated phases: 1-2
 - conflicts: none
 
-### [ ] [score 3.0] Large component extraction (HazardBoard focus)
-- proposed: 2026-06-12, expand pass 70
-- source signals:
-  - **Code smell**: HazardBoard.tsx at 799 lines (2× folder median)
-  - **AUDIT [5.9]**: Component test coverage gaps backing the extraction need
-- rationale: Signal multiplicity - file-length outlier stacks with test coverage audit finding; HazardBoard.tsx has grown significantly since previous measurement
-- proposed scope: 1 phase to extract subcomponents from HazardBoard.tsx
-- estimated phases: 1
-- conflicts: none
-
 ### [ ] [score 3.8] Minigame gating mechanics integration (issue #333)
 - proposed: 2026-06-12, expand pass 71
 - source signals:
@@ -234,16 +204,6 @@
 - estimated phases: 1
 - conflicts: none
 
-### [ ] [score 3.2] Large component extraction (HazardBoard continuation)
-- proposed: 2026-06-12, expand pass 71
-- source signals:
-  - **File-length outlier smell**: HazardBoard.tsx at 799 lines (significantly >2× median)
-  - **Phase 117/119 pattern**: Follows established large-component extraction pattern
-- rationale: File-length outlier following Phase 117 extraction pattern. HazardBoard.tsx largest file in codebase at 799 lines.
-- proposed scope: 1 phase to extract subcomponents from HazardBoard.tsx following Phase 117 pattern
-- estimated phases: 1
-- conflicts: none
-
 ### [ ] [score 2.8] Documentation navigation consolidation
 - proposed: 2026-06-12, expand pass 71
 - source signals:
@@ -252,17 +212,6 @@
   - **CRITIQUE [MED]**: Extensive documentation lacks index
 - rationale: Signal multiplicity - multiple independent critique findings on same documentation navigation theme
 - proposed scope: 1 phase to consolidate documentation navigation and add proper index structure
-- estimated phases: 1
-- conflicts: none
-
-### [ ] [score 4.8] Hazard/Gathering hex literal token migration systematic cleanup
-- proposed: 2026-06-13, expand pass 72
-- source signals:
-  - **Hex literal smell clusters**: 15+ untouched hex literals in components/hazard/ directory ('as any' cast smell under aggressive posture)
-  - **Design system bypass**: Hardcoded colors '#0c0a08', '#8a57bd', '#17150f', '#86a821' in HazardCard, HazardDie, RouteSelect, gathering components 
-  - **Token system exists**: AXM design tokens established but inconsistently applied in minigame components
-- rationale: Concentrated hex-literal usage in newly shipped hazard/gathering minigame components bypasses established design token system. Aggressive posture accepts smell as primary signal with design consistency urgency.
-- proposed scope: 1-phase systematic replacement of hex literals with appropriate AXM tokens across hazard/gathering component families
 - estimated phases: 1
 - conflicts: none
 
@@ -334,27 +283,13 @@
 - estimated phases: 1
 - conflicts: none
 
-### [ ] [score 2.8] Hex literal to AXM token migration completion
-- proposed: 2026-06-13, expand pass 73
-- source signals:
-  - Hex literal smell cluster (100+ instances gathering/*, hazard/*)
-  - Token leakage vs established AXM.* pattern
-- rationale: Complete systematic token migration per existing pattern
-- proposed scope: 1-phase hex literal cleanup for minigame components
-- estimated phases: 1
-- conflicts: none (ongoing /iterate drain work - may be better left to iterate)
-
-### [ ] [score 2.7] HazardBoard component extraction refactor
-- proposed: 2026-06-13, expand pass 73
-- source signals:
-  - File-length outlier smell (HazardBoard.tsx at 799 lines)
-  - Maintainability concern for complex component
-- rationale: Extract sub-components from large cohesive component for better maintainability
-- proposed scope: 1-phase sub-component extraction
-- estimated phases: 1
-- conflicts: none
-
 ## Drained / shipped
+
+### [pruned 2026-06-14 via oversight] Duplicate cluster collapse — 7 entries removed
+- 4× HazardBoard extraction proposals (passes 69, 70, 71, 73) — superseded by [3.5]
+  "Large component extraction - HazardBoard.tsx refactor" (pass 72, kept in ## Pending).
+- 3× Hazard hex-literal migration proposals (passes 69, 72, 73) — superseded by [6.0]
+  "Hazard minigame hex-literal token migration" (pass 68, kept in ## Pending).
 
 ### [promoted 2026-06-05] Live mobile candidate batch → Phases 107-111
 - User ordered all five pending candidates promoted.

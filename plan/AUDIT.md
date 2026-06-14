@@ -31,7 +31,7 @@
 - addressed: 2026-06-14 via commit 00d8c70
 - fix: Updated plan/bearings.md lines 62 and 79 from ^0.20.0 to ^0.21.0 to match actual package.json engine version, resolving documentation consistency issue for maintainer setup.
 
-### [ ] [2.4] Missing test coverage for DebugEncounterButtons component
+### [x] [2.4] Missing test coverage for DebugEncounterButtons component
 - category: tests
 - impact: 4
 - ease: 6
@@ -44,6 +44,9 @@
 - evidence: Component missing from components/__tests__/ directory; other debug components have test coverage
 - suggested fix: Create components/__tests__/DebugEncounterButtons.test.tsx following existing debug component test patterns
 - source: audit
+- issue: #408
+- addressed: 2026-06-14 via commit 07de432
+- fix: Added comprehensive test coverage for DebugEncounterButtons component including DEV gate functionality, action routing for quest/rest/cache encounters, and accessibility compliance following established debug component test patterns.
 
 ### [ ] [2.0] Missing test coverage for DebugHazardButton component
 - category: tests

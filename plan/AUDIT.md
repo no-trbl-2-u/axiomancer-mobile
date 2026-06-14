@@ -98,7 +98,7 @@
 - addressed: 2026-06-14 via commit c769fc1
 - fix: Added comprehensive test coverage for HazardGate component including no session, active at mount, state flip, no re-push, and side-effect-only behavior following EventGate test pattern with useGameState and router.push mocking.
 
-### [ ] [2.7] Engine version mismatch between documentation and package.json affecting maintainer setup
+### [x] [2.7] Engine version mismatch between documentation and package.json affecting maintainer setup
 - category: external-critique
 - impact: 6
 - ease: 9
@@ -111,6 +111,9 @@
 - evidence: Line 233: 'Current engine version: `axiomancer-mechanics ^0.20.0`' vs package.json line 41: 'axiomancer-mechanics': '^0.21.0'
 - suggested fix: Update README.md line 233 to reflect actual engine version ^0.21.0
 - source: external-critique
+- issue: #406
+- addressed: 2026-06-14 via commit 2da4282
+- fix: Updated README.md line 233 from 'axiomancer-mechanics ^0.20.0' to '^0.21.0' to match package.json engine version, resolving documentation consistency issue for maintainer setup.
 
 ### [x] [2.8] DebugGatheringButton component missing test coverage affecting debug maintainability
 - category: tests

@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-14 at commit b1c19b8
-> Pass count: 74
+> Last pass: 2026-06-14 at commit 1806ddb
+> Pass count: 75
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -109,6 +109,61 @@
 - proposed scope: 1-phase systematic replacement of hex literals with appropriate AXM tokens in hazard component family
 - estimated phases: 1
 - conflicts: none
+
+### [ ] [score 8.5] Build plan runway replenishment strategy
+- proposed: 2026-06-14, expand pass 75
+- source signals:
+  - **Completely drained build plan**: All 148 phases shipped, no pending work
+  - **Oversight directive**: Explicit "/march tick must fire an /expand pass" guidance for runway refill
+  - **Queue exhaustion**: Current candidates are sub-4.0 cleanup tier, insufficient to feed autonomous loop
+- rationale: Build plan is completely shipped for the first time. Oversight explicitly directed expand to refill before iterate. Signal multiplicity (structural + directive + queue state) indicates immediate need for strategic phase planning.
+- proposed scope: 1-phase meta-planning to identify next development arc based on current product state, playtest findings, and strategic priorities
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 7.5] TypeScript cast reduction refactor (state and test boundaries)
+- proposed: 2026-06-14, expand pass 75
+- source signals:
+  - **Massive cast smell**: 226 "as any"/"as unknown" occurrences across 81 files
+  - **Concentrated clusters**: state/actions.ts (16 casts), test boundaries, engine interface files
+  - **Type safety erosion**: Aggressive posture smell indicates systemic bypass of TypeScript benefits
+- rationale: 226 casts represent significant technical debt. Concentrated in critical state management and engine boundaries where type safety matters most. Signal multiplicity includes file-length outliers pointing to same complexity.
+- proposed scope: Multi-phase systematic cast elimination starting with highest-concentration files (state/, presenter boundaries)
+- estimated phases: 3
+- conflicts: Check against do-not-re-propose guard for "as any cast drain" - this filing includes specific counts and file locations
+
+### [ ] [score 6.5] Fresh maintainer onboarding consolidation  
+- proposed: 2026-06-14, expand pass 75
+- source signals:
+  - **Critique clustering**: 5 pending [MED] findings from pass 41 all about documentation/repository comprehension
+  - **Recurring pattern**: Multiple passes identifying setup references, navigation confusion, priority guidance gaps
+  - **Fresh maintainer friction**: repo-proxy critique consistently identifies onboarding barriers
+- rationale: Five independent critique findings point to systemic documentation fragmentation. Recurring across multiple critique passes indicates persistent barrier to new contributor adoption.
+- proposed scope: 1-phase documentation consolidation addressing setup guide, priority guidance, repository navigation, and fresh contributor workflow
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 5.5] Hex literal token migration completion
+- proposed: 2026-06-14, expand pass 75
+- source signals:
+  - **Widespread literal smell**: 243 hex literal occurrences across 37 files
+  - **Design system bypass**: Hardcoded colors throughout gathering/, hazard/, theme/ components
+  - **Partial migration state**: Do-not-re-propose note indicates ongoing /iterate work but substantial uncaptured scope remains
+- rationale: 243 hex literals indicate incomplete design token adoption. While /iterate handles some files, scope suggests systematic migration needed beyond per-file drain approach.
+- proposed scope: 1-phase systematic audit and migration of remaining hex literals to AXM tokens, coordinated with /iterate to avoid duplication
+- estimated phases: 1
+- conflicts: Partial - do-not-re-propose guard mentions hex-literal work is ongoing /iterate drain, but scope may justify dedicated phase for completion
+
+### [ ] [score 4.5] Large component extraction continuation (minigame surfaces)  
+- proposed: 2026-06-14, expand pass 75
+- source signals:
+  - **File length outliers**: HazardBoard.tsx (799 lines), LevelUpModal.tsx (536 lines) exceed folder medians significantly
+  - **Successful pattern**: Phases 117/119 established extraction pattern for large components  
+  - **Maintainability smell**: Files >600 lines violate build-plan style guardrail preference for small focused files
+- rationale: Following successful Phase 117/119 large-component extraction pattern. HazardBoard at 799 lines is largest component, clear extraction candidate.
+- proposed scope: 1-phase component extraction focused on HazardBoard.tsx subcomponent separation while preserving behavior and tests
+- estimated phases: 1
+- conflicts: Check against do-not-re-propose guard for "large-component extraction" - this filing targets specific files not previously extracted
 
 ### [ ] [score 3.7] Large state file extraction refactor
 - proposed: 2026-06-10, expand pass 68

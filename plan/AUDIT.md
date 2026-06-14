@@ -31,7 +31,7 @@
 - addressed: 2026-06-14 via commit eb17d4f
 - fix: Added comprehensive test coverage for GatheringGate component including no session, active at mount, state flip, no re-push, and side-effect-only behavior following EventGate test pattern with useGameState and router.push mocking.
 
-### [ ] [4.8] RestGate component missing test coverage affecting navigation maintainability  
+### [x] [4.8] RestGate component missing test coverage affecting navigation maintainability  
 - category: tests
 - impact: 6
 - ease: 8
@@ -44,6 +44,8 @@
 - evidence: Component missing from components/__tests__/ directory
 - suggested fix: Create components/__tests__/RestGate.test.tsx following EventGate test pattern
 - source: audit
+- addressed: 2026-06-14 via commit 4cbb39f
+- fix: Added comprehensive test coverage for RestGate component including no session, active at mount, state flip, no re-push, and side-effect-only behavior following EventGate test pattern with useGameState and router.push mocking.
 
 ### [ ] [4.8] QuestGate component missing test coverage affecting navigation maintainability
 - category: tests

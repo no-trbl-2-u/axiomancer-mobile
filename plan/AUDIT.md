@@ -14,6 +14,23 @@
 
 ## Top 5 findings (scored)
 
+### [x] [2.8] Vision document voice inconsistency between archaic and technical language (external critique HIGH)
+- category: external-critique
+- impact: 8
+- ease: 7
+- base-score: 5.6
+- user-source-bump: 0.0 (external source)
+- bias-multiplier: 0.5 (external-critique down-weight)
+- final-score: 2.8
+- next: Maintain consistent archaic voice throughout vision document or clearly separate technical implementation details
+- observation: Vision document uses inconsistent voice between archaic game language and modern technical language within same sections
+- evidence: Lines 42-66 mix archaic terms like 'Befriend' and 'friendship counters' with modern technical language like 'modal when the engine emits the state' and 'status effect whose only purpose is qualifying future Befriend paths'
+- suggested fix: Maintain consistent archaic voice throughout vision document or clearly separate technical implementation details from game vision
+- source: external-critique
+- issue: #396
+- addressed: 2026-06-14 via commit 4c54c1f
+- fix: Replaced modern technical terminology with game-oriented language in friendship/mercy section while preserving implementation clarity. Changed 'modal when engine emits state' to 'choice when moment arises', 'status effect' to 'condition', and other technical phrases to maintain voice consistency throughout the document.
+
 ### [x] [4.2] EquipmentDock component missing test coverage affecting inventory maintainability
 - category: tests
 - impact: 6

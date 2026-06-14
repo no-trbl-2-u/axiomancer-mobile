@@ -90,9 +90,12 @@ const POOL_IDS = {
  * Key format: `<continent>:<mapId>:<nodeId>` → npcName.
  */
 const QUEST_NPCS: Record<string, string> = {
-    // fv-6 "Ash Mire": "The mire where the boy-priest told you to look."
-    'coastal-continent:fishing-village:fv-6': 'boy-priest',
     // nf-6 "Pilgrim's Cairn": "A cairn raised by some earlier pilgrim. Names worn flat."
+    // Northern-forest's single quest node. The engine ships no quest BOARD
+    // for this map (only `build-the-boat` exists), so it stays an NPC
+    // interaction; the dialogue itself is mobile-authored — see
+    // `quest-dialogue.ts` (the engine map def carries no `forgotten-pilgrim`
+    // NPC, so the interaction would otherwise render an empty card).
     'coastal-continent:northern-forest:nf-6': 'forgotten-pilgrim',
 };
 

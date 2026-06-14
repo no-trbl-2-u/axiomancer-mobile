@@ -84,6 +84,7 @@ import {
 } from 'axiomancer-mechanics';
 
 import { getMapLayout } from '@/state/exploration-maps';
+import { questNpcDialogueFor } from '@/state/exploration-maps/quest-dialogue';
 
 import {
     COMBAT_SKILLS,
@@ -2002,16 +2003,23 @@ function resolveCurrentMapEventAction(store: AppStore, sourceNodeType?: string):
 
         // Spread the advanced state onto the store. `event` is mobile-only
         // and survives because `result.state` does not include it.
+        // If the resolved event is an interaction, seed the dialogue
+        // cursor at the tree's root so `selectEventViewModel` composes
+        // against the right node. Prefer the engine-supplied tree; when
+        // the engine returns no tree (the map definition carries no NPC
+        // for this `npcName`), fall back to a mobile-authored tree so the
+        // card shows real replies instead of the bare "A figure waits."
+        // empty state (e.g. nf-6 forgotten-pilgrim — see quest-dialogue.ts).
+        let dialogueCursor: { tree: DialogueTree; nodeId: string } | null = null;
+        if (result.event.kind === 'interaction') {
+            const tree = result.event.dialogue ?? questNpcDialogueFor(result.event.npcName);
+            if (tree) dialogueCursor = { tree, nodeId: tree.rootId };
+        }
+
         const nextEvent = {
             ...(state.event ?? EMPTY_EVENT_SLICE),
             pending: result,
-            // If the resolved event is an interaction with a DialogueTree,
-            // seed the dialogue cursor at the tree's root so
-            // `selectEventViewModel` composes against the right node.
-            dialogueCursor:
-                result.event.kind === 'interaction' && result.event.dialogue
-                    ? { tree: result.event.dialogue, nodeId: result.event.dialogue.rootId }
-                    : null,
+            dialogueCursor,
             history: [],
             sourceNodeType: sourceNodeType ?? null,
         };

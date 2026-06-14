@@ -115,3 +115,8 @@ jobs:
         run: npm run e2e:gathering
         env:
           GATHER_E2E_REUSE_EXPORT: '1'
+
+      - name: Encounter routing (every minigame trigger → its screen)
+        run: npm run e2e:encounters
+        env:
+          ENCOUNTER_E2E_REUSE_EXPORT: '1'

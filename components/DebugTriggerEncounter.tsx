@@ -10,22 +10,30 @@
  *               current map so the fight is the gentlest available.
  *   - BOSS     → combat-prelude with the lowest-level boss foe on
  *               the current map (KNEEL / STRIKE chrome, no flee).
- *   - HAZARD   → the hazard minigame (`actions.beginHazard()` →
- *               `<HazardGate>` routes to `/hazard`).
- *   - REST / GATHER / TREASURE / QUEST → the paced narrative card
- *               on the `/event` route (`<EventGate>` routes there).
+ *   - HAZARD / REST / GATHER / TREASURE / QUEST → the real minigame
+ *               session, launched through the same `begin*` actions
+ *               the live map path uses, so the matching gate
+ *               (`<HazardGate>` → `/hazard`, `<RestGate>` → `/rest`,
+ *               `<GatheringGate>` → `/gathering`, `<CacheGate>` →
+ *               `/cache`, `<QuestGate>` → `/quest`) routes to the
+ *               full-screen minigame.
  *
- * Mechanism: the engine's `ResolvedEvent` shapes are constructed
- * directly and dropped onto the event slice (mirrors
- * `<DebugDialogueJump>`), so each button is deterministic and
- * repeatable regardless of where the player is standing. Combat and
- * hazard run their full real flow; the four narrative kinds render
- * their event card for UI testing (engine-side rewards/healing apply
- * through normal play, not through this dev shortcut).
+ * Mechanism (Phase 137 alignment, 2026-06-14): rest / gather /
+ * treasure / quest no longer reach the `/event` slice — the live
+ * `resolveCurrentMapEventAction` intercepts those kinds and starts a
+ * minigame session. This panel mirrors that interception by calling
+ * the `begin*` actions directly rather than seeding a `ResolvedEvent`
+ * onto the event slice. The old slice-seeding behavior dead-ended at
+ * the `/event` "NO EVENT" card because `composeNarrative` returns the
+ * empty VM for minigame kinds — the exact bug this rewrite fixes.
+ * Combat / boss still construct a combat-prelude `ResolvedEvent` and
+ * drop it on the slice (those DO render in-place via
+ * `<EncounterModalOverlay>`); village / cutscene still seed their
+ * paced events for `<EventGate>` to route. Every button is
+ * deterministic regardless of where the player is standing.
  *
- * Navigation happens first so paced events (`<EventGate>` pushes
- * `/event`) and the hazard route stack on top of the WILDS tab
- * rather than the other way round.
+ * Navigation happens first so the minigame / paced routes stack on
+ * top of the WILDS tab rather than the other way round.
  *
  * Renders null outside dev builds. Mounts inside the DevMenu.
  */
@@ -38,7 +46,6 @@ import {
     consumableLibrary,
     type Enemy,
     type Item,
-    type Material,
 } from 'axiomancer-mechanics';
 
 import { isDevToolsEnabled } from '@/lib/buildProfile';
@@ -115,16 +122,6 @@ const PACED_EXTRAS: readonly { id: string; label: string; event: unknown }[] = [
     },
 ];
 
-/** A synthetic gather material — engine 0.16 doesn't ship a Material
- * library, so we construct one inline (same shape as the gather pools). */
-const SAMPLE_MATERIAL: Material = {
-    id: 'dev-tide-glass',
-    name: 'Tide-Glass Shard',
-    description: 'A nub of sea-worn glass, pulled from the shallows for testing.',
-    category: 'material',
-    quantity: 1,
-};
-
 export function DebugTriggerEncounter() {
     const store = useGameStore();
     const actions = useGameActions();
@@ -200,21 +197,28 @@ export function DebugTriggerEncounter() {
                 actions.beginHazard();
                 return;
             case 'rest':
-                setPending({ kind: 'rest', healed: 10 }, 'rest');
+                // "The Night Watch" — <RestGate> routes to /rest. Mirror
+                // the live interceptor's default half-heal.
+                actions.beginRest({ healFraction: 0.5 });
                 return;
             case 'gather':
-                setPending({ kind: 'gathering', items: [SAMPLE_MATERIAL] }, 'gather');
+                // "The Gleaning" — <GatheringGate> routes to /gathering.
+                // Skip the tutorial framing for the dev shortcut so it
+                // drops straight into the organic board.
+                actions.beginGathering({});
                 return;
             case 'treasure': {
+                // "The Reliquary" — <CacheGate> routes to /cache. Seed a
+                // sample item + coin so the claim ledger has content.
                 const loot: Item[] = consumableLibrary[0] ? [consumableLibrary[0]] : [];
-                setPending({ kind: 'loot-cache', items: loot, currency: 25 }, 'treasure');
+                actions.beginLootCache({ items: loot, currency: 25 });
                 return;
             }
             case 'quest':
-                setPending(
-                    { kind: 'interaction', npcName: 'wandering-pilgrim' },
-                    'quest',
-                );
+                // "The Boy's Almanac" board — <QuestGate> routes to /quest.
+                // The only authored board today is the story's first main
+                // quest, "build-the-boat" (fishing-village Sea Cave).
+                actions.beginQuestBoard({ boardId: 'build-the-boat' });
                 return;
             default:
                 return;

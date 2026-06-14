@@ -57,9 +57,12 @@ export const fishingVillageLayout: MapLayout = {
             x: 180,
             y: 160,
             label: 'Ash Mire',
-            type: 'quest',
+            // One-quest-per-map (2026-06-14): the boat quest at Sea Cave
+            // (fv-15) is the village's single story beat. This node, once
+            // a second quest stub, is now a standard encounter.
+            type: 'encounter',
             connectedNodes: ['fv-7'],
-            description: 'The mire where the boy-priest told you to look.',
+            description: 'Something heavy shifts in the ash-choked mire.',
         },
         {
             id: 'fv-7',
@@ -187,9 +190,11 @@ export const fishingVillageLayout: MapLayout = {
             x: 340,
             y: 160,
             label: 'Hermit Hut',
-            type: 'quest',
+            // One-quest-per-map (2026-06-14): re-typed from a second quest
+            // stub to a treasure cache — the hermit's abandoned hoard.
+            type: 'treasure',
             connectedNodes: ['fv-19'],
-            description: 'A hermit dwells here. Their eyes hold old secrets.',
+            description: 'A hermit dwelt here once. Their hoard outlasted them.',
         },
 
         // Cliff district (fv-21..fv-25) - positioned east, upper

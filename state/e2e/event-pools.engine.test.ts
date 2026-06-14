@@ -101,10 +101,13 @@ describe('exploration event-pool registration', () => {
         expect(result.event.kind).toBe('loot-cache');
     });
 
-    it('quest node fires an interaction event', () => {
-        const state = stateAt('fishing-village', 'fv-6');
+    it('the quest-board node (fv-15 Sea Cave) fires a quest event', () => {
+        // One-quest-per-map (2026-06-14): fv-15 is fishing-village's
+        // single quest beat, the build-the-boat board. (fv-6 and fv-20
+        // were re-typed to encounter / treasure.)
+        const state = stateAt('fishing-village', 'fv-15');
         const result = resolveMapEvent(state);
-        expect(result.event.kind).toBe('interaction');
+        expect(result.event.kind).toBe('quest');
     });
 
     it('is idempotent — calling registerExplorationEventPools twice doesn\'t break behavior', () => {
@@ -283,18 +286,11 @@ describe('fishing village starter-tier enemy bias (Phase 120)', () => {
 });
 
 describe('per-quest-node NPC wiring (Phase 56)', () => {
-    it('fv-6 (Ash Mire) resolves to an interaction with the boy-priest', () => {
-        const state = stateAt('fishing-village', 'fv-6');
-        const result = resolveMapEvent(state);
-        expect(result.event.kind).toBe('interaction');
-        if (result.event.kind === 'interaction') {
-            // The engine's resolved interaction event carries the
-            // npcName threaded from the pool payload. Layout
-            // description for fv-6 names the "boy-priest".
-            expect(result.event.npcName).toBe('boy-priest');
-        }
-    });
-
+    // One-quest-per-map (2026-06-14): fishing-village's quest beat is now
+    // the build-the-boat board at fv-15 (see the quest-board suite); the
+    // old NPC-interaction quest stubs fv-6 / fv-20 were re-typed to
+    // encounter / treasure. Northern-forest keeps its single quest as an
+    // NPC interaction (no board content ships for that map yet).
     it('nf-6 (Pilgrim\'s Cairn) resolves to an interaction with the forgotten-pilgrim', () => {
         const state = stateAt('northern-forest', 'nf-6');
         const result = resolveMapEvent(state);
@@ -304,18 +300,16 @@ describe('per-quest-node NPC wiring (Phase 56)', () => {
         }
     });
 
-    it('per-quest pools are distinct — each quest node fires its own npcName, not a shared placeholder', () => {
-        const fvState = stateAt('fishing-village', 'fv-6');
-        const nfState = stateAt('northern-forest', 'nf-6');
-        const fvResult = resolveMapEvent(fvState);
-        const nfResult = resolveMapEvent(nfState);
+    it('the re-typed fv-6 (Ash Mire) is now an encounter, not a quest interaction', () => {
+        const state = stateAt('fishing-village', 'fv-6');
+        const result = resolveMapEvent(state);
+        expect(result.event.kind).toBe('encounter');
+    });
 
-        const fvName = fvResult.event.kind === 'interaction' ? fvResult.event.npcName : null;
-        const nfName = nfResult.event.kind === 'interaction' ? nfResult.event.npcName : null;
-
-        expect(fvName).toBeDefined();
-        expect(nfName).toBeDefined();
-        expect(fvName).not.toBe(nfName);
+    it('the re-typed fv-20 (Hermit Hut) is now a treasure cache, not a quest interaction', () => {
+        const state = stateAt('fishing-village', 'fv-20');
+        const result = resolveMapEvent(state);
+        expect(result.event.kind).toBe('loot-cache');
     });
 });
 

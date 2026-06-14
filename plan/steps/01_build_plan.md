@@ -192,6 +192,20 @@ commit that ships the phase.
       AUDIT finding [4.2] is closed. Skipped to avoid duplicate work (skipped
       via oversight 2026-06-13 — superseded by 529d4e5 during the same pass).
 
+- [ ] Phase 124 — Mechanics 0.21.0 mobile catch-up. `axiomancer-mechanics@0.21.0`
+      is published to npm and tagged `v0.21.0`; mobile still depends on
+      `^0.20.0`, which will not float to `0.21.0` under pre-1.0 semver. Bump the
+      package, drain type/import drift from the new `quest` MapEvent kind and
+      rest `healFraction` payload, and account for the engine-owned encounter
+      procedures: Quest Board micro-game verbs, Rest / Night Watch, and
+      Loot-cache / Reliquary. Mobile presents mechanics state and legal choices;
+      it must not simulate board, rest, cache, reward, or outcome rules locally.
+      Brief: `plan/phases/phase_124_mechanics_0_21_mobile_catchup.md`. Upgrade
+      guide: `docs/engine-upgrade-0.20.0-to-0.21.0.md`. Verification:
+      `npm run typecheck`, focused encounter Jest, `npm run verify`,
+      `npm run verify:visual` or exact visual-smoke evidence, plus SELF/dev-menu
+      trigger notes for Quest Board, Rest, and Loot-cache.
+
 - [x] Phase 1 — Adopt nexus methodology. Shipped in commit
       `a703908` ("chore: adopt nexus methodology"); closed out
       in this commit.

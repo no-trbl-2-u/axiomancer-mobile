@@ -45,7 +45,7 @@
 - suggested fix: Add usage guidance explaining when to use setup/ documentation vs README quick start based on developer needs
 - source: external-critique
 
-### [1.8] Spec completion status lacks required metadata format
+### [x] [1.8] Spec completion status lacks required metadata format
 - category: external-critique
 - impact: 3
 - ease: 7
@@ -58,6 +58,9 @@
 - evidence: Lines 76-84 show '[DONE]' status without the documented '> [DONE on YYYY-MM-DD — see PR #N]' format from line 96-97 conventions
 - suggested fix: Add completion dates and PR references to done specs per stated conventions
 - source: external-critique
+- issue: #395
+- addressed: 2026-06-13 via commit 346bed9
+- fix: Updated specs 1-9 status table to include completion dates and PR references following documented convention format '[DONE on YYYY-MM-DD — see PR #N]' per lines 96-97. All completed specs now show proper metadata format consistent with stated conventions. Verification: npm run verify passes.
 
 ### [1.8] Technical comments drift from archaic voice consistency
 - category: external-critique

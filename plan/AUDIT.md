@@ -44,6 +44,7 @@
 - evidence: Component handles inventory item rendering and categorization but missing from components/inventory/__tests__/ directory
 - suggested fix: Create components/inventory/__tests__/ItemGrid.test.tsx following ItemCard test pattern with item rendering and categorization testing
 - source: audit
+- issue: #414
 
 ### [x] [3.0] Engine version inconsistency in plan/bearings.md documentation
 - category: external-critique

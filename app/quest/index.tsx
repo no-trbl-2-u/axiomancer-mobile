@@ -7,7 +7,7 @@
  * screen renders the presenter VM and dispatches store actions only.
  */
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import {
     ScrollView,
@@ -17,8 +17,13 @@ import {
     useWindowDimensions,
     View,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 
 import { QuestBoardTrack } from '@/components/quest/QuestBoardTrack';
+import { QuestDie } from '@/components/quest/QuestDie';
+import { QuestHullMeter } from '@/components/quest/QuestHullMeter';
+import { QuestLegend } from '@/components/quest/QuestLegend';
+import { useQuestLanding } from '@/components/quest/useQuestLanding';
 import {
     QuestDuskOverlay,
     QuestIntroOverlay,
@@ -27,8 +32,25 @@ import {
 } from '@/components/quest/QuestOverlays';
 import { ScreenBg } from '@/components/ScreenBg';
 import { useGameActions, useGameState } from '@/state/GameStoreProvider';
-import { selectQuestBoardVM } from '@/state/presenters/quest.engine';
+import { QUEST_TIER_LABELS, selectQuestBoardVM } from '@/state/presenters/quest.engine';
+import type { QuestSpaceKind } from 'axiomancer-mechanics';
 import { AXM, FONTS } from '@/theme/axm';
+
+/** Kind-themed haptic for the arrival flourish (U2). No-op off-device. */
+function fireArrivalHaptic(kind: QuestSpaceKind | undefined): void {
+    if (!kind) return;
+    try {
+        if (kind === 'duel' || kind === 'snag') {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => undefined);
+        } else if (kind === 'hearth' || kind === 'cache' || kind === 'gather') {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
+        } else {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => undefined);
+        }
+    } catch {
+        // Haptics are pure polish — never let them break the screen.
+    }
+}
 
 export default function QuestScreen() {
     // Subscribe to the stable slice; memo the VM downstream (the
@@ -40,10 +62,23 @@ export default function QuestScreen() {
     const router = useRouter();
     const { width } = useWindowDimensions();
 
+    // Presentation-only choreography: tumble → walk the piece → reveal.
+    const land = useQuestLanding(vm);
+
     // Auto-close when the session clears (claim or abandon).
     useEffect(() => {
         if (!vm.active && router.canGoBack()) router.back();
     }, [vm.active, router]);
+
+    // Arrival flourish (U2): fire a kind-themed haptic the moment the piece
+    // lands. The board handles the matching visual flash off the same key.
+    const prevArrivalRef = useRef(land.arrivalKey);
+    useEffect(() => {
+        if (land.arrivalKey !== prevArrivalRef.current) {
+            prevArrivalRef.current = land.arrivalKey;
+            fireArrivalHaptic(vm.pending?.kind);
+        }
+    }, [land.arrivalKey, vm.pending]);
 
     if (!vm.active) return <ScreenBg><View /></ScreenBg>;
 
@@ -73,8 +108,21 @@ export default function QuestScreen() {
                     </View>
                 </View>
 
+                {/* Boat-build progress (U3) */}
+                <QuestHullMeter
+                    progress={vm.boatProgress}
+                    tierLabel={QUEST_TIER_LABELS[vm.tierPreview]}
+                />
+
                 {/* The board */}
-                <QuestBoardTrack spaces={vm.spaces} size={boardSize}>
+                <QuestBoardTrack
+                    spaces={vm.spaces}
+                    size={boardSize}
+                    pieceIndex={land.displayPos}
+                    targetIndex={land.targetPos}
+                    pathIndices={land.pathPositions}
+                    arrivalKey={land.arrivalKey}
+                >
                     {/* Center well: the hull ledger + the bone die */}
                     <View style={styles.wellParts} testID="quest-parts">
                         {vm.parts.map(p => (
@@ -87,11 +135,14 @@ export default function QuestScreen() {
                             </Text>
                         ))}
                     </View>
-                    {vm.lastRoll !== null && (
-                        <Text style={styles.lastRoll} testID="quest-last-roll">
-                            ⚄ {vm.lastRoll.die}
-                            {vm.lastRoll.bonus > 0 ? ` +${vm.lastRoll.bonus}` : ''}
-                        </Text>
+                    {(land.dieFace !== null || vm.lastRoll !== null) && (
+                        <QuestDie
+                            face={land.dieFace}
+                            rolling={land.stage === 'rolling'}
+                            tick={land.rollTick}
+                            bonus={vm.lastRoll?.bonus ?? 0}
+                            total={land.stage === 'still' ? vm.lastRoll?.total ?? null : null}
+                        />
                     )}
                     <TouchableOpacity
                         accessibilityRole="button"
@@ -102,9 +153,18 @@ export default function QuestScreen() {
                         style={[styles.rollButton, { opacity: vm.phase === 'idle' ? 1 : 0.4 }]}
                         testID="quest-roll"
                     >
-                        <Text style={styles.rollText}>CAST THE BONE</Text>
+                        <Text style={styles.rollText}>
+                            {land.stage === 'rolling'
+                                ? 'THE BONE FALLS…'
+                                : land.stage === 'walking' || land.stage === 'arrived'
+                                  ? 'WALKING…'
+                                  : 'CAST THE BONE'}
+                        </Text>
                     </TouchableOpacity>
                 </QuestBoardTrack>
+
+                {/* Legend — what each mark on the track means */}
+                <QuestLegend spaces={vm.spaces} />
 
                 {/* Charms tray */}
                 <Text style={styles.sectionLabel}>CHARMS</Text>
@@ -165,7 +225,7 @@ export default function QuestScreen() {
             {vm.phase === 'intro' && (
                 <QuestIntroOverlay vm={vm} onBegin={actions.startQuestBoardPlay} />
             )}
-            {vm.phase === 'space' && vm.pending !== null && (
+            {vm.phase === 'space' && vm.pending !== null && land.revealed && (
                 <QuestSpaceOverlay
                     pending={vm.pending}
                     onChoose={actions.chooseQuestSpaceOption}
@@ -227,12 +287,6 @@ const styles = StyleSheet.create({
         fontSize: 12,
         letterSpacing: 0.5,
         color: AXM.bone,
-    },
-    lastRoll: {
-        fontFamily: FONTS.gothic,
-        fontSize: 20,
-        color: AXM.sulfur,
-        marginTop: 4,
     },
     rollButton: {
         marginTop: 6,

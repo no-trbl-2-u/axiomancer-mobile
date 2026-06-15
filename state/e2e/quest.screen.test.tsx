@@ -9,9 +9,12 @@ import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
 
+import * as Haptics from 'expo-haptics';
+
 import CacheScreen from '@/app/cache/index';
 import QuestScreen from '@/app/quest/index';
 import RestScreen from '@/app/rest/index';
+import { QUEST_LANDING_TIMING } from '@/components/quest/useQuestLanding';
 import { createAppActions, type AppActions } from '@/state/actions';
 import type { AppStore } from '@/state/store';
 import { BUILD_THE_BOAT_BOARD, createLootCacheSession } from 'axiomancer-mechanics';
@@ -24,6 +27,16 @@ jest.mock('expo-router', () => ({
         push: jest.fn(),
         canGoBack: () => false,
     }),
+}));
+
+// Override the global haptics mock with spies so the arrival flourish
+// (U2) can be asserted on.
+jest.mock('expo-haptics', () => ({
+    impactAsync: jest.fn(() => Promise.resolve()),
+    notificationAsync: jest.fn(() => Promise.resolve()),
+    selectionAsync: jest.fn(() => Promise.resolve()),
+    ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
+    NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
 }));
 
 afterEach(() => {
@@ -65,26 +78,101 @@ describe('quest screen', () => {
         }
     });
 
-    it('casting the bone opens a space card; continue returns to the die', () => {
-        const { store, actions } = mount(<QuestScreen />);
+    it('casting the bone tumbles, walks the piece, then opens a space card; continue returns to the die', () => {
+        jest.useFakeTimers();
+        try {
+            const { store, actions } = mount(<QuestScreen />);
+            act(() => {
+                actions.beginQuestBoard({ seed: 7 });
+                actions.startQuestBoardPlay();
+            });
+            fireEvent.press(screen.getByTestId('quest-roll'));
+            const s = store.getState().quest.session!;
+            // Engine has resolved, but the card stays shut while the die
+            // tumbles and the piece walks.
+            expect(s.phase).toBe('space');
+            expect(screen.queryByTestId('quest-space')).toBeNull();
+            expect(screen.getByTestId('quest-die')).toBeTruthy();
+
+            // Flush the tumble + walk + reveal beats.
+            act(() => {
+                jest.runAllTimers();
+            });
+            expect(screen.getByTestId('quest-space')).toBeTruthy();
+
+            // Resolve: pick the first enabled option if any, then continue.
+            if (s.pending!.result === null) {
+                const enabled = s.pending!.options.filter(o => !o.disabledReason);
+                const pick = s.pending!.kind === 'market'
+                    ? enabled.find(o => o.id === 'leave')!
+                    : enabled[0];
+                fireEvent.press(screen.getByTestId(`quest-option-${pick.id}`));
+            }
+            fireEvent.press(screen.getByTestId('quest-continue'));
+            expect(['idle', 'dusk']).toContain(store.getState().quest.session!.phase);
+        } finally {
+            jest.useRealTimers();
+        }
+    });
+
+    it('flags the destination while the piece walks and fires a haptic on arrival (U1/U2)', () => {
+        const impact = jest.mocked(Haptics.impactAsync);
+        const notify = jest.mocked(Haptics.notificationAsync);
+        jest.useFakeTimers();
+        try {
+            const { store, actions } = mount(<QuestScreen />);
+            act(() => {
+                actions.beginQuestBoard({ seed: 7 });
+                actions.startQuestBoardPlay();
+            });
+            fireEvent.press(screen.getByTestId('quest-roll'));
+            const dest = store.getState().quest.session!.pos;
+
+            // Settle the die → walking begins; the destination is flagged but
+            // the piece hasn't reached it yet.
+            act(() => {
+                jest.advanceTimersByTime(QUEST_LANDING_TIMING.rollMs + 1);
+            });
+            expect(screen.getByTestId(`quest-target-${dest}`)).toBeTruthy();
+            expect(screen.queryByTestId('quest-space')).toBeNull();
+
+            // Finish the walk: the flag is consumed by the piece and the
+            // arrival haptic fires exactly once.
+            act(() => {
+                jest.runAllTimers();
+            });
+            expect(screen.queryByTestId(`quest-target-${dest}`)).toBeNull();
+            expect(screen.getByTestId('quest-piece')).toBeTruthy();
+            expect(impact.mock.calls.length + notify.mock.calls.length).toBe(1);
+        } finally {
+            jest.useRealTimers();
+        }
+    });
+
+    it('draws the boat-build hull meter with the tier preview (U3)', () => {
+        const { actions } = mount(<QuestScreen />);
+        act(() => {
+            actions.beginQuestBoard({ seed: 7, boardId: 'build-the-boat' });
+            actions.startQuestBoardPlay();
+        });
+        expect(screen.getByTestId('quest-hull-meter')).toBeTruthy();
+        expect(screen.getByTestId('quest-hull-fill')).toBeTruthy();
+        // Tier preview text is present (one of the three outcome tiers).
+        const tier = screen.getByTestId('quest-hull-tier').props.children;
+        expect(String(tier.join ? tier.join('') : tier)).toMatch(/MASTERWORK|SEAWORTHY|DRIFTWOOD/);
+    });
+
+    it('the legend unfolds the marks key on demand', () => {
+        const { actions } = mount(<QuestScreen />);
         act(() => {
             actions.beginQuestBoard({ seed: 7 });
             actions.startQuestBoardPlay();
         });
-        fireEvent.press(screen.getByTestId('quest-roll'));
-        const s = store.getState().quest.session!;
-        expect(s.phase).toBe('space');
-        expect(screen.getByTestId('quest-space')).toBeTruthy();
-        // Resolve: pick the first enabled option if any, then continue.
-        if (s.pending!.result === null) {
-            const enabled = s.pending!.options.filter(o => !o.disabledReason);
-            const pick = s.pending!.kind === 'market'
-                ? enabled.find(o => o.id === 'leave')!
-                : enabled[0];
-            fireEvent.press(screen.getByTestId(`quest-option-${pick.id}`));
-        }
-        fireEvent.press(screen.getByTestId('quest-continue'));
-        expect(['idle', 'dusk']).toContain(store.getState().quest.session!.phase);
+        // Collapsed by default.
+        expect(screen.queryByTestId('quest-legend-slipway')).toBeNull();
+        fireEvent.press(screen.getByTestId('quest-legend-toggle'));
+        // The slipway is always on the board, so its row must appear.
+        expect(screen.getByTestId('quest-legend-slipway')).toBeTruthy();
     });
 
     it('the outcome ledger claims and clears the table', () => {

@@ -4,10 +4,10 @@
 
 **This document is for asset replacement workflow, not initial development setup.**
 
-If you're a fresh maintainer getting oriented with the project, you likely don't need this file yet. This specification is used when:
-- Replacing coded SVG placeholders with final artwork
-- Working on the visual polish phase of development
-- Implementing new visual assets that integrate with existing components
+If you're a fresh maintainer getting oriented with the project, you likely don't need this file yet. **Start using this when Spec 11 (asset pipeline) is ready to implement** or when you need to:
+- Replace coded SVG placeholders with final artwork
+- Work on the visual polish phase of development
+- Implement new visual assets that integrate with existing components
 
 For initial development and contributing to game logic, start with [README.md](./README.md) and [docs/](./docs/).
 

@@ -99,6 +99,7 @@ import { EMPTY_EVENT_SLICE, type AppStore } from './store';
 import {
     abandonHazardAction,
     acknowledgeHazardOutcomeAction,
+    applyHazardDeckPresetAction,
     HAZARD_HEXED_FLAG,
     HAZARD_TOKEN_FLAG_PREFIX,
     applyHazardCardAction,
@@ -116,6 +117,8 @@ import {
     unstageHazardCardAction,
     type BeginHazardOptions,
     type ClaimHazardRewardsResult,
+    type HazardDeckPresetId,
+    type HazardDeckPresetResult,
 } from './hazard/store-actions';
 import type { HazardProgressKey, HazardRouteKey } from 'axiomancer-mechanics';
 import {
@@ -451,6 +454,8 @@ export interface AppActions {
      * the granted card ids.
      */
     randomizeHazardDeck: () => string[];
+    /** Dev tool — apply one deterministic Kid strategy deck preset. */
+    applyHazardDeckPreset: (presetId: HazardDeckPresetId) => HazardDeckPresetResult;
 
     // -----------------------------------------------------------------
     // Gathering minigame ("The Gleaning" — see state/gathering/). The
@@ -1353,6 +1358,7 @@ export function createAppActions(store: AppStore): AppActions {
         claimHazardRewards: (cardId) => claimHazardRewardsAction(store, cardId),
         abandonHazard: () => abandonHazardAction(store),
         randomizeHazardDeck: () => randomizeHazardDeckAction(store),
+        applyHazardDeckPreset: (presetId) => applyHazardDeckPresetAction(store, presetId),
         beginGathering: (options) => beginGatheringAction(store, options),
         selectGatheringApproach: (approach) => selectGatheringApproachAction(store, approach),
         harvestGatheringPlot: (uid) => harvestGatheringPlotAction(store, uid),

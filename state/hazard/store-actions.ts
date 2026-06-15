@@ -39,7 +39,7 @@ import {
     HAZARD_VITAE_REWARD,
 } from 'axiomancer-mechanics';
 import { appendAcquiredCard, HAZARD_CARD_FLAG_PREFIX, hazardDeckBag } from 'axiomancer-mechanics';
-import type { HazardProgressKey, HazardRouteKey, HazardSessionState } from 'axiomancer-mechanics';
+import type { HazardCardDef, HazardProgressKey, HazardRouteKey, HazardSessionState } from 'axiomancer-mechanics';
 import { resolveMinigameSeed, resolveMinigameString } from '../minigame-seeds';
 import type { AppStore } from '../store';
 
@@ -79,6 +79,190 @@ function setSession(store: AppStore, session: HazardSessionState | null): void {
 export interface BeginHazardOptions {
     hazardId?: string;
     seed?: number;
+}
+
+export type HazardDeckPresetId =
+    | 'starter-baseline'
+    | 'early-straightforward'
+    | 'late-straightforward'
+    | 'early-enchantment'
+    | 'late-enchantment'
+    | 'early-utility'
+    | 'late-utility';
+
+export type HazardDeckPresetEra = 'baseline' | 'early' | 'late';
+export type HazardDeckPresetProfile = 'baseline' | 'straightforward' | 'enchantment' | 'utility';
+
+export interface HazardDeckPreset {
+    id: HazardDeckPresetId;
+    label: string;
+    era: HazardDeckPresetEra;
+    profile: HazardDeckPresetProfile;
+    description: string;
+    cardIds: readonly string[];
+}
+
+export interface HazardDeckPresetResult {
+    presetId: HazardDeckPresetId;
+    label: string;
+    era: HazardDeckPresetEra;
+    profile: HazardDeckPresetProfile;
+    cardIds: string[];
+}
+
+function allHazardCards(): HazardCardDef[] {
+    return [...HAZARD_DECK, ...HAZARD_REWARD_CARDS];
+}
+
+function isEnchantCard(card: HazardCardDef): boolean {
+    return card.effect === 'aura' || (card.keywords ?? []).includes('enchant');
+}
+
+function isUtilityCard(card: HazardCardDef): boolean {
+    return !isEnchantCard(card) && !!card.effect;
+}
+
+function isStraightforwardCard(card: HazardCardDef): boolean {
+    return !card.dead && !card.effect;
+}
+
+function pickCards(predicate: (card: HazardCardDef) => boolean, count: number, preferred: readonly string[]): string[] {
+    const selected: string[] = [];
+    const seen = new Set<string>();
+    const add = (id: string): void => {
+        if (seen.has(id)) return;
+        const card = allHazardCards().find((candidate) => candidate.id === id);
+        if (!card || !predicate(card)) return;
+        selected.push(id);
+        seen.add(id);
+    };
+
+    for (const id of preferred) add(id);
+    for (const card of allHazardCards()) {
+        if (selected.length >= count) break;
+        if (predicate(card)) add(card.id);
+    }
+    return selected.slice(0, count);
+}
+
+const earlyStraightforward = pickCards(isStraightforwardCard, 7, [
+    'r_grip',
+    'r_wind',
+    'r_pivot',
+    'r_drop',
+    'x_shoulder',
+    'x_eelstep',
+    'x_evenbreath',
+]);
+const lateStraightforward = pickCards(isStraightforwardCard, 13, [
+    ...earlyStraightforward,
+    'x_gatebreak',
+    'x_ghostgait',
+    'x_twinoath',
+    'x_stormpivot',
+    'x_tidalturn',
+    'x_pendulum',
+]);
+const earlyEnchantment = pickCards((card) => isEnchantCard(card) || isStraightforwardCard(card), 7, [
+    'r_aggr',
+    'r_swift',
+    'r_zeal',
+    'r_martyr',
+    'x_shoulder',
+    'x_eelstep',
+    'x_evenbreath',
+]);
+const lateEnchantment = pickCards((card) => isEnchantCard(card) || isStraightforwardCard(card), 13, [
+    ...earlyEnchantment,
+    'r_relic',
+    'x_warpaint',
+    'x_tailfeather',
+    'x_communion',
+    'x_chorus',
+    'x_whetstonechant',
+]);
+const earlyUtility = pickCards((card) => isUtilityCard(card) || isStraightforwardCard(card), 7, [
+    'r_even',
+    'r_conv',
+    'r_stone',
+    'r_tide',
+    'x_shoulder',
+    'x_eelstep',
+    'x_evenbreath',
+]);
+const lateUtility = pickCards((card) => isUtilityCard(card) || isStraightforwardCard(card), 13, [
+    ...earlyUtility,
+    'x_dawnpsalm',
+    'x_secondsun',
+    'x_lastrelic',
+    'x_greywarden',
+    'x_oldcapstan',
+    'x_goldoath',
+]);
+
+export const HAZARD_DECK_PRESETS: readonly HazardDeckPreset[] = Object.freeze([
+    {
+        id: 'starter-baseline',
+        label: 'Starter baseline',
+        era: 'baseline',
+        profile: 'baseline',
+        description: 'Only the implicit starter bag. Use this as the clean control deck.',
+        cardIds: [],
+    },
+    {
+        id: 'early-straightforward',
+        label: 'Early straightforward',
+        era: 'early',
+        profile: 'straightforward',
+        description: 'Low utility, low enchantment, direct force/escape cards for new-run clarity.',
+        cardIds: earlyStraightforward,
+    },
+    {
+        id: 'late-straightforward',
+        label: 'Late straightforward',
+        era: 'late',
+        profile: 'straightforward',
+        description: 'Large direct-progress deck for late-game straight-line pressure testing.',
+        cardIds: lateStraightforward,
+    },
+    {
+        id: 'early-enchantment',
+        label: 'Early enchantment',
+        era: 'early',
+        profile: 'enchantment',
+        description: 'Low utility, high enchantment, low direct-progress support.',
+        cardIds: earlyEnchantment,
+    },
+    {
+        id: 'late-enchantment',
+        label: 'Late enchantment',
+        era: 'late',
+        profile: 'enchantment',
+        description: 'Larger aura-heavy deck for testing long-term enchantment strategy.',
+        cardIds: lateEnchantment,
+    },
+    {
+        id: 'early-utility',
+        label: 'Early utility',
+        era: 'early',
+        profile: 'utility',
+        description: 'Low enchantment, high utility, low direct-progress deck for tool-use testing.',
+        cardIds: earlyUtility,
+    },
+    {
+        id: 'late-utility',
+        label: 'Late utility',
+        era: 'late',
+        profile: 'utility',
+        description: 'Large utility deck for testing draw, conversion, purge, ward, bounty, and anchor lines.',
+        cardIds: lateUtility,
+    },
+]);
+
+function hazardDeckPresetById(presetId: HazardDeckPresetId): HazardDeckPreset {
+    const preset = HAZARD_DECK_PRESETS.find((candidate) => candidate.id === presetId);
+    if (!preset) throw new Error(`Unknown hazard deck preset: ${presetId}`);
+    return preset;
 }
 
 export function beginHazardAction(store: AppStore, options: BeginHazardOptions = {}): boolean {
@@ -313,6 +497,25 @@ export function abandonHazardAction(store: AppStore): void {
 
 /** Acquired cards granted by the dev deck-randomizer. */
 const RANDOMIZE_ACQUIRED_COUNT = 10;
+
+/** Apply a deterministic Kid playtest deck preset by replacing acquired hazard-card flags. */
+export function applyHazardDeckPresetAction(store: AppStore, presetId: HazardDeckPresetId): HazardDeckPresetResult {
+    const preset = hazardDeckPresetById(presetId);
+    const state = store.getState() as unknown as GameState;
+    let flags = (state.flags ?? []).filter((f) => !f.startsWith(HAZARD_CARD_FLAG_PREFIX));
+    const cardIds = [...preset.cardIds];
+    for (const cardId of cardIds) {
+        flags = appendAcquiredCard(flags, cardId);
+    }
+    store.setState({ flags } as never);
+    return {
+        presetId: preset.id,
+        label: preset.label,
+        era: preset.era,
+        profile: preset.profile,
+        cardIds,
+    };
+}
 
 /**
  * Dev tool — rebuilds the player's acquired hazard cards as a random

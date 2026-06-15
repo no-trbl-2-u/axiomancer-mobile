@@ -151,12 +151,19 @@ Shows the final result (Perfect / Complete / Failure):
 
 ## Rewards overlay
 
-`RewardsOverlay` presents:
+Current `RewardsOverlay` presents:
 - Tier label
 - Rewards list (icon + name + description per reward)
 - Consequences list (icon + name + description per consequence)
-- Card offer (3 cards): tap to preview, confirm to pick → `claimHazardRewards(pickedCardId)`
+- Card offer (3 cards)
 - Skip button (Perfect tier only) → `claimHazardRewards(null)`
+
+Accepted next UX doctrine (Phases 125–126):
+- Tapping a reward card opens a confirmation overlay; it must not immediately claim.
+- Overlay shows only: the card, keyword glossary, archetype, and current deck count where available.
+- Overlay must **not** show hidden labels such as fix/payoff/risk, in-focus, or off-focus.
+- Confirm button commits `claimHazardRewards(pickedCardId)`; cancel returns to the offer.
+- When mechanics offers card removal, mobile opens a grid overlay of all current deck cards so the player chooses which one to remove.
 
 ---
 
@@ -167,6 +174,23 @@ Sub-quests are surfaced in the play surface HUD as a compact list. Each shows:
 - Status chip: active / done / failed
 
 Completed sub-quests are highlighted in the Resolve Flash and Rewards overlays.
+
+Accepted next mechanics doctrine adds sub-quest drafting: mobile must present 2–3 candidate objectives and let the player confirm one when mechanics exposes the draft state/action.
+
+---
+
+## Persistent Hazard deck screen
+
+Accepted next UX doctrine (Phase 126): add a Hazard deck/library screen outside the active encounter.
+
+The screen should show:
+- all current Hazard deck cards in a phone-readable grid/list,
+- starter cards vs gained reward cards vs CRACK/scar cards,
+- color distribution,
+- keyword distribution,
+- deck identity summary when mechanics exposes it.
+
+The same card grid is reused when mechanics offers the remove-card reward option. Removal must require player confirmation and must call mechanics-owned state/action; mobile must not mutate deck rules locally.
 
 ---
 

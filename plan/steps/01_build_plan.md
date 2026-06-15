@@ -54,13 +54,17 @@ commit that ships the phase.
 
 **Next up (autonomous loop's queue):**
 
-> **Queue-drained steering (set via oversight 2026-06-13; updated via oversight 2026-06-14).**
+> **Queue-drained steering (set via oversight 2026-06-13; updated via T steering 2026-06-15).**
 > Phase 122 (playtest-gap discovery) shipped [cb26742]. Phase 124 (mechanics 0.21 catch-up)
-> is next and ships immediately. **After Phase 124 ships, run `/deep-playtest` again** to
-> surface Quest Board, Rest, and Loot-cache UX gaps as the next batch of high-score
-> gameplay candidates (directed via oversight 2026-06-14). Do not promote sub-4.0 cleanup
-> candidates until that post-124 playtest refills the queue with player-facing work.
-> (Phase 123 was already addressed on main by `/iterate` in commit 529d4e5 — marked [skipped].)
+> shipped [ff48fcd]. T accepted the Hazard UX follow-up as the next player-facing runway:
+> Phase 125 adds reward-card preview + confirm behavior, and Phase 126 adds the Hazard
+> deck/library screen plus the remove-card grid needed when mechanics exposes card removal.
+> Do not promote sub-4.0 cleanup candidates ahead of these accepted Hazard UX phases unless
+> a blocking regression appears.
+
+- [ ] Phase 125 — Hazard reward choice confirmation overlay. Filed by T direct steering 2026-06-15. Reward-card choice needs a confirm button: tapping a reward card opens an overlay showing only the card, keywords, archetype, and current deck count where available; do **not** expose hidden fix/payoff/risk labels. Confirm commits the pick; cancel returns to the 3-card offer. Do not duplicate existing projection/apply behavior and do not add route-choice opening-hand hints. Brief: `plan/phases/phase_125_hazard_reward_choice_confirm_overlay.md`. Verification: focused reward overlay Jest + `npm run typecheck` + `npm run verify` + visual-smoke evidence or exact blocker.
+
+- [ ] Phase 126 — Hazard deck screen and remove-card grid. Filed by T direct steering 2026-06-15. Design and implement a persistent Hazard deck/library screen outside the encounter and a grid overlay of all current deck cards for the mechanics-owned remove-card reward option. Show starter/reward/CRACK cards, color/keyword distribution, and deck identity summary when available; do not mutate deck rules locally. Brief: `plan/phases/phase_126_hazard_deck_screen_remove_grid.md`. Verification: focused deck screen/grid Jest + `npm run typecheck` + `npm run verify` + visual-smoke evidence or exact blocker.
 
 - [x] Phase 104 — Mercy modal consumes engine truth only. Promoted above all else by Glanton cleanup 2026-06-04 after doctrine-alignment audit. Replace local friendship-threshold/modal/spare/exploit simulation with mechanics-emitted mercy state/actions/report truth; remove hard-coded exploit damage; preserve modal UX and accessibility. Brief: `plan/phases/phase_104_mercy_modal_engine_truth.md`. Verification: focused Jest + `npm run verify`. Shipped in commit ce59115.
 

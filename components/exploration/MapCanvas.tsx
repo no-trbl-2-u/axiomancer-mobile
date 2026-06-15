@@ -114,7 +114,7 @@ export function MapCanvas({ nodes, edges, children }: MapCanvasProps) {
     }));
 
     return (
-        <View style={styles.graphWrap} onLayout={onWrapLayout}>
+        <View style={styles.graphWrap} onLayout={onWrapLayout} testID="map-canvas-wrapper">
             <View style={[StyleSheet.absoluteFillObject, styles.graphBackground]} />
             <Splatter color={AXM.blood} size={170} seed={3} style={styles.bloodSplatter} />
             <Splatter color={AXM.sulfur} size={130} seed={9} style={styles.sulfurSplatter} />

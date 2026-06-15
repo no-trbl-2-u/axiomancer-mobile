@@ -31,7 +31,7 @@
 - addressed: 2026-06-15 via commit 8078435
 - fix: Added comprehensive test coverage for NodeGrid component including node rendering, empty state handling, onNodePress delegation, labeled node ID propagation, and available vs locked node behavior validation following established exploration component test patterns.
 
-### [ ] [5.6] ItemGrid component missing test coverage affecting inventory maintainability
+### [x] [5.6] ItemGrid component missing test coverage affecting inventory maintainability
 - category: tests
 - impact: 7
 - ease: 8
@@ -45,6 +45,8 @@
 - suggested fix: Create components/inventory/__tests__/ItemGrid.test.tsx following ItemCard test pattern with item rendering and categorization testing
 - source: audit
 - issue: #414
+- addressed: 2026-06-15 via commit 6a3416c
+- fix: Added comprehensive test coverage for ItemGrid component including empty state handling, category grouping and rendering, item delegation to ItemCard, scroll behavior, handler propagation, expansion state management, and accessibility props following established inventory test patterns.
 
 ### [x] [3.0] Engine version inconsistency in plan/bearings.md documentation
 - category: external-critique

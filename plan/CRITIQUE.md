@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-14 at commit 076dfb9
-> Pass count: 42
+> Last pass: 2026-06-15 at commit 772f0c0
+> Pass count: 43
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -26,13 +26,33 @@
 
 ## Pending
 
-<!-- Pass 41 (2026-06-14, commit a185532): repo-proxy pass —
+<!-- Pass 43 (2026-06-15, commit 772f0c0): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
      critique reads docs/specs/artifacts as the "fresh maintainer"
      proxy. Focus on general repository comprehension for new
-     contributors. Examined README.md, VISION.md, docs/README.md,
-     specs/README.md, setup/, app/_layout.tsx, package.json, bearings.md.
-     6 findings filed below. -->
+     contributors. Examined README.md, docs/README.md, specs/README.md,
+     setup/, SVG_ASSET_SPEC.md, package.json, plan/README.md.
+     2 findings filed below. -->
+
+### [HIGH] /setup/01_repository.md — Setup guide references non-existent future setup files
+- pass: 43 (commit 772f0c0)
+- viewport: desktop
+- auth_state: anonymous
+- category: navigation
+- observation: Repository setup guide promises future setup files that don't exist, creating broken workflow for new maintainers
+- evidence: Lines 232-234: 'See [`setup/02_eas.md`](./02_eas.md) _(Coming Soon)_' and similar references to 03_store_setup.md and 04_claude_playtest.md that lead nowhere
+- suggested fix: Either create the promised files or remove the coming soon references
+- source: file-read
+
+### [LOW] /docs/README.md — Duplicate priority classification creates confusion
+- pass: 43 (commit 772f0c0)
+- viewport: desktop
+- auth_state: anonymous
+- category: navigation
+- observation: Testing documentation table lists both testing.md and testing-guide.md with overlapping purposes and priority ratings that don't clearly distinguish use cases
+- evidence: Lines 10-21: testing.md marked 'ESSENTIAL' and testing-guide.md marked 'HELPFUL' but both described as testing guidance without clear functional distinction
+- suggested fix: Clarify distinct purposes or consolidate into single testing reference
+- source: file-read
 
 ### [MED] /README.md — Engine version mismatch between documentation and package.json
 - pass: 41 (commit a185532)

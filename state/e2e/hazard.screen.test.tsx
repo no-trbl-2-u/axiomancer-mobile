@@ -265,7 +265,10 @@ describe('hazard screen — outcome and rewards', () => {
         fireEvent.press(screen.getByTestId('hazard-rewards-confirm'));
         expect(store.getState().hazard.session).not.toBeNull();
         const offer = store.getState().hazard.session!.outcome!.offerCards[0];
+        // new flow: tap card opens preview overlay, then confirm in preview
         fireEvent.press(screen.getByTestId(`hazard-offer-${offer.id}`));
+        expect(screen.getByTestId('hazard-card-preview')).toBeTruthy();
+        fireEvent.press(screen.getByTestId('hazard-preview-confirm'));
         fireEvent.press(screen.getByTestId('hazard-rewards-confirm'));
         expect(store.getState().hazard.session).toBeNull(); // claimed & cleared
     });

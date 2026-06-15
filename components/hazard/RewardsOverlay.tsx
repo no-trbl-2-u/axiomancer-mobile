@@ -69,6 +69,7 @@ export function RewardsOverlay({
     const styles = useStyles();
     const [tip, setTip] = useState<string | null>(null);
     const [picked, setPicked] = useState<string | null>(null);
+    const [previewCard, setPreviewCard] = useState<string | null>(null);
     const tierColor =
         rewards.tier === 'perfect' ? HZ.gold : rewards.tier === 'complete' ? AXM.parchment : AXM.blood;
     const hasOffer = rewards.offerCards.length > 0;
@@ -187,9 +188,9 @@ export function RewardsOverlay({
                                 {rewards.offerCards.map((card, i) => (
                                     <Animated.View key={card.uid} entering={FadeInDown.delay(150 + i * 120).duration(280)}>
                                         <Pressable
-                                            onPress={() => setPicked(picked === card.cardId ? null : card.cardId)}
+                                            onPress={() => setPreviewCard(card.cardId)}
                                             accessibilityRole="button"
-                                            accessibilityLabel={`Reward card ${card.name}, ${card.rarity}`}
+                                            accessibilityLabel={`Preview reward card ${card.name}, ${card.rarity}`}
                                             testID={`hazard-offer-${card.cardId}`}
                                             style={{ transform: [{ translateY: picked === card.cardId ? -8 : 0 }] }}
                                         >
@@ -220,6 +221,66 @@ export function RewardsOverlay({
                     )}
                 </View>
             </ScrollView>
+
+            {/* card preview overlay */}
+            {previewCard && (
+                <Animated.View entering={FadeIn.duration(200)} style={styles.previewOverlay} testID="hazard-card-preview">
+                    <View style={styles.previewContainer}>
+                        <Text style={styles.previewTitle}>REWARD PREVIEW</Text>
+                        
+                        {(() => {
+                            const card = rewards.offerCards.find(c => c.cardId === previewCard);
+                            if (!card) return null;
+                            
+                            return (
+                                <>
+                                    <View style={styles.previewCardContainer}>
+                                        <HazardCard card={card} mode="detail" />
+                                    </View>
+                                    
+                                    <View style={styles.previewInfo}>
+                                        <Text style={styles.previewCardName}>{card.name}</Text>
+                                        <Text style={styles.previewArchetype}>{card.kind.toUpperCase()} CARD</Text>
+                                        {card.keywords && card.keywords.length > 0 && (
+                                            <View style={styles.previewKeywords}>
+                                                <Text style={styles.previewKeywordsLabel}>KEYWORDS:</Text>
+                                                <Text style={styles.previewKeywordsList}>
+                                                    {card.keywords.join(', ')}
+                                                </Text>
+                                            </View>
+                                        )}
+                                    </View>
+                                    
+                                    <View style={styles.previewActions}>
+                                        <Pressable
+                                            onPress={() => setPreviewCard(null)}
+                                            accessibilityRole="button"
+                                            accessibilityLabel="Cancel card selection"
+                                            testID="hazard-preview-cancel"
+                                            style={[styles.previewBtn, styles.previewCancelBtn]}
+                                        >
+                                            <Text style={[styles.previewBtnText, styles.previewCancelText]}>CANCEL</Text>
+                                        </Pressable>
+                                        
+                                        <Pressable
+                                            onPress={() => {
+                                                setPicked(card.cardId);
+                                                setPreviewCard(null);
+                                            }}
+                                            accessibilityRole="button"
+                                            accessibilityLabel="Confirm card selection"
+                                            testID="hazard-preview-confirm"
+                                            style={[styles.previewBtn, styles.previewConfirmBtn]}
+                                        >
+                                            <Text style={[styles.previewBtnText, styles.previewConfirmText]}>TAKE THIS CARD</Text>
+                                        </Pressable>
+                                    </View>
+                                </>
+                            );
+                        })()}
+                    </View>
+                </Animated.View>
+            )}
 
             {/* confirm / skip */}
             <View style={styles.confirmRow}>
@@ -294,4 +355,23 @@ const useStyles = makeStyles((AXM) => ({
     skipBtn: { width: 54, height: 54, borderWidth: 1.5, borderColor: AXM.bone, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },
     skipX: { fontFamily: FONTS.gothic, fontSize: 20, lineHeight: 21, color: AXM.bone },
     skipLabel: { fontFamily: FONTS.mono, fontSize: 10, letterSpacing: 1, color: AXM.bone },
+    
+    // Preview overlay styles
+    previewOverlay: { ...StyleSheet.absoluteFillObject, zIndex: 70, backgroundColor: 'rgba(0,0,0,0.9)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 },
+    previewContainer: { backgroundColor: '#0b0907', borderWidth: 2, borderColor: AXM.sulfur, paddingHorizontal: 16, paddingVertical: 20, maxWidth: 400, width: '100%' },
+    previewTitle: { fontFamily: FONTS.gothic, fontSize: 16, letterSpacing: 1.5, color: AXM.sulfur, textAlign: 'center', marginBottom: 16 },
+    previewCardContainer: { alignItems: 'center', marginBottom: 16 },
+    previewInfo: { alignItems: 'center', marginBottom: 20 },
+    previewCardName: { fontFamily: FONTS.gothic, fontSize: 18, letterSpacing: 0.5, color: AXM.parchment, textAlign: 'center', marginBottom: 4 },
+    previewArchetype: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 1.2, color: AXM.bone, textAlign: 'center', marginBottom: 8 },
+    previewKeywords: { alignItems: 'center', marginTop: 8 },
+    previewKeywordsLabel: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1.5, color: AXM.ash, marginBottom: 2 },
+    previewKeywordsList: { fontFamily: FONTS.serif, fontSize: 13, color: AXM.parchment, textAlign: 'center' },
+    previewActions: { flexDirection: 'row', gap: 12 },
+    previewBtn: { flex: 1, paddingVertical: 12, alignItems: 'center', borderWidth: 2 },
+    previewCancelBtn: { borderColor: AXM.ash, backgroundColor: 'rgba(0,0,0,0.3)' },
+    previewConfirmBtn: { borderColor: AXM.sulfur, backgroundColor: 'rgba(212,192,38,0.14)' },
+    previewBtnText: { fontFamily: FONTS.gothic, fontSize: 15, letterSpacing: 1.5 },
+    previewCancelText: { color: AXM.bone },
+    previewConfirmText: { color: AXM.sulfur },
 }));

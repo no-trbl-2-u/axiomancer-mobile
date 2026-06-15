@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 
 import { RewardsOverlay } from '../RewardsOverlay';
 import type { HazardRewardsVM } from '@/state/presenters/hazard.engine';
@@ -174,5 +174,104 @@ describe('RewardsOverlay', () => {
         const failureVM = { ...mockRewardsVM, tier: 'failure' as const };
         const { root: failureRoot } = render(<RewardsOverlay {...mockProps} rewards={failureVM} />);
         expect(failureRoot).toBeTruthy();
+    });
+
+    describe('card preview overlay', () => {
+        it('opens preview when tapping a reward card', () => {
+            const { getByTestId, queryByTestId } = render(<RewardsOverlay {...mockProps} />);
+            
+            // Preview should not be visible initially
+            expect(queryByTestId('hazard-card-preview')).toBeNull();
+            
+            // Tap the first reward card
+            fireEvent.press(getByTestId('hazard-offer-card-1'));
+            
+            // Preview overlay should now be visible
+            expect(getByTestId('hazard-card-preview')).toBeTruthy();
+        });
+
+        it('shows card preview with correct information', () => {
+            const { getByTestId, getAllByText, getByText } = render(<RewardsOverlay {...mockProps} />);
+            
+            // Tap the first reward card
+            fireEvent.press(getByTestId('hazard-offer-card-1'));
+            
+            // Should show preview title
+            expect(getByText('REWARD PREVIEW')).toBeTruthy();
+            // Card name should appear (possibly multiple times)
+            expect(getAllByText('Fire Strike').length).toBeGreaterThan(0);
+            expect(getByText('RED CARD')).toBeTruthy();
+        });
+
+        it('shows confirm and cancel buttons in preview', () => {
+            const { getByTestId } = render(<RewardsOverlay {...mockProps} />);
+            
+            // Tap the first reward card
+            fireEvent.press(getByTestId('hazard-offer-card-1'));
+            
+            // Should show both action buttons
+            expect(getByTestId('hazard-preview-cancel')).toBeTruthy();
+            expect(getByTestId('hazard-preview-confirm')).toBeTruthy();
+        });
+
+        it('closes preview when cancel button is pressed', () => {
+            const { getByTestId, queryByTestId } = render(<RewardsOverlay {...mockProps} />);
+            
+            // Open preview
+            fireEvent.press(getByTestId('hazard-offer-card-1'));
+            expect(getByTestId('hazard-card-preview')).toBeTruthy();
+            
+            // Press cancel
+            fireEvent.press(getByTestId('hazard-preview-cancel'));
+            
+            // Preview should be hidden
+            expect(queryByTestId('hazard-card-preview')).toBeNull();
+        });
+
+        it('selects card and closes preview when confirm button is pressed', () => {
+            const { getByTestId, queryByTestId } = render(<RewardsOverlay {...mockProps} />);
+            
+            // Open preview
+            fireEvent.press(getByTestId('hazard-offer-card-1'));
+            expect(getByTestId('hazard-card-preview')).toBeTruthy();
+            
+            // Press confirm
+            fireEvent.press(getByTestId('hazard-preview-confirm'));
+            
+            // Preview should be hidden
+            expect(queryByTestId('hazard-card-preview')).toBeNull();
+            
+            // Card should be visually selected (check for picked badge or visual indicator)
+            // This would be tested by checking the visual state of the card
+        });
+
+        it('does not immediately select card when tapped (preview first)', () => {
+            const mockOnConfirm = jest.fn();
+            const { getByTestId } = render(<RewardsOverlay {...mockProps} onConfirm={mockOnConfirm} />);
+            
+            // Tap the first reward card
+            fireEvent.press(getByTestId('hazard-offer-card-1'));
+            
+            // onConfirm should not have been called yet (preview should open instead)
+            expect(mockOnConfirm).not.toHaveBeenCalled();
+        });
+
+        it('calls onConfirm only after card is confirmed through preview', () => {
+            const mockOnConfirm = jest.fn();
+            const { getByTestId } = render(<RewardsOverlay {...mockProps} onConfirm={mockOnConfirm} />);
+            
+            // Tap card to open preview
+            fireEvent.press(getByTestId('hazard-offer-card-1'));
+            expect(mockOnConfirm).not.toHaveBeenCalled();
+            
+            // Confirm selection through preview
+            fireEvent.press(getByTestId('hazard-preview-confirm'));
+            
+            // Now the main confirm button should be enabled, but we need to test the full flow
+            fireEvent.press(getByTestId('hazard-rewards-confirm'));
+            
+            // onConfirm should be called with the selected card ID
+            expect(mockOnConfirm).toHaveBeenCalledWith('card-1');
+        });
     });
 });

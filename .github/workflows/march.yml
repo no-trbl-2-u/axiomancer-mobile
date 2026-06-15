@@ -147,6 +147,10 @@ jobs:
         uses: anthropics/claude-code-base-action@beta
         with:
           prompt: "/march ${{ github.event.inputs.args }}"
+          # Pin an active model. The action's built-in default was
+          # claude-sonnet-4-20250514, which retired 2026-06-15 and now 404s;
+          # claude-sonnet-4-6 is its drop-in successor.
+          model: claude-sonnet-4-6
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           allowed_tools: "Bash,Read,Edit,Write,Glob,Grep,Agent,TodoWrite,WebFetch,WebSearch"
           settings: '{"permissions":{"defaultMode":"bypassPermissions","skipDangerousModePermissionPrompt":true}}'

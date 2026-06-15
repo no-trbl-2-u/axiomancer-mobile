@@ -233,11 +233,14 @@ export function DebugTriggerEncounter() {
     };
 
     const onPressPaced = (event: unknown) => {
-        // Same stacking discipline as onPress; <EventGate> observes the
-        // seeded village/cutscene event and pushes its dedicated route.
+        // Village/cutscene push a dedicated full-screen route via
+        // <EventGate>, which is mounted at the root layout and so fires
+        // from any tab. Unlike onPress (whose combat-prelude renders over
+        // the WILDS map), these need NO tab jump — and crucially, NOT
+        // jumping means the event's dismiss tap returns here, to the dev
+        // menu, instead of dead-ending on the exploration map.
         // `sourceNodeType` is metadata these screens don't read, so any
         // valid NodeType is harmless — 'quest' stands in.
-        router.push('/(tabs)/exploration');
         setPending(event, 'quest');
     };
 

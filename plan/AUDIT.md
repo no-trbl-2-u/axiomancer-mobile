@@ -99,7 +99,7 @@
 - addressed: 2026-06-14 via commit 76172e5
 - fix: Added comprehensive test coverage for DebugHazardButton component including DEV gate functionality, action routing for hazard session creation, and accessibility compliance following established debug component test patterns.
 
-### [ ] [1.5] SVG_ASSET_SPEC.md unclear guidance for new maintainers
+### [x] [1.5] SVG_ASSET_SPEC.md unclear guidance for new maintainers
 - category: external-critique
 - impact: 6
 - ease: 5
@@ -112,6 +112,8 @@
 - evidence: Lines 5-12 warn fresh maintainers they 'likely don't need this file yet' but no guidance on when they WOULD need it or how to know when asset replacement phase begins
 - suggested fix: Add clear trigger conditions like 'Start using this when Spec 11 (asset pipeline) is ready to implement'
 - source: external-critique
+- addressed: 2026-06-15 via commit 4a7e671
+- fix: Added clear trigger condition "Start using this when Spec 11 (asset pipeline) is ready to implement" to help fresh maintainers understand when the asset specification becomes relevant for their workflow.
 
 ### [x] [2.8] Setup guide references missing setup runbooks creating broken navigation
 - category: external-critique

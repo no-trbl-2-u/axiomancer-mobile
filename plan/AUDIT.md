@@ -10,9 +10,82 @@
 > findings 0.5× so they no longer outrank player-facing gameplay work.
 > Conducted by: /iterate autonomous audit
 
-> **Latest audit update (2026-06-15).** Fresh /iterate audit conducted identifying 29 components still missing test coverage, with core exploration and inventory components requiring immediate attention.
+> **Latest audit update (2026-06-15).** Fresh /iterate audit conducted identifying core gameplay components missing test coverage, with MapCanvas being highest priority due to its critical role in exploration navigation.
 
 ## Top 5 findings (scored)
+
+### [x] [10.0] MapCanvas component missing test coverage affecting core exploration gameplay maintainability
+- category: tests
+- impact: 9
+- ease: 9
+- base-score: 8.1
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias)
+- final-score: 12.15 (clamped to 10.0)
+- next: Add comprehensive test coverage for MapCanvas component focusing on gesture handling, viewport centering, and node positioning
+- observation: MapCanvas component at components/exploration/MapCanvas.tsx lacks test coverage despite being the core interactive map component for exploration navigation
+- evidence: Component handles complex pinch/pan gestures and viewport management but missing from components/exploration/__tests__/ directory. Critical for player navigation between game areas.
+- suggested fix: Create components/exploration/__tests__/MapCanvas.test.tsx with gesture simulation, viewport calculations, and node rendering tests following exploration component patterns
+- source: audit
+- issue: #416
+- addressed: 2026-06-15 via commit b7882aa
+- fix: Added comprehensive test coverage for MapCanvas component including basic rendering, viewport layout handling, node lookup validation, centering logic for focus nodes, gesture integration points, and children rendering following established exploration component test patterns.
+
+### [ ] [10.0] PlotCard component missing test coverage affecting gathering minigame maintainability  
+- category: tests
+- impact: 8
+- ease: 9
+- base-score: 7.2
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias)
+- final-score: 10.8 (clamped to 10.0)
+- next: Add comprehensive test coverage for PlotCard component with all three render modes and plot data variations
+- observation: PlotCard component at components/gathering/PlotCard.tsx is a core gameplay component missing tests despite handling complex plot rendering with multiple modes
+- evidence: Component renders gathering plots with family colors, trait indicators, and wrath costs but missing from components/gathering/__tests__/ directory
+- suggested fix: Create components/gathering/__tests__/PlotCard.test.tsx covering spread/detail/preview modes, trait rendering, and wrath cost display following gathering component patterns
+- source: audit
+
+### [ ] [10.0] GatheringOverlays component missing test coverage affecting minigame interaction maintainability
+- category: tests
+- impact: 8
+- ease: 8.5  
+- base-score: 6.8
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias)
+- final-score: 10.2 (clamped to 10.0)
+- next: Add comprehensive test coverage for GatheringOverlays component including modal states and overlay interactions
+- observation: GatheringOverlays component at components/gathering/GatheringOverlays.tsx handles critical gathering game overlays but lacks test coverage
+- evidence: Component manages complex overlay states for gathering minigame but missing from components/gathering/__tests__/ directory
+- suggested fix: Create components/gathering/__tests__/GatheringOverlays.test.tsx with overlay state transitions and interaction testing following gathering component patterns
+- source: audit
+
+### [ ] [9.0] InventoryTabs component missing test coverage affecting item management maintainability
+- category: tests
+- impact: 8
+- ease: 7.5
+- base-score: 6.0  
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias)
+- final-score: 9.0
+- next: Add comprehensive test coverage for InventoryTabs component including tab switching and accessibility compliance
+- observation: InventoryTabs component at components/inventory/InventoryTabs.tsx handles inventory category navigation but lacks test coverage
+- evidence: Component manages tab state for satchel/equipment/burden categories but missing from components/inventory/__tests__/ directory
+- suggested fix: Create components/inventory/__tests__/InventoryTabs.test.tsx with tab selection, state management, and accessibility testing following inventory component patterns
+- source: audit
+
+### [ ] [7.2] Art components directory entirely missing test coverage affecting visual consistency
+- category: tests  
+- impact: 8
+- ease: 9
+- base-score: 7.2
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.0 (no bias applied to art components)
+- final-score: 7.2
+- next: Add test coverage for all art components including Filigree, PlayerPortrait, TitleEmblem, and VictoryWreath
+- observation: Components art directory at components/art/ has no __tests__ directory, leaving 4 visual components untested
+- evidence: Filigree.tsx, PlayerPortrait.tsx, TitleEmblem.tsx, and VictoryWreath.tsx all lack test coverage despite being used across multiple screens
+- suggested fix: Create components/art/__tests__/ directory with comprehensive rendering tests for all art components following established component test patterns
+- source: audit
 
 ### [x] [5.6] NodeGrid component missing test coverage affecting exploration maintainability
 - category: tests

@@ -22,7 +22,7 @@
  */
 
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import {
     startQuest as engineStartQuest,
     progressQuest as engineProgressQuest,
@@ -33,7 +33,8 @@ import {
 
 import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useGameStore } from '@/state/GameStoreProvider';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 interface QuestSpec {
     label: string;
@@ -82,6 +83,7 @@ const QUESTS: readonly QuestSpec[] = [
 ];
 
 export function DebugQuestState() {
+    const styles = useStyles();
     const store = useGameStore();
 
     if (!isDevToolsEnabled()) return null;
@@ -152,7 +154,7 @@ export function DebugQuestState() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: {
         marginTop: 8,
         marginHorizontal: 12,
@@ -205,4 +207,4 @@ const styles = StyleSheet.create({
         color: AXM.sulfur,
         letterSpacing: 1,
     },
-});
+}));

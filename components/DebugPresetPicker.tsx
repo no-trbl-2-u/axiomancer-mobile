@@ -17,13 +17,15 @@
 
 import { characterPresets } from 'axiomancer-mechanics';
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useGameActions } from '@/state/GameStoreProvider';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 export function DebugPresetPicker() {
+    const styles = useStyles();
     const actions = useGameActions();
     const [active, setActive] = useState<string | null>(null);
 
@@ -67,7 +69,7 @@ export function DebugPresetPicker() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     row: {
         marginTop: 8,
         marginHorizontal: 12,
@@ -116,4 +118,4 @@ const styles = StyleSheet.create({
     buttonLabelActive: {
         color: AXM.sulfur,
     },
-});
+}));

@@ -10,7 +10,7 @@
 import React from 'react';
 import Svg, { Circle, Ellipse, G, Path } from 'react-native-svg';
 
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 interface VictoryWreathProps {
     size?: number;
@@ -55,7 +55,10 @@ function Branch({ color }: { color: string }) {
     );
 }
 
-export function VictoryWreath({ size = 96, color = AXM.bone, accent = AXM.sulfur }: VictoryWreathProps) {
+export function VictoryWreath({ size = 96, color, accent }: VictoryWreathProps) {
+    const AXM = usePalette();
+    const resolvedColor = color ?? AXM.bone;
+    const resolvedAccent = accent ?? AXM.sulfur;
     return (
         <Svg
             width={size}
@@ -65,14 +68,14 @@ export function VictoryWreath({ size = 96, color = AXM.bone, accent = AXM.sulfur
             importantForAccessibility="no-hide-descendants"
         >
             {/* left branch */}
-            <Branch color={color} />
+            <Branch color={resolvedColor} />
             {/* right branch (mirrored) */}
             <G transform="translate(120 0) scale(-1 1)">
-                <Branch color={color} />
+                <Branch color={resolvedColor} />
             </G>
             {/* crowning sigil */}
-            <Circle cx={60} cy={16} r={9} fill="none" stroke={accent} strokeWidth={1.4} opacity={0.8} />
-            <Path d="M60 8 L 63 16 L 60 24 L 57 16 Z" fill={accent} />
+            <Circle cx={60} cy={16} r={9} fill="none" stroke={resolvedAccent} strokeWidth={1.4} opacity={0.8} />
+            <Path d="M60 8 L 63 16 L 60 24 L 57 16 Z" fill={resolvedAccent} />
             <Circle cx={60} cy={16} r={2} fill={AXM.bg} />
         </Svg>
     );

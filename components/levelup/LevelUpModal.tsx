@@ -17,12 +17,13 @@
  */
 
 import React, { useCallback, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import { DerivedPreviewRibbon } from '@/components/levelup/DerivedPreviewRibbon';
 import { StanceRow, type LevelStance } from '@/components/levelup/StanceRow';
 import { pickFlavor } from '@/components/levelup/levelUpFlavor';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 import { toRomanLower } from '@/state/presenters/roman';
 import { STANCES } from '@/state/presenters/stances';
 import { calculateDerivedPreview } from '@/state/presenters/levelup.engine';
@@ -127,6 +128,8 @@ export function LevelUpModal({
             return currentDerived;
         }
     }, [current, currentDerived, spent]);
+
+    const styles = useStyles();
 
     return (
         <View style={styles.root} testID="levelup-modal">
@@ -298,7 +301,7 @@ export function LevelUpModal({
 }
 
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: {
         position: 'absolute',
         top: 0,
@@ -532,5 +535,5 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: AXM.bone,
     },
-});
+}));
 

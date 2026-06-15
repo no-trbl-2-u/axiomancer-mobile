@@ -1,7 +1,8 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 export interface RollBarProps {
     value: number;
@@ -11,6 +12,7 @@ export interface RollBarProps {
 }
 
 export const RollBar = React.memo(function RollBar({ value, max, color, label }: RollBarProps) {
+    const styles = useStyles();
     const pct = Math.min(1, Math.max(0, value / max));
     return (
         <View style={styles.rollBarRow}>
@@ -23,7 +25,7 @@ export const RollBar = React.memo(function RollBar({ value, max, color, label }:
     );
 });
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     rollBarRow: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -54,4 +56,4 @@ const styles = StyleSheet.create({
         letterSpacing: 0.5,
         width: 40,
     },
-});
+}));

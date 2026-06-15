@@ -7,7 +7,7 @@
 import React from 'react';
 import Svg, { Circle, G, Path, Rect } from 'react-native-svg';
 
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 // ---------------------------------------------------------------------------
 // Family glyphs (sprig / drop / shard / knuckle)
@@ -16,12 +16,14 @@ import { AXM } from '@/theme/axm';
 export function FamilyGlyph({
     kind,
     size = 26,
-    color = AXM.parchment,
+    color,
 }: {
     kind: 'sprig' | 'drop' | 'shard' | 'knuckle';
     size?: number;
     color?: string;
 }) {
+    const AXM = usePalette();
+    color = color ?? AXM.parchment;
     const sw = Math.max(1.4, size / 16);
     const s = { stroke: color, strokeWidth: sw, fill: 'none' as const, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const };
     switch (kind) {
@@ -69,13 +71,15 @@ export function FamilyGlyph({
 export function WrathEye({
     open = 0,
     size = 22,
-    color = AXM.blood,
+    color,
 }: {
     /** 0 = lidded, 1 = wide open. */
     open?: number;
     size?: number;
     color?: string;
 }) {
+    const AXM = usePalette();
+    color = color ?? AXM.blood;
     const sw = Math.max(1.3, size / 14);
     const lid = 4 + 6 * Math.min(1, Math.max(0, open));
     const s = { stroke: color, strokeWidth: sw, fill: 'none' as const, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const };
@@ -89,7 +93,9 @@ export function WrathEye({
 }
 
 /** Grace mark — a small kneeling halo. */
-export function GraceMark({ size = 18, color = AXM.sulfur }: { size?: number; color?: string }) {
+export function GraceMark({ size = 18, color }: { size?: number; color?: string }) {
+    const AXM = usePalette();
+    color = color ?? AXM.sulfur;
     const s = { stroke: color, strokeWidth: Math.max(1.2, size / 14), fill: 'none' as const, strokeLinecap: 'round' as const };
     return (
         <Svg viewBox="0 0 24 24" width={size} height={size}>
@@ -107,12 +113,14 @@ export function GraceMark({ size = 18, color = AXM.sulfur }: { size?: number; co
 export function TraitGlyph({
     kind,
     size = 14,
-    color = AXM.parchment,
+    color,
 }: {
     kind: 'gift' | 'lure' | 'breath' | 'tangle';
     size?: number;
     color?: string;
 }) {
+    const AXM = usePalette();
+    color = color ?? AXM.parchment;
     const sw = Math.max(1.2, size / 12);
     const s = { stroke: color, strokeWidth: sw, fill: 'none' as const, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const };
     switch (kind) {
@@ -156,12 +164,14 @@ export function TraitGlyph({
 export function ToolGlyph({
     kind,
     size = 20,
-    color = AXM.parchment,
+    color,
 }: {
     kind: 'sickle' | 'veil' | 'twig' | 'bell' | 'jar' | 'spade';
     size?: number;
     color?: string;
 }) {
+    const AXM = usePalette();
+    color = color ?? AXM.parchment;
     const sw = Math.max(1.3, size / 14);
     const s = { stroke: color, strokeWidth: sw, fill: 'none' as const, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const };
     const wrap = (children: React.ReactNode) => (
@@ -225,7 +235,7 @@ export function ToolGlyph({
 export function RichnessPips({
     count,
     size = 9,
-    color = AXM.parchment,
+    color,
     max = 4,
 }: {
     count: number;
@@ -233,6 +243,8 @@ export function RichnessPips({
     color?: string;
     max?: number;
 }) {
+    const AXM = usePalette();
+    color = color ?? AXM.parchment;
     const n = Math.max(0, Math.min(max, count));
     if (n === 0) return null;
     const w = size + 3;

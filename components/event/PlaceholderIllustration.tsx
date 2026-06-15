@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 import Svg, { Path, Circle, Ellipse, G, Line } from 'react-native-svg';
 
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 import type { EventArtSlug } from '@/state/presenters/event-assets';
 
 /**
@@ -12,6 +12,7 @@ import type { EventArtSlug } from '@/state/presenters/event-assets';
  * placeholders, but their slugs come from the engine."
  */
 export function PlaceholderIllustration({ slug }: { slug: EventArtSlug }) {
+    const AXM = usePalette();
     const getAccessibilityLabel = (slug: EventArtSlug): string => {
         const labels: Record<EventArtSlug, string> = {
             'interaction-generic': 'Generic interaction illustration showing a figure with speech elements', 

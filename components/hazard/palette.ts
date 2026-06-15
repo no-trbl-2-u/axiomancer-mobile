@@ -7,7 +7,7 @@
  * with a distinct glyph shape (blade / eye / crescent / sun / cross).
  */
 
-import { AXM } from '@/theme/axm';
+import type { Palette } from '@/theme/palette';
 import type { HazardDieKind } from 'axiomancer-mechanics';
 
 export const HZ = {
@@ -60,4 +60,10 @@ export const RARITY_UI = {
     rare: { c: HZ.gold, label: 'RARE' },
 } as const;
 
-export const ROUTE_ACCENT = { safe: AXM.rust, risk: HZ.acid } as const;
+/**
+ * Route-type accents (SAFE rust / RISK acid-green). The SAFE accent
+ * tracks the active theme's `rust`, so this is a function of the live
+ * palette — call it with `usePalette()` inside a component.
+ */
+export const routeAccent = (AXM: Palette) =>
+    ({ safe: AXM.rust, risk: HZ.acid }) as const;

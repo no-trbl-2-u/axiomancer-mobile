@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import { useTooltip } from '@/hooks/useTooltip';
 import { StanceGlyph } from '@/components/StanceGlyph';
 import type { SkillOption } from '@/state/presenters/combat.engine';
@@ -12,6 +13,8 @@ export interface SkillRowProps {
 }
 
 export const SkillRow = React.memo(function SkillRow({ skill: s, onPick }: SkillRowProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
     const tooltip = useTooltip();
     const ref = useRef<View | null>(null);
     const [isFocused, setIsFocused] = useState(false);
@@ -47,7 +50,7 @@ export const SkillRow = React.memo(function SkillRow({ skill: s, onPick }: Skill
     );
 });
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     row: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -109,4 +112,4 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 2,
     },
-});
+}));

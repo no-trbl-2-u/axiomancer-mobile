@@ -26,12 +26,13 @@ import type {
     HazardResolveFlashVM,
     HazardOutcomeVM,
 } from '@/state/presenters/hazard.engine';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 import { HazardCard } from './HazardCard';
 import { HazardDie } from './HazardDie';
 import { LedgerMark, ProgGlyph } from './glyphs';
-import { HZ, ROUTE_ACCENT, TYPE_ACCENT } from './palette';
+import { HZ, routeAccent, TYPE_ACCENT } from './palette';
 
 // ---------------------------------------------------------------------------
 // Dice-cast interstitial — dice tumble in, settle, then the board opens.
@@ -74,6 +75,8 @@ export function DiceRollOverlay({
     routeKey: 'safe' | 'risk';
     onDone: () => void;
 }) {
+    const AXM = usePalette();
+    const styles = useStyles();
     useEffect(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => undefined);
         const t = setTimeout(onDone, 1700);
@@ -83,7 +86,7 @@ export function DiceRollOverlay({
     return (
         <Animated.View entering={FadeIn.duration(160)} style={styles.rollRoot} testID="hazard-dice-roll">
             <View style={{ alignItems: 'center', paddingTop: 70 }}>
-                <Text style={[styles.rollBadge, { backgroundColor: ROUTE_ACCENT[routeKey] }]}>{routeLabel}</Text>
+                <Text style={[styles.rollBadge, { backgroundColor: routeAccent(AXM)[routeKey] }]}>{routeLabel}</Text>
                 <Text style={styles.rollTitle}>CASTING THE DICE</Text>
                 <Text style={styles.rollSub}>— fate clatters on cold stone. this cast must last.</Text>
             </View>
@@ -132,6 +135,8 @@ export function ResolveFlashOverlay({
     flash: HazardResolveFlashVM;
     onDone: () => void;
 }) {
+    const AXM = usePalette();
+    const styles = useStyles();
     return (
         <Pressable style={styles.flashRoot} onPress={onDone} testID="hazard-resolve-flash">
             <Text style={styles.flashEyebrow}>
@@ -181,6 +186,8 @@ export function OutcomeOverlay({
     outcome: HazardOutcomeVM;
     onContinue: () => void;
 }) {
+    const AXM = usePalette();
+    const styles = useStyles();
     const color =
         outcome.tier === 'perfect' ? HZ.gold : outcome.tier === 'complete' ? AXM.parchment : AXM.blood;
     useEffect(() => {
@@ -230,6 +237,7 @@ export function OutcomeOverlay({
 // ---------------------------------------------------------------------------
 
 export function CardDetailOverlay({ card, onClose }: { card: HazardCardVM; onClose: () => void }) {
+    const styles = useStyles();
     return (
         <Pressable style={styles.detailRoot} onPress={onClose} testID="hazard-card-detail">
             <View style={{ paddingTop: 14, paddingHorizontal: 14 }}>
@@ -253,7 +261,7 @@ export function CardDetailOverlay({ card, onClose }: { card: HazardCardVM; onClo
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     rollRoot: { ...StyleSheet.absoluteFillObject, zIndex: 55, backgroundColor: '#0a0908', alignItems: 'center' },
     rollBadge: { fontFamily: FONTS.sans, fontSize: 14, letterSpacing: 2, color: AXM.bg, paddingHorizontal: 12, paddingVertical: 3, overflow: 'hidden' },
     rollTitle: { fontFamily: FONTS.gothic, fontSize: 26, color: AXM.parchment, letterSpacing: 1, marginTop: 14 },
@@ -284,4 +292,4 @@ const styles = StyleSheet.create({
     keywordName: { fontFamily: FONTS.gothic, fontSize: 14, letterSpacing: 1, color: AXM.sulfur },
     keywordTag: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 2, color: AXM.bone },
     keywordDesc: { fontFamily: FONTS.serif, fontSize: 14, color: AXM.parchment, lineHeight: 18, marginTop: 3 },
-});
+}));

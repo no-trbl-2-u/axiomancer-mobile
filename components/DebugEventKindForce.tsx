@@ -20,13 +20,14 @@
  */
 
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useGameStore } from '@/state/GameStoreProvider';
 import { forceEventKindOnNode } from '@/state/exploration-maps/event-pools';
 import type { NodeType } from '@/state/presenters/exploration.engine';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 const FORCEABLE_KINDS: readonly { key: NodeType; label: string }[] = [
     { key: 'rest', label: 'REST' },
@@ -37,6 +38,7 @@ const FORCEABLE_KINDS: readonly { key: NodeType; label: string }[] = [
 ];
 
 export function DebugEventKindForce() {
+    const styles = useStyles();
     const store = useGameStore();
 
     if (!isDevToolsEnabled()) return null;
@@ -74,7 +76,7 @@ export function DebugEventKindForce() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: {
         marginTop: 8,
         marginHorizontal: 12,
@@ -115,4 +117,4 @@ const styles = StyleSheet.create({
         color: AXM.sulfur,
         letterSpacing: 1,
     },
-});
+}));

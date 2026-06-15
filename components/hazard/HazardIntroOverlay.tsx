@@ -10,7 +10,8 @@ import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-na
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 import { DangerArt } from './danger-art';
 
@@ -22,6 +23,7 @@ export interface HazardIntroOverlayProps {
 }
 
 export function HazardIntroOverlay({ hazardId, title, intro, onContinue }: HazardIntroOverlayProps) {
+    const styles = useStyles();
     const { width } = useWindowDimensions();
     const artWidth = Math.min(width - 56, 320);
     useEffect(() => {
@@ -50,7 +52,7 @@ export function HazardIntroOverlay({ hazardId, title, intro, onContinue }: Hazar
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: {
         ...StyleSheet.absoluteFillObject,
         zIndex: 60,
@@ -113,4 +115,4 @@ const styles = StyleSheet.create({
         letterSpacing: 2,
         color: AXM.parchment,
     },
-});
+}));

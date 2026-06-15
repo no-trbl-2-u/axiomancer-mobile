@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 import { EffectGlyph } from './EffectGlyph';
 
 interface Effect {
@@ -16,23 +17,24 @@ interface EffectChipProps {
   dim?: boolean;
 }
 
-const COLOR_MAP: Record<string, string> = {
-  poison: AXM.heal,
-  bleed: AXM.blood,
-  stun: AXM.sulfur,
-  regen: AXM.heal,
-  burn: AXM.rust,
-  buff: AXM.sulfur,
-  debuff: AXM.blood,
-};
-
-const TINT_MAP: Record<string, string> = {
-  buff: AXM.buff,
-  debuff: AXM.debuff,
-  neutral: AXM.deepBg,
-};
-
 export const EffectChip = React.memo(function EffectChip({ effect, dim = false }: EffectChipProps) {
+  const AXM = usePalette();
+  const COLOR_MAP: Record<string, string> = {
+    poison: AXM.heal,
+    bleed: AXM.blood,
+    stun: AXM.sulfur,
+    regen: AXM.heal,
+    burn: AXM.rust,
+    buff: AXM.sulfur,
+    debuff: AXM.blood,
+  };
+
+  const TINT_MAP: Record<string, string> = {
+    buff: AXM.buff,
+    debuff: AXM.debuff,
+    neutral: AXM.deepBg,
+  };
+
   const c = COLOR_MAP[effect.kind] || AXM.parchment;
   const bg = TINT_MAP[effect.tint || 'neutral'] || AXM.deepBg;
 

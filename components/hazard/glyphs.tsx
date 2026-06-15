@@ -8,7 +8,7 @@
 import React from 'react';
 import Svg, { Circle, Ellipse, G, Path, Rect } from 'react-native-svg';
 
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 // ---------------------------------------------------------------------------
 // Die-face glyphs (blade / eye / crescent / sun / cross)
@@ -17,12 +17,14 @@ import { AXM } from '@/theme/axm';
 export function DieGlyph({
     kind,
     size = 26,
-    color = AXM.parchment,
+    color,
 }: {
     kind: 'blade' | 'eye' | 'crescent' | 'sun' | 'cross' | 'path';
     size?: number;
     color?: string;
 }) {
+    const AXM = usePalette();
+    color = color ?? AXM.parchment;
     const sw = Math.max(1.4, size / 16);
     const s = { stroke: color, strokeWidth: sw, fill: 'none' as const, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const };
     switch (kind) {
@@ -80,12 +82,14 @@ export function DieGlyph({
 export function ProgGlyph({
     kind,
     size = 18,
-    color = AXM.parchment,
+    color,
 }: {
     kind: 'force' | 'escape' | 'passage';
     size?: number;
     color?: string;
 }) {
+    const AXM = usePalette();
+    color = color ?? AXM.parchment;
     const sw = Math.max(1.3, size / 13);
     const s = { stroke: color, strokeWidth: sw, fill: 'none' as const, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const };
     if (kind === 'escape') {
@@ -116,6 +120,7 @@ export function LedgerMark({
     kind: 'O' | 'X' | 'pending';
     size?: number;
 }) {
+    const AXM = usePalette();
     if (kind === 'O') {
         return (
             <Svg viewBox="0 0 24 24" width={size} height={size}>
@@ -145,13 +150,15 @@ export function LedgerMark({
 
 export function BoonIcon({
     icon,
-    color = AXM.parchment,
+    color,
     size = 22,
 }: {
     icon: string;
     color?: string;
     size?: number;
 }) {
+    const AXM = usePalette();
+    color = color ?? AXM.parchment;
     const s = { stroke: color, strokeWidth: 1.5, fill: 'none' as const, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const };
     const wrap = (children: React.ReactNode) => (
         <Svg viewBox="0 0 24 24" width={size} height={size}>
@@ -258,7 +265,9 @@ export function Cracks({ seed = 1, opacity = 0.5 }: { seed?: number; opacity?: n
 // Trash bin — the discard/salvage drop target
 // ---------------------------------------------------------------------------
 
-export function TrashGlyph({ size = 22, color = AXM.bone }: { size?: number; color?: string }) {
+export function TrashGlyph({ size = 22, color }: { size?: number; color?: string }) {
+    const AXM = usePalette();
+    color = color ?? AXM.bone;
     const s = { stroke: color, strokeWidth: 1.6, fill: 'none' as const, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const };
     return (
         <Svg viewBox="0 0 24 24" width={size} height={size}>

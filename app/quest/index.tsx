@@ -11,7 +11,6 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import {
     ScrollView,
-    StyleSheet,
     Text,
     TouchableOpacity,
     useWindowDimensions,
@@ -34,7 +33,8 @@ import { ScreenBg } from '@/components/ScreenBg';
 import { useGameActions, useGameState } from '@/state/GameStoreProvider';
 import { QUEST_TIER_LABELS, selectQuestBoardVM } from '@/state/presenters/quest.engine';
 import type { QuestSpaceKind } from 'axiomancer-mechanics';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 /** Kind-themed haptic for the arrival flourish (U2). No-op off-device. */
 function fireArrivalHaptic(kind: QuestSpaceKind | undefined): void {
@@ -53,6 +53,8 @@ function fireArrivalHaptic(kind: QuestSpaceKind | undefined): void {
 }
 
 export default function QuestScreen() {
+    const styles = useStyles();
+    const AXM = usePalette();
     // Subscribe to the stable slice; memo the VM downstream (the
     // presenter returns a fresh object every call — same doctrine as
     // the event screen's getSnapshot note).
@@ -263,7 +265,7 @@ export default function QuestScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     scroll: { padding: 8, paddingBottom: 24 },
     header: { paddingHorizontal: 6, paddingTop: 4, paddingBottom: 8 },
     headerTitle: {
@@ -363,4 +365,4 @@ const styles = StyleSheet.create({
         letterSpacing: 2,
         color: AXM.bone,
     },
-});
+}));

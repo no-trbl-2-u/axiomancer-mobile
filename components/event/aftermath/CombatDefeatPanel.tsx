@@ -23,9 +23,10 @@
  */
 
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 import type { AftermathDefeatViewModel } from '@/state/presenters/aftermath.engine';
 import { toRomanLower } from '@/state/presenters/roman';
 
@@ -41,6 +42,7 @@ export interface CombatDefeatPanelProps {
 // the call sites.
 
 export function CombatDefeatPanel({ vm, onBeginAgain, onLetClose }: CombatDefeatPanelProps) {
+    const styles = useStyles();
     const deepest = vm.runSummary.deepestNodeId ?? '·';
     return (
         <View style={styles.root} testID="combat-defeat-panel">
@@ -146,6 +148,7 @@ export function CombatDefeatPanel({ vm, onBeginAgain, onLetClose }: CombatDefeat
 }
 
 function LedgerRow({ label, value }: { label: string; value: string }) {
+    const styles = useStyles();
     return (
         <View style={styles.ledgerRow}>
             <Text style={styles.ledgerLabel}>{label}</Text>
@@ -154,7 +157,7 @@ function LedgerRow({ label, value }: { label: string; value: string }) {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: {
         flex: 1,
         backgroundColor: AXM.deepBg,
@@ -315,4 +318,4 @@ const styles = StyleSheet.create({
         borderStyle: 'dashed',
         opacity: 0.6,
     },
-});
+}));

@@ -27,10 +27,10 @@
  */
 
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import Svg, { Rect } from 'react-native-svg';
 
-import { AXM } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 /**
  * 16×16 sprite. Characters:
@@ -65,20 +65,21 @@ export const PIXEL_HEART: readonly string[] = [
     '......rrss......',
 ];
 
-const PIX_COLORS: Record<string, string> = {
-    r: AXM.blood,
-    s: AXM.pixelShadow,
-    h: AXM.pixelHighlight,
-    p: AXM.parchment,
-    '*': AXM.sulfur,
-};
-
 export interface PixelEmblemProps {
     /** Pixel size of one sprite cell. Default 11 yields a 176×176 sprite. */
     cell?: number;
 }
 
 export function PixelEmblem({ cell = 11 }: PixelEmblemProps) {
+    const AXM = usePalette();
+    const styles = useStyles();
+    const PIX_COLORS: Record<string, string> = {
+        r: AXM.blood,
+        s: AXM.pixelShadow,
+        h: AXM.pixelHighlight,
+        p: AXM.parchment,
+        '*': AXM.sulfur,
+    };
     const side = 16 * cell;
     return (
         <View
@@ -112,7 +113,7 @@ export function PixelEmblem({ cell = 11 }: PixelEmblemProps) {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     frame: {
         padding: 8,
         borderWidth: 1,
@@ -120,4 +121,4 @@ const styles = StyleSheet.create({
         backgroundColor: AXM.silhouette,
         alignSelf: 'center',
     },
-});
+}));

@@ -11,15 +11,17 @@
  */
 
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 export interface CodexStatusStripProps {
     line: string;
 }
 
 export function CodexStatusStrip({ line }: CodexStatusStripProps) {
+    const styles = useStyles();
     return (
         <View style={styles.row}>
             <Text style={styles.text} accessibilityRole="header">
@@ -29,7 +31,7 @@ export function CodexStatusStrip({ line }: CodexStatusStripProps) {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     row: {
         paddingHorizontal: 14,
         paddingTop: 8,
@@ -44,4 +46,4 @@ const styles = StyleSheet.create({
         letterSpacing: 1,
         color: AXM.bone,
     },
-});
+}));

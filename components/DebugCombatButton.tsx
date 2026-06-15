@@ -17,16 +17,18 @@
  */
 
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useCombatMode } from '@/state/combat-mode';
 import { useGameActions } from '@/state/GameStoreProvider';
 import { createMockEncounterEnemy } from '@/state/mocks/combat.mock';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 export function DebugCombatButton() {
+    const styles = useStyles();
     const actions = useGameActions();
     const { enterCombat } = useCombatMode();
     const router = useRouter();
@@ -58,7 +60,7 @@ export function DebugCombatButton() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     row: {
         marginTop: 8,
         marginHorizontal: 12,
@@ -98,4 +100,4 @@ const styles = StyleSheet.create({
         color: AXM.blood,
         letterSpacing: 1.5,
     },
-});
+}));

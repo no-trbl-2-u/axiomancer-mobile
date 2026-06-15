@@ -9,22 +9,24 @@
 
 import React, { useEffect, useMemo } from 'react';
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 import { ScreenBg } from '@/components/ScreenBg';
 import { useGameActions, useGameState } from '@/state/GameStoreProvider';
 import { selectCacheVM, type CacheLayerVM } from '@/state/presenters/cache.engine';
-import { AXM, FONTS } from '@/theme/axm';
-
-const READING_CHROME: Record<CacheLayerVM['reading'], { label: string; color: string }> = {
-    sealed: { label: 'SEALED',          color: AXM.bone },
-    live:   { label: 'TRAP — LIVE',     color: AXM.blood },
-    dud:    { label: 'TRAP — DEAD',     color: AXM.heal },
-    clean:  { label: 'LIFTED CLEAN',    color: AXM.heal },
-    sprung: { label: 'SPRUNG',          color: AXM.blood },
-};
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 function LayerCard({ layer }: { layer: CacheLayerVM }) {
+    const styles = useStyles();
+    const AXM = usePalette();
+    const READING_CHROME: Record<CacheLayerVM['reading'], { label: string; color: string }> = {
+        sealed: { label: 'SEALED',          color: AXM.bone },
+        live:   { label: 'TRAP — LIVE',     color: AXM.blood },
+        dud:    { label: 'TRAP — DEAD',     color: AXM.heal },
+        clean:  { label: 'LIFTED CLEAN',    color: AXM.heal },
+        sprung: { label: 'SPRUNG',          color: AXM.blood },
+    };
     const chrome = READING_CHROME[layer.reading];
     return (
         <View
@@ -50,6 +52,8 @@ function LayerCard({ layer }: { layer: CacheLayerVM }) {
 }
 
 export default function CacheScreen() {
+    const styles = useStyles();
+    const AXM = usePalette();
     const slice = useGameState((s) => s.cache);
     const vm = useMemo(() => selectCacheVM({ cache: slice }), [slice]);
     const actions = useGameActions();
@@ -212,7 +216,7 @@ export default function CacheScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     scrollOuter: { flex: 1 },
     // Centre the reliquary in the viewport so the short intro/card phases
     // don't sit atop a sea of empty black (critic round: cache was the one
@@ -297,4 +301,4 @@ const styles = StyleSheet.create({
     disabled: { opacity: 0.35 },
     abandon: { alignSelf: 'center', marginTop: 18, padding: 6 },
     abandonText: { fontFamily: FONTS.mono, fontSize: 12, letterSpacing: 2, color: AXM.bone },
-});
+}));

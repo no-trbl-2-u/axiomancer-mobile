@@ -14,13 +14,15 @@ import type {
     QuestOutcomeVM,
     QuestVowVM,
 } from '@/state/presenters/quest.engine';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 // ---------------------------------------------------------------------------
 // Shared bits
 // ---------------------------------------------------------------------------
 
 function Scrim({ children, testID }: { children: React.ReactNode; testID: string }) {
+    const styles = useStyles();
     return (
         <View style={styles.scrim} testID={testID}>
             <View style={styles.panel}>{children}</View>
@@ -31,7 +33,7 @@ function Scrim({ children, testID }: { children: React.ReactNode; testID: string
 function BigButton({
     label,
     onPress,
-    accent = AXM.sulfur,
+    accent,
     testID,
 }: {
     label: string;
@@ -39,20 +41,24 @@ function BigButton({
     accent?: string;
     testID: string;
 }) {
+    const styles = useStyles();
+    const AXM = usePalette();
     return (
         <TouchableOpacity
             accessibilityRole="button"
             accessibilityLabel={label}
             onPress={onPress}
-            style={[styles.bigButton, { borderColor: accent }]}
+            style={[styles.bigButton, { borderColor: accent ?? AXM.sulfur }]}
             testID={testID}
         >
-            <Text style={[styles.bigButtonText, { color: accent }]}>{label}</Text>
+            <Text style={[styles.bigButtonText, { color: accent ?? AXM.sulfur }]}>{label}</Text>
         </TouchableOpacity>
     );
 }
 
 function VowRows({ vows }: { vows: readonly QuestVowVM[] }) {
+    const styles = useStyles();
+    const AXM = usePalette();
     return (
         <View style={styles.vowRows}>
             {vows.map(v => (
@@ -81,6 +87,7 @@ function VowRows({ vows }: { vows: readonly QuestVowVM[] }) {
 // ---------------------------------------------------------------------------
 
 export function QuestIntroOverlay({ vm, onBegin }: { vm: QuestBoardVM; onBegin: () => void }) {
+    const styles = useStyles();
     return (
         <Scrim testID="quest-intro">
             <ScrollView>
@@ -110,6 +117,7 @@ export function QuestIntroOverlay({ vm, onBegin }: { vm: QuestBoardVM; onBegin: 
 // ---------------------------------------------------------------------------
 
 function OptionRow({ option, onPress }: { option: QuestOptionVM; onPress: () => void }) {
+    const styles = useStyles();
     return (
         <TouchableOpacity
             accessibilityRole="button"
@@ -137,6 +145,7 @@ export function QuestSpaceOverlay({
     onChoose: (optionId: string) => void;
     onContinue: () => void;
 }) {
+    const styles = useStyles();
     const result = pending.result;
     return (
         <Scrim testID="quest-space">
@@ -195,6 +204,7 @@ export function QuestDuskOverlay({
     collapsed: boolean;
     onContinue: () => void;
 }) {
+    const styles = useStyles();
     return (
         <Scrim testID="quest-dusk">
             <Text style={styles.title}>{collapsed ? 'CARRIED HOME' : 'DUSK'}</Text>
@@ -222,6 +232,7 @@ export function QuestOutcomeOverlay({
     outcome: QuestOutcomeVM;
     onClaim: () => void;
 }) {
+    const styles = useStyles();
     return (
         <Scrim testID="quest-outcome">
             <ScrollView>
@@ -250,7 +261,7 @@ export function QuestOutcomeOverlay({
 // Styles
 // ---------------------------------------------------------------------------
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     scrim: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: 'rgba(6, 5, 10, 0.92)',
@@ -373,4 +384,4 @@ const styles = StyleSheet.create({
         letterSpacing: 2,
     },
     flexOne: { flex: 1 },
-});
+}));

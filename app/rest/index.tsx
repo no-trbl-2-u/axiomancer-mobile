@@ -9,7 +9,7 @@
 
 import React, { useEffect, useMemo } from 'react';
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 import { ScreenBg } from '@/components/ScreenBg';
 import { useGameActions, useGameState } from '@/state/GameStoreProvider';
@@ -18,9 +18,11 @@ import {
     selectRestVM,
     type RestOptionVM,
 } from '@/state/presenters/rest.engine';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 function OptionRow({ option, onPress }: { option: RestOptionVM; onPress: () => void }) {
+    const styles = useStyles();
     return (
         <TouchableOpacity
             accessibilityRole="button"
@@ -40,6 +42,8 @@ function OptionRow({ option, onPress }: { option: RestOptionVM; onPress: () => v
 }
 
 export default function RestScreen() {
+    const styles = useStyles();
+    const AXM = usePalette();
     const slice = useGameState((s) => s.rest);
     const vm = useMemo(() => selectRestVM({ rest: slice }), [slice]);
     const actions = useGameActions();
@@ -200,7 +204,7 @@ export default function RestScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     scrollOuter: { flex: 1 },
     // Centre the Night Watch in the viewport — the option stack left the
     // bottom ~40% empty black (critic round, same treatment as cache /
@@ -322,4 +326,4 @@ const styles = StyleSheet.create({
     bigButtonText: { fontFamily: FONTS.gothic, fontSize: 18, letterSpacing: 2, color: AXM.sulfur },
     abandon: { alignSelf: 'center', marginTop: 18, padding: 6 },
     abandonText: { fontFamily: FONTS.mono, fontSize: 12, letterSpacing: 2, color: AXM.bone },
-});
+}));

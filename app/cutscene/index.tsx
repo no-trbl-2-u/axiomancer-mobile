@@ -10,13 +10,15 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 import { ScreenBg } from '@/components/ScreenBg';
 import { useGameActions, useGameState } from '@/state/GameStoreProvider';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 export default function CutsceneScreen() {
+    const styles = useStyles();
     const slice = useGameState((s) => s.event);
     const actions = useGameActions();
     const router = useRouter();
@@ -86,7 +88,7 @@ export default function CutsceneScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     scroll: { padding: 20, paddingTop: 40, paddingBottom: 60 },
     eyebrow: {
         fontFamily: FONTS.sans,
@@ -114,4 +116,4 @@ const styles = StyleSheet.create({
     skip: { position: 'absolute', top: 14, right: 14, padding: 8 },
     skipText: { fontFamily: FONTS.mono, fontSize: 10, letterSpacing: 2, color: AXM.bone },
     flexOne: { flex: 1 },
-});
+}));

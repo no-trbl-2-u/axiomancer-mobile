@@ -7,9 +7,10 @@
  */
 
 import React from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
+import { Modal, Text, TouchableOpacity, View, ScrollView } from 'react-native';
 
-import { AXM, FONTS, TYPE } from '@/theme/axm';
+import { FONTS, TYPE } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import AftermathBackdrop from './AftermathBackdrop';
 import PixelHeartEmblem from './PixelHeartEmblem';
 import { TornPanel } from '@/components/TornPanel';
@@ -53,6 +54,8 @@ export default function FriendshipModal({
     rewards,
     onContinue,
 }: FriendshipModalProps) {
+    const AXM = usePalette();
+    const styles = useStyles();
     if (!visible) {
         return null;
     }
@@ -203,7 +206,7 @@ export default function FriendshipModal({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     container: {
         flex: 1,
         paddingHorizontal: 20,
@@ -377,4 +380,4 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         lineHeight: 20,
     },
-});
+}));

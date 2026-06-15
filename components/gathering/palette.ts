@@ -7,7 +7,7 @@
  * opening eye.
  */
 
-import { AXM } from '@/theme/axm';
+import type { Palette } from '@/theme/palette';
 import type { GatherFamily } from 'axiomancer-mechanics';
 
 export const GL = {
@@ -16,7 +16,6 @@ export const GL = {
     rot: '#8a57bd',
     soil: '#14110c',
     soilHi: '#1f1a13',
-    ember: AXM.blood,
 } as const;
 
 export interface FamilyColorway {
@@ -35,9 +34,12 @@ export const FAMILY: Record<GatherFamily, FamilyColorway> = {
     bone: { c: '#b3a78c', dark: '#6a6151', lite: '#d6cbb1', bg: '#121008', label: 'BONE', glyph: 'knuckle' },
 };
 
-/** Wrath is the site's anger; grace its favour. */
-export const WRATH_ACCENT = AXM.blood;
-export const GRACE_ACCENT = AXM.sulfur;
+/**
+ * Wrath is the site's anger (the theme's `blood`); grace its favour (the
+ * theme's `sulfur`). Consumers read these straight off the live palette
+ * (`AXM.blood` / `AXM.sulfur`) via `usePalette()` so they track the
+ * active theme.
+ */
 
 /** Plot-card paper stock (slightly mossier than the hazard parchment). */
 export const PLOT_PAPER = '#d3cfae';
@@ -54,4 +56,10 @@ export const TRAIT_UI = {
     tangle: { c: '#8a57bd', label: 'TANGLE' },
 } as const;
 
-export const APPROACH_ACCENT = { glean: AXM.bone, strip: '#86a821' } as const;
+/**
+ * Approach accents (GLEAN bone / STRIP acid-green). The GLEAN accent
+ * tracks the active theme's `bone`, so this is a function of the live
+ * palette — call it with `usePalette()` inside a component.
+ */
+export const approachAccent = (AXM: Palette) =>
+    ({ glean: AXM.bone, strip: '#86a821' }) as const;

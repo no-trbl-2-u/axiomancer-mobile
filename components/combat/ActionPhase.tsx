@@ -1,17 +1,11 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import { ActionIcon } from '@/components/ActionIcon';
 import { TooltipTarget } from '@/components/tooltip/TooltipTarget';
 import type { ActionOption } from '@/state/presenters/combat.engine';
-
-const ACCENT_BY_KIND: Record<ActionOption['accentKind'], string> = {
-    blood: AXM.blood,
-    parchment: AXM.parchment,
-    sulfur: AXM.sulfur,
-    rust: AXM.rust,
-};
 
 export interface ActionPhaseProps {
     options: readonly ActionOption[];
@@ -28,6 +22,14 @@ export const ActionPhase = React.memo(function ActionPhase({
     onPick,
     onFlee,
 }: ActionPhaseProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
+    const ACCENT_BY_KIND: Record<ActionOption['accentKind'], string> = {
+        blood: AXM.blood,
+        parchment: AXM.parchment,
+        sulfur: AXM.sulfur,
+        rust: AXM.rust,
+    };
     return (
         <View>
             <View style={styles.grid}>
@@ -96,7 +98,7 @@ export const ActionPhase = React.memo(function ActionPhase({
     );
 });
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     grid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -160,4 +162,4 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontStyle: 'italic',
     },
-});
+}));

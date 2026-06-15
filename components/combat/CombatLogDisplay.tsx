@@ -1,24 +1,14 @@
 import React from 'react';
 import {
     ScrollView,
-    StyleSheet,
     Text,
     View,
 } from 'react-native';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import type { CombatLogEntryDisplay } from '@/state/presenters/combat.engine';
 import { SectionLabel } from '@/components/SectionLabel';
-
-const LOG_SEVERITY_COLOR: Record<CombatLogEntryDisplay['severity'], string> = {
-    info: AXM.parchment,
-    damage: AXM.blood,
-    crit: AXM.sulfur,
-    heal: AXM.heal,
-    effect: AXM.rust,
-    friendship: AXM.rust,
-    system: AXM.bone,
-};
 
 interface CombatLogDisplayProps {
     log: readonly CombatLogEntryDisplay[];
@@ -31,6 +21,17 @@ export function CombatLogDisplay({
     round,
     emptyMessage,
 }: CombatLogDisplayProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
+    const LOG_SEVERITY_COLOR: Record<CombatLogEntryDisplay['severity'], string> = {
+        info: AXM.parchment,
+        damage: AXM.blood,
+        crit: AXM.sulfur,
+        heal: AXM.heal,
+        effect: AXM.rust,
+        friendship: AXM.rust,
+        system: AXM.bone,
+    };
     return (
         <View style={styles.logWrap}>
             <View style={styles.logBox}>
@@ -73,7 +74,7 @@ export function CombatLogDisplay({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     logWrap: { padding: 6, paddingHorizontal: 10, paddingBottom: 0 },
     logBox: { backgroundColor: AXM.deepBg, borderWidth: 1, borderColor: AXM.ash, borderStyle: 'dashed', padding: 5, paddingHorizontal: 8, height: 78, overflow: 'hidden' },
     logHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
@@ -85,4 +86,4 @@ const styles = StyleSheet.create({
     logLegend: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4, paddingVertical: 5, paddingHorizontal: 8, borderWidth: 1, borderColor: AXM.ash, backgroundColor: AXM.backdrop },
     logLegendLabel: { fontFamily: FONTS.mono, fontSize: 8, color: AXM.bone, letterSpacing: 1 },
     logLegendItem: { fontFamily: FONTS.mono, fontSize: 8, letterSpacing: 1 },
-});
+}));

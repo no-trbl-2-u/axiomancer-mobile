@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import { ActionIcon } from '@/components/ActionIcon';
 import { TooltipTarget } from '@/components/tooltip/TooltipTarget';
 import type { InventoryCategory, InventoryItemRow } from '@/state/presenters/inventory.engine';
@@ -26,6 +27,7 @@ export function groupByCategory(items: readonly InventoryItemRow[]): Record<Inve
 }
 
 export function ItemGlyph({ category, sub }: { category: InventoryCategory; sub: string | null }) {
+    const AXM = usePalette();
     if (category === 'equipment' && sub === 'Weapon') {
         return <ActionIcon kind="sword" size={32} color={AXM.parchment} />;
     }
@@ -134,8 +136,10 @@ export interface ItemCardProps {
 }
 
 export function ItemCard({ item, expanded, onTap, onUseOrEquip, onDiscard }: ItemCardProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
     const [isFocused, setIsFocused] = useState(false);
-    
+
     const itemLabel = item.equipped
         ? `${item.name}, worn`
         : item.quantity > 1
@@ -264,7 +268,7 @@ export function ItemCard({ item, expanded, onTap, onUseOrEquip, onDiscard }: Ite
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     itemCard: {
         width: '31.5%',
         backgroundColor: AXM.panelBg,
@@ -392,4 +396,4 @@ const styles = StyleSheet.create({
         elevation: 3,
         borderColor: AXM.sulfur,
     },
-});
+}));

@@ -22,7 +22,7 @@ import Svg, {
     Stop,
 } from 'react-native-svg';
 
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 interface TitleEmblemProps {
     size?: number;
@@ -44,6 +44,7 @@ function polar(cx: number, cy: number, r: number, angleDeg: number) {
 }
 
 export function TitleEmblem({ size = 168, title }: TitleEmblemProps) {
+    const AXM = usePalette();
     const C = 110; // centre of the 220 viewBox
     const a11y = title
         ? ({ accessibilityRole: 'image' as const, accessibilityLabel: title })

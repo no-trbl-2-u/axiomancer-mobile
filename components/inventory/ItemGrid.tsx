@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import { SectionLabel } from '@/components/SectionLabel';
 import { CATEGORY_ORDER, groupByCategory, ItemCard } from '@/components/inventory/ItemCard';
 import type { InventoryItemRow } from '@/state/presenters/inventory.engine';
@@ -11,6 +12,8 @@ interface EmptySackProps {
 }
 
 function EmptySack({ message }: EmptySackProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
     return (
         <View style={styles.emptyOuter} testID="inventory-empty">
             <Svg viewBox="0 0 64 64" width={64} height={64} fill="none" stroke={AXM.bone} strokeWidth={2}>
@@ -48,6 +51,7 @@ export function ItemGrid({
     // presenter side (sub-tick F lifted the inline SLOT_KEY_TO_SUB map
     // onto the presenter as `filterRowsBySlot`). Screen consumes
     // vm.items unconditionally now.
+    const styles = useStyles();
     const grouped = useMemo(() => groupByCategory(items), [items]);
 
     if (isEmpty) {
@@ -90,7 +94,7 @@ export function ItemGrid({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     emptyOuter: {
         flex: 1,
         alignItems: 'center',
@@ -128,4 +132,4 @@ const styles = StyleSheet.create({
         gap: 6,
         marginTop: 6,
     },
-});
+}));

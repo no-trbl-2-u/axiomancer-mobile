@@ -14,9 +14,10 @@
  */
 
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 export interface EventCodexHeaderProps {
     left: string;
@@ -24,6 +25,7 @@ export interface EventCodexHeaderProps {
 }
 
 export function EventCodexHeader({ left, right }: EventCodexHeaderProps) {
+    const styles = useStyles();
     return (
         <View style={styles.row} accessibilityRole="header">
             <Text style={styles.leftText}>{left}</Text>
@@ -32,7 +34,7 @@ export function EventCodexHeader({ left, right }: EventCodexHeaderProps) {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     row: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -55,4 +57,4 @@ const styles = StyleSheet.create({
         letterSpacing: 1,
         color: AXM.bone,
     },
-});
+}));

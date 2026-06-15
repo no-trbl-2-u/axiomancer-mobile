@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import { SectionLabel } from './SectionLabel';
 
 interface FriendshipMeterProps {
@@ -11,6 +12,8 @@ interface FriendshipMeterProps {
 }
 
 export function FriendshipMeter({ value = 0, max = 5, compact = false }: FriendshipMeterProps) {
+  const AXM = usePalette();
+  const styles = useStyles();
   return (
     <View style={styles.row}>
       {!compact && <SectionLabel size={9} style={styles.friendLabel}>FRIEND</SectionLabel>}
@@ -31,7 +34,7 @@ export function FriendshipMeter({ value = 0, max = 5, compact = false }: Friends
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -49,4 +52,4 @@ const styles = StyleSheet.create({
   friendLabel: {
     color: AXM.bone,
   },
-});
+}));

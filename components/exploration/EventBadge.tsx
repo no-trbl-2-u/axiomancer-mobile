@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { AXM, FONTS } from '@/theme/axm';
+import { View, Text } from 'react-native';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import { ActionIcon } from '@/components/ActionIcon';
 import { SectionLabel } from '@/components/SectionLabel';
 
@@ -12,6 +13,8 @@ interface EventBadgeProps {
 }
 
 export function EventBadge({ eventCallout }: EventBadgeProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
     return (
         <View style={styles.eventCallout}>
             <View style={styles.eventCalloutRow}>
@@ -23,7 +26,7 @@ export function EventBadge({ eventCallout }: EventBadgeProps) {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     eventCallout: {
         position: 'absolute',
         top: 50,
@@ -47,4 +50,4 @@ const styles = StyleSheet.create({
         marginTop: 2,
         lineHeight: 15,
     },
-});
+}));

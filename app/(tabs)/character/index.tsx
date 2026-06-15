@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { AXM, FONTS } from '@/theme/axm';
+import { View, Text, Pressable } from 'react-native';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import { TooltipTarget } from '@/components/tooltip/TooltipTarget';
 import { AscendStrip } from '@/components/levelup/AscendStrip';
 import { LearnSkillModal } from '@/components/levelup/LearnSkillModal';
@@ -8,6 +9,7 @@ import { LevelReadyStrip } from '@/components/levelup/LevelReadyStrip';
 import { LevelUpModal } from '@/components/levelup/LevelUpModal';
 import { DevMenu } from '@/components/DevMenu';
 import { DebugComponentsLazy } from '@/components/DebugComponentsLazy';
+import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import { ScreenBg } from '@/components/ScreenBg';
 import { SectionLabel } from '@/components/SectionLabel';
 import { StanceGlyph } from '@/components/StanceGlyph';
@@ -18,6 +20,8 @@ import { useGameActions, useGameState, useGameStore } from '@/state/GameStorePro
 import { selectCharacterViewModel } from '@/state/presenters/character.engine';
 
 export default function CharacterScreen() {
+  const AXM = usePalette();
+  const styles = useStyles();
   // Subscribe to stable slices to avoid getSnapshot identity churn:
   // `selectCharacterViewModel` returns a frozen new object every call,
   // which would loop `useSyncExternalStore` if used directly as a
@@ -482,6 +486,7 @@ export default function CharacterScreen() {
           </View>
         </View>
       )}
+      <ThemeSwitcher />
       <DevMenu>
         <DebugComponentsLazy />
       </DevMenu>
@@ -489,7 +494,7 @@ export default function CharacterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
   // Density pass (visual-audit 2026-06): tightened section spacing and
   // hero-element sizes so the whole SELF tab fits a 390×844 screen
   // without scrolling. Kept legible — only spacing/scale shrank.
@@ -581,4 +586,4 @@ const styles = StyleSheet.create({
   ledgerDesc: { fontFamily: FONTS.serif, fontSize: 12, color: AXM.parchment },
   ledgerDivider: { height: 1, borderTopWidth: 1, borderTopColor: AXM.ash, borderStyle: 'dashed', marginTop: 5, marginBottom: 4 },
   ledgerLore: { fontFamily: FONTS.serifItalic, fontSize: 12, color: AXM.bone, lineHeight: 15 },
-});
+}));

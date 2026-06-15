@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { AXM, FONTS } from '@/theme/axm';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 import type { InventoryTab, InventoryTabRow } from '@/state/presenters/inventory.engine';
 
 interface InventoryTabsProps {
@@ -11,6 +12,7 @@ interface InventoryTabsProps {
 }
 
 export function InventoryTabs({ tabs, activeTab, onTabPress, dimmed = false }: InventoryTabsProps) {
+    const styles = useStyles();
     return (
         <View style={[styles.tabRow, dimmed && styles.tabRowDimmed]}>
             {tabs.map((t) => (
@@ -37,7 +39,7 @@ export function InventoryTabs({ tabs, activeTab, onTabPress, dimmed = false }: I
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     tabRow: {
         flexDirection: 'row',
         marginHorizontal: 10,
@@ -90,4 +92,4 @@ const styles = StyleSheet.create({
         color: AXM.bone,
         backgroundColor: AXM.panelBg,
     },
-});
+}));

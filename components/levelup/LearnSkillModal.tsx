@@ -15,7 +15,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { StanceGlyph } from '@/components/StanceGlyph';
 import type { LearnableSkillOffer } from '@/state/actions';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 export interface LearnSkillModalProps {
     offers: LearnableSkillOffer[];
@@ -26,6 +27,8 @@ export interface LearnSkillModalProps {
 }
 
 export function LearnSkillModal({ offers, picksRemaining, onPick, onSkip }: LearnSkillModalProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
     return (
         <View style={styles.root} testID="learn-skill-modal">
             <View style={styles.panel}>
@@ -76,7 +79,7 @@ export function LearnSkillModal({ offers, picksRemaining, onPick, onSkip }: Lear
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: {
         ...StyleSheet.absoluteFillObject,
         // Above the LevelUpModal (zIndex 50) — this pick gates the
@@ -198,4 +201,4 @@ const styles = StyleSheet.create({
         color: AXM.bone,
         textDecorationLine: 'underline',
     },
-});
+}));

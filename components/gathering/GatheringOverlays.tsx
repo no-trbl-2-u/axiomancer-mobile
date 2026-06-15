@@ -24,17 +24,18 @@ import type {
     GatherPlotVM,
     GatherReprisalFlashVM,
 } from '@/state/presenters/gathering.engine';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 import { PlotCard } from './PlotCard';
 import { WrathEye } from './glyphs';
-import { GRACE_ACCENT, WRATH_ACCENT } from './palette';
 
 // ---------------------------------------------------------------------------
 // Reprisal flash — the site answers a crossing.
 // ---------------------------------------------------------------------------
 
 function ReprisalEye({ eruption, veiled }: { eruption: boolean; veiled: boolean }) {
+    const AXM = usePalette();
     const t = useSharedValue(0);
     useEffect(() => {
         t.value = withSequence(
@@ -58,7 +59,7 @@ function ReprisalEye({ eruption, veiled }: { eruption: boolean; veiled: boolean 
             <WrathEye
                 open={veiled ? 0.1 : 1}
                 size={120}
-                color={veiled ? AXM.bone : WRATH_ACCENT}
+                color={veiled ? AXM.bone : AXM.blood}
             />
         </Animated.View>
     );
@@ -71,7 +72,9 @@ export function ReprisalOverlay({
     flash: GatherReprisalFlashVM;
     onDone: () => void;
 }) {
-    const accent = flash.eruption ? WRATH_ACCENT : flash.veiled ? AXM.bone : '#d08a5a';
+    const AXM = usePalette();
+    const styles = useStyles();
+    const accent = flash.eruption ? AXM.blood : flash.veiled ? AXM.bone : '#d08a5a';
     return (
         <Pressable style={styles.flashRoot} onPress={onDone} testID="gathering-reprisal">
             <Text style={styles.flashEyebrow}>
@@ -103,14 +106,16 @@ export function GatheringOutcomeOverlay({
     outcome: GatherOutcomeVM;
     onContinue: () => void;
 }) {
+    const AXM = usePalette();
+    const styles = useStyles();
     const color =
         outcome.tier === 'communion'
-            ? GRACE_ACCENT
+            ? AXM.sulfur
             : outcome.tier === 'laden'
               ? AXM.parchment
               : outcome.tier === 'despoiled'
                 ? '#c98a3b'
-                : WRATH_ACCENT;
+                : AXM.blood;
     useEffect(() => {
         Haptics.notificationAsync(
             outcome.tier === 'routed'
@@ -165,6 +170,7 @@ export function PlotDetailOverlay({
     onTake: (uid: string) => void;
     onClose: () => void;
 }) {
+    const styles = useStyles();
     return (
         <Pressable style={styles.detailRoot} onPress={onClose} testID="gathering-plot-detail">
             <View style={{ paddingTop: 14, paddingHorizontal: 14 }}>
@@ -203,7 +209,7 @@ export function PlotDetailOverlay({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     flashRoot: { ...StyleSheet.absoluteFillObject, zIndex: 58, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(4,4,2,0.94)', paddingHorizontal: 28 },
     flashEyebrow: { fontFamily: FONTS.sans, fontSize: 13, letterSpacing: 2, color: AXM.bone },
     flashName: { fontFamily: FONTS.gothic, fontSize: 30, letterSpacing: 2, textAlign: 'center', textShadowColor: '#000', textShadowOffset: { width: 2, height: 2 }, textShadowRadius: 0 },
@@ -226,4 +232,4 @@ const styles = StyleSheet.create({
     keywordDesc: { fontFamily: FONTS.serif, fontSize: 14, color: AXM.parchment, lineHeight: 18, marginTop: 3 },
     detailTake: { marginTop: 14, borderWidth: 2, borderColor: '#86a821', paddingHorizontal: 30, paddingVertical: 9, backgroundColor: 'rgba(134,168,33,0.1)' },
     detailTakeText: { fontFamily: FONTS.gothic, fontSize: 16, letterSpacing: 2, color: '#86a821' },
-});
+}));

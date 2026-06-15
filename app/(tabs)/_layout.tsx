@@ -1,16 +1,19 @@
 import { Tabs } from 'expo-router';
 import React, { useMemo } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { View, Text } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import { useCombatMode } from '@/state/combat-mode';
 import { TAB_TITLES } from '@/state/presenters/tabs.engine';
 import { useGameState } from '@/state/GameStoreProvider';
 import { selectTabBadges } from '@/state/presenters/navigation.engine';
 
 function TabBadge({ text, kind }: { text: string; kind: 'event' | 'levelup' }) {
+  const AXM = usePalette();
+  const styles = useStyles();
   const badgeColor = kind === 'levelup' ? AXM.sulfur : AXM.blood;
-  
+
   return (
     <View style={[styles.badge, { backgroundColor: badgeColor }]}>
       <Text style={styles.badgeText}>{text}</Text>
@@ -29,6 +32,7 @@ function TabIconWithBadge({
   size: number; 
   badge: { text: string; kind: 'event' | 'levelup' } | null;
 }) {
+  const styles = useStyles();
   return (
     <View style={styles.iconContainer}>
       <TabIcon kind={kind} color={color} size={size} />
@@ -79,6 +83,8 @@ function TabIcon({ kind, color, size }: { kind: string; color: string; size: num
 }
 
 export default function TabLayout() {
+  const AXM = usePalette();
+  const styles = useStyles();
   const { inEncounterModal } = useCombatMode();
   // Tab configuration: Combat moved to encounter modal (Phase 63d).
   // STRIFE tab hidden from bar but route preserved for dev tools.
@@ -223,7 +229,7 @@ export default function TabLayout() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
   tabBar: {
     backgroundColor: AXM.panelBg,
     borderTopColor: AXM.ash,
@@ -265,4 +271,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     lineHeight: 16,
   },
-});
+}));

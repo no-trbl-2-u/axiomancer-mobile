@@ -1,6 +1,7 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { AXM, FONTS } from '@/theme/axm';
+import { Text, View } from 'react-native';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 const DIAMOND_STRAND = '◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆';
 
@@ -15,6 +16,7 @@ export function ChainBarFixed({
     label,
     accentColor,
 }: ChainBarFixedProps) {
+    const styles = useStyles();
     return (
         <View
             style={[
@@ -43,7 +45,7 @@ export function ChainBarFixed({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     chainBarFixed: {
         position: 'absolute',
         left: 4,
@@ -79,4 +81,4 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         paddingHorizontal: 6,
     },
-});
+}));

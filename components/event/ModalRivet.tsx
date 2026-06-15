@@ -1,13 +1,14 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Circle as SvgCircle, Defs as SvgDefs, RadialGradient as SvgRadialGradient, Stop as SvgStop } from 'react-native-svg';
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 interface ModalRivetProps {
     position: 'tl' | 'tr' | 'bl' | 'br';
 }
 
 export function ModalRivet({ position }: ModalRivetProps) {
+    const AXM = usePalette();
     const offsetStyle =
         position === 'tl' ? styles.rivetTL :
         position === 'tr' ? styles.rivetTR :

@@ -8,9 +8,10 @@
  */
 
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 /** Unicode pip faces for 1-6; falls back to the number outside that range. */
 const DIE_FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
@@ -32,6 +33,7 @@ export interface QuestDieProps {
 }
 
 export function QuestDie({ face, rolling, tick, bonus, total }: QuestDieProps) {
+    const styles = useStyles();
     // Discrete tilt while tumbling; square-on when settled.
     const angle = rolling ? ((tick % 4) - 1.5) * 18 : 0;
     const scale = rolling && tick % 2 === 0 ? 1.12 : 1;
@@ -53,7 +55,7 @@ export function QuestDie({ face, rolling, tick, bonus, total }: QuestDieProps) {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     wrap: { alignItems: 'center', marginTop: 4, minHeight: 34 },
     face: {
         fontFamily: FONTS.gothic,
@@ -68,4 +70,4 @@ const styles = StyleSheet.create({
         color: AXM.bone,
         marginTop: -2,
     },
-});
+}));

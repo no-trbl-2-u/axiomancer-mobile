@@ -29,11 +29,13 @@ import {
     type EventConsequence,
     type ChoiceAccentKey,
 } from '@/state/presenters/event.engine';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
+import type { Palette } from '@/theme/palette';
 
 import { EventArt } from '@/components/event/EventArt';
 
-function resolveAccent(key: ChoiceAccentKey): string {
+function resolveAccent(key: ChoiceAccentKey, AXM: Palette): string {
     if (key === 'blood') return AXM.blood;
     if (key === 'sulfur') return AXM.sulfur;
     if (key === 'parchment') return AXM.parchment;
@@ -58,6 +60,7 @@ function consequenceLabel(c: EventConsequence): string {
 }
 
 function ConsequenceChips({ consequences }: { consequences: readonly EventConsequence[] }) {
+    const styles = useStyles();
     if (consequences.length === 0) return null;
     const shown = consequences.slice(0, 3);
     const overflow = consequences.length - shown.length;
@@ -84,7 +87,9 @@ function ChoiceRow({
     isFirst: boolean;
     onPress: () => void;
 }) {
-    const accent = resolveAccent(choice.accentKey);
+    const styles = useStyles();
+    const AXM = usePalette();
+    const accent = resolveAccent(choice.accentKey, AXM);
     return (
         <TouchableOpacity
             accessibilityRole="button"
@@ -114,6 +119,8 @@ function ChoiceRow({
 }
 
 export default function EventScreen() {
+    const styles = useStyles();
+    const AXM = usePalette();
     // Subscribe to stable slices to avoid getSnapshot identity churn:
     // selectEventViewModel returns a frozen new object every call, which
     // would loop useSyncExternalStore if used directly as a selector.
@@ -155,7 +162,7 @@ export default function EventScreen() {
 
     const isBoss = vm.variant === 'boss';
     const illustrationHeight = isBoss ? 360 : 320;
-    const badgeAccent = resolveAccent(vm.badgeAccentKey);
+    const badgeAccent = resolveAccent(vm.badgeAccentKey, AXM);
     const preludeChrome = vm.preludeChrome;
 
     if (!hasEvent) {
@@ -266,7 +273,7 @@ export default function EventScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     illustration: { margin: 8, marginTop: 0, position: 'relative', overflow: 'hidden' },
     preludeHeader: {
         flexDirection: 'row',
@@ -395,4 +402,4 @@ const styles = StyleSheet.create({
     emptyArea: { padding: 24, gap: 12 },
     flexOne: { flex: 1 },
     splatterPosition: { position: 'absolute', top: -20, right: -30 },
-});
+}));

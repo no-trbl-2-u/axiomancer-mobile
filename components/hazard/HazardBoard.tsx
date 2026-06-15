@@ -31,12 +31,13 @@ import Animated, {
 
 import type { HazardCardVM, HazardDieVM, HazardMeterVM, HazardViewModel } from '@/state/presenters/hazard.engine';
 import { HAZARD_TUNING } from 'axiomancer-mechanics';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 import { HazardCard } from './HazardCard';
 import { HazardDie } from './HazardDie';
 import { Cracks, LedgerMark, ProgGlyph, TrashGlyph } from './glyphs';
-import { HZ, ROUTE_ACCENT, TYPE_ACCENT } from './palette';
+import { HZ, routeAccent, TYPE_ACCENT } from './palette';
 
 // ---------------------------------------------------------------------------
 // Drag plumbing
@@ -98,6 +99,8 @@ function measureRect(ref: MeasurableRef): Promise<Rect | null> {
 // ---------------------------------------------------------------------------
 
 function SegBar({ meter }: { meter: HazardMeterVM }) {
+    const AXM = usePalette();
+    const styles = useStyles();
     const accent = TYPE_ACCENT[meter.key];
     const segs = Math.max(1, meter.need);
     return (
@@ -141,6 +144,7 @@ function SegBar({ meter }: { meter: HazardMeterVM }) {
 }
 
 function LiveMeter({ vm }: { vm: HazardViewModel }) {
+    const styles = useStyles();
     // Memoized expensive calculation for threshold ladder text
     const ladderText = useMemo(() => {
         return vm.thresholdLadder
@@ -186,6 +190,7 @@ function TrayDie({
     drag: DragController;
     ghosted: boolean;
 }) {
+    const styles = useStyles();
     const pan = Gesture.Pan()
         .enabled(die.usable)
         .minDistance(6)
@@ -224,6 +229,8 @@ function TrayDie({
 // ---------------------------------------------------------------------------
 
 function ApplyButton({ card, onApply }: { card: HazardCardVM; onApply: (uid: string) => void }) {
+    const AXM = usePalette();
+    const styles = useStyles();
     if (card.applied) {
         return (
             <View style={[styles.applyBtn, styles.applyLocked]} testID={`hazard-applied-${card.uid}`}>
@@ -254,6 +261,8 @@ function ApplyButton({ card, onApply }: { card: HazardCardVM; onApply: (uid: str
 // ---------------------------------------------------------------------------
 
 function ChooseToggle({ card, onChoose }: { card: HazardCardVM; onChoose: (uid: string, key: 'force' | 'escape') => void }) {
+    const AXM = usePalette();
+    const styles = useStyles();
     if (!card.choose || card.poweredByDieId === null || card.applied) return null;
     const opt = (key: 'force' | 'escape', label: string) => {
         const on = card.chosenKey === key;
@@ -288,6 +297,7 @@ function ChooseToggle({ card, onChoose }: { card: HazardCardVM; onChoose: (uid: 
 // ---------------------------------------------------------------------------
 
 function EnchantStrip({ vm }: { vm: HazardViewModel }) {
+    const styles = useStyles();
     if (vm.enchantments.length === 0 && vm.goldVowNote === null) return null;
     return (
         <View style={styles.enchantPanel} testID="hazard-enchantments">
@@ -311,6 +321,8 @@ function EnchantStrip({ vm }: { vm: HazardViewModel }) {
 const QUEST_GLYPH: Record<string, string> = { active: '○', done: '✓', failed: '✕' };
 
 function SubquestStrip({ vm }: { vm: HazardViewModel }) {
+    const AXM = usePalette();
+    const styles = useStyles();
     if (vm.subquests.length === 0) return null;
     return (
         <View style={styles.questPanel} testID="hazard-subquests">
@@ -347,6 +359,8 @@ function SubquestStrip({ vm }: { vm: HazardViewModel }) {
 // ---------------------------------------------------------------------------
 
 function PlayButton({ enabled, subLabel, onPress }: { enabled: boolean; subLabel: string; onPress: () => void }) {
+    const AXM = usePalette();
+    const styles = useStyles();
     const pulse = useSharedValue(0);
     React.useEffect(() => {
         pulse.value = enabled
@@ -398,6 +412,8 @@ export interface HazardBoardProps {
 }
 
 export const HazardBoard = React.memo(function HazardBoard({ vm, drag, onStage, onUnstage, onPower, onApply, onDiscard, onChoose, onResolve, onInspect }: HazardBoardProps) {
+    const AXM = usePalette();
+    const styles = useStyles();
     const playAreaRef = useRef<View | null>(null);
     const trashRef = useRef<View | null>(null);
     const stagedRefs = useRef(new Map<string, View | null>());
@@ -520,7 +536,7 @@ export const HazardBoard = React.memo(function HazardBoard({ vm, drag, onStage, 
         return Gesture.Exclusive(pan, tap);
     };
 
-    const routeAccent = vm.routeKey ? ROUTE_ACCENT[vm.routeKey] : AXM.bone;
+    const routeBadgeColor = vm.routeKey ? routeAccent(AXM)[vm.routeKey] : AXM.bone;
     const n = vm.hand.length;
     const mid = (n - 1) / 2;
     const overlap = n > 6 ? 56 : n > 4 ? 42 : 24;
@@ -539,7 +555,7 @@ export const HazardBoard = React.memo(function HazardBoard({ vm, drag, onStage, 
                 <View>
                     <Text style={styles.headerTitle}>{vm.title}</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 }}>
-                        <Text style={[styles.routeBadge, { backgroundColor: routeAccent }]}>{vm.routeLabel}</Text>
+                        <Text style={[styles.routeBadge, { backgroundColor: routeBadgeColor }]}>{vm.routeLabel}</Text>
                         <Text style={styles.roundLabel}>{vm.roundLabel}</Text>
                     </View>
                 </View>
@@ -692,7 +708,7 @@ export const HazardBoard = React.memo(function HazardBoard({ vm, drag, onStage, 
     );
 });
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: { flex: 1, backgroundColor: '#0c0a08' },
     header: {
         flexDirection: 'row',
@@ -796,4 +812,4 @@ const styles = StyleSheet.create({
     playBtn: { width: 78, height: 78, borderRadius: 39, borderWidth: 2.5, alignItems: 'center', justifyContent: 'center' },
     playText: { fontFamily: FONTS.gothic, fontSize: 17, letterSpacing: 1, lineHeight: 18 },
     playSub: { fontFamily: FONTS.mono, fontSize: 10, letterSpacing: 1, marginTop: 2 },
-});
+}));

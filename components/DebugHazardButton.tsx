@@ -6,13 +6,15 @@
  */
 
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useGameActions } from '@/state/GameStoreProvider';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 export function DebugHazardButton() {
+    const styles = useStyles();
     const actions = useGameActions();
 
     if (!isDevToolsEnabled()) return null;
@@ -41,7 +43,7 @@ export function DebugHazardButton() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     row: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -62,4 +64,4 @@ const styles = StyleSheet.create({
         backgroundColor: AXM.rustSubtle,
     },
     buttonLabel: { fontFamily: FONTS.gothic, fontSize: 14, letterSpacing: 2, color: AXM.rust },
-});
+}));

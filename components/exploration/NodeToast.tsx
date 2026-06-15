@@ -1,12 +1,13 @@
 import React, { useEffect } from 'react';
-import { Text, StyleSheet } from 'react-native';
+import { Text } from 'react-native';
 import Animated, {
     useAnimatedStyle,
     useSharedValue,
     withTiming,
     Easing,
 } from 'react-native-reanimated';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 interface NodeToastProps {
     tip: string;
@@ -20,6 +21,7 @@ interface NodeToastProps {
  * handles the mount-time fade-in only.
  */
 export function NodeToast({ tip }: NodeToastProps) {
+    const styles = useStyles();
     const opacity = useSharedValue(0);
     
     useEffect(() => {
@@ -39,7 +41,7 @@ export function NodeToast({ tip }: NodeToastProps) {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     // Locked / consumed node feedback toast (port design spec — design's
     // prototype.jsx flow). Bottom-center, brief auto-dismiss, parchment
     // text over an ash-bordered panel.
@@ -59,4 +61,4 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: AXM.parchment,
     },
-});
+}));

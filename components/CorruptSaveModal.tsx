@@ -15,7 +15,8 @@
 import React from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 export const CORRUPT_SAVE_COPY = {
     eyebrow: 'THE PAGE WAS TORN',
@@ -35,6 +36,7 @@ export interface CorruptSaveModalProps {
 }
 
 export function CorruptSaveModal({ visible, onConfirm, onCancel }: CorruptSaveModalProps) {
+    const styles = useStyles();
     return (
         <Modal
             visible={visible}
@@ -81,7 +83,7 @@ export function CorruptSaveModal({ visible, onConfirm, onCancel }: CorruptSaveMo
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     backdrop: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: AXM.bg,
@@ -145,4 +147,4 @@ const styles = StyleSheet.create({
     },
     confirmLabel: { color: AXM.blood },
     cancelLabel: { color: AXM.bone },
-});
+}));

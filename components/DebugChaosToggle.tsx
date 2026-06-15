@@ -18,13 +18,15 @@
  */
 
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { setChaosMode } from '@/state/exploration-maps/event-pools';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 export function DebugChaosToggle() {
+    const styles = useStyles();
     const [chaosOn, setChaosOn] = useState<boolean>(false);
 
     if (!isDevToolsEnabled()) return null;
@@ -65,7 +67,7 @@ export function DebugChaosToggle() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     row: {
         marginTop: 8,
         marginHorizontal: 12,
@@ -112,4 +114,4 @@ const styles = StyleSheet.create({
     },
     buttonLabelOn: { color: AXM.blood },
     buttonLabelOff: { color: AXM.sulfur },
-});
+}));

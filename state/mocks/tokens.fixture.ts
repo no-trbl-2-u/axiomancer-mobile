@@ -16,8 +16,34 @@
  */
 
 import { AXM } from '@/theme/axm';
+import type { Palette } from '@/theme/palette';
 
 export type TokenKey = 'body' | 'mind' | 'heart' | 'fallacy' | 'paradox';
+
+/**
+ * The accent colour for a token kind, resolved from the **live** palette
+ * so token chips re-paint on a theme switch. `body→blood`, `heart→rust`,
+ * `fallacy→parchment`, `paradox→sulfur`; `mind` keeps its own steel-blue
+ * (no AXM equivalent). Render-time callers pass `usePalette()`.
+ *
+ * The static `TOKEN[kind].color` below is a default-theme snapshot kept
+ * for the (non-rendered) crucible engine view-model; UI reads colour via
+ * this function instead.
+ */
+export function tokenColor(kind: TokenKey, palette: Palette): string {
+    switch (kind) {
+        case 'body':
+            return palette.blood;
+        case 'heart':
+            return palette.rust;
+        case 'fallacy':
+            return palette.parchment;
+        case 'paradox':
+            return palette.sulfur;
+        case 'mind':
+            return '#6b8eb0';
+    }
+}
 
 export interface TokenMeta {
     /** Foreground / stroke. */

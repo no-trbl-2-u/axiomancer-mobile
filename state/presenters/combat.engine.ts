@@ -51,6 +51,7 @@ import {
     selectCombatHudViewModel,
     type CombatHudViewModel,
 } from './combat-hud.engine';
+import { currentPalette } from '@/theme/runtime';
 import { MAX_EFFECTS_SHOWN } from './constants';
 import { freezeViewModel } from './freeze';
 import { toRomanLower as toRoman } from './roman';
@@ -930,7 +931,10 @@ interface ResourcePool {
 const EMPTY_POOL: ResourcePool = { body: 0, mind: 0, heart: 0, fallacy: 0, paradox: 0 };
 
 function buildCrucibleTokens(resources: ResourcePool): readonly CrucibleToken[] {
-    const { AXM } = require('@/theme/axm');
+    // Read the live palette so crucible-token colours track the active
+    // theme; the consuming combat view subscribes via usePalette()/
+    // useStyles() and re-renders on switch, re-running this builder.
+    const AXM = currentPalette();
     return [
         { key: 'body', glyph: '◐', short: 'BOD', count: resources.body, color: AXM.blood },
         { key: 'heart', glyph: '◑', short: 'HRT', count: resources.heart, color: AXM.sulfur },

@@ -7,9 +7,10 @@
  */
 
 import React from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
+import { Modal, Text, TouchableOpacity, View, ScrollView } from 'react-native';
 
-import { AXM, FONTS, TYPE } from '@/theme/axm';
+import { FONTS, TYPE } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import AftermathBackdrop from './AftermathBackdrop';
 import { TornPanel } from '@/components/TornPanel';
 import { Splatter } from '@/components/Splatter';
@@ -55,6 +56,8 @@ export default function VictoryModal({
     rewards,
     onContinue,
 }: VictoryModalProps) {
+    const AXM = usePalette();
+    const styles = useStyles();
     if (!visible) {
         return null;
     }
@@ -189,7 +192,7 @@ export default function VictoryModal({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     container: {
         flex: 1,
         paddingHorizontal: 20,
@@ -336,4 +339,4 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         lineHeight: 20,
     },
-});
+}));

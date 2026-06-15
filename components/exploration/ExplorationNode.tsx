@@ -1,20 +1,10 @@
 import React, { useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { AXM, FONTS } from '@/theme/axm';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import { NodeMark } from '@/components/NodeMark';
 import { useTooltip } from '@/hooks/useTooltip';
 import type { ExplorationNode as ExplorationNodeType, NodeType } from '@/state/presenters/exploration.engine';
-
-const EVENT_BADGE: Record<NodeType, { c: string; label: string }> = {
-    encounter: { c: AXM.blood, label: 'ENCOUNTER' },
-    treasure: { c: AXM.sulfur, label: 'TREASURE' },
-    boss: { c: AXM.blood, label: 'BOSS' },
-    quest: { c: AXM.sulfur, label: 'QUEST' },
-    rest: { c: AXM.rust, label: 'REST' },
-    gather: { c: AXM.bone, label: 'GATHER' },
-    current: { c: AXM.sulfur, label: 'HERE' },
-    hazard: { c: AXM.rust, label: 'HAZARD' },
-};
 
 interface ExplorationNodeProps {
     node: ExplorationNodeType;
@@ -39,6 +29,18 @@ interface ExplorationNodeProps {
 const NODE_SIZE = 44;
 
 export function ExplorationNode({ node: n, onNodePress, shouldShowLabel }: ExplorationNodeProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
+    const EVENT_BADGE: Record<NodeType, { c: string; label: string }> = {
+        encounter: { c: AXM.blood, label: 'ENCOUNTER' },
+        treasure: { c: AXM.sulfur, label: 'TREASURE' },
+        boss: { c: AXM.blood, label: 'BOSS' },
+        quest: { c: AXM.sulfur, label: 'QUEST' },
+        rest: { c: AXM.rust, label: 'REST' },
+        gather: { c: AXM.bone, label: 'GATHER' },
+        current: { c: AXM.sulfur, label: 'HERE' },
+        hazard: { c: AXM.rust, label: 'HAZARD' },
+    };
     const tooltip = useTooltip();
     const ref = useRef<View | null>(null);
     const ev = EVENT_BADGE[n.type] ?? EVENT_BADGE.encounter;
@@ -85,7 +87,7 @@ export function ExplorationNode({ node: n, onNodePress, shouldShowLabel }: Explo
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     nodeWrap: {
         position: 'absolute',
         width: NODE_SIZE,
@@ -121,4 +123,4 @@ const styles = StyleSheet.create({
         letterSpacing: 1,
         color: AXM.bg,
     },
-});
+}));

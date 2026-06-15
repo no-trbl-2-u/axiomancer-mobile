@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import type { ResolveSlice } from '@/state/presenters/combat.engine';
 import { RollBar } from './RollBar';
 
@@ -19,6 +20,8 @@ export function ResolvePanel({
     onContinue,
     onLeave,
 }: ResolvePanelProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
     const advColor =
         resolve.advantageKind === 'adv' ? AXM.sulfur
             : resolve.advantageKind === 'dis' ? AXM.blood
@@ -80,7 +83,7 @@ export function ResolvePanel({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     wrap: {
         paddingHorizontal: 8,
     },
@@ -179,4 +182,4 @@ const styles = StyleSheet.create({
         textTransform: 'uppercase',
         letterSpacing: 1,
     },
-});
+}));

@@ -1,11 +1,11 @@
 import React from 'react';
 import {
-    StyleSheet,
     Text,
     View,
 } from 'react-native';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import type { CrucibleToken } from '@/state/presenters/combat.engine';
 
 /**
@@ -32,6 +32,8 @@ import type { CrucibleToken } from '@/state/presenters/combat.engine';
 const FILL_CAP = 5;
 
 export function CombatResourceTracker({ tokens }: { tokens: readonly CrucibleToken[] }) {
+    const styles = useStyles();
+    const AXM = usePalette();
     return (
         <View style={styles.row} testID="combat-resource-tracker">
             <View style={styles.labelCol}>
@@ -65,7 +67,7 @@ export function CombatResourceTracker({ tokens }: { tokens: readonly CrucibleTok
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     row: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -137,4 +139,4 @@ const styles = StyleSheet.create({
         fontSize: 10,
         letterSpacing: 1,
     },
-});
+}));

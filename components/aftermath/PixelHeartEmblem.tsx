@@ -11,7 +11,7 @@ import React from 'react';
 import { View } from 'react-native';
 import Svg, { Rect } from 'react-native-svg';
 
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 export interface PixelHeartEmblemProps {
     /** Size of each pixel cell (default 12px for 192px total) */
@@ -19,6 +19,7 @@ export interface PixelHeartEmblemProps {
 }
 
 export default function PixelHeartEmblem({ cellSize = 12 }: PixelHeartEmblemProps) {
+    const AXM = usePalette();
     const gridSize = 16;
     const totalSize = gridSize * cellSize;
 

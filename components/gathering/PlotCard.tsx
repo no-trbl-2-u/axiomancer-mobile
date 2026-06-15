@@ -16,9 +16,10 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import type { GatherPlotVM } from '@/state/presenters/gathering.engine';
 import { FONTS } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 import { FamilyGlyph, RichnessPips, TraitGlyph, WrathEye } from './glyphs';
-import { CARD_EDGE, CARD_INK, CARD_INK2, FAMILY, PLOT_PAPER, TRAIT_UI, WRATH_ACCENT } from './palette';
+import { CARD_EDGE, CARD_INK, CARD_INK2, FAMILY, PLOT_PAPER, TRAIT_UI } from './palette';
 
 export type PlotCardMode = 'spread' | 'detail' | 'preview';
 
@@ -51,8 +52,9 @@ export const PlotArt = React.memo(function PlotArt({
 
 /** The wrath price chip: the eye + the cost (or relief for breaths). */
 function WrathChip({ cost, size = 12, isBreath }: { cost: number; size?: number; isBreath: boolean }) {
+    const AXM = usePalette();
     const relief = cost < 0;
-    const color = relief ? '#5b86c4' : cost === 0 ? CARD_INK2 : WRATH_ACCENT;
+    const color = relief ? '#5b86c4' : cost === 0 ? CARD_INK2 : AXM.blood;
     return (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
             <WrathEye open={relief || cost === 0 ? 0.1 : Math.min(1, cost / 4)} size={size + 4} color={color} />
@@ -73,6 +75,7 @@ export const PlotCard = React.memo(function PlotCard({
     plot: GatherPlotVM;
     mode?: PlotCardMode;
 }) {
+    const AXM = usePalette();
     const c = FAMILY[plot.family];
     const trait = plot.trait ? TRAIT_UI[plot.trait] : null;
     const W = mode === 'detail' ? 234 : mode === 'preview' ? 88 : 104;
@@ -132,7 +135,7 @@ export const PlotCard = React.memo(function PlotCard({
                             </View>
                         )}
                     </View>
-                    <View style={[styles.detailRow, { borderColor: plot.wrathCost > 0 ? WRATH_ACCENT : CARD_EDGE }]}>
+                    <View style={[styles.detailRow, { borderColor: plot.wrathCost > 0 ? AXM.blood : CARD_EDGE }]}>
                         <Text style={styles.detailRowLabel}>PRICE</Text>
                         <WrathChip cost={plot.wrathCost} isBreath={plot.isBreath} size={13} />
                     </View>

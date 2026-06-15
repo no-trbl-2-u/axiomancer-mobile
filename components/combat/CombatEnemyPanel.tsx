@@ -1,11 +1,11 @@
 import React from 'react';
 import {
-    StyleSheet,
     Text,
     View,
 } from 'react-native';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import { EnemyPortrait } from '@/components/event/enemy-art/EnemyPortrait';
 import type { CombatViewModel, StanceKey } from '@/state/presenters/combat.engine';
 import { StatBar } from '@/components/StatBar';
@@ -22,6 +22,8 @@ interface CombatEnemyPanelProps {
 }
 
 export const CombatEnemyPanel = React.memo(function CombatEnemyPanel({ vm }: CombatEnemyPanelProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
     const lastStance: StanceKey = vm.enemy.lastStance ?? 'mind';
     // Phase 72 — restructured to the design's left-portrait pattern
     // (`design/handoff-2026-05-23/project/screens-canonical.jsx:213-243`).
@@ -111,7 +113,7 @@ export const CombatEnemyPanel = React.memo(function CombatEnemyPanel({ vm }: Com
     );
 });
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     // Phase 72 — three-column EnemyPanel layout matching the design's
     // PtCombatBody EnemyPanel (`screens-canonical.jsx:213-243`).
     // Portrait left (60×72 framed), info middle (flex), stance indicator
@@ -195,4 +197,4 @@ const styles = StyleSheet.create({
     healthBarSection: {
         marginTop: 6,
     },
-});
+}));

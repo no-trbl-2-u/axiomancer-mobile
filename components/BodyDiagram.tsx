@@ -1,8 +1,9 @@
 import React from 'react';
 import Svg, { Circle, Path, Ellipse } from 'react-native-svg';
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 export function BodyDiagram({ height = 220 }: { height?: number } = {}) {
+  const AXM = usePalette();
   const slotDots = [
     [44, 20], [44, 60], [22, 115], [66, 115],
     [44, 100], [78, 80], [44, 195],

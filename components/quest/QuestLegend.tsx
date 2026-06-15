@@ -8,17 +8,21 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import type { QuestSpaceVM } from '@/state/presenters/quest.engine';
 import {
     QUEST_SPACE_KIND_BLURBS,
     QUEST_SPACE_KIND_LABELS,
 } from '@/state/presenters/quest.engine';
-import { QUEST_KIND_ACCENTS } from '@/components/quest/QuestBoardTrack';
-import { AXM, FONTS } from '@/theme/axm';
+import { questKindAccents } from '@/components/quest/QuestBoardTrack';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 export function QuestLegend({ spaces }: { spaces: readonly QuestSpaceVM[] }) {
+    const styles = useStyles();
+    const AXM = usePalette();
+    const QUEST_KIND_ACCENTS = questKindAccents(AXM);
     const [open, setOpen] = useState(false);
 
     // Unique kinds in first-seen board order — only mark the spaces in play.
@@ -70,7 +74,7 @@ export function QuestLegend({ spaces }: { spaces: readonly QuestSpaceVM[] }) {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     header: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -104,4 +108,4 @@ const styles = StyleSheet.create({
     },
     blurb: { fontFamily: FONTS.mono, fontSize: 11, lineHeight: 15, color: AXM.bone },
     flexOne: { flex: 1 },
-});
+}));

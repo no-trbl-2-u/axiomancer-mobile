@@ -1,6 +1,6 @@
 import React from 'react';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 interface NodeMarkProps {
   kind?: 'completed' | 'locked' | 'current' | 'available';
@@ -15,6 +15,7 @@ interface NodeMarkProps {
  * further on the exploration map.
  */
 export function NodeMark({ kind = 'available', size = 28 }: NodeMarkProps) {
+  const AXM = usePalette();
   if (kind === 'completed') {
     return (
       <Svg viewBox="0 0 32 32" width={size} height={size} accessibilityRole="image" accessibilityLabel="Completed map node">

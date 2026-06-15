@@ -178,16 +178,22 @@ describe('DebugTriggerEncounter: minigame triggers', () => {
 
 describe('DebugTriggerEncounter: paced dedicated-route triggers', () => {
     // VILLAGE + CUTSCENE genuinely DO render through the event slice —
-    // <EventGate> routes them to /village and /cutscene respectively.
+    // <EventGate> (root-mounted) routes them to /village and /cutscene.
+    //
+    // Regression guard (2026-06-15): these must NOT jump to the WILDS
+    // tab first. The dedicated route pushes from wherever the dev
+    // triggered it, so jumping made the event's dismiss tap dead-end on
+    // the exploration map instead of returning to the dev menu. EventGate
+    // fires from any tab, so the jump was both unnecessary and wrong.
     it.each([
         ['village', 'village', '/village'],
         ['cutscene', 'cutscene', '/cutscene'],
-    ])('%s seeds a %s event and routes to %s', (button, eventKind, route) => {
+    ])('%s seeds a %s event, routes to %s, and does NOT jump to WILDS', (button, eventKind, route) => {
         const store = makeStore();
         const tree = render(withProvider(store, <DebugTriggerEncounter />));
         fireEvent.press(tree.getByTestId(`debug-trigger-encounter-${button}`));
 
-        expect(mockPush).toHaveBeenCalledWith('/(tabs)/exploration');
+        expect(mockPush).not.toHaveBeenCalledWith('/(tabs)/exploration');
         expect(store.getState().event.pending!.event.kind).toBe(eventKind);
         expect(selectHasActiveEvent(store.getState())).toBe(true);
         expect(selectPacedEventRoute(store.getState())).toBe(route);

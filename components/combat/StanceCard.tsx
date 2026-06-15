@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     },
     cardTouch: {
         width: '100%',
-        height: 234,
+        height: 214,
         borderRadius: 3,
     },
     card: {

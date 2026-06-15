@@ -16,7 +16,8 @@ import Animated, {
     withTiming,
 } from 'react-native-reanimated';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 import { Roots, WrathEye } from './glyphs';
 
@@ -42,6 +43,7 @@ export function GatheringIntroOverlay({
     intro: string;
     onContinue: () => void;
 }) {
+    const styles = useStyles();
     return (
         <View style={styles.root} testID="gathering-intro">
             <Roots seed={11} opacity={0.5} />
@@ -73,7 +75,7 @@ export function GatheringIntroOverlay({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: { ...StyleSheet.absoluteFillObject, zIndex: 70, backgroundColor: '#070906' },
     eyebrow: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 2, color: '#86a821', marginTop: 18 },
     title: {
@@ -100,4 +102,4 @@ const styles = StyleSheet.create({
     },
     cta: { borderWidth: 2, borderColor: AXM.parchment, paddingHorizontal: 26, paddingVertical: 10, backgroundColor: AXM.bg },
     ctaText: { fontFamily: FONTS.gothic, fontSize: 16, letterSpacing: 2, color: AXM.parchment },
-});
+}));

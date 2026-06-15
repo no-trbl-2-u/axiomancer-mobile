@@ -1,11 +1,11 @@
 import React from 'react';
 import {
-    StyleSheet,
     Text,
     View,
 } from 'react-native';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 import { SectionLabel } from '@/components/SectionLabel';
 import type {
     ActionOption,
@@ -27,6 +27,7 @@ export interface PhaseBottomProps {
 }
 
 export const PhaseBottom = React.memo(function PhaseBottom({ vm, onPickStance, onPickAction, onPickSkill, onGoBackToPhase, onFlee, onContinue, onLeave }: PhaseBottomProps) {
+    const styles = useStyles();
     return (
         <View style={styles.phaseSection} testID={`combat-phase-${vm.phase}`}>
             <View style={styles.phaseHeader}>
@@ -57,10 +58,10 @@ export const PhaseBottom = React.memo(function PhaseBottom({ vm, onPickStance, o
     );
 });
 
-const styles = StyleSheet.create({
-    phaseSection: { 
-        padding: 8, 
-        paddingHorizontal: 10, 
+const useStyles = makeStyles((AXM) => ({
+    phaseSection: {
+        padding: 8,
+        paddingHorizontal: 10,
         paddingBottom: 14 
     },
     phaseHeader: { 
@@ -100,7 +101,7 @@ const styles = StyleSheet.create({
     pipActive: { 
         backgroundColor: AXM.sulfur 
     },
-    pipInactive: { 
-        backgroundColor: AXM.ash 
+    pipInactive: {
+        backgroundColor: AXM.ash
     },
-});
+}));

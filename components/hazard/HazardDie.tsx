@@ -14,7 +14,7 @@ import { View } from 'react-native';
 import Svg, { Defs, Line, Polygon, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import type { HazardDieKind } from 'axiomancer-mechanics';
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 import { DIE } from './palette';
 import { DieGlyph } from './glyphs';
@@ -28,6 +28,7 @@ export interface HazardDieProps {
 }
 
 export const HazardDie = React.memo(function HazardDie({ kind, size = 48, state = 'available', glow = false, temporary = false }: HazardDieProps) {
+    const AXM = usePalette();
     const d = DIE[kind];
     const isHex = kind === 'hex';
     const o = Math.round(size * 0.32); // isometric offset

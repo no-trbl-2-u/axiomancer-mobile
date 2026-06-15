@@ -18,9 +18,10 @@
  */
 
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import type { TooltipAccent } from '@/state/presenters/tooltip.engine';
 
 export interface TapTooltipProps {
@@ -39,20 +40,6 @@ export interface TapTooltipProps {
     testID?: string;
 }
 
-const ACCENT_COLORS: Record<TooltipAccent, string> = {
-    heart: AXM.blood,
-    body: AXM.rust,
-    mind: AXM.sulfur,
-    neutral: AXM.sulfur,
-};
-
-const ACCENT_BORDER_COLORS: Record<TooltipAccent, string> = {
-    heart: AXM.blood,
-    body: AXM.rust,
-    mind: AXM.sulfur,
-    neutral: AXM.ash,
-};
-
 export function TapTooltip({
     title,
     body,
@@ -62,6 +49,22 @@ export function TapTooltip({
     accent = 'neutral',
     testID,
 }: TapTooltipProps) {
+    const AXM = usePalette();
+    const styles = useStyles();
+    const ACCENT_COLORS: Record<TooltipAccent, string> = {
+        heart: AXM.blood,
+        body: AXM.rust,
+        mind: AXM.sulfur,
+        neutral: AXM.sulfur,
+    };
+
+    const ACCENT_BORDER_COLORS: Record<TooltipAccent, string> = {
+        heart: AXM.blood,
+        body: AXM.rust,
+        mind: AXM.sulfur,
+        neutral: AXM.ash,
+    };
+
     const titleColor = ACCENT_COLORS[accent];
     const borderColor = ACCENT_BORDER_COLORS[accent];
     return (
@@ -84,7 +87,7 @@ export function TapTooltip({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: {
         position: 'absolute',
         maxWidth: 280,
@@ -112,4 +115,4 @@ const styles = StyleSheet.create({
         color: AXM.bone,
         marginTop: 4,
     },
-});
+}));

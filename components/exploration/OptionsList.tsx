@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { AXM, FONTS } from '@/theme/axm';
+import { View, Text, ScrollView } from 'react-native';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 import { SectionLabel } from '@/components/SectionLabel';
 import { OptionRow } from './OptionRow';
 import type { ExplorationOption } from '@/state/presenters/exploration.engine';
@@ -16,6 +17,7 @@ interface OptionsListProps {
 }
 
 export function OptionsList({ options, onOptionPress, drawerCopy }: OptionsListProps) {
+    const styles = useStyles();
     return (
         <View style={styles.drawer}>
             <View style={styles.drawerHeader}>
@@ -44,7 +46,7 @@ export function OptionsList({ options, onOptionPress, drawerCopy }: OptionsListP
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     drawer: {
         paddingHorizontal: 10,
         paddingBottom: 8,
@@ -73,4 +75,4 @@ const styles = StyleSheet.create({
         gap: 6,
         paddingVertical: 2,
     },
-});
+}));

@@ -25,13 +25,13 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-    StyleSheet,
     Text,
     View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 import { useAesthetic } from '@/state/aesthetic-mode';
 import { useCombatMode } from '@/state/combat-mode';
 import { useGameActions, useGameState } from '@/state/GameStoreProvider';
@@ -142,6 +142,7 @@ export function derivePreview(body: string): string {
 }
 
 export function CombatPanel() {
+    const styles = useStyles();
     const router = useRouter();
     const {
         exitCombat,
@@ -493,7 +494,7 @@ export function CombatPanel() {
 // Styles
 // ---------------------------------------------------------------------------
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
     loadingText: {
         fontFamily: FONTS.mono,
@@ -509,5 +510,5 @@ const styles = StyleSheet.create({
         padding: 10, alignItems: 'center',
     },
     toastText: { fontFamily: FONTS.serifItalic, fontSize: 12, color: AXM.parchment },
-});
+}));
 

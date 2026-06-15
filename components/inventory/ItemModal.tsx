@@ -1,6 +1,7 @@
 import React from 'react';
-import { Modal, Pressable, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { AXM, FONTS } from '@/theme/axm';
+import { Modal, Pressable, View, Text, TouchableOpacity } from 'react-native';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import { TooltipProvider } from '@/components/tooltip/TooltipProvider';
 import { TooltipTarget } from '@/components/tooltip/TooltipTarget';
 import type { ItemModalViewModel } from '@/state/presenters/inventory.modal.engine';
@@ -12,6 +13,8 @@ interface ItemModalProps {
 }
 
 export function ItemModal({ modalVm, onConfirm, onCancel }: ItemModalProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
     return (
         <Modal
             visible={modalVm !== null}
@@ -91,7 +94,7 @@ export function ItemModal({ modalVm, onConfirm, onCancel }: ItemModalProps) {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     modalBackdrop: {
         flex: 1,
         backgroundColor: AXM.shadow,
@@ -182,4 +185,4 @@ const styles = StyleSheet.create({
         letterSpacing: 1.5,
         color: AXM.parchment,
     },
-});
+}));

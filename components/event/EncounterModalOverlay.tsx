@@ -27,7 +27,7 @@
  * in `components/event/__tests__/EncounterModalOverlay.test.tsx`.
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import Animated, {
     useAnimatedStyle,
     useSharedValue,
@@ -42,7 +42,7 @@ import { CombatVictoryPanel } from '@/components/event/aftermath/CombatVictoryPa
 import { ChainBarFixed } from '@/components/event/ChainBarFixed';
 import { EncounterPreludeContent } from '@/components/event/EncounterPreludeContent';
 import { ModalRivet } from '@/components/event/ModalRivet';
-import { AXM } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import { useCombatMode } from '@/state/combat-mode';
 import { useGameActions, useGameState } from '@/state/GameStoreProvider';
 import { selectAftermathViewModel } from '@/state/presenters/aftermath.engine';
@@ -85,6 +85,8 @@ export function EncounterModalOverlay({
     // body swaps from `<CombatPanel>` to `<CombatVictoryPanel>`
     // in place, and the seal stays closed until the panel's
     // CARRY ON button fires `dismissAftermath()`.
+    const AXM = usePalette();
+    const styles = useStyles();
     const [mode, setMode] = useState<EncounterModalMode>('prelude');
     const {
         lastOutcome,
@@ -278,7 +280,7 @@ export function EncounterModalOverlay({
 }
 
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     overlay: {
         position: 'absolute',
         top: 0,
@@ -362,4 +364,4 @@ const styles = StyleSheet.create({
     // edge-to-edge and the EnemyPanel + phase rows looked cramped
     // against the modal border.
     combatScrollContent: { paddingBottom: 12, paddingHorizontal: 4 },
-});
+}));

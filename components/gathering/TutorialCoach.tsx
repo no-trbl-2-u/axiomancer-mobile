@@ -10,12 +10,13 @@
  */
 
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import type { GatheringViewModel } from '@/state/presenters/gathering.engine';
 import type { GatheringSessionState } from 'axiomancer-mechanics';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 import { GraceMark } from './glyphs';
 import { GATHERING_TUTORIAL_STEPS, currentTutorialStep } from './tutorial-steps';
@@ -29,6 +30,8 @@ export function TutorialCoach({
     vm: GatheringViewModel;
     onSkip: () => void;
 }) {
+    const AXM = usePalette();
+    const styles = useStyles();
     const index = currentTutorialStep(session, vm);
     if (index < 0) return null;
     const step = GATHERING_TUTORIAL_STEPS[index];
@@ -67,7 +70,7 @@ export function TutorialCoach({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: {
         position: 'absolute',
         left: 0,
@@ -93,4 +96,4 @@ const styles = StyleSheet.create({
     title: { fontFamily: FONTS.gothic, fontSize: 16, letterSpacing: 0.5, color: AXM.parchment, marginTop: 5 },
     body: { fontFamily: FONTS.serif, fontSize: 13, lineHeight: 17, color: AXM.bone, marginTop: 3 },
     lookFor: { fontFamily: FONTS.mono, fontSize: 11, letterSpacing: 0.6, color: AXM.sulfur, marginTop: 6 },
-});
+}));

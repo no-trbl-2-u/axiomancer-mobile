@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { AXM, FONTS } from '@/theme/axm';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 import { ItemGlyph } from '@/components/inventory/ItemCard';
 import { useTooltip } from '@/hooks/useTooltip';
 import type { EquipmentDockSlot } from '@/state/presenters/inventory.engine';
@@ -17,9 +18,10 @@ export function EquipmentSlot({ slot, bareLabel, selected, onPress }: EquipmentS
     // kind:'slot' tooltip (content shared with the SELF surface).
     // Single-tap stays for slot-filter select (existing behaviour),
     // mirroring Phase 75 skill-row pattern.
+    const styles = useStyles();
     const tooltip = useTooltip();
     const slotRef = useRef<View | null>(null);
-    
+
     if (slot === null) {
         return <View style={styles.dockSlotEmpty} />;
     }
@@ -62,7 +64,7 @@ export function EquipmentSlot({ slot, bareLabel, selected, onPress }: EquipmentS
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     dockSlotEmpty: {
         height: 64,
     },
@@ -135,4 +137,4 @@ const styles = StyleSheet.create({
         color: AXM.bone,
         lineHeight: 14,
     },
-});
+}));

@@ -9,14 +9,16 @@
 
 import React, { useEffect, useMemo } from 'react';
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 import { ScreenBg } from '@/components/ScreenBg';
 import { useGameActions, useGameState } from '@/state/GameStoreProvider';
 import { selectVillageVM } from '@/state/presenters/village.engine';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 export default function VillageScreen() {
+    const styles = useStyles();
     const event = useGameState((s) => s.event);
     const player = useGameState((s) => s.player);
     const vm = useMemo(
@@ -98,7 +100,7 @@ export default function VillageScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     scroll: { padding: 14, paddingBottom: 24 },
     eyebrow: {
         fontFamily: FONTS.sans,
@@ -167,4 +169,4 @@ const styles = StyleSheet.create({
     },
     bigButtonText: { fontFamily: FONTS.gothic, fontSize: 18, letterSpacing: 2, color: AXM.parchment },
     flexOne: { flex: 1 },
-});
+}));

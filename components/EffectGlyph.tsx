@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 interface EffectGlyphProps {
   kind: string;
@@ -9,7 +9,9 @@ interface EffectGlyphProps {
   color?: string;
 }
 
-export function EffectGlyph({ kind, size = 16, color = AXM.parchment }: EffectGlyphProps) {
+export function EffectGlyph({ kind, size = 16, color: colorProp }: EffectGlyphProps) {
+  const AXM = usePalette();
+  const color = colorProp ?? AXM.parchment;
   switch (kind) {
     case 'poison':
       return (

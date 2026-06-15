@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 import Svg, { Path, Circle, Ellipse, Line, G, Defs, RadialGradient, Stop } from 'react-native-svg';
 
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 /**
  * Combat encounter illustration (visual-audit 2026-06 rework).
@@ -34,6 +34,7 @@ const EMBERS = Array.from({ length: 14 }, (_, i) => ({
 }));
 
 export function EncounterIllustration() {
+    const AXM = usePalette();
     return (
         <Svg
             viewBox="0 0 374 320"

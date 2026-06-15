@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { AXM, FONTS } from '@/theme/axm';
+import { View, Text } from 'react-native';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 interface MapOverlaysProps {
     legend: {
@@ -10,6 +11,7 @@ interface MapOverlaysProps {
 }
 
 export function MapOverlays({ legend }: MapOverlaysProps) {
+    const styles = useStyles();
     return (
         <>
             {/* Compass */}
@@ -25,7 +27,7 @@ export function MapOverlays({ legend }: MapOverlaysProps) {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     compass: {
         position: 'absolute',
         top: 10,
@@ -62,4 +64,4 @@ const styles = StyleSheet.create({
         color: AXM.bone,
         letterSpacing: 1,
     },
-});
+}));

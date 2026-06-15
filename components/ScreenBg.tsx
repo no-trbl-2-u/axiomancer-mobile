@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AXM } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 interface ScreenBgProps {
   children: React.ReactNode;
@@ -9,6 +9,7 @@ interface ScreenBgProps {
 }
 
 export function ScreenBg({ children, scrollable = true }: ScreenBgProps) {
+  const styles = useStyles();
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.bg}>
@@ -25,7 +26,7 @@ export function ScreenBg({ children, scrollable = true }: ScreenBgProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
   safe: {
     flex: 1,
     backgroundColor: AXM.bg,
@@ -43,4 +44,4 @@ const styles = StyleSheet.create({
   bottomPad: {
     height: 20,
   },
-});
+}));

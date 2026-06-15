@@ -18,7 +18,7 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import Svg, { Circle, Defs, Ellipse, G, Line, Path, RadialGradient, Stop } from 'react-native-svg';
 
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 const BACK_TREES = [
     { x: 30, top: 96, depth: 0.35 },
@@ -44,6 +44,7 @@ export interface CreatureSceneProps {
 }
 
 export function CreatureScene({ label, shadowWidth = 64, children }: CreatureSceneProps) {
+    const AXM = usePalette();
     return (
         <Svg
             viewBox="0 0 374 320"

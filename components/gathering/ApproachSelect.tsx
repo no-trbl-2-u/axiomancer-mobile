@@ -12,11 +12,12 @@ import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated'
 
 import type { GatherApproachChoiceVM, GatheringViewModel } from '@/state/presenters/gathering.engine';
 import type { GatherApproachKey } from 'axiomancer-mechanics';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 import { Roots } from './glyphs';
 import { PlotCard } from './PlotCard';
-import { APPROACH_ACCENT } from './palette';
+import { approachAccent } from './palette';
 
 function ApproachPanel({
     choice,
@@ -25,8 +26,10 @@ function ApproachPanel({
     choice: GatherApproachChoiceVM;
     onPick: (key: GatherApproachKey) => void;
 }) {
+    const AXM = usePalette();
+    const styles = useStyles();
     const gentle = choice.key === 'glean';
-    const accent = APPROACH_ACCENT[choice.key];
+    const accent = approachAccent(AXM)[choice.key];
     return (
         <Pressable
             accessibilityRole="button"
@@ -86,6 +89,7 @@ export function ApproachSelect({
     vm: GatheringViewModel;
     onPick: (key: GatherApproachKey) => void;
 }) {
+    const styles = useStyles();
     return (
         <Animated.View entering={FadeIn.duration(220)} style={styles.root} testID="gathering-approach-select">
             <View style={styles.topStrip}>
@@ -131,7 +135,7 @@ export function ApproachSelect({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: { ...StyleSheet.absoluteFillObject, backgroundColor: '#0a0b07', zIndex: 50 },
     topStrip: {
         flexDirection: 'row',
@@ -162,4 +166,4 @@ const styles = StyleSheet.create({
     chipValue: { fontFamily: FONTS.serif, fontSize: 13, color: AXM.parchment },
     cta: { marginTop: 11, paddingVertical: 9, alignItems: 'center', borderWidth: 2 },
     ctaText: { fontFamily: FONTS.gothic, fontSize: 15, letterSpacing: 1.5 },
-});
+}));

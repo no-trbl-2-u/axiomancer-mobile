@@ -8,11 +8,12 @@
  */
 
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useGameActions } from '@/state/GameStoreProvider';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 function DebugRow({
     label,
@@ -27,6 +28,7 @@ function DebugRow({
     onPress: () => void;
     testID: string;
 }) {
+    const styles = useStyles();
     return (
         <View style={styles.row}>
             <View style={styles.labelCol}>
@@ -78,7 +80,7 @@ export function DebugEncounterButtons() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     row: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -99,4 +101,4 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(134,168,33,0.08)',
     },
     buttonLabel: { fontFamily: FONTS.gothic, fontSize: 14, letterSpacing: 2, color: '#86a821' },
-});
+}));

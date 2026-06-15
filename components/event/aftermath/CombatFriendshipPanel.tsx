@@ -15,11 +15,12 @@
  */
 
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import Svg, { Circle, Path as SvgPath } from 'react-native-svg';
 
 import { PixelEmblem } from '@/components/event/aftermath/PixelEmblem';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import type { AftermathParleyViewModel } from '@/state/presenters/aftermath.engine';
 
 export interface CombatFriendshipPanelProps {
@@ -28,6 +29,8 @@ export interface CombatFriendshipPanelProps {
 }
 
 export function CombatFriendshipPanel({ vm, onContinue }: CombatFriendshipPanelProps) {
+    const AXM = usePalette();
+    const styles = useStyles();
     const lootCount = vm.rewards.loot.length;
     const xpDisplay = vm.rewards.xp === null ? '—' : String(vm.rewards.xp);
     const currencyDisplay =
@@ -140,6 +143,7 @@ interface RewardCellProps {
 }
 
 function RewardCell({ label, value, tint }: RewardCellProps) {
+    const styles = useStyles();
     return (
         <View style={styles.rewardCell}>
             <Text style={[styles.rewardValue, { color: tint }]}>{value}</Text>
@@ -155,6 +159,7 @@ function RewardCell({ label, value, tint }: RewardCellProps) {
  * standing in for the codex seal.
  */
 function BookGlyph() {
+    const AXM = usePalette();
     return (
         <Svg width={28} height={34} viewBox="0 0 28 34">
             <SvgPath
@@ -174,7 +179,7 @@ function BookGlyph() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: {
         flex: 1,
         backgroundColor: AXM.bg,
@@ -325,4 +330,4 @@ const styles = StyleSheet.create({
         color: AXM.rust,
         letterSpacing: 2,
     },
-});
+}));

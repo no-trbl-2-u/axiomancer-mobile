@@ -13,7 +13,8 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 import type { MercyChoiceSlice } from '@/state/presenters/combat.engine';
 
 export interface MercyChoiceModalProps {
@@ -30,6 +31,7 @@ export function MercyChoiceModal({
     onSpare,
     onExploit,
 }: MercyChoiceModalProps) {
+    const styles = useStyles();
     const [focusedButton, setFocusedButton] = useState<'spare' | 'exploit' | null>(null);
 
     // Focus management: when modal opens, set initial focus state to spare button as the default choice
@@ -128,7 +130,7 @@ export function MercyChoiceModal({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     backdrop: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: AXM.overlay,
@@ -238,4 +240,4 @@ const styles = StyleSheet.create({
         elevation: 4,
         borderWidth: 3,
     },
-});
+}));

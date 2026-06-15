@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 import type { SkillOption } from '@/state/presenters/combat.engine';
 import { SkillRow } from './SkillRow';
 
@@ -18,6 +19,7 @@ export const SkillPhase = React.memo(function SkillPhase({
     totalCount,
     onPick,
 }: SkillPhaseProps) {
+    const styles = useStyles();
     // Skills bound to another stance stay hidden (the stance choice is
     // committed by this phase); skills of the current stance all show,
     // with unaffordable ones greyed out so the player can see what
@@ -41,7 +43,7 @@ export const SkillPhase = React.memo(function SkillPhase({
     );
 });
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     list: {
         paddingHorizontal: 8,
     },
@@ -61,4 +63,4 @@ const styles = StyleSheet.create({
         fontStyle: 'italic',
         marginTop: 8,
     },
-});
+}));

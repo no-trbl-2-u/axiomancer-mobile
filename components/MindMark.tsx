@@ -1,13 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 interface MindMarkProps {
   stacks?: number;
 }
 
 export function MindMark({ stacks = 0 }: MindMarkProps) {
+  const AXM = usePalette();
+  const styles = useStyles();
   if (stacks <= 0) return null;
   return (
     <View style={styles.badge}>
@@ -21,7 +24,7 @@ export function MindMark({ stacks = 0 }: MindMarkProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -39,4 +42,4 @@ const styles = StyleSheet.create({
     color: AXM.sulfur,
     letterSpacing: 0.5,
   },
-});
+}));

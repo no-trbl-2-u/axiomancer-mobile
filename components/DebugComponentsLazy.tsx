@@ -11,7 +11,8 @@
 
 import React, { Suspense, lazy } from 'react';
 import { Text, View } from 'react-native';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 import { isDevToolsEnabled } from '@/lib/buildProfile';
 
 // Lazy load debug components to reduce bundle size
@@ -38,9 +39,9 @@ const DebugPopulateAllItems = lazy(() => import('@/components/DebugPopulateAllIt
 const DebugSeedButton = lazy(() => import('@/components/DebugSeedButton').then(m => ({ default: m.DebugSeedButton })));
 const DebugXpGrant = lazy(() => import('@/components/DebugXpGrant').then(m => ({ default: m.DebugXpGrant })));
 const AestheticDevToggle = lazy(() => import('@/components/AestheticDevToggle').then(m => ({ default: m.AestheticDevToggle })));
-const DebugThemeSwitcher = lazy(() => import('@/components/DebugThemeSwitcher').then(m => ({ default: m.DebugThemeSwitcher })));
 
 function LoadingFallback() {
+  const AXM = usePalette();
   return (
     <View style={{ padding: 8 }}>
       <Text style={{ fontFamily: FONTS.mono, fontSize: 10, color: AXM.bone }}>
@@ -60,7 +61,6 @@ export function DebugComponentsLazy() {
   return (
     <Suspense fallback={<LoadingFallback />}>
       <AestheticDevToggle />
-      <DebugThemeSwitcher />
       <DebugSeedButton />
       <DebugPopulateAllItems />
       <DebugTriggerEncounter />

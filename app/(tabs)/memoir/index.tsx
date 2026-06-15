@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 
 import { ScreenBg } from '@/components/ScreenBg';
 import { SectionLabel } from '@/components/SectionLabel';
@@ -10,17 +10,11 @@ import {
     type MemoirQuestRow,
     type MemoirViewModel,
 } from '@/state/presenters/memoir.engine';
-import { AXM, FONTS } from '@/theme/axm';
-
-function resolveTint(key: MemoirViewModel['moralAlignment']['chip']['tintKey']): string {
-    if (key === 'blood') return AXM.blood;
-    if (key === 'rust') return AXM.rust;
-    if (key === 'sulfur') return AXM.sulfur;
-    if (key === 'parchment') return AXM.parchment;
-    return AXM.bone;
-}
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 function QuestCard({ quest }: { quest: MemoirQuestRow }) {
+    const styles = useStyles();
     return (
         // Phase 74 follow-up walkthrough — memoir Tick 2: wrap the
         // whole card in a TooltipTarget pointing at the new
@@ -73,6 +67,17 @@ function QuestCard({ quest }: { quest: MemoirQuestRow }) {
  * every call.
  */
 export default function MemoirScreen() {
+    const styles = useStyles();
+    const AXM = usePalette();
+    const resolveTint = (
+        key: MemoirViewModel['moralAlignment']['chip']['tintKey'],
+    ): string => {
+        if (key === 'blood') return AXM.blood;
+        if (key === 'rust') return AXM.rust;
+        if (key === 'sulfur') return AXM.sulfur;
+        if (key === 'parchment') return AXM.parchment;
+        return AXM.bone;
+    };
     const player = useGameState((s) => s.player);
     const quests = useGameState((s) => s.quests);
     const moralMeter = useGameState((s) => s.moralMeter);
@@ -249,7 +254,7 @@ export default function MemoirScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     scroll: { paddingBottom: 32 },
     header: { padding: 14, paddingBottom: 4 },
     subline: {
@@ -353,4 +358,4 @@ const styles = StyleSheet.create({
         marginTop: 8,
         lineHeight: 14,
     },
-});
+}));

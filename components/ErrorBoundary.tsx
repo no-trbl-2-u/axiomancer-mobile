@@ -40,12 +40,12 @@ import React, { Component, type ErrorInfo, type ReactNode, useState } from 'reac
 import {
     Pressable,
     ScrollView,
-    StyleSheet,
     Text,
     View,
 } from 'react-native';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 import { useGameState } from '@/state/GameStoreProvider';
 
 interface ErrorBoundaryProps {
@@ -121,6 +121,7 @@ function deriveErrorCode(error: Error): string {
 }
 
 function ErrorScreen({ error, componentStack, onReset }: ErrorScreenProps) {
+    const styles = useStyles();
     const [copyPressed, setCopyPressed] = useState<boolean>(false);
     const errorCode = deriveErrorCode(error);
     const technical = `${error.message || '(no message)'}${error.stack ? `\n${error.stack}` : ''}${componentStack !== null ? `\n\n— component stack —${componentStack}` : ''}`;
@@ -312,6 +313,7 @@ function buildContext(): string {
 }
 
 function Section({ label, children }: { label: string; children: ReactNode }) {
+    const styles = useStyles();
     return (
         <View style={styles.section}>
             <Text style={styles.sectionLabel}>{label}</Text>
@@ -322,7 +324,7 @@ function Section({ label, children }: { label: string; children: ReactNode }) {
 
 declare const __DEV__: boolean | undefined;
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: {
         flex: 1,
         backgroundColor: AXM.panelBg,
@@ -498,4 +500,4 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 14,
     },
-});
+}));

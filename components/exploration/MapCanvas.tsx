@@ -6,7 +6,7 @@ import Animated, {
     useSharedValue,
 } from 'react-native-reanimated';
 import Svg, { Path, Circle, G } from 'react-native-svg';
-import { AXM } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import { Splatter } from '@/components/Splatter';
 import type { ExplorationNode, ExplorationEdge } from '@/state/presenters/exploration.engine';
 
@@ -25,6 +25,8 @@ const CANVAS_W = 360 * SPREAD;
 const CANVAS_H = 400 * SPREAD;
 
 export function MapCanvas({ nodes, edges, children }: MapCanvasProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
     const nodeById = React.useMemo(() => {
         const m = new Map<string, ExplorationNode>();
         for (const n of nodes) m.set(n.id, n);
@@ -164,7 +166,7 @@ export function MapCanvas({ nodes, edges, children }: MapCanvasProps) {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     graphWrap: {
         marginHorizontal: 10,
         marginVertical: 6,
@@ -194,4 +196,4 @@ const styles = StyleSheet.create({
         left: -20,
         opacity: 0.18,
     },
-});
+}));

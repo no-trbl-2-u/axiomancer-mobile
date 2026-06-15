@@ -1,7 +1,8 @@
 import React, { useRef } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import { useTooltip } from '@/hooks/useTooltip';
 import { StanceGlyph } from '@/components/StanceGlyph';
 import type { StanceOption, StanceKey } from '@/state/presenters/combat.engine';
@@ -19,6 +20,8 @@ export function StanceCard({
     onPick,
     a11yLabel,
 }: StanceCardProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
     const isAdv = opt.advantage === 'adv';
     const isDis = opt.advantage === 'dis';
     const accent = isAdv ? AXM.sulfur : isDis ? AXM.blood : AXM.parchment;
@@ -84,7 +87,7 @@ export function StanceCard({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     // Each card flexes to share the row evenly so all three stances fit
     // on a 390px screen (previously fixed at 160px, which overflowed and
     // clipped the edge stances — the MIND stance was unreachable).
@@ -194,4 +197,4 @@ const styles = StyleSheet.create({
         fontSize: 10,
         fontWeight: '600',
     },
-});
+}));

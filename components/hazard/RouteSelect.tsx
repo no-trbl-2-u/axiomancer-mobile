@@ -12,11 +12,12 @@ import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated'
 
 import type { HazardRouteChoiceVM, HazardViewModel } from '@/state/presenters/hazard.engine';
 import type { HazardRouteKey } from 'axiomancer-mechanics';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 import { HazardCard } from './HazardCard';
 import { Cracks, ProgGlyph } from './glyphs';
-import { HZ, ROUTE_ACCENT, TYPE_ACCENT } from './palette';
+import { HZ, routeAccent, TYPE_ACCENT } from './palette';
 
 const ROMAN = ['I', 'II', 'III', 'IV', 'V'];
 
@@ -31,6 +32,7 @@ function LadderRow({
     label: string;
     glyph: 'force' | 'escape' | 'passage';
 }) {
+    const styles = useStyles();
     return (
         <View style={styles.ladderRow}>
             <View style={styles.ladderLabel}>
@@ -56,8 +58,10 @@ function RoutePanel({
     route: HazardRouteChoiceVM;
     onPick: (key: HazardRouteKey) => void;
 }) {
+    const AXM = usePalette();
+    const styles = useStyles();
     const safe = route.key === 'safe';
-    const accent = ROUTE_ACCENT[route.key];
+    const accent = routeAccent(AXM)[route.key];
     return (
         <Pressable
             accessibilityRole="button"
@@ -145,6 +149,7 @@ export function RouteSelect({
     vm: HazardViewModel;
     onPick: (key: HazardRouteKey) => void;
 }) {
+    const styles = useStyles();
     return (
         <Animated.View entering={FadeIn.duration(220)} style={styles.root} testID="hazard-route-select">
             <View style={styles.topStrip}>
@@ -199,7 +204,7 @@ export function RouteSelect({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: { ...StyleSheet.absoluteFillObject, backgroundColor: '#0b0a08', zIndex: 50 },
     topStrip: {
         flexDirection: 'row',
@@ -244,4 +249,4 @@ const styles = StyleSheet.create({
     chipValueMono: { fontFamily: FONTS.mono, fontSize: 12, color: AXM.parchment },
     cta: { marginTop: 11, paddingVertical: 9, alignItems: 'center', borderWidth: 2 },
     ctaText: { fontFamily: FONTS.gothic, fontSize: 15, letterSpacing: 1.5 },
-});
+}));

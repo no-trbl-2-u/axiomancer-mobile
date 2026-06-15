@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { AXM, FONTS } from '@/theme/axm';
+import { View, Text } from 'react-native';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import { ScreenBg } from '@/components/ScreenBg';
 import { SectionLabel } from '@/components/SectionLabel';
 import { StatBar } from '@/components/StatBar';
@@ -22,6 +23,8 @@ import {
 } from '@/state/presenters/inventory.modal.engine';
 
 export default function InventoryScreen() {
+    const AXM = usePalette();
+    const styles = useStyles();
     const [activeTab, setActiveTab] = useState<InventoryTab>('all');
     const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
     const [modalItemId, setModalItemId] = useState<string | null>(null);
@@ -167,7 +170,7 @@ export default function InventoryScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     header: { padding: 14, paddingBottom: 0 },
     headerRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
     title: { fontFamily: FONTS.gothic, fontSize: 28, lineHeight: 30, color: AXM.parchment, marginTop: 2 },
@@ -177,4 +180,4 @@ const styles = StyleSheet.create({
     burdenSection: {
         marginTop: 8,
     },
-});
+}));

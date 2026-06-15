@@ -1,7 +1,7 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
-import { AXM } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import type {
     ActionOption,
     CombatViewModel,
@@ -34,6 +34,8 @@ export const PhaseStack = React.memo(function PhaseStack({
     onContinue,
     onLeave,
 }: PhaseStackProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
     return (
         <View style={styles.column} testID="combat-phase-stack">
             {vm.phaseStack
@@ -130,7 +132,7 @@ export const PhaseStack = React.memo(function PhaseStack({
     );
 });
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     column: {
         flex: 1,
     },
@@ -181,4 +183,4 @@ const styles = StyleSheet.create({
     rowBody: {
         paddingTop: 8,
     },
-});
+}));

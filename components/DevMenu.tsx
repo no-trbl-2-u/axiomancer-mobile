@@ -26,10 +26,11 @@
  */
 
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { isDevToolsEnabled } from '@/lib/buildProfile';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 interface DevMenuProps {
     children: React.ReactNode;
@@ -42,6 +43,7 @@ interface DevMenuProps {
 }
 
 export function DevMenu({ children, initiallyExpanded = false }: DevMenuProps) {
+    const styles = useStyles();
     const [expanded, setExpanded] = useState(initiallyExpanded);
 
     if (!isDevToolsEnabled()) return null;
@@ -63,7 +65,7 @@ export function DevMenu({ children, initiallyExpanded = false }: DevMenuProps) {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: {
         marginTop: 16,
         marginHorizontal: 12,
@@ -90,4 +92,4 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: AXM.sulfur,
     },
-});
+}));

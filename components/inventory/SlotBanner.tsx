@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { AXM, FONTS } from '@/theme/axm';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 interface SlotBannerProps {
     bannerEyebrow: string;
@@ -10,6 +11,7 @@ interface SlotBannerProps {
 }
 
 export function SlotBanner({ bannerEyebrow, bannerSlotLabel, bannerClearLabel, onClear }: SlotBannerProps) {
+    const styles = useStyles();
     return (
         <View style={styles.slotBanner} testID="slot-filter-banner">
             <View>
@@ -31,7 +33,7 @@ export function SlotBanner({ bannerEyebrow, bannerSlotLabel, bannerClearLabel, o
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     slotBanner: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -70,4 +72,4 @@ const styles = StyleSheet.create({
         letterSpacing: 1.4,
         textTransform: 'uppercase',
     },
-});
+}));

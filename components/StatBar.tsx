@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import type { DimensionValue } from 'react-native';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 interface StatBarProps {
   value: number;
@@ -12,7 +13,10 @@ interface StatBarProps {
   showText?: boolean;
 }
 
-export const StatBar = React.memo(function StatBar({ value, max, color = AXM.blood, label, height = 14, showText = true }: StatBarProps) {
+export const StatBar = React.memo(function StatBar({ value, max, color, label, height = 14, showText = true }: StatBarProps) {
+  const AXM = usePalette();
+  const styles = useStyles();
+  const barColor = color ?? AXM.blood;
   const pct = Math.max(0, Math.min(1, value / max));
   const percentage = Math.round(pct * 100);
   const accessibilityLabel = label ? 
@@ -51,7 +55,7 @@ export const StatBar = React.memo(function StatBar({ value, max, color = AXM.blo
         importantForAccessibility="no"
       >
         <View 
-          style={[styles.fill, { width: `${(pct * 100).toFixed(1)}%` as DimensionValue, backgroundColor: color }]}
+          style={[styles.fill, { width: `${(pct * 100).toFixed(1)}%` as DimensionValue, backgroundColor: barColor }]}
           importantForAccessibility="no"
         />
         <View 
@@ -63,7 +67,7 @@ export const StatBar = React.memo(function StatBar({ value, max, color = AXM.blo
   );
 });
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
   container: { width: '100%' },
   labelRow: {
     flexDirection: 'row',
@@ -105,4 +109,4 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: AXM.parchmentMed,
   },
-});
+}));

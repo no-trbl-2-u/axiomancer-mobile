@@ -7,9 +7,10 @@
  */
 
 import React from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
+import { Modal, Text, TouchableOpacity, View, ScrollView } from 'react-native';
 
-import { AXM, FONTS, TYPE } from '@/theme/axm';
+import { FONTS, TYPE } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import AftermathBackdrop from './AftermathBackdrop';
 
 export interface DefeatModalProps {
@@ -47,6 +48,8 @@ export default function DefeatModal({
     onRetry,
     onAbandon,
 }: DefeatModalProps) {
+    const AXM = usePalette();
+    const styles = useStyles();
     if (!visible) {
         return null;
     }
@@ -161,7 +164,7 @@ export default function DefeatModal({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     container: {
         flex: 1,
         position: 'relative',
@@ -296,4 +299,4 @@ const styles = StyleSheet.create({
         borderStyle: 'dashed',
         opacity: 0.6,
     },
-});
+}));

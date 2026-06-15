@@ -19,11 +19,12 @@
  */
 
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import Svg, { Circle, Path as SvgPath } from 'react-native-svg';
 
 import { Splatter } from '@/components/Splatter';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import { toRomanLower } from '@/state/presenters/roman';
 
 export interface AscendStripProps {
@@ -36,6 +37,8 @@ export interface AscendStripProps {
 }
 
 export function AscendStrip({ pendingPoints, level, onOpen }: AscendStripProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
     // Lowercase roman for the target level only, per the bundle's
     // numeral rule. Points count stays in arabic (stat-deltas).
     const targetLevel = toRomanLower(level + 1);
@@ -99,6 +102,7 @@ function renderChevrons(n: number): string {
  * Rendered in sulfur here per the ASCEND brand color.
  */
 function LockSealGlyph() {
+    const AXM = usePalette();
     return (
         <Svg viewBox="0 0 22 22" width={22} height={22}>
             <Circle cx={11} cy={11} r={10} fill={AXM.sulfur} stroke={AXM.bg} strokeWidth={0.6} />
@@ -124,7 +128,7 @@ function LockSealGlyph() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     strip: {
         marginVertical: 6,
         backgroundColor: AXM.panelBg,
@@ -202,4 +206,4 @@ const styles = StyleSheet.create({
         color: AXM.sulfur,
         lineHeight: 22,
     },
-});
+}));

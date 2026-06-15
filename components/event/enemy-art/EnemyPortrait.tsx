@@ -14,7 +14,7 @@
 import React from 'react';
 import Svg, { Defs, Ellipse, RadialGradient, Stop } from 'react-native-svg';
 
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 import { resolveEnemyArchetype, type EnemyArchetype } from '@/state/presenters/enemy-art';
 import {
     AvianFigure,
@@ -57,6 +57,7 @@ export function EnemyPortrait({
     height = 70,
     label,
 }: EnemyPortraitProps) {
+    const AXM = usePalette();
     const archetype = resolveEnemyArchetype(enemyArtKey, isBoss);
     const Figure = FIGURES[archetype];
     return (

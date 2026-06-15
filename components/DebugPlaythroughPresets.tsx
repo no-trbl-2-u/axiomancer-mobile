@@ -15,17 +15,19 @@
  */
 
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { getTemplatesBySlot } from 'axiomancer-mechanics';
 
 import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useGameStore } from '@/state/GameStoreProvider';
 import { templateToEquipment } from '@/state/selectors/equipment';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 type PresetType = 'fresh' | 'endgame' | null;
 
 export function DebugPlaythroughPresets() {
+    const styles = useStyles();
     const store = useGameStore();
     const [active, setActive] = useState<PresetType>(null);
 
@@ -147,7 +149,7 @@ export function DebugPlaythroughPresets() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     row: {
         marginTop: 8,
         marginHorizontal: 12,
@@ -196,4 +198,4 @@ const styles = StyleSheet.create({
     buttonLabelActive: {
         color: AXM.sulfur,
     },
-});
+}));

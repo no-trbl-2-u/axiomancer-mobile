@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { AXM, FONTS } from '@/theme/axm';
+import { View, Text } from 'react-native';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import { SectionLabel } from '@/components/SectionLabel';
 import { PaperDoll } from './PaperDoll';
 import { EquipmentSlot } from './EquipmentSlot';
@@ -28,8 +29,10 @@ interface EquipmentDockProps {
 }
 
 export function EquipmentDock({ vm, selectedSlot, onSelectSlot }: EquipmentDockProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
     const rows = useMemo(() => pairDockRows(vm.slots), [vm.slots]);
-    
+
     return (
         <View style={styles.dock} testID="equipment-dock">
             {/* iron rivets in each corner */}
@@ -83,7 +86,7 @@ export function EquipmentDock({ vm, selectedSlot, onSelectSlot }: EquipmentDockP
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     dock: {
         position: 'relative',
         marginHorizontal: 10,
@@ -124,4 +127,4 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         paddingVertical: 12,
     },
-});
+}));

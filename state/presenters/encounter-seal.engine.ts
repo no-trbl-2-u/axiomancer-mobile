@@ -25,7 +25,7 @@
  * `EncounterSealChrome` shape.
  */
 
-import { AXM } from '@/theme/axm';
+import { currentPalette } from '@/theme/runtime';
 import { toRomanLower } from './roman';
 
 export type EncounterSealMode = 'prelude' | 'combat' | 'aftermath';
@@ -65,6 +65,9 @@ export function selectEncounterSealChrome(
     mode: EncounterSealMode,
     round: number = 1,
 ): EncounterSealChrome {
+    // Live palette so the seal's accent tracks the active theme; the
+    // consuming view subscribes and re-renders on switch.
+    const AXM = currentPalette();
     if (mode === 'aftermath') {
         return {
             topLabel: 'IT IS DONE',

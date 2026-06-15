@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { AXM, FONTS } from '@/theme/axm';
+import { View, Text } from 'react-native';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 import { ScreenBg } from '@/components/ScreenBg';
 import { StatusCard } from '@/components/StatusCard';
 import { SectionLabel } from '@/components/SectionLabel';
@@ -27,6 +28,7 @@ import {
 import { EncounterModalOverlay } from '@/components/event/EncounterModalOverlay';
 
 export default function ExplorationScreen() {
+    const styles = useStyles();
     const {
         enterCombat,
         inEncounterModal,
@@ -215,7 +217,7 @@ export default function ExplorationScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     regionHeader: {
         paddingHorizontal: 14,
         paddingTop: 12,
@@ -241,4 +243,4 @@ const styles = StyleSheet.create({
     continentLabel: {
         color: AXM.bone,
     },
-});
+}));

@@ -10,10 +10,11 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
 import type { GatherSpoilsVM } from '@/state/presenters/gathering.engine';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 import { FamilyGlyph, GraceMark, RichnessPips } from './glyphs';
-import { FAMILY, GRACE_ACCENT, WRATH_ACCENT } from './palette';
+import { FAMILY } from './palette';
 
 export function SpoilsOverlay({
     spoils,
@@ -22,6 +23,8 @@ export function SpoilsOverlay({
     spoils: GatherSpoilsVM;
     onConfirm: () => void;
 }) {
+    const AXM = usePalette();
+    const styles = useStyles();
     return (
         <Animated.View entering={FadeIn.duration(240)} style={styles.root} testID="gathering-spoils">
             <View style={styles.topStrip}>
@@ -86,20 +89,20 @@ export function SpoilsOverlay({
                 {(spoils.coinNotes.length > 0 || spoils.vitaeNotes.length > 0 || spoils.scarNote || spoils.boonNote) && (
                     <Animated.View entering={FadeInDown.delay(280).duration(280)} style={styles.ledger}>
                         {spoils.coinNotes.map((note) => (
-                            <Text key={note} style={[styles.ledgerNote, { color: GRACE_ACCENT }]}>
+                            <Text key={note} style={[styles.ledgerNote, { color: AXM.sulfur }]}>
                                 {note}
                             </Text>
                         ))}
                         {spoils.vitaeNotes.map((note) => (
                             <Text
                                 key={note}
-                                style={[styles.ledgerNote, { color: note.startsWith('+') ? '#86a821' : WRATH_ACCENT }]}
+                                style={[styles.ledgerNote, { color: note.startsWith('+') ? '#86a821' : AXM.blood }]}
                             >
                                 {note}
                             </Text>
                         ))}
                         {spoils.boonNote !== null && (
-                            <Text style={[styles.ledgerNote, { color: GRACE_ACCENT }]}>{spoils.boonNote}</Text>
+                            <Text style={[styles.ledgerNote, { color: AXM.sulfur }]}>{spoils.boonNote}</Text>
                         )}
                         {spoils.scarNote !== null && (
                             <Text style={[styles.ledgerNote, styles.scarNote]}>{spoils.scarNote}</Text>
@@ -151,7 +154,7 @@ export function SpoilsOverlay({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: { ...StyleSheet.absoluteFillObject, zIndex: 64, backgroundColor: '#0a0b07' },
     topStrip: { paddingVertical: 6, alignItems: 'center', backgroundColor: '#000', borderBottomWidth: 1, borderBottomColor: AXM.ash },
     topStripText: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 2.5, color: AXM.parchment },
@@ -165,13 +168,13 @@ const styles = StyleSheet.create({
     familyCell: { flex: 1, alignItems: 'center', gap: 3, borderWidth: 1, paddingVertical: 6, backgroundColor: 'rgba(0,0,0,0.3)' },
     familyCellText: { fontFamily: FONTS.mono, fontSize: 11 },
     setBadge: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1.4, color: '#0c0a08', paddingHorizontal: 5, overflow: 'hidden' },
-    refinedRow: { marginHorizontal: 14, marginTop: 6, borderWidth: 1, borderColor: GRACE_ACCENT, paddingHorizontal: 9, paddingVertical: 6, backgroundColor: 'rgba(212,192,38,0.06)' },
-    refinedName: { fontFamily: FONTS.gothic, fontSize: 14, letterSpacing: 0.5, color: GRACE_ACCENT },
+    refinedRow: { marginHorizontal: 14, marginTop: 6, borderWidth: 1, borderColor: AXM.sulfur, paddingHorizontal: 9, paddingVertical: 6, backgroundColor: 'rgba(212,192,38,0.06)' },
+    refinedName: { fontFamily: FONTS.gothic, fontSize: 14, letterSpacing: 0.5, color: AXM.sulfur },
     refinedDesc: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 13, color: AXM.bone, marginTop: 2 },
     roundHarvest: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 1, color: '#86a821', textAlign: 'center', marginTop: 8 },
     ledger: { marginHorizontal: 14, marginTop: 14, borderWidth: 1, borderColor: AXM.ash, paddingHorizontal: 10, paddingVertical: 8, gap: 4, backgroundColor: 'rgba(0,0,0,0.35)' },
     ledgerNote: { fontFamily: FONTS.mono, fontSize: 12, letterSpacing: 0.4 },
-    scarNote: { color: WRATH_ACCENT },
+    scarNote: { color: AXM.blood },
     boonRow: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 5, backgroundColor: 'rgba(0,0,0,0.3)' },
     boonMark: { fontFamily: FONTS.gothic, fontSize: 15 },
     boonName: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 1 },
@@ -180,4 +183,4 @@ const styles = StyleSheet.create({
     confirmRow: { paddingHorizontal: 14, paddingVertical: 10, borderTopWidth: 1, borderTopColor: AXM.ash, backgroundColor: '#0a0a07' },
     confirm: { borderWidth: 2, borderColor: AXM.parchment, paddingVertical: 10, alignItems: 'center', backgroundColor: AXM.bg },
     confirmText: { fontFamily: FONTS.gothic, fontSize: 16, letterSpacing: 2, color: AXM.parchment },
-});
+}));

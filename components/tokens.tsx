@@ -13,13 +13,15 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, type TextStyle } from 'react-native';
+import { View, Text, type TextStyle } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import {
     TOKEN,
     TOKEN_KEYS,
+    tokenColor,
     type TokenKey,
     type TokenCounts,
 } from '@/state/mocks/tokens.fixture';
@@ -32,7 +34,8 @@ export interface TokenIconProps {
 
 /** Tiny woodcut glyph for a single token type. */
 export function TokenIcon({ kind, size = 16, color }: TokenIconProps) {
-    const c = color ?? TOKEN[kind].color;
+    const AXM = usePalette();
+    const c = color ?? tokenColor(kind, AXM);
     switch (kind) {
         case 'body':
             return (
@@ -102,7 +105,10 @@ export interface TokenChipProps {
 
 /** Single chip showing one token type with its count. Five fit in a row on a phone. */
 export function TokenChip({ kind, count = 0, dim = false, glow = false, compact = false }: TokenChipProps) {
+    const AXM = usePalette();
+    const styles = useStyles();
     const t = TOKEN[kind];
+    const accent = tokenColor(kind, AXM);
     const has = count > 0;
     return (
         <View
@@ -113,23 +119,23 @@ export function TokenChip({ kind, count = 0, dim = false, glow = false, compact 
                     paddingVertical: compact ? 2 : 3,
                     paddingHorizontal: compact ? 4 : 5,
                     backgroundColor: has ? t.bg : AXM.bg,
-                    borderColor: has ? t.color : AXM.ash,
+                    borderColor: has ? accent : AXM.ash,
                     opacity: dim ? 0.4 : 1,
                 },
-                glow && has && { shadowColor: t.color, shadowOpacity: 0.9, shadowRadius: 6, elevation: 6 },
+                glow && has && { shadowColor: accent, shadowOpacity: 0.9, shadowRadius: 6, elevation: 6 },
             ]}
         >
-            <TokenIcon kind={kind} size={compact ? 14 : 16} color={has ? t.color : AXM.bone} />
+            <TokenIcon kind={kind} size={compact ? 14 : 16} color={has ? accent : AXM.bone} />
             <Text
                 style={[
                     compact ? styles.compactCount : styles.regularCount,
-                    { color: has ? t.color : AXM.bone }
+                    { color: has ? accent : AXM.bone }
                 ]}
             >{count}</Text>
             <Text
                 style={[
                     styles.shortLabel,
-                    { color: has ? t.color : AXM.bone }
+                    { color: has ? accent : AXM.bone }
                 ]}
             >{t.short}</Text>
         </View>
@@ -144,6 +150,7 @@ export interface TokenRackProps {
 
 /** Live pool — replaces the MP bar in the combat HUD. Always visible in combat. */
 export function TokenRack({ tokens = {}, highlightKind = null, compact = false }: TokenRackProps) {
+    const styles = useStyles();
     return (
         <View style={[styles.rack, { paddingVertical: compact ? 2 : 4, paddingHorizontal: 4 }]}>
             {!compact && (
@@ -177,6 +184,8 @@ export interface TokenCostProps {
  * Pips lacking the corresponding token render as dashed outlines.
  */
 export function TokenCost({ cost = {}, tokens = {}, size = 14, dense = false }: TokenCostProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
     const entries: TokenKey[] = TOKEN_KEYS.flatMap(k => Array.from({ length: cost[k] || 0 }, () => k));
     if (entries.length === 0) {
         return <Text style={styles.freeCostLabel}>FREE</Text>;
@@ -190,6 +199,7 @@ export function TokenCost({ cost = {}, tokens = {}, size = 14, dense = false }: 
         <View style={[styles.costRow, { gap: dense ? 2 : 3 }]}>
             {entries.map((k, i) => {
                 const c = TOKEN[k];
+                const accent = tokenColor(k, AXM);
                 const missing = lacks[i];
                 return (
                     <View
@@ -197,16 +207,16 @@ export function TokenCost({ cost = {}, tokens = {}, size = 14, dense = false }: 
                         style={[
                             styles.costPip,
                             {
-                                width: size, 
+                                width: size,
                                 height: size,
                                 backgroundColor: missing ? 'transparent' : c.bg,
                                 borderStyle: missing ? 'dashed' : 'solid',
-                                borderColor: c.color,
+                                borderColor: accent,
                                 opacity: missing ? 0.45 : 1,
                             }
                         ]}
                     >
-                        <TokenIcon kind={k} size={size - 6} color={c.color} />
+                        <TokenIcon kind={k} size={size - 6} color={accent} />
                     </View>
                 );
             })}
@@ -214,7 +224,7 @@ export function TokenCost({ cost = {}, tokens = {}, size = 14, dense = false }: 
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     chip: {
         position: 'relative',
         alignItems: 'center',
@@ -278,4 +288,4 @@ const styles = StyleSheet.create({
         color: AXM.bone,
         textTransform: 'uppercase',
     } satisfies TextStyle,
-});
+}));

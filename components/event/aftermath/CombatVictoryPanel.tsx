@@ -22,12 +22,13 @@
  */
 
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import Svg, { Circle, Path as SvgPath } from 'react-native-svg';
 
 import { Splatter } from '@/components/Splatter';
 import { VictoryWreath } from '@/components/art/VictoryWreath';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import type { AftermathVictoryViewModel } from '@/state/presenters/aftermath.engine';
 
 export interface CombatVictoryPanelProps {
@@ -36,6 +37,8 @@ export interface CombatVictoryPanelProps {
 }
 
 export function CombatVictoryPanel({ vm, onContinue }: CombatVictoryPanelProps) {
+    const AXM = usePalette();
+    const styles = useStyles();
     const lootCount = vm.rewards.loot.length;
     const xpDisplay = vm.rewards.xp === null ? '—' : String(vm.rewards.xp);
     const currencyDisplay =
@@ -187,6 +190,7 @@ interface RewardCellProps {
 }
 
 function RewardCell({ label, value, tint }: RewardCellProps) {
+    const styles = useStyles();
     return (
         <View style={styles.rewardCell}>
             <Text style={[styles.rewardValue, { color: tint }]}>{value}</Text>
@@ -202,6 +206,7 @@ function RewardCell({ label, value, tint }: RewardCellProps) {
  * fragment default.
  */
 function ItemGlyph({ slot, size = 18 }: { slot: string; size?: number }) {
+    const AXM = usePalette();
     const c = AXM.parchment;
     if (slot === 'weapon') {
         return (
@@ -240,6 +245,7 @@ function ItemGlyph({ slot, size = 18 }: { slot: string; size?: number }) {
 }
 
 function RarityRail({ rarity }: { rarity: AftermathVictoryViewModel['rewards']['loot'][number]['rarity'] }) {
+    const styles = useStyles();
     if (rarity === 'unique') {
         return <View style={[styles.rarityRail, styles.rarityRailUnique]} />;
     }
@@ -252,7 +258,7 @@ function RarityRail({ rarity }: { rarity: AftermathVictoryViewModel['rewards']['
     return <View style={[styles.rarityRail, styles.rarityRailCommon]} />;
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: {
         flex: 1,
         backgroundColor: AXM.bg,
@@ -466,4 +472,4 @@ const styles = StyleSheet.create({
         color: AXM.sulfur,
         letterSpacing: 2,
     },
-});
+}));

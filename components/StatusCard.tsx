@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { AXM, FONTS } from '@/theme/axm';
+import { View, Text } from 'react-native';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import { StatBar } from './StatBar';
 import { SectionLabel } from './SectionLabel';
 import { useGameState } from '@/state/GameStoreProvider';
@@ -22,6 +23,8 @@ interface StatusCardProps {
 }
 
 export function StatusCard(props: StatusCardProps = {}) {
+  const AXM = usePalette();
+  const styles = useStyles();
   // Read from engine `state.player` so the card reflects real
   // game state. Test fixtures may still inject props directly —
   // the prop wins when defined, otherwise we fall through to the
@@ -81,7 +84,7 @@ export function StatusCard(props: StatusCardProps = {}) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
   card: {
     margin: 8,
     marginBottom: 0,
@@ -181,4 +184,4 @@ const styles = StyleSheet.create({
   moraleMax: {
     color: AXM.bone,
   },
-});
+}));

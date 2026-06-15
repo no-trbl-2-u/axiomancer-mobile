@@ -1,9 +1,10 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { SectionLabel } from '@/components/SectionLabel';
 import { StanceGlyph } from '@/components/StanceGlyph';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 export type LevelStance = 'heart' | 'body' | 'mind';
 
@@ -18,6 +19,8 @@ export interface StanceRowProps {
 }
 
 export function StanceRow({ stance, current, spent, canInc, canDec, onInc, onDec }: StanceRowProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
     const newValue = current + spent;
     const showDelta = spent > 0;
     return (
@@ -92,7 +95,7 @@ export function StanceRow({ stance, current, spent, canInc, canDec, onInc, onDec
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     row: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -155,4 +158,4 @@ const styles = StyleSheet.create({
         fontSize: 22,
         lineHeight: 22,
     },
-});
+}));

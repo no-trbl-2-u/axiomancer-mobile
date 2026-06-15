@@ -10,7 +10,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown, FadeInUp, ZoomIn } from 'react-native-reanimated';
 
 import type { HazardRewardsVM } from '@/state/presenters/hazard.engine';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 import { HazardCard } from './HazardCard';
 import { BoonIcon } from './glyphs';
@@ -33,6 +34,8 @@ function BoonChip({
     onTap: () => void;
     testID: string;
 }) {
+    const AXM = usePalette();
+    const styles = useStyles();
     const c = kind === 'reward' ? HZ.gold : AXM.blood;
     return (
         <View>
@@ -62,6 +65,8 @@ export function RewardsOverlay({
     rewards: HazardRewardsVM;
     onConfirm: (cardId: string | null) => void;
 }) {
+    const AXM = usePalette();
+    const styles = useStyles();
     const [tip, setTip] = useState<string | null>(null);
     const [picked, setPicked] = useState<string | null>(null);
     const tierColor =
@@ -254,7 +259,7 @@ export function RewardsOverlay({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: { ...StyleSheet.absoluteFillObject, zIndex: 62, backgroundColor: '#0b0907' },
     eyebrow: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 2, color: AXM.bone },
     title: { fontFamily: FONTS.gothic, fontSize: 26, letterSpacing: 1.5, marginTop: 2, textShadowColor: '#000', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 0 },
@@ -289,4 +294,4 @@ const styles = StyleSheet.create({
     skipBtn: { width: 54, height: 54, borderWidth: 1.5, borderColor: AXM.bone, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },
     skipX: { fontFamily: FONTS.gothic, fontSize: 20, lineHeight: 21, color: AXM.bone },
     skipLabel: { fontFamily: FONTS.mono, fontSize: 10, letterSpacing: 1, color: AXM.bone },
-});
+}));

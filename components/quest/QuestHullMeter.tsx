@@ -8,9 +8,10 @@
  */
 
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 export interface QuestHullMeterProps {
     /** 0..1 — fraction of required parts fitted. */
@@ -20,6 +21,7 @@ export interface QuestHullMeterProps {
 }
 
 export function QuestHullMeter({ progress, tierLabel }: QuestHullMeterProps) {
+    const styles = useStyles();
     const pct = Math.round(Math.max(0, Math.min(1, progress)) * 100);
     return (
         <View style={styles.wrap} testID="quest-hull-meter">
@@ -39,7 +41,7 @@ export function QuestHullMeter({ progress, tierLabel }: QuestHullMeterProps) {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     wrap: { paddingHorizontal: 6, paddingBottom: 8 },
     row: {
         flexDirection: 'row',
@@ -69,4 +71,4 @@ const styles = StyleSheet.create({
         height: '100%',
         backgroundColor: AXM.sulfur,
     },
-});
+}));

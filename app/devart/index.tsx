@@ -8,9 +8,10 @@
  */
 
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { EnemyIllustration } from '@/components/event/enemy-art/EnemyIllustration';
 
@@ -28,6 +29,7 @@ const SAMPLES: ReadonlyArray<{ label: string; key: string; boss?: boolean }> = [
 ];
 
 export default function DevArtGallery() {
+    const styles = useStyles();
     if (!isDevToolsEnabled()) {
         return <View style={styles.root} testID="devart-disabled" />;
     }
@@ -48,7 +50,7 @@ export default function DevArtGallery() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: { flex: 1, backgroundColor: AXM.bg },
     content: { padding: 12, paddingBottom: 48 },
     heading: {
@@ -77,4 +79,4 @@ const styles = StyleSheet.create({
         marginTop: 4,
         textAlign: 'center',
     },
-});
+}));

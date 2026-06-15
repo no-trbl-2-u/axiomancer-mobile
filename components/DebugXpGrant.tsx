@@ -16,15 +16,17 @@
  */
 
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useGameStore } from '@/state/GameStoreProvider';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 const XP_GRANT_AMOUNT = 100;
 
 export function DebugXpGrant() {
+    const styles = useStyles();
     const store = useGameStore();
 
     if (!isDevToolsEnabled()) return null;
@@ -85,7 +87,7 @@ export function DebugXpGrant() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     row: {
         marginTop: 8,
         marginHorizontal: 12,
@@ -126,4 +128,4 @@ const styles = StyleSheet.create({
         color: AXM.sulfur,
         letterSpacing: 1,
     },
-});
+}));

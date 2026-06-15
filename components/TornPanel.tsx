@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { AXM, tornEdgePath } from '@/theme/axm';
+import { tornEdgePath } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 interface TornPanelProps {
   children?: React.ReactNode;
@@ -15,13 +16,16 @@ interface TornPanelProps {
 
 export function TornPanel({
   children,
-  bgColor = AXM.panelBg,
+  bgColor: bgColorProp,
   jag = 6,
   seed = 1,
-  screenBg = AXM.bg,
+  screenBg: screenBgProp,
   padding = 12,
   style,
 }: TornPanelProps) {
+  const AXM = usePalette();
+  const bgColor = bgColorProp ?? AXM.panelBg;
+  const screenBg = screenBgProp ?? AXM.bg;
   const [size, setSize] = useState({ width: 0, height: 0 });
 
   return (

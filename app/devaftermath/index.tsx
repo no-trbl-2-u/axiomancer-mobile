@@ -18,10 +18,10 @@
  */
 
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 
-import { AXM } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { CombatDefeatPanel } from '@/components/event/aftermath/CombatDefeatPanel';
 import { CombatFriendshipPanel } from '@/components/event/aftermath/CombatFriendshipPanel';
@@ -66,6 +66,7 @@ const PARLEY_VM: AftermathParleyViewModel = {
 };
 
 export default function DevAftermathPanel() {
+    const styles = useStyles();
     const params = useLocalSearchParams<{ panel?: string }>();
     if (!isDevToolsEnabled()) {
         return <View style={styles.root} testID="devaftermath-disabled" />;
@@ -82,8 +83,8 @@ export default function DevAftermathPanel() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     // Full-screen container — the panels are seal bodies that fill the
     // encounter modal in the real flow; their flex:1 root fills this.
     root: { flex: 1, backgroundColor: AXM.bg },
-});
+}));

@@ -9,7 +9,7 @@
 import React from 'react';
 import Svg, { Circle, G, Line, Path, Rect } from 'react-native-svg';
 
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 const INK = '#0c0a08';
 const STONE = '#1d1813';
@@ -21,7 +21,9 @@ export interface DangerArtProps {
 }
 
 /** Doomed pilgrim silhouette (shared): hunched walker with a staff. */
-function Pilgrim({ x, y, scale = 1, color = AXM.bone }: { x: number; y: number; scale?: number; color?: string }) {
+function Pilgrim({ x, y, scale = 1, color }: { x: number; y: number; scale?: number; color?: string }) {
+    const AXM = usePalette();
+    color = color ?? AXM.bone;
     return (
         <G transform={`translate(${x}, ${y}) scale(${scale})`}>
             <Circle cx={0} cy={-14} r={3.4} fill={color} />
@@ -32,6 +34,7 @@ function Pilgrim({ x, y, scale = 1, color = AXM.bone }: { x: number; y: number; 
 }
 
 function CliffArt({ width = 300, height = 150 }: DangerArtProps) {
+    const AXM = usePalette();
     return (
         <Svg width={width} height={height} viewBox="0 0 300 150">
             <Rect width={300} height={150} fill={INK} />
@@ -53,6 +56,7 @@ function CliffArt({ width = 300, height = 150 }: DangerArtProps) {
 }
 
 function FloodArt({ width = 300, height = 150 }: DangerArtProps) {
+    const AXM = usePalette();
     return (
         <Svg width={width} height={height} viewBox="0 0 300 150">
             <Rect width={300} height={150} fill={INK} />
@@ -72,6 +76,7 @@ function FloodArt({ width = 300, height = 150 }: DangerArtProps) {
 }
 
 function AshArt({ width = 300, height = 150 }: DangerArtProps) {
+    const AXM = usePalette();
     return (
         <Svg width={width} height={height} viewBox="0 0 300 150">
             <Rect width={300} height={150} fill={INK} />
@@ -100,6 +105,7 @@ function AshArt({ width = 300, height = 150 }: DangerArtProps) {
 }
 
 function FamineArt({ width = 300, height = 150 }: DangerArtProps) {
+    const AXM = usePalette();
     return (
         <Svg width={width} height={height} viewBox="0 0 300 150">
             <Rect width={300} height={150} fill={INK} />
@@ -121,6 +127,7 @@ function FamineArt({ width = 300, height = 150 }: DangerArtProps) {
 }
 
 function BanditArt({ width = 300, height = 150 }: DangerArtProps) {
+    const AXM = usePalette();
     return (
         <Svg width={width} height={height} viewBox="0 0 300 150">
             <Rect width={300} height={150} fill={INK} />
@@ -153,6 +160,7 @@ function BanditArt({ width = 300, height = 150 }: DangerArtProps) {
 }
 
 function FeverArt({ width = 300, height = 150 }: DangerArtProps) {
+    const AXM = usePalette();
     return (
         <Svg width={width} height={height} viewBox="0 0 300 150">
             <Rect width={300} height={150} fill={INK} />

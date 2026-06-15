@@ -1,6 +1,6 @@
 import React from 'react';
 import Svg, { Path, Ellipse, SvgXml } from 'react-native-svg';
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 interface GlyphProps {
   size?: number;
@@ -31,15 +31,21 @@ const bodyXml = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <path d="M32 16 L 32 12 M 30 14 L 32 12 L 34 14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
 
-export const GlyphHeart = React.memo(function GlyphHeart({ size = 40, color = AXM.parchment }: GlyphProps) {
+export const GlyphHeart = React.memo(function GlyphHeart({ size = 40, color: colorProp }: GlyphProps) {
+  const AXM = usePalette();
+  const color = colorProp ?? AXM.parchment;
   return <SvgXml xml={heartXml} width={size} height={size} color={color} accessibilityRole="image" accessibilityLabel="Heart stance glyph" />;
 });
 
-export const GlyphBody = React.memo(function GlyphBody({ size = 40, color = AXM.parchment }: GlyphProps) {
+export const GlyphBody = React.memo(function GlyphBody({ size = 40, color: colorProp }: GlyphProps) {
+  const AXM = usePalette();
+  const color = colorProp ?? AXM.parchment;
   return <SvgXml xml={bodyXml} width={size} height={size} color={color} accessibilityRole="image" accessibilityLabel="Body stance glyph" />;
 });
 
-export const GlyphMind = React.memo(function GlyphMind({ size = 40, color = AXM.parchment, stroke = 2.4 }: GlyphProps) {
+export const GlyphMind = React.memo(function GlyphMind({ size = 40, color: colorProp, stroke = 2.4 }: GlyphProps) {
+  const AXM = usePalette();
+  const color = colorProp ?? AXM.parchment;
   return (
     <Svg width={size} height={size} viewBox="0 0 64 64" fill="none" accessibilityRole="image" accessibilityLabel="Mind stance glyph">
       <Path
@@ -55,7 +61,9 @@ export const GlyphMind = React.memo(function GlyphMind({ size = 40, color = AXM.
   );
 });
 
-export function StanceGlyph({ kind, size = 40, color = AXM.parchment, stroke = 2.4 }: GlyphProps & { kind: string }) {
+export function StanceGlyph({ kind, size = 40, color: colorProp, stroke = 2.4 }: GlyphProps & { kind: string }) {
+  const AXM = usePalette();
+  const color = colorProp ?? AXM.parchment;
   if (kind === 'heart') return <GlyphHeart size={size} color={color} stroke={stroke} />;
   if (kind === 'body') return <GlyphBody size={size} color={color} stroke={stroke} />;
   return <GlyphMind size={size} color={color} stroke={stroke} />;

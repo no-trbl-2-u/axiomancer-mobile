@@ -5,7 +5,8 @@ import { EventArt } from '@/components/event/EventArt';
 import { EventCodexHeader } from '@/components/event/EventCodexHeader';
 import { Splatter } from '@/components/Splatter';
 import { ActionIcon } from '@/components/ActionIcon';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import { useAesthetic } from '@/state/aesthetic-mode';
 import { selectEventCodexHeader } from '@/state/presenters/event.codex.engine';
 import type { EventViewModel } from '@/state/presenters/event.engine';
@@ -21,6 +22,8 @@ export function EncounterPreludeContent({
     onFight,
     onFlee,
 }: EncounterPreludeContentProps) {
+    const AXM = usePalette();
+    const styles = useStyles();
     const { mode: aesthetic } = useAesthetic();
     const isBoss = vm.variant === 'boss';
     const fightChoice = vm.choices.find((c) => c.id === 'fight');
@@ -148,7 +151,7 @@ export function EncounterPreludeContent({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     preludeHeader: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -263,4 +266,4 @@ const styles = StyleSheet.create({
         color: AXM.bone,
         letterSpacing: 1.4,
     },
-});
+}));

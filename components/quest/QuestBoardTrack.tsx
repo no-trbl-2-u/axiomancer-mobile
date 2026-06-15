@@ -22,7 +22,8 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import type { QuestSpaceVM } from '@/state/presenters/quest.engine';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 /** Grid cells (col,row) walking the w×h perimeter clockwise from (0,0). */
 export function perimeterCells(w: number, h: number): { col: number; row: number }[] {
@@ -42,17 +43,19 @@ export function ringDimensions(count: number): { w: number; h: number } {
     return { w, h };
 }
 
-export const QUEST_KIND_ACCENTS: Record<string, string> = {
-    slipway: AXM.sulfur,
-    gather: AXM.bone,
-    duel: AXM.blood,
-    snag: AXM.rust,
-    hearth: AXM.heal,
-    market: AXM.parchment,
-    parley: AXM.parchment,
-    cache: AXM.sulfur,
-    omen: AXM.sulfur,
-};
+export function questKindAccents(AXM: ReturnType<typeof usePalette>): Record<string, string> {
+    return {
+        slipway: AXM.sulfur,
+        gather: AXM.bone,
+        duel: AXM.blood,
+        snag: AXM.rust,
+        hearth: AXM.heal,
+        market: AXM.parchment,
+        parley: AXM.parchment,
+        cache: AXM.sulfur,
+        omen: AXM.sulfur,
+    };
+}
 
 interface QuestSpaceCellProps {
     space: QuestSpaceVM;
@@ -70,6 +73,8 @@ interface QuestSpaceCellProps {
 function QuestSpaceCell({
     space, left, top, size, accent, hasPiece, isTarget, isPath, arrivalKey,
 }: QuestSpaceCellProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
     const glow = useSharedValue(0);
     const pop = useSharedValue(1);
 
@@ -157,6 +162,9 @@ export interface QuestBoardTrackProps {
 export function QuestBoardTrack({
     spaces, size, pieceIndex, targetIndex, pathIndices, arrivalKey = 0, children,
 }: QuestBoardTrackProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
+    const QUEST_KIND_ACCENTS = questKindAccents(AXM);
     const { w, h } = ringDimensions(spaces.length);
     const cells = perimeterCells(w, h).slice(0, spaces.length);
     const cell = Math.floor(size / Math.max(w, h));
@@ -201,7 +209,7 @@ export function QuestBoardTrack({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     space: {
         position: 'absolute',
         borderWidth: 1,
@@ -241,4 +249,4 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         padding: 6,
     },
-});
+}));

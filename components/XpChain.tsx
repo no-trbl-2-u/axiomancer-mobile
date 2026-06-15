@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import Svg, { Ellipse } from 'react-native-svg';
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 interface XpChainProps {
   value: number;
@@ -10,6 +10,7 @@ interface XpChainProps {
 }
 
 export function XpChain({ value, max, links = 16 }: XpChainProps) {
+  const AXM = usePalette();
   const filled = Math.round((value / max) * links);
   return (
     <View style={styles.row}>

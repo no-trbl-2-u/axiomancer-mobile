@@ -1,8 +1,9 @@
 import React from 'react';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 export function PaperDoll() {
+    const AXM = usePalette();
     return (
         <Svg viewBox="0 0 70 180" width={52} height={140} fill="none">
             {/* halo */}

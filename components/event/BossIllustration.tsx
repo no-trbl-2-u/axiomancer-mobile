@@ -1,9 +1,10 @@
 import { StyleSheet } from 'react-native';
 import Svg, { Path, Circle, Ellipse, Line, Rect, G } from 'react-native-svg';
 
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 export function BossIllustration() {
+    const AXM = usePalette();
     return (
         <Svg 
             viewBox="0 0 374 360" 

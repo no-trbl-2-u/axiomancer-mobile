@@ -1,5 +1,6 @@
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { AXM, FONTS } from '@/theme/axm';
+import { View, Text, Pressable } from 'react-native';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 import { useGameActions } from '@/state/GameStoreProvider';
 import { TitleEmblem } from '@/components/art/TitleEmblem';
 import { FiligreeRule } from '@/components/art/Filigree';
@@ -9,6 +10,7 @@ interface TitleScreenProps {
 }
 
 export function TitleScreen({ onContinue }: TitleScreenProps) {
+  const styles = useStyles();
   const actions = useGameActions();
 
   const handleStartGame = () => {
@@ -65,7 +67,7 @@ export function TitleScreen({ onContinue }: TitleScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
   container: {
     flex: 1,
     backgroundColor: AXM.bg,
@@ -151,4 +153,4 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     opacity: 0.7,
   },
-});
+}));

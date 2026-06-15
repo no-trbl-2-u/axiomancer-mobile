@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { AXM, FONTS } from '@/theme/axm';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import { ActionIcon } from '@/components/ActionIcon';
 import type { ExplorationOption, NodeType } from '@/state/presenters/exploration.engine';
 
@@ -22,6 +23,8 @@ interface OptionRowProps {
 }
 
 export function OptionRow({ option: opt, onPress, leaguesLabel }: OptionRowProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
     const accent =
         opt.type === 'encounter' || opt.type === 'boss'
             ? AXM.blood
@@ -60,7 +63,7 @@ export function OptionRow({ option: opt, onPress, leaguesLabel }: OptionRowProps
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     stepCard: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -111,4 +114,4 @@ const styles = StyleSheet.create({
         fontSize: 18,
         color: AXM.parchment,
     },
-});
+}));

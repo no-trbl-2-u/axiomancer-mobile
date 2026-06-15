@@ -10,7 +10,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 interface FiligreeRuleProps {
     /** Total width of the rule. Defaults to filling the parent. */
@@ -19,16 +19,18 @@ interface FiligreeRuleProps {
     color?: string;
 }
 
-export function FiligreeRule({ width = '70%', color = AXM.sulfur }: FiligreeRuleProps) {
+export function FiligreeRule({ width = '70%', color }: FiligreeRuleProps) {
+    const AXM = usePalette();
+    const resolvedColor = color ?? AXM.sulfur;
     return (
         <View
             style={[styles.row, { width }]}
             accessibilityElementsHidden
             importantForAccessibility="no-hide-descendants"
         >
-            <View style={[styles.line, { backgroundColor: color }]} />
-            <View style={[styles.diamond, { borderColor: color }]} />
-            <View style={[styles.line, { backgroundColor: color }]} />
+            <View style={[styles.line, { backgroundColor: resolvedColor }]} />
+            <View style={[styles.diamond, { borderColor: resolvedColor }]} />
+            <View style={[styles.line, { backgroundColor: resolvedColor }]} />
         </View>
     );
 }

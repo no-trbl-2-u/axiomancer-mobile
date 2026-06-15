@@ -9,7 +9,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 import { isDialogueAppliedEvent } from 'axiomancer-mechanics';
 
@@ -20,7 +20,8 @@ import {
     selectHasActiveEvent,
     type EventChoice,
 } from '@/state/presenters/event.engine';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 /** How long the dialogue-confirmation ✓ stays visible (ported from
  *  the pre-Phase-137 event modal's Tick C). */
@@ -35,6 +36,7 @@ function ReplyRow({
     confirmed: boolean;
     onPress: () => void;
 }) {
+    const styles = useStyles();
     return (
         <TouchableOpacity
             accessibilityRole="button"
@@ -66,6 +68,7 @@ function ReplyRow({
 }
 
 export default function DialogueScreen() {
+    const styles = useStyles();
     // Same stable-slice subscription doctrine as the event screen —
     // the presenter returns a fresh frozen object per call.
     const slice = useGameState((s) => s.event);
@@ -164,7 +167,7 @@ export default function DialogueScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     scrollOuter: { flex: 1 },
     // Centre the conversation in the viewport so it doesn't sit in a sea
     // of empty black (critic round 1: narrative screens had huge dead space).
@@ -231,4 +234,4 @@ const styles = StyleSheet.create({
     abandon: { alignSelf: 'center', marginTop: 16, padding: 8 },
     abandonText: { fontFamily: FONTS.mono, fontSize: 11, letterSpacing: 2, color: AXM.bone },
     flexOne: { flex: 1 },
-});
+}));

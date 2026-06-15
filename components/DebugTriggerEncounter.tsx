@@ -39,7 +39,7 @@
  */
 
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
     EnemiesByMap,
@@ -52,7 +52,8 @@ import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useGameActions, useGameStore } from '@/state/GameStoreProvider';
 import { EMPTY_EVENT_SLICE } from '@/state/store';
 import type { NodeType } from '@/state/presenters/exploration.engine';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 type MapKey = keyof typeof EnemiesByMap;
 const DEFAULT_MAP: MapKey = 'fishing-village';
@@ -123,6 +124,7 @@ const PACED_EXTRAS: readonly { id: string; label: string; event: unknown }[] = [
 ];
 
 export function DebugTriggerEncounter() {
+    const styles = useStyles();
     const store = useGameStore();
     const actions = useGameActions();
     const router = useRouter();
@@ -280,7 +282,7 @@ export function DebugTriggerEncounter() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: {
         marginTop: 8,
         marginHorizontal: 12,
@@ -326,4 +328,4 @@ const styles = StyleSheet.create({
         color: AXM.rust,
         letterSpacing: 1,
     },
-});
+}));

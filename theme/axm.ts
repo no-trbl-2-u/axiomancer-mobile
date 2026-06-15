@@ -1,23 +1,23 @@
-import { type Palette, paletteFor, resolveActiveThemeId } from './palette';
+import { type Palette } from './palette';
+import { currentPalette, getActiveThemeId } from './runtime';
 
 /**
- * The active theme id, resolved **once** synchronously at module-load
- * (global override → persisted choice → default). Exported so the dev
- * switcher can highlight the current selection.
+ * The active theme id at module-load. Exported for backward compat and
+ * non-reactive callers; React code that must track switches should use
+ * `useThemeId()` from `theme/runtime` instead.
  */
-export const ACTIVE_THEME_ID = resolveActiveThemeId();
+export const ACTIVE_THEME_ID = getActiveThemeId();
 
 /**
- * Canonical colour palette — now a snapshot of the active theme. Every
- * component reads these keys; the keys/shape are unchanged from the
- * historical static palette, so all 150+ consumers are untouched.
- *
- * Resolved at module-load (before any importer's `StyleSheet.create`
- * runs), so static stylesheets capture the active theme's colours. See
- * `theme/palette.ts` for the registry, the per-token meaning, and how
- * runtime switching (reload-based) works.
+ * Canonical colour palette — a **static snapshot** of the active theme
+ * at module-load. Retained for non-reactive consumers (engine
+ * presenters that snapshot once, fixtures, fallbacks). Reactive UI must
+ * read colours via `usePalette()` / `makeStyles()` from `theme/runtime`
+ * so they re-paint when the theme switches without a reload. See
+ * `theme/palette.ts` for the registry and `theme/runtime.tsx` for the
+ * live store.
  */
-export const AXM: Palette = paletteFor(ACTIVE_THEME_ID);
+export const AXM: Palette = currentPalette();
 
 export const FONTS = {
   gothic: 'PirataOne_400Regular',

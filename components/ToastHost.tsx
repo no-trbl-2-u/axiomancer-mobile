@@ -12,15 +12,17 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 
 import { useGameEvents, useGameState, useGameStore } from '@/state/GameStoreProvider';
 import { selectInventoryToast } from '@/state/presenters/inventory-feedback.engine';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 const TOAST_TTL_MS = 3000;
 
 export function ToastHost() {
+    const styles = useStyles();
     const store = useGameStore();
     const toast = useGameState((s) => s.notifications?.toast ?? { text: null, id: 0 });
     const lastClearedIdRef = useRef<number>(toast.id);
@@ -85,7 +87,7 @@ export function ToastHost() {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     host: {
         position: 'absolute',
         left: 0,
@@ -106,4 +108,4 @@ const styles = StyleSheet.create({
         letterSpacing: 1.5,
         color: AXM.parchment,
     },
-});
+}));

@@ -10,7 +10,7 @@
 import React from 'react';
 import Svg, { Circle, Defs, G, Line, Path, RadialGradient, Stop } from 'react-native-svg';
 
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 interface PlayerPortraitProps {
     width?: number;
@@ -18,6 +18,7 @@ interface PlayerPortraitProps {
 }
 
 export function PlayerPortrait({ width = 80, height = 96 }: PlayerPortraitProps) {
+    const AXM = usePalette();
     return (
         <Svg
             width={width}

@@ -5,15 +5,18 @@
  */
 
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import type { GatherSatchelFamilyVM } from '@/state/presenters/gathering.engine';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 import { FamilyGlyph } from './glyphs';
 import { FAMILY } from './palette';
 
 function FamilyStack({ vm }: { vm: GatherSatchelFamilyVM }) {
+    const AXM = usePalette();
+    const styles = useStyles();
     const c = FAMILY[vm.family];
     const empty = vm.pieces === 0;
     const progress = Math.min(1, vm.richness / vm.setThreshold);
@@ -50,6 +53,7 @@ export function SatchelTray({
     count: number;
     richness: number;
 }) {
+    const styles = useStyles();
     return (
         <View style={styles.root} testID="gathering-satchel">
             <View style={styles.header}>
@@ -67,7 +71,7 @@ export function SatchelTray({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: { paddingHorizontal: 12, paddingVertical: 6 },
     header: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 5 },
     title: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 1.6, color: AXM.parchment, flexShrink: 0, marginRight: 8 },
@@ -97,4 +101,4 @@ const styles = StyleSheet.create({
         paddingVertical: 0.5,
         overflow: 'hidden',
     },
-});
+}));

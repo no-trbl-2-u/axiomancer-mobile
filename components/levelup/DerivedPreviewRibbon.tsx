@@ -8,8 +8,9 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { AXM, FONTS } from '@/theme/axm';
+import { View, Text } from 'react-native';
+import { FONTS } from '@/theme/axm';
+import { makeStyles } from '@/theme/runtime';
 
 export interface StancePreview {
     attack: number;
@@ -47,6 +48,7 @@ export function DerivedPreviewRibbon({
     preview,
     hasAllocations,
 }: DerivedPreviewRibbonProps) {
+    const styles = useStyles();
     return (
         <View style={styles.container} testID="derived-preview-ribbon">
             {/* Header row */}
@@ -109,6 +111,7 @@ interface StatCellProps {
 }
 
 function StatCell({ current, preview, hasAllocations, testID }: StatCellProps) {
+    const styles = useStyles();
     const delta = preview - current;
     const showDelta = hasAllocations && delta !== 0;
 
@@ -139,7 +142,7 @@ function StatCell({ current, preview, hasAllocations, testID }: StatCellProps) {
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     container: {
         backgroundColor: AXM.panelBg,
         borderWidth: 1,
@@ -187,4 +190,4 @@ const styles = StyleSheet.create({
         flex: 1,
         textAlign: 'right',
     },
-});
+}));

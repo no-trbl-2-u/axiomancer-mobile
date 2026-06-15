@@ -9,7 +9,7 @@
 import React from 'react';
 import { StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 
-import { AXM } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 export interface AftermathBackdropProps {
     /** Child modal content */
@@ -22,9 +22,10 @@ export interface AftermathBackdropProps {
 
 export default function AftermathBackdrop({
     children,
-    tint = AXM.deepBg,
+    tint,
     hatch = false,
 }: AftermathBackdropProps) {
+    const AXM = usePalette();
     // Non-dismissible: swallow tap-outside events
     const handleBackdropPress = () => {
         // Intentionally empty - no dismissal on tap-outside
@@ -32,7 +33,7 @@ export default function AftermathBackdrop({
 
     return (
         <TouchableWithoutFeedback onPress={handleBackdropPress}>
-            <View style={[styles.backdrop, { backgroundColor: tint }]}>
+            <View style={[styles.backdrop, { backgroundColor: tint ?? AXM.deepBg }]}>
                 {hatch && <View style={styles.hatchOverlay} />}
                 <TouchableWithoutFeedback>
                     <View style={styles.content}>

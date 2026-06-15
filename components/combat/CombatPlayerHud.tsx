@@ -1,10 +1,9 @@
 import React from 'react';
 import {
-    StyleSheet,
     View,
 } from 'react-native';
 
-import { AXM } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import type { CombatViewModel } from '@/state/presenters/combat.engine';
 import { StatBar } from '@/components/StatBar';
 import { StanceGlyph } from '@/components/StanceGlyph';
@@ -18,6 +17,8 @@ interface CombatPlayerHudProps {
 }
 
 export const CombatPlayerHud = React.memo(function CombatPlayerHud({ vm }: CombatPlayerHudProps) {
+    const styles = useStyles();
+    const AXM = usePalette();
     // Phase 73 — port the design's PlayerHUDLive (`prototype.jsx:
     // 452-472`). Sits at the bottom of the seal as a "your turn"
     // footer: stance glyph on the left (sulfur when a stance is
@@ -71,7 +72,7 @@ export const CombatPlayerHud = React.memo(function CombatPlayerHud({ vm }: Comba
     );
 });
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     // Phase 73 — design's PlayerHUDLive frame (`prototype.jsx:454`).
     // Sits at the bottom of the seal with a deepBg fill + 1px
     // borderTop, padding 8x16. The stance glyph sits left, content
@@ -81,4 +82,4 @@ const styles = StyleSheet.create({
     playerCol: { flex: 1, flexDirection: 'column', gap: 4 },
     playerMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     playerEffects: { flexDirection: 'row', gap: 3 },
-});
+}));

@@ -1,6 +1,7 @@
 import React from 'react';
 import Svg, { Circle } from 'react-native-svg';
-import { AXM, rnd } from '@/theme/axm';
+import { rnd } from '@/theme/axm';
+import { usePalette } from '@/theme/runtime';
 
 interface SplatterProps {
   color?: string;
@@ -9,7 +10,9 @@ interface SplatterProps {
   style?: object;
 }
 
-export function Splatter({ color = AXM.blood, size = 220, seed = 1, style = {} }: SplatterProps) {
+export function Splatter({ color: colorProp, size = 220, seed = 1, style = {} }: SplatterProps) {
+  const AXM = usePalette();
+  const color = colorProp ?? AXM.blood;
   const drops = Array.from({ length: 28 }, (_, i) => ({
     cx: 10 + rnd(i + 1, seed) * 200,
     cy: 10 + rnd(i + 7, seed) * 200,

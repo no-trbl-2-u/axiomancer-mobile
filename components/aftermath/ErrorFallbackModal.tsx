@@ -7,9 +7,10 @@
  */
 
 import React, { useState } from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, View, ScrollView, Alert } from 'react-native';
+import { Modal, Text, TouchableOpacity, View, ScrollView, Alert } from 'react-native';
 
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 import AftermathBackdrop from './AftermathBackdrop';
 import { TornPanel } from '@/components/TornPanel';
 
@@ -39,6 +40,8 @@ export default function ErrorFallbackModal({
     onRetry,
     onReturnHome,
 }: ErrorFallbackModalProps) {
+    const AXM = usePalette();
+    const styles = useStyles();
     const [copyPressed, setCopyPressed] = useState(false);
 
     if (!visible) {
@@ -154,7 +157,7 @@ export default function ErrorFallbackModal({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     container: {
         flex: 1,
         paddingHorizontal: 20,
@@ -258,4 +261,4 @@ const styles = StyleSheet.create({
         lineHeight: 16,
         paddingHorizontal: 16,
     },
-});
+}));

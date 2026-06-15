@@ -9,7 +9,7 @@
  */
 
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
 import type {
@@ -20,19 +20,21 @@ import type {
     GatheringViewModel,
 } from '@/state/presenters/gathering.engine';
 import type { GatherToolId } from 'axiomancer-mechanics';
-import { AXM, FONTS } from '@/theme/axm';
+import { FONTS } from '@/theme/axm';
+import { makeStyles, usePalette } from '@/theme/runtime';
 
 import { GraceMark, Roots, ToolGlyph } from './glyphs';
 import { PlotCard } from './PlotCard';
 import { SatchelTray } from './SatchelTray';
 import { WrathMeter } from './WrathMeter';
-import { GRACE_ACCENT } from './palette';
 
 // ---------------------------------------------------------------------------
 // Small parts
 // ---------------------------------------------------------------------------
 
 function DepthRibbon({ vm }: { vm: GatheringViewModel }) {
+    const AXM = usePalette();
+    const styles = useStyles();
     return (
         <View style={styles.depthRow}>
             {vm.depthNames.map((name, i) => {
@@ -59,6 +61,8 @@ function DepthRibbon({ vm }: { vm: GatheringViewModel }) {
 }
 
 function BoonChip({ boon }: { boon: GatherBoonVM }) {
+    const AXM = usePalette();
+    const styles = useStyles();
     const tone =
         boon.status === 'done' ? '#86a821' : boon.status === 'failed' ? AXM.ash : AXM.bone;
     return (
@@ -85,6 +89,8 @@ function OfferingChip({
     offering: GatherOfferingVM;
     onPay: (id: string) => void;
 }) {
+    const AXM = usePalette();
+    const styles = useStyles();
     const disabled = offering.paid || !offering.payable;
     return (
         <Pressable
@@ -100,12 +106,12 @@ function OfferingChip({
             style={[
                 styles.offeringChip,
                 {
-                    borderColor: offering.paid ? '#86a821' : disabled ? AXM.ash : GRACE_ACCENT,
+                    borderColor: offering.paid ? '#86a821' : disabled ? AXM.ash : AXM.sulfur,
                     opacity: !offering.paid && disabled ? 0.5 : 1,
                 },
             ]}
         >
-            <GraceMark size={13} color={offering.paid ? '#86a821' : GRACE_ACCENT} />
+            <GraceMark size={13} color={offering.paid ? '#86a821' : AXM.sulfur} />
             <View style={{ flexShrink: 1 }}>
                 <Text style={[styles.offeringName, offering.paid && { color: '#86a821' }]} numberOfLines={1}>
                     {offering.name}
@@ -119,6 +125,8 @@ function OfferingChip({
 }
 
 function ToolChip({ tool, onUse }: { tool: GatherToolVM; onUse: (id: GatherToolId) => void }) {
+    const AXM = usePalette();
+    const styles = useStyles();
     return (
         <Pressable
             accessibilityRole="button"
@@ -162,6 +170,7 @@ export function GatheringBoard({
     onUseTool: (id: GatherToolId) => void;
     onWithdraw: () => void;
 }) {
+    const styles = useStyles();
     return (
         <View style={styles.root} testID="gathering-board">
             {/* top strip */}
@@ -289,7 +298,7 @@ export function GatheringBoard({
     );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((AXM) => ({
     root: { flex: 1, backgroundColor: '#0b0c08' },
     topStrip: {
         flexDirection: 'row',
@@ -416,4 +425,4 @@ const styles = StyleSheet.create({
     withdrawCta: { borderColor: AXM.parchment, backgroundColor: AXM.bg },
     withdrawText: { fontFamily: FONTS.gothic, fontSize: 15, letterSpacing: 1.5, color: AXM.parchment },
     ctaSub: { fontFamily: FONTS.mono, fontSize: 10, letterSpacing: 1, color: AXM.bone, marginTop: 1 },
-});
+}));

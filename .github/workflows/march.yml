@@ -147,10 +147,13 @@ jobs:
         uses: anthropics/claude-code-base-action@beta
         with:
           prompt: "/march ${{ github.event.inputs.args }}"
-          # Pin an active model. The action's built-in default was
-          # claude-sonnet-4-20250514, which retired 2026-06-15 and now 404s;
-          # claude-sonnet-4-6 is its drop-in successor.
-          model: claude-sonnet-4-6
+          # Pin an active model. The action's built-in default
+          # (claude-sonnet-4-20250514) retired 2026-06-15 and now 404s.
+          # Opus 4.8 runs the 1M-token context window natively on the API.
+          model: claude-opus-4-8
+          # Reasoning effort for the autonomous loop (low|medium|high|...).
+          claude_env: |
+            CLAUDE_CODE_EFFORT_LEVEL: medium
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           allowed_tools: "Bash,Read,Edit,Write,Glob,Grep,Agent,TodoWrite,WebFetch,WebSearch"
           settings: '{"permissions":{"defaultMode":"bypassPermissions","skipDangerousModePermissionPrompt":true}}'

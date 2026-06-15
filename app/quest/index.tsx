@@ -80,10 +80,24 @@ export default function QuestScreen() {
         }
     }, [land.arrivalKey, vm.pending]);
 
+    // Hold the gathered-parts ledger (and the hull bar it feeds) steady
+    // while a cast is in flight: the counts should tick over only once the
+    // space resolves and the player walks on — never mid-tumble or mid-walk.
+    // The gate is the engine phase, which flips synchronously with the roll,
+    // not the choreography stage, which lags it by a frame.
+    const settledPartsRef = useRef(vm.parts);
+    const settledProgressRef = useRef(vm.boatProgress);
+    if (vm.phase !== 'space') {
+        settledPartsRef.current = vm.parts;
+        settledProgressRef.current = vm.boatProgress;
+    }
+
     if (!vm.active) return <ScreenBg><View /></ScreenBg>;
 
     const boardSize = Math.min(width - 16, 420);
     const stretchPips = Array.from({ length: vm.stretchesPerDay }, (_, i) => i < vm.stretch);
+    const shownParts = settledPartsRef.current;
+    const shownProgress = settledProgressRef.current;
 
     return (
         <ScreenBg>
@@ -108,9 +122,9 @@ export default function QuestScreen() {
                     </View>
                 </View>
 
-                {/* Boat-build progress (U3) */}
+                {/* Boat-build progress (U3) — held steady mid-cast */}
                 <QuestHullMeter
-                    progress={vm.boatProgress}
+                    progress={shownProgress}
                     tierLabel={QUEST_TIER_LABELS[vm.tierPreview]}
                 />
 
@@ -125,8 +139,8 @@ export default function QuestScreen() {
                 >
                     {/* Center well: the hull ledger + the bone die */}
                     <View style={styles.wellParts} testID="quest-parts">
-                        {vm.parts.map(p => (
-                            <Text key={p.kind} style={styles.partLine}>
+                        {shownParts.map(p => (
+                            <Text key={p.kind} style={styles.partLine} testID={`quest-part-${p.kind}`}>
                                 {p.label}{' '}
                                 <Text style={{ color: p.fitted >= p.required ? AXM.heal : AXM.parchment }}>
                                     {p.fitted}/{p.required}

@@ -55,6 +55,20 @@ function rigQuest(store: AppStore, over: Partial<QuestBoardSession>): void {
     store.setState({ quest: { session: { ...s, ...over } } });
 }
 
+/** Concatenates all rendered text under a testID (handles nested <Text>). */
+function flattenText(testID: string): string {
+    const out: string[] = [];
+    const walk = (c: unknown): void => {
+        if (c == null || c === false) return;
+        if (typeof c === 'string' || typeof c === 'number') { out.push(String(c)); return; }
+        if (Array.isArray(c)) { c.forEach(walk); return; }
+        const el = c as { props?: { children?: unknown } };
+        if (el.props && el.props.children !== undefined) walk(el.props.children);
+    };
+    walk(screen.getByTestId(testID).props.children);
+    return out.join('');
+}
+
 describe('quest screen', () => {
     it('shows the board reveal, then the track, resources, and charms', () => {
         const { store, actions } = mount(<QuestScreen />);
@@ -173,6 +187,41 @@ describe('quest screen', () => {
         fireEvent.press(screen.getByTestId('quest-legend-toggle'));
         // The slipway is always on the board, so its row must appear.
         expect(screen.getByTestId('quest-legend-slipway')).toBeTruthy();
+    });
+
+    it('holds the gathered-parts ledger and hull steady until the cast resolves', () => {
+        jest.useFakeTimers();
+        try {
+            const { store, actions } = mount(<QuestScreen />);
+            act(() => {
+                actions.beginQuestBoard({ seed: 7, boardId: 'build-the-boat' });
+                actions.startQuestBoardPlay();
+            });
+            const beforeParts = flattenText('quest-parts');
+            const beforeHull = flattenText('quest-hull-tier');
+
+            // Mid-cast: the engine has already fitted new parts, but the space
+            // hasn't been walked-on yet (phase is still 'space').
+            const s = store.getState().quest.session!;
+            const bumpedFitted = Object.fromEntries(
+                Object.keys(s.fitted).map(k => [k, (s.fitted as Record<string, number>)[k] + 1]),
+            );
+            act(() => {
+                rigQuest(store, { phase: 'space', fitted: bumpedFitted as typeof s.fitted });
+            });
+            // Frozen — neither the middle ledger nor the hull bar moved.
+            expect(flattenText('quest-parts')).toBe(beforeParts);
+            expect(flattenText('quest-hull-tier')).toBe(beforeHull);
+
+            // The cast resolves (phase leaves 'space') → both catch up.
+            act(() => {
+                rigQuest(store, { phase: 'idle' });
+            });
+            expect(flattenText('quest-parts')).not.toBe(beforeParts);
+            expect(flattenText('quest-hull-tier')).not.toBe(beforeHull);
+        } finally {
+            jest.useRealTimers();
+        }
     });
 
     it('the outcome ledger claims and clears the table', () => {

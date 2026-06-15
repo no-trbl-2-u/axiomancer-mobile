@@ -149,6 +149,32 @@ export const QUEST_SPACE_GLYPHS: Record<QuestSpaceKind, string> = Object.freeze(
     omen: '▶',
 });
 
+/** Short legend label per space kind (the "what the marks mean" key). */
+export const QUEST_SPACE_KIND_LABELS: Record<QuestSpaceKind, string> = Object.freeze({
+    slipway: 'SLIPWAY',
+    gather: 'GATHER',
+    duel: 'DUEL',
+    snag: 'SNAG',
+    hearth: 'HEARTH',
+    market: 'MARKET',
+    parley: 'PARLEY',
+    cache: 'CACHE',
+    omen: 'OMEN',
+});
+
+/** One-line meaning shown beneath each legend label. */
+export const QUEST_SPACE_KIND_BLURBS: Record<QuestSpaceKind, string> = Object.freeze({
+    slipway: 'Launch the piece; lap it to complete a day.',
+    gather: 'Forage parts and fish from the shore.',
+    duel: 'A fight — win to seize, lose and bleed vigor.',
+    snag: 'A hazard that can drag the piece back.',
+    hearth: 'Rest a while and mend vigor.',
+    market: 'Trade fish for the parts you still want.',
+    parley: 'Talk your way toward a boon.',
+    cache: 'A found stash, free for the taking.',
+    omen: 'Fate turns — a vow is put to the test.',
+});
+
 export const QUEST_TIER_LABELS: Record<QuestOutcomeTier, string> = Object.freeze({
     masterwork: 'MASTERWORK',
     seaworthy: 'SEAWORTHY',

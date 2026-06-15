@@ -6,10 +6,20 @@
  *
  * Geometry: spaces walk the perimeter of a near-square grid clockwise
  * from the top-left (index 0 = the slipway). 16 spaces → a 5×5 ring.
+ *
+ * The track also renders two bits of landing choreography fed by
+ * `useQuestLanding`: the destination/route preview while the piece
+ * walks (U1), and a kind-coloured flash on the cell it lands on (U2).
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import Animated, {
+    useAnimatedStyle,
+    useSharedValue,
+    withSequence,
+    withTiming,
+} from 'react-native-reanimated';
 
 import type { QuestSpaceVM } from '@/state/presenters/quest.engine';
 import { AXM, FONTS } from '@/theme/axm';
@@ -32,7 +42,7 @@ export function ringDimensions(count: number): { w: number; h: number } {
     return { w, h };
 }
 
-const KIND_ACCENTS: Record<string, string> = {
+export const QUEST_KIND_ACCENTS: Record<string, string> = {
     slipway: AXM.sulfur,
     gather: AXM.bone,
     duel: AXM.blood,
@@ -44,19 +54,114 @@ const KIND_ACCENTS: Record<string, string> = {
     omen: AXM.sulfur,
 };
 
+interface QuestSpaceCellProps {
+    space: QuestSpaceVM;
+    left: number;
+    top: number;
+    size: number;
+    accent: string;
+    hasPiece: boolean;
+    isTarget: boolean;
+    isPath: boolean;
+    /** Bumps when a piece lands; triggers the flourish if this is the cell. */
+    arrivalKey: number;
+}
+
+function QuestSpaceCell({
+    space, left, top, size, accent, hasPiece, isTarget, isPath, arrivalKey,
+}: QuestSpaceCellProps) {
+    const glow = useSharedValue(0);
+    const pop = useSharedValue(1);
+
+    // Flash + pop when the piece lands on this cell (U2). Skips key 0 so
+    // the board doesn't flash on first mount.
+    useEffect(() => {
+        if (!hasPiece || arrivalKey === 0) return;
+        glow.value = withSequence(withTiming(1, { duration: 110 }), withTiming(0, { duration: 440 }));
+        pop.value = withSequence(withTiming(1.35, { duration: 110 }), withTiming(1, { duration: 320 }));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [arrivalKey]);
+
+    const glowStyle = useAnimatedStyle(() => ({ opacity: glow.value }));
+    const glyphStyle = useAnimatedStyle(() => ({ transform: [{ scale: pop.value }] }));
+
+    const borderColor = hasPiece
+        ? AXM.sulfur
+        : isTarget
+          ? AXM.sulfur
+          : isPath
+            ? AXM.bone
+            : AXM.ash;
+    const backgroundColor = hasPiece ? AXM.selectFill : AXM.panelBg;
+
+    return (
+        <View
+            accessibilityLabel={`${space.name}${hasPiece ? ', the piece stands here' : isTarget ? ', the piece is bound here' : ''}`}
+            style={[
+                styles.space,
+                {
+                    left,
+                    top,
+                    width: size,
+                    height: size,
+                    borderColor,
+                    borderWidth: isTarget && !hasPiece ? 2 : 1,
+                    backgroundColor,
+                },
+            ]}
+            testID={`quest-space-${space.index}`}
+        >
+            {/* Kind-coloured arrival flash overlay (U2). */}
+            <Animated.View
+                pointerEvents="none"
+                style={[styles.glow, { backgroundColor: accent }, glowStyle]}
+                testID={`quest-space-glow-${space.index}`}
+            />
+            <Animated.Text style={[styles.glyph, { color: accent }, glyphStyle]}>
+                {space.glyph}
+            </Animated.Text>
+            {hasPiece && (
+                <Text style={styles.piece} testID="quest-piece">
+                    ◆
+                </Text>
+            )}
+            {isTarget && !hasPiece && (
+                <Text style={styles.flag} testID={`quest-target-${space.index}`}>
+                    ⚑
+                </Text>
+            )}
+        </View>
+    );
+}
+
 export interface QuestBoardTrackProps {
     spaces: readonly QuestSpaceVM[];
     /** Width available; the track renders a square of this size. */
     size: number;
+    /**
+     * Index the piece is *shown* at. Overrides each space's baked
+     * `isPiece` so the landing choreography can walk the piece a space
+     * at a time. Falls back to the VM's own marker when omitted.
+     */
+    pieceIndex?: number;
+    /** Destination the piece is bound for this cast — drawn with a flag (U1). */
+    targetIndex?: number | null;
+    /** Route spaces to the destination — drawn with a brighter border (U1). */
+    pathIndices?: readonly number[];
+    /** Bumps each landing; the destination cell flashes its kind colour (U2). */
+    arrivalKey?: number;
     /** Rendered inside the center well. */
     children?: React.ReactNode;
 }
 
-export function QuestBoardTrack({ spaces, size, children }: QuestBoardTrackProps) {
+export function QuestBoardTrack({
+    spaces, size, pieceIndex, targetIndex, pathIndices, arrivalKey = 0, children,
+}: QuestBoardTrackProps) {
     const { w, h } = ringDimensions(spaces.length);
     const cells = perimeterCells(w, h).slice(0, spaces.length);
     const cell = Math.floor(size / Math.max(w, h));
     const pad = 2;
+    const pathSet = React.useMemo(() => new Set(pathIndices ?? []), [pathIndices]);
 
     return (
         <View style={{ width: cell * w, height: cell * h, alignSelf: 'center' }} testID="quest-board-track">
@@ -76,31 +181,20 @@ export function QuestBoardTrack({ spaces, size, children }: QuestBoardTrackProps
             </View>
             {spaces.map((space, i) => {
                 const at = cells[i];
-                const accent = KIND_ACCENTS[space.kind] ?? AXM.bone;
+                const hasPiece = pieceIndex === undefined ? space.isPiece : pieceIndex === space.index;
                 return (
-                    <View
+                    <QuestSpaceCell
                         key={space.id}
-                        accessibilityLabel={`${space.name}${space.isPiece ? ', the piece stands here' : ''}`}
-                        style={[
-                            styles.space,
-                            {
-                                left: at.col * cell + pad,
-                                top: at.row * cell + pad,
-                                width: cell - pad * 2,
-                                height: cell - pad * 2,
-                                borderColor: space.isPiece ? AXM.sulfur : AXM.ash,
-                                backgroundColor: space.isPiece ? AXM.selectFill : AXM.panelBg,
-                            },
-                        ]}
-                        testID={`quest-space-${space.index}`}
-                    >
-                        <Text style={[styles.glyph, { color: accent }]}>{space.glyph}</Text>
-                        {space.isPiece && (
-                            <Text style={styles.piece} testID="quest-piece">
-                                ◆
-                            </Text>
-                        )}
-                    </View>
+                        space={space}
+                        left={at.col * cell + pad}
+                        top={at.row * cell + pad}
+                        size={cell - pad * 2}
+                        accent={QUEST_KIND_ACCENTS[space.kind] ?? AXM.bone}
+                        hasPiece={hasPiece}
+                        isTarget={targetIndex === space.index}
+                        isPath={pathSet.has(space.index)}
+                        arrivalKey={arrivalKey}
+                    />
                 );
             })}
         </View>
@@ -113,6 +207,11 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         alignItems: 'center',
         justifyContent: 'center',
+        overflow: 'hidden',
+    },
+    glow: {
+        ...StyleSheet.absoluteFillObject,
+        opacity: 0,
     },
     glyph: {
         fontSize: 16,
@@ -124,6 +223,13 @@ const styles = StyleSheet.create({
         right: 3,
         fontFamily: FONTS.gothic,
         fontSize: 14,
+        color: AXM.sulfur,
+    },
+    flag: {
+        position: 'absolute',
+        top: 0,
+        right: 2,
+        fontSize: 11,
         color: AXM.sulfur,
     },
     well: {

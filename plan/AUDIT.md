@@ -14,7 +14,7 @@
 
 ## Top 5 findings (scored)
 
-### [ ] [5.6] NodeGrid component missing test coverage affecting exploration maintainability
+### [x] [5.6] NodeGrid component missing test coverage affecting exploration maintainability
 - category: tests
 - impact: 7
 - ease: 8
@@ -28,6 +28,8 @@
 - suggested fix: Create components/exploration/__tests__/NodeGrid.test.tsx with node rendering and interaction testing
 - source: audit
 - issue: #410
+- addressed: 2026-06-15 via commit 8078435
+- fix: Added comprehensive test coverage for NodeGrid component including node rendering, empty state handling, onNodePress delegation, labeled node ID propagation, and available vs locked node behavior validation following established exploration component test patterns.
 
 ### [ ] [5.6] ItemGrid component missing test coverage affecting inventory maintainability
 - category: tests

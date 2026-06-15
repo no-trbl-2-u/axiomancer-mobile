@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-14 at commit 205d32c
-> Pass count: 76
+> Last pass: 2026-06-15 at commit ae63384
+> Pass count: 77
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -356,6 +356,38 @@
 - rationale: Concentrated cast pattern in presenter layer creates type safety gaps. Aggressive posture accepts this smell as primary signal for targeted cleanup.
 - proposed scope: 1-phase replacement of unsafe casts with proper typing in presenter boundary files
 - estimated phases: 1
+- conflicts: none
+
+### [ ] [score 10.0] Core component test coverage completion
+- proposed: 2026-06-15, expand pass 77
+- source signals:
+  - **Audit clustering**: GatheringOverlays [10.0], InventoryTabs [9.0], Art components [7.2] — three high-impact audit findings for missing test coverage
+  - **Test coverage momentum**: Recent test additions for MapCanvas, PlotCard, ItemGrid following established patterns
+  - **Gameplay/content bias**: Audit bias weights gameplay components 1.5x, making these coverage gaps high-priority
+- rationale: Multiple independent audit findings all point to core component test coverage gaps affecting gameplay maintainability. Signal multiplicity and audit scoring indicate systemic test debt in critical user-facing components.
+- proposed scope: 1-phase test coverage sweep for GatheringOverlays, InventoryTabs, and Art components directory following established component test patterns
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 7.0] Design documentation integration phase  
+- proposed: 2026-06-15, expand pass 77
+- source signals:
+  - **Design landings**: New gathering.md (270 lines) documenting minigame UX patterns landed 2026-06-15
+  - **Documentation export**: New hazard-card-library.md providing comprehensive card library reference  
+  - **Integration gap**: Design documentation exists but lacks integration with existing spec/docs structure
+- rationale: Fresh design documentation exports landed within the last 24 hours but exist in isolation from the established documentation architecture. Design consistency requires integration.
+- proposed scope: 1-phase integration of new design documentation with existing docs/ and specs/ structure, cross-referencing, and navigation updates
+- estimated phases: 1
+- conflicts: none
+
+### [ ] [score 6.0] TypeScript cast reduction systematic audit
+- proposed: 2026-06-15, expand pass 77  
+- source signals:
+  - **Type safety smell**: 219 `as any`/`as unknown` occurrences across 76 files (aggressive posture smell detection)
+  - **Test coverage correlation**: Type safety issues compound with missing test coverage for proper validation
+- rationale: Widespread type safety debt across the codebase creates maintenance risk and reduces TypeScript's value. High occurrence count indicates systematic rather than isolated issue.
+- proposed scope: 3-phase systematic audit and reduction of type casts with typed wrapper functions, focusing on highest-density files first
+- estimated phases: 3
 - conflicts: none
 
 ## Drained / shipped

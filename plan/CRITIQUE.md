@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-15 at commit 772f0c0
-> Pass count: 43
+> Last pass: 2026-06-15 at commit 2da7843
+> Pass count: 44
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -26,22 +26,42 @@
 
 ## Pending
 
-<!-- Pass 43 (2026-06-15, commit 772f0c0): repo-proxy pass —
+<!-- Pass 44 (2026-06-15, commit 2da7843): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
      critique reads docs/specs/artifacts as the "fresh maintainer"
      proxy. Focus on general repository comprehension for new
      contributors. Examined README.md, docs/README.md, specs/README.md,
      setup/, SVG_ASSET_SPEC.md, package.json, plan/README.md.
-     2 findings filed below. -->
+     3 findings filed below. Pass 43 HIGH finding resolved (setup files created). -->
 
-### [HIGH] /setup/01_repository.md — Setup guide references non-existent future setup files
-- pass: 43 (commit 772f0c0)
+### [MED] /README.md — Engine version pinning documentation inconsistent
+- pass: 44 (commit 2da7843)
 - viewport: desktop
 - auth_state: anonymous
-- category: navigation
-- observation: Repository setup guide promises future setup files that don't exist, creating broken workflow for new maintainers
-- evidence: Lines 232-234: 'See [`setup/02_eas.md`](./02_eas.md) _(Coming Soon)_' and similar references to 03_store_setup.md and 04_claude_playtest.md that lead nowhere
-- suggested fix: Either create the promised files or remove the coming soon references
+- category: comprehension
+- observation: README and bearings.md give conflicting guidance about engine pinning strategy causing confusion about upgrade policies
+- evidence: README line 233 states "Current engine version: axiomancer-mechanics ^0.21.0" but bearings.md lines 79-80 specify "exact" pinning after drift incident and package.json shows caret usage
+- suggested fix: Align documentation to clarify exact vs caret pinning strategy
+- source: file-read
+
+### [MED] /docs/README.md — Engine upgrade documentation outdated for current version
+- pass: 44 (commit 2da7843)
+- viewport: desktop
+- auth_state: anonymous
+- category: comprehension
+- observation: Documentation references multiple old engine upgrade guides but lacks current 0.21.0 upgrade context
+- evidence: Shows upgrade paths from 0.7.0-0.16.0 in lines 24-33 but current is 0.21.0, missing recent upgrade documentation chain
+- suggested fix: Add note indicating which upgrade docs are historical vs current or provide 0.20.0-to-0.21.0 reference
+- source: file-read
+
+### [LOW] /SVG_ASSET_SPEC.md — Asset completion checklist lacks context
+- pass: 44 (commit 2da7843)
+- viewport: desktop
+- auth_state: anonymous
+- category: comprehension
+- observation: Asset replacement checklist shows items completed without commit references or completion dates
+- evidence: Lines 261-263 show completed items "GlyphHeart" and "GlyphBody" but no indication of when or how replacement was done
+- suggested fix: Add commit references or completion dates to completed checklist items
 - source: file-read
 
 ### [LOW] /docs/README.md — Duplicate priority classification creates confusion
@@ -1014,6 +1034,16 @@
 - suggested fix: Add clear 'TODO' or 'Coming Soon' annotations to setup guide references until runbooks are authored
 - source: repo-proxy
 - addressed: 2026-06-14 via commit e253c8d
+### [x] [HIGH] /setup/01_repository.md — Setup guide references non-existent future setup files
+- pass: 43 (commit 772f0c0)
+- viewport: desktop
+- auth_state: anonymous
+- category: navigation
+- observation: Repository setup guide promises future setup files that don't exist, creating broken workflow for new maintainers
+- evidence: Lines 232-234 reference setup/02_eas.md, setup/03_store_setup.md, setup/04_claude_playtest.md with "Coming Soon" but these create dead links
+- suggested fix: Either create the promised files or remove the coming soon references
+- source: file-read
+- addressed: 2026-06-15 via pass 44 (setup files now exist with real content)
 
 ### [x] [MED] /setup/ — Setup documentation usage guidance unclear for fresh maintainers ✅
 - pass: 38 (commit f7112f9)

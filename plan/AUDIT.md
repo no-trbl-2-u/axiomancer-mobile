@@ -31,7 +31,7 @@
 - addressed: 2026-06-15 via commit b7882aa
 - fix: Added comprehensive test coverage for MapCanvas component including basic rendering, viewport layout handling, node lookup validation, centering logic for focus nodes, gesture integration points, and children rendering following established exploration component test patterns.
 
-### [ ] [10.0] PlotCard component missing test coverage affecting gathering minigame maintainability  
+### [x] [10.0] PlotCard component missing test coverage affecting gathering minigame maintainability  
 - category: tests
 - impact: 8
 - ease: 9
@@ -44,6 +44,9 @@
 - evidence: Component renders gathering plots with family colors, trait indicators, and wrath costs but missing from components/gathering/__tests__/ directory
 - suggested fix: Create components/gathering/__tests__/PlotCard.test.tsx covering spread/detail/preview modes, trait rendering, and wrath cost display following gathering component patterns
 - source: audit
+- issue: #417
+- addressed: 2026-06-15 via commit 7a41373
+- fix: Added comprehensive test coverage for PlotCard component including all three render modes (spread/detail/preview), family rendering across all families, trait display for various traits, yield/wrath cost display, edge cases, and accessibility features following established gathering component test patterns.
 
 ### [ ] [10.0] GatheringOverlays component missing test coverage affecting minigame interaction maintainability
 - category: tests

@@ -1,4 +1,4 @@
-# Site audit — 2026-06-14
+# Site audit — 2026-06-15
 
 > Bias: gameplay/content (set via oversight 2026-06-11 — supersedes onboarding/docs bias from 2026-06-11)
 > /iterate weights gameplay/content findings 1.5×: encounter progression, enemy tuning,
@@ -10,9 +10,38 @@
 > findings 0.5× so they no longer outrank player-facing gameplay work.
 > Conducted by: /iterate autonomous audit
 
-> **Latest audit update (2026-06-14).** Comprehensive /iterate audit conducted identifying engine version inconsistencies and continuing test coverage gaps across multiple component categories.
+> **Latest audit update (2026-06-15).** Fresh /iterate audit conducted identifying 29 components still missing test coverage, with core exploration and inventory components requiring immediate attention.
 
 ## Top 5 findings (scored)
+
+### [ ] [5.6] NodeGrid component missing test coverage affecting exploration maintainability
+- category: tests
+- impact: 7
+- ease: 8
+- base-score: 5.6
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.0 (no bias applied to tests category)
+- final-score: 5.6
+- next: Add hermetic test for NodeGrid component following existing exploration component test patterns
+- observation: NodeGrid component at components/exploration/NodeGrid.tsx lacks test coverage despite being core to exploration navigation
+- evidence: Component renders exploration nodes for player navigation but missing from components/exploration/__tests__/ directory
+- suggested fix: Create components/exploration/__tests__/NodeGrid.test.tsx with node rendering and interaction testing
+- source: audit
+- issue: #410
+
+### [ ] [5.6] ItemGrid component missing test coverage affecting inventory maintainability
+- category: tests
+- impact: 7
+- ease: 8
+- base-score: 5.6
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.0 (no bias applied to tests category)
+- final-score: 5.6
+- next: Add hermetic test for ItemGrid component following existing inventory component test patterns
+- observation: ItemGrid component at components/inventory/ItemGrid.tsx lacks test coverage despite being core to inventory display
+- evidence: Component handles inventory item rendering and categorization but missing from components/inventory/__tests__/ directory
+- suggested fix: Create components/inventory/__tests__/ItemGrid.test.tsx following ItemCard test pattern with item rendering and categorization testing
+- source: audit
 
 ### [x] [3.0] Engine version inconsistency in plan/bearings.md documentation
 - category: external-critique

@@ -63,6 +63,7 @@
 - evidence: Lines 261-263 show completed items "GlyphHeart" and "GlyphBody" but no indication of when or how replacement was done
 - suggested fix: Add commit references or completion dates to completed checklist items
 - source: file-read
+- resolution: Duplicate of pass-41 finding already addressed at commit e253c8d (2026-06-14). The "Coming Soon" annotations are the intentional treatment — the runbooks are acknowledged as not-yet-authored rather than silently broken. Closed via oversight 2026-06-15.
 
 ### [LOW] /docs/README.md — Duplicate priority classification creates confusion
 - pass: 43 (commit 772f0c0)

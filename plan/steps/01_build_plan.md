@@ -54,7 +54,8 @@ commit that ships the phase.
 
 **Next up (autonomous loop's queue):**
 
-> **Queue-drained steering (set via oversight 2026-06-13; updated via T steering 2026-06-15).**
+> **Queue-drained steering (set via oversight 2026-06-13; updated via T steering 2026-06-15;
+> post-126 directive added via oversight 2026-06-15).**
 > Phase 122 (playtest-gap discovery) shipped [cb26742]. Phase 124 (mechanics 0.21 catch-up)
 > shipped [ff48fcd]. T accepted the Hazard UX follow-up as the next player-facing runway:
 > Phase 125 adds reward-card preview + confirm behavior, Phase 126 adds the Hazard
@@ -63,6 +64,9 @@ commit that ships the phase.
 > removing false dice-roll tracking from skill use.
 > Do not promote sub-4.0 cleanup candidates ahead of these accepted UX phases unless
 > a blocking regression appears.
+> **After Phase 126 ships:** fire an `/expand` pass to surface concrete player-facing candidates
+> (gameplay, content, encounter UX, story depth — not sub-4.0 cleanup), then promote from the
+> fresh batch at the next `/oversight` call.
 
 - [x] Phase 125 — Hazard reward choice confirmation overlay. Filed by T direct steering 2026-06-15. Reward-card choice needs a confirm button: tapping a reward card opens an overlay showing only the card, keywords, archetype, and current deck count where available; do **not** expose hidden fix/payoff/risk labels. Confirm commits the pick; cancel returns to the 3-card offer. Do not duplicate existing projection/apply behavior and do not add route-choice opening-hand hints. Brief: `plan/phases/phase_125_hazard_reward_choice_confirm_overlay.md`. Verification: focused reward overlay Jest + `npm run typecheck` + `npm run verify` + visual-smoke evidence or exact blocker. `[DONE on 2026-06-15 — see commit 8086b11]`.
 

@@ -350,6 +350,17 @@ function cardVM(entry: HazardHandEntry, session: HazardSessionState): HazardCard
     };
 }
 
+/**
+ * Build a static (un-staged) card VM straight from a card id — the
+ * same shape the rewards offer uses. Phase 126 reuses this so the
+ * persistent deck screen and remove-card grid render identical
+ * `HazardCard` stock to the in-encounter hand. Unknown ids fall
+ * through to the engine's own throw, matching offer behaviour.
+ */
+export function cardVMFromId(cardId: string): HazardCardVM {
+    return offerCardVM(getHazardCardDef(cardId));
+}
+
 function offerCardVM(def: HazardCardDef): HazardCardVM {
     return {
         uid: `offer-${def.id}`,

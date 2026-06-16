@@ -89,6 +89,9 @@ const EXPECTED_ROUTE_FILES: ReadonlySet<string> = new Set([
     './event/index.tsx',
     // Hazard minigame (design handoff 2026-06-10).
     './hazard/index.tsx',
+    // Phase 126 — persistent Hazard deck / library + remove-card grid,
+    // reachable from the SELF tab outside an encounter.
+    './hazard-deck/index.tsx',
     // Gathering minigame — "The Gleaning" (Forage archetype).
     './gathering/index.tsx',
     // Phase 137 — dedicated encounter screens: the Quest Board

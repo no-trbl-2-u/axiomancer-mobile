@@ -202,6 +202,24 @@ These are live in mobile as best-effort adapters and should become mechanics-own
 - Cache/relic rewards: currently shillings; a real loot/relic table would be better.
 - Out-of-combat death: absent; hazard damage floors VITAE at 1.
 - Immediate save on claim: mobile calls `save()` after applying spoils/scars.
+- **Remove-card / deck-thinning (Phase 126 blocked integration point):**
+  `axiomancer-mechanics` exposes `appendAcquiredCard(flags, cardId)`
+  for *adding* a reward/CRACK card to the durable deck, but there is
+  **no counterpart remove-card action** — no `removeAcquiredCard`, no
+  deck-mutation transition, no remove-card reward option. The Phase 126
+  deck screen (`app/hazard-deck/index.tsx`) + remove-card grid
+  (`components/hazard/HazardRemoveGrid.tsx`) are therefore shipped
+  **inspect-only**: the grid lets the player select an acquired card
+  and confirm, but the confirm surfaces a graceful blocked banner
+  (`selectHazardDeckViewModel().removeBlockedReason`) and leaves
+  `GameState.flags` untouched, because the brief (Phase 126 §3) forbids
+  implementing the deck-mutation rule locally. **When mechanics opens a
+  remove-card action**, wire it through the no-op `onConfirmRemove`
+  callback in `app/hazard-deck/index.tsx` and flip
+  `removeBlocked`/`removeBlockedReason` off in
+  `state/presenters/hazard-deck.engine.ts` (the removable set —
+  acquired cards only, since the starter bag is immutable in the flag
+  model — is already computed and surfaced).
 
 ## Current `axiomancer-mechanics` state
 

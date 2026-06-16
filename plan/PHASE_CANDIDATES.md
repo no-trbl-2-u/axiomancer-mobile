@@ -57,27 +57,6 @@
 > against shipped code so none re-propose closed work. `/oversight`
 > promotes from this fresh batch.
 
-### [ ] [score 6.5] Hazard scar recovery at inn rest (max-VITAE healing path)
-- proposed: 2026-06-16, expand pass 78
-- source signals:
-  - **Adapter gap (divergence doc)**: `docs/hazard-v2-vs-mechanics-divergence.md:201` — "Max-VITAE scar recovery: mobile applies the scar, but 'until next inn rest' is not wired."
-  - **Code confirmation**: `state/hazard/store-actions.ts:432` permanently applies `maxVitaeDelta -= HAZARD_MAXHP_SCAR` (floored at 5 via `:459`) with no recovery path; the Rest encounter (`app/rest/index.tsx` — three camp watches) restores VITAE but never scarred max-VITAE.
-  - **Design intent**: hazard consequence doctrine treats `maxhp` scars as *recoverable* at a proper inn rest, not permanent attrition.
-- rationale: A permanent, unrecoverable max-VITAE scar with no in-game healing path is a player-progression trap — repeated hazard play monotonically erodes the ceiling with no counter-loop. The intended recovery surface (inn rest) already exists; this wires the existing scar flag to it. Two independent signals (documented adapter gap + verified code state) plus existing recovery surface = real, cheap, high-leverage.
-- proposed scope: 1-phase — restore scarred max-VITAE at inn rest (and only inn rest, not field camp watches), reading scar magnitude from the hazard flag model; preserve existing rest-watch UX and engine-truth boundary. If `axiomancer-mechanics` owns the rest/scar truth, consume it; if not, treat as a documented mobile adapter consistent with the existing scar-apply adapter.
-- estimated phases: 1
-- conflicts: none — recovery loop is additive; does not duplicate the scar-apply path.
-
-### [ ] [score 5.5] Loot-cache reward depth — real loot/relic table over placeholder shillings
-- proposed: 2026-06-16, expand pass 78
-- source signals:
-  - **Adapter gap (divergence doc)**: `docs/hazard-v2-vs-mechanics-divergence.md:202` — "Cache/relic rewards: currently shillings; a real loot/relic table would be better."
-  - **Encounter design exists**: `design/encounters/loot-cache.md` (196 lines, "The Reliquary") describes a relic/loot reward fantasy the current screen flattens to currency.
-  - **Live screen**: `app/cache/index.tsx` ("The Reliquary") delve/probe/seal flow is built but rewards resolve to shillings rather than items/relics.
-- rationale: The Loot-cache encounter has full delving UX but its payoff is a flat currency drop, undercutting the "reliquary" fantasy the design specifies. Reward variety is a core player-motivation lever for a risk/reward encounter. Engine-truth boundary must be respected — likely needs a mechanics loot/relic table; if engine-gated, file the consumer half and stop with an exact export blocker.
-- proposed scope: 1–2 phases — surface a real loot/relic reward table at cache claim (items, relics, or tiered spoils) instead of flat shillings, consuming `axiomancer-mechanics` World/LootCache truth where available. May be engine-gated (`[needs-engine-release]`) if mechanics exposes no relic table.
-- estimated phases: 1-2
-- conflicts: none; supersedes a known placeholder.
 
 ### [ ] [needs-engine-release] [score 5.0] Hazard deck-thinning — remove-card action consumer
 - proposed: 2026-06-16, expand pass 78
@@ -90,16 +69,6 @@
 - estimated phases: 1 (after engine release)
 - conflicts: `[needs-engine-release]` — blocked on `axiomancer-mechanics` remove-card action; do not implement the deck-mutation rule locally (Phase 126 §3 forbids it).
 
-### [ ] [score 4.5] Out-of-combat death + scar/curse consequence weight
-- proposed: 2026-06-16, expand pass 78
-- source signals:
-  - **Adapter gap (divergence doc)**: `docs/hazard-v2-vs-mechanics-divergence.md:203` — "Out-of-combat death: absent; hazard damage floors VITAE at 1."
-  - **Stakes flattening**: hazard `minhp` damage can never kill — VITAE floors at 1 — so the non-combat encounter risk/reward loop has no true downside, weakening every hazard route-risk decision.
-  - **Design intent**: hazard route doctrine (`design/encounters/hazard.md`, `docs/hazard-balance-recommendations.md`) frames risk routes as genuinely dangerous.
-- rationale: A risk/reward minigame whose worst non-combat outcome is "1 VITAE, walk away" has no teeth — the risk side of every route choice is hollow. Wiring an out-of-combat death (or a meaningful equivalent consequence) restores stakes. Higher uncertainty/scope (touches save/death flow, needs design + engine sign-off on the death model) keeps this below the cheaper recovery/reward candidates.
-- proposed scope: 1–2 phases — define and wire the out-of-combat death (or severe-consequence) path for lethal hazard outcomes, consistent with the combat death/aftermath flow; respect engine-truth for the death model. May need a `/oversight` design call on how punishing it should be.
-- estimated phases: 1-2
-- conflicts: needs-user-call on lethality model (how punishing); surface for `/oversight`.
 
 ### [ ] [score 2.8] Repository onboarding documentation consolidation
 - proposed: 2026-06-07, expand pass 62
@@ -1197,6 +1166,30 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### [promoted → Phase 128] Hazard scar recovery at inn rest (max-VITAE healing path)
+
+- moved from ## Pending (expand pass 78, 2026-06-16) to ## Promoted via /oversight 2026-06-16,
+  assigned Phase 128. T promoted all three mobile-actionable pass-78 candidates. Signals:
+  adapter gap (`docs/hazard-v2-vs-mechanics-divergence.md:201`), code confirmation
+  (`state/hazard/store-actions.ts:432` — scar applied permanently, no recovery path), design
+  intent (recoverable at inn rest). Brief lives in `plan/steps/01_build_plan.md` Status block.
+
+### [promoted → Phase 129] Loot-cache reward depth — real loot/relic table over placeholder shillings
+
+- moved from ## Pending (expand pass 78, 2026-06-16) to ## Promoted via /oversight 2026-06-16,
+  assigned Phase 129. Signals: adapter gap (`docs/hazard-v2-vs-mechanics-divergence.md:202`),
+  encounter design exists (`design/encounters/loot-cache.md`), live screen flattens to shillings.
+  May be engine-gated — file consumer half, stop with exact export blocker if mechanics exposes no
+  relic table. Brief lives in `plan/steps/01_build_plan.md` Status block.
+
+### [promoted → Phase 130] Out-of-combat death + scar/curse consequence weight
+
+- moved from ## Pending (expand pass 78, 2026-06-16) to ## Promoted via /oversight 2026-06-16,
+  assigned Phase 130. Signals: adapter gap (`docs/hazard-v2-vs-mechanics-divergence.md:203` —
+  VITAE floors at 1, no lethal outcome), design intent (hazard routes framed as genuinely
+  dangerous). Design call on lethality model may surface during shipping; `/oversight` gate noted
+  in build-plan row. Brief lives in `plan/steps/01_build_plan.md` Status block.
 
 ### [promoted → Phase 120] Starting-map enemy composition tuning
 

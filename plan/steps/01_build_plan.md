@@ -55,24 +55,46 @@ commit that ships the phase.
 **Next up (autonomous loop's queue):**
 
 > **Queue-drained steering (set via oversight 2026-06-13; updated via T steering 2026-06-15;
-> post-126 directive added via oversight 2026-06-15).**
-> Phase 122 (playtest-gap discovery) shipped [cb26742]. Phase 124 (mechanics 0.21 catch-up)
-> shipped [ff48fcd]. T accepted the Hazard UX follow-up as the next player-facing runway:
-> Phase 125 adds reward-card preview + confirm behavior, Phase 126 adds the Hazard
-> deck/library screen plus the remove-card grid needed when mechanics exposes card removal,
-> and Phase 127 cleans deterministic combat skill UX by adding skill detail confirmation and
-> removing false dice-roll tracking from skill use.
-> Do not promote sub-4.0 cleanup candidates ahead of these accepted UX phases unless
-> a blocking regression appears.
-> **After Phase 126 ships:** fire an `/expand` pass to surface concrete player-facing candidates
-> (gameplay, content, encounter UX, story depth — not sub-4.0 cleanup), then promote from the
-> fresh batch at the next `/oversight` call.
+> post-126 directive added via oversight 2026-06-15; post-127 promotions via oversight 2026-06-16).**
+> Phases 125–127 all shipped 2026-06-16, closing the accepted Hazard/combat UX runway. Expand
+> pass 78 fired per post-126 directive; T promoted three mobile-actionable candidates at the
+> next `/oversight` (2026-06-16): Phase 128 (hazard scar recovery), Phase 129 (loot-cache
+> reward depth), Phase 130 (out-of-combat death stakes). Do not promote sub-4.0 cleanup
+> candidates ahead of these accepted gameplay phases unless a blocking regression appears.
 
 - [x] Phase 125 — Hazard reward choice confirmation overlay. Filed by T direct steering 2026-06-15. Reward-card choice needs a confirm button: tapping a reward card opens an overlay showing only the card, keywords, archetype, and current deck count where available; do **not** expose hidden fix/payoff/risk labels. Confirm commits the pick; cancel returns to the 3-card offer. Do not duplicate existing projection/apply behavior and do not add route-choice opening-hand hints. Brief: `plan/phases/phase_125_hazard_reward_choice_confirm_overlay.md`. Verification: focused reward overlay Jest + `npm run typecheck` + `npm run verify` + visual-smoke evidence or exact blocker. `[DONE on 2026-06-15 — see commit 8086b11]`.
 
 - [x] Phase 126 — Hazard deck screen and remove-card grid. Filed by T direct steering 2026-06-15. Shipped a persistent inspect-only Hazard deck/library screen (`app/hazard-deck/index.tsx`, reachable from the SELF tab) + a tap-to-select remove-card grid overlay (`components/hazard/HazardRemoveGrid.tsx`). New presenter `state/presenters/hazard-deck.engine.ts` maps the durable deck (immutable starter bag + acquired reward/CRACK flags, all mechanics truth) into counts, colour/type/keyword distributions, and the acquired-only removable set. Per §3, deck mutation is NOT done locally: `axiomancer-mechanics` exposes no remove-card action, so the grid confirm surfaces a graceful blocked banner and leaves the save untouched (documented blocked integration point in `docs/hazard-v2-vs-mechanics-divergence.md`). Tests: `state/presenters/__tests__/hazard-deck.engine.test.ts` + `state/e2e/hazard-deck.screen.test.tsx`. `[DONE on 2026-06-16]`. Verification: `npm run verify` green (lint + typecheck + 2240 tests).
 
 - [x] Phase 127 — Combat skill confirmation overlay and deterministic skill result UI. Filed by T direct steering 2026-06-15. Shipped a `SkillConfirmOverlay` (`components/combat/SkillConfirmOverlay.tsx`): tapping a skill stages it (local `pendingSkill` in `app/(tabs)/combat.tsx`) and opens a detail card — name, stance, cost, affordability, deterministic damage/effects/statuses (engine-owned `effectText`), and prose — with explicit COMMIT / CANCEL controls. COMMIT routes through the existing `setPlayerAction('skill', id)` + `resolveRound()` path; CANCEL clears with no side effects. The dice-roll tracker is removed from skill use: the action layer stamps `wasSkill` onto the resolve summary (`state/actions.ts`), the presenter lifts it to `vm.resolve.playerActionWasSkill` (`combat.engine.ts`), and `ResolvePanel` renders a deterministic doctrine banner (no dice imagery) on skill rounds while preserving roll UI for attack/defend. Enemy skill-answer display is **blocked**: mechanics 0.21.0 publishes no enemy-response event (`SkillPhaseEvent` carries player-cast outcomes only); documented in `docs/combat.md` pending mechanics Phase 150. Tests: `components/combat/__tests__/SkillConfirmOverlay.test.tsx`, presenter `playerActionWasSkill` cases + screen-flow open/cancel/confirm in `state/e2e/`. `[DONE on 2026-06-16]`. Verification: `npm run verify` green (lint 0 errors + typecheck + 2251 tests).
+
+- [ ] Phase 128 — Hazard scar recovery at inn rest (max-VITAE healing path). Promoted via
+      `/oversight` 2026-06-16 from expand pass 78 [score 6.5]. `state/hazard/store-actions.ts`
+      permanently applies `maxVitaeDelta -= HAZARD_MAXHP_SCAR` with no recovery path; the Rest
+      encounter restores VITAE but never scarred max-VITAE. Wire recovery at inn rest only (not
+      field camp watches), reading scar magnitude from the hazard flag model; preserve existing
+      rest-watch UX and engine-truth boundary. If `axiomancer-mechanics` owns the rest/scar truth,
+      consume it; otherwise treat as a documented mobile adapter consistent with the existing
+      scar-apply adapter. Brief: draft via `/plan-a-phase phase 128`. Verification: hermetic test
+      pins that an inn rest after a scar restores max-VITAE toward baseline; field-camp watch does
+      not; `npm run verify` green.
+
+- [ ] Phase 129 — Loot-cache reward depth — real loot/relic table over placeholder shillings.
+      Promoted via `/oversight` 2026-06-16 from expand pass 78 [score 5.5]. `app/cache/index.tsx`
+      ("The Reliquary") delve/probe/seal flow is built but rewards resolve to shillings rather than
+      items/relics. Surface a real loot/relic reward table at cache claim consuming `axiomancer-mechanics`
+      World/LootCache truth where available; if engine-gated, stop with an exact export blocker
+      rather than simulating locally. Brief: draft via `/plan-a-phase phase 129`. Verification:
+      hermetic test confirms non-currency reward shape on cache claim; `npm run verify` green.
+
+- [ ] Phase 130 — Out-of-combat death + scar/curse consequence weight. Promoted via `/oversight`
+      2026-06-16 from expand pass 78 [score 4.5]. Hazard `minhp` damage currently floors VITAE at 1
+      with no true downside; risk/reward loop has no teeth. Define and wire the out-of-combat death
+      (or severe-consequence) path for lethal hazard outcomes, consistent with the combat death/aftermath
+      flow; respect engine-truth for the death model. A `/oversight` design call on lethality model
+      may be needed before or during shipping. Brief: draft via `/plan-a-phase phase 130`. Verification:
+      hermetic test confirms lethal hazard damage triggers the defined consequence path; `npm run verify`
+      green.
 
 - [x] Phase 104 — Mercy modal consumes engine truth only. Promoted above all else by Glanton cleanup 2026-06-04 after doctrine-alignment audit. Replace local friendship-threshold/modal/spare/exploit simulation with mechanics-emitted mercy state/actions/report truth; remove hard-coded exploit damage; preserve modal UX and accessibility. Brief: `plan/phases/phase_104_mercy_modal_engine_truth.md`. Verification: focused Jest + `npm run verify`. Shipped in commit ce59115.
 

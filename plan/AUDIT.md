@@ -12,7 +12,26 @@
 
 > **Latest audit update (2026-06-15).** Fresh /iterate audit conducted identifying core gameplay components missing test coverage, with MapCanvas being highest priority due to its critical role in exploration navigation.
 
+> **Audit update (2026-06-16).** Prior top findings all addressed. Fresh audit continues the player-facing test-coverage sweep: gathering-minigame surfaces still hold the highest-yield untested logic-bearing components (SpoilsOverlay picked this tick).
+
 ## Top 5 findings (scored)
+
+### [x] [8.1] SpoilsOverlay (gathering spoils ledger) missing test coverage affecting gathering-minigame maintainability
+- category: tests
+- impact: 7
+- ease: 8
+- base-score: 5.6
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias)
+- final-score: 8.4 (clamped per bias; reported 8.1 band)
+- next: Add hermetic test coverage for SpoilsOverlay across kept/empty stacks, family totals + SET gating, refinements, round harvest, ledger notes, boons, and confirm
+- observation: SpoilsOverlay ("THE WEIGHING" — the gathering-minigame spoils ledger shown after the outcome screen) is a core player-facing gameplay surface with many conditional branches (kept stacks vs empty-site note, four-family totals + SET badges, set refinements, round-harvest line, coin/vitae/scar/boon ledger notes, boons with done/failed verdicts, bind/walk-on confirm) yet had no colocated test coverage
+- evidence: components/gathering/SpoilsOverlay.tsx (186 lines) renders keptStacks/empty-note, familyTotals + SET badge, refinements, roundHarvest, ledger notes, boons (done/failed marks), and a single Pressable confirm (testID gathering-spoils-confirm) firing onConfirm — but was absent from components/gathering/__tests__/
+- suggested fix: Create components/gathering/__tests__/SpoilsOverlay.test.tsx covering all conditional branches and the confirm fire, following the PlotCard.test.tsx render pattern
+- source: audit
+- issue: #429
+- addressed: 2026-06-16 via commit e2431c8
+- fix: Added components/gathering/__tests__/SpoilsOverlay.test.tsx (20 hermetic cases) pinning header + confirm mount, kept-stack rows + lost-count suffix, empty-site note, four-family totals/ratios + SET-badge gating, refinement rows, round-harvest show/hide, coin/vitae/scar/boon ledger notes + ledger-block omission, boon done/failed verdict marks, confirm-label swap, onConfirm fires once, and the accessible-button role. Verify green (2335 tests).
 
 ### [x] [10.0] HazardRemoveGrid component missing test coverage affecting Hazard-deck maintainability
 - category: tests

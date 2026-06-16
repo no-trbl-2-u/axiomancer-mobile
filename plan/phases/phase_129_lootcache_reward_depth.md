@@ -32,8 +32,15 @@ exports a full item factory:
 | --- | --- |
 | `equipmentTemplates` / `getTemplatesBySlot` | the relic table's draw pool |
 | `uniqueTemplates` | the rare-relic table |
-| `dropItemWithAffixes(templateId, playerLevel, { rarity?, rng })` | rolls a real Equipment with rarity + affixes |
+| `dropItem(templateId, playerLevel, rarity?, rng)` | rolls a real Equipment with engine-rolled rarity + modifiers |
 | `EquipmentTemplate.requiredLevel` | level-gate filter (factory throws below it) |
+
+Note: `dropItemWithAffixes` is exported by `Items/index` but is NOT
+re-exported at the package root in 0.21.0 (runtime `undefined`), so
+the root-available `dropItem` — which still rolls rarity via the
+engine's `RARITY_WEIGHTS` table and rolls modifiers — is the deepest
+engine-truth roll reachable. Documented in the `loot-table.ts`
+module docstring.
 
 The factory throws if `playerLevel < template.requiredLevel`, so the
 table filters the draw pool by the player's level before rolling.

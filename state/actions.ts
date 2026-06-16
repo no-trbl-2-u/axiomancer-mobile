@@ -175,6 +175,7 @@ import {
     type BeginLootCacheOptions,
     type ClaimLootCacheResult,
 } from './cache/store-actions';
+import type { CacheLootTier } from './cache/loot-table';
 import {
     applyPlayerTierPresetAction,
     type ApplyPlayerTierPresetResult,
@@ -2031,14 +2032,23 @@ function resolveCurrentMapEventAction(store: AppStore, sourceNodeType?: string):
         // currency to `result.state`; restore the pre-event player so the
         // cache's claim is the only thing that touches the inventory.
         // `<CacheGate>` routes to /cache when the slice fills.
+        //
+        // Phase 129 — reward depth: rather than the authored static
+        // roster (`result.event.items`, always base-rarity), roll a real
+        // engine-truth loot/relic table scaled to the player's level.
+        // Deeper locales (northern-forest) roll the `rich` tier (more
+        // items + a unique-relic chance); the coastal opener rolls
+        // `modest`. Currency from the event payload is preserved.
         if (result.event.kind === 'loot-cache') {
             store.setState({
                 ...resolvedState,
                 player: gameState.player,
                 event: EMPTY_EVENT_SLICE,
             });
+            const mapName = resolvedState.world?.currentMap?.name;
+            const tier: CacheLootTier = mapName === 'northern-forest' ? 'rich' : 'modest';
             beginLootCacheAction(store, {
-                items: result.event.items,
+                lootTable: { tier },
                 currency: result.event.currency,
             });
             return true;

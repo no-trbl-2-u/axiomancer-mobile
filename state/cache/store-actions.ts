@@ -24,6 +24,7 @@ import {
 import type { CacheItemRef, LootCacheOutcomeTier, LootCacheSession } from 'axiomancer-mechanics';
 import { resolveMinigameSeed } from '../minigame-seeds';
 import { EMPTY_CACHE_SLICE, type AppStore } from '../store';
+import { rollCacheLoot, type CacheLootTier } from './loot-table';
 
 /** Flag prefix banking a keeper's keepsake. */
 export const CACHE_KEEPSAKE_FLAG_PREFIX = 'cache-keepsake:';
@@ -47,6 +48,14 @@ export interface BeginLootCacheOptions {
     items?: readonly Item[];
     currency?: number;
     seed?: number;
+    /**
+     * Phase 129 — roll a real engine-truth loot/relic reward set
+     * scaled to the player's level instead of a static roster. Ignored
+     * when an explicit `items` list is passed (authored set pieces /
+     * dev paths win). The tier scales item count + the unique chance;
+     * the engine owns rarity. See `state/cache/loot-table.ts`.
+     */
+    lootTable?: { tier: CacheLootTier };
 }
 
 export function beginLootCacheAction(store: AppStore, options: BeginLootCacheOptions = {}): boolean {
@@ -54,7 +63,14 @@ export function beginLootCacheAction(store: AppStore, options: BeginLootCacheOpt
     if (state.cache?.session) return false; // one cache at a time
     const seed = resolveMinigameSeed('cache', options.seed, globalThis.__AXM_CACHE_SEED__);
 
-    const items = options.items ?? [];
+    // Explicit authored items win; otherwise roll the level-scaled
+    // table when the caller opts in. Falls back to an empty list
+    // (currency-only cache) when neither is supplied.
+    let items: readonly Item[] = options.items ?? [];
+    if (options.items === undefined && options.lootTable) {
+        const playerLevel = (state as unknown as GameState).player?.level ?? 1;
+        items = rollCacheLoot({ playerLevel, seed, tier: options.lootTable.tier });
+    }
     const stash: Record<string, Item> = {};
     const refs: CacheItemRef[] = items.map((item, i) => {
         const uid = `cache-${i}`;

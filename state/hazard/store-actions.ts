@@ -53,6 +53,26 @@ export const EMPTY_HAZARD_SLICE: MobileHazardSlice = Object.freeze({ session: nu
 export const HAZARD_HEXED_FLAG = 'hazard-hexed';
 /** Flag prefix for banked paradox tokens granted by the `token` reward. */
 export const HAZARD_TOKEN_FLAG_PREFIX = 'hazard-token-banked:';
+/**
+ * Flag prefix recording an unhealed max-VITAE scar from the `maxhp`
+ * consequence. The suffix is the magnitude of max-VITAE lost. The scar
+ * is also baked into `player.maxHealth` at claim (the live effect); the
+ * flag is the durable record an inn rest reads to restore the loss
+ * toward baseline. Mobile-only adapter — `axiomancer-mechanics` owns no
+ * scar-recovery truth (see docs/hazard-v2-vs-mechanics-divergence.md).
+ */
+export const HAZARD_SCAR_FLAG_PREFIX = 'hazard-scar:';
+
+/** Sum the banked max-VITAE loss across all unhealed scar flags. */
+export function bankedScarMagnitude(flags: readonly string[]): number {
+    let total = 0;
+    for (const flag of flags) {
+        if (!flag.startsWith(HAZARD_SCAR_FLAG_PREFIX)) continue;
+        const magnitude = Number.parseInt(flag.slice(HAZARD_SCAR_FLAG_PREFIX.length), 10);
+        if (Number.isFinite(magnitude) && magnitude > 0) total += magnitude;
+    }
+    return total;
+}
 
 /**
  * Dev/test seed override. The Playwright playthrough (and any dev
@@ -458,6 +478,13 @@ export function claimHazardRewardsAction(store: AppStore, cardId: string | null)
     const player = state.player;
     const newMax = Math.max(5, player.maxHealth + maxVitaeDelta);
     const newHealth = Math.min(newMax, Math.max(1, player.health + vitaeDelta));
+    // Record the scar that was actually applied (the floor-5 clamp may
+    // soften the nominal HAZARD_MAXHP_SCAR) so an inn rest can restore
+    // exactly the max-VITAE lost — never more.
+    const appliedScar = player.maxHealth - newMax;
+    if (appliedScar > 0) {
+        flags = [...flags, `${HAZARD_SCAR_FLAG_PREFIX}${appliedScar}`];
+    }
     store.setState({
         player: {
             ...player,

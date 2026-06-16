@@ -68,16 +68,19 @@ commit that ships the phase.
 
 - [x] Phase 127 — Combat skill confirmation overlay and deterministic skill result UI. Filed by T direct steering 2026-06-15. Shipped a `SkillConfirmOverlay` (`components/combat/SkillConfirmOverlay.tsx`): tapping a skill stages it (local `pendingSkill` in `app/(tabs)/combat.tsx`) and opens a detail card — name, stance, cost, affordability, deterministic damage/effects/statuses (engine-owned `effectText`), and prose — with explicit COMMIT / CANCEL controls. COMMIT routes through the existing `setPlayerAction('skill', id)` + `resolveRound()` path; CANCEL clears with no side effects. The dice-roll tracker is removed from skill use: the action layer stamps `wasSkill` onto the resolve summary (`state/actions.ts`), the presenter lifts it to `vm.resolve.playerActionWasSkill` (`combat.engine.ts`), and `ResolvePanel` renders a deterministic doctrine banner (no dice imagery) on skill rounds while preserving roll UI for attack/defend. Enemy skill-answer display is **blocked**: mechanics 0.21.0 publishes no enemy-response event (`SkillPhaseEvent` carries player-cast outcomes only); documented in `docs/combat.md` pending mechanics Phase 150. Tests: `components/combat/__tests__/SkillConfirmOverlay.test.tsx`, presenter `playerActionWasSkill` cases + screen-flow open/cancel/confirm in `state/e2e/`. `[DONE on 2026-06-16]`. Verification: `npm run verify` green (lint 0 errors + typecheck + 2251 tests).
 
-- [ ] Phase 128 — Hazard scar recovery at inn rest (max-VITAE healing path). Promoted via
+- [x] Phase 128 — Hazard scar recovery at inn rest (max-VITAE healing path). Promoted via
       `/oversight` 2026-06-16 from expand pass 78 [score 6.5]. `state/hazard/store-actions.ts`
       permanently applies `maxVitaeDelta -= HAZARD_MAXHP_SCAR` with no recovery path; the Rest
-      encounter restores VITAE but never scarred max-VITAE. Wire recovery at inn rest only (not
-      field camp watches), reading scar magnitude from the hazard flag model; preserve existing
-      rest-watch UX and engine-truth boundary. If `axiomancer-mechanics` owns the rest/scar truth,
-      consume it; otherwise treat as a documented mobile adapter consistent with the existing
-      scar-apply adapter. Brief: draft via `/plan-a-phase phase 128`. Verification: hermetic test
-      pins that an inn rest after a scar restores max-VITAE toward baseline; field-camp watch does
-      not; `npm run verify` green.
+      encounter restores VITAE but never scarred max-VITAE. Shipped as a documented mobile adapter
+      (the engine `RestOutcome` owns no max-VITAE field): the `maxhp` consequence now also records
+      the actually-applied scar as a durable `hazard-scar:<n>` flag, and `claimRestOutcomeAction`
+      mends those flags back into `maxHealth` and clears them when the night is inn-grade
+      (`RestSession.baseHealFraction >= 1.0`); field-camp watches (`healFraction: 0.5`) restore
+      current VITAE only and leave the scar intact. Recovered max never exceeds baseline. Inn-vs-camp
+      rides on the existing `baseHealFraction` rather than a new event kind (documented design call).
+      Brief: `plan/phases/phase_128_hazard_scar_recovery_inn_rest.md`. Tests:
+      `state/e2e/hazard-scar-rest-recovery.engine.test.ts`. Divergence doc updated. Verification:
+      `npm run verify` green (lint 0 errors + typecheck + 2353 tests). `[DONE on 2026-06-16 — see commit 676376f]`.
 
 - [ ] Phase 129 — Loot-cache reward depth — real loot/relic table over placeholder shillings.
       Promoted via `/oversight` 2026-06-16 from expand pass 78 [score 5.5]. `app/cache/index.tsx`

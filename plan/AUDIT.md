@@ -14,6 +14,23 @@
 
 ## Top 5 findings (scored)
 
+### [x] [10.0] HazardRemoveGrid component missing test coverage affecting Hazard-deck maintainability
+- category: tests
+- impact: 8
+- ease: 9
+- base-score: 7.2
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias)
+- final-score: 10.8 (clamped to 10.0)
+- next: Add hermetic test coverage for HazardRemoveGrid covering selection, confirm gating, blocked-banner flow, and empty state
+- observation: HazardRemoveGrid (Phase 126 remove-card grid overlay) is a core Hazard-deck gameplay component handling tap-to-select, confirm gating, the blocked-removal banner, and the empty-deck state, yet had no colocated test coverage
+- evidence: components/hazard/HazardRemoveGrid.tsx (183 lines) manages local selection state, confirm enable/disable, the blocked-banner show/dismiss flow, copy-count pips, and accessibility labels but was absent from components/hazard/__tests__/
+- suggested fix: Create components/hazard/__tests__/HazardRemoveGrid.test.tsx with select/deselect toggle, confirm gating + label swap, blocked-banner appearance + dismiss, empty-state copy, count-pip rendering, and accessibility-state coverage following established hazard component test patterns
+- source: audit
+- issue: #428
+- addressed: 2026-06-16 via commit 4c75b5d
+- fix: Added components/hazard/__tests__/HazardRemoveGrid.test.tsx (14 hermetic cases) pinning heading/prompt copy, per-entry tile rendering, close-button wiring, confirm gating + label swap, tile select/deselect accessibilityState + CUT badge, confirm fires the chosen card id, blocked-banner show/dismiss (no onConfirm write while blocked), copy-count pip + accessibility-label annotation, and empty-state copy with the confirm footer hidden.
+
 ### [x] [10.0] MapCanvas component missing test coverage affecting core exploration gameplay maintainability
 - category: tests
 - impact: 9

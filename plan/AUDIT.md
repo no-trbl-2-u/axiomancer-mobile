@@ -82,7 +82,7 @@
 - addressed: 2026-06-16 — see commit below
 - fix: Added 10 hermetic tests in components/inventory/__tests__/InventoryTabs.test.tsx covering per-row button/label rendering, onTabPress key delegation, active-tab accessibilityState, pluralized count accessibility labels (item/items), zero-count label omission, count-badge visibility gating, dimmed-state render + pointerEvents-none press blocking, and the empty tab-list branch.
 
-### [ ] [7.2] Art components directory entirely missing test coverage affecting visual consistency
+### [x] [7.2] Art components directory entirely missing test coverage affecting visual consistency
 - category: tests  
 - impact: 8
 - ease: 9
@@ -95,6 +95,9 @@
 - evidence: Filigree.tsx, PlayerPortrait.tsx, TitleEmblem.tsx, and VictoryWreath.tsx all lack test coverage despite being used across multiple screens
 - suggested fix: Create components/art/__tests__/ directory with comprehensive rendering tests for all art components following established component test patterns
 - source: audit
+- issue: #427
+- addressed: 2026-06-16 via commit 4b66fbb
+- fix: Added components/art/__tests__/art-components.test.tsx (17 hermetic cases) pinning FiligreeRule/PlayerPortrait/TitleEmblem/VictoryWreath default + explicit dimensions, fixed viewBoxes, decorative-vs-labelled a11y posture, the 24-tick astrolabe ring count, and theme-aware colour forwarding (ARGB int-payload assertions).
 
 ### [x] [5.6] NodeGrid component missing test coverage affecting exploration maintainability
 - category: tests

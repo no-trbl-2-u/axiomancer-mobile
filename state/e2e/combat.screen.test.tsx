@@ -11,7 +11,7 @@
  */
 
 import { afterEach, describe, it, expect, jest } from '@jest/globals';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render, within } from '@testing-library/react-native';
 import React from 'react';
 
 // Mock expo-router — the screen calls useRouter().replace on flee.
@@ -188,5 +188,85 @@ describe('CombatScreen: integration smoke', () => {
         }
         const tree = render(withProviders(store, <Probe />));
         expect(tree.toJSON()).not.toThrow;
+    });
+});
+
+// Phase 127 — tapping a skill stages a confirm overlay before the
+// round commits. Confirm resolves; Cancel returns to the picker.
+describe('CombatScreen: skill confirmation overlay (Phase 127)', () => {
+    // Seed combat into the skill picker with a committed HEART stance,
+    // so the picker renders enabled heart skills the player can tap.
+    function seedSkillPhase(store: AppStore): void {
+        store.getState().startCombat(createMockEncounterEnemy());
+        const c = store.getState().combat!;
+        store.getState().updateCombat({
+            ...c,
+            playerChoice: { ...(c.playerChoice ?? {}), stance: 'heart' },
+            phase: 'choosing_skill',
+            // Seed a generous resource pool so at least one heart skill
+            // is affordable (`enabled`); a fresh combat starts at zero
+            // tokens, which would grey out every row.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            combatResources: { body: 9, mind: 9, heart: 9, fallacy: 9, paradox: 9 } as any,
+        });
+    }
+
+    function firstEnabledSkillTestId(tree: ReturnType<typeof render>): string {
+        const rows = tree.UNSAFE_root.findAll(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (node: any) =>
+                typeof node.props?.testID === 'string' &&
+                node.props.testID.startsWith('combat-skill-row-') &&
+                node.props.accessibilityRole === 'button' &&
+                node.props.accessibilityState?.disabled !== true,
+        );
+        expect(rows.length).toBeGreaterThan(0);
+        return rows[0].props.testID as string;
+    }
+
+    it('opens the confirm overlay on skill tap without resolving the round', () => {
+        const store = makeStore();
+        seedSkillPhase(store);
+        const tree = render(withProviders(store, <CombatScreen />));
+
+        // No overlay before the tap.
+        expect(tree.queryByTestId('skill-confirm-overlay')).toBeNull();
+        const phaseBefore = store.getState().combat!.phase;
+
+        fireEvent.press(tree.getByTestId(firstEnabledSkillTestId(tree)));
+
+        // Overlay opens; the round has NOT resolved (phase unchanged).
+        expect(tree.getByTestId('skill-confirm-overlay')).toBeTruthy();
+        expect(store.getState().combat!.phase).toBe(phaseBefore);
+    });
+
+    it('Cancel dismisses the overlay and leaves combat in the skill phase', () => {
+        const store = makeStore();
+        seedSkillPhase(store);
+        const tree = render(withProviders(store, <CombatScreen />));
+
+        fireEvent.press(tree.getByTestId(firstEnabledSkillTestId(tree)));
+        const overlay = tree.getByTestId('skill-confirm-overlay');
+        fireEvent.press(within(overlay).getByTestId('skill-confirm-cancel'));
+
+        expect(tree.queryByTestId('skill-confirm-overlay')).toBeNull();
+        expect(store.getState().combat!.phase).toBe('choosing_skill');
+    });
+
+    it('Confirm commits the skill and advances the round to resolving', () => {
+        const store = makeStore();
+        seedSkillPhase(store);
+        const tree = render(withProviders(store, <CombatScreen />));
+
+        fireEvent.press(tree.getByTestId(firstEnabledSkillTestId(tree)));
+        const overlay = tree.getByTestId('skill-confirm-overlay');
+        fireEvent.press(within(overlay).getByTestId('skill-confirm-confirm'));
+
+        // The engine-backed resolve ran: phase moved off the picker and
+        // the committed action is a skill.
+        const c = store.getState().combat!;
+        expect(c.phase).toBe('resolving');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((c.playerChoice as any).action).toBe('skill');
     });
 });

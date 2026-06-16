@@ -267,6 +267,14 @@ export interface ResolveSlice {
     /** Pre-formatted header, e.g. `'❦ PARLEY · HEART OPENS'`. */
     header: string;
     /**
+     * Phase 127 — true when the committed action was a deterministic
+     * skill. Player skills always hit and carry static, mechanics-owned
+     * damage, so the ResolvePanel hides the contested attack-roll
+     * tracker and renders deterministic result feedback instead. Roll
+     * UI stays for genuine attack/defend rounds (`false`).
+     */
+    playerActionWasSkill: boolean;
+    /**
      * Continue-button label for the ResolvePanel — `'✠ NEXT ROUND'`
      * mid-fight, `'✠ DEPART'` once combat has ended. Lifted onto the
      * VM per Hard Rule #8 (CRITIQUE pass 8 HIGH drain); the screen
@@ -1076,6 +1084,10 @@ function resolveSliceFromState(
             : 'miss';
     const primaryText = typeof last?.primaryText === 'string' ? last.primaryText : '—';
     const message = typeof last?.message === 'string' ? last.message : '';
+    // Phase 127 — the action layer stamps `wasSkill` onto the
+    // resolution summary. Default false when absent (legacy / pre-
+    // resolve states) so the roll tracker shows for ordinary rounds.
+    const playerActionWasSkill = last?.wasSkill === true;
     let header: string;
     switch (outcome) {
         case 'friendship':
@@ -1109,6 +1121,7 @@ function resolveSliceFromState(
         primaryText,
         message,
         header,
+        playerActionWasSkill,
         nextActionLabel,
     };
 }

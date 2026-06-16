@@ -876,6 +876,14 @@ interface ResolutionSummary {
     outcome: 'damage' | 'crit' | 'friendship' | 'miss';
     primaryText: string;
     message: string;
+    /**
+     * Phase 127 — true when the committed player action was a skill.
+     * Skills always hit and carry static mechanics-owned damage, so the
+     * presenter suppresses the attack-roll tracker (a contested-roll
+     * affordance) and renders deterministic result feedback instead.
+     * Defaults false; `summarizeRoundEvents` sets it from `playerAction`.
+     */
+    wasSkill: boolean;
 }
 
 /**
@@ -1056,6 +1064,7 @@ export function summarizeRoundEvents(
             outcome,
             primaryText,
             message,
+            wasSkill: playerAction === 'skill',
         },
         logLines,
     };

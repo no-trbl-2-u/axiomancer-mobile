@@ -88,6 +88,7 @@ const createMockCombatVM = (actionOptions: ActionOption[]): CombatViewModel => (
         primaryText: '–2',
         message: 'Body stance beats mind',
         header: 'RESOLUTION',
+        playerActionWasSkill: false,
         nextActionLabel: 'CONTINUE',
     },
     log: [],

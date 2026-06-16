@@ -1207,6 +1207,51 @@ describe('resolveRound: engine-driven skill resolution', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Phase 127 — deterministic skill use suppresses the attack-roll tracker
+// ---------------------------------------------------------------------------
+
+describe('selectCombatViewModel: resolve.playerActionWasSkill', () => {
+    it('defaults false on the no-combat fallback', () => {
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const vm = selectCombatViewModel(store.getState());
+        expect(vm.resolve.playerActionWasSkill).toBe(false);
+    });
+
+    it('stays false after resolving a basic attack round (roll UI kept)', () => {
+        mockFixedRng(0.5);
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
+
+        actions.setPlayerStance('body');
+        actions.setPlayerAction('attack');
+        actions.resolveRound();
+
+        const vm = selectCombatViewModel(store.getState());
+        expect(vm.resolve.playerActionWasSkill).toBe(false);
+    });
+
+    it('flips true after resolving a skill round (roll UI suppressed)', () => {
+        mockFixedRng(0.5);
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+        actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
+
+        const heartSkill = COMBAT_SKILLS
+            .filter((s) => s.stance === 'heart')
+            .sort((a, b) => a.manaCost - b.manaCost)[0];
+        expect(heartSkill).toBeDefined();
+
+        actions.setPlayerStance('heart');
+        actions.setPlayerAction('skill', heartSkill!.id);
+        actions.resolveRound();
+
+        const vm = selectCombatViewModel(store.getState());
+        expect(vm.resolve.playerActionWasSkill).toBe(true);
+    });
+});
+
+// ---------------------------------------------------------------------------
 // Phase 116 — Token resource accumulation fix (issue #227)
 // ---------------------------------------------------------------------------
 

@@ -40,24 +40,39 @@ export function ResolvePanel({
 
     return (
         <View style={styles.wrap}>
-            <View style={styles.scaleBox}>
-                <View style={styles.scaleHeader}>
-                    <View>
+            {resolve.playerActionWasSkill ? (
+                // Phase 127 — skills always hit and carry static,
+                // mechanics-owned damage. The contested attack-roll
+                // tracker would misrepresent that, so render a
+                // deterministic doctrine banner (no dice imagery).
+                <View style={styles.scaleBox} testID="combat-resolve-skill-result">
+                    <View style={styles.skillResultHeader}>
                         <Text style={[styles.scaleEyebrow, { color: AXM.sulfur }]}>YOU · {resolve.playerStance.toUpperCase()}</Text>
-                        <Text style={styles.scaleSubLabel}>ATTACK ROLL</Text>
+                        <Text style={styles.scaleSubLabel}>DOCTRINE RESOLVES</Text>
                     </View>
-                    <View style={styles.centerAlign}>
-                        <Text style={[styles.scaleEyebrow, { color: AXM.bone }]}>VS</Text>
-                    </View>
-                    <View style={styles.rightAlign}>
-                        <Text style={[styles.scaleEyebrow, { color: AXM.blood }]}>FOE · {resolve.enemyStance.toUpperCase()}</Text>
-                        <Text style={styles.scaleSubLabel}>FOE DEFENSE</Text>
-                    </View>
+                    <Text style={styles.skillResultText}>the technique lands as written.</Text>
+                    <Text style={styles.verdictText}>{resolve.header.toLowerCase()}</Text>
                 </View>
-                <RollBar value={resolve.playerRoll} max={max} color={AXM.sulfur} label="YOU" />
-                <RollBar value={resolve.enemyRoll} max={max} color={AXM.blood} label="FOE" />
-                <Text style={styles.verdictText}>{resolve.header.toLowerCase()}</Text>
-            </View>
+            ) : (
+                <View style={styles.scaleBox}>
+                    <View style={styles.scaleHeader}>
+                        <View>
+                            <Text style={[styles.scaleEyebrow, { color: AXM.sulfur }]}>YOU · {resolve.playerStance.toUpperCase()}</Text>
+                            <Text style={styles.scaleSubLabel}>ATTACK ROLL</Text>
+                        </View>
+                        <View style={styles.centerAlign}>
+                            <Text style={[styles.scaleEyebrow, { color: AXM.bone }]}>VS</Text>
+                        </View>
+                        <View style={styles.rightAlign}>
+                            <Text style={[styles.scaleEyebrow, { color: AXM.blood }]}>FOE · {resolve.enemyStance.toUpperCase()}</Text>
+                            <Text style={styles.scaleSubLabel}>FOE DEFENSE</Text>
+                        </View>
+                    </View>
+                    <RollBar value={resolve.playerRoll} max={max} color={AXM.sulfur} label="YOU" />
+                    <RollBar value={resolve.enemyRoll} max={max} color={AXM.blood} label="FOE" />
+                    <Text style={styles.verdictText}>{resolve.header.toLowerCase()}</Text>
+                </View>
+            )}
             {isCrit && (
                 <Text style={styles.critFlag}>CRIT — DOUBLE</Text>
             )}
@@ -100,6 +115,16 @@ const useStyles = makeStyles((AXM) => ({
         justifyContent: 'space-between',
         alignItems: 'flex-start',
         marginBottom: 12,
+    },
+    skillResultHeader: {
+        marginBottom: 10,
+    },
+    skillResultText: {
+        fontFamily: FONTS.mono,
+        fontSize: 11,
+        color: AXM.bone,
+        letterSpacing: 0.5,
+        marginBottom: 4,
     },
     centerAlign: {
         alignItems: 'center',

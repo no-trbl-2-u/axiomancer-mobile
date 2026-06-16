@@ -49,6 +49,7 @@ import { CombatEnemyPanel } from '@/components/combat/CombatEnemyPanel';
 import { CombatLogDisplay } from '@/components/combat/CombatLogDisplay';
 import { CombatPlayerHud } from '@/components/combat/CombatPlayerHud';
 import { MercyChoiceModal } from '@/components/combat/MercyChoiceModal';
+import { SkillConfirmOverlay } from '@/components/combat/SkillConfirmOverlay';
 
 // ---------------------------------------------------------------------------
 // Local UI state (Q2: stance preview lives here until the user commits)
@@ -163,6 +164,10 @@ export function CombatPanel() {
     const vm = useCombatViewModel({ selectedStance: selectedStance ?? undefined });
     const actions = useGameActions();
     const [toast, setToast] = useState<string | null>(null);
+    // Phase 127 — the picked skill awaiting confirmation. Tapping a
+    // skill row stages it here and opens the confirm overlay; the round
+    // only resolves once the player commits. `null` keeps it closed.
+    const [pendingSkill, setPendingSkill] = useState<SkillOption | null>(null);
 
     useEffect(() => {
         // The pre-Phase-110 auto-bootstrap (`combat === null` →
@@ -209,11 +214,26 @@ export function CombatPanel() {
         actions.resolveRound();
     }, [actions, vm.actionPicker.itemMessage]);
 
+    // Phase 127 — tapping a skill no longer commits the round. It
+    // stages the skill in the confirm overlay so the player sees the
+    // deterministic result (damage / effects / cost) and explicitly
+    // confirms before the engine resolves. Unaffordable skills can
+    // still be inspected; the overlay's CONFIRM is gated instead.
     const onPickSkill = useCallback((skill: SkillOption) => {
-        if (!skill.enabled) return;
-        actions.setPlayerAction('skill', skill.id);
+        setPendingSkill(skill);
+    }, []);
+
+    const onConfirmSkill = useCallback(() => {
+        if (pendingSkill === null || !pendingSkill.enabled) return;
+        const skillId = pendingSkill.id;
+        setPendingSkill(null);
+        actions.setPlayerAction('skill', skillId);
         actions.resolveRound();
-    }, [actions]);
+    }, [actions, pendingSkill]);
+
+    const onCancelSkill = useCallback(() => {
+        setPendingSkill(null);
+    }, []);
 
     // Phase 103 — Mercy choice modal callbacks
     const onMercySpare = useCallback(() => {
@@ -468,6 +488,12 @@ export function CombatPanel() {
                     <Text style={styles.toastText}>{toast}</Text>
                 </View>
             )}
+            {/* Phase 127 — skill confirmation overlay */}
+            <SkillConfirmOverlay
+                skill={pendingSkill}
+                onConfirm={onConfirmSkill}
+                onCancel={onCancelSkill}
+            />
             {/* Phase 103 — Mercy choice modal */}
             <MercyChoiceModal
                 mercyChoice={vm.mercyChoice}

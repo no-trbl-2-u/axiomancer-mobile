@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-15 at commit 2da7843
-> Pass count: 44
+> Last pass: 2026-06-16 at commit 69e4ae2
+> Pass count: 45
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -25,6 +25,32 @@
 > keep this header actionable.
 
 ## Pending
+
+<!-- Pass 45 (2026-06-16, commit 69e4ae2): repo-proxy pass attempted
+     but NOT completed. The `reader` sub-agent (skills/critique.md §4
+     mandates delegating the visit; the main agent must not visit from
+     its own context) failed to spawn — twice — with `API Error: 404
+     model: claude-sonnet-4-20250514` (request ids req_011Cc7irmsNMmcv6gwegAeaP,
+     req_011Cc7isWCpRFSkKUTRWr98K). Per §7 failure mode 2, after one
+     re-spawn that also failed, this pass files the malfunction note
+     below, advances the pass counter (the signal /march reads to
+     re-rate-limit critique), and exits without product findings. No
+     code/content/data was touched. Re-run /critique once the reader
+     agent's model is available again. -->
+
+### [needs-user-call] reader sub-agent malfunction at pass 45
+- pass: 45 (commit 69e4ae2)
+- viewport: n/a (repo-proxy)
+- category: infra
+- observation: `/critique` could not run because the mandated `reader`
+  sub-agent failed to spawn on both the initial attempt and the single
+  re-spawn required by skills/critique.md §7 failure mode 2.
+- evidence: `API Error: 404 {"type":"not_found_error","message":"model:
+  claude-sonnet-4-20250514"}` returned on both Task() invocations of
+  subagent_type "reader".
+- suggested fix: restore/availability-check the `reader` agent's
+  configured model (.claude/agents/reader.md), then re-run `/critique`.
+- source: repo-proxy
 
 <!-- Pass 44 (2026-06-15, commit 2da7843): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,

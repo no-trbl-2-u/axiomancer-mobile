@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-15 at commit ae63384
-> Pass count: 77
+> Last pass: 2026-06-16 at commit 4fcd38c
+> Pass count: 78
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -45,6 +45,61 @@
 > through to `/iterate` — the current candidate pool is too thin to feed
 > the loop. After expand refills, the next `/oversight` promotes from the
 > fresh batch.
+
+> **Pass 78 — post-126 player-facing refill (fired per build-plan
+> directive: "After Phase 126 ships, fire an /expand pass to surface
+> concrete player-facing candidates — gameplay, content, encounter UX,
+> story depth — not sub-4.0 cleanup").** Phases 125–127 closed the
+> accepted Hazard/combat UX runway, leaving the candidate pool entirely
+> cleanup/infra/docs tier. The four candidates below were sourced from
+> live game-system gaps documented in `docs/hazard-v2-vs-mechanics-divergence.md`
+> ("Mobile-side adapters" §) and `design/encounters/`, cross-checked
+> against shipped code so none re-propose closed work. `/oversight`
+> promotes from this fresh batch.
+
+### [ ] [score 6.5] Hazard scar recovery at inn rest (max-VITAE healing path)
+- proposed: 2026-06-16, expand pass 78
+- source signals:
+  - **Adapter gap (divergence doc)**: `docs/hazard-v2-vs-mechanics-divergence.md:201` — "Max-VITAE scar recovery: mobile applies the scar, but 'until next inn rest' is not wired."
+  - **Code confirmation**: `state/hazard/store-actions.ts:432` permanently applies `maxVitaeDelta -= HAZARD_MAXHP_SCAR` (floored at 5 via `:459`) with no recovery path; the Rest encounter (`app/rest/index.tsx` — three camp watches) restores VITAE but never scarred max-VITAE.
+  - **Design intent**: hazard consequence doctrine treats `maxhp` scars as *recoverable* at a proper inn rest, not permanent attrition.
+- rationale: A permanent, unrecoverable max-VITAE scar with no in-game healing path is a player-progression trap — repeated hazard play monotonically erodes the ceiling with no counter-loop. The intended recovery surface (inn rest) already exists; this wires the existing scar flag to it. Two independent signals (documented adapter gap + verified code state) plus existing recovery surface = real, cheap, high-leverage.
+- proposed scope: 1-phase — restore scarred max-VITAE at inn rest (and only inn rest, not field camp watches), reading scar magnitude from the hazard flag model; preserve existing rest-watch UX and engine-truth boundary. If `axiomancer-mechanics` owns the rest/scar truth, consume it; if not, treat as a documented mobile adapter consistent with the existing scar-apply adapter.
+- estimated phases: 1
+- conflicts: none — recovery loop is additive; does not duplicate the scar-apply path.
+
+### [ ] [score 5.5] Loot-cache reward depth — real loot/relic table over placeholder shillings
+- proposed: 2026-06-16, expand pass 78
+- source signals:
+  - **Adapter gap (divergence doc)**: `docs/hazard-v2-vs-mechanics-divergence.md:202` — "Cache/relic rewards: currently shillings; a real loot/relic table would be better."
+  - **Encounter design exists**: `design/encounters/loot-cache.md` (196 lines, "The Reliquary") describes a relic/loot reward fantasy the current screen flattens to currency.
+  - **Live screen**: `app/cache/index.tsx` ("The Reliquary") delve/probe/seal flow is built but rewards resolve to shillings rather than items/relics.
+- rationale: The Loot-cache encounter has full delving UX but its payoff is a flat currency drop, undercutting the "reliquary" fantasy the design specifies. Reward variety is a core player-motivation lever for a risk/reward encounter. Engine-truth boundary must be respected — likely needs a mechanics loot/relic table; if engine-gated, file the consumer half and stop with an exact export blocker.
+- proposed scope: 1–2 phases — surface a real loot/relic reward table at cache claim (items, relics, or tiered spoils) instead of flat shillings, consuming `axiomancer-mechanics` World/LootCache truth where available. May be engine-gated (`[needs-engine-release]`) if mechanics exposes no relic table.
+- estimated phases: 1-2
+- conflicts: none; supersedes a known placeholder.
+
+### [ ] [needs-engine-release] [score 5.0] Hazard deck-thinning — remove-card action consumer
+- proposed: 2026-06-16, expand pass 78
+- source signals:
+  - **Phase 126 blocked integration point**: `docs/hazard-v2-vs-mechanics-divergence.md:205-222` — the deck screen (`app/hazard-deck/index.tsx`) + remove-card grid (`components/hazard/HazardRemoveGrid.tsx`) shipped **inspect-only** because `axiomancer-mechanics` exposes `appendAcquiredCard` but **no counterpart remove-card action**.
+  - **Wiring already staged**: the no-op `onConfirmRemove` callback + `removeBlocked`/`removeBlockedReason` plumbing in `state/presenters/hazard-deck.engine.ts` are in place, waiting on the engine.
+  - **Player demand shape**: deck-thinning is the standard counter-loop to deck growth from reward cards (Phase 125); without it the deck only inflates.
+- rationale: Genuine player-facing feature (deck-thinning), already scaffolded mobile-side, blocked solely on a missing engine action. Filing it as an engine-release-gated candidate keeps it visible so it ships the moment mechanics opens `removeAcquiredCard`. Honest scope: the mobile consumer half is small once the engine action exists.
+- proposed scope: 1-phase consumer — when mechanics publishes a remove-card / deck-mutation action, wire it through the existing `onConfirmRemove` callback and flip `removeBlocked` off. **Engine-gated**: cannot ship until `axiomancer-mechanics` exposes the action; surface as `[needs-engine-release]` for `/oversight`.
+- estimated phases: 1 (after engine release)
+- conflicts: `[needs-engine-release]` — blocked on `axiomancer-mechanics` remove-card action; do not implement the deck-mutation rule locally (Phase 126 §3 forbids it).
+
+### [ ] [score 4.5] Out-of-combat death + scar/curse consequence weight
+- proposed: 2026-06-16, expand pass 78
+- source signals:
+  - **Adapter gap (divergence doc)**: `docs/hazard-v2-vs-mechanics-divergence.md:203` — "Out-of-combat death: absent; hazard damage floors VITAE at 1."
+  - **Stakes flattening**: hazard `minhp` damage can never kill — VITAE floors at 1 — so the non-combat encounter risk/reward loop has no true downside, weakening every hazard route-risk decision.
+  - **Design intent**: hazard route doctrine (`design/encounters/hazard.md`, `docs/hazard-balance-recommendations.md`) frames risk routes as genuinely dangerous.
+- rationale: A risk/reward minigame whose worst non-combat outcome is "1 VITAE, walk away" has no teeth — the risk side of every route choice is hollow. Wiring an out-of-combat death (or a meaningful equivalent consequence) restores stakes. Higher uncertainty/scope (touches save/death flow, needs design + engine sign-off on the death model) keeps this below the cheaper recovery/reward candidates.
+- proposed scope: 1–2 phases — define and wire the out-of-combat death (or severe-consequence) path for lethal hazard outcomes, consistent with the combat death/aftermath flow; respect engine-truth for the death model. May need a `/oversight` design call on how punishing it should be.
+- estimated phases: 1-2
+- conflicts: needs-user-call on lethality model (how punishing); surface for `/oversight`.
 
 ### [ ] [score 2.8] Repository onboarding documentation consolidation
 - proposed: 2026-06-07, expand pass 62

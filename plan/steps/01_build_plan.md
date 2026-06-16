@@ -82,13 +82,21 @@ commit that ships the phase.
       `state/e2e/hazard-scar-rest-recovery.engine.test.ts`. Divergence doc updated. Verification:
       `npm run verify` green (lint 0 errors + typecheck + 2353 tests). `[DONE on 2026-06-16 — see commit 676376f]`.
 
-- [ ] Phase 129 — Loot-cache reward depth — real loot/relic table over placeholder shillings.
+- [x] Phase 129 — Loot-cache reward depth — real loot/relic table over placeholder shillings.
       Promoted via `/oversight` 2026-06-16 from expand pass 78 [score 5.5]. `app/cache/index.tsx`
-      ("The Reliquary") delve/probe/seal flow is built but rewards resolve to shillings rather than
-      items/relics. Surface a real loot/relic reward table at cache claim consuming `axiomancer-mechanics`
-      World/LootCache truth where available; if engine-gated, stop with an exact export blocker
-      rather than simulating locally. Brief: draft via `/plan-a-phase phase 129`. Verification:
-      hermetic test confirms non-currency reward shape on cache claim; `npm run verify` green.
+      ("The Reliquary") delve/probe/seal flow was built but rewards resolved to a static base-rarity
+      roster (`templateToEquipment`, always `rarity: 'common'`, no rolled mods) plus flat shillings.
+      Shipped `rollCacheLoot` (`state/cache/loot-table.ts`): a seeded, level-gated loot/relic table
+      that consumes engine truth (`dropItem` rolling real rarity via `RARITY_WEIGHTS` + modifiers,
+      drawn from `equipmentTemplates`/`uniqueTemplates`). NOT engine-gated — `dropItem` is root-exported
+      (`dropItemWithAffixes` is absent at the package root in 0.21.0, documented in the module). A new
+      `beginLootCache({ lootTable: { tier } })` option rolls the set when no explicit `items` are passed
+      (authored items still win); the treasure-node branch in `state/actions.ts` opts in per locale
+      (northern-forest = `rich` w/ 12% unique chance, fishing-village = `modest`). Empty eligible pool
+      (level gate) → currency-only, never throws. Tests: `state/cache/__tests__/loot-table.test.ts` +
+      `state/e2e/cache.loot-table.engine.test.ts`. Brief:
+      `plan/phases/phase_129_lootcache_reward_depth.md`. Verification: `npm run verify` green
+      (lint 0 errors + typecheck + 2384 tests). `[DONE on 2026-06-16 — see commit bbcd120]`.
 
 - [ ] Phase 130 — Out-of-combat death + scar/curse consequence weight. Promoted via `/oversight`
       2026-06-16 from expand pass 78 [score 4.5]. Hazard `minhp` damage currently floors VITAE at 1

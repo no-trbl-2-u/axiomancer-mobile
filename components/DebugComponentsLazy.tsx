@@ -36,6 +36,8 @@ const DebugMapResetButton = lazy(() => import('@/components/DebugMapResetButton'
 const DebugPlaythroughPresets = lazy(() => import('@/components/DebugPlaythroughPresets').then(m => ({ default: m.DebugPlaythroughPresets })));
 const DebugPresetPicker = lazy(() => import('@/components/DebugPresetPicker').then(m => ({ default: m.DebugPresetPicker })));
 const DebugPopulateAllItems = lazy(() => import('@/components/DebugPopulateAllItems').then(m => ({ default: m.DebugPopulateAllItems })));
+const DebugAddItemById = lazy(() => import('@/components/DebugAddItemById').then(m => ({ default: m.DebugAddItemById })));
+const DebugPlayerTierPresets = lazy(() => import('@/components/DebugPlayerTierPresets').then(m => ({ default: m.DebugPlayerTierPresets })));
 const DebugSeedButton = lazy(() => import('@/components/DebugSeedButton').then(m => ({ default: m.DebugSeedButton })));
 const DebugXpGrant = lazy(() => import('@/components/DebugXpGrant').then(m => ({ default: m.DebugXpGrant })));
 const AestheticDevToggle = lazy(() => import('@/components/AestheticDevToggle').then(m => ({ default: m.AestheticDevToggle })));
@@ -63,6 +65,7 @@ export function DebugComponentsLazy() {
       <AestheticDevToggle />
       <DebugSeedButton />
       <DebugPopulateAllItems />
+      <DebugAddItemById />
       <DebugTriggerEncounter />
       <DebugCombatButton />
       <DebugHazardButton />
@@ -73,6 +76,7 @@ export function DebugComponentsLazy() {
       <DebugChaosToggle />
       <DebugPresetPicker />
       <DebugPlaythroughPresets />
+      <DebugPlayerTierPresets />
       <DebugXpGrant />
       <DebugManaControl />
       <DebugCurrencyControl />

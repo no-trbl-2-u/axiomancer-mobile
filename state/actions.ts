@@ -175,6 +175,14 @@ import {
     type BeginLootCacheOptions,
     type ClaimLootCacheResult,
 } from './cache/store-actions';
+import {
+    applyPlayerTierPresetAction,
+    type ApplyPlayerTierPresetResult,
+} from './dev/player-presets';
+import {
+    addItemByIdAction,
+    type AddItemByIdResult,
+} from './dev/item-by-id';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -349,6 +357,24 @@ export interface AppActions {
      * this.
      */
     applyCharacterPreset: (presetId: string) => ApplyCharacterPresetResult;
+    /**
+     * Phase 131 — dev-only player-tier preset adoption. Looks up the
+     * mobile `PLAYER_TIER_PRESETS` row (`kid-l1` / `kid-l15` /
+     * `kid-l30` / `kid-l50`) and replaces the player slice with a
+     * fresh `buildCharacterFromPreset` build at that level — seeded
+     * with level-relevant skills and equipment for the Kid's
+     * evidence runs. No-op (`applied: false`) on unknown ids.
+     * Component mount is `isDevToolsEnabled()`-guarded.
+     */
+    applyPlayerTierPreset: (presetId: string) => ApplyPlayerTierPresetResult;
+    /**
+     * Phase 131 — dev-only "add item by id". Resolves `id` against
+     * the engine's item registries (equipment template → unique
+     * template → consumable) and pushes the match to the player's
+     * inventory. Returns a graceful failure for unknown ids.
+     * Component mount is `isDevToolsEnabled()`-guarded.
+     */
+    addItemById: (id: string) => AddItemByIdResult;
     /**
      * Phase 73 — allocate a single stat point. Wraps the engine's
      * `allocateStatPoint(stat)` action. The engine clamps
@@ -1313,6 +1339,8 @@ export function createAppActions(store: AppStore): AppActions {
         debugSeed: () => debugSeedAction(store),
         populateAllItems: () => populateAllItemsAction(store),
         applyCharacterPreset: (presetId) => applyCharacterPresetAction(store, presetId),
+        applyPlayerTierPreset: (presetId) => applyPlayerTierPresetAction(store, presetId),
+        addItemById: (id) => addItemByIdAction(store, id),
         allocateStatPoint: (stat) => {
             // Engine's `allocateStatPoint` is a zustand action attached
             // to the GameStore (`node_modules/axiomancer-mechanics/dist/

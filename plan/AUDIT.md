@@ -14,7 +14,26 @@
 
 > **Audit update (2026-06-16).** Prior top findings all addressed. Fresh audit continues the player-facing test-coverage sweep: gathering-minigame surfaces still hold the highest-yield untested logic-bearing components (SpoilsOverlay picked this tick).
 
+> **Audit update (2026-06-16, second tick).** SpoilsOverlay addressed. Sweep continues into the quest-board minigame (Phase 124): QuestBoardTrack was the largest untested logic-bearing quest surface (pure geometry helpers + conditional ring rendering) — picked this tick.
+
 ## Top 5 findings (scored)
+
+### [x] [7.0] QuestBoardTrack (quest-board minigame ring) missing test coverage affecting quest-board maintainability
+- category: tests
+- impact: 7
+- ease: 9
+- base-score: 6.3
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias)
+- final-score: 9.45 (clamped per bias band; reported 7.0 band conservatively for a presentation+helper surface)
+- next: Add hermetic coverage for the pure helpers (perimeterCells/ringDimensions/questKindAccents) plus the component's piece/target/path/well render branches
+- observation: QuestBoardTrack (the ring of spaces drawn around the board's center well — core quest-board minigame surface from Phase 124) exports three pure geometry/accent helpers and renders the piece marker, destination flag, route borders, per-landing arrival flash, and center-well children, yet had no colocated test coverage
+- evidence: components/quest/QuestBoardTrack.tsx (252 lines) exports perimeterCells(w,h), ringDimensions(count), questKindAccents(palette) and the QuestBoardTrack component (testIDs quest-board-track, quest-space-<i>, quest-piece, quest-target-<i>, quest-space-glow-<i>) but was absent from components/quest/__tests__/
+- suggested fix: Create components/quest/__tests__/QuestBoardTrack.test.tsx covering the pure helpers and the component's conditional branches, following the QuestLegend/QuestHullMeter render pattern
+- source: audit
+- issue: #430
+- addressed: 2026-06-16 via commit 2a33c6f
+- fix: Added components/quest/__tests__/QuestBoardTrack.test.tsx (14 hermetic cases) pinning perimeterCells clockwise walk + exact ring-count + no-repeat, ringDimensions 5x5/min-3x3/grow-until-seated, questKindAccents full kind→palette-colour map, and the component's track frame + per-space cells, piece marker (isPiece default vs pieceIndex override), target flag show + hide-when-piece-on-target, per-space glow overlays, and center-well children. Verify green (2349 tests, +14).
 
 ### [x] [8.1] SpoilsOverlay (gathering spoils ledger) missing test coverage affecting gathering-minigame maintainability
 - category: tests

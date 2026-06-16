@@ -48,7 +48,7 @@
 - addressed: 2026-06-15 via commit 7a41373
 - fix: Added comprehensive test coverage for PlotCard component including all three render modes (spread/detail/preview), family rendering across all families, trait display for various traits, yield/wrath cost display, edge cases, and accessibility features following established gathering component test patterns.
 
-### [ ] [10.0] GatheringOverlays component missing test coverage affecting minigame interaction maintainability
+### [x] [10.0] GatheringOverlays component missing test coverage affecting minigame interaction maintainability
 - category: tests
 - impact: 8
 - ease: 8.5  
@@ -61,6 +61,9 @@
 - evidence: Component manages complex overlay states for gathering minigame but missing from components/gathering/__tests__/ directory
 - suggested fix: Create components/gathering/__tests__/GatheringOverlays.test.tsx with overlay state transitions and interaction testing following gathering component patterns
 - source: audit
+- issue: #425
+- addressed: 2026-06-16 via commit 35ab5ae
+- fix: Added 23 hermetic tests across the three exported overlays — ReprisalOverlay (eyebrow/eruption/veiled branches, detail call-out presence, onDone press), GatheringOutcomeOverlay (each tier word, CTA label + onContinue), and PlotDetailOverlay (keyword call-outs, TAKE/TEND label + accessibility branches, onTake/onClose press wiring).
 
 ### [ ] [9.0] InventoryTabs component missing test coverage affecting item management maintainability
 - category: tests

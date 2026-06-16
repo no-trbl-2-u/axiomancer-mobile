@@ -1167,6 +1167,19 @@ warranted a full phase promotion:
 
 ## Promoted
 
+### Phase 131 — Dev menu Kid evidence presets
+- promoted: 2026-06-16 by T direct steering
+- source: T corrected the Kid playthrough evidence-preset recommendation: player presets must be exactly L1/L15/L30/L50 with level-relevant skills/equipment, plus an add-item-by-id button.
+- brief: `plan/phases/phase_131_dev_menu_kid_evidence_presets.md`
+- build-plan row: `plan/steps/01_build_plan.md`
+
+### Phase 132 — Dev menu tab extraction
+- promoted: 2026-06-16 by T direct steering
+- source: T accepted that more dev controls are needed, then requested the dev menu be extracted into a tab instead of a noisy dropdown before a later visual audit decides which buttons to remove.
+- brief: `plan/phases/phase_132_dev_menu_tab_extraction.md`
+- build-plan row: `plan/steps/01_build_plan.md`
+
+
 ### [promoted → Phase 128] Hazard scar recovery at inn rest (max-VITAE healing path)
 
 - moved from ## Pending (expand pass 78, 2026-06-16) to ## Promoted via /oversight 2026-06-16,

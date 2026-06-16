@@ -65,7 +65,7 @@
 - addressed: 2026-06-16 via commit 35ab5ae
 - fix: Added 23 hermetic tests across the three exported overlays — ReprisalOverlay (eyebrow/eruption/veiled branches, detail call-out presence, onDone press), GatheringOutcomeOverlay (each tier word, CTA label + onContinue), and PlotDetailOverlay (keyword call-outs, TAKE/TEND label + accessibility branches, onTake/onClose press wiring).
 
-### [ ] [9.0] InventoryTabs component missing test coverage affecting item management maintainability
+### [x] [9.0] InventoryTabs component missing test coverage affecting item management maintainability
 - category: tests
 - impact: 8
 - ease: 7.5
@@ -73,11 +73,14 @@
 - user-source-bump: 0.0 (audit source)
 - bias-multiplier: 1.5 (gameplay/content bias)
 - final-score: 9.0
+- issue: #426
 - next: Add comprehensive test coverage for InventoryTabs component including tab switching and accessibility compliance
 - observation: InventoryTabs component at components/inventory/InventoryTabs.tsx handles inventory category navigation but lacks test coverage
 - evidence: Component manages tab state for satchel/equipment/burden categories but missing from components/inventory/__tests__/ directory
 - suggested fix: Create components/inventory/__tests__/InventoryTabs.test.tsx with tab selection, state management, and accessibility testing following inventory component patterns
 - source: audit
+- addressed: 2026-06-16 — see commit below
+- fix: Added 10 hermetic tests in components/inventory/__tests__/InventoryTabs.test.tsx covering per-row button/label rendering, onTabPress key delegation, active-tab accessibilityState, pluralized count accessibility labels (item/items), zero-count label omission, count-badge visibility gating, dimmed-state render + pointerEvents-none press blocking, and the empty tab-list branch.
 
 ### [ ] [7.2] Art components directory entirely missing test coverage affecting visual consistency
 - category: tests  

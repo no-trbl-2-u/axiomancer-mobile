@@ -22,7 +22,26 @@
 
 > **Audit update (2026-06-17, third tick).** WrathMeter addressed. Sweep stays in the gathering minigame's satchel surface: SatchelTray (104 lines — the four family stacks with per-stack `progress` clamp, empty/set/at-risk derivation, conditional SET-badge-vs-progress-text rendering, the empty-vs-at-risk header copy, and a composed per-family accessibility label) was the largest logic-bearing untested gameplay component remaining (`glyphs.tsx` / `danger-art.tsx` are pure static SVG art) — picked this tick.
 
+> **Audit update (2026-06-17, fourth tick).** SatchelTray addressed. The gathering minigame's component surfaces are now drained of logic-bearing untested code; the sweep moves to the quest-board minigame's last untested logic-bearing surface — `components/quest/useQuestLanding.ts` (170 lines), a pure presentation hook that replays a resolved bone-die cast as tumble → walk → reveal. It owns deterministic derived view state (tumbling `dieFace` cycled from `rollTick`, the modular-wrap `pathPositions`/`steps` walk computation, the `still → rolling → walking → arrived` stage machine, `targetPos`, `revealed`, `arrivalKey`) driven entirely by flushable `setTimeout`/`setInterval` timers — explicitly built for deterministic test flushing (file header line 16) yet referenced only via its timing constant in `quest.screen.test.tsx`, never unit-tested. Largest untested logic-bearing gameplay component remaining (`glyphs.tsx`/`figures.tsx`/`danger-art.tsx` are pure static SVG art; `DevToolsSections.tsx` is dev-only) — picked this tick.
+
 ## Top 5 findings (scored)
+
+### [x] [7.2] useQuestLanding (quest-board cast choreography hook) missing test coverage affecting quest-board maintainability
+- category: tests
+- impact: 6
+- ease: 8
+- base-score: 4.8
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias)
+- final-score: 7.2
+- next: Add hermetic coverage with fake timers for the die-tumble face cycling, the modular-wrap walk path/step computation, the still→rolling→walking→arrived stage machine, the no-movement short-circuit, the targetPos/pathPositions preview, the revealed gate, the arrivalKey bump, and the VM-sync reset when phase leaves `space`
+- observation: useQuestLanding (the presentation-only choreography that replays a resolved bone-die cast as tumble → walk the piece one space at a time → reveal the landing card) derives a tumbling `dieFace` cycled deterministically from `rollTick` (`(rollTick % 6) + 1`), a modular-wrap walk route (`steps = (to - from + length) % length`, `pathPositions` listing each step in order), a `still → rolling → walking → arrived` stage machine, a `targetPos`/`pathPositions` "where you're headed" preview, a `revealed` gate that opens the card only after the arrive beat, an `arrivalKey` flourish bump, and a VM-sync reset whenever the phase leaves `space` — all on flushable setTimeout/setInterval timers, yet had no colocated test coverage
+- evidence: components/quest/useQuestLanding.ts (170 lines) exports useQuestLanding(vm) and QUEST_LANDING_TIMING; its file header (line 16) states "All timers are plain setTimeout/setInterval so tests can flush them deterministically," but the only test reference (state/e2e/quest.screen.test.tsx:17) imports QUEST_LANDING_TIMING alone — the hook's derivation logic was absent from any __tests__/ dir
+- suggested fix: Create components/quest/__tests__/useQuestLanding.test.ts using renderHook + jest fake timers covering the tumble face cycle, the walk path/step computation (including modular wrap), the stage transitions, the steps===0 short-circuit, the targetPos/pathPositions preview, the revealed timing gate, the arrivalKey bump, and the phase-leaves-space reset, following the combat-mode.engine renderHook pattern
+- source: audit
+- issue: #441
+- addressed: 2026-06-17 via commit 0254973
+- fix: Added components/quest/__tests__/useQuestLanding.test.ts (11 hermetic cases, jest fake timers) pinning the idle VM-sync + lastRoll seed, the deterministic tumbling die-face cycle (rollTick % 6 + 1 including the wrap back to 1), the settle-to-real-face + route preview once tumbling ends, the modular-wrap walk path/step computation (including lapping the slipway: from=6 to=1 -> route 7,0,1), the still->rolling->walking->arrived stage machine, the steps===0 no-movement short-circuit (rolling straight to arrived), the revealed timing gate (card opens only after the arrive beat), the arrivalKey flourish bump (exactly once per landing), and the phase-leaves-space reset/re-sync to the VM. Verify green (2448 tests, +11).
 
 ### [x] [6.0] SatchelTray (gathering satchel tray) missing test coverage affecting gathering-minigame maintainability
 - category: tests

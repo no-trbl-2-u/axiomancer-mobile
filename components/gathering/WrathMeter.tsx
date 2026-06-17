@@ -15,7 +15,7 @@ import { makeStyles, usePalette } from '@/theme/runtime';
 
 import { GraceMark, WrathEye } from './glyphs';
 
-function segmentColor(index: number, vm: GatherWrathVM, AXM: Palette): string {
+export function segmentColor(index: number, vm: GatherWrathVM, AXM: Palette): string {
     if (index >= vm.value) return 'rgba(0,0,0,0.45)';
     const lastThreshold = vm.thresholds.filter((t) => index + 1 >= t.at).length;
     if (lastThreshold >= 2) return AXM.blood;

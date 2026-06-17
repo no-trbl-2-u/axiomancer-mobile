@@ -1204,6 +1204,12 @@ warranted a full phase promotion:
 
 ## Promoted
 
+### Phase 133 — Inventory equip-change delta surface
+- promoted: 2026-06-17 by T direct steering; priority override above all else.
+- source: T directed mobile to show only item equip/change deltas: gained/lost stats, modifiers, keywords, passive effects, and status-effect changes when equipment is equipped or swapped.
+- brief: `plan/phases/phase_133_inventory_equip_change_delta_surface.md`
+- build-plan row: `plan/steps/01_build_plan.md`
+
 ### Phase 131 — Dev menu Kid evidence presets
 - promoted: 2026-06-16 by T direct steering
 - source: T corrected the Kid playthrough evidence-preset recommendation: player presets must be exactly L1/L15/L30/L50 with level-relevant skills/equipment, plus an add-item-by-id button.

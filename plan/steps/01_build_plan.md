@@ -54,6 +54,8 @@ commit that ships the phase.
 
 **Next up (autonomous loop's queue):**
 
+- [ ] Phase 133 — Inventory equip-change delta surface. Filed by T direct steering 2026-06-17 and promoted above all else. In item equip/swap/unequip UI, show only values changed by the candidate item: gained/lost stats, modifiers, keywords/affix labels, passive effects, status-effect/proc hooks, and resource interactions. Hide unchanged values. Compare against the currently equipped item in the same slot; gained-only for empty slot, lost-only for unequip, gained/lost split for swap. Do not simulate mechanics locally and do not parse affix truth from item names; consume structured mechanics fields when available and degrade gracefully when not. Brief: `plan/phases/phase_133_inventory_equip_change_delta_surface.md`. Verification: inventory presenter/component Jest + `npm run typecheck` + `npm run verify`. Source: T Telegram steering 2026-06-17.
+
 > **Queue-drained steering (set via oversight 2026-06-13; updated via T steering 2026-06-15;
 > post-126 directive added via oversight 2026-06-15; post-127 promotions via oversight 2026-06-16).**
 > Phases 125–127 all shipped 2026-06-16, closing the accepted Hazard/combat UX runway. Expand

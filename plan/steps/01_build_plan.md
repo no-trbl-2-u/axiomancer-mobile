@@ -98,14 +98,17 @@ commit that ships the phase.
       `plan/phases/phase_129_lootcache_reward_depth.md`. Verification: `npm run verify` green
       (lint 0 errors + typecheck + 2384 tests). `[DONE on 2026-06-16 — see commit bbcd120]`.
 
-- [ ] Phase 130 — Out-of-combat death + scar/curse consequence weight. Promoted via `/oversight`
+- [x] Phase 130 — Out-of-combat death + scar/curse consequence weight. Promoted via `/oversight`
       2026-06-16 from expand pass 78 [score 4.5]. Hazard `minhp` damage currently floors VITAE at 1
       with no true downside; risk/reward loop has no teeth. Define and wire the out-of-combat death
       (or severe-consequence) path for lethal hazard outcomes, consistent with the combat death/aftermath
       flow; respect engine-truth for the death model. A `/oversight` design call on lethality model
-      may be needed before or during shipping. Brief: draft via `/plan-a-phase phase 130`. Verification:
-      hermetic test confirms lethal hazard damage triggers the defined consequence path; `npm run verify`
-      green.
+      may be needed before or during shipping. Brief: `plan/phases/phase_130_out_of_combat_death.md`.
+      Verification: hermetic test confirms lethal hazard damage triggers the defined consequence path;
+      `npm run verify` green. Shipped: a crossing whose net VITAE swing crosses the engine `isDefeated`
+      threshold (`health <= 0`) routes through `resetRun({keepCharacter:true})` (combat-death parity),
+      stamps a `hazard-death:` tombstone, and forfeits spoils; `died` surfaces on the claim result.
+      `[DONE on 2026-06-17 — see commit 6f798ff]`.
 
 - [x] Phase 131 — Dev menu Kid evidence presets (`cf55e66`). Filed by T direct steering 2026-06-16 after the Kid playthrough matrix discussion. Upgrade the dev menu into an evidence setup range for the Kid: player presets exactly `L1`, `L15`, `L30`, and `L50`, each with level-relevant skills and equipment; dev-only `add item by id` inventory injection; deterministic Hazard deck presets (starter baseline/control, early/late straightforward, early/late enchantment, early/late utility); and supported Hazard/Gathering/Combat seed/scenario controls. Keep `SHUFFLE FATE` as random variety, not evidence-grade. Brief: `plan/phases/phase_131_dev_menu_kid_evidence_presets.md`. Verification: focused dev preset/item/Hazard deck tests + `npm run typecheck` + `npm run verify` + visual evidence or exact blocker.
 

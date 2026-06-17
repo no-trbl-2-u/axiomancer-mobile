@@ -26,6 +26,7 @@ const mockEquipmentWeapon: InventoryItemRow = {
     category: 'equipment',
     sub: 'Weapon',
     quantity: 1,
+    rarity: 'common',
     equipped: false,
     description: 'A sturdy iron blade.',
     canUse: true,
@@ -40,6 +41,7 @@ const mockEquippedArmor: InventoryItemRow = {
     category: 'equipment',
     sub: 'Armor',
     quantity: 1,
+    rarity: 'common',
     equipped: true,
     description: 'Well-worn protection.',
     canUse: false,
@@ -54,6 +56,7 @@ const mockConsumable: InventoryItemRow = {
     category: 'consumable',
     sub: null,
     quantity: 3,
+    rarity: null,
     equipped: false,
     description: 'Restores vitality.',
     canUse: true,
@@ -68,6 +71,7 @@ const mockMaterial: InventoryItemRow = {
     category: 'material',
     sub: null,
     quantity: 5,
+    rarity: null,
     equipped: false,
     description: 'Raw metal for smithing.',
     canUse: false,
@@ -82,6 +86,7 @@ const mockQuestItem: InventoryItemRow = {
     category: 'quest',
     sub: null,
     quantity: 1,
+    rarity: null,
     equipped: false,
     description: 'Opens forgotten doors.',
     canUse: false,
@@ -96,6 +101,7 @@ const mockEquipmentWithPreview: InventoryItemRow = {
     category: 'equipment',
     sub: 'Weapon',
     quantity: 1,
+    rarity: 'common',
     equipped: false,
     description: 'Sharp steel blade.',
     canUse: true,
@@ -524,6 +530,100 @@ describe('ItemCard: equipDelta panel (Phase 133)', () => {
         );
         const r = render(tree);
         expect(r.queryByTestId('equip-delta-inert')).toBeNull();
+    });
+});
+
+describe('ItemCard: rarity shine affordances (Phase 135)', () => {
+    const handlers = {
+        onTap: jest.fn(),
+        onUseOrEquip: jest.fn(),
+        onDiscard: jest.fn(),
+    };
+
+    const makeItem = (
+        rarity: InventoryItemRow['rarity'],
+        overrides: Partial<InventoryItemRow> = {},
+    ): InventoryItemRow => ({
+        ...mockEquipmentWeapon,
+        id: `rarity-${rarity ?? 'none'}`,
+        rarity,
+        ...overrides,
+    });
+
+    it('renders green shine and "one affix" language for uncommon', () => {
+        const item = makeItem('uncommon');
+        const { tree } = withAllProviders(
+            <ItemCard item={item} expanded={false} {...handlers} />
+        );
+        const r = render(tree);
+        expect(r.getByTestId(`rarity-shine-${item.id}`)).toBeTruthy();
+        expect(r.queryByTestId(`rarity-outline-${item.id}`)).toBeNull();
+        expect(r.getByTestId(`item-${item.id}`).props.accessibilityLabel)
+            .toContain('uncommon, one affix');
+    });
+
+    it('renders blue shine and "two affixes" language for rare', () => {
+        const item = makeItem('rare');
+        const { tree } = withAllProviders(
+            <ItemCard item={item} expanded={false} {...handlers} />
+        );
+        const r = render(tree);
+        expect(r.getByTestId(`rarity-shine-${item.id}`)).toBeTruthy();
+        expect(r.getByTestId(`item-${item.id}`).props.accessibilityLabel)
+            .toContain('rare, two affixes');
+    });
+
+    it('renders red outline and "three fixed modifiers" language for unique', () => {
+        const item = makeItem('unique');
+        const { tree } = withAllProviders(
+            <ItemCard item={item} expanded={false} {...handlers} />
+        );
+        const r = render(tree);
+        expect(r.getByTestId(`rarity-outline-${item.id}`)).toBeTruthy();
+        expect(r.queryByTestId(`rarity-shine-${item.id}`)).toBeNull();
+        expect(r.getByTestId(`item-${item.id}`).props.accessibilityLabel)
+            .toContain('unique, three fixed modifiers');
+    });
+
+    it('renders no shine or outline for common', () => {
+        const item = makeItem('common');
+        const { tree } = withAllProviders(
+            <ItemCard item={item} expanded={false} {...handlers} />
+        );
+        const r = render(tree);
+        expect(r.queryByTestId(`rarity-shine-${item.id}`)).toBeNull();
+        expect(r.queryByTestId(`rarity-outline-${item.id}`)).toBeNull();
+    });
+
+    it('renders no shine or outline for non-equipment (null rarity)', () => {
+        const item = makeItem(null, { category: 'consumable', sub: null });
+        const { tree } = withAllProviders(
+            <ItemCard item={item} expanded={false} {...handlers} />
+        );
+        const r = render(tree);
+        expect(r.queryByTestId(`rarity-shine-${item.id}`)).toBeNull();
+        expect(r.queryByTestId(`rarity-outline-${item.id}`)).toBeNull();
+    });
+
+    it('keeps the unique outline and WORN badge on an equipped unique', () => {
+        const item = makeItem('unique', { equipped: true, sub: 'Armor' });
+        const { tree } = withAllProviders(
+            <ItemCard item={item} expanded={false} {...handlers} />
+        );
+        const r = render(tree);
+        expect(r.getByTestId(`rarity-outline-${item.id}`)).toBeTruthy();
+        expect(r.getByText('WORN')).toBeTruthy();
+        expect(r.getByTestId(`item-${item.id}`).props.accessibilityLabel)
+            .toContain('worn');
+    });
+
+    it('preserves the rarity treatment when the card is expanded', () => {
+        const item = makeItem('rare');
+        const { tree } = withAllProviders(
+            <ItemCard item={item} expanded={true} {...handlers} />
+        );
+        const r = render(tree);
+        expect(r.getByTestId(`rarity-shine-${item.id}`)).toBeTruthy();
     });
 });
 

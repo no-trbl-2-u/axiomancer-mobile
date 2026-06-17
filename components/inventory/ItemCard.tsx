@@ -7,6 +7,7 @@ import { makeStyles, usePalette } from '@/theme/runtime';
 import { ActionIcon } from '@/components/ActionIcon';
 import { TooltipTarget } from '@/components/tooltip/TooltipTarget';
 import { EquipDeltaPanel } from '@/components/inventory/EquipDeltaPanel';
+import { rarityAffordance, rarityColors } from '@/components/inventory/rarityAffordance';
 import type { InventoryCategory, InventoryItemRow } from '@/state/presenters/inventory.engine';
 
 export const CATEGORY_ORDER: readonly InventoryCategory[] = [
@@ -141,11 +142,39 @@ export function ItemCard({ item, expanded, onTap, onUseOrEquip, onDiscard }: Ite
     const AXM = usePalette();
     const [isFocused, setIsFocused] = useState(false);
 
-    const itemLabel = item.equipped
+    const affordance = rarityAffordance(item.rarity);
+    const colors = rarityColors(item.rarity, AXM);
+
+    const baseLabel = item.equipped
         ? `${item.name}, worn`
         : item.quantity > 1
             ? `${item.name}, ${item.quantity}`
             : item.name;
+    const itemLabel = affordance.label !== null
+        ? `${baseLabel}, ${affordance.label}`
+        : baseLabel;
+
+    // Unique's red outline wins the border (colour + 2px weight) over
+    // the equipped sulfur border, but the WORN badge below still renders
+    // so worn-ness stays legible. Uncommon / rare paint a soft shine via
+    // shadow/elevation rather than a hard border so they read as a glow.
+    const rarityBorderColor = affordance.isOutline
+        ? colors.accent
+        : item.equipped
+            ? AXM.sulfur
+            : AXM.ash;
+    const rarityBorderWidth = affordance.isOutline || item.equipped ? 2 : 1;
+    const shineStyle = affordance.isShine
+        ? {
+            borderColor: colors.accent,
+            shadowColor: colors.glow,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.9,
+            shadowRadius: 6,
+            elevation: 4,
+        }
+        : null;
+
     return (
         <TouchableOpacity
             accessibilityRole="button"
@@ -159,12 +188,27 @@ export function ItemCard({ item, expanded, onTap, onUseOrEquip, onDiscard }: Ite
                 expanded && styles.itemCardExpanded,
                 isFocused && styles.itemCardFocused,
                 {
-                    borderColor: item.equipped ? AXM.sulfur : AXM.ash,
-                    borderWidth: item.equipped ? 2 : 1,
+                    borderColor: rarityBorderColor,
+                    borderWidth: rarityBorderWidth,
                 },
+                shineStyle,
             ]}
             testID={`item-${item.id}`}
         >
+            {affordance.isShine && (
+                <View
+                    pointerEvents="none"
+                    style={[styles.rarityShine, { borderColor: colors.accent }]}
+                    testID={`rarity-shine-${item.id}`}
+                />
+            )}
+            {affordance.isOutline && (
+                <View
+                    pointerEvents="none"
+                    style={[styles.rarityOutline, { borderColor: colors.accent }]}
+                    testID={`rarity-outline-${item.id}`}
+                />
+            )}
             <View style={styles.itemIcon}>
                 <ItemGlyph category={item.category} sub={item.sub} />
             </View>
@@ -399,5 +443,22 @@ const useStyles = makeStyles((AXM) => ({
         shadowRadius: 4,
         elevation: 3,
         borderColor: AXM.sulfur,
+    },
+    rarityShine: {
+        position: 'absolute',
+        top: 1,
+        left: 1,
+        right: 1,
+        bottom: 1,
+        borderWidth: 1,
+        opacity: 0.7,
+    },
+    rarityOutline: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        borderWidth: 2,
     },
 }));

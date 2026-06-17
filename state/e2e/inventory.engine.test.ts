@@ -228,6 +228,25 @@ describe('selectInventoryViewModel: engine read', () => {
         expect(vm.items[0].sub).toBe('Weapon');
     });
 
+    it('exposes the engine equipment rarity on the `rarity` row field (Phase 135)', () => {
+        const unique: Equipment = { ...sword('relic'), rarity: 'unique' };
+        const store = makeStore([unique]);
+
+        const vm = selectInventoryViewModel(store.getState());
+
+        expect(vm.items[0].rarity).toBe('unique');
+    });
+
+    it('leaves `rarity` null on non-equipment rows (Phase 135)', () => {
+        const store = makeStore([potion(), tooth(), ash()]);
+
+        const vm = selectInventoryViewModel(store.getState());
+
+        for (const row of vm.items) {
+            expect(row.rarity).toBeNull();
+        }
+    });
+
     it('marks consumables as canUse and canDiscard', () => {
         const store = makeStore([potion()]);
 

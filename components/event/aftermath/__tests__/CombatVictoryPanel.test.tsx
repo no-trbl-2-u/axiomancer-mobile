@@ -19,6 +19,8 @@ import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
 
 import { CombatVictoryPanel } from '@/components/event/aftermath/CombatVictoryPanel';
+import { RARITY_BLUE } from '@/components/inventory/rarityAffordance';
+import { paletteFor, DEFAULT_THEME_ID } from '@/theme/palette';
 import type { AftermathVictoryViewModel } from '@/state/presenters/aftermath.engine';
 
 const BASE_VM: AftermathVictoryViewModel = {
@@ -117,6 +119,59 @@ describe('CombatVictoryPanel: render contract', () => {
         expect(tree.queryByText('WEAPON')).not.toBeNull();
         // The empty flavor line is suppressed.
         expect(tree.queryByTestId('combat-victory-panel-loot-empty')).toBeNull();
+    });
+});
+
+describe('CombatVictoryPanel: rarity rail affordances (Phase 135)', () => {
+    const AXM = paletteFor(DEFAULT_THEME_ID);
+
+    function flatBg(node: { props: { style: unknown } }): string | undefined {
+        const styles = Array.isArray(node.props.style) ? node.props.style : [node.props.style];
+        let bg: string | undefined;
+        for (const s of styles.flat(Infinity)) {
+            if (s && typeof s === 'object' && 'backgroundColor' in s) {
+                bg = (s as { backgroundColor?: string }).backgroundColor;
+            }
+        }
+        return bg;
+    }
+
+    function renderLoot(loot: AftermathVictoryViewModel['rewards']['loot']) {
+        return render(
+            <CombatVictoryPanel
+                vm={{ ...BASE_VM, rewards: { ...BASE_VM.rewards, loot } }}
+                onContinue={() => {}}
+            />,
+        );
+    }
+
+    it('paints the uncommon rail green and labels "one affix"', () => {
+        const tree = renderLoot([{ name: 'Green Charm', slot: 'accessory', rarity: 'uncommon' }]);
+        expect(flatBg(tree.getByTestId('loot-rarity-0'))).toBe(AXM.heal);
+        expect(tree.getByTestId('loot-row-0').props.accessibilityLabel)
+            .toContain('uncommon, one affix');
+    });
+
+    it('paints the rare rail blue and labels "two affixes"', () => {
+        const tree = renderLoot([{ name: 'Blue Shard', slot: 'weapon', rarity: 'rare' }]);
+        expect(flatBg(tree.getByTestId('loot-rarity-0'))).toBe(RARITY_BLUE);
+        expect(tree.getByTestId('loot-row-0').props.accessibilityLabel)
+            .toContain('rare, two affixes');
+    });
+
+    it('paints the unique rail red and labels "three fixed modifiers"', () => {
+        const tree = renderLoot([{ name: 'Red Relic', slot: 'weapon', rarity: 'unique' }]);
+        expect(flatBg(tree.getByTestId('loot-rarity-0'))).toBe(AXM.blood);
+        expect(tree.getByTestId('loot-row-0').props.accessibilityLabel)
+            .toContain('unique, three fixed modifiers');
+    });
+
+    it('leaves the common rail muted with no rarity phrase', () => {
+        const tree = renderLoot([{ name: 'Plain Thing', slot: 'weapon', rarity: 'common' }]);
+        expect(flatBg(tree.getByTestId('loot-rarity-0'))).toBe(AXM.bone);
+        const label = tree.getByTestId('loot-row-0').props.accessibilityLabel;
+        expect(label).not.toContain('affix');
+        expect(label).not.toContain('fixed modifiers');
     });
 });
 

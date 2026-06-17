@@ -59,6 +59,13 @@ export interface InventoryItemRow {
     sub: string | null;
     /** Stack size — always 1 for non-stackable items. */
     quantity: number;
+    /**
+     * Equipment rarity (`common | uncommon | rare | unique`) or `null`
+     * for non-equipment rows. Drives the rarity shine / outline
+     * affordance (Phase 135). Read straight from the engine
+     * `Equipment.rarity`; never inferred from the name or affix fields.
+     */
+    rarity: 'common' | 'uncommon' | 'rare' | 'unique' | null;
     equipped: boolean;
     description: string;
     /** Whether the item can currently be used / equipped. */
@@ -303,6 +310,10 @@ function subFor(item: Item): string | null {
     return null;
 }
 
+function rarityFor(item: Item): InventoryItemRow['rarity'] {
+    return isEquipment(item) ? item.rarity : null;
+}
+
 function quantityFor(item: Item): number {
     if (isConsumable(item) || isMaterial(item)) {
         // `?? 1` defends against fixtures that omit the engine-required
@@ -401,6 +412,7 @@ function buildRows(inventory: readonly Item[]): InventoryItemRow[] {
             category: cat,
             sub: subFor(item),
             quantity: quantityFor(item),
+            rarity: rarityFor(item),
             equipped,
             description: item.description,
             canUse: canUseFor(item),

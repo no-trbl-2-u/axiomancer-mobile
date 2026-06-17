@@ -29,6 +29,7 @@ import { Splatter } from '@/components/Splatter';
 import { VictoryWreath } from '@/components/art/VictoryWreath';
 import { FONTS } from '@/theme/axm';
 import { makeStyles, usePalette } from '@/theme/runtime';
+import { rarityAffordance, rarityColors } from '@/components/inventory/rarityAffordance';
 import type { AftermathVictoryViewModel } from '@/state/presenters/aftermath.engine';
 
 export interface CombatVictoryPanelProps {
@@ -140,20 +141,31 @@ export function CombatVictoryPanel({ vm, onContinue }: CombatVictoryPanelProps) 
                         </Text>
                     ) : (
                         <View style={styles.lootList}>
-                            {vm.rewards.loot.map((it, i) => (
-                                <View key={`${it.name}-${i}`} style={styles.lootRow}>
-                                    <View style={styles.lootGlyphWrap}>
-                                        <ItemGlyph slot={it.slot} />
+                            {vm.rewards.loot.map((it, i) => {
+                                const rarityLabel = rarityAffordance(it.rarity).label;
+                                const lootLabel = rarityLabel === null
+                                    ? `${it.name}, ${it.slot}`
+                                    : `${it.name}, ${it.slot}, ${rarityLabel}`;
+                                return (
+                                    <View
+                                        key={`${it.name}-${i}`}
+                                        style={styles.lootRow}
+                                        accessibilityLabel={lootLabel}
+                                        testID={`loot-row-${i}`}
+                                    >
+                                        <View style={styles.lootGlyphWrap}>
+                                            <ItemGlyph slot={it.slot} />
+                                        </View>
+                                        <View style={styles.lootRowText}>
+                                            <Text style={styles.lootName}>{it.name}</Text>
+                                            <Text style={styles.lootSlot}>
+                                                {it.slot.toUpperCase()}
+                                            </Text>
+                                        </View>
+                                        <RarityRail rarity={it.rarity} testID={`loot-rarity-${i}`} />
                                     </View>
-                                    <View style={styles.lootRowText}>
-                                        <Text style={styles.lootName}>{it.name}</Text>
-                                        <Text style={styles.lootSlot}>
-                                            {it.slot.toUpperCase()}
-                                        </Text>
-                                    </View>
-                                    <RarityRail rarity={it.rarity} />
-                                </View>
-                            ))}
+                                );
+                            })}
                         </View>
                     )}
                 </View>
@@ -244,18 +256,35 @@ function ItemGlyph({ slot, size = 18 }: { slot: string; size?: number }) {
     );
 }
 
-function RarityRail({ rarity }: { rarity: AftermathVictoryViewModel['rewards']['loot'][number]['rarity'] }) {
+/**
+ * Loot-tile rarity rail. Phase 135 aligns the rail colours to the
+ * shared rarity rule so reward tiles speak the same language as the
+ * inventory `ItemCard`: uncommon green, rare blue, unique red. Unique
+ * renders a thicker, full-opacity bar so its red outline reads as the
+ * "set-in-stone" tier; common stays a muted hairline.
+ */
+function RarityRail({
+    rarity,
+    testID,
+}: {
+    rarity: AftermathVictoryViewModel['rewards']['loot'][number]['rarity'];
+    testID?: string;
+}) {
+    const AXM = usePalette();
     const styles = useStyles();
-    if (rarity === 'unique') {
-        return <View style={[styles.rarityRail, styles.rarityRailUnique]} />;
-    }
-    if (rarity === 'rare') {
-        return <View style={[styles.rarityRail, styles.rarityRailRare]} />;
-    }
-    if (rarity === 'uncommon') {
-        return <View style={[styles.rarityRail, styles.rarityRailUncommon]} />;
-    }
-    return <View style={[styles.rarityRail, styles.rarityRailCommon]} />;
+    const affordance = rarityAffordance(rarity);
+    const colors = rarityColors(rarity, AXM);
+    return (
+        <View
+            testID={testID}
+            style={[
+                styles.rarityRail,
+                { backgroundColor: colors.accent },
+                affordance.isOutline && styles.rarityRailUnique,
+                rarity === 'common' && styles.rarityRailCommon,
+            ]}
+        />
+    );
 }
 
 const useStyles = makeStyles((AXM) => ({
@@ -441,12 +470,10 @@ const useStyles = makeStyles((AXM) => ({
     },
     rarityRail: {
         width: 28,
-        height: 1,
+        height: 2,
     },
-    rarityRailCommon: { backgroundColor: AXM.bone, opacity: 0.6 },
-    rarityRailUncommon: { backgroundColor: AXM.parchment, opacity: 0.7 },
-    rarityRailRare: { backgroundColor: AXM.parchment },
-    rarityRailUnique: { backgroundColor: AXM.sulfur },
+    rarityRailCommon: { opacity: 0.6 },
+    rarityRailUnique: { height: 4 },
     spacer: { flex: 1, minHeight: 8, alignItems: 'center', justifyContent: 'center' },
     wreathWatermark: { opacity: 0.16 },
     carryOn: {

@@ -47,6 +47,7 @@ const DebugPlaythroughPresets = lazy(() => import('@/components/DebugPlaythrough
 const DebugPresetPicker = lazy(() => import('@/components/DebugPresetPicker').then(m => ({ default: m.DebugPresetPicker })));
 const DebugPopulateAllItems = lazy(() => import('@/components/DebugPopulateAllItems').then(m => ({ default: m.DebugPopulateAllItems })));
 const DebugAddItemById = lazy(() => import('@/components/DebugAddItemById').then(m => ({ default: m.DebugAddItemById })));
+const DebugLootRarityButtons = lazy(() => import('@/components/DebugLootRarityButtons').then(m => ({ default: m.DebugLootRarityButtons })));
 const DebugPlayerTierPresets = lazy(() => import('@/components/DebugPlayerTierPresets').then(m => ({ default: m.DebugPlayerTierPresets })));
 const DebugSeedButton = lazy(() => import('@/components/DebugSeedButton').then(m => ({ default: m.DebugSeedButton })));
 const DebugXpGrant = lazy(() => import('@/components/DebugXpGrant').then(m => ({ default: m.DebugXpGrant })));
@@ -123,6 +124,7 @@ export function DevToolsSections() {
 
                 <DevSection label="INVENTORY & ITEM TOOLS" testID="dev-section-inventory">
                     <DebugPopulateAllItems />
+                    <DebugLootRarityButtons />
                     <DebugAddItemById />
                     <DebugCurrencyControl />
                     <DebugXpGrant />

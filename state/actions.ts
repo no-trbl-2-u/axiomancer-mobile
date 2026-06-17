@@ -184,6 +184,11 @@ import {
     addItemByIdAction,
     type AddItemByIdResult,
 } from './dev/item-by-id';
+import {
+    lootUncommonItemAction,
+    lootRareItemAction,
+    type LootRarityResult,
+} from './dev/loot-rarity';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -376,6 +381,23 @@ export interface AppActions {
      * Component mount is `isDevToolsEnabled()`-guarded.
      */
     addItemById: (id: string) => AddItemByIdResult;
+    /**
+     * Phase 136 — dev-only "loot a real uncommon drop". Generates a
+     * genuine uncommon equipment drop through the engine
+     * `dropItem(templateId, level, 'uncommon')` path (one rolled
+     * affix) and pushes it to inventory. Reports the generated item
+     * name + affix count. Component mount is
+     * `isDevToolsEnabled()`-guarded.
+     */
+    lootUncommonItem: () => LootRarityResult;
+    /**
+     * Phase 136 — dev-only "loot a real rare drop". Generates a
+     * genuine rare equipment drop through the engine
+     * `dropItem(templateId, level, 'rare')` path (two rolled affixes)
+     * and pushes it to inventory. Reports the generated item name +
+     * affix count. Component mount is `isDevToolsEnabled()`-guarded.
+     */
+    lootRareItem: () => LootRarityResult;
     /**
      * Phase 73 — allocate a single stat point. Wraps the engine's
      * `allocateStatPoint(stat)` action. The engine clamps
@@ -1342,6 +1364,8 @@ export function createAppActions(store: AppStore): AppActions {
         applyCharacterPreset: (presetId) => applyCharacterPresetAction(store, presetId),
         applyPlayerTierPreset: (presetId) => applyPlayerTierPresetAction(store, presetId),
         addItemById: (id) => addItemByIdAction(store, id),
+        lootUncommonItem: () => lootUncommonItemAction(store),
+        lootRareItem: () => lootRareItemAction(store),
         allocateStatPoint: (stat) => {
             // Engine's `allocateStatPoint` is a zustand action attached
             // to the GameStore (`node_modules/axiomancer-mechanics/dist/

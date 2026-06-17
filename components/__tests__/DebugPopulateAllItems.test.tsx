@@ -87,13 +87,23 @@ describe('DebugPopulateAllItems: press routing', () => {
     it('updates the visible result line with a populated · breakdown summary', () => {
         const store = makeStore();
         const tree = render(withProvider(store, <DebugPopulateAllItems />));
-        // Before press, the row shows the static subtitle.
-        expect(tree.queryByText('one of every item in the game')).not.toBeNull();
 
         fireEvent.press(tree.getByTestId('debug-populate-all-items'));
 
         const text = JSON.stringify(tree.toJSON());
         expect(text).toMatch(/populated · \d+ total · \d+ eq \/ \d+ uniq \/ \d+ cons/);
+    });
+
+    it('static copy is honest about rarity: registry gear only, not uncommon/rare static dump', () => {
+        const store = makeStore();
+        const tree = render(withProvider(store, <DebugPopulateAllItems />));
+        const sub = tree.getByTestId('debug-populate-sub').props.children as string;
+        // No longer claims to dump "every item in the game".
+        expect(sub).not.toMatch(/every item in the game/i);
+        // Truthfully scopes to registry content + points at the loot buttons.
+        expect(sub).toMatch(/common\/base/i);
+        expect(sub).toMatch(/unique/i);
+        expect(sub).toMatch(/LOOT/);
     });
 
     it('a second tap is non-destructive — never throws', () => {

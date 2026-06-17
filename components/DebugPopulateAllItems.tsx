@@ -1,5 +1,5 @@
 /**
- * Dev-only "populate every item" button.
+ * Dev-only "populate registry items" button.
  *
  * Press to fire `actions.populateAllItems()` — walks the engine's
  * three central item registries (`equipmentTemplates`,
@@ -8,11 +8,18 @@
  * rendering, equip dock peer ordering, and per-rarity / per-slot
  * chrome under a maximal load.
  *
+ * Rarity truth (Phase 136): POPULATE provides only the items that
+ * actually exist as static registry rows — common / base equipment,
+ * unique relics, and consumables. Uncommon and rare equipment are
+ * NOT registry rows; the engine rolls them at drop time. Use the
+ * LOOT UNCOMMON / LOOT RARE buttons (DebugLootRarityButtons) to add
+ * those real generated drops.
+ *
  * User-direct request 2026-05-22 (mid-`/march` interjection): "let's
  * add a button that 'populates' items and gives the player every
  * item in the game". Sibling to `DebugSeedButton` (which seeds a
  * representative sample — head/body/weapon + one potion + a few
- * skills + map reset); this one is the full-inventory dump for
+ * skills + map reset); this one is the full registry dump for
  * targeted UI testing.
  *
  * Renders null in production builds (`__DEV__` is false). Mount
@@ -46,15 +53,16 @@ export function DebugPopulateAllItems() {
         <View style={styles.row}>
             <View style={styles.labelCol}>
                 <Text style={styles.label}>DEBUG · POPULATE</Text>
-                <Text style={styles.sub}>
-                    {lastResult ?? 'one of every item in the game'}
+                <Text style={styles.sub} testID="debug-populate-sub">
+                    {lastResult ??
+                        'common/base + unique registry gear + consumables · uncommon/rare via LOOT buttons'}
                 </Text>
             </View>
             <Pressable
                 style={styles.button}
                 onPress={onPress}
                 accessibilityRole="button"
-                accessibilityLabel="Populate inventory with one of every item in the engine registries"
+                accessibilityLabel="Populate inventory with registry gear: common/base equipment, unique relics, and consumables"
                 testID="debug-populate-all-items"
             >
                 <Text style={styles.buttonLabel}>POPULATE</Text>

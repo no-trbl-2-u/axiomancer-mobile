@@ -46,7 +46,7 @@
 - suggested fix: Create components/gathering/__tests__/TutorialCoach.test.tsx covering the index<0 null return, the step counter at multiple steps, the current step's title/body/find rendering, the step-swap when an earlier predicate is met, and the SKIP press firing onSkip, following the SatchelTray render pattern
 - source: audit
 - issue: #447
-- addressed: 2026-06-17 via commit PENDING
+- addressed: 2026-06-17 via commit cf17a0f
 - fix: Added components/gathering/__tests__/TutorialCoach.test.tsx (7 hermetic cases) pinning the index<0 null-return gate (no banner when the script is complete), the banner render while a step is unmet, the FIRST GLEANING · n / total counter at steps 1 and 4, the current step's title/body/find copy, the step-swap when an earlier predicate is met (next title shown, prior hidden), and the SKIP press firing onSkip exactly once. Minimal partial-session fixtures populate only the fields the seven step predicates read. Verify green (238 suites / 2522 tests, +7).
 
 ### [x] [7.2] EquipDeltaPanel (inventory equip-change delta surface) missing test coverage affecting inventory maintainability

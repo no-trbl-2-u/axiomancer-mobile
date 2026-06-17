@@ -26,6 +26,7 @@ import {
     selectGatheringViewModel,
     type GatherPlotVM,
 } from '@/state/presenters/gathering.engine';
+import type { SeedInput } from 'axiomancer-mechanics';
 
 export default function GatheringScreen() {
     const gathering = useGameState((s) => s.gathering);
@@ -54,7 +55,7 @@ export default function GatheringScreen() {
 
     // Site-reveal modal: shown once per session (keyed by seed) before
     // the approach choice — for map-triggered AND dev-triggered alike.
-    const [introAckSeed, setIntroAckSeed] = useState<number | null>(null);
+    const [introAckSeed, setIntroAckSeed] = useState<SeedInput | null>(null);
     const showIntro = vm.active && vm.phase === 'approach-select' && introAckSeed !== vm.sessionSeed;
 
     // The detail overlay must never outlive the plot it describes

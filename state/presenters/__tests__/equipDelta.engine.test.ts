@@ -162,12 +162,52 @@ describe('computeEquipDelta: keyword/affix graceful omission', () => {
     });
 
     it('surfaces keyword labels when present on the item instance', () => {
-        const worn = weapon('worn') as Equipment & { suffixName?: string };
-        worn.suffixName = 'of Ruin';
-        const cand = weapon('cand') as Equipment & { prefixName?: string };
-        cand.prefixName = 'Gilded';
+        const worn = weapon('worn', { suffixName: 'of Ruin' });
+        const cand = weapon('cand', { prefixName: 'Gilded' });
         const d = computeEquipDelta(cand, worn);
         expect(d.gained.keywords).toEqual([{ key: 'prefix:Gilded', label: 'Gilded' }]);
         expect(d.lost.keywords).toEqual([{ key: 'suffix:of Ruin', label: 'of Ruin' }]);
+    });
+});
+
+describe('computeEquipDelta: mechanics 0.22.0 structured affixes', () => {
+    // Mechanics 0.22.0 ships structured prefix/suffix provenance on
+    // Equipment. A rare drop carries both; the delta surface must read
+    // them from the engine instance, never parse the display name.
+    it('reads a rare affixed drop straight off the engine instance', () => {
+        const affixed = weapon('affixed-rare', {
+            rarity: 'rare',
+            prefixId: 'keen',
+            prefixName: 'Keen',
+            suffixId: 'of-focus',
+            suffixName: 'of Focus',
+            // The composed display name must NOT be the truth source — the
+            // delta keys come from the structured fields, not this string.
+            name: 'Keen Iron Blade of Focus',
+        });
+        const plain = weapon('plain-common', { rarity: 'common' });
+
+        const equipFromEmpty = computeEquipDelta(affixed, null);
+        expect(equipFromEmpty.gained.keywords).toEqual([
+            { key: 'prefix:Keen', label: 'Keen' },
+            { key: 'suffix:of Focus', label: 'of Focus' },
+        ]);
+
+        const swap = computeEquipDelta(affixed, plain);
+        expect(swap.gained.keywords).toEqual([
+            { key: 'prefix:Keen', label: 'Keen' },
+            { key: 'suffix:of Focus', label: 'of Focus' },
+        ]);
+        expect(swap.lost.keywords).toHaveLength(0);
+    });
+
+    it('omits affix labels for legacy equipment saved before 0.22.0', () => {
+        // Pre-0.22.0 saves carry no prefix/suffix fields. The reader must
+        // degrade to an empty label set rather than throwing.
+        const legacyWorn = weapon('legacy-worn', { rarity: 'uncommon' });
+        const legacyCand = weapon('legacy-cand', { rarity: 'rare' });
+        const d = computeEquipDelta(legacyCand, legacyWorn);
+        expect(d.gained.keywords).toHaveLength(0);
+        expect(d.lost.keywords).toHaveLength(0);
     });
 });

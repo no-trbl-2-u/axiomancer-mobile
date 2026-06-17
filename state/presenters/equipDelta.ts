@@ -259,19 +259,19 @@ function diffResources(fromItem: Equipment, notIn: Equipment): ResourceDeltaEntr
 }
 
 /**
- * Keyword / affix labels. The mechanics engine (v0.21.0) does not
- * publish `prefixName` / `suffixName` on the item instance at the
- * package root, so this resolves to an empty list. The shape exists so
- * the surface lights up automatically once Mechanics Phase 152 lands
- * the affix-library provenance — no mobile change required beyond
- * populating this reader. We never parse affix truth from the display
- * name (brief §"Decisions made upfront").
+ * Keyword / affix labels. As of mechanics 0.22.0 the engine publishes
+ * structured `prefixName` / `suffixName` on the `Equipment` instance
+ * (rare drops carry both, uncommon one, common/unique neither), so this
+ * reader now lights up on affixed drops automatically. Legacy saved
+ * equipment from before 0.22.0 simply omits the fields and resolves to
+ * an empty list. A `keywords` array is not part of the published
+ * `Equipment` surface yet; we read it defensively via the cast so the
+ * label set widens for free if mechanics adds it. We never parse affix
+ * truth from the display name (brief §"Decisions made upfront").
  */
 function keywordEntries(equipment: Equipment): Map<string, KeywordDeltaEntry> {
     const out = new Map<string, KeywordDeltaEntry>();
     const provenance = equipment as Equipment & {
-        prefixName?: string;
-        suffixName?: string;
         keywords?: readonly string[];
     };
     if (typeof provenance.prefixName === 'string' && provenance.prefixName.length > 0) {

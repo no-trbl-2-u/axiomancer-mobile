@@ -27,6 +27,7 @@ import { RewardsOverlay } from '@/components/hazard/RewardsOverlay';
 import { RouteSelect } from '@/components/hazard/RouteSelect';
 import { useGameActions, useGameState } from '@/state/GameStoreProvider';
 import { selectHazardViewModel, type HazardCardVM } from '@/state/presenters/hazard.engine';
+import type { SeedInput } from 'axiomancer-mechanics';
 
 type DropResolver = (payload: DragPayload, x: number, y: number) => void | Promise<void>;
 
@@ -40,7 +41,7 @@ export default function HazardScreen() {
 
     // Danger-intro modal: shown once per session (keyed by seed) before
     // route select — for map-triggered AND dev-triggered hazards alike.
-    const [introAckSeed, setIntroAckSeed] = useState<number | null>(null);
+    const [introAckSeed, setIntroAckSeed] = useState<SeedInput | null>(null);
     const showIntro = vm.active && vm.phase === 'route-select' && introAckSeed !== vm.sessionSeed;
 
     // ── screen-level drag controller ──

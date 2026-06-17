@@ -16,6 +16,7 @@ import {
     getGatherSiteDef,
     getGatherToolDef,
     type GatherKeywordId,
+    type SeedInput,
 } from 'axiomancer-mechanics';
 import {
     canPayGatheringOffering,
@@ -166,7 +167,7 @@ export interface GatheringViewModel {
     active: boolean;
     phase: GatheringPhase;
     siteId: string;
-    sessionSeed: number;
+    sessionSeed: SeedInput;
     title: string;
     scenario: string;
     intro: string;

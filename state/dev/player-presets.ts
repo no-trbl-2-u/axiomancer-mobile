@@ -170,21 +170,26 @@ export const PLAYER_TIER_PRESETS: readonly PlayerTierPreset[] = Object.freeze([
     {
         id: 'kid-l50',
         label: 'L50',
-        summary: 'endgame — all skills, dragon-tier + unique',
+        summary: 'endgame — all skills, top-tier affixed gear',
         preset: {
             id: 'kid-l50',
             name: 'Kid · L50',
             summary: 'Endgame evidence kit.',
             level: 50,
             baseStats: { heart: 40, body: 44, mind: 42 },
+            // Mechanics 0.22.0 trimmed the equipment library; the old
+            // dragon-tier ids were removed. Endgame now seeds the
+            // top-tier curated affixed L20 variants (the highest
+            // requiredLevel rows the trimmed library ships) so the
+            // build still arrives geared and affix-backed.
             equipment: [
-                { templateId: 'axioms-edge', slot: 'weapon' },
-                { templateId: 'dragonscale-harness', slot: 'armor' },
-                { templateId: 'oracle-crown', slot: 'head' },
-                { templateId: 'titan-carapace', slot: 'body' },
-                { templateId: 'dragonclaw-gauntlets', slot: 'hands' },
-                { templateId: 'windwalker-greaves', slot: 'feet' },
-                { templateId: 'oracle-eye', slot: 'accessory' },
+                { templateId: 'savage-mithril-blade-of-ruin', slot: 'weapon' },
+                { templateId: 'adamant-plate-mail-of-warding', slot: 'armor' },
+                { templateId: 'full-helm-of-insight', slot: 'head' },
+                { templateId: 'scaled-coat-of-thorns', slot: 'body' },
+                { templateId: 'plate-gauntlets-of-the-duelist', slot: 'hands' },
+                { templateId: 'phantom-iron-greaves-of-shadows', slot: 'feet' },
+                { templateId: 'silver-ring-of-resilience', slot: 'accessory' },
             ],
             knownSkills: [
                 ...TIER_1_SKILLS,

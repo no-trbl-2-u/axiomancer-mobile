@@ -29,13 +29,25 @@ describe('rollCacheLoot', () => {
     });
 
     it('rolls real (non-placeholder) rarity, not flat common', () => {
-        // Modest L1 seed 7 rolls a single rare Iron Blade — proof the
-        // engine rarity table drives the drop, not a static common.
+        // Modest L1 seed 7 rolls a single rare blade — proof the engine
+        // rarity table drives the drop, not a static common. Under
+        // mechanics 0.22.0 a rare carries both a prefix and a suffix, so
+        // the drop arrives affix-backed (e.g. "Keen Iron Blade of Focus")
+        // with structured provenance the UI reads directly.
         const items = rollCacheLoot({ playerLevel: 1, seed: 7, tier: 'modest' });
         expect(items).toHaveLength(1);
-        expect(items[0].name).toBe('Iron Blade');
-        expect(rarityOf(items[0])).toBe('rare');
-        expect(items[0].category).toBe('equipment');
+        const drop = items[0];
+        expect(rarityOf(drop)).toBe('rare');
+        expect(drop.category).toBe('equipment');
+        expect(isEquipment(drop)).toBe(true);
+        if (isEquipment(drop)) {
+            // Rare = prefix + suffix per the 0.22.0 affix defaults; assert
+            // the structured fields rather than parsing the display name.
+            expect(drop.prefixName).toBeTruthy();
+            expect(drop.suffixName).toBeTruthy();
+            expect(drop.prefixId).toBeTruthy();
+            expect(drop.suffixId).toBeTruthy();
+        }
     });
 
     it('scales item count by tier', () => {
@@ -59,10 +71,17 @@ describe('rollCacheLoot', () => {
     });
 
     it('drops a unique relic on a rich-tier roll that hits the chance', () => {
-        // Rich L50 seed 6 hits the unique chance and pulls Axiom's Edge.
-        const items = rollCacheLoot({ playerLevel: 50, seed: 6, tier: 'rich' });
-        expect(items.some((i) => rarityOf(i) === 'unique')).toBe(true);
-        expect(items.some((i) => i.name === "Axiom's Edge")).toBe(true);
+        // Rich L50 seed 22 hits the unique chance and pulls Axiom's Edge
+        // (seed refreshed for the 0.22.0 trimmed-library RNG stream).
+        // Uniques stay fixed/non-procedural: no rolled prefix/suffix.
+        const items = rollCacheLoot({ playerLevel: 50, seed: 22, tier: 'rich' });
+        const unique = items.find((i) => rarityOf(i) === 'unique');
+        expect(unique).toBeDefined();
+        expect(unique?.name).toBe("Axiom's Edge");
+        if (unique && isEquipment(unique)) {
+            expect(unique.prefixName).toBeUndefined();
+            expect(unique.suffixName).toBeUndefined();
+        }
     });
 
     it('never drops a unique on the modest tier (uniqueChance 0)', () => {

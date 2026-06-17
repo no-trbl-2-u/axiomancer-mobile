@@ -11,6 +11,7 @@ import {
     HAZARD_CONSEQUENCES,
     HAZARD_KEYWORDS,
     HAZARD_REWARDS,
+    type SeedInput,
 } from 'axiomancer-mechanics';
 import {
     dieCanPowerCard,
@@ -174,7 +175,7 @@ export interface HazardViewModel {
     /** Hazard def id — keys the intro modal's per-danger art. */
     hazardId: string;
     /** Session seed — lets the screen show the intro once per session. */
-    sessionSeed: number;
+    sessionSeed: SeedInput;
     boardHeadline: string;
     boardNote: string;
     roundLabel: string;

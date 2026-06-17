@@ -20,7 +20,26 @@
 
 > **Audit update (2026-06-17, second tick).** QuestOverlays addressed. Quest-board minigame coverage now drained; sweep moves to the gathering minigame's WRATH surface: WrathMeter (130 lines — a pure threshold-coloured `segmentColor` helper plus conditional sickled/mired/watcher/dusk status-tag derivation, fired-notch rendering, grace colouring, and dynamic segment count) was the largest untested logic-bearing gameplay component remaining — picked this tick.
 
+> **Audit update (2026-06-17, third tick).** WrathMeter addressed. Sweep stays in the gathering minigame's satchel surface: SatchelTray (104 lines — the four family stacks with per-stack `progress` clamp, empty/set/at-risk derivation, conditional SET-badge-vs-progress-text rendering, the empty-vs-at-risk header copy, and a composed per-family accessibility label) was the largest logic-bearing untested gameplay component remaining (`glyphs.tsx` / `danger-art.tsx` are pure static SVG art) — picked this tick.
+
 ## Top 5 findings (scored)
+
+### [x] [6.0] SatchelTray (gathering satchel tray) missing test coverage affecting gathering-minigame maintainability
+- category: tests
+- impact: 5
+- ease: 8
+- base-score: 4.0
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias)
+- final-score: 6.0
+- next: Add hermetic coverage for the per-family progress clamp, empty/set/at-risk derivation, SET-badge-vs-progress-text branch, the empty-vs-at-risk header copy, and the composed accessibility label, following the SpoilsOverlay/WrathMeter render pattern
+- observation: SatchelTray (the four family stacks under the gathering site showing set-progress — everything in it is "at risk" until the player withdraws) derives a per-stack `progress = Math.min(1, vm.richness / vm.setThreshold)` clamp, an `empty = vm.pieces === 0` dim, a `vm.set` border/badge swap, a conditional SET-badge vs `richness/threshold` progress-text, an empty-vs-at-risk header subline, and a composed per-family accessibility label, yet had no colocated test coverage
+- evidence: components/gathering/SatchelTray.tsx (104 lines) renders testID gathering-satchel with the THE SATCHEL header, four FamilyStack children carrying accessibilityLabel "<label>: <pieces> pieces, richness <richness> of <setThreshold>[, set complete]", but was absent from components/gathering/__tests__/
+- suggested fix: Create components/gathering/__tests__/SatchelTray.test.tsx covering the progress clamp at/over threshold, the empty dim, the SET-badge vs progress-text branch, the empty-vs-at-risk header copy, and the per-family accessibility label, following the SpoilsOverlay/WrathMeter render pattern
+- source: audit
+- issue: #440
+- addressed: 2026-06-17 via commit cdbaa53
+- fix: Added components/gathering/__tests__/SatchelTray.test.tsx (9 hermetic cases) pinning the THE SATCHEL header mount, the empty-and-safe vs at-risk header subline, every family label + piece count (including the two zero-piece stacks), the SET badge for a completed family, the richness/threshold progress-text for unset families (single + duplicate 0/5 stacks), and the three accessibility-label branches (set-complete suffix / in-progress / empty). Verify green (2437 tests, +9).
 
 ### [x] [7.2] WrathMeter (gathering WRATH meter) missing test coverage affecting gathering-minigame maintainability
 - category: tests

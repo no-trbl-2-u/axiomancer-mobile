@@ -1204,6 +1204,12 @@ warranted a full phase promotion:
 
 ## Promoted
 
+### Phase 134 — Mechanics 0.22.0 mobile catch-up
+- promoted: 2026-06-17 by T direct steering; priority override above all else because mobile must consume the just-published mechanics affix release before the equip-delta UI can rely on it.
+- source: T asked for a mobile phase to account for the `axiomancer-mechanics@0.22.0` package bump.
+- brief: `plan/phases/phase_134_mechanics_0_22_mobile_catchup.md`
+- build-plan row: `plan/steps/01_build_plan.md`
+
 ### Phase 133 — Inventory equip-change delta surface
 - promoted: 2026-06-17 by T direct steering; priority override above all else.
 - source: T directed mobile to show only item equip/change deltas: gained/lost stats, modifiers, keywords, passive effects, and status-effect changes when equipment is equipped or swapped.

@@ -12,7 +12,7 @@ T direct steering, 2026-06-17:
 
 > make a mobile phase (above all else) in order to "only show effected stats, modifiers, keywords, that change when an item is equipped/changed. (ie. lost and gained stats, passive effects, and status effect changes when an item is equipped/swapped."
 
-This phase is promoted above all else in Mobile so it can consume the mechanics affix/provenance work as soon as the engine package exposes it.
+This phase is promoted above all else in Mobile so it can consume mechanics affix/provenance work as soon as the engine package exposes it.
 
 ## Decisions made upfront — DO NOT ASK
 

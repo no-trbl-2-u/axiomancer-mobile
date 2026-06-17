@@ -14,22 +14,27 @@ import type {
 } from '@/state/presenters/equipDelta';
 
 /**
- * Equip-change delta surface (Phase 133).
+ * Character-update delta surface (Phase 133; polarity reworked Phase 137).
  *
  * Renders **only what changes** when an item is equipped, unequipped,
- * or swapped: gained vs. lost stats, modifiers, passive effects,
- * on-hit / on-defend proc hooks, resource interactions, and keyword /
- * affix labels. Unchanged values never render; empty sections (and the
- * whole panel when `delta.isEmpty`) are suppressed.
+ * or swapped: every character-facing value the equipment transition
+ * affects — stats, rolled modifiers, passive effects, on-hit /
+ * on-defend proc hooks, resource interactions, and keyword / affix
+ * labels. Unchanged values never render; empty sections (and the whole
+ * panel when `delta.isEmpty`) are suppressed.
  *
- * Gained values use the sulfur (gold) treatment; lost values use the
- * blood (red) treatment, mirroring the existing `replacePreview` chips.
+ * Polarity doctrine (Phase 137): increases / gained values / new-item
+ * passive effects use the **green** (heal) treatment; decreases / lost
+ * values / old-item passive effects use the **red** (blood) treatment.
+ * Sulfur/gold is no longer used for positive deltas in this panel —
+ * green/red is the only signal so a glance reads the net character
+ * change unambiguously.
  */
 
 const MODE_EYEBROW: Record<EquipDelta['mode'], string> = {
-    equip: 'ON EQUIP',
-    unequip: 'ON UNEQUIP',
-    swap: 'ON SWAP',
+    equip: 'CHARACTER UPDATES — ON EQUIP',
+    unequip: 'CHARACTER UPDATES — ON UNEQUIP',
+    swap: 'CHARACTER UPDATES — ON SWAP',
 };
 
 function resourceLabel(entry: ResourceDeltaEntry): string {
@@ -186,7 +191,7 @@ const useStyles = makeStyles((AXM) => ({
         padding: 6,
         paddingHorizontal: 8,
         borderLeftWidth: 2,
-        borderLeftColor: AXM.sulfur,
+        borderLeftColor: AXM.heal,
         backgroundColor: AXM.panelBg,
     },
     eyebrow: {
@@ -209,19 +214,19 @@ const useStyles = makeStyles((AXM) => ({
         letterSpacing: 1.4,
         marginBottom: 3,
     },
-    sideLabelPos: { color: AXM.sulfur },
+    sideLabelPos: { color: AXM.heal },
     sideLabelNeg: { color: AXM.blood },
     tagWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, alignItems: 'center' },
     chip: { paddingVertical: 1, paddingHorizontal: 4, borderWidth: 1 },
-    chipPos: { backgroundColor: AXM.sulfurSubtle, borderColor: AXM.sulfur },
+    chipPos: { backgroundColor: AXM.healSubtle, borderColor: AXM.heal },
     chipNeg: { backgroundColor: AXM.bloodSubtle, borderColor: AXM.blood },
     chipText: { fontFamily: FONTS.mono, fontSize: 9, letterSpacing: 0.8 },
-    chipTextPos: { color: AXM.sulfur },
+    chipTextPos: { color: AXM.heal },
     chipTextNeg: { color: AXM.blood },
     tag: { paddingVertical: 1, paddingHorizontal: 4, borderWidth: 1 },
-    tagPos: { backgroundColor: AXM.sulfurSubtle, borderColor: AXM.sulfur },
+    tagPos: { backgroundColor: AXM.healSubtle, borderColor: AXM.heal },
     tagNeg: { backgroundColor: AXM.bloodSubtle, borderColor: AXM.blood },
     tagText: { fontFamily: FONTS.mono, fontSize: 9, letterSpacing: 0.6 },
-    tagTextPos: { color: AXM.sulfur },
+    tagTextPos: { color: AXM.heal },
     tagTextNeg: { color: AXM.blood },
 }));

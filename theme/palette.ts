@@ -79,6 +79,7 @@ export interface Palette extends ThemeSpec {
     parchmentDim: string;
     sulfurSubtle: string;
     sulfurMed: string;
+    healSubtle: string;
     bloodSubtle: string;
     bloodMed: string;
     bloodStrong: string;
@@ -119,6 +120,7 @@ export function makePalette(s: ThemeSpec): Palette {
         parchmentDim: rgba(s.parchment, 0.65),
         sulfurSubtle: rgba(s.sulfur, 0.1),
         sulfurMed: rgba(s.sulfur, 0.3),
+        healSubtle: rgba(s.heal, 0.1),
         bloodSubtle: rgba(s.blood, 0.1),
         bloodMed: rgba(s.blood, 0.3),
         bloodStrong: rgba(s.blood, 0.55),

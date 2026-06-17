@@ -16,11 +16,19 @@
 
 import { describe, expect, it } from '@jest/globals';
 import { render } from '@testing-library/react-native';
+import { StyleSheet, type TextStyle } from 'react-native';
 import React from 'react';
 
 import { EquipDeltaPanel } from '@/components/inventory/EquipDeltaPanel';
 import { withAllProviders } from '@/test-utils/withAllProviders';
+import { AXM } from '@/theme/axm';
 import type { EquipDelta, EquipDeltaSide } from '@/state/presenters/equipDelta';
+
+function textColor(node: { props?: { style?: unknown } }): string | undefined {
+    return (StyleSheet.flatten(node.props?.style as TextStyle) as TextStyle)?.color as
+        | string
+        | undefined;
+}
 
 function emptySide(): EquipDeltaSide {
     return {
@@ -58,11 +66,11 @@ describe('EquipDeltaPanel', () => {
         expect(queryByTestId(`equip-delta-${ITEM_ID}`)).toBeNull();
     });
 
-    it('maps mode to the eyebrow label', () => {
+    it('maps mode to the character-update eyebrow label', () => {
         const cases: [EquipDelta['mode'], string][] = [
-            ['equip', 'ON EQUIP'],
-            ['unequip', 'ON UNEQUIP'],
-            ['swap', 'ON SWAP'],
+            ['equip', 'CHARACTER UPDATES \u2014 ON EQUIP'],
+            ['unequip', 'CHARACTER UPDATES \u2014 ON UNEQUIP'],
+            ['swap', 'CHARACTER UPDATES \u2014 ON SWAP'],
         ];
         for (const [mode, label] of cases) {
             const { getByText, unmount } = renderPanel(makeDelta({ mode }));
@@ -175,5 +183,39 @@ describe('EquipDeltaPanel', () => {
         );
         expect(getByText('+2 mind (start)')).toBeTruthy();
         expect(getByText('-1 body (start)')).toBeTruthy();
+    });
+
+    it('colours a positive stat increase green (heal) and a decrease red (blood)', () => {
+        const { getByText } = renderPanel(
+            makeDelta({
+                stats: [
+                    { stat: 'attack', delta: 2 },
+                    { stat: 'speed', delta: -1 },
+                ],
+            }),
+        );
+        expect(textColor(getByText('+2 attack'))).toBe(AXM.heal);
+        expect(textColor(getByText('-1 speed'))).toBe(AXM.blood);
+    });
+
+    it('colours new-item (gained) passive effects green and old-item (lost) passives red on a swap', () => {
+        const { getByText } = renderPanel(
+            makeDelta({
+                mode: 'swap',
+                gained: { ...emptySide(), passiveEffects: [{ id: 'eff-new', name: null }] },
+                lost: { ...emptySide(), passiveEffects: [{ id: 'eff-old', name: null }] },
+            }),
+        );
+        expect(textColor(getByText('eff-new'))).toBe(AXM.heal);
+        expect(textColor(getByText('eff-old'))).toBe(AXM.blood);
+    });
+
+    it('uses green (heal), never sulfur/gold, for the gained side label', () => {
+        const { getByText } = renderPanel(
+            makeDelta({ gained: { ...emptySide(), keywords: [{ key: 'k', label: 'Keen' }] } }),
+        );
+        const label = getByText('GAINED');
+        expect(textColor(label)).toBe(AXM.heal);
+        expect(textColor(label)).not.toBe(AXM.sulfur);
     });
 });

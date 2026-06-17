@@ -1204,6 +1204,12 @@ warranted a full phase promotion:
 
 ## Promoted
 
+### Phase 135 — Item rarity shine affordances
+- promoted: 2026-06-17 by T direct steering; priority override top of queue.
+- source: T directed mobile to add green shine to uncommon items (1 affix), blue shine to rare items (2 affixes), and red outline to unique items (3 set-in-stone modifiers).
+- brief: `plan/phases/phase_135_item_rarity_shine_affordances.md`
+- build-plan row: `plan/steps/01_build_plan.md`
+
 ### Phase 134 — Mechanics 0.22.0 mobile catch-up
 - promoted: 2026-06-17 by T direct steering; priority override above all else because mobile must consume the just-published mechanics affix release before the equip-delta UI can rely on it.
 - source: T asked for a mobile phase to account for the `axiomancer-mechanics@0.22.0` package bump.

@@ -13,14 +13,41 @@ screen show in the `choosing_stance` phase", read this repo.
 
 ## Repository navigation
 
-This repository contains extensive documentation across multiple directories. Here's what each area contains and when to use it:
+This repository keeps its documentation in several directories. They do
+**not** overlap — each answers a different question. Pick the directory by
+the question you are trying to answer, not by topic:
 
-- **[`VISION.md`](./VISION.md)** — T's game vision and UX doctrine guardrails. Read before major mobile UX, combat, mercy/friendship, alignment, or `/march` work.
-- **[`docs/adr/`](./docs/adr/)** — Architecture Decision Records. Durable mobile architecture and product decisions that sit above build-plan execution.
-- **[`specs/`](./specs/)** — Planning specifications. Start at [`specs/README.md`](./specs/README.md) for development workflow and implementation status.
-- **[`plan/`](./plan/)** — Build plan, audit findings, critique log, and phase briefs. Used by autonomous shipping skills.
-- **[`docs/`](./docs/)** — Technical documentation including testing standards, engine upgrade guides, and AI-assist prompt templates.
-- **[`setup/`](./setup/)** — Detailed setup guides for repository, EAS Build, store configuration, and AI testing.
+| You want to…                                              | Go to        | Not to       |
+| --------------------------------------------------------- | ------------ | ------------ |
+| Get the app running / build / deploy on a fresh machine   | [`setup/`](./setup/)     | `docs/`      |
+| Understand a runtime concept (testing standard, engine upgrade, AI-assist prompts) | [`docs/`](./docs/)       | `setup/`     |
+| Know **why** a durable architecture or product call was made | [`docs/adr/`](./docs/adr/)  | `docs/`      |
+| Plan or implement a new feature against its written contract | [`specs/`](./specs/)     | `plan/`      |
+| See what the autonomous loop is shipping (build plan, audit, critique, phase briefs) | [`plan/`](./plan/)       | `specs/`     |
+| Understand T's game vision / UX doctrine before major UX work | [`VISION.md`](./VISION.md) | `docs/adr/`  |
+
+The boundaries, stated plainly:
+
+- **[`setup/`](./setup/)** is **operational** — step-by-step runbooks to
+  stand up the repo, EAS Build, store config, and AI testing. If a doc
+  tells you *which command to run on a new machine*, it belongs here.
+  Start at [`setup/01_repository.md`](setup/01_repository.md).
+- **[`docs/`](./docs/)** is **conceptual / reference** — durable
+  technical guidance you read *while developing* (testing standards,
+  engine-upgrade guides, prompt templates). No machine-bootstrap steps.
+- **[`docs/adr/`](./docs/adr/)** is **decisions** — Architecture Decision
+  Records capturing the *why* behind durable architecture and product
+  calls that sit above day-to-day build-plan execution.
+- **[`specs/`](./specs/)** is **contracts** — the written specification
+  for a surface *before* it is built. Start at
+  [`specs/README.md`](./specs/README.md) for workflow and status.
+- **[`plan/`](./plan/)** is **execution state** — the live build plan,
+  audit findings, critique log, and phase briefs the autonomous shipping
+  skills read and write. A spec says *what to build*; the plan tracks
+  *what has been built and what is next*.
+- **[`VISION.md`](./VISION.md)** is **doctrine** — T's game vision and UX
+  guardrails. Read before major mobile UX, combat, mercy/friendship,
+  alignment, or `/march` work.
 
 ---
 

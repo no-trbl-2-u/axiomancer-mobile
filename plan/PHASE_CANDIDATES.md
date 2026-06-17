@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-17 at commit e82ac18
-> Pass count: 79
+> Last pass: 2026-06-17 at commit 27184a1
+> Pass count: 80
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -93,6 +93,36 @@
 - proposed scope: 1-phase extraction of cohesive HazardBoard sub-sections into `components/hazard/board/` sub-components (dice tray, hand row, apply/resolve panels) with their own hermetic tests; no behaviour change.
 - estimated phases: 1
 - conflicts: none — pure refactor; covered by the existing Hazard e2e suite.
+
+
+> **Pass 80 — affix-provenance legibility on the item card
+> (`/march`-dispatched, post-135 player-facing refill).** The
+> mechanics 0.22.0 affix release (Phase 134) and the Phase 135 rarity
+> shine both landed within the last 7 days. Phase 134's catch-up wired
+> structured affix fields (`prefixName`/`suffixName`/`prefixId`/`suffixId`)
+> into the engine and the *equip-delta* surface, but cross-checking the
+> consumers shows the base inventory `ItemCard` — and the reward panels
+> that reuse it — still render only `item.name` + the rarity shine, never
+> the affix labels themselves. A player browsing the satchel sees a green
+> shine on an uncommon drop (Phase 135) but cannot read *which* prefix or
+> suffix it carries unless they trigger an equip comparison. The release
+> notes (`docs/engine-upgrade-0.21.0-to-0.22.0.md:38-46`) direct mobile to
+> "read `prefixName`/`suffixName` directly when surfacing affix labels" —
+> done in equip-delta, not yet on the card itself. `/oversight` promotes
+> from this batch.
+
+
+### [ ] [score 5.5] Affix-provenance labels on the inventory ItemCard (read structured prefix/suffix, never parse names)
+- proposed: 2026-06-17, expand pass 80
+- source signals:
+  - **Engine-bump cliff (§4 I)**: `axiomancer-mechanics ^0.22.0` (the affix release) landed structured `prefixName`/`suffixName`/`prefixId`/`suffixId` on `Equipment` (`docs/engine-upgrade-0.21.0-to-0.22.0.md:26-46`). Phase 134 was the catch-up but explicitly scoped the affix *read* to the equip-delta surface only ("the Phase 133 equip-change delta surface already reads these fields structurally" — upgrade doc line 42); the base item card was out of scope.
+  - **Consumer gap confirmed by grep**: `prefixName`/`suffixName` are consumed only in `state/presenters/equipDelta.ts:277-286` (the worn-sibling comparison) and named-but-not-read in `components/inventory/rarityAffordance.ts:7`. `components/inventory/ItemCard.tsx` (464 lines) renders `item.name` + rarity shine at lines 216/241/245 but never surfaces the affix labels. `selectInventoryViewModel` (`state/presenters/inventory.engine.ts`) does not carry standalone affix-label fields on the item view-model.
+  - **Design landing (§4 E)**: the affix release is a content/design landing — uncommon drops now carry one affix, rare drops carry two (upgrade doc 48-55) — that has a presenter+card phase's worth of player-facing surface no phase has integrated yet beyond comparison.
+  - **Player-legibility gap (player-facing)**: a player looking at a single affixed drop in the satchel (or in `CombatVictoryPanel`, which reuses `ItemCard`) sees a Phase 135 rarity shine but no affix names, so the shine signals "this is special" without saying *why*.
+- rationale: Multi-source convergence — engine-bump cliff + a design/content landing + a grep-confirmed consumer gap + a direct release-note instruction the catch-up phase only half-satisfied. This is read-only presentation of fields the engine already populates: extend the inventory item view-model with structured affix labels (sourced from `prefixName`/`suffixName` + structured ids, omitted gracefully on common/unique/legacy saves) and render them on the `ItemCard` beneath the name. Composes with the Phase 135 rarity shine (shine = how rare, affix label = which affixes) and benefits `CombatVictoryPanel` for free since it reuses `ItemCard`. Honestly one phase — no engine changes, no name parsing, presenter-pure.
+- proposed scope: 1-phase — add structured affix-label fields to the inventory item view-model in `state/presenters/inventory.engine.ts` (read `prefixName`/`suffixName`/`prefixId`/`suffixId` off the `Equipment` instance, omit when absent), render an affix-label row on `ItemCard.tsx` beneath the item name keyed off the structured fields (never `item.name`), with hermetic presenter + ItemCard coverage. No engine changes; no affix simulation; no name parsing.
+- estimated phases: 1
+- conflicts: none — read-only structured-field surfacing; respects bearings "Presenter purity" + engine-source-of-truth + the upgrade doc's "never parse affix truth from item names" rule. Distinct from the equip-delta surface (Phase 133, comparison-only) — this is the always-visible single-item label.
 
 
 ### [ ] [needs-engine-release] [score 5.0] Hazard deck-thinning — remove-card action consumer

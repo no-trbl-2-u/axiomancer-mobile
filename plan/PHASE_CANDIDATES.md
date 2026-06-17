@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-16 at commit 4fcd38c
-> Pass count: 78
+> Last pass: 2026-06-17 at commit e82ac18
+> Pass count: 79
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -56,6 +56,43 @@
 > ("Mobile-side adapters" §) and `design/encounters/`, cross-checked
 > against shipped code so none re-propose closed work. `/oversight`
 > promotes from this fresh batch.
+
+
+> **Pass 79 — durable read-back surfaces for save-scoped flags
+> (`/march`-dispatched, post-130 player-facing refill).** Phases
+> 128/130 added durable flag families (`hazard-scar:`, `hazard-death:`,
+> alongside the older `night-keepsake:`) that the engine writes but the
+> player can never review after the moment they land. `docs/hazard-v2-vs-mechanics-divergence.md:228`
+> explicitly defers a "deaths-this-save surface" to the future, and
+> `hazardDeathCount(flags)` already exists waiting for a consumer.
+> Candidate A surfaces those read-backs in the existing memoir tab.
+> Candidate B is a file-length-outlier extraction smell (HazardBoard.tsx).
+> Cross-checked against shipped code: the `hazard-hexed` "combat doesn't
+> consume it" note at divergence-doc:200 is **stale** (combat already
+> applies `debuff_hex` via `state/actions.ts:705-746`), so it is NOT
+> filed. `/oversight` promotes from this batch.
+
+
+### [ ] [score 5.0] Save-scoped run-history surface in the memoir tab (deaths + keepsakes read-back)
+- proposed: 2026-06-17, expand pass 79
+- source signals:
+  - **Engine read-back already computed, no consumer**: `state/hazard/store-actions.ts` exposes `hazardDeathCount(flags)` (Phase 130) and `docs/hazard-v2-vs-mechanics-divergence.md:228-229` explicitly defers it: "`hazardDeathCount(flags)` reads the tombstones for a *future* deaths-this-save surface." The helper ships, the surface does not.
+  - **Keepsakes written but never aggregated**: `state/rest/store-actions.ts:27,143-144` banks `night-keepsake:<id>` flags at rest/cache claim; `state/presenters/rest.engine.ts` + `cache.engine.ts` surface a keepsake only at the moment of acquisition. There is no durable "keepsakes you have collected this save" view — they vanish into flags.
+  - **Natural home exists**: the memoir tab (`app/(tabs)/memoir/index.tsx`, 361 lines) + `state/presenters/memoir.engine.ts` (642 lines) is the established journal/history surface; a save-stats section extends it rather than adding a route.
+- rationale: Multi-source convergence — two independent durable-flag families (`hazard-death:`, `night-keepsake:`) that the player can never review, plus an engine helper (`hazardDeathCount`) that already exists with no consumer and a doc that names the gap as "future." This is read-only aggregation of state that already exists (a presenter extension + a memoir section), not new game rules, so it is honestly one phase and cannot drift into engine territory. Gives weight to the run's history (deaths survived, keepsakes earned), reinforcing the Phase 130 death stakes.
+- proposed scope: 1-phase — extend `selectMemoirViewModel` with a save-stats block (`deathsThisSave` via `hazardDeathCount`, collected keepsakes via the `night-keepsake:` flag prefix, optionally scar count via `hazard-scar:`), render a read-only section in the memoir tab. No engine changes; flags already exist.
+- estimated phases: 1
+- conflicts: none — read-only aggregation of existing flags; presenter-pure; no new rules or RNG (respects bearings "Presenter purity" + engine-source-of-truth).
+
+### [ ] [score 2.8] HazardBoard.tsx sub-component extraction (file-length outlier)
+- proposed: 2026-06-17, expand pass 79
+- source signals:
+  - **File-length outlier smell (§4 I)**: `components/hazard/HazardBoard.tsx` is **815 lines** — the largest non-test `.tsx` in the repo and >2× the `components/hazard/` folder median (~250 lines: HazardCard 389, RewardsOverlay 377, HazardOverlays 295). Next-largest hazard file is less than half its size.
+  - **Cohesion check passes the "real candidate" bar**: the board mixes route-select chrome, dice tray, hand rows, apply step, and resolve banners — distinct sections that are extraction candidates, not one logically-cohesive map.
+- rationale: Single-source file-length smell with a specific file + line count (per the do-not-re-propose guard's requirement: "only file with a SPECIFIC file + line count"). Aggressive posture accepts a single smell at the 2.5 floor. Phase 117 set the precedent for large-component extraction; this is the current largest outlier.
+- proposed scope: 1-phase extraction of cohesive HazardBoard sub-sections into `components/hazard/board/` sub-components (dice tray, hand row, apply/resolve panels) with their own hermetic tests; no behaviour change.
+- estimated phases: 1
+- conflicts: none — pure refactor; covered by the existing Hazard e2e suite.
 
 
 ### [ ] [needs-engine-release] [score 5.0] Hazard deck-thinning — remove-card action consumer

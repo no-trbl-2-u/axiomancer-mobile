@@ -24,7 +24,26 @@
 
 > **Audit update (2026-06-17, fourth tick).** SatchelTray addressed. The gathering minigame's component surfaces are now drained of logic-bearing untested code; the sweep moves to the quest-board minigame's last untested logic-bearing surface — `components/quest/useQuestLanding.ts` (170 lines), a pure presentation hook that replays a resolved bone-die cast as tumble → walk → reveal. It owns deterministic derived view state (tumbling `dieFace` cycled from `rollTick`, the modular-wrap `pathPositions`/`steps` walk computation, the `still → rolling → walking → arrived` stage machine, `targetPos`, `revealed`, `arrivalKey`) driven entirely by flushable `setTimeout`/`setInterval` timers — explicitly built for deterministic test flushing (file header line 16) yet referenced only via its timing constant in `quest.screen.test.tsx`, never unit-tested. Largest untested logic-bearing gameplay component remaining (`glyphs.tsx`/`figures.tsx`/`danger-art.tsx` are pure static SVG art; `DevToolsSections.tsx` is dev-only) — picked this tick.
 
+> **Audit update (2026-06-17, fifth tick).** useQuestLanding addressed. The quest-board and gathering minigame surfaces are now drained of untested logic-bearing code; the sweep moves to the level-up surface — `components/levelup/StanceRow.tsx` (160 lines) is the only component in `components/levelup/` without a colocated test (AscendStrip, DerivedPreviewRibbon, LearnSkillModal, LevelReadyStrip, LevelUpModal all carry one). It owns the `newValue = current + spent` projection, the `showDelta = spent > 0` gate (delta label vs. waiting bar), the `canInc ? onInc : undefined` / `canDec ? onDec : undefined` press gating, the disabled-state `accessibilityState` + ash-colour styling, and per-stance testIDs/labels (`levelup-modal-row/inc/dec-<stance>`) — picked this tick.
+
 ## Top 5 findings (scored)
+
+### [x] [6.0] StanceRow (level-up stat-allocation row) missing test coverage affecting level-up maintainability
+- category: tests
+- impact: 5
+- ease: 8
+- base-score: 4.0
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias)
+- final-score: 6.0
+- next: Add hermetic coverage for the newValue projection, the showDelta label-vs-waiting-bar branch, the canInc/canDec press gating (handler fires vs. undefined), the disabled accessibilityState/colour, and the per-stance testIDs, following the DerivedPreviewRibbon/AscendStrip render pattern
+- observation: StanceRow (the per-stance ± allocation row inside the level-up modal — emblem, "newValue from current" counter, +N delta, and increment/decrement controls) derives `newValue = current + spent`, a `showDelta = spent > 0` gate that swaps the +N delta label for a waiting bar, gated press handlers (`onPress={canInc ? onInc : undefined}` / `canDec ? onDec : undefined`), disabled-state border/glyph colours and `accessibilityState={{ disabled }}`, and per-stance testIDs/accessibility labels, yet had no colocated test coverage
+- evidence: components/levelup/StanceRow.tsx (160 lines) exports StanceRow and renders testID levelup-modal-row-<stance> with levelup-modal-inc/dec-<stance> controls, but was the only file in components/levelup/ absent from components/levelup/__tests__/ (siblings AscendStrip, DerivedPreviewRibbon, LearnSkillModal, LevelReadyStrip, LevelUpModal all carry colocated tests)
+- suggested fix: Create components/levelup/__tests__/StanceRow.test.tsx covering the newValue counter, the showDelta vs waiting-bar branch, the inc/dec press gating (fires when enabled, no-op when disabled), the disabled accessibilityState, and the per-stance testIDs/labels, following the DerivedPreviewRibbon render pattern
+- source: audit
+- issue: #443
+- addressed: 2026-06-17 via commit 5cd8c21
+- fix: Added components/levelup/__tests__/StanceRow.test.tsx (13 hermetic cases) pinning the per-stance testIDs/labels (heart/body/mind row + inc/dec controls, uppercased label), the newValue = current + spent projection ("from current" subline), the showDelta = spent > 0 gate (delta label hidden at spent 0, "+N" shown otherwise), the inc/dec press gating (onInc/onDec fire exactly once when enabled, no-op when disabled), and the canInc/canDec disabled accessibilityState on both controls. Verify green (235 suites / 2480 tests, +13).
 
 ### [x] [7.2] useQuestLanding (quest-board cast choreography hook) missing test coverage affecting quest-board maintainability
 - category: tests

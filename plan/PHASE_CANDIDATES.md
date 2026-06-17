@@ -1234,6 +1234,18 @@ warranted a full phase promotion:
 
 ## Promoted
 
+### Phase 136 — Dev loot rarity controls
+- promoted: 2026-06-17 by T direct steering; priority override top of queue.
+- source: T clarified POPULATE should provide common/base + unique items because uncommon/rare are generated at drop time, then directed two new dev buttons: `LOOT UNCOMMON` and `LOOT RARE`.
+- brief: `plan/phases/phase_136_dev_loot_rarity_controls.md`
+- build-plan row: `plan/steps/01_build_plan.md`
+
+### Phase 137 — Full character update deltas for equip changes
+- promoted: 2026-06-17 by T direct steering; next phase after Phase 136.
+- source: T directed the equip/swap/unequip updated-stats section to show all changed character updates only, with green increases/new item values and red decreases/old item values; passive effects use old=red/new=green.
+- brief: `plan/phases/phase_137_full_character_update_deltas.md`
+- build-plan row: `plan/steps/01_build_plan.md`
+
 ### Phase 135 — Item rarity shine affordances
 - promoted: 2026-06-17 by T direct steering; priority override top of queue.
 - source: T directed mobile to add green shine to uncommon items (1 affix), blue shine to rare items (2 affixes), and red outline to unique items (3 set-in-stone modifiers).

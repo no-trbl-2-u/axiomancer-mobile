@@ -16,7 +16,26 @@
 
 > **Audit update (2026-06-16, second tick).** SpoilsOverlay addressed. Sweep continues into the quest-board minigame (Phase 124): QuestBoardTrack was the largest untested logic-bearing quest surface (pure geometry helpers + conditional ring rendering) — picked this tick.
 
+> **Audit update (2026-06-17).** QuestBoardTrack addressed. Sweep continues through the quest-board minigame: QuestOverlays (387 lines — the intro reveal, open-space card, dusk flash, and outcome ledger) was the largest untested logic-bearing gameplay component remaining — picked this tick.
+
 ## Top 5 findings (scored)
+
+### [x] [6.75] QuestOverlays (quest-board minigame overlays) missing test coverage affecting quest-board maintainability
+- category: tests
+- impact: 6
+- ease: 7.5
+- base-score: 4.5
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias)
+- final-score: 6.75
+- next: Add hermetic coverage for the four overlays' conditional render branches plus each overlay's prop-callback fire
+- observation: QuestOverlays (the quest-board minigame's board-reveal intro, open-space card, dusk flash, and outcome ledger — Phase 124) exports four overlays with many conditional branches (vow kept/broken/active marks, option enabled/disabled + disabledReason, result-vs-pending swap with rolls/chips/market-ledger gating, dusk collapsed-vs-normal copy, outcome stat row + vows-kept count), yet had no colocated test coverage
+- evidence: components/quest/QuestOverlays.tsx (387 lines) exports QuestIntroOverlay/QuestSpaceOverlay/QuestDuskOverlay/QuestOutcomeOverlay (testIDs quest-intro/quest-begin, quest-space/quest-option-<id>/quest-result-rolls/quest-result-chips/quest-market-ledger/quest-continue, quest-dusk/quest-dawn, quest-outcome/quest-claim) but was absent from components/quest/__tests__/
+- suggested fix: Create components/quest/__tests__/QuestOverlays.test.tsx covering all four overlays' conditional branches and the onBegin/onChoose/onContinue/onClaim fires, following the QuestLegend/QuestBoardTrack render pattern
+- source: audit
+- issue: #437
+- addressed: 2026-06-17 via commit b189bab
+- fix: Added components/quest/__tests__/QuestOverlays.test.tsx (22 hermetic cases) pinning intro story-beat/title/intro + per-status vow marks + satchel charms + onBegin; space-card pending branch (option rows, WALK ON hidden, onChoose with id, disabled option + reason, market-ledger show/omit); resolved branch (title/body swap, options hidden, roll faces show/omit, delta chips, onContinue); dusk normal-vs-collapsed copy + onContinue; outcome tier/copy/stat-row + vows-kept count + onClaim. Verify green (2411 tests, +22).
 
 ### [x] [7.0] QuestBoardTrack (quest-board minigame ring) missing test coverage affecting quest-board maintainability
 - category: tests

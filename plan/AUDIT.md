@@ -26,7 +26,26 @@
 
 > **Audit update (2026-06-17, fifth tick).** useQuestLanding addressed. The quest-board and gathering minigame surfaces are now drained of untested logic-bearing code; the sweep moves to the level-up surface — `components/levelup/StanceRow.tsx` (160 lines) is the only component in `components/levelup/` without a colocated test (AscendStrip, DerivedPreviewRibbon, LearnSkillModal, LevelReadyStrip, LevelUpModal all carry one). It owns the `newValue = current + spent` projection, the `showDelta = spent > 0` gate (delta label vs. waiting bar), the `canInc ? onInc : undefined` / `canDec ? onDec : undefined` press gating, the disabled-state `accessibilityState` + ash-colour styling, and per-stance testIDs/labels (`levelup-modal-row/inc/dec-<stance>`) — picked this tick.
 
+> **Audit update (2026-06-17, sixth tick).** StanceRow addressed — `components/levelup/` is now fully test-covered. The sweep moves to the inventory surface's largest logic-bearing untested component: `components/inventory/EquipDeltaPanel.tsx` (227 lines — the freshly-shipped Phase 133 equip-change delta surface). It owns the `delta.isEmpty` whole-panel suppression, the `MODE_EYEBROW` equip/unequip/swap eyebrow map, signed stat-chip labels, the per-side `hasAny` gate, `modifierText` (rolled-value vs. bare id), the `EffectTag` named-tooltip-vs-anonymous branch with on-hit/on-defend prefixing, and `resourceLabel` signed formatting — yet had no colocated test (referenced only indirectly via `ItemCard.test.tsx`). The larger `glyphs.tsx`/`danger-art.tsx` files are pure static SVG art — picked this tick.
+
 ## Top 5 findings (scored)
+
+### [x] [7.2] EquipDeltaPanel (inventory equip-change delta surface) missing test coverage affecting inventory maintainability
+- category: tests
+- impact: 6
+- ease: 8
+- base-score: 4.8
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias)
+- final-score: 7.2
+- next: Add hermetic coverage for the isEmpty suppression, mode eyebrow mapping, signed stat chips, the per-side hasAny gate, swap dual-side rendering, modifier value-vs-bare formatting, named-vs-anonymous effect tags with prefixes, and resource label formatting, following the ItemCard.test.tsx render pattern via withAllProviders
+- observation: EquipDeltaPanel (the Phase 133 equip-change delta surface inside the expanded ItemCard — eyebrow, signed stat chips, and gained/lost tag blocks) suppresses the whole panel on `delta.isEmpty`, maps `mode` to an ON EQUIP/UNEQUIP/SWAP eyebrow, gates each side on `hasAny`, formats modifiers as `name (value)` or falls back to `id`, renders named effects via TooltipTarget vs. anonymous ones as plain tags with on-hit/on-defend prefixes, and signs resource labels via `resourceLabel`, yet had no colocated test coverage
+- evidence: components/inventory/EquipDeltaPanel.tsx (227 lines) shipped in commit 8a46160 (Phase 133) and renders testIDs equip-delta-<itemId>, equip-delta-stats/gained/lost, but no EquipDeltaPanel.test.tsx existed in components/inventory/ or its __tests__/ (it was exercised only indirectly via ItemCard.test.tsx); the larger glyphs.tsx/danger-art.tsx files are pure static SVG art
+- suggested fix: Create components/inventory/EquipDeltaPanel.test.tsx covering isEmpty suppression, the three mode eyebrows, signed stat chips, the hasAny side gate, swap dual-side rendering, modifierText value-vs-bare, EffectTag named-tooltip-vs-anonymous with prefixes, and resourceLabel formatting, following the ItemCard render pattern
+- source: audit
+- issue: #444
+- addressed: 2026-06-17 via commit c9d10a2
+- fix: Added components/inventory/EquipDeltaPanel.test.tsx (10 hermetic cases) pinning the isEmpty whole-panel suppression, the equip/unequip/swap eyebrow mapping, signed +/- stat chips, the per-side hasAny gate (empty side renders nothing), swap dual-side rendering, modifierText (rolled-value `name (5)` vs. bare-id fallback), EffectTag (named via TooltipTarget tip vs. anonymous plain tag) with on-hit/on-defend prefixing, and resourceLabel signed formatting. Verify green (236 suites / 2490 tests, +10).
 
 ### [x] [6.0] StanceRow (level-up stat-allocation row) missing test coverage affecting level-up maintainability
 - category: tests

@@ -111,6 +111,10 @@ const EXPECTED_ROUTE_FILES: ReadonlySet<string> = new Set([
     // isDevToolsEnabled() gate — renders the defeat / parley panels
     // that have no organic combat-capture path.
     './devaftermath/index.tsx',
+    // Phase 132 — dedicated dev-tools route. The SELF tab's DEV MENU
+    // dropdown was extracted here; gated by isDevToolsEnabled() so
+    // production renders an inert placeholder.
+    './dev/index.tsx',
     './(tabs)/_layout.tsx',
     './(tabs)/character/index.tsx',
     './(tabs)/combat.tsx',

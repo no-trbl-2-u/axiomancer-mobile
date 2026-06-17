@@ -10,7 +10,7 @@
 - Bump `axiomancer-mechanics` from `^0.20.0` to `^0.21.0` or an exact `0.21.0` pin if the phase chooses tighter package discipline.
 - This is an encounter-procedure release. Mechanics now owns more of Quest Board, Rest, and Loot-cache.
 - Mobile must present engine-owned encounter state and choices. It must not locally simulate Quest Board verbs, rest watches, loot-cache layers, rewards, or outcome tiers.
-- Verification must include typecheck, focused encounter Jest, full verify, visual smoke, and at least one dev-menu playthrough using SELF → dev menu → selected encounter.
+- Verification must include typecheck, focused encounter Jest, full verify, visual smoke, and at least one dev-tools playthrough using SELF → DEV TOOLS (the `/dev` route, Phase 132) → selected encounter. (Pre-132 builds: SELF → dev menu dropdown.)
 
 ---
 
@@ -91,12 +91,15 @@ npm run verify
 npm run verify:visual
 ```
 
-Also perform one real dev-menu smoke path when the app can run:
+Also perform one real dev-tools smoke path when the app can run:
 
 1. Open the app.
 2. Go to `SELF`.
-3. Open the dev menu.
-4. Trigger Quest Board, Rest, and Loot-cache encounters if available.
+3. Tap `DEV TOOLS` to open the `/dev` route (Phase 132 extracted the old
+   SELF dropdown into a dedicated dev-only route). On pre-132 builds,
+   expand the SELF `DEV MENU` dropdown instead.
+4. Under `ENCOUNTER TRIGGERS`, trigger Quest Board, Rest, and Loot-cache
+   encounters if available.
 5. Record pass/fail notes and screenshots/logs for any runtime errors.
 
 If `verify:visual` exits on screenshot diffs with clean export and zero console errors, preserve the diff evidence for T. Do not approve new baselines merely to make the gate green.

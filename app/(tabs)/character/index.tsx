@@ -8,8 +8,7 @@ import { AscendStrip } from '@/components/levelup/AscendStrip';
 import { LearnSkillModal } from '@/components/levelup/LearnSkillModal';
 import { LevelReadyStrip } from '@/components/levelup/LevelReadyStrip';
 import { LevelUpModal } from '@/components/levelup/LevelUpModal';
-import { DevMenu } from '@/components/DevMenu';
-import { DebugComponentsLazy } from '@/components/DebugComponentsLazy';
+import { DevToolsLink } from '@/components/dev/DevToolsLink';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import { ScreenBg } from '@/components/ScreenBg';
 import { SectionLabel } from '@/components/SectionLabel';
@@ -506,9 +505,7 @@ export default function CharacterScreen() {
         </View>
       )}
       <ThemeSwitcher />
-      <DevMenu>
-        <DebugComponentsLazy />
-      </DevMenu>
+      <DevToolsLink />
     </ScreenBg>
   );
 }

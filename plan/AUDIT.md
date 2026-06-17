@@ -28,7 +28,26 @@
 
 > **Audit update (2026-06-17, sixth tick).** StanceRow addressed — `components/levelup/` is now fully test-covered. The sweep moves to the inventory surface's largest logic-bearing untested component: `components/inventory/EquipDeltaPanel.tsx` (227 lines — the freshly-shipped Phase 133 equip-change delta surface). It owns the `delta.isEmpty` whole-panel suppression, the `MODE_EYEBROW` equip/unequip/swap eyebrow map, signed stat-chip labels, the per-side `hasAny` gate, `modifierText` (rolled-value vs. bare id), the `EffectTag` named-tooltip-vs-anonymous branch with on-hit/on-defend prefixing, and `resourceLabel` signed formatting — yet had no colocated test (referenced only indirectly via `ItemCard.test.tsx`). The larger `glyphs.tsx`/`danger-art.tsx` files are pure static SVG art — picked this tick.
 
+> **Audit update (2026-06-17, seventh tick).** EquipDeltaPanel addressed. The sweep returns to the gathering minigame's last untested render-layer surface — `components/gathering/TutorialCoach.tsx` (99 lines), the guided-first-gleaning coach. While the `currentTutorialStep` predicate engine is covered by `state/e2e/gathering.tutorial.engine.test.ts` (which only asserts step *ids* through the store action layer), the coach component's own rendering was untested: the `index < 0` null-return gate when the script completes, the `FIRST GLEANING · n / total` step counter, the current step's title/body/find copy, the `key={step.id}` per-step re-animation, and the SKIP press wiring. It was the only logic-bearing gathering-minigame component without a colocated render test (`GatheringIntroOverlay`/`glyphs` are static presentation/SVG art) — picked this tick.
+
 ## Top 5 findings (scored)
+
+### [x] [6.0] TutorialCoach (gathering guided-first-gleaning coach) missing render test coverage affecting gathering maintainability
+- category: tests
+- impact: 5
+- ease: 8
+- base-score: 4.0
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias)
+- final-score: 6.0
+- next: Add hermetic render coverage for the index<0 null-return gate, the FIRST GLEANING · n / total step counter, the current step's title/body/find copy, and the SKIP press wiring, following the SatchelTray render pattern with minimal partial-session fixtures
+- observation: TutorialCoach (the bottom-docked guided-first-gleaning coach) derives its current step statelessly from the live session each render (`currentTutorialStep` — first step whose `done` predicate is unmet), returns null once the script completes (`index < 0`), renders a `FIRST GLEANING · index+1 / length` counter, the current step's title/body/lookFor copy under a `key={step.id}` re-animation, and a SKIP control wired to `onSkip`, yet had no colocated render test — the predicate engine alone was covered by the gathering.tutorial.engine e2e (step ids only)
+- evidence: components/gathering/TutorialCoach.tsx (99 lines) exports TutorialCoach and renders testIDs gathering-tutorial and gathering-tutorial-skip, but had no test in components/gathering/__tests__/ (siblings ApproachSelect, GatheringBoard, GatheringOverlays, PlotCard, SatchelTray, SpoilsOverlay, WrathMeter all carry one); GatheringIntroOverlay/glyphs are static presentation/SVG art
+- suggested fix: Create components/gathering/__tests__/TutorialCoach.test.tsx covering the index<0 null return, the step counter at multiple steps, the current step's title/body/find rendering, the step-swap when an earlier predicate is met, and the SKIP press firing onSkip, following the SatchelTray render pattern
+- source: audit
+- issue: #447
+- addressed: 2026-06-17 via commit PENDING
+- fix: Added components/gathering/__tests__/TutorialCoach.test.tsx (7 hermetic cases) pinning the index<0 null-return gate (no banner when the script is complete), the banner render while a step is unmet, the FIRST GLEANING · n / total counter at steps 1 and 4, the current step's title/body/find copy, the step-swap when an earlier predicate is met (next title shown, prior hidden), and the SKIP press firing onSkip exactly once. Minimal partial-session fixtures populate only the fields the seven step predicates read. Verify green (238 suites / 2522 tests, +7).
 
 ### [x] [7.2] EquipDeltaPanel (inventory equip-change delta surface) missing test coverage affecting inventory maintainability
 - category: tests

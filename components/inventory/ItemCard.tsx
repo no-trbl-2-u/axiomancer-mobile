@@ -6,6 +6,7 @@ import { FONTS } from '@/theme/axm';
 import { makeStyles, usePalette } from '@/theme/runtime';
 import { ActionIcon } from '@/components/ActionIcon';
 import { TooltipTarget } from '@/components/tooltip/TooltipTarget';
+import { EquipDeltaPanel } from '@/components/inventory/EquipDeltaPanel';
 import type { InventoryCategory, InventoryItemRow } from '@/state/presenters/inventory.engine';
 
 export const CATEGORY_ORDER: readonly InventoryCategory[] = [
@@ -235,6 +236,9 @@ export function ItemCard({ item, expanded, onTap, onUseOrEquip, onDiscard }: Ite
                                 </View>
                             )}
                         </View>
+                    )}
+                    {item.equipDelta !== null && (
+                        <EquipDeltaPanel itemId={item.id} delta={item.equipDelta} />
                     )}
                     <View style={styles.actionsRow}>
                         {item.canUse && (

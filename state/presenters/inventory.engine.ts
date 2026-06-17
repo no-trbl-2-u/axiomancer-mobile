@@ -23,7 +23,10 @@ import {
 } from 'axiomancer-mechanics';
 
 import { freezeViewModel } from './freeze';
+import { computeEquipDelta, type EquipDelta } from './equipDelta';
 import { firstEquippedPerSlot } from '../selectors/equipment';
+
+export type { EquipDelta } from './equipDelta';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -78,6 +81,23 @@ export interface InventoryItemRow {
      * `computeDelta`).
      */
     replacePreview: ReplacePreview | null;
+    /**
+     * Rich equip-change delta surface (Phase 133). Where `replacePreview`
+     * collapses the change into a single signed net-stat list, this model
+     * splits the change into gained vs. lost across stats, rolled
+     * modifiers, passive effects, on-hit / on-defend proc hooks, combat
+     * resource interactions, and keyword/affix labels — showing **only**
+     * what the equip operation changes.
+     *
+     * Filled for equipment rows:
+     *   - non-equipped with a worn sibling → `mode: 'swap'`
+     *   - non-equipped into an empty slot  → `mode: 'equip'` (gained only)
+     *   - the worn item itself             → `mode: 'unequip'` (lost only)
+     *
+     * `null` for non-equipment rows. The view hides empty sections and the
+     * whole surface when `equipDelta.isEmpty` is true.
+     */
+    equipDelta: EquipDelta | null;
 }
 
 export interface ReplacePreview {
@@ -386,26 +406,39 @@ function buildRows(inventory: readonly Item[]): InventoryItemRow[] {
             canUse: canUseFor(item),
             canDiscard: canDiscardFor(item),
             replacePreview: null,
+            equipDelta: null,
         };
         rowsById.set(item.id, row);
         order.push(item.id);
     }
 
-    // Second pass: replacePreview for non-equipped equipment whose
-    // slot has an equipped sibling. Skipped when the slot is empty
-    // (no opposition; the item's own stats win unopposed, which the
-    // expanded card surfaces via its existing "WOULD EQUIP TO" line).
+    // Second pass: replacePreview + equipDelta for equipment rows.
+    //
+    // `replacePreview` (Phase 35) stays scoped to non-equipped items
+    // with an equipped sibling — net signed stat list only. `equipDelta`
+    // (Phase 133) is computed for *every* equipment row so the surface
+    // can show gained-only (equip into empty slot), lost-only (the worn
+    // item), or gained+lost (swap), across stats, modifiers, passive
+    // effects, proc hooks, resources, and keywords.
     for (const id of order) {
         const row = rowsById.get(id)!;
-        if (row.category !== 'equipment' || row.equipped) continue;
+        if (row.category !== 'equipment') continue;
         const item = itemById.get(id);
         if (item === undefined) continue;
-        const equippedSibling = equippedBySlot.get(item.slot);
-        if (equippedSibling === undefined || equippedSibling.id === item.id) continue;
-        rowsById.set(id, {
-            ...row,
-            replacePreview: computeReplacePreview(item, equippedSibling),
-        });
+
+        const equippedSibling = equippedBySlot.get(item.slot) ?? null;
+        const equipDelta = computeEquipDelta(item, equippedSibling);
+
+        let replacePreview: ReplacePreview | null = null;
+        if (
+            !row.equipped &&
+            equippedSibling !== null &&
+            equippedSibling.id !== item.id
+        ) {
+            replacePreview = computeReplacePreview(item, equippedSibling);
+        }
+
+        rowsById.set(id, { ...row, replacePreview, equipDelta });
     }
 
     return order.map((id) => rowsById.get(id)!);

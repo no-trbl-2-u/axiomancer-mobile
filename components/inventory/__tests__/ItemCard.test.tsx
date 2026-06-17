@@ -31,6 +31,7 @@ const mockEquipmentWeapon: InventoryItemRow = {
     canUse: true,
     canDiscard: true,
     replacePreview: null,
+    equipDelta: null,
 };
 
 const mockEquippedArmor: InventoryItemRow = {
@@ -44,6 +45,7 @@ const mockEquippedArmor: InventoryItemRow = {
     canUse: false,
     canDiscard: false,
     replacePreview: null,
+    equipDelta: null,
 };
 
 const mockConsumable: InventoryItemRow = {
@@ -57,6 +59,7 @@ const mockConsumable: InventoryItemRow = {
     canUse: true,
     canDiscard: true,
     replacePreview: null,
+    equipDelta: null,
 };
 
 const mockMaterial: InventoryItemRow = {
@@ -70,6 +73,7 @@ const mockMaterial: InventoryItemRow = {
     canUse: false,
     canDiscard: true,
     replacePreview: null,
+    equipDelta: null,
 };
 
 const mockQuestItem: InventoryItemRow = {
@@ -83,6 +87,7 @@ const mockQuestItem: InventoryItemRow = {
     canUse: false,
     canDiscard: false,
     replacePreview: null,
+    equipDelta: null,
 };
 
 const mockEquipmentWithPreview: InventoryItemRow = {
@@ -102,6 +107,7 @@ const mockEquipmentWithPreview: InventoryItemRow = {
             { stat: 'weight', delta: -1 },
         ],
     },
+    equipDelta: null,
 };
 
 describe('ItemCard: basic rendering', () => {
@@ -434,6 +440,90 @@ describe('ItemGlyph: category-based icon rendering', () => {
         );
         const rendered = render(tree);
         expect(rendered.toJSON()).not.toBeNull();
+    });
+});
+
+describe('ItemCard: equipDelta panel (Phase 133)', () => {
+    const handlers = {
+        onTap: jest.fn(),
+        onUseOrEquip: jest.fn(),
+        onDiscard: jest.fn(),
+    };
+
+    const swapItem: InventoryItemRow = {
+        ...mockEquipmentWeapon,
+        id: 'fang',
+        equipDelta: {
+            mode: 'swap',
+            against: { id: 'old-blade', name: 'Old Blade' },
+            stats: [
+                { stat: 'attack', delta: 2 },
+                { stat: 'stamina', delta: -1 },
+            ],
+            gained: {
+                modifiers: [],
+                passiveEffects: [{ id: 'thirst', name: 'Bloodthirst' }],
+                onHitEffects: [],
+                onDefendEffects: [],
+                resources: [{ key: 'start:mind', resource: 'mind', amount: 2, kind: 'start' }],
+                keywords: [{ key: 'prefix:Gilded', label: 'Gilded' }],
+            },
+            lost: {
+                modifiers: [{ id: 'mod-old', name: null, value: 3 }],
+                passiveEffects: [],
+                onHitEffects: [],
+                onDefendEffects: [{ id: 'ward', name: null }],
+                resources: [],
+                keywords: [],
+            },
+            isEmpty: false,
+        },
+    };
+
+    it('renders the panel with gained and lost sections when expanded', () => {
+        const { tree } = withAllProviders(
+            <ItemCard item={swapItem} expanded={true} {...handlers} />
+        );
+        const r = render(tree);
+        expect(r.getByTestId('equip-delta-fang')).toBeTruthy();
+        expect(r.getByTestId('equip-delta-gained-fang')).toBeTruthy();
+        expect(r.getByTestId('equip-delta-lost-fang')).toBeTruthy();
+        expect(r.getByText('Bloodthirst')).toBeTruthy();
+        expect(r.getByText('Gilded')).toBeTruthy();
+    });
+
+    it('does not render the panel when collapsed', () => {
+        const { tree } = withAllProviders(
+            <ItemCard item={swapItem} expanded={false} {...handlers} />
+        );
+        const r = render(tree);
+        expect(r.queryByTestId('equip-delta-fang')).toBeNull();
+    });
+
+    it('suppresses the panel when the delta is empty', () => {
+        const emptyDeltaItem: InventoryItemRow = {
+            ...mockEquipmentWeapon,
+            id: 'inert',
+            equipDelta: {
+                mode: 'swap',
+                against: { id: 'x', name: 'X' },
+                stats: [],
+                gained: {
+                    modifiers: [], passiveEffects: [], onHitEffects: [],
+                    onDefendEffects: [], resources: [], keywords: [],
+                },
+                lost: {
+                    modifiers: [], passiveEffects: [], onHitEffects: [],
+                    onDefendEffects: [], resources: [], keywords: [],
+                },
+                isEmpty: true,
+            },
+        };
+        const { tree } = withAllProviders(
+            <ItemCard item={emptyDeltaItem} expanded={true} {...handlers} />
+        );
+        const r = render(tree);
+        expect(r.queryByTestId('equip-delta-inert')).toBeNull();
     });
 });
 

@@ -30,6 +30,7 @@ const mockItem: InventoryItemRow = {
     canUse: true,
     canDiscard: true,
     replacePreview: null,
+    equipDelta: null,
 };
 
 const mockConsumableItem: InventoryItemRow = {
@@ -43,6 +44,7 @@ const mockConsumableItem: InventoryItemRow = {
     canUse: true,
     canDiscard: true,
     replacePreview: null,
+    equipDelta: null,
 };
 
 const mockEquippedItem: InventoryItemRow = {
@@ -56,6 +58,7 @@ const mockEquippedItem: InventoryItemRow = {
     canUse: false,
     canDiscard: false,
     replacePreview: null,
+    equipDelta: null,
 };
 
 describe('groupByCategory utility function', () => {

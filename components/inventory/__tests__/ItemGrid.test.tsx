@@ -31,6 +31,7 @@ const mockEquipmentWeapon: InventoryItemRow = {
     canUse: true,
     canDiscard: true,
     replacePreview: null,
+    equipDelta: null,
 };
 
 const mockConsumable: InventoryItemRow = {
@@ -44,6 +45,7 @@ const mockConsumable: InventoryItemRow = {
     canUse: true,
     canDiscard: true,
     replacePreview: null,
+    equipDelta: null,
 };
 
 const mockMaterial: InventoryItemRow = {
@@ -57,6 +59,7 @@ const mockMaterial: InventoryItemRow = {
     canUse: false,
     canDiscard: true,
     replacePreview: null,
+    equipDelta: null,
 };
 
 const mockQuestItem: InventoryItemRow = {
@@ -70,6 +73,7 @@ const mockQuestItem: InventoryItemRow = {
     canUse: false,
     canDiscard: false,
     replacePreview: null,
+    equipDelta: null,
 };
 
 const mockCategoryHeaders = {

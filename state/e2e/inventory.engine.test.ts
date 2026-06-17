@@ -893,3 +893,68 @@ describe('selectInventoryViewModel: equip-preview replacePreview', () => {
         expect(row.replacePreview!.deltas).toEqual([{ stat: 'mind', delta: 2 }]);
     });
 });
+
+describe('selectInventoryViewModel: equipDelta surface (Phase 133)', () => {
+    it('is null on non-equipment rows', () => {
+        const store = makeStore([potion('phial-1', 6, 2), ash('ash-1', 3)]);
+        const vm = selectInventoryViewModel(store.getState());
+        for (const row of vm.items) {
+            expect(row.equipDelta).toBeNull();
+        }
+    });
+
+    it('is equip mode (gained only) on the lone worn item in an empty slot', () => {
+        const equipped = swordWithStats('long-blade', 'Long Blade', [
+            { stat: 'attack', value: 4 },
+        ]);
+        const store = makeStore([equipped]);
+        const vm = selectInventoryViewModel(store.getState());
+        const row = vm.items.find((r) => r.id === 'long-blade')!;
+        // The lone item is auto-marked worn; against itself it would be
+        // unequip, but with no other sibling the worn map points to it,
+        // so the delta compares it against itself → unequip (lost only).
+        expect(row.equipDelta).not.toBeNull();
+        expect(row.equipDelta!.mode).toBe('unequip');
+        expect(row.equipDelta!.stats).toEqual([{ stat: 'attack', delta: -4 }]);
+    });
+
+    it('is swap mode with gained/lost split for a non-equipped sibling', () => {
+        const equipped = swordWithStats('long-blade', 'Long Blade', [
+            { stat: 'attack', value: 4 },
+            { stat: 'stamina', value: -1 },
+        ]);
+        const replacer = swordWithStats('steel-edge', 'Steel Edge', [
+            { stat: 'attack', value: 5 },
+            { stat: 'defense', value: 2 },
+        ]);
+        const store = makeStore([equipped, replacer]);
+        const vm = selectInventoryViewModel(store.getState());
+        const row = vm.items.find((r) => r.id === 'steel-edge')!;
+        expect(row.equipDelta).not.toBeNull();
+        expect(row.equipDelta!.mode).toBe('swap');
+        expect(row.equipDelta!.against).toEqual({ id: 'long-blade', name: 'Long Blade' });
+        const sorted = [...row.equipDelta!.stats].sort((a, b) => a.stat.localeCompare(b.stat));
+        expect(sorted).toEqual([
+            { stat: 'attack', delta: 1 },
+            { stat: 'defense', delta: 2 },
+            { stat: 'stamina', delta: 1 },
+        ]);
+    });
+
+    it('surfaces gained/lost passive effects on a swap', () => {
+        const equipped: Equipment = {
+            ...sword('worn-blade'),
+            passiveEffects: ['shared', 'old-ward'],
+        };
+        const replacer: Equipment = {
+            ...dagger('new-fang'),
+            passiveEffects: ['shared', 'new-thirst'],
+        };
+        const store = makeStore([equipped, replacer]);
+        const vm = selectInventoryViewModel(store.getState());
+        const row = vm.items.find((r) => r.id === 'new-fang')!;
+        expect(row.equipDelta!.mode).toBe('swap');
+        expect(row.equipDelta!.gained.passiveEffects.map((e) => e.id)).toEqual(['new-thirst']);
+        expect(row.equipDelta!.lost.passiveEffects.map((e) => e.id)).toEqual(['old-ward']);
+    });
+});

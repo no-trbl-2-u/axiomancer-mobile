@@ -1009,7 +1009,7 @@
 - suggested fix: Add reference to this file in README repository navigation section
 - source: file-read
 
-### [HIGH] /README.md — Repository navigation creates confusing hierarchy with overlapping documentation directories
+### [x] [HIGH] /README.md — Repository navigation creates confusing hierarchy with overlapping documentation directories ✅
 - pass: 42 (commit 076dfb9)
 - viewport: desktop
 - category: navigation
@@ -1017,6 +1017,8 @@
 - evidence: Lines 16-24 list setup/ for 'detailed setup guides' while docs/ contains 'technical documentation' creating navigation confusion
 - suggested fix: Consolidate or clearly delineate the boundary between setup/, docs/, and other documentation directories with explicit routing guidance
 - source: repo-proxy
+- issue: #439
+- resolution: Reworked README "Repository navigation" into a decision-oriented "you want to… / go to / not to" table plus a per-directory "stated plainly" list that delineates setup/ (operational runbooks) vs docs/ (conceptual reference) vs docs/adr/ (decisions) vs specs/ (contracts) vs plan/ (execution state) vs VISION.md (doctrine). Addressed by /iterate.
 
 ### [MED] /VISION.md — Inconsistent terminology around mercy/friendship mechanics  
 - pass: 42 (commit 076dfb9)

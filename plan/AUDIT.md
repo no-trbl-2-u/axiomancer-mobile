@@ -18,7 +18,26 @@
 
 > **Audit update (2026-06-17).** QuestBoardTrack addressed. Sweep continues through the quest-board minigame: QuestOverlays (387 lines — the intro reveal, open-space card, dusk flash, and outcome ledger) was the largest untested logic-bearing gameplay component remaining — picked this tick.
 
+> **Audit update (2026-06-17, second tick).** QuestOverlays addressed. Quest-board minigame coverage now drained; sweep moves to the gathering minigame's WRATH surface: WrathMeter (130 lines — a pure threshold-coloured `segmentColor` helper plus conditional sickled/mired/watcher/dusk status-tag derivation, fired-notch rendering, grace colouring, and dynamic segment count) was the largest untested logic-bearing gameplay component remaining — picked this tick.
+
 ## Top 5 findings (scored)
+
+### [x] [7.2] WrathMeter (gathering WRATH meter) missing test coverage affecting gathering-minigame maintainability
+- category: tests
+- impact: 6
+- ease: 8
+- base-score: 4.8
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias)
+- final-score: 7.2
+- next: Add hermetic coverage for the pure segmentColor helper plus the status-tag derivation, notch fired/unfired, grace colouring, and dynamic segment-count render branches
+- observation: WrathMeter (the segmented WRATH bar under the gathering site's opening eye — shows the place's escalating answer as the meter fills, with threshold notches and surcharge status tags) contains a pure `segmentColor(index, vm, AXM)` helper that picks one of three fills by how many thresholds the index has passed, plus conditional sickled/mired/watcher/dusk tag rows, per-threshold fired-vs-unfired notch tinting, grace-active colouring, eye-open ratio colouring, and a `vm.max`-driven dynamic segment count, yet had no colocated test coverage
+- evidence: components/gathering/WrathMeter.tsx (130 lines) renders testID gathering-wrath with the WRATH value/max label, an accessibilityLabel reporting value/dusk, threshold notches, and the four status tags (sickled/mired/watcher/dusk), but was absent from components/gathering/__tests__/
+- suggested fix: Create components/gathering/__tests__/WrathMeter.test.tsx covering the segmentColor threshold bands, the four conditional status tags, notch fired/unfired, grace value colouring, and the dynamic segment count, following the SpoilsOverlay/PlotCard render pattern
+- source: audit
+- issue: #438
+- addressed: 2026-06-17 via commit 09db862
+- fix: Exported the pure segmentColor helper and added components/gathering/__tests__/WrathMeter.test.tsx (17 hermetic cases) pinning the four segmentColor threshold bands (unfilled / 0 / 1 / 2+ thresholds plus the cell-equals-position boundary), the WRATH value/max label, the accessibility label's dusk suffix, all four surcharge tags individually + all-at-once + the calm no-tags case, the grace value + note, and the omitted-tag-row case. Verify green (2428 tests, +17).
 
 ### [x] [6.75] QuestOverlays (quest-board minigame overlays) missing test coverage affecting quest-board maintainability
 - category: tests

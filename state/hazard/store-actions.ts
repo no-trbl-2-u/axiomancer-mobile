@@ -21,6 +21,7 @@ import {
     createHazardSession,
     discardHazardCard as engineDiscardCard,
     finishHazardRolling as engineFinishRolling,
+    isDefeated as engineIsDefeated,
     powerHazardCard as enginePowerCard,
     resolveHazardRound as engineResolveRound,
     selectHazardRoute as engineSelectRoute,
@@ -63,6 +64,16 @@ export const HAZARD_TOKEN_FLAG_PREFIX = 'hazard-token-banked:';
  */
 export const HAZARD_SCAR_FLAG_PREFIX = 'hazard-scar:';
 
+/**
+ * Flag prefix recording an out-of-combat death (Phase 130). One flag is
+ * stamped per fatal Hazard crossing — a crossing whose net VITAE swing
+ * would drop the player to `health <= 0` by the engine's `isDefeated`
+ * threshold. The suffix is a timestamp so repeated deaths accumulate
+ * distinct tombstones rather than collapsing to one. The durable record
+ * a future deaths-this-save surface reads; engine owns no death counter.
+ */
+export const HAZARD_DEATH_FLAG_PREFIX = 'hazard-death:';
+
 /** Sum the banked max-VITAE loss across all unhealed scar flags. */
 export function bankedScarMagnitude(flags: readonly string[]): number {
     let total = 0;
@@ -72,6 +83,15 @@ export function bankedScarMagnitude(flags: readonly string[]): number {
         if (Number.isFinite(magnitude) && magnitude > 0) total += magnitude;
     }
     return total;
+}
+
+/** Count the out-of-combat deaths recorded across all tombstone flags. */
+export function hazardDeathCount(flags: readonly string[]): number {
+    let count = 0;
+    for (const flag of flags) {
+        if (flag.startsWith(HAZARD_DEATH_FLAG_PREFIX)) count += 1;
+    }
+    return count;
 }
 
 /**
@@ -379,6 +399,14 @@ export interface ClaimHazardRewardsResult {
     tokensBanked: number;
     tokensLost: boolean;
     hexed: boolean;
+    /**
+     * Phase 130 — true when the crossing was fatal: the net VITAE swing
+     * would have dropped the player to `health <= 0` (engine `isDefeated`
+     * threshold), so the run was reset via `resetRun({ keepCharacter })`
+     * and the crossing's spoils were forfeit. On a fatal claim every
+     * delta reads 0 — death yields no reward.
+     */
+    died: boolean;
 }
 
 const NOOP_CLAIM: ClaimHazardRewardsResult = Object.freeze({
@@ -391,6 +419,7 @@ const NOOP_CLAIM: ClaimHazardRewardsResult = Object.freeze({
     tokensBanked: 0,
     tokensLost: false,
     hexed: false,
+    died: false,
 });
 
 /**
@@ -476,6 +505,46 @@ export function claimHazardRewardsAction(store: AppStore, cardId: string | null)
     }
 
     const player = state.player;
+
+    // Phase 130 — out-of-combat death. The nominal post-crossing VITAE
+    // (before the floor-1 clamp below) decides lethality by the engine's
+    // own `isDefeated` threshold (`health <= 0`) — the SAME predicate the
+    // combat death path uses. A crossing the player cannot afford routes
+    // through the engine death/respawn primitive (`resetRun`, mirroring
+    // combat's BEGIN AGAIN) instead of silently maiming to 1. Spoils are
+    // forfeit on the killing crossing: we never reach the spoils-apply
+    // `setState` below.
+    const nominalHealth = player.health + vitaeDelta;
+    if (engineIsDefeated({ ...player, health: nominalHealth })) {
+        const deathStore = store.getState() as unknown as {
+            resetRun?: (o: { keepCharacter: boolean }) => unknown;
+        };
+        // Stamp the tombstone onto the PRE-reset flags so it survives the
+        // run reset (resetRun keeps the character but may rebuild run
+        // flags); re-read post-reset flags and append.
+        deathStore.resetRun?.({ keepCharacter: true });
+        const afterReset = store.getState() as unknown as GameState;
+        const tombstoned = [...(afterReset.flags ?? []), `${HAZARD_DEATH_FLAG_PREFIX}${Date.now()}`];
+        store.setState({ flags: tombstoned, hazard: { session: null } } as never);
+        try {
+            store.getState().save();
+        } catch {
+            // Persistence failures must not strand the player on the modal.
+        }
+        return {
+            applied: true,
+            vitaeDelta: 0,
+            maxVitaeDelta: 0,
+            shillings: 0,
+            cardAdded: null,
+            crackAdded: false,
+            tokensBanked: 0,
+            tokensLost: false,
+            hexed: false,
+            died: true,
+        };
+    }
+
     const newMax = Math.max(5, player.maxHealth + maxVitaeDelta);
     const newHealth = Math.min(newMax, Math.max(1, player.health + vitaeDelta));
     // Record the scar that was actually applied (the floor-5 clamp may
@@ -514,6 +583,7 @@ export function claimHazardRewardsAction(store: AppStore, cardId: string | null)
         tokensBanked,
         tokensLost,
         hexed,
+        died: false,
     };
 }
 

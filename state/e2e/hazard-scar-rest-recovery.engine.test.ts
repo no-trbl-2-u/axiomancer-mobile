@@ -63,6 +63,13 @@ function playLosingRound(store: AppStore, actions: AppActions): void {
 /** Drives a full failing hazard that scars max-VITAE; returns the applied scar. */
 function scarThePlayer(store: AppStore, actions: AppActions): number {
     const maxBefore = (store.getState() as unknown as GameState).player.maxHealth;
+    // Phase 130 — the failing crossing's VITAE swing (−20) is lethal at the
+    // default 15 VITAE, which would route through out-of-combat death and
+    // skip the scar entirely. These tests probe max-VITAE *scarring*, so
+    // give the pilgrim enough current VITAE to survive the maiming. Only
+    // current health is raised; maxHealth (the scar baseline) is untouched.
+    const survivor = (store.getState() as unknown as GameState).player;
+    store.setState({ player: { ...survivor, health: survivor.maxHealth + 40 } } as never);
     actions.beginHazard({ seed: 9, hazardId: 'cracked-cliff' });
     actions.selectHazardRoute('risk');
     actions.finishHazardRolling();

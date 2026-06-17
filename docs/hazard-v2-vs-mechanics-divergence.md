@@ -215,7 +215,18 @@ These are live in mobile as best-effort adapters and should become mechanics-own
   stays a documented mobile adapter — same family as the scar-apply
   adapter and `hazard-token-banked:` / `night-keepsake:` flags.
 - Cache/relic rewards: currently shillings; a real loot/relic table would be better.
-- Out-of-combat death: absent; hazard damage floors VITAE at 1.
+- Out-of-combat death (Phase 130): a Hazard crossing whose net VITAE
+  swing would drop the player to `health <= 0` (engine `isDefeated`
+  threshold — the SAME predicate combat death uses) is **fatal**. The
+  claim routes through the engine `resetRun({ keepCharacter: true })`
+  primitive (mirroring combat's BEGIN AGAIN), stamps a durable
+  `hazard-death:<ts>` tombstone flag, forfeits the crossing's spoils,
+  and returns `died: true`. A swing that lands on `>= 1` VITAE is still
+  a maiming (floored at 1), not a death. The engine owns no
+  out-of-combat run-loop death *event* — death is composed mobile-side
+  from the engine `isDefeated` threshold + `resetRun` transition, not a
+  locally-simulated death rule. `hazardDeathCount(flags)` reads the
+  tombstones for a future deaths-this-save surface.
 - Immediate save on claim: mobile calls `save()` after applying spoils/scars.
 - **Remove-card / deck-thinning (Phase 126 blocked integration point):**
   `axiomancer-mechanics` exposes `appendAcquiredCard(flags, cardId)`

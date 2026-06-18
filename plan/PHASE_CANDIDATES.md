@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-17 at commit 27184a1
-> Pass count: 80
+> Last pass: 2026-06-18 at commit 0b36aa2
+> Pass count: 81
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -480,6 +480,39 @@
 - proposed scope: 3-phase systematic audit and reduction of type casts with typed wrapper functions, focusing on highest-density files first
 - estimated phases: 3
 - conflicts: none
+
+
+> **Pass 81 — engine-bump doc-drift + critique-loop infra blocker
+> (`/march`-dispatched expand, aggressive posture). Signals are
+> CRITIQUE pending rows (no open AUDIT rows — all `[x]`), cross-checked
+> against the live README/package.json so neither candidate re-treads
+> the already-filed broad "onboarding consolidation" (pass 62/75) or
+> the `state/actions.ts` cast drain (pass 75/77). Candidate A is a
+> specific factual-accuracy fix freshly worsened by Phase 134's 0.22.0
+> bump; Candidate B elevates the 3-pass-deep `/critique` blocker out of
+> CRITIQUE.md so `/oversight`/the user actually sees it. `/oversight`
+> promotes from this batch.**
+
+### [ ] [score 4.5] Engine-version doc-drift reconciliation (README/docs vs package.json 0.22.0)
+- proposed: 2026-06-18, expand pass 81
+- source signals:
+  - **Critique clustering (§4 B) — 4 pending rows, same family**: `plan/CRITIQUE.md` Pending carries four unresolved comprehension findings all naming engine-version doc drift: `[MED] /README.md — Engine version pinning documentation inconsistent` (pass 44), `[MED] /docs/README.md — Engine upgrade documentation outdated` (pass 44), `[MED] /README.md — Engine version mismatch between documentation and package.json` (pass 41), plus the related caret-vs-exact confusion (pass 44). Repeatedly surfaced across two independent critique passes.
+  - **Grep-verified, now worse than the critique rows captured (§ urgency)**: `README.md:260` states `Current engine version: axiomancer-mechanics ^0.21.0` but `package.json:43` is now `"axiomancer-mechanics": "^0.22.0"` (Phase 134's affix-release bump, landed within the last 7 days). `README.md:262` still links the `docs/engine-upgrade-0.20.0-to-0.21.0.md` guide as the "upgrading from" reference, while the `0.21.0-to-0.22.0` guide (cited at PHASE_CANDIDATES pass 80) already exists — so the README points a fresh maintainer at a stale upgrade path.
+  - **Engine-bump cliff (§4 I)**: the 0.22.0 bump (Phase 134) landed without the README/docs catch-up that should accompany an engine version change; the version string + upgrade-guide pointer are the loose ends.
+- rationale: Multi-source convergence — four filed critique rows + a grep-confirmed factual error that the latest engine bump made strictly worse. This is a *factual-accuracy* fix (correct the version number, point at the current upgrade guide, reconcile the caret-vs-exact note), distinct from the broad prose-restructuring "onboarding consolidation" candidate (pass 62/75) which it must NOT be merged into. Cheap-and-impactful: a fresh maintainer reading the README today is told the wrong engine version and handed the wrong upgrade doc. Honestly one phase — docs-only, no code.
+- proposed scope: 1-phase docs sweep — update `README.md:260` to `^0.22.0`, repoint `README.md:262` at `docs/engine-upgrade-0.21.0-to-0.22.0.md`, reconcile the caret-vs-exact pinning note against `bearings.md`, and add the current-vs-historical marker the pass-44 `docs/README.md` finding asks for. Resolve the four CRITIQUE rows in the same pass.
+- estimated phases: 1
+- conflicts: none — docs-only; does not touch the engine pin itself or any code. Adjacent to but narrower than the existing onboarding-consolidation candidate (that one is prose/structure; this one is version-fact correctness).
+
+### [ ] [needs-user-call] [score 3.0] Unblock the `/critique` reader sub-agent (retired model id pinned in runtime config)
+- proposed: 2026-06-18, expand pass 81
+- source signals:
+  - **Critique infra row, 3 consecutive blocked passes (§4 B / infra)**: `plan/CRITIQUE.md` Pending `[needs-user-call] reader sub-agent malfunction (passes 45–47)` — every `Task()` invocation of `subagent_type: reader` across passes 45, 46, 47 (6 invocations) returned `API Error: 404 {"type":"not_found_error","message":"model: claude-sonnet-4-20250514"}`. The last two commits (`edb7bef`, and pass 47 at `792f634`) are both "critique pass blocked".
+  - **Root cause confirmed by grep**: `.claude/agents/reader.md` carries **no `model:` frontmatter field** (verified — grep for `model` returns nothing), so the retired `claude-sonnet-4-20250514` id is pinned in runtime/agent config the `/critique` skill cannot override. The 2026-06-17 fix attempts have not landed a corrected id.
+- rationale: This is the single highest-leverage item in the signal set — an entire loop arm (`/critique`'s external-observer feedback) has been dead for three passes and will stay dead until the reader agent's model is repointed at an available id. It lives buried in CRITIQUE.md where `/march`'s critique gate keeps rate-limiting past it; filing it as a candidate elevates it so `/oversight`/the user resolves the runtime-config pin. **Not autonomously shippable** by the loop (the model id is outside repo-reachable config), hence `[needs-user-call]`.
+- proposed scope: runtime-config / agent-doc change (out-of-loop) — repoint the `reader` agent to inherit the default model (or add a current `model:` field to `.claude/agents/reader.md`), then re-run `/critique`. If the pin is purely in `.claude/agents/reader.md` and addable there, it may be a 1-touch fix; if it lives in external runtime config, it requires user/runtime action.
+- estimated phases: 1 (or out-of-loop runtime fix)
+- conflicts: `[needs-user-call]` — the model id may be pinned outside repo-reachable config; `/expand` cannot resolve it (Hard Rule 1: no code changes), and `/critique` cannot self-heal it. Surface to user/oversight.
 
 ## Drained / shipped
 

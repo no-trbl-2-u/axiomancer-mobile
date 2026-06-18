@@ -245,7 +245,7 @@ export function RewardsOverlay({
                                             <View style={styles.previewKeywords}>
                                                 <Text style={styles.previewKeywordsLabel}>KEYWORDS:</Text>
                                                 <Text style={styles.previewKeywordsList}>
-                                                    {card.keywords.join(', ')}
+                                                    {card.keywords.map((kw) => kw.name).join(', ')}
                                                 </Text>
                                             </View>
                                         )}

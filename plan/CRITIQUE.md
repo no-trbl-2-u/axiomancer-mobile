@@ -61,17 +61,6 @@
   `/critique`.
 - source: repo-proxy
 
-### [MED] Hazard reward preview renders keyword objects as raw text (NEW — Kid playthrough 2026-06-18)
-- category: bug
-- impact: 5 (reward choice comprehension is degraded after a completed Hazard)
-- ease: ?
-- observed: daily Kid Hazard ladder 2026-06-18.
-  - Run 2 and Run 5 reached the reward preview after a completed/perfect Cracked Cliff Hazard.
-  - Preview text included `KEYWORDS: [object Object], [object Object]...` instead of readable keyword labels/details.
-  - The reward could still be claimed, so this is not a hard progression blocker.
-- next: render reward-card keyword metadata through the same label/detail formatter used by the card detail overlay.
-- source: Kid daily playthrough (2026-06-18)
-
 ### [MED] Hazard reward offer tiles expose inconsistent card names before preview (NEW — Kid playthrough 2026-06-18)
 - category: accessibility
 - impact: 5 (automation and accessibility users may choose blind until opening preview)
@@ -1094,6 +1083,23 @@
 <!-- Drained from ## Pending via /oversight 2026-06-08 (queue-drained
      call): addressed-✅ findings moved here so the open-findings
      signal /iterate reads is accurate. -->
+
+### [x] [MED] Hazard reward preview renders keyword objects as raw text (Kid playthrough 2026-06-18)
+- category: bug
+- impact: 5 (reward choice comprehension is degraded after a completed Hazard)
+- observed: daily Kid Hazard ladder 2026-06-18.
+  - Run 2 and Run 5 reached the reward preview after a completed/perfect Cracked Cliff Hazard.
+  - Preview text included `KEYWORDS: [object Object], [object Object]...` instead of readable keyword labels/details.
+  - The reward could still be claimed, so this is not a hard progression blocker.
+- source: Kid daily playthrough (2026-06-18)
+- issue: #458
+- resolution: `components/hazard/RewardsOverlay.tsx` preview rendered
+  `card.keywords.join(', ')` where `HazardCardVM.keywords` is
+  `{ id, name, desc }[]`, so array→string coercion produced
+  `[object Object]`. Now maps each keyword to its `name`
+  (`card.keywords.map((kw) => kw.name).join(', ')`). New
+  RewardsOverlay test asserts keyword names render and `[object Object]`
+  never appears. 2602/2602 verify green.
 
 ### [x] [HIGH] /setup/01_repository.md — Setup guide references missing setup runbooks creating broken navigation
 - pass: 41 (commit a185532)

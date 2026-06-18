@@ -203,6 +203,30 @@ describe('RewardsOverlay', () => {
             expect(getByText('RED CARD')).toBeTruthy();
         });
 
+        it('renders keyword names (not [object Object]) in preview', () => {
+            const vmWithKeywords = {
+                ...mockRewardsVM,
+                offerCards: [
+                    {
+                        ...mockRewardsVM.offerCards[0],
+                        keywords: [
+                            { id: 'pierce', name: 'Pierce', desc: 'Ignores armor.' },
+                            { id: 'burn', name: 'Burn', desc: 'Deals damage over time.' },
+                        ],
+                    },
+                    mockRewardsVM.offerCards[1],
+                ],
+            };
+            const { getByTestId, getByText, queryByText } = render(
+                <RewardsOverlay {...mockProps} rewards={vmWithKeywords} />
+            );
+
+            fireEvent.press(getByTestId('hazard-offer-card-1'));
+
+            expect(getByText('Pierce, Burn')).toBeTruthy();
+            expect(queryByText(/\[object Object\]/)).toBeNull();
+        });
+
         it('shows confirm and cancel buttons in preview', () => {
             const { getByTestId } = render(<RewardsOverlay {...mockProps} />);
             

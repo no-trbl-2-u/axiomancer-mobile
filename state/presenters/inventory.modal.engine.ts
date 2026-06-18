@@ -10,9 +10,11 @@ import {
     equipItem as engineEquipItem,
     isConsumable,
     isEquipment,
+    lookupEffect,
     type Character,
     type Consumable,
     type Equipment,
+    type EquipmentProcTrigger,
     type GameStore,
     type Item,
 } from 'axiomancer-mechanics';
@@ -70,6 +72,19 @@ export interface ModalEffectDelta {
     direction: 'gained' | 'lost';
 }
 
+/**
+ * One line of an item's *intrinsic* modifier block — the stats and
+ * effects the item itself grants (independent of equip state). Stat
+ * lines read e.g. "+5 PHYS ATK"; effect lines read the resolved effect
+ * name. This is what makes an affixed drop ("Keen Iron Blade of
+ * Clarity") show *what* its affixes do, not just its name.
+ */
+export interface ItemModifierLine {
+    label: string;
+    /** Engine stat key for tooltip wiring, when the line is a stat. */
+    id?: string;
+}
+
 export interface ItemModalViewModel {
     /** Item ID the modal is acting on. */
     itemId: string | null;
@@ -99,6 +114,12 @@ export interface ItemModalViewModel {
      * display-only rows, and equips that change no effects.
      */
     effectDeltas: readonly ModalEffectDelta[];
+    /**
+     * The item's own intrinsic modifiers — the stats (with values) and
+     * effects it grants, regardless of equip state. Empty for items with
+     * no modifiers (e.g. a plain common drop) and for consumables.
+     */
+    itemModifiers: readonly ItemModifierLine[];
     /**
      * Name of the currently-equipped item that this equip would
      * replace, or `null` when the slot is empty / this item is
@@ -137,6 +158,7 @@ export function selectItemModalViewModel(
         previewLines: [item.description] as readonly string[],
         statDeltas: [] as readonly StatDelta[],
         effectDeltas: [] as readonly ModalEffectDelta[],
+        itemModifiers: [] as readonly ItemModifierLine[],
         replacingName: null,
     });
 }
@@ -176,6 +198,7 @@ function buildConsumableModal(player: Character, item: Item): ItemModalViewModel
         previewLines: previewLines as readonly string[],
         statDeltas: [] as readonly StatDelta[],
         effectDeltas: [] as readonly ModalEffectDelta[],
+        itemModifiers: [] as readonly ItemModifierLine[],
         replacingName: null,
     });
 }
@@ -271,6 +294,7 @@ function buildEquipmentModal(player: Character, item: Item): ItemModalViewModel 
     const effectDeltas = newlyWorn === null
         ? []
         : computeEffectDeltas(newlyWorn, removed, player);
+    const itemModifiers = computeItemModifiers(eq);
 
     return freezeViewModel({
         itemId: item.id,
@@ -284,6 +308,7 @@ function buildEquipmentModal(player: Character, item: Item): ItemModalViewModel 
         previewLines: previewLines as readonly string[],
         statDeltas: statDeltas as readonly StatDelta[],
         effectDeltas: effectDeltas as readonly ModalEffectDelta[],
+        itemModifiers: itemModifiers as readonly ItemModifierLine[],
         replacingName: replacing === null ? null : replacing.name,
     });
 }
@@ -384,6 +409,48 @@ function computeStatDeltas(before: Character, after: Character): StatDelta[] {
  * else fall back to the label (unknown keys, which trail anyway). */
 function idOrLabelKey(row: StatDelta): string {
     return row.id ?? row.label;
+}
+
+/** Signed integer string for a stat value (`+5` / `-2`). */
+function signed(n: number): string {
+    return n >= 0 ? `+${n}` : `${n}`;
+}
+
+/** Resolve an effect id to its engine name, gracefully null on miss. */
+function effectName(id: string): string {
+    try {
+        return lookupEffect(id)?.name ?? id;
+    } catch {
+        return id;
+    }
+}
+
+/**
+ * Build the item's intrinsic modifier block — the stats (with values)
+ * and effects it grants on its own. Stat lines carry the engine stat
+ * key as `id` so the view can wire a tooltip. Multipliers render as
+ * `×N`, flat modifiers as `+N` / `-N`. Returns `[]` for an item with no
+ * modifiers (a plain common drop).
+ */
+function computeItemModifiers(eq: Equipment): ItemModifierLine[] {
+    const out: ItemModifierLine[] = [];
+    for (const mod of eq.statModifiers ?? []) {
+        const value = mod.isMultiplier ? `×${mod.value}` : signed(mod.value);
+        const line: ItemModifierLine = TOOLTIP_STAT_KEY.test(mod.stat)
+            ? { label: `${value} ${statLabelFor(mod.stat)}`, id: mod.stat }
+            : { label: `${value} ${statLabelFor(mod.stat)}` };
+        out.push(line);
+    }
+    for (const id of eq.passiveEffects ?? []) {
+        out.push({ label: effectName(id) });
+    }
+    for (const proc of (eq.onHitEffects ?? []) as readonly EquipmentProcTrigger[]) {
+        out.push({ label: `on-hit: ${effectName(proc.effectId)}` });
+    }
+    for (const proc of (eq.onDefendEffects ?? []) as readonly EquipmentProcTrigger[]) {
+        out.push({ label: `on-defend: ${effectName(proc.effectId)}` });
+    }
+    return out;
 }
 
 /** Summarise a combat-resource interaction for a one-line effect row. */

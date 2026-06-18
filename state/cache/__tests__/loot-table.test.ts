@@ -19,6 +19,21 @@ function rarityOf(item: Item): ItemRarity | undefined {
     return isEquipment(item) ? item.rarity : undefined;
 }
 
+/** Named affix count (prefix + suffix) for an equipment drop. */
+function namedAffixes(item: Item): number {
+    if (!isEquipment(item)) return 0;
+    return (item.prefixName ? 1 : 0) + (item.suffixName ? 1 : 0);
+}
+
+/** Expected named-affix count per rarity (uniques carry fixed mods, not
+ * prefix/suffix affixes, so they expect 0 named affixes). */
+const AFFIXES_FOR: Record<string, number> = {
+    common: 0,
+    uncommon: 1,
+    rare: 2,
+    unique: 0,
+};
+
 describe('rollCacheLoot', () => {
     it('is deterministic for a fixed (level, seed, tier)', () => {
         const a = rollCacheLoot({ playerLevel: 20, seed: 99, tier: 'rich' });
@@ -28,26 +43,35 @@ describe('rollCacheLoot', () => {
         );
     });
 
-    it('rolls real (non-placeholder) rarity, not flat common', () => {
-        // Modest L1 seed 7 rolls a single rare blade — proof the engine
-        // rarity table drives the drop, not a static common. Under
-        // mechanics 0.22.0 a rare carries both a prefix and a suffix, so
-        // the drop arrives affix-backed (e.g. "Keen Iron Blade of Focus")
-        // with structured provenance the UI reads directly.
-        const items = rollCacheLoot({ playerLevel: 1, seed: 7, tier: 'modest' });
-        expect(items).toHaveLength(1);
-        const drop = items[0];
-        expect(rarityOf(drop)).toBe('rare');
-        expect(drop.category).toBe('equipment');
-        expect(isEquipment(drop)).toBe(true);
-        if (isEquipment(drop)) {
-            // Rare = prefix + suffix per the 0.22.0 affix defaults; assert
-            // the structured fields rather than parsing the display name.
-            expect(drop.prefixName).toBeTruthy();
-            expect(drop.suffixName).toBeTruthy();
-            expect(drop.prefixId).toBeTruthy();
-            expect(drop.suffixId).toBeTruthy();
+    it('every equipment drop carries the named affixes its rarity demands', () => {
+        // Core contract: common 0 affixes, uncommon 1, rare 2 (prefix +
+        // suffix). Sweep a range of seeds so the invariant is exercised
+        // across all rolled rarities.
+        for (let seed = 1; seed < 60; seed++) {
+            const items = rollCacheLoot({ playerLevel: 30, seed, tier: 'rich' });
+            for (const drop of items) {
+                if (!isEquipment(drop)) continue;
+                const rarity = rarityOf(drop) ?? 'common';
+                expect(namedAffixes(drop)).toBe(AFFIXES_FOR[rarity]);
+                if (rarity === 'rare') {
+                    expect(drop.prefixName).toBeTruthy();
+                    expect(drop.suffixName).toBeTruthy();
+                }
+            }
         }
+    });
+
+    it('rolls real rarity, not flat common', () => {
+        // Across many seeds the engine weight table must produce at least
+        // one above-common drop — proof rarity is rolled, not static.
+        const seen = new Set<string>();
+        for (let seed = 1; seed < 60; seed++) {
+            for (const drop of rollCacheLoot({ playerLevel: 30, seed, tier: 'rich' })) {
+                const r = rarityOf(drop);
+                if (r) seen.add(r);
+            }
+        }
+        expect([...seen].some((r) => r !== 'common')).toBe(true);
     });
 
     it('scales item count by tier', () => {
@@ -70,17 +94,22 @@ describe('rollCacheLoot', () => {
         expect(maxRequired).toBeLessThanOrEqual(1);
     });
 
-    it('drops a unique relic on a rich-tier roll that hits the chance', () => {
-        // Rich L50 seed 22 hits the unique chance and pulls Axiom's Edge
-        // (seed refreshed for the 0.22.0 trimmed-library RNG stream).
-        // Uniques stay fixed/non-procedural: no rolled prefix/suffix.
-        const items = rollCacheLoot({ playerLevel: 50, seed: 22, tier: 'rich' });
-        const unique = items.find((i) => rarityOf(i) === 'unique');
+    it('drops a fixed unique relic on a rich-tier roll that hits the chance', () => {
+        // Scan seeds for a rich-tier roll that hits the unique chance, then
+        // assert the relic is fixed/non-procedural: a registry name, no
+        // rolled prefix/suffix, and its three fixed modifiers.
+        let unique: Item | undefined;
+        for (let seed = 1; seed < 200 && !unique; seed++) {
+            unique = rollCacheLoot({ playerLevel: 50, seed, tier: 'rich' }).find(
+                (i) => rarityOf(i) === 'unique',
+            );
+        }
         expect(unique).toBeDefined();
-        expect(unique?.name).toBe("Axiom's Edge");
         if (unique && isEquipment(unique)) {
-            expect(unique.prefixName).toBeUndefined();
-            expect(unique.suffixName).toBeUndefined();
+            expect(unique.name).toBeTruthy();
+            expect(unique.prefixName).toBeFalsy();
+            expect(unique.suffixName).toBeFalsy();
+            expect(unique.rolledMods ?? []).toHaveLength(3);
         }
     });
 

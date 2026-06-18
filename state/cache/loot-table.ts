@@ -8,28 +8,30 @@
  * cache drops level-appropriate equipment with rolled rarity and
  * modifiers, with a `rich`-tier chance at a unique relic.
  *
- * NOT engine-gated: `axiomancer-mechanics` 0.21.0 exports `dropItem`
- * (rolls rarity via the engine's `RARITY_WEIGHTS` table + rolls
- * modifiers) plus the `equipmentTemplates` / `uniqueTemplates`
- * libraries. We consume those — no local item minting, no local
- * rarity table. (`dropItemWithAffixes` is NOT re-exported at the
- * package root in 0.21.0 (runtime `undefined`), so the rolled-mod
- * `dropItem` path is the deepest engine-truth roll available.)
+ * Drops carry NAMED affixes by rarity — common 0, uncommon 1, rare 2
+ * (prefix + suffix) — through the shared loot roller
+ * (`state/loot/affix-roll.ts`), so a cache drop reads "Keen Iron Blade
+ * of Clarity" rather than a bare base item. The per-drop rarity is
+ * drawn from the engine's own `rarityWeightTable`; uniques come from the
+ * `rich`-tier relic chance.
  *
  * Deterministic: same (playerLevel, seed, tier) → same items. A
- * mulberry32 PRNG seeded from the cache seed drives both the template
- * draws and the engine's `dropItem` rng callback, so the flow stays
+ * mulberry32 PRNG seeded from the cache seed drives the template draws,
+ * the rarity draw, and the roller's affix rng, so the flow stays
  * hermetic-testable and replay-stable.
  */
 
 import {
-    dropItem,
     equipmentTemplates,
+    rarityWeightTable,
     uniqueTemplates,
     type EquipmentTemplate,
     type Item,
+    type ItemRarity,
     type UniqueItemTemplate,
 } from 'axiomancer-mechanics';
+
+import { rollAffixedDrop, hasBakedAffix, type AffixRarity } from '@/state/loot/affix-roll';
 
 /** Reward depth. `modest` = early locales, `rich` = deeper locales. */
 export type CacheLootTier = 'modest' | 'rich';
@@ -86,6 +88,25 @@ function drawOne<T>(pool: readonly T[], rng: () => number): T | null {
     return pool[Math.floor(rng() * pool.length)];
 }
 
+/** Procedural rarities (common/uncommon/rare) and their engine weights —
+ * the `unique` row is dropped here because uniques come from the
+ * separate `rich`-tier relic chance, not the per-drop rarity table. */
+const PROCEDURAL_RARITY_WEIGHTS: ReadonlyArray<readonly [AffixRarity, number]> =
+    (rarityWeightTable as ReadonlyArray<readonly [ItemRarity, number]>).filter(
+        ([rarity]) => rarity !== 'unique',
+    ) as ReadonlyArray<readonly [AffixRarity, number]>;
+
+/** Draw a procedural rarity from the engine's own weight table. */
+function drawProceduralRarity(rng: () => number): AffixRarity {
+    const total = PROCEDURAL_RARITY_WEIGHTS.reduce((sum, [, w]) => sum + w, 0);
+    let roll = rng() * total;
+    for (const [rarity, weight] of PROCEDURAL_RARITY_WEIGHTS) {
+        roll -= weight;
+        if (roll < 0) return rarity;
+    }
+    return PROCEDURAL_RARITY_WEIGHTS[0][0];
+}
+
 /**
  * Roll a real loot/relic reward set from engine truth.
  *
@@ -103,8 +124,12 @@ export function rollCacheLoot(opts: RollCacheLootOptions): Item[] {
     const rng = mulberry32(seed);
     const tuning = CACHE_LOOT_TUNING[tier];
 
+    // Exclude templates with baked-in affixes: the factory force-pins
+    // those regardless of the rolled rarity, which would break the
+    // rarity↔affix-count contract (e.g. a "common" arriving with an
+    // affix). Procedural drops roll their affixes purely from rarity.
     const eligibleEquip: EquipmentTemplate[] = equipmentTemplates.filter(
-        (t) => t.requiredLevel <= playerLevel,
+        (t) => t.requiredLevel <= playerLevel && !hasBakedAffix(t),
     );
 
     const out: Item[] = [];
@@ -114,7 +139,8 @@ export function rollCacheLoot(opts: RollCacheLootOptions): Item[] {
             const tpl = drawOne(eligibleEquip, rng);
             if (!tpl) continue;
             try {
-                out.push(dropItem(tpl.id, playerLevel, undefined, rng) as Item);
+                const rarity = drawProceduralRarity(rng);
+                out.push(rollAffixedDrop(tpl.id, playerLevel, rarity, rng) as Item);
             } catch {
                 // Level gate is pre-filtered; any residual throw (e.g. a
                 // future engine change) must not strand the reward — skip.
@@ -129,7 +155,7 @@ export function rollCacheLoot(opts: RollCacheLootOptions): Item[] {
         const relic = drawOne(eligibleUnique, rng);
         if (relic) {
             try {
-                out.push(dropItem(relic.id, playerLevel, 'unique', rng) as Item);
+                out.push(rollAffixedDrop(relic.id, playerLevel, 'unique', rng) as Item);
             } catch {
                 // Same defensive skip as the equipment loop.
             }

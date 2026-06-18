@@ -274,6 +274,32 @@ describe('selectItemModalViewModel: equipment preview (Q5)', () => {
         expect(vm.statDeltas).toHaveLength(0);
     });
 
+    // The item's own modifiers surface (with values) regardless of equip
+    // state, so an affixed drop shows *what* its affixes grant.
+    it('exposes the item\'s intrinsic modifiers with values', () => {
+        const store = makeStore([blade, runeBlade]);
+
+        const vm = selectItemModalViewModel(store.getState(), 'rune-blade')!;
+
+        const labels = vm.itemModifiers.map((m) => m.label);
+        expect(labels).toContain('+5 PHYS ATK');
+        // The passive effect id surfaces (resolved name, or the id when
+        // the engine has no definition for the fixture id).
+        expect(labels.some((l) => l.includes('rune-ward'))).toBe(true);
+        // The stat line carries its engine key for tooltip wiring.
+        const atk = vm.itemModifiers.find((m) => m.label === '+5 PHYS ATK');
+        expect(atk?.id).toBe('physicalAttack');
+    });
+
+    // A plain common item (no modifiers) exposes an empty modifier list.
+    it('exposes no intrinsic modifiers for a plain item', () => {
+        const store = makeStore([blade]);
+
+        const vm = selectItemModalViewModel(store.getState(), 'long-blade')!;
+
+        expect(vm.itemModifiers).toHaveLength(0);
+    });
+
     // Brief fix #3: non-stat changes (passive effects, etc.) surface in
     // `effectDeltas` so the preview shows all of an item's effect.
     it('surfaces gained passive effects in effectDeltas', () => {

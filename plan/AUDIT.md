@@ -60,7 +60,7 @@
 - suggested fix: Create components/inventory/SlotBanner.test.tsx covering prop rendering (eyebrow, ✦-prefixed slot label, clear label), the slot-filter-banner/slot-filter-clear testIDs, the "Clear slot filter" accessibility label, the onClear press wiring, and updated-prop reflection
 - source: audit
 - issue: #464
-- addressed: 2026-06-18 via commit __PENDING__
+- addressed: 2026-06-18 via commit 2b4b650
 - fix: Added components/inventory/SlotBanner.test.tsx (5 hermetic cases) pinning the banner's prop rendering (eyebrow / ✦-prefixed slot label / clear label), the slot-filter-banner + slot-filter-clear testIDs, the "Clear slot filter" accessibility label, the onClear press wiring, and updated-prop reflection. Pure presentation — rendered directly without provider scaffolding, mirroring EquipmentSlot.test.tsx. Verify green (248 suites / 2633 tests, +5).
 
 ### [x] [7.5] questNpcDialogueFor (quest-node NPC dialogue fallback resolver) missing unit coverage affecting dialogue-boundary maintainability

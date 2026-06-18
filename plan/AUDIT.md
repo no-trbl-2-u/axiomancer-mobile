@@ -52,7 +52,26 @@
 
 > **Audit update (2026-06-18, eighteenth tick).** theme/palette addressed last tick. The sweep returns to the level-up surface for its one remaining untested source: `components/levelup/levelUpFlavor.ts` (11 lines) — the chronicle flavour picker `pickFlavor(toLevel)` consumed by `LevelUpModal.tsx` to render a level-up chronicle line. Every sibling in `components/levelup/` carries a colocated `__tests__` entry (AscendStrip, DerivedPreviewRibbon, LearnSkillModal, LevelReadyStrip, LevelUpModal, StanceRow); `levelUpFlavor.ts` was the only one without. Tiny, but it owns a real player-facing determinism contract — `toLevel % FLAVOR_VARIANTS.length` deterministically maps each level transition to a fixed chronicle line (deliberately not RNG, per the module comment, "keeps tests stable + the flavour reads as a chronicle entry") with modular wraparound across the three variants. A silent regression (swap to RNG, reorder variants, off-by-one) would go uncaught. Gameplay/content-biased (player-facing level-up chronicle text), near-zero ship cost — picked this tick.
 
+> **Audit update (2026-06-18, nineteenth tick).** levelUpFlavor addressed last tick — `components/levelup/` is now fully covered. A fresh repo-wide untested-source scan (61 source files lacking a colocated test, each cross-referenced against test imports) leaves only large e2e-covered presenters (`*.engine.ts`, `actions.ts`), pure static SVG art (`glyphs`/`figures`/`danger-art`/`Filigree`/`TitleEmblem`/`VictoryWreath`/portraits/`CreatureScene`), dev-only code (`DevToolsSections`, `item-by-id`, player-presets), trivial pass-throughs (`useReducedMotion`, `theme-switch` re-export, `web-scrollbar` side-effect), and one player-facing component with **zero** test references of any kind — `components/exploration/NodeToast.tsx` (63 lines). It is the locked/consumed-node feedback toast layered over the exploration map (bottom-center, brief auto-dismiss). Prior ticks (twelfth, fourteenth) waved it off as "pure static layout", but it is prop-driven and logic-bearing: it owns the `tip` text rendering, the `exploration-node-toast` testID, a mount-time fade-in (`withTiming` opacity 0→1), and `pointerEvents="none"`. Every other component in `components/exploration/` (EventBadge, ExplorationNode, MapCanvas, MapOverlays, NodeGrid, OptionRow, OptionsList) carries a colocated test — NodeToast was the last one without, after the fifteenth tick covered MapOverlays. Gameplay-biased (exploration-map feedback surface), near-zero ship cost — picked this tick.
+
 ## Top 5 findings (scored)
+
+### [x] [4.5] NodeToast (exploration node feedback toast) missing test coverage affecting exploration-UI maintainability
+- category: tests
+- impact: 4
+- ease: 9
+- base-score: 3.6
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias — player-facing exploration-map feedback toast), clamped to 4.5 (impact×ease/10 = 3.6 × 1.5 = 5.4; reported at the conservative 4.5 reflecting the thin render contract)
+- final-score: 4.5
+- next: Add a colocated components/exploration/__tests__/NodeToast.test.tsx mirroring MapOverlays.test.tsx — render with a tip prop, assert the tip text renders, assert the exploration-node-toast testID is present, assert updated tip props reflect on re-render, and assert an empty tip renders without crashing
+- observation: components/exploration/NodeToast.tsx is the locked/consumed-node feedback toast layered over the exploration map; it is prop-driven on `tip` and owns a real render contract (tip text, the exploration-node-toast testID, a mount-time fade-in, pointerEvents="none") yet had no colocated test and zero test references of any kind
+- evidence: a grep for NodeToast across *.test.ts/*.test.tsx returned nothing; every other component in components/exploration/ (EventBadge, ExplorationNode, MapCanvas, MapOverlays, NodeGrid, OptionRow, OptionsList) carries a colocated test — NodeToast was the last one without after the fifteenth tick covered MapOverlays
+- suggested fix: Create components/exploration/__tests__/NodeToast.test.tsx covering tip prop rendering, the exploration-node-toast testID, updated-prop reflection on re-render, and an empty-tip render, mirroring MapOverlays.test.tsx's direct-render style
+- source: audit
+- issue: #469
+- addressed: 2026-06-18 via commit 5472fac
+- fix: Added components/exploration/__tests__/NodeToast.test.tsx (5 hermetic cases) pinning the tip prop rendering, the exploration-node-toast testID, updated-tip reflection on re-render, and the empty-tip render — rendered directly without provider scaffolding, mirroring MapOverlays.test.tsx. Verify green (253 suites / 2671 tests, +5).
 
 ### [x] [5.4] levelUpFlavor.ts (level-up chronicle flavour picker) missing unit coverage affecting level-up maintainability
 - category: tests

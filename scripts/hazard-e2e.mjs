@@ -79,13 +79,14 @@ function runExpoExport() {
         {
             cwd: REPO_ROOT,
             stdio: 'inherit',
-            // The harness drives the DEV MENU (dev-menu-header → the Debug*
-            // entry buttons), which only mounts when `isDevToolsEnabled()` is
-            // true. In an export build `__DEV__` is false, so we must bake
-            // `extra.devToolsEnabled=true` into the bundle — `app.config.ts`
-            // does that for any non-`production` BUILD_PROFILE. Without this
-            // the dev menu never renders and the playthrough times out
-            // waiting for `dev-menu-header`.
+            // The harness drives the dev tools (SELF → `self-dev-tools-link`
+            // → the `/dev` Developer screen → the Debug* entry buttons), which
+            // only mount when `isDevToolsEnabled()` is true. In an export build
+            // `__DEV__` is false, so we must bake `extra.devToolsEnabled=true`
+            // into the bundle — `app.config.ts` does that for any
+            // non-`production` BUILD_PROFILE. Without this the dev affordance
+            // never renders and the playthrough times out waiting for
+            // `self-dev-tools-link`.
             env: { ...process.env, BUILD_PROFILE: 'preview' },
         },
     )
@@ -151,6 +152,21 @@ async function centerOf(locator) {
     const box = await locator.boundingBox()
     if (!box) return null
     return { x: box.x + box.width / 2, y: box.y + box.height / 2 }
+}
+
+/**
+ * Navigate from the SELF tab into the dev controls.
+ *
+ * Phase 132 extracted the inline `DevMenu` dropdown (the old
+ * `dev-menu-header` affordance) into a dedicated `/dev` route reached
+ * by the `self-dev-tools-link` row on the SELF sheet. The Debug* entry
+ * buttons now live on that Developer screen, so the harness taps the
+ * link and waits for the route before looking for them.
+ */
+async function openDevTools(page) {
+    await page.getByTestId('self-dev-tools-link').waitFor({ state: 'visible', timeout: 15000 })
+    await page.getByTestId('self-dev-tools-link').click()
+    await page.waitForURL((url) => url.pathname.endsWith('/dev'), { timeout: 10000 })
 }
 
 /** Real pointer drag with intermediate moves so PanGestureHandler activates. */
@@ -307,8 +323,9 @@ async function playHazard(page, baseUrl, route, seed) {
     )
     await page.goto(`${baseUrl}/character`, { waitUntil: 'networkidle' })
 
-    // Open the dev menu and fire the hazard entry.
-    await page.getByTestId('dev-menu-header').click()
+    // Open the dev tools (SELF → DEV TOOLS → the /dev Developer screen)
+    // and fire the hazard entry.
+    await openDevTools(page)
     await page.getByTestId('debug-hazard-button').waitFor({ state: 'visible', timeout: 15000 })
     await page.getByTestId('debug-hazard-button').click()
 

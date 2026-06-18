@@ -227,10 +227,16 @@ async function goto(page, path) {
     await settle(page, 700)
 }
 
+// Phase 132 extracted the inline DevMenu dropdown (the old
+// `dev-menu-header` affordance) into a dedicated `/dev` route reached by
+// the `self-dev-tools-link` row on the SELF sheet. Callers `goto('/character')`
+// first; this taps the link and waits for the route before the Debug*
+// buttons are queried.
 async function openDevMenu(page) {
-    const header = page.getByTestId('dev-menu-header')
-    await header.waitFor({ state: 'visible', timeout: 15000 })
-    await header.click()
+    const link = page.getByTestId('self-dev-tools-link')
+    await link.waitFor({ state: 'visible', timeout: 15000 })
+    await link.click()
+    await page.waitForURL((url) => url.pathname.endsWith('/dev'), { timeout: 10000 })
 }
 
 async function settle(page, ms) {

@@ -88,9 +88,10 @@ function runExpoExport() {
         {
             cwd: REPO_ROOT,
             stdio: 'inherit',
-            // The DEV menu (dev-menu-header → Debug* buttons) only mounts
-            // when `isDevToolsEnabled()` is true; `app.config.ts` bakes
-            // that in for any non-`production` BUILD_PROFILE.
+            // The dev tools (SELF → `self-dev-tools-link` → the `/dev`
+            // Developer screen → Debug* buttons) only mount when
+            // `isDevToolsEnabled()` is true; `app.config.ts` bakes that in
+            // for any non-`production` BUILD_PROFILE.
             env: { ...process.env, BUILD_PROFILE: 'preview' },
         },
     )
@@ -152,12 +153,28 @@ function startStaticServer(rootDir) {
 // One case
 // ---------------------------------------------------------------------------
 
+/**
+ * Navigate from the SELF tab into the dev controls.
+ *
+ * Phase 132 extracted the inline `DevMenu` dropdown (the old
+ * `dev-menu-header` affordance) into a dedicated `/dev` route reached
+ * by the `self-dev-tools-link` row on the SELF sheet. The Debug* entry
+ * buttons now live on that Developer screen, so the harness taps the
+ * link and waits for the route before looking for them.
+ */
+async function openDevTools(page) {
+    await page.getByTestId('self-dev-tools-link').waitFor({ state: 'visible', timeout: 15000 })
+    await page.getByTestId('self-dev-tools-link').click()
+    await page.waitForURL((url) => url.pathname.endsWith('/dev'), { timeout: 10000 })
+}
+
 async function checkButton(page, baseUrl, c) {
     log(`=== ${c.button.toUpperCase()} → ${c.route} (${c.name}) ===`)
     await page.goto(`${baseUrl}/character`, { waitUntil: 'networkidle' })
 
-    // Open the dev menu and fire the trigger button.
-    await page.getByTestId('dev-menu-header').click()
+    // Open the dev tools (SELF → DEV TOOLS → the /dev Developer screen)
+    // and fire the trigger button.
+    await openDevTools(page)
     const btn = page.getByTestId(`debug-trigger-encounter-${c.button}`)
     await btn.waitFor({ state: 'visible', timeout: 15000 })
     await btn.click()

@@ -353,6 +353,15 @@ function statLabelFor(key: string): string {
 }
 
 /**
+ * Round a stat value to one decimal place for display. Integer stats
+ * stay integers (`15`); fractional stats like luck read cleanly (`1.5`
+ * rather than `1.55432728`).
+ */
+function round1(n: number): number {
+    return Math.round(n * 10) / 10;
+}
+
+/**
  * Flatten a character's numeric stats into one `key → value` map —
  * derived combat stats, non-combat saves/tests, and max health — so the
  * modal can diff any of them.
@@ -388,12 +397,16 @@ function computeStatDeltas(before: Character, after: Character): StatDelta[] {
 
     const out: StatDelta[] = [];
     for (const key of keys) {
-        const b = beforeMap.get(key) ?? 0;
-        const a = afterMap.get(key) ?? 0;
+        // Round to one decimal so fractional stats (luck) read as e.g.
+        // 1.5, and compare the rounded values so a sub-0.05 wobble never
+        // surfaces a "+0.0" row.
+        const b = round1(beforeMap.get(key) ?? 0);
+        const a = round1(afterMap.get(key) ?? 0);
         if (a === b) continue;
+        const d = round1(a - b);
         const row: StatDelta = TOOLTIP_STAT_KEY.test(key)
-            ? { label: statLabelFor(key), before: b, after: a, delta: a - b, id: key }
-            : { label: statLabelFor(key), before: b, after: a, delta: a - b };
+            ? { label: statLabelFor(key), before: b, after: a, delta: d, id: key }
+            : { label: statLabelFor(key), before: b, after: a, delta: d };
         out.push(row);
     }
     out.sort((x, y) => {
@@ -411,9 +424,11 @@ function idOrLabelKey(row: StatDelta): string {
     return row.id ?? row.label;
 }
 
-/** Signed integer string for a stat value (`+5` / `-2`). */
+/** Signed stat-value string, rounded to one decimal (`+5` / `-2` /
+ * `+1.5` for luck). */
 function signed(n: number): string {
-    return n >= 0 ? `+${n}` : `${n}`;
+    const r = round1(n);
+    return r >= 0 ? `+${r}` : `${r}`;
 }
 
 /** Resolve an effect id to its engine name, gracefully null on miss. */
@@ -435,7 +450,7 @@ function effectName(id: string): string {
 function computeItemModifiers(eq: Equipment): ItemModifierLine[] {
     const out: ItemModifierLine[] = [];
     for (const mod of eq.statModifiers ?? []) {
-        const value = mod.isMultiplier ? `×${mod.value}` : signed(mod.value);
+        const value = mod.isMultiplier ? `×${round1(mod.value)}` : signed(mod.value);
         const line: ItemModifierLine = TOOLTIP_STAT_KEY.test(mod.stat)
             ? { label: `${value} ${statLabelFor(mod.stat)}`, id: mod.stat }
             : { label: `${value} ${statLabelFor(mod.stat)}` };
@@ -460,23 +475,31 @@ function resourceLabel(entry: EquipDeltaSide['resources'][number]): string {
     return `${entry.resource} ${sign}${entry.amount} (${when})`;
 }
 
-/** Flatten one side (gained or lost) of an equip delta into labels. */
+/**
+ * Flatten one side (gained or lost) of an equip delta into labels —
+ * the *non-stat* changes only: passive effects, on-hit / on-defend
+ * status adjustments, and combat-resource interactions. Affix/keyword
+ * labels and rolled modifiers are deliberately excluded: their effect
+ * is the stat change (already in the stat table) plus any passive
+ * effect (already covered here), so listing the affix/modifier
+ * add/remove on top is redundant noise.
+ */
 function effectLabelsForSide(side: EquipDeltaSide): string[] {
     const out: string[] = [];
     for (const e of side.passiveEffects) out.push(e.name ?? e.id);
     for (const e of side.onHitEffects) out.push(`on-hit: ${e.name ?? e.id}`);
     for (const e of side.onDefendEffects) out.push(`on-defend: ${e.name ?? e.id}`);
     for (const r of side.resources) out.push(resourceLabel(r));
-    for (const k of side.keywords) out.push(k.label);
     return out;
 }
 
 /**
- * Compute the passive-effect / resource / keyword changes the equip
- * causes by diffing the newly-worn item against the one it removes.
- * Stat changes are handled separately (`computeStatDeltas`); rolled
- * modifiers are intentionally omitted here because their effect already
- * shows up in the stat table.
+ * Compute the non-stat changes the equip causes by diffing the
+ * newly-worn item against the one it removes — passive effects, on-hit /
+ * on-defend status adjustments, and resource interactions. Stat changes
+ * ride on `computeStatDeltas`; affix/keyword and rolled-modifier
+ * add/removes are intentionally omitted (their effect is already the
+ * stat change), so this block shows only genuine non-stat changes.
  */
 function computeEffectDeltas(
     newlyWorn: Equipment,

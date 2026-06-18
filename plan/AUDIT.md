@@ -42,7 +42,26 @@
 
 > **Audit update (2026-06-18, thirteenth tick).** minigame-seeds addressed last tick. The sweep returns to the exploration-maps boundary: `state/exploration-maps/quest-dialogue.ts` exports `questNpcDialogueFor(npcName)`, the mobile-authored fallback resolver that supplies a `DialogueTree` for quest-node NPC interactions the engine ships without an authored tree (currently the Northern Forest `forgotten-pilgrim` at nf-6). It owns a keyed lookup into `QUEST_NPC_DIALOGUE` plus a `?? null` fallback for unmapped names. The happy path (forgotten-pilgrim flowing through the action layer) is exercised by `state/e2e/map-encounter-minigames.engine.test.ts`, but the resolver's own contract — the exact-keyed lookup return and the `null` fallback branch for an unknown name — was never isolated in a unit test (a grep for `questNpcDialogueFor`/`QUEST_NPC_DIALOGUE` returned only the module + its lone `state/actions.ts` consumer; no `state/exploration-maps/__tests__/quest-dialogue.test.ts` existed). Largest logic-bearing untested boundary function remaining after the presenter/component/minigame-infra sweeps — picked this tick.
 
+> **Audit update (2026-06-18, fourteenth tick).** questNpcDialogueFor addressed last tick — the presenter, component, minigame-infra, and exploration-maps boundary sweeps have all drained their logic-bearing untested code. With no logic-bearing surface left, the sweep takes the cheapest remaining player-facing coverage gap: `components/inventory/SlotBanner.tsx` (74 lines), the inventory slot-filter banner rendered in the inventory tab (`app/(tabs)/inventory/index.tsx:138`) when filtering equipment by slot. The recent twelfth/thirteenth ticks deferred it as "pure static layout", but it is not purely static — it owns an interactive `onClear` callback fired from a `TouchableOpacity` (`testID="slot-filter-clear"`, `accessibilityLabel="Clear slot filter"`) plus prop-driven eyebrow / ✦-prefixed slot-label / clear-label rendering. Every sibling in `components/inventory/` carries a colocated test; SlotBanner was the last one without. A modest but real contract (press wiring + a11y label + prop rendering) at near-zero ship cost — picked this tick.
+
 ## Top 5 findings (scored)
+
+### [x] [8.1] SlotBanner (inventory slot-filter banner) missing test coverage affecting inventory maintainability
+- category: tests
+- impact: 6
+- ease: 9
+- base-score: 5.4
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias — player-facing inventory filter UI)
+- final-score: 8.1
+- next: Add a colocated SlotBanner.test.tsx mirroring EquipmentSlot.test.tsx — render with props, assert eyebrow/✦-slot-label/clear-label render, assert the slot-filter-banner/slot-filter-clear testIDs and the "Clear slot filter" a11y label are present, and assert pressing the clear control fires onClear
+- observation: components/inventory/SlotBanner.tsx is the inventory slot-filter banner shown in the inventory tab when filtering equipment by slot; it owns an interactive onClear callback (TouchableOpacity with testID slot-filter-clear + accessibilityLabel "Clear slot filter") plus prop-driven eyebrow/slot-label/clear-label rendering — yet was the only component in components/inventory/ without a colocated test
+- evidence: app/(tabs)/inventory/index.tsx:138 renders <SlotBanner>; every sibling in components/inventory/ (EquipmentSlot, EquipmentDock, InventoryTabs, ItemCard, ItemGrid, ItemModal, PaperDoll, EquipDeltaPanel) carries a colocated test, SlotBanner did not; the component-coverage sweep (6+ AUDIT ticks) had drained every other logic-bearing inventory/minigame/level-up/presenter surface
+- suggested fix: Create components/inventory/SlotBanner.test.tsx covering prop rendering (eyebrow, ✦-prefixed slot label, clear label), the slot-filter-banner/slot-filter-clear testIDs, the "Clear slot filter" accessibility label, the onClear press wiring, and updated-prop reflection
+- source: audit
+- issue: #464
+- addressed: 2026-06-18 via commit __PENDING__
+- fix: Added components/inventory/SlotBanner.test.tsx (5 hermetic cases) pinning the banner's prop rendering (eyebrow / ✦-prefixed slot label / clear label), the slot-filter-banner + slot-filter-clear testIDs, the "Clear slot filter" accessibility label, the onClear press wiring, and updated-prop reflection. Pure presentation — rendered directly without provider scaffolding, mirroring EquipmentSlot.test.tsx. Verify green (248 suites / 2633 tests, +5).
 
 ### [x] [7.5] questNpcDialogueFor (quest-node NPC dialogue fallback resolver) missing unit coverage affecting dialogue-boundary maintainability
 - category: tests

@@ -36,7 +36,26 @@
 
 > **Audit update (2026-06-18, tenth tick).** village.engine addressed — the presenter layer's last zero-coverage logic-bearing surface is drained. The sweep moves to the player-facing settings surface: `components/ThemeSwitcher.tsx` (165 lines — the COLOUR THEME appearance switcher mounted on the SELF/character tab) carried no colocated test. It owns the `expanded` collapse/expand toggle (chevron, `accessibilityState`, Collapse/Expand label flip), the active-name header readout, one swatch per registered theme when expanded, the active-vs-inactive swatch styling + `selected` accessibility state + active label, and the per-swatch `setActiveTheme(id)` press wiring against the live theme store. It is a real player setting (not dev-gated). The remaining untested components are pure static SVG art (`glyphs`/`figures`/`danger-art`/enemy-art/`TitleEmblem`/`VictoryWreath`/portraits) or dev-only (`DevToolsSections`) — picked this tick.
 
+> **Audit update (2026-06-18, eleventh tick).** ThemeSwitcher addressed. The tenth tick lumped `enemy-art` in with "pure static SVG art", but that conflated the static figure drawings (`figures.tsx`/`CreatureScene.tsx` backdrop) with the *dispatcher* that wires them — `components/event/enemy-art/EnemyIllustration.tsx` (79 lines), the combat-encounter art router rendered on every combat encounter, is logic-bearing and carried no colocated test. It resolves `resolveEnemyArchetype(enemyArtKey, isBoss)`, falls through to the generic `EncounterIllustration` for unmatched foes, routes each bespoke archetype (vermin/crustacean/spirit/beast/avian/flora/zealot/eldritch) to a `CreatureScene` with a per-archetype accessibility label + shadow width, and boss-gates `tyrant` (crowned CreatureScene when `isBoss`, throne `BossIllustration` otherwise). The sibling fall-through scenes (EncounterIllustration, BossIllustration) and the underlying `resolveEnemyArchetype` presenter all carry tests; only the dispatcher wiring them was untested. The remaining untested components are genuinely pure static SVG art (`glyphs`/`figures`/`danger-art`/`TitleEmblem`/`VictoryWreath`/portraits) or dev-only (`DevToolsSections`) — picked this tick.
+
 ## Top 5 findings (scored)
+
+### [x] [7.5] EnemyIllustration (combat-encounter art dispatcher) missing test coverage affecting combat-art maintainability
+- category: tests
+- impact: 5
+- ease: 10
+- base-score: 5.0
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias — combat-encounter art is a player-facing combat surface)
+- final-score: 7.5
+- next: Add hermetic render coverage for the generic fall-through (no key + unmatched key -> EncounterIllustration's label), each bespoke archetype rendering its CreatureScene label, the tyrant boss branch (crowned CreatureScene) vs. the tyrant non-boss branch (throne BossIllustration), and the keyless-boss default (tyrant), reading the resolver/label truth at test time
+- observation: EnemyIllustration (the combat-encounter art dispatcher rendered on every combat encounter) maps a resolved enemy archetype to the correct illustration scene yet had no colocated test; it resolves `resolveEnemyArchetype(enemyArtKey, isBoss)`, returns `EncounterIllustration` for `generic`, renders a `CreatureScene` with a per-archetype accessibility label + shadow width for each bespoke archetype, and branches `tyrant` on `isBoss` (crowned CreatureScene when boss, throne `BossIllustration` otherwise) — the sibling scenes and the resolver presenter all carry tests; only the dispatcher wiring them was untested
+- evidence: components/event/enemy-art/EnemyIllustration.tsx (79 lines) exports EnemyIllustration; a grep for EnemyIllustration across *.test.ts/*.test.tsx returned no matches; state/presenters/enemy-art.ts (resolveEnemyArchetype) has state/presenters/__tests__/enemy-art.test.ts; components/event/EncounterIllustration.tsx and BossIllustration.tsx both carry colocated tests; CreatureScene surfaces the dispatcher's per-archetype label via the Svg accessibilityLabel so the mapping is observable via getByLabelText
+- suggested fix: Create components/event/enemy-art/__tests__/EnemyIllustration.test.tsx covering the generic fall-through, each bespoke archetype's CreatureScene label, the tyrant boss-vs-non-boss branch, and the keyless-boss tyrant default, reading the LABELS/resolveEnemyArchetype truth at test time
+- source: audit
+- issue: #454
+- addressed: 2026-06-18 via commit 72e1bdd
+- fix: Added components/event/enemy-art/__tests__/EnemyIllustration.test.tsx (8 hermetic cases) pinning the dispatcher contract: the bespoke-sample/resolver alignment guard, the generic fall-through (unmatched key + no key -> EncounterIllustration's label), each of the eight bespoke archetypes rendering a non-generic image-role CreatureScene label, the distinct-per-archetype label set, the tyrant boss branch (crowned CreatureScene, no throne BossIllustration label) vs. the tyrant non-boss branch (throne BossIllustration), and the keyless-boss tyrant default. Labels + resolveEnemyArchetype truth read at test time so the suite survives roster/copy churn. Verify green (244 suites / 2576 tests, +8).
 
 ### [x] [4.0] ThemeSwitcher (player-facing colour-theme switcher) missing test coverage affecting appearance-settings maintainability
 - category: tests

@@ -20,6 +20,8 @@ See [`README.md`](./README.md) for architecture docs and [`plan/bearings.md`](./
 - Canon combat terms are `VITAE` and `STANCE` / `CHOOSE A STANCE`; do not approve `HEALTH` / `GUARD` regressions.
 - `npm run verify:visual` exit 1 with clean export and zero console errors is a baseline-vs-regression judgment, not automatically a product failure. Missing baselines are baseline debt. Console/runtime errors are product failures and must be fixed or reproduced before baseline approval.
 - A `/combat` smoke screenshot that shows only `THE FIELD STIRS.` instead of the seeded active encounter is route/state initialization evidence. Do not approve it as a new baseline unless T/Judge explicitly decides the blank combat smoke state is intended.
+- If `verify:visual` is red only on `root` / `character` with clean export and zero console errors, inspect the screenshot diffs and decide approve-vs-regression; do not report it as a build/runtime failure.
+- Minigame e2e harnesses must follow current dev-control routing. Current route truth is SELF → `self-dev-tools-link` → `/dev`; failures waiting for retired `dev-menu-header` are harness drift, not proof that Hazard/Gathering product routes are absent.
 - If typecheck errors cite newly shipped engine fields, verify installed `axiomancer-mechanics` package truth with a fresh install before changing mobile tests.
 
 ## Key development commands

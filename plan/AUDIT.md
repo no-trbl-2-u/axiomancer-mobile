@@ -34,7 +34,26 @@
 
 > **Audit update (2026-06-18, ninth tick).** tutorial-steps addressed last tick — the gathering/quest-board/level-up/inventory minigame component surfaces are now drained of untested logic-bearing code. The sweep moves up into the presenter layer, where the freshly-shipped Phase 137 settlement-shop presenter `state/presenters/village.engine.ts` (108 lines) carried no test coverage at all — neither a colocated `state/presenters/__tests__/village.engine.test.ts` nor an e2e in `state/e2e/` (the village *data* is referenced by `event-pools`/`map-encounter-minigames` e2e, but `selectVillageVM`/`resolveWareItem`'s own derivation logic is never exercised). It owns the `EMPTY_VM` gate (no pending event / non-village kind), merchant `line`/`hasDialogue` derivation off `dialogueTree.nodes[rootId].text`, ware resolution against the engine consumable/equipment libraries with unknown-id filtering, and the per-ware affordability threshold (`currency >= price`). A pure player-facing presenter with branchy logic and zero coverage outranks the remaining presentational components (SlotBanner/NodeToast/MapOverlays are static layout) — picked this tick.
 
+> **Audit update (2026-06-18, tenth tick).** village.engine addressed — the presenter layer's last zero-coverage logic-bearing surface is drained. The sweep moves to the player-facing settings surface: `components/ThemeSwitcher.tsx` (165 lines — the COLOUR THEME appearance switcher mounted on the SELF/character tab) carried no colocated test. It owns the `expanded` collapse/expand toggle (chevron, `accessibilityState`, Collapse/Expand label flip), the active-name header readout, one swatch per registered theme when expanded, the active-vs-inactive swatch styling + `selected` accessibility state + active label, and the per-swatch `setActiveTheme(id)` press wiring against the live theme store. It is a real player setting (not dev-gated). The remaining untested components are pure static SVG art (`glyphs`/`figures`/`danger-art`/enemy-art/`TitleEmblem`/`VictoryWreath`/portraits) or dev-only (`DevToolsSections`) — picked this tick.
+
 ## Top 5 findings (scored)
+
+### [x] [4.0] ThemeSwitcher (player-facing colour-theme switcher) missing test coverage affecting appearance-settings maintainability
+- category: tests
+- impact: 5
+- ease: 8
+- base-score: 4.0
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.0 (appearance/settings — not gameplay/content)
+- final-score: 4.0
+- next: Add hermetic render coverage for the collapsed-by-default gate, the expand/collapse toggle, the active-name header readout, one swatch per registered theme, active-vs-inactive accessibility, and the setActiveTheme press wiring, reading THEME_ORDER/THEME_SPECS/getActiveThemeId at runtime and resetting to DEFAULT_THEME_ID in afterEach
+- observation: ThemeSwitcher (the bottom-of-character-tab COLOUR THEME switcher) is a logic-bearing interactive player-facing component with no colocated test; it gates the swatch grid behind a collapsed-by-default `expanded` toggle (chevron + accessibilityState + Collapse/Expand label), reads the active theme name into the header, renders one swatch per registered theme, highlights the active swatch (sulfur border width 2 + sulfur name vs ash border width 1 + parchment name) with a `selected` accessibility state and `, active` label suffix, and wires each swatch press to `setActiveTheme(id)` against the live runtime store — yet was never exercised by a test
+- evidence: components/ThemeSwitcher.tsx (165 lines) exports ThemeSwitcher and renders testIDs theme-switcher, theme-switcher-toggle, theme-<id>; a grep for ThemeSwitcher across *.test.ts/*.test.tsx returned no matches; it is mounted on app/(tabs)/character/index.tsx; sibling interactive components (StanceRow, SatchelTray, TutorialCoach, WrathMeter) all carry colocated render tests
+- suggested fix: Create components/__tests__/ThemeSwitcher.test.tsx covering the collapsed default (no grid, Expand chevron/label), the expand/collapse toggle, the active-name header readout, one swatch per registered theme, the active swatch's selected state + active label vs inactive, and a setActiveTheme press switching the live theme, reading theme registries at runtime and resetting in afterEach
+- source: audit
+- issue: #452
+- addressed: 2026-06-18 via commit b243454
+- fix: Added components/__tests__/ThemeSwitcher.test.tsx (8 hermetic cases) pinning the section mount/header, the collapsed-by-default gate (no swatch grid, Expand label + ▸ chevron, accessibilityState expanded:false), the active-name header readout, the initialExpanded path + accessibilityState expanded:true + ▾ chevron, the toggle-press expand/collapse cycle, one swatch per registered theme rendered, the active-vs-inactive swatch accessibility (selected state + ", active" label suffix), and a setActiveTheme press switching the live getActiveThemeId(). THEME_ORDER/THEME_SPECS read at runtime and the theme reset to DEFAULT_THEME_ID in afterEach so the suite survives theme-content churn. Verify green (243 suites / 2568 tests, +8).
 
 ### [x] [7.2] village.engine (Phase 137 settlement-shop presenter) missing test coverage affecting village/shop maintainability
 - category: tests

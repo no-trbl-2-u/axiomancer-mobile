@@ -288,6 +288,21 @@ describe('selectInventoryViewModel: stacking', () => {
         expect(vm.items).toHaveLength(1);
         expect(vm.items[0].quantity).toBe(3);
     });
+
+    it('surfaces a rare dev-loot drop after POPULATE has already added the base registry item', () => {
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+
+        actions.populateAllItems();
+        const result = actions.lootRareItem();
+
+        expect(result.added).toBe(true);
+        expect(result.name).not.toBeNull();
+        const vm = selectInventoryViewModel(store.getState());
+        const rareRows = vm.items.filter((i) => i.name === result.name && i.rarity === 'rare');
+        expect(rareRows).toHaveLength(1);
+        expect(rareRows[0].quantity).toBe(1);
+    });
 });
 
 // ---------------------------------------------------------------------------

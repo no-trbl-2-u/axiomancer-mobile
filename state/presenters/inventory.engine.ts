@@ -377,7 +377,8 @@ function computeReplacePreview(
  * additionally computes `replacePreview` for every non-equipped
  * equipment row whose slot has an equipped sibling.
  */
-function buildRows(inventory: readonly Item[]): InventoryItemRow[] {
+function buildRows(state: GameStore): InventoryItemRow[] {
+    const inventory = state.player?.inventory ?? [];
     const rowsById = new Map<string, InventoryItemRow>();
     const order: string[] = [];
     // Worn-state convention lives in `state/selectors/equipment.ts`
@@ -439,7 +440,7 @@ function buildRows(inventory: readonly Item[]): InventoryItemRow[] {
         if (item === undefined) continue;
 
         const equippedSibling = equippedBySlot.get(item.slot) ?? null;
-        const equipDelta = computeEquipDelta(item, equippedSibling);
+        const equipDelta = computeEquipDelta(item, equippedSibling, state.player);
 
         let replacePreview: ReplacePreview | null = null;
         if (
@@ -574,7 +575,7 @@ export function selectInventoryViewModel(
     localUi: InventoryLocalUi = {},
 ): InventoryViewModel {
     const inventory = state.player?.inventory ?? [];
-    const rows = buildRows(inventory);
+    const rows = buildRows(state);
     const activeTab = localUi.activeTab ?? 'all';
     const selectedSlot = localUi.selectedSlot ?? null;
     // Slot filter overrides tab filter — the screen sets activeTab='all'

@@ -9,7 +9,7 @@
  */
 
 import { describe, expect, it } from '@jest/globals';
-import type { Equipment, EquipmentProcTrigger, StatModifier } from 'axiomancer-mechanics';
+import { createCharacter, type Equipment, type EquipmentProcTrigger, type StatModifier } from 'axiomancer-mechanics';
 
 import { computeEquipDelta } from '@/state/presenters/equipDelta';
 
@@ -76,6 +76,26 @@ describe('computeEquipDelta: mode', () => {
 });
 
 describe('computeEquipDelta: unchanged values are hidden', () => {
+    it('can compute full character-derived stat deltas when the player is provided', () => {
+        const player = createCharacter({
+            name: 'Pilgrim',
+            level: 1,
+            baseStats: { heart: 4, body: 4, mind: 4 },
+        });
+        const cand = weapon('body-blade', {
+            statModifiers: stats({ stat: 'body', value: 2 }),
+        });
+
+        const d = computeEquipDelta(cand, null, player);
+        const byStat = Object.fromEntries(d.stats.map((entry) => [entry.stat, entry.delta]));
+
+        expect(byStat.body).toBeUndefined();
+        expect(byStat.physicalAttack).toBe(2);
+        expect(byStat.physicalSkill).toBe(2);
+        expect(byStat.physicalDefense).toBe(6);
+        expect(byStat.luck).toBeCloseTo(2 / 3);
+    });
+
     it('drops a stat that is identical on both items', () => {
         const worn = weapon('worn', { statModifiers: stats({ stat: 'attack', value: 4 }) });
         const cand = weapon('cand', { statModifiers: stats({ stat: 'attack', value: 4 }, { stat: 'reach', value: 1 }) });

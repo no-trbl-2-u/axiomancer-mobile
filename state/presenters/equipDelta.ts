@@ -26,7 +26,10 @@
  */
 
 import {
+    equipItem as engineEquipItem,
     lookupEffect,
+    unequipItem as engineUnequipItem,
+    type Character,
     type CombatResources,
     type Equipment,
     type EquipmentProcTrigger,
@@ -145,6 +148,37 @@ function computeStatDeltas(
     }
     out.sort((a, b) => a.stat.localeCompare(b.stat));
     return out;
+}
+
+function characterStats(character: Character): Map<string, number> {
+    const out = new Map<string, number>();
+    for (const [stat, value] of Object.entries(character.derivedStats ?? {})) {
+        if (typeof value === 'number' && Number.isFinite(value)) out.set(stat, value);
+    }
+    for (const [stat, value] of Object.entries(character.nonCombatStats ?? {})) {
+        if (typeof value === 'number' && Number.isFinite(value)) out.set(stat, value);
+    }
+    if (typeof character.maxHealth === 'number' && Number.isFinite(character.maxHealth)) {
+        out.set('maxHealth', character.maxHealth);
+    }
+    return out;
+}
+
+function computeCharacterStatDeltas(player: Character, after: Character): StatDeltaEntry[] {
+    return computeStatDeltas(characterStats(after), characterStats(player));
+}
+
+function fullOrItemStatDeltas(
+    player: Character | undefined,
+    after: Character,
+    fallbackCandidate: Map<string, number>,
+    fallbackAgainst: Map<string, number>,
+): StatDeltaEntry[] {
+    if (player !== undefined) {
+        const full = computeCharacterStatDeltas(player, after);
+        if (full.length > 0) return full;
+    }
+    return computeStatDeltas(fallbackCandidate, fallbackAgainst);
 }
 
 /** Resolve an effect ID to its engine name, gracefully returning `null`
@@ -353,10 +387,18 @@ function sideIsEmpty(side: EquipDeltaSide): boolean {
 export function computeEquipDelta(
     candidate: Equipment,
     worn: Equipment | null,
+    player?: Character,
 ): EquipDelta {
     if (worn === null) {
         const gained = buildSide(candidate, EMPTY_EQUIPMENT);
-        const stats = computeStatDeltas(aggregateStats(candidate), new Map());
+        const stats = player === undefined
+            ? computeStatDeltas(aggregateStats(candidate), new Map())
+            : fullOrItemStatDeltas(
+                player,
+                engineEquipItem(player, candidate),
+                aggregateStats(candidate),
+                new Map(),
+            );
         const delta: EquipDelta = {
             mode: 'equip',
             against: null,
@@ -370,7 +412,14 @@ export function computeEquipDelta(
 
     if (worn.id === candidate.id) {
         const lost = buildSide(candidate, EMPTY_EQUIPMENT);
-        const stats = computeStatDeltas(new Map(), aggregateStats(candidate));
+        const stats = player === undefined
+            ? computeStatDeltas(new Map(), aggregateStats(candidate))
+            : fullOrItemStatDeltas(
+                player,
+                engineUnequipItem(player, candidate.slot),
+                new Map(),
+                aggregateStats(candidate),
+            );
         const delta: EquipDelta = {
             mode: 'unequip',
             against: { id: candidate.id, name: candidate.name },
@@ -382,7 +431,14 @@ export function computeEquipDelta(
         return delta;
     }
 
-    const stats = computeStatDeltas(aggregateStats(candidate), aggregateStats(worn));
+    const stats = player === undefined
+        ? computeStatDeltas(aggregateStats(candidate), aggregateStats(worn))
+        : fullOrItemStatDeltas(
+            player,
+            engineEquipItem(player, candidate),
+            aggregateStats(candidate),
+            aggregateStats(worn),
+        );
     const gained = buildSide(candidate, worn);
     const lost = buildSide(worn, candidate);
     return {

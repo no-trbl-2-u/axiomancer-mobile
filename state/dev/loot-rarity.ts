@@ -125,12 +125,14 @@ export function lootRarityItem(
             attempts++;
             try {
                 const item = dropItem(tpl.id, playerLevel, rarity) as Equipment;
-                addItem({ ...item });
+                const instanceId = `${item.id}__devloot_${rarity}_${state.player.inventory.length}_${attempts}`;
+                const instancedItem: Equipment = { ...item, id: instanceId };
+                addItem(instancedItem);
                 return {
                     added: true,
                     rarity,
-                    name: item.name,
-                    affixCount: countAffixes(item),
+                    name: instancedItem.name,
+                    affixCount: countAffixes(instancedItem),
                     reason: null,
                 };
             } catch {

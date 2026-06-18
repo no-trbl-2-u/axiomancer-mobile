@@ -50,7 +50,26 @@
 
 > **Audit update (2026-06-18, seventeenth tick).** GatheringIntroOverlay addressed last tick — the player-facing component layer is now fully drained of logic-bearing untested code. The sweep moves up into the shared theming infrastructure: `theme/palette.ts` (298 lines) is the theme registry + palette factory that drives **every** component's colours via the frozen `AXM` snapshot, yet it carried no colocated test — the only `*.test.*` referencing `theme/palette` is `theme/__tests__/runtime.test.tsx`, which imports `DEFAULT_THEME_ID`/`paletteFor` purely as fixtures for the runtime-store contract and never isolates the module's own logic. It owns the most branchy untested source remaining: `hexToRgb` (3-digit hex expansion + bit-shift channel extraction), `rgba` (alpha-channel string formatting), `makePalette` (derives 14 translucent tokens from base hues at fixed alphas), `isThemeId` (type-guard via `in THEME_SPECS`), `resolveActiveThemeId` (global-override → localStorage → default priority with try/catch fallbacks), and `paletteFor` (registry lookup + factory). A regression here silently mis-paints the entire UI. Largest logic-bearing untested source after the presenter/component/minigame-infra/boundary sweeps — picked this tick.
 
+> **Audit update (2026-06-18, eighteenth tick).** theme/palette addressed last tick. The sweep returns to the level-up surface for its one remaining untested source: `components/levelup/levelUpFlavor.ts` (11 lines) — the chronicle flavour picker `pickFlavor(toLevel)` consumed by `LevelUpModal.tsx` to render a level-up chronicle line. Every sibling in `components/levelup/` carries a colocated `__tests__` entry (AscendStrip, DerivedPreviewRibbon, LearnSkillModal, LevelReadyStrip, LevelUpModal, StanceRow); `levelUpFlavor.ts` was the only one without. Tiny, but it owns a real player-facing determinism contract — `toLevel % FLAVOR_VARIANTS.length` deterministically maps each level transition to a fixed chronicle line (deliberately not RNG, per the module comment, "keeps tests stable + the flavour reads as a chronicle entry") with modular wraparound across the three variants. A silent regression (swap to RNG, reorder variants, off-by-one) would go uncaught. Gameplay/content-biased (player-facing level-up chronicle text), near-zero ship cost — picked this tick.
+
 ## Top 5 findings (scored)
+
+### [x] [5.4] levelUpFlavor.ts (level-up chronicle flavour picker) missing unit coverage affecting level-up maintainability
+- category: tests
+- impact: 4
+- ease: 9
+- base-score: 3.6
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias — player-facing level-up chronicle text)
+- final-score: 5.4
+- next: Add a colocated components/levelup/__tests__/levelUpFlavor.test.ts — assert pickFlavor maps each level to its variant by modulo, wraps around the variant list, is deterministic across repeated calls, always returns a known variant, reaches every variant, and agrees with the modulo formula at large/boundary levels
+- observation: components/levelup/levelUpFlavor.ts is the chronicle flavour picker pickFlavor(toLevel) consumed by LevelUpModal.tsx; it owns a deterministic level→line mapping (toLevel % FLAVOR_VARIANTS.length) with modular wraparound, yet was the only file in components/levelup/ without a colocated test
+- evidence: every sibling in components/levelup/__tests__/ carries a test (AscendStrip, DerivedPreviewRibbon, LearnSkillModal, LevelReadyStrip, LevelUpModal, StanceRow); a grep for pickFlavor/levelUpFlavor returned only the module + LevelUpModal.tsx, with no *.test.* reference; the determinism contract and modular wraparound were never directly exercised
+- suggested fix: Create components/levelup/__tests__/levelUpFlavor.test.ts pinning the per-level modulo mapping, modular wraparound, determinism across repeated calls, the known-variant invariant, full variant reachability, and the modulo formula at large/boundary levels
+- source: audit
+- issue: #468
+- addressed: 2026-06-18 via commit 4b364de
+- fix: Added components/levelup/__tests__/levelUpFlavor.test.ts (6 hermetic cases) pinning pickFlavor's determinism contract — the per-level modulo mapping (level 0/1/2 → variants 0/1/2), modular wraparound (3/4/5/6 cycling back through the three-variant list), determinism across repeated calls for the same level (no drift over a 0–29 sweep × 5 repeats), the always-a-known-variant invariant over a 0–49 sweep, full variant reachability across consecutive levels, and agreement with the `level % VARIANTS.length` formula at large/boundary levels (0/99/100/999/1000). Verify green (252 suites / 2666 tests, +6).
 
 ### [x] [5.4] theme/palette.ts (theme registry + palette factory) missing unit coverage affecting theming maintainability
 - category: tests

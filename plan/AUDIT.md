@@ -64,7 +64,7 @@
 - suggested fix: Create components/gathering/GatheringIntroOverlay.test.tsx covering title/intro prop rendering, the fixed eyebrow line, the gathering-intro + gathering-intro-continue testIDs, the button accessibility role, the onContinue press wiring, and updated-prop reflection, mirroring SlotBanner.test.tsx's direct-render style
 - source: audit
 - issue: #466
-- addressed: 2026-06-18 via commit __PENDING__
+- addressed: 2026-06-18 via commit 86c77ff
 - fix: Added components/gathering/GatheringIntroOverlay.test.tsx (6 hermetic cases) pinning the title/intro prop rendering, the fixed "❧ A PLACE THAT GIVES — AND COUNTS" eyebrow, the gathering-intro + gathering-intro-continue testIDs, the button accessibility role, the onContinue press wiring, and updated title/intro reflection. Pure presentation — rendered directly without provider scaffolding, mirroring SlotBanner.test.tsx. Verify green (250 suites / 2645 tests, +6).
 
 ### [x] [5.4] MapOverlays (exploration-map compass/legend chrome) missing test coverage affecting exploration-UI maintainability

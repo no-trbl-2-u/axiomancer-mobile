@@ -72,17 +72,6 @@
 - next: ensure each reward offer tile visibly and accessibly renders card name/rarity before the player opens the preview.
 - source: Kid daily playthrough (2026-06-18)
 
-### [HIGH] Mobile minigame e2e harness still waits for stale inline dev menu (NEW — Kid playthrough 2026-06-18)
-- category: tests
-- impact: 8 (`npm run e2e:minigames` fails before testing Hazard/Gathering/Encounter flow)
-- ease: 6 (route update appears localized to the e2e harness dev-entry helper)
-- observed: daily Kid Hazard ladder 2026-06-18.
-  - `npm run e2e:minigames` aborted in `scripts/hazard-e2e.mjs` waiting for `data-testid="dev-menu-header"`.
-  - Current exported app exposes `SELF → DEV TOOLS` via `data-testid="self-dev-tools-link"`, then a Developer screen with `debug-trigger-encounter-hazard`, direct `debug-hazard-button`, deck randomize, and deterministic deck preset buttons.
-  - Manual/subagent browser playthroughs reached Hazard through the new Developer screen, so this is harness drift rather than proof the product route is absent.
-- next: update `hazard-e2e.mjs`, `gathering-e2e.mjs`, and `encounter-routing-e2e.mjs` to navigate through `self-dev-tools-link` / the Developer screen before looking for debug controls.
-- source: Kid daily playthrough (2026-06-18)
-
 <!-- Pass 44 (2026-06-15, commit 2da7843): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
      critique reads docs/specs/artifacts as the "fresh maintainer"
@@ -1083,6 +1072,25 @@
 <!-- Drained from ## Pending via /oversight 2026-06-08 (queue-drained
      call): addressed-✅ findings moved here so the open-findings
      signal /iterate reads is accurate. -->
+
+### [x] [HIGH] Mobile minigame e2e harness still waits for stale inline dev menu (Kid playthrough 2026-06-18)
+- category: tests
+- impact: 8 (`npm run e2e:minigames` fails before testing Hazard/Gathering/Encounter flow)
+- ease: 6 (route update appears localized to the e2e harness dev-entry helper)
+- observed: daily Kid Hazard ladder 2026-06-18.
+  - `npm run e2e:minigames` aborted in `scripts/hazard-e2e.mjs` waiting for `data-testid="dev-menu-header"`.
+  - Current exported app exposes `SELF → DEV TOOLS` via `data-testid="self-dev-tools-link"`, then a Developer screen with `debug-trigger-encounter-hazard`, direct `debug-hazard-button`, deck randomize, and deterministic deck preset buttons.
+  - Manual/subagent browser playthroughs reached Hazard through the new Developer screen, so this is harness drift rather than proof the product route is absent.
+- source: Kid daily playthrough (2026-06-18)
+- issue: #459
+- resolution: Phase 132 moved the Debug* controls onto the dedicated
+  `/dev` route reached via `self-dev-tools-link` on the SELF sheet, but
+  the harnesses still clicked the retired `dev-menu-header`. Added a
+  shared `openDevTools` helper to `hazard-e2e.mjs`, `gathering-e2e.mjs`,
+  and `encounter-routing-e2e.mjs` (and fixed the equivalent
+  `openDevMenu` in `audit-capture.mjs`) that taps the link and waits for
+  the `/dev` route before querying the debug buttons. Fix commit
+  aabc17d; 2602/2602 verify green.
 
 ### [x] [MED] Hazard reward preview renders keyword objects as raw text (Kid playthrough 2026-06-18)
 - category: bug

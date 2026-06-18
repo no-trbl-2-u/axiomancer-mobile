@@ -61,6 +61,39 @@
   `/critique`.
 - source: repo-proxy
 
+### [MED] Hazard reward preview renders keyword objects as raw text (NEW — Kid playthrough 2026-06-18)
+- category: bug
+- impact: 5 (reward choice comprehension is degraded after a completed Hazard)
+- ease: ?
+- observed: daily Kid Hazard ladder 2026-06-18.
+  - Run 2 and Run 5 reached the reward preview after a completed/perfect Cracked Cliff Hazard.
+  - Preview text included `KEYWORDS: [object Object], [object Object]...` instead of readable keyword labels/details.
+  - The reward could still be claimed, so this is not a hard progression blocker.
+- next: render reward-card keyword metadata through the same label/detail formatter used by the card detail overlay.
+- source: Kid daily playthrough (2026-06-18)
+
+### [MED] Hazard reward offer tiles expose inconsistent card names before preview (NEW — Kid playthrough 2026-06-18)
+- category: accessibility
+- impact: 5 (automation and accessibility users may choose blind until opening preview)
+- ease: ?
+- observed: daily Kid Hazard ladder 2026-06-18.
+  - Run 1 found three reward offer hit targets with empty `innerText`.
+  - Run 3 saw offer IDs (`x_swiftcurrent`, `r_warcry`, `x_oxback`) but blank visible/accessibility text in the tile query.
+  - Run 5 saw `QUIET COMMUNION` exposed by aria label and preview, but the tile itself still had empty inner text.
+- next: ensure each reward offer tile visibly and accessibly renders card name/rarity before the player opens the preview.
+- source: Kid daily playthrough (2026-06-18)
+
+### [HIGH] Mobile minigame e2e harness still waits for stale inline dev menu (NEW — Kid playthrough 2026-06-18)
+- category: tests
+- impact: 8 (`npm run e2e:minigames` fails before testing Hazard/Gathering/Encounter flow)
+- ease: 6 (route update appears localized to the e2e harness dev-entry helper)
+- observed: daily Kid Hazard ladder 2026-06-18.
+  - `npm run e2e:minigames` aborted in `scripts/hazard-e2e.mjs` waiting for `data-testid="dev-menu-header"`.
+  - Current exported app exposes `SELF → DEV TOOLS` via `data-testid="self-dev-tools-link"`, then a Developer screen with `debug-trigger-encounter-hazard`, direct `debug-hazard-button`, deck randomize, and deterministic deck preset buttons.
+  - Manual/subagent browser playthroughs reached Hazard through the new Developer screen, so this is harness drift rather than proof the product route is absent.
+- next: update `hazard-e2e.mjs`, `gathering-e2e.mjs`, and `encounter-routing-e2e.mjs` to navigate through `self-dev-tools-link` / the Developer screen before looking for debug controls.
+- source: Kid daily playthrough (2026-06-18)
+
 <!-- Pass 44 (2026-06-15, commit 2da7843): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
      critique reads docs/specs/artifacts as the "fresh maintainer"

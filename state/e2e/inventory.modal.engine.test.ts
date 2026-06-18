@@ -68,6 +68,45 @@ const runeBlade: Equipment = {
     passiveEffects: ['rune-ward'],
 };
 
+// A weapon granting a fractional luck modifier — exercises the
+// one-decimal rounding of the luck display.
+const luckBlade: Equipment = {
+    id: 'luck-blade',
+    name: 'Lucky Blade',
+    description: 'Suspiciously fortunate.',
+    category: 'equipment',
+    slot: 'weapon',
+    rarity: 'uncommon',
+    requiredLevel: 1,
+    statModifiers: [{ stat: 'luck', value: 1.55432728, isMultiplier: false }],
+};
+
+// Two named (affixed) weapons used to prove the equip/swap block shows
+// non-stat changes, not affix/keyword add-removes.
+const affixBladeWorn: Equipment = {
+    id: 'affix-worn',
+    name: 'Dull Blade',
+    description: 'A worn affixed blade.',
+    category: 'equipment',
+    slot: 'weapon',
+    rarity: 'uncommon',
+    requiredLevel: 1,
+    prefixId: 'p-dull',
+    prefixName: 'Dull',
+};
+const affixBladeCandidate: Equipment = {
+    id: 'affix-candidate',
+    name: 'Glittering Blade',
+    description: 'A bright affixed blade with a ward.',
+    category: 'equipment',
+    slot: 'weapon',
+    rarity: 'uncommon',
+    requiredLevel: 1,
+    prefixId: 'p-glitter',
+    prefixName: 'Glittering',
+    passiveEffects: ['rune-ward'],
+};
+
 // ---------------------------------------------------------------------------
 
 describe('selectItemModalViewModel: missing item', () => {
@@ -298,6 +337,46 @@ describe('selectItemModalViewModel: equipment preview (Q5)', () => {
         const vm = selectItemModalViewModel(store.getState(), 'long-blade')!;
 
         expect(vm.itemModifiers).toHaveLength(0);
+    });
+
+    // Luck is fractional; the modifier window rounds it to one decimal.
+    it('rounds a luck modifier to one decimal in the intrinsic list', () => {
+        const store = makeStore([luckBlade]);
+
+        const vm = selectItemModalViewModel(store.getState(), 'luck-blade')!;
+
+        const luck = vm.itemModifiers.find((m) => m.label.includes('LUCK'));
+        expect(luck?.label).toBe('+1.6 LUCK');
+    });
+
+    it('rounds a luck stat delta to one decimal', () => {
+        // Worn plain blade + lucky peer: tapping the peer previews the
+        // swap, whose luck delta must read at one decimal.
+        const store = makeStore([blade, luckBlade]);
+
+        const vm = selectItemModalViewModel(store.getState(), 'luck-blade')!;
+
+        const luck = vm.statDeltas.find((d) => d.id === 'luck' || d.label === 'LUCK');
+        expect(luck).toBeDefined();
+        // Every surfaced number carries at most one decimal place.
+        for (const n of [luck!.before, luck!.after, luck!.delta]) {
+            expect(Number.isInteger(n * 10)).toBe(true);
+        }
+    });
+
+    // Brief: the equip/swap block shows non-stat changes (passive effects
+    // / status adjustments), NOT affix/keyword add-removes.
+    it('omits affix/keyword labels from the equip/swap effect block', () => {
+        const store = makeStore([affixBladeWorn, affixBladeCandidate]);
+
+        const vm = selectItemModalViewModel(store.getState(), 'affix-candidate')!;
+
+        const labels = vm.effectDeltas.map((e) => e.label);
+        // Affix words never appear as add/remove lines…
+        expect(labels.some((l) => l.includes('Glittering'))).toBe(false);
+        expect(labels.some((l) => l.includes('Dull'))).toBe(false);
+        // …but the genuine non-stat change (the gained passive effect) does.
+        expect(labels.some((l) => l.includes('rune-ward'))).toBe(true);
     });
 
     // Brief fix #3: non-stat changes (passive effects, etc.) surface in

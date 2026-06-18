@@ -46,7 +46,26 @@
 
 > **Audit update (2026-06-18, fifteenth tick).** SlotBanner addressed last tick — `components/inventory/` is now fully covered. The component-coverage sweep is at its true frontier: a fresh repo-wide scan for source files lacking a colocated/`__tests__` test, cross-referenced against test imports, leaves only large e2e-covered modules (`actions.ts`, the `*.engine.ts` presenters), pure static SVG art (`glyphs`/`figures`/`danger-art`/`TitleEmblem`/`VictoryWreath`/portraits), dev-only code (`DevToolsSections`, `item-by-id`), and one player-facing component with **zero** test references of any kind — `components/exploration/MapOverlays.tsx` (67 lines). It is the compass + NODE GRAPH + bottom-legend chrome layered over the exploration map on every exploration screen. Earlier ticks deferred it as "pure static layout", but it is prop-driven: it consumes a `legend: { left, right }` prop and renders both strings into the bottom legend row, alongside the fixed `N ↑ · scale: leagues` compass and `NODE GRAPH` label. Thin, but a real player-facing render contract with no coverage and near-zero ship cost — picked this tick.
 
+> **Audit update (2026-06-18, sixteenth tick).** MapOverlays addressed last tick. Several prior ticks (seventh, eighth, twelfth) repeatedly waved off `components/gathering/GatheringIntroOverlay.tsx` (105 lines) as "static presentation" — but that mislabel conflated its decorative SVG (`glyphs`/`SlowEye`) with the component itself, which is genuinely logic-bearing: it is the once-per-session gathering-minigame site-reveal modal shown before the approach choice, owning prop-driven `title`/`intro` rendering, a fixed eyebrow line, a `gathering-intro` root + `gathering-intro-continue` CTA (`accessibilityRole="button"`) and the `onContinue` press wiring that advances the player into the minigame. A repo-wide untested-source scan now leaves only pure static SVG art (`glyphs`/`figures`/`danger-art`/enemy-art figures/`TitleEmblem`/`VictoryWreath`/portraits) and dev-only code (`DevToolsSections`, `item-by-id`) — GatheringIntroOverlay was the last player-facing component carrying a real render + interaction contract with no coverage. Gameplay-biased (gathering minigame surface), near-zero ship cost — picked this tick.
+
 ## Top 5 findings (scored)
+
+### [x] [7.2] GatheringIntroOverlay (gathering minigame intro) missing test coverage affecting gathering-minigame maintainability
+- category: tests
+- impact: 6
+- ease: 8
+- base-score: 4.8
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias — player-facing gathering-minigame intro modal)
+- final-score: 7.2
+- next: Add a colocated GatheringIntroOverlay.test.tsx mirroring SlotBanner.test.tsx — render with title/intro props, assert title/intro + fixed eyebrow render, assert the gathering-intro/gathering-intro-continue testIDs and button role, assert pressing the CTA fires onContinue, and assert updated title/intro props reflect
+- observation: components/gathering/GatheringIntroOverlay.tsx is the once-per-session site-reveal modal shown before the gathering-minigame approach choice; it owns prop-driven title/intro rendering, a fixed eyebrow, a gathering-intro-continue CTA (accessibilityRole "button") and the onContinue press wiring that advances the player — yet prior ticks mislabeled it "static presentation" and it was the last player-facing component with a real render+interaction contract and no coverage
+- evidence: a repo-wide untested-source scan cross-referenced against test imports left GatheringIntroOverlay as the sole player-facing component with no `*.test.*` reference (the remaining untested files are pure static SVG art — glyphs/figures/danger-art/TitleEmblem/VictoryWreath/portraits — or dev-only DevToolsSections/item-by-id); the component imports decorative glyphs but its own contract (title/intro/eyebrow render + CTA press) was never exercised
+- suggested fix: Create components/gathering/GatheringIntroOverlay.test.tsx covering title/intro prop rendering, the fixed eyebrow line, the gathering-intro + gathering-intro-continue testIDs, the button accessibility role, the onContinue press wiring, and updated-prop reflection, mirroring SlotBanner.test.tsx's direct-render style
+- source: audit
+- issue: #466
+- addressed: 2026-06-18 via commit __PENDING__
+- fix: Added components/gathering/GatheringIntroOverlay.test.tsx (6 hermetic cases) pinning the title/intro prop rendering, the fixed "❧ A PLACE THAT GIVES — AND COUNTS" eyebrow, the gathering-intro + gathering-intro-continue testIDs, the button accessibility role, the onContinue press wiring, and updated title/intro reflection. Pure presentation — rendered directly without provider scaffolding, mirroring SlotBanner.test.tsx. Verify green (250 suites / 2645 tests, +6).
 
 ### [x] [5.4] MapOverlays (exploration-map compass/legend chrome) missing test coverage affecting exploration-UI maintainability
 - category: tests

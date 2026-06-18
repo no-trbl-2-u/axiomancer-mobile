@@ -26,6 +26,7 @@ const mockConsumableModalVm: ItemModalViewModel = {
     previewLines: ['Heal 25 HP', 'HP 50 → 75 (+25)'],
     statDeltas: [],
     effectDeltas: [],
+    itemModifiers: [],
     replacingName: null,
 };
 
@@ -44,6 +45,7 @@ const mockEquipmentModalVm: ItemModalViewModel = {
         { label: 'EMOT DEF', before: 6, after: 6, delta: 0, id: 'emotionalDefense' },
     ],
     effectDeltas: [],
+    itemModifiers: [],
     replacingName: 'Rusty Dagger',
 };
 
@@ -57,6 +59,7 @@ const mockViewOnlyModalVm: ItemModalViewModel = {
     previewLines: ['A book of forgotten knowledge'],
     statDeltas: [],
     effectDeltas: [],
+    itemModifiers: [],
     replacingName: null,
 };
 

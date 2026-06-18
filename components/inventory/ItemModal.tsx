@@ -36,6 +36,20 @@ export function ItemModal({ modalVm, onConfirm, onCancel }: ItemModalProps) {
                                         ))}
                                     </View>
                                 )}
+                                {modalVm.itemModifiers.length > 0 && (
+                                    <View style={styles.modalModBlock} testID="item-modifier-list">
+                                        <Text style={styles.modalModEyebrow}>MODIFIERS</Text>
+                                        {modalVm.itemModifiers.map((m, i) => (
+                                            <Text
+                                                key={`${m.label}-${i}`}
+                                                style={styles.modalModLine}
+                                                testID={m.id ? `item-mod-${m.id}` : undefined}
+                                            >
+                                                {m.label}
+                                            </Text>
+                                        ))}
+                                    </View>
+                                )}
                                 {modalVm.statDeltas.length > 0 && (
                                     <View style={styles.modalStatTable}>
                                         {modalVm.statDeltas.map((d) => {
@@ -175,6 +189,26 @@ const useStyles = makeStyles((AXM) => ({
         fontFamily: FONTS.mono,
         fontSize: 11,
         color: AXM.parchment,
+    },
+    modalModBlock: {
+        marginTop: 8,
+        padding: 8,
+        backgroundColor: AXM.deepBg,
+        borderWidth: 1,
+        borderColor: AXM.ash,
+    },
+    modalModEyebrow: {
+        fontFamily: FONTS.mono,
+        fontSize: 8,
+        letterSpacing: 1.4,
+        color: AXM.bone,
+        marginBottom: 4,
+    },
+    modalModLine: {
+        fontFamily: FONTS.mono,
+        fontSize: 11,
+        lineHeight: 15,
+        color: AXM.sulfur,
     },
     modalEffectBlock: {
         marginTop: 8,

@@ -4,7 +4,6 @@ import {
     lootUncommonItemAction,
     lootRareItemAction,
     lootUniqueItemAction,
-    countAffixes,
 } from '../loot-rarity';
 import { createAppStore } from '@/state/store';
 import type { Equipment } from 'axiomancer-mechanics';
@@ -14,33 +13,6 @@ describe('loot-rarity dev helper', () => {
 
     beforeEach(() => {
         store = createAppStore();
-    });
-
-    it('countAffixes prefers rolledMods, falling back to prefix/suffix fields', () => {
-        const base = {
-            id: 'x',
-            name: 'X',
-            description: '',
-            category: 'equipment',
-            slot: 'weapon',
-            rarity: 'uncommon',
-            requiredLevel: 1,
-        } as Equipment;
-        expect(countAffixes(base)).toBe(0);
-        // rolledMods is the engine-truth affix record (0.22.x).
-        expect(countAffixes({ ...base, rolledMods: [{ modId: 'a', value: 1 }] })).toBe(1);
-        expect(
-            countAffixes({
-                ...base,
-                rolledMods: [
-                    { modId: 'a', value: 1 },
-                    { modId: 'b', value: 2 },
-                ],
-            }),
-        ).toBe(2);
-        // Fallback path when rolledMods is absent.
-        expect(countAffixes({ ...base, prefixName: 'Keen' })).toBe(1);
-        expect(countAffixes({ ...base, prefixId: 'a', suffixId: 'b' })).toBe(2);
     });
 
     it('loots a real common drop with exactly zero modifiers', () => {

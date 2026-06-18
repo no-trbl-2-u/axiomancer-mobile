@@ -53,6 +53,21 @@ const blade: Equipment = {
     requiredLevel: 1,
 };
 
+// A stat-bearing weapon used to exercise the equip stat-delta surface:
+// it adds physical attack and a passive effect, so swapping it in over
+// the plain `blade` produces a real, non-empty set of changes.
+const runeBlade: Equipment = {
+    id: 'rune-blade',
+    name: 'Rune Blade',
+    description: 'Etched with a humming sigil.',
+    category: 'equipment',
+    slot: 'weapon',
+    rarity: 'uncommon',
+    requiredLevel: 1,
+    statModifiers: [{ stat: 'physicalAttack', value: 5, isMultiplier: false }],
+    passiveEffects: ['rune-ward'],
+};
+
 // ---------------------------------------------------------------------------
 
 describe('selectItemModalViewModel: missing item', () => {
@@ -216,9 +231,11 @@ describe('selectItemModalViewModel: equipment preview (Q5)', () => {
     });
 
     it('exposes a stat delta table for the modal to render', () => {
-        const store = makeStore([blade]);
+        // `blade` is worn; tapping the stat-bearing peer previews the
+        // swap, which changes at least one stat.
+        const store = makeStore([blade, runeBlade]);
 
-        const vm = selectItemModalViewModel(store.getState(), 'long-blade')!;
+        const vm = selectItemModalViewModel(store.getState(), 'rune-blade')!;
 
         expect(vm.statDeltas.length).toBeGreaterThan(0);
         for (const delta of vm.statDeltas) {
@@ -228,23 +245,59 @@ describe('selectItemModalViewModel: equipment preview (Q5)', () => {
         }
     });
 
+    // Brief fix #3: the modal shows *only* stats that change — never a
+    // stat whose value is unchanged.
+    it('emits only stats that actually change (no zero-delta rows)', () => {
+        const store = makeStore([blade, runeBlade]);
+
+        const vm = selectItemModalViewModel(store.getState(), 'rune-blade')!;
+
+        expect(vm.statDeltas.length).toBeGreaterThan(0);
+        for (const delta of vm.statDeltas) {
+            expect(delta.delta).not.toBe(0);
+            expect(delta.after - delta.before).toBe(delta.delta);
+        }
+        // Rune Blade adds +5 physical attack over the plain blade.
+        const atk = vm.statDeltas.find((d) => d.id === 'physicalAttack');
+        expect(atk).toBeDefined();
+        expect(atk!.delta).toBe(5);
+    });
+
+    // A swap that changes nothing (identical stat-less weapons) shows an
+    // empty stat table.
+    it('shows no stat rows when the equip changes no stats', () => {
+        const twin: Equipment = { ...blade, id: 'twin-blade', name: 'Twin Blade' };
+        const store = makeStore([blade, twin]);
+
+        const vm = selectItemModalViewModel(store.getState(), 'twin-blade')!;
+
+        expect(vm.statDeltas).toHaveLength(0);
+    });
+
+    // Brief fix #3: non-stat changes (passive effects, etc.) surface in
+    // `effectDeltas` so the preview shows all of an item's effect.
+    it('surfaces gained passive effects in effectDeltas', () => {
+        const store = makeStore([blade, runeBlade]);
+
+        const vm = selectItemModalViewModel(store.getState(), 'rune-blade')!;
+
+        const gained = vm.effectDeltas.filter((e) => e.direction === 'gained');
+        expect(gained.some((e) => e.label === 'rune-ward')).toBe(true);
+    });
+
     // Phase 80a — equipment stat-delta rows carry an `id` engine-stat
     // key so the inventory item modal's TooltipTarget wrap can fire a
-    // `kind:'item-stat'` synthesizer tooltip on tap. Pin the four
-    // currently-emitted keys so a future rename in the engine surfaces
-    // here as a test failure (and not as silently-broken tooltips).
+    // `kind:'item-stat'` synthesizer tooltip on tap. The combat /
+    // non-combat stat keys follow the `<dimension><Verb>` pattern the
+    // synthesizer resolves; pin physical-attack so a future rename in
+    // the engine surfaces here as a test failure.
     it('equipment stat deltas carry engine stat-key ids for tooltip wiring (Phase 80a)', () => {
-        const store = makeStore([blade]);
+        const store = makeStore([blade, runeBlade]);
 
-        const vm = selectItemModalViewModel(store.getState(), 'long-blade')!;
+        const vm = selectItemModalViewModel(store.getState(), 'rune-blade')!;
 
-        const ids = vm.statDeltas.map((d) => d.id);
-        expect(ids).toEqual([
-            'physicalAttack',
-            'physicalDefense',
-            'mentalAttack',
-            'emotionalDefense',
-        ]);
+        const atk = vm.statDeltas.find((d) => d.label === 'PHYS ATK');
+        expect(atk?.id).toBe('physicalAttack');
     });
 });
 

@@ -124,15 +124,34 @@ describe('inventory screen: use modal', () => {
 // the modal renders without throwing.
 describe('inventory screen: item-modal stat tooltips (Phase 80a)', () => {
     it('renders TooltipTarget-wrapped stat rows for an equipment modal', () => {
-        const store = makeStore([sword]);
+        // `sword` is worn (first-in-slot, no stat mods). A stat-bearing
+        // peer previews an equip-swap, so every stat it changes shows up
+        // as a TooltipTarget-wrapped row. The modal shows *only* changed
+        // stats, so the peer must move all four pinned keys.
+        const statSword: Equipment = {
+            id: 'rune-blade',
+            name: 'Rune Blade',
+            description: 'Etched with a humming sigil.',
+            category: 'equipment',
+            slot: 'weapon',
+            rarity: 'uncommon',
+            requiredLevel: 1,
+            statModifiers: [
+                { stat: 'physicalAttack', value: 5, isMultiplier: false },
+                { stat: 'physicalDefense', value: 3, isMultiplier: false },
+                { stat: 'mentalAttack', value: 2, isMultiplier: false },
+                { stat: 'emotionalDefense', value: 4, isMultiplier: false },
+            ],
+        };
+        const store = makeStore([sword, statSword]);
 
         const tree = render(withProviders(store));
 
-        // Press the item row to open the modal directly (equipment bypass).
-        fireEvent.press(tree.getByTestId('item-long-blade'));
+        // Press the (non-worn) peer row to open its equip modal.
+        fireEvent.press(tree.getByTestId('item-rune-blade'));
 
-        // The equipment modal's 4 stat rows each carry a testID
-        // `inv-modal-stat-<engine-key>` driven by `StatDelta.id`.
+        // Each changed stat row carries a testID `inv-modal-stat-<key>`
+        // driven by `StatDelta.id`.
         expect(tree.getByTestId('inv-modal-stat-physicalAttack')).toBeTruthy();
         expect(tree.getByTestId('inv-modal-stat-physicalDefense')).toBeTruthy();
         expect(tree.getByTestId('inv-modal-stat-mentalAttack')).toBeTruthy();

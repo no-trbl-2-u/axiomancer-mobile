@@ -63,6 +63,24 @@ export function ItemModal({ modalVm, onConfirm, onCancel }: ItemModalProps) {
                                         })}
                                     </View>
                                 )}
+                                {modalVm.effectDeltas.length > 0 && (
+                                    <View style={styles.modalEffectBlock}>
+                                        {modalVm.effectDeltas.map((e, i) => (
+                                            <Text
+                                                key={`${e.direction}-${e.label}-${i}`}
+                                                style={[
+                                                    styles.modalEffectLine,
+                                                    e.direction === 'gained'
+                                                        ? styles.modalEffectGain
+                                                        : styles.modalEffectLoss,
+                                                ]}
+                                            >
+                                                {e.direction === 'gained' ? '+ ' : '− '}
+                                                {e.label}
+                                            </Text>
+                                        ))}
+                                    </View>
+                                )}
                                 {modalVm.confirmPrompt !== '' && (
                                     <Text style={styles.modalPrompt}>{modalVm.confirmPrompt}</Text>
                                 )}
@@ -157,6 +175,24 @@ const useStyles = makeStyles((AXM) => ({
         fontFamily: FONTS.mono,
         fontSize: 11,
         color: AXM.parchment,
+    },
+    modalEffectBlock: {
+        marginTop: 8,
+        padding: 8,
+        backgroundColor: AXM.deepBg,
+        borderWidth: 1,
+        borderColor: AXM.ash,
+    },
+    modalEffectLine: {
+        fontFamily: FONTS.mono,
+        fontSize: 11,
+        lineHeight: 15,
+    },
+    modalEffectGain: {
+        color: AXM.heal,
+    },
+    modalEffectLoss: {
+        color: AXM.blood,
     },
     modalPrompt: {
         fontFamily: FONTS.serifItalic,

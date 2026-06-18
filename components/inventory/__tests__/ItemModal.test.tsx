@@ -25,6 +25,7 @@ const mockConsumableModalVm: ItemModalViewModel = {
     confirmLabel: 'DRINK',
     previewLines: ['Heal 25 HP', 'HP 50 → 75 (+25)'],
     statDeltas: [],
+    effectDeltas: [],
     replacingName: null,
 };
 
@@ -42,6 +43,7 @@ const mockEquipmentModalVm: ItemModalViewModel = {
         { label: 'MENT ATK', before: 5, after: 5, delta: 0, id: 'mentalAttack' },
         { label: 'EMOT DEF', before: 6, after: 6, delta: 0, id: 'emotionalDefense' },
     ],
+    effectDeltas: [],
     replacingName: 'Rusty Dagger',
 };
 
@@ -54,6 +56,7 @@ const mockViewOnlyModalVm: ItemModalViewModel = {
     confirmLabel: 'CLOSE',
     previewLines: ['A book of forgotten knowledge'],
     statDeltas: [],
+    effectDeltas: [],
     replacingName: null,
 };
 

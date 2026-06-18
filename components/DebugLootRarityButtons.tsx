@@ -1,19 +1,19 @@
 /**
  * Dev-only "loot a real rarity drop" controls (Phase 136).
  *
- * Two buttons — LOOT UNCOMMON and LOOT RARE — that generate genuine
- * uncommon / rare equipment drops through the engine's drop-time
- * affix roll (`actions.lootUncommonItem` / `actions.lootRareItem`)
- * and push them to the player's inventory. Uncommon rolls one affix;
- * rare rolls two.
+ * Four buttons — LOOT COMMON, LOOT UNCOMMON, LOOT RARE, LOOT UNIQUE —
+ * that generate genuine equipment drops through the engine's drop-time
+ * roll (`actions.lootCommonItem` / `lootUncommonItem` / `lootRareItem`
+ * / `lootUniqueItem`) and push them to the player's inventory. Common
+ * carries no modifiers, uncommon one, rare two; unique drops a relic
+ * with its three fixed modifiers rolled for the player's level.
  *
  * Why this exists: POPULATE and ADD ITEM BY ID can only hand out
- * static registry rows (common/base gear, unique relics, consumables).
- * Uncommon and rare equipment are not registry rows — the engine rolls
- * them at drop time — so the Kid and the visual smoke path had no
- * honest way to inspect the Phase 135 uncommon green-shine and rare
- * blue-shine inventory chrome. These buttons close that gap with real
- * generated drops, not hand-faked rarity.
+ * static registry rows. Uncommon and rare equipment are not registry
+ * rows — the engine rolls them at drop time — so the Kid and the visual
+ * smoke path had no honest way to inspect the Phase 135 rarity chrome.
+ * These buttons close that gap with real generated drops at every
+ * rarity, not hand-faked rarity.
  *
  * Sister to `DebugPopulateAllItems` / `DebugAddItemById`; mounts under
  * `/dev` → INVENTORY & ITEM TOOLS. Renders null outside dev builds.
@@ -30,11 +30,11 @@ import type { LootRarityResult } from '@/state/dev/loot-rarity';
 
 function describeResult(result: LootRarityResult): { ok: boolean; text: string } {
     if (result.added) {
-        const affixes = result.affixCount ?? 0;
-        const affixLabel = affixes === 1 ? '1 affix' : `${affixes} affixes`;
+        const mods = result.affixCount ?? 0;
+        const modLabel = mods === 1 ? '1 mod' : `${mods} mods`;
         return {
             ok: true,
-            text: `looted ${result.rarity} · ${result.name} · ${affixLabel}`,
+            text: `looted ${result.rarity} · ${result.name} · ${modLabel}`,
         };
     }
     return {
@@ -50,8 +50,10 @@ export function DebugLootRarityButtons() {
 
     if (!isDevToolsEnabled()) return null;
 
+    const onLootCommon = () => setFeedback(describeResult(actions.lootCommonItem()));
     const onLootUncommon = () => setFeedback(describeResult(actions.lootUncommonItem()));
     const onLootRare = () => setFeedback(describeResult(actions.lootRareItem()));
+    const onLootUnique = () => setFeedback(describeResult(actions.lootUniqueItem()));
 
     return (
         <View style={styles.panel}>
@@ -65,10 +67,20 @@ export function DebugLootRarityButtons() {
                     numberOfLines={2}
                     testID="debug-loot-rarity-feedback"
                 >
-                    {feedback?.text ?? 'generate real uncommon (1 affix) / rare (2 affixes) drops'}
+                    {feedback?.text
+                        ?? 'generate real common (0) / uncommon (1) / rare (2) / unique (3 fixed) drops'}
                 </Text>
             </View>
             <View style={styles.buttonRow}>
+                <Pressable
+                    style={styles.button}
+                    onPress={onLootCommon}
+                    accessibilityRole="button"
+                    accessibilityLabel="Generate a real common equipment drop"
+                    testID="debug-loot-common-button"
+                >
+                    <Text style={styles.buttonLabel}>LOOT COMMON</Text>
+                </Pressable>
                 <Pressable
                     style={styles.button}
                     onPress={onLootUncommon}
@@ -78,6 +90,8 @@ export function DebugLootRarityButtons() {
                 >
                     <Text style={styles.buttonLabel}>LOOT UNCOMMON</Text>
                 </Pressable>
+            </View>
+            <View style={styles.buttonRow}>
                 <Pressable
                     style={styles.button}
                     onPress={onLootRare}
@@ -86,6 +100,15 @@ export function DebugLootRarityButtons() {
                     testID="debug-loot-rare-button"
                 >
                     <Text style={styles.buttonLabel}>LOOT RARE</Text>
+                </Pressable>
+                <Pressable
+                    style={styles.button}
+                    onPress={onLootUnique}
+                    accessibilityRole="button"
+                    accessibilityLabel="Generate a real unique relic drop"
+                    testID="debug-loot-unique-button"
+                >
+                    <Text style={styles.buttonLabel}>LOOT UNIQUE</Text>
                 </Pressable>
             </View>
         </View>

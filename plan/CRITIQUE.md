@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-17 at commit eb83684
-> Pass count: 46
+> Last pass: 2026-06-18 at commit 792f634
+> Pass count: 47
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -26,39 +26,41 @@
 
 ## Pending
 
-<!-- Pass 46 (2026-06-17, commit eb83684): repo-proxy pass attempted
-     but NOT completed — same blocker as pass 45 recurs. The `reader`
-     sub-agent (skills/critique.md §4 mandates delegating the visit;
-     the main agent must not visit from its own context) again failed
-     to spawn — twice — with `API Error: 404 model:
-     claude-sonnet-4-20250514` (request ids req_011Cc911JkLEGozx8NpPHiGa,
-     req_011Cc912ANajc23KCqTpCpCw). Note: `.claude/agents/reader.md`
-     declares no `model:` field, so the stale model id is pinned in
-     runtime config outside the agent doc and cannot be overridden from
-     the skill. Per §7 failure mode 2, after one re-spawn that also
-     failed, this pass advances the pass counter (the signal /march
-     reads to re-rate-limit critique) and exits without product
-     findings. No code/content/data was touched. Re-run /critique once
-     the reader agent's model is available again. -->
+<!-- Pass 47 (2026-06-18, commit 792f634): repo-proxy pass attempted
+     but NOT completed — same blocker as passes 45–46 recurs for the
+     THIRD consecutive time. The `reader` sub-agent (skills/critique.md
+     §4 mandates delegating the visit; the main agent must not visit
+     from its own context) again failed to spawn — twice — with
+     `API Error: 404 model: claude-sonnet-4-20250514` (request ids
+     req_011CcAwdzp9ymvBXvxiWZsiq, req_011CcAwf3AZfxr81A3LpBvHg). Note:
+     `.claude/agents/reader.md` declares no `model:` field, so the stale
+     model id is pinned in runtime config outside the agent doc and
+     cannot be overridden from the skill. Per §7 failure mode 2, after
+     one re-spawn that also failed, this pass advances the pass counter
+     (the signal /march reads to re-rate-limit critique) and exits
+     without product findings. No code/content/data was touched. Re-run
+     /critique once the reader agent's model is available again. -->
 
-### [needs-user-call] reader sub-agent malfunction (passes 45–46)
-- pass: 46 (commit eb83684; first seen pass 45 at 69e4ae2)
+### [needs-user-call] reader sub-agent malfunction (passes 45–47)
+- pass: 47 (commit 792f634; first seen pass 45 at 69e4ae2)
 - viewport: n/a (repo-proxy)
 - category: infra
 - observation: `/critique` could not run because the mandated `reader`
   sub-agent failed to spawn on both the initial attempt and the single
   re-spawn required by skills/critique.md §7 failure mode 2. This is the
-  second consecutive critique pass blocked by the same cause.
+  THIRD consecutive critique pass blocked by the same cause (45, 46, 47).
 - evidence: `API Error: 404 {"type":"not_found_error","message":"model:
   claude-sonnet-4-20250514"}` returned on every Task() invocation of
-  subagent_type "reader" across passes 45 and 46 (4 invocations total).
-  `.claude/agents/reader.md` carries no `model:` frontmatter field, so
-  the unavailable model id is pinned in runtime/agent config the skill
-  cannot reach.
+  subagent_type "reader" across passes 45, 46, and 47 (6 invocations
+  total). `.claude/agents/reader.md` carries no `model:` frontmatter
+  field, so the unavailable model id is pinned in runtime/agent config
+  the skill cannot reach. The 2026-06-17 fix attempts have not landed
+  the corrected model id, so the blocker persists.
 - suggested fix: update the `reader` agent's configured model to a
   currently-available id (it should inherit the default model rather
   than pin the retired `claude-sonnet-4-20250514`), then re-run
-  `/critique`.
+  `/critique`. This is now blocking the critique loop for a third
+  consecutive pass and warrants direct user/runtime-config attention.
 - source: repo-proxy
 
 <!-- Pass 44 (2026-06-15, commit 2da7843): repo-proxy pass —

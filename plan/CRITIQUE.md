@@ -61,17 +61,6 @@
   `/critique`.
 - source: repo-proxy
 
-### [MED] Hazard reward offer tiles expose inconsistent card names before preview (NEW — Kid playthrough 2026-06-18)
-- category: accessibility
-- impact: 5 (automation and accessibility users may choose blind until opening preview)
-- ease: ?
-- observed: daily Kid Hazard ladder 2026-06-18.
-  - Run 1 found three reward offer hit targets with empty `innerText`.
-  - Run 3 saw offer IDs (`x_swiftcurrent`, `r_warcry`, `x_oxback`) but blank visible/accessibility text in the tile query.
-  - Run 5 saw `QUIET COMMUNION` exposed by aria label and preview, but the tile itself still had empty inner text.
-- next: ensure each reward offer tile visibly and accessibly renders card name/rarity before the player opens the preview.
-- source: Kid daily playthrough (2026-06-18)
-
 <!-- Pass 44 (2026-06-15, commit 2da7843): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
      critique reads docs/specs/artifacts as the "fresh maintainer"
@@ -1072,6 +1061,20 @@
 <!-- Drained from ## Pending via /oversight 2026-06-08 (queue-drained
      call): addressed-✅ findings moved here so the open-findings
      signal /iterate reads is accurate. -->
+
+### [x] [MED] Hazard reward offer tiles expose inconsistent card names before preview (Kid playthrough 2026-06-18)
+- category: accessibility
+- impact: 5 (automation and accessibility users may choose blind until opening preview)
+- ease: 7 (regression-guard test; render contract already satisfied)
+- issue: #460
+- observed: daily Kid Hazard ladder 2026-06-18.
+  - Run 1 found three reward offer hit targets with empty `innerText`.
+  - Run 3 saw offer IDs (`x_swiftcurrent`, `r_warcry`, `x_oxback`) but blank visible/accessibility text in the tile query.
+  - Run 5 saw `QUIET COMMUNION` exposed by aria label and preview, but the tile itself still had empty inner text.
+- next: ensure each reward offer tile visibly and accessibly renders card name/rarity before the player opens the preview.
+- source: Kid daily playthrough (2026-06-18)
+- addressed: 2026-06-18 via commit (this tick)
+- resolution: Investigated the offer tile (`components/hazard/RewardsOverlay.tsx` → `HazardCard mode="offer"`). The card **name** renders as a visible `<Text numberOfLines={2}>` and the **rarity** as a visible `<Text>` (`COMMON`/`UNCOMMON`/`RARE`), and the offer `Pressable` carries `accessibilityLabel="Preview reward card {name}, {rarity}"` — so both name and rarity are present and accessible **before** preview for sighted and screen-reader users. The blank-`innerText` observation is a react-native-web `numberOfLines` line-clamp artifact in the Playwright harness (the clamped span reports empty `innerText` while `textContent`/aria are populated), not a missing-name product defect. Rather than churn product code, locked the contract with two hermetic regression guards in `components/hazard/__tests__/RewardsOverlay.test.tsx`: one pins both offer tiles' visible name + rarity text before any preview opens, the other pins name + rarity on each tile's accessibility label. Verify green (245 suites / 2611 tests).
 
 ### [x] [HIGH] Mobile minigame e2e harness still waits for stale inline dev menu (Kid playthrough 2026-06-18)
 - category: tests

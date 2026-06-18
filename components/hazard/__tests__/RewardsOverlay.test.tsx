@@ -122,6 +122,31 @@ describe('RewardsOverlay', () => {
         expect(getByText('Ice Shield')).toBeTruthy();
     });
 
+    // Regression guard for issue #460 (critique pass 46 / Kid playthrough
+    // 2026-06-18): every reward offer tile must surface its card name AND
+    // rarity — both as visible text and on the tile's accessibility label —
+    // BEFORE the player opens the preview. A blank pre-preview tile leaves
+    // automation/screen-reader users choosing blind.
+    it('exposes each offer tile name + rarity visibly before any preview', () => {
+        const { getByText } = render(<RewardsOverlay {...mockProps} />);
+        // Visible card names (the offer-mode HazardCard renders these).
+        expect(getByText('Fire Strike')).toBeTruthy();
+        expect(getByText('Ice Shield')).toBeTruthy();
+        // Visible rarity labels on the tiles.
+        expect(getByText('COMMON')).toBeTruthy();
+        expect(getByText('UNCOMMON')).toBeTruthy();
+    });
+
+    it('exposes each offer tile name + rarity on its accessibility label before preview', () => {
+        const { getByLabelText, queryByTestId } = render(<RewardsOverlay {...mockProps} />);
+        // No preview is open at mount.
+        expect(queryByTestId('hazard-card-preview')).toBeNull();
+        // The offer Pressable carries name + rarity for screen readers /
+        // automation that read the accessibility tree rather than innerText.
+        expect(getByLabelText('Preview reward card Fire Strike, common')).toBeTruthy();
+        expect(getByLabelText('Preview reward card Ice Shield, uncommon')).toBeTruthy();
+    });
+
     it('renders offer sub-label', () => {
         const { getByText } = render(<RewardsOverlay {...mockProps} />);
         expect(getByText('Choose one card')).toBeTruthy();

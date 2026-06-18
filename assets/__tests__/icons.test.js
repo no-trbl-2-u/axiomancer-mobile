@@ -44,9 +44,12 @@ describe('App Icon Assets', () => {
     requiredIcons.forEach(({ file }) => {
       const iconPath = path.join(assetsPath, file);
       const stats = fs.statSync(iconPath);
-      // Icons should not be empty and should be reasonable file sizes
+      // Icons should not be empty and should be reasonable file sizes.
+      // The launcher art is a full painted illustration (throne-room key
+      // art), so the 1024px master is palette-compressed but still far
+      // larger than the old flat crest — keep a generous upper bound.
       expect(stats.size).toBeGreaterThan(100);
-      expect(stats.size).toBeLessThan(50000); // 50KB reasonable upper limit for these icons
+      expect(stats.size).toBeLessThan(800000); // 800KB upper limit for the illustrated icon
     });
   });
 });

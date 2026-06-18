@@ -185,8 +185,10 @@ import {
     type AddItemByIdResult,
 } from './dev/item-by-id';
 import {
+    lootCommonItemAction,
     lootUncommonItemAction,
     lootRareItemAction,
+    lootUniqueItemAction,
     type LootRarityResult,
 } from './dev/loot-rarity';
 
@@ -382,22 +384,40 @@ export interface AppActions {
      */
     addItemById: (id: string) => AddItemByIdResult;
     /**
+     * Phase 136 — dev-only "loot a real common drop". Generates a
+     * genuine common equipment drop (zero modifiers) through the engine
+     * `dropItem` path and pushes it to inventory. Reports the generated
+     * item name + modifier count. Component mount is
+     * `isDevToolsEnabled()`-guarded.
+     */
+    lootCommonItem: () => LootRarityResult;
+    /**
      * Phase 136 — dev-only "loot a real uncommon drop". Generates a
      * genuine uncommon equipment drop through the engine
-     * `dropItem(templateId, level, 'uncommon')` path (one rolled
-     * affix) and pushes it to inventory. Reports the generated item
-     * name + affix count. Component mount is
+     * `dropItem(templateId, level, 'uncommon')` path (exactly one rolled
+     * modifier) and pushes it to inventory. Reports the generated item
+     * name + modifier count. Component mount is
      * `isDevToolsEnabled()`-guarded.
      */
     lootUncommonItem: () => LootRarityResult;
     /**
      * Phase 136 — dev-only "loot a real rare drop". Generates a
      * genuine rare equipment drop through the engine
-     * `dropItem(templateId, level, 'rare')` path (two rolled affixes)
-     * and pushes it to inventory. Reports the generated item name +
-     * affix count. Component mount is `isDevToolsEnabled()`-guarded.
+     * `dropItem(templateId, level, 'rare')` path (exactly two rolled
+     * modifiers) and pushes it to inventory. Reports the generated item
+     * name + modifier count. Component mount is
+     * `isDevToolsEnabled()`-guarded.
      */
     lootRareItem: () => LootRarityResult;
+    /**
+     * Phase 136 — dev-only "loot a unique relic". Generates a genuine
+     * unique drop from `uniqueTemplates` through the engine
+     * `dropItem(templateId, level, 'unique')` path (its three fixed
+     * modifiers, rolled to level-appropriate values) and pushes it to
+     * inventory. Reports the generated item name + modifier count.
+     * Component mount is `isDevToolsEnabled()`-guarded.
+     */
+    lootUniqueItem: () => LootRarityResult;
     /**
      * Phase 73 — allocate a single stat point. Wraps the engine's
      * `allocateStatPoint(stat)` action. The engine clamps
@@ -1364,8 +1384,10 @@ export function createAppActions(store: AppStore): AppActions {
         applyCharacterPreset: (presetId) => applyCharacterPresetAction(store, presetId),
         applyPlayerTierPreset: (presetId) => applyPlayerTierPresetAction(store, presetId),
         addItemById: (id) => addItemByIdAction(store, id),
+        lootCommonItem: () => lootCommonItemAction(store),
         lootUncommonItem: () => lootUncommonItemAction(store),
         lootRareItem: () => lootRareItemAction(store),
+        lootUniqueItem: () => lootUniqueItemAction(store),
         allocateStatPoint: (stat) => {
             // Engine's `allocateStatPoint` is a zustand action attached
             // to the GameStore (`node_modules/axiomancer-mechanics/dist/

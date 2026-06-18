@@ -7,14 +7,11 @@
  */
 
 import {
-    deriveStats,
     equipItem as engineEquipItem,
-    unequipItem as engineUnequipItem,
     isConsumable,
     isEquipment,
     type Character,
     type Consumable,
-    type DerivedStats,
     type Equipment,
     type GameStore,
     type Item,
@@ -22,6 +19,7 @@ import {
 
 import { freezeViewModel } from './freeze';
 import { parseHealAmount } from '../actions';
+import { computeEquipDelta, type EquipDeltaSide } from './equipDelta';
 import {
     findEquippedInSlot as selectFindEquippedInSlot,
     isEquippedFirstOfSlot as selectIsEquippedFirstOfSlot,
@@ -57,6 +55,21 @@ export interface StatDelta {
     id?: string;
 }
 
+/**
+ * A non-stat change (passive / on-hit / on-defend effect, combat
+ * resource interaction, or keyword/affix) gained or lost by the equip
+ * operation the modal previews. Stat changes ride on `statDeltas`;
+ * everything else the equip alters surfaces here so the preview shows
+ * *all* of an item's effect — not just its four headline combat stats.
+ */
+export interface ModalEffectDelta {
+    /** Display label (resolved engine effect name, resource summary, or
+     * keyword/affix word; falls back to the raw id when unresolved). */
+    label: string;
+    /** `'gained'` when the equip adds this, `'lost'` when it removes it. */
+    direction: 'gained' | 'lost';
+}
+
 export interface ItemModalViewModel {
     /** Item ID the modal is acting on. */
     itemId: string | null;
@@ -72,8 +85,20 @@ export interface ItemModalViewModel {
     confirmLabel: string;
     /** Preview lines (Q2 / Q5 — "potential results"). */
     previewLines: readonly string[];
-    /** Stat deltas for an equip preview (Q5). */
+    /**
+     * Stat deltas for an equip preview (Q5). Covers *every* stat the
+     * equip changes — combat stats, non-combat saves/tests, luck, and
+     * max health — and includes **only** stats whose value actually
+     * changes (unchanged stats are dropped, per the design brief).
+     */
     statDeltas: readonly StatDelta[];
+    /**
+     * Non-stat changes the equip preview should surface — passive /
+     * on-hit / on-defend effects, combat-resource interactions, and
+     * keyword/affix labels gained or lost. Empty for consumables,
+     * display-only rows, and equips that change no effects.
+     */
+    effectDeltas: readonly ModalEffectDelta[];
     /**
      * Name of the currently-equipped item that this equip would
      * replace, or `null` when the slot is empty / this item is
@@ -111,6 +136,7 @@ export function selectItemModalViewModel(
         confirmLabel: 'CLOSE',
         previewLines: [item.description] as readonly string[],
         statDeltas: [] as readonly StatDelta[],
+        effectDeltas: [] as readonly ModalEffectDelta[],
         replacingName: null,
     });
 }
@@ -149,6 +175,7 @@ function buildConsumableModal(player: Character, item: Item): ItemModalViewModel
         confirmLabel: 'DRINK',
         previewLines: previewLines as readonly string[],
         statDeltas: [] as readonly StatDelta[],
+        effectDeltas: [] as readonly ModalEffectDelta[],
         replacingName: null,
     });
 }
@@ -157,34 +184,6 @@ function buildEquipmentModal(player: Character, item: Item): ItemModalViewModel 
     const eq = item as Equipment;
     const isAlreadyEquipped = selectIsEquippedFirstOfSlot(player.inventory, eq);
     const replacing = isAlreadyEquipped ? null : selectFindEquippedInSlot(player.inventory, eq);
-
-    // Calculate actual stat changes by simulating equipment application.
-    // derivedStats are guaranteed present after v1→v2 persistence migration
-    const before: DerivedStats = player.derivedStats;
-    
-    // Simulate the stat changes this equipment would cause
-    let after: DerivedStats;
-    if (isAlreadyEquipped) {
-        // If already equipped, simulate unequipping to show what we'd lose
-        if (replacing) {
-            // There's a replacement item that would become equipped
-            const tempPlayer = engineUnequipItem(player, eq.slot);
-            after = tempPlayer.derivedStats;
-        } else {
-            // No replacement, just show current stats (no change)
-            after = before;
-        }
-    } else {
-        // Not equipped, simulate equipping to show what we'd gain
-        const equippedPlayer = engineEquipItem(player, eq);
-        after = equippedPlayer.derivedStats;
-    }
-    const statDeltas: StatDelta[] = [
-        delta('PHYS ATK', before.physicalAttack, after.physicalAttack, 'physicalAttack'),
-        delta('PHYS DEF', before.physicalDefense, after.physicalDefense, 'physicalDefense'),
-        delta('MENT ATK', before.mentalAttack, after.mentalAttack, 'mentalAttack'),
-        delta('EMOT DEF', before.emotionalDefense, after.emotionalDefense, 'emotionalDefense'),
-    ];
 
     // User-jot 2026-05-22 (oversight 29th): equipment needs an
     // 'unequip' option in addition to equip + discard. Under
@@ -247,6 +246,32 @@ function buildEquipmentModal(player: Character, item: Item): ItemModalViewModel 
               : `${eq.slot.charAt(0).toUpperCase() + eq.slot.slice(1)} slot.`,
     ];
 
+    // Compute the real before/after character for whichever operation
+    // the confirm button performs, then surface *every* changed stat and
+    // effect — not just the four headline combat stats — keeping only
+    // entries that actually change (per the design brief).
+    //
+    // - equip   → wear `eq` (engine replaces any worn slot sibling).
+    // - unequip → take `eq` off and wear `wornSibling` in its place.
+    // - view    → display-only (sole worn item / no action) → no change.
+    let afterChar: Character = player;
+    let newlyWorn: Equipment | null = null;
+    let removed: Equipment | null = null;
+    if (mode === 'equip') {
+        afterChar = engineEquipItem(player, eq);
+        newlyWorn = eq;
+        removed = replacing;
+    } else if (mode === 'unequip' && wornSibling !== null) {
+        afterChar = engineEquipItem(player, wornSibling);
+        newlyWorn = wornSibling;
+        removed = eq;
+    }
+
+    const statDeltas = computeStatDeltas(player, afterChar);
+    const effectDeltas = newlyWorn === null
+        ? []
+        : computeEffectDeltas(newlyWorn, removed, player);
+
     return freezeViewModel({
         itemId: item.id,
         name: item.name,
@@ -258,13 +283,147 @@ function buildEquipmentModal(player: Character, item: Item): ItemModalViewModel 
         confirmLabel,
         previewLines: previewLines as readonly string[],
         statDeltas: statDeltas as readonly StatDelta[],
+        effectDeltas: effectDeltas as readonly ModalEffectDelta[],
         replacingName: replacing === null ? null : replacing.name,
     });
 }
 
-function delta(label: string, before: number, after: number, id?: string): StatDelta {
-    return id !== undefined
-        ? { label, before, after, delta: after - before, id }
-        : { label, before, after, delta: after - before };
+/**
+ * Short chrome labels for the known engine stat keys. Anything not
+ * listed (a stat the engine adds later) falls back to a humanized
+ * upper-case rendering of the key, so the table never silently drops a
+ * new stat.
+ */
+const STAT_LABELS: Record<string, string> = {
+    maxHealth: 'MAX HP',
+    physicalAttack: 'PHYS ATK',
+    physicalSkill: 'PHYS SKL',
+    physicalDefense: 'PHYS DEF',
+    mentalAttack: 'MENT ATK',
+    mentalSkill: 'MENT SKL',
+    mentalDefense: 'MENT DEF',
+    emotionalAttack: 'EMOT ATK',
+    emotionalSkill: 'EMOT SKL',
+    emotionalDefense: 'EMOT DEF',
+    luck: 'LUCK',
+    physicalSave: 'BODY SAVE',
+    physicalTest: 'BODY TEST',
+    mentalSave: 'MIND SAVE',
+    mentalTest: 'MIND TEST',
+    emotionalSave: 'HEART SAVE',
+    emotionalTest: 'HEART TEST',
+};
+
+/** Engine stat keys the inventory item-stat tooltip synthesizer can
+ * resolve (`<dimension><Verb>` — see `tooltip.engine.ts`). Only these
+ * get a `StatDelta.id` so the row's TooltipTarget never renders an
+ * empty chip for a key the synthesizer can't describe. */
+const TOOLTIP_STAT_KEY = /^(physical|mental|emotional)(Attack|Skill|Defense|Save|Test)$/;
+
+function statLabelFor(key: string): string {
+    return (
+        STAT_LABELS[key]
+        ?? key.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase()).toUpperCase().trim()
+    );
+}
+
+/**
+ * Flatten a character's numeric stats into one `key → value` map —
+ * derived combat stats, non-combat saves/tests, and max health — so the
+ * modal can diff any of them.
+ */
+function characterStatMap(character: Character): Map<string, number> {
+    const out = new Map<string, number>();
+    const add = (key: string, value: unknown) => {
+        if (typeof value === 'number' && Number.isFinite(value)) out.set(key, value);
+    };
+    for (const [key, value] of Object.entries(character.derivedStats ?? {})) add(key, value);
+    for (const [key, value] of Object.entries(character.nonCombatStats ?? {})) add(key, value);
+    add('maxHealth', character.maxHealth);
+    return out;
+}
+
+/**
+ * Diff every stat between the player and the post-operation character,
+ * emitting a before→after row for each stat that *changed*. Unchanged
+ * stats are dropped. Ordered by `STAT_LABELS` declaration order so the
+ * combat stats lead and the rest follow stably; unknown keys trail in
+ * alphabetical order.
+ */
+function computeStatDeltas(before: Character, after: Character): StatDelta[] {
+    const beforeMap = characterStatMap(before);
+    const afterMap = characterStatMap(after);
+    const keys = new Set<string>([...beforeMap.keys(), ...afterMap.keys()]);
+
+    const known = Object.keys(STAT_LABELS);
+    const orderOf = (key: string) => {
+        const i = known.indexOf(key);
+        return i === -1 ? Number.MAX_SAFE_INTEGER : i;
+    };
+
+    const out: StatDelta[] = [];
+    for (const key of keys) {
+        const b = beforeMap.get(key) ?? 0;
+        const a = afterMap.get(key) ?? 0;
+        if (a === b) continue;
+        const row: StatDelta = TOOLTIP_STAT_KEY.test(key)
+            ? { label: statLabelFor(key), before: b, after: a, delta: a - b, id: key }
+            : { label: statLabelFor(key), before: b, after: a, delta: a - b };
+        out.push(row);
+    }
+    out.sort((x, y) => {
+        const ox = orderOf(idOrLabelKey(x));
+        const oy = orderOf(idOrLabelKey(y));
+        if (ox !== oy) return ox - oy;
+        return x.label.localeCompare(y.label);
+    });
+    return out;
+}
+
+/** Recover the engine stat key for ordering: prefer the explicit id,
+ * else fall back to the label (unknown keys, which trail anyway). */
+function idOrLabelKey(row: StatDelta): string {
+    return row.id ?? row.label;
+}
+
+/** Summarise a combat-resource interaction for a one-line effect row. */
+function resourceLabel(entry: EquipDeltaSide['resources'][number]): string {
+    const sign = entry.amount > 0 ? '+' : '';
+    const when = entry.kind === 'start' ? 'start' : entry.kind;
+    return `${entry.resource} ${sign}${entry.amount} (${when})`;
+}
+
+/** Flatten one side (gained or lost) of an equip delta into labels. */
+function effectLabelsForSide(side: EquipDeltaSide): string[] {
+    const out: string[] = [];
+    for (const e of side.passiveEffects) out.push(e.name ?? e.id);
+    for (const e of side.onHitEffects) out.push(`on-hit: ${e.name ?? e.id}`);
+    for (const e of side.onDefendEffects) out.push(`on-defend: ${e.name ?? e.id}`);
+    for (const r of side.resources) out.push(resourceLabel(r));
+    for (const k of side.keywords) out.push(k.label);
+    return out;
+}
+
+/**
+ * Compute the passive-effect / resource / keyword changes the equip
+ * causes by diffing the newly-worn item against the one it removes.
+ * Stat changes are handled separately (`computeStatDeltas`); rolled
+ * modifiers are intentionally omitted here because their effect already
+ * shows up in the stat table.
+ */
+function computeEffectDeltas(
+    newlyWorn: Equipment,
+    removed: Equipment | null,
+    player: Character,
+): ModalEffectDelta[] {
+    const equipDelta = computeEquipDelta(newlyWorn, removed, player);
+    const out: ModalEffectDelta[] = [];
+    for (const label of effectLabelsForSide(equipDelta.gained)) {
+        out.push({ label, direction: 'gained' });
+    }
+    for (const label of effectLabelsForSide(equipDelta.lost)) {
+        out.push({ label, direction: 'lost' });
+    }
+    return out;
 }
 

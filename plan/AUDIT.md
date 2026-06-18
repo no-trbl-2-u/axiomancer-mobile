@@ -44,7 +44,26 @@
 
 > **Audit update (2026-06-18, fourteenth tick).** questNpcDialogueFor addressed last tick — the presenter, component, minigame-infra, and exploration-maps boundary sweeps have all drained their logic-bearing untested code. With no logic-bearing surface left, the sweep takes the cheapest remaining player-facing coverage gap: `components/inventory/SlotBanner.tsx` (74 lines), the inventory slot-filter banner rendered in the inventory tab (`app/(tabs)/inventory/index.tsx:138`) when filtering equipment by slot. The recent twelfth/thirteenth ticks deferred it as "pure static layout", but it is not purely static — it owns an interactive `onClear` callback fired from a `TouchableOpacity` (`testID="slot-filter-clear"`, `accessibilityLabel="Clear slot filter"`) plus prop-driven eyebrow / ✦-prefixed slot-label / clear-label rendering. Every sibling in `components/inventory/` carries a colocated test; SlotBanner was the last one without. A modest but real contract (press wiring + a11y label + prop rendering) at near-zero ship cost — picked this tick.
 
+> **Audit update (2026-06-18, fifteenth tick).** SlotBanner addressed last tick — `components/inventory/` is now fully covered. The component-coverage sweep is at its true frontier: a fresh repo-wide scan for source files lacking a colocated/`__tests__` test, cross-referenced against test imports, leaves only large e2e-covered modules (`actions.ts`, the `*.engine.ts` presenters), pure static SVG art (`glyphs`/`figures`/`danger-art`/`TitleEmblem`/`VictoryWreath`/portraits), dev-only code (`DevToolsSections`, `item-by-id`), and one player-facing component with **zero** test references of any kind — `components/exploration/MapOverlays.tsx` (67 lines). It is the compass + NODE GRAPH + bottom-legend chrome layered over the exploration map on every exploration screen. Earlier ticks deferred it as "pure static layout", but it is prop-driven: it consumes a `legend: { left, right }` prop and renders both strings into the bottom legend row, alongside the fixed `N ↑ · scale: leagues` compass and `NODE GRAPH` label. Thin, but a real player-facing render contract with no coverage and near-zero ship cost — picked this tick.
+
 ## Top 5 findings (scored)
+
+### [x] [5.4] MapOverlays (exploration-map compass/legend chrome) missing test coverage affecting exploration-UI maintainability
+- category: tests
+- impact: 4
+- ease: 9
+- base-score: 3.6
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias — player-facing exploration map overlay)
+- final-score: 5.4
+- next: Add a colocated components/exploration/__tests__/MapOverlays.test.tsx — render with a legend prop, assert the fixed compass ("N ↑ · scale: leagues") and "NODE GRAPH" chrome render, assert both legend.left/legend.right strings render, and assert updated legend props reflect
+- observation: components/exploration/MapOverlays.tsx is the compass + NODE GRAPH label + bottom-legend chrome layered over the exploration map on every exploration screen; it is prop-driven (consumes legend.left/legend.right and renders both into the legend row) yet was the only player-facing component in the repo with zero test references of any kind
+- evidence: a repo-wide untested-source scan cross-referenced against test imports left MapOverlays as the sole player-facing component with no `*.test.*` reference (item-by-id is dev-only; the remaining untested files are e2e-covered presenters or pure static SVG art); every sibling in components/exploration/ (EventBadge, ExplorationNode, MapCanvas, NodeGrid, OptionRow, OptionsList) carries a colocated test
+- suggested fix: Create components/exploration/__tests__/MapOverlays.test.tsx covering the fixed compass + NODE GRAPH chrome, both legend strings rendering, and updated-prop reflection, mirroring EventBadge.test.tsx's direct-render style
+- source: audit
+- issue: #465
+- addressed: 2026-06-18 via commit acefb1f
+- fix: Added components/exploration/__tests__/MapOverlays.test.tsx (6 hermetic cases) pinning the fixed compass ("N ↑ · scale: leagues") + NODE GRAPH chrome, both prop-driven legend strings (legend.left/legend.right), updated-prop reflection (old strings gone, new strings present), and empty-legend resilience. Rendered directly without provider scaffolding, mirroring EventBadge.test.tsx. Verify green (249 suites / 2639 tests, +6).
 
 ### [x] [8.1] SlotBanner (inventory slot-filter banner) missing test coverage affecting inventory maintainability
 - category: tests

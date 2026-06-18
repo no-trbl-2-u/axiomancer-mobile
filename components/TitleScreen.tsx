@@ -1,9 +1,12 @@
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { FONTS } from '@/theme/axm';
 import { makeStyles } from '@/theme/runtime';
 import { useGameActions } from '@/state/GameStoreProvider';
-import { TitleEmblem } from '@/components/art/TitleEmblem';
-import { FiligreeRule } from '@/components/art/Filigree';
+
+// The throne-room key art doubles as the launcher icon; here it fills
+// the title screen and the painted "AxiomanceR" wordmark carries the brand.
+const TITLE_ART = require('@/assets/images/title-embark.jpg');
 
 interface TitleScreenProps {
   onContinue: () => void;
@@ -23,44 +26,45 @@ export function TitleScreen({ onContinue }: TitleScreenProps) {
 
   return (
     <View style={styles.container}>
-      {/* Crest + title lockup */}
-      <View style={styles.titleSection}>
-        <TitleEmblem size={156} title="Axiomancer crest — a radiant eye above a sword" />
-        <Text style={styles.mainTitle}>AXIOMANCER</Text>
-        <Text style={styles.subtitle}>· MOBILE ·</Text>
+      {/* Full-bleed key art — anchored to the top so the painted
+          wordmark stays in frame on tall portrait screens. */}
+      <Image
+        source={TITLE_ART}
+        style={StyleSheet.absoluteFill}
+        contentFit="cover"
+        contentPosition="top center"
+        accessibilityLabel="A crowned king enthroned beside a horned axiomancer in a stained-glass hall"
+      />
+
+      {/* Bottom scrim so the call-to-action reads over the art. */}
+      <View style={styles.scrim} pointerEvents="none">
+        <View style={styles.scrimBand1} />
+        <View style={styles.scrimBand2} />
+        <View style={styles.scrimBand3} />
       </View>
 
-      {/* Flavor text */}
-      <View style={styles.flavorSection}>
-        <FiligreeRule />
-        <Text style={styles.flavorText}>
-          You are a PILGRIM in the cursed lands, carrying ancient knowledge and modern
-          steel. The path ahead winds through strange territories where VITAE flows like
-          blood and every choice shapes your legend.
+      {/* Call to action */}
+      <View style={styles.content}>
+        <Text style={styles.tagline}>
+          The cursed lands await. Carry your ancient knowledge and modern
+          steel into the LEAGUES beyond.
         </Text>
-        <FiligreeRule />
-      </View>
 
-      {/* Start button */}
-      <View style={styles.buttonSection}>
         <Pressable
           style={({ pressed }) => [
-            styles.startButton,
-            pressed && styles.startButtonPressed,
+            styles.embarkButton,
+            pressed && styles.embarkButtonPressed,
           ]}
           onPress={handleStartGame}
           accessibilityRole="button"
-          accessibilityLabel="Begin your journey"
+          accessibilityLabel="Embark on your journey"
         >
-          <Text style={styles.startButtonText}>BEGIN JOURNEY</Text>
+          <Text style={styles.embarkButtonText}>EMBARK…</Text>
         </Pressable>
-      </View>
 
-      {/* Footer */}
-      <View style={styles.footer}>
         <Text style={styles.footerText}>
           Your path begins in the fishing village, where travelers gather
-          before venturing into the LEAGUES beyond.
+          before venturing into the realms beyond.
         </Text>
       </View>
     </View>
@@ -71,54 +75,52 @@ const useStyles = makeStyles((AXM) => ({
   container: {
     flex: 1,
     backgroundColor: AXM.bg,
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
+  },
+  // Stacked translucent bands fake a bottom-up gradient without an
+  // extra gradient dependency, fading the art into the dark CTA panel.
+  scrim: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '55%',
+    justifyContent: 'flex-end',
+  },
+  scrimBand1: {
+    height: '34%',
+    backgroundColor: 'rgba(10,10,10,0.25)',
+  },
+  scrimBand2: {
+    height: '33%',
+    backgroundColor: 'rgba(10,10,10,0.6)',
+  },
+  scrimBand3: {
+    height: '33%',
+    backgroundColor: 'rgba(10,10,10,0.9)',
+  },
+  content: {
     alignItems: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 28,
+    paddingBottom: 48,
+    gap: 22,
   },
-  titleSection: {
-    alignItems: 'center',
-    marginBottom: 36,
-  },
-  mainTitle: {
-    fontFamily: FONTS.gothic,
-    fontSize: 48,
-    color: AXM.parchment,
-    textAlign: 'center',
-    letterSpacing: 2,
-    marginTop: 8,
-    // Soft glow so the wordmark reads as lit rather than flat.
-    textShadowColor: AXM.sulfurMed,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 14,
-  },
-  subtitle: {
-    fontFamily: FONTS.sans,
-    fontSize: 16,
-    color: AXM.sulfur,
-    letterSpacing: 8,
-    marginTop: 6,
-    opacity: 0.85,
-  },
-  flavorSection: {
-    marginBottom: 40,
-    paddingHorizontal: 8,
-    maxWidth: 340,
-    gap: 16,
-  },
-  flavorText: {
+  tagline: {
     fontFamily: FONTS.serif,
     fontSize: 16,
-    color: AXM.parchmentDim,
+    color: AXM.parchment,
     textAlign: 'center',
     lineHeight: 24,
+    maxWidth: 340,
+    // Keep the line legible where it crosses brighter art.
+    textShadowColor: 'rgba(0,0,0,0.9)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 6,
   },
-  buttonSection: {
-    marginBottom: 48,
-  },
-  startButton: {
+  embarkButton: {
     backgroundColor: AXM.sulfur,
     paddingVertical: 16,
-    paddingHorizontal: 40,
+    paddingHorizontal: 56,
     borderWidth: 1,
     borderColor: AXM.parchment,
     // Lift the CTA off the dark field with an accent glow.
@@ -128,22 +130,16 @@ const useStyles = makeStyles((AXM) => ({
     shadowRadius: 16,
     elevation: 8,
   },
-  startButtonPressed: {
+  embarkButtonPressed: {
     backgroundColor: AXM.rust,
     borderColor: AXM.parchment,
   },
-  startButtonText: {
+  embarkButtonText: {
     fontFamily: FONTS.sans,
-    fontSize: 18,
+    fontSize: 20,
     color: AXM.bg,
-    letterSpacing: 3,
+    letterSpacing: 4,
     textAlign: 'center',
-  },
-  footer: {
-    position: 'absolute',
-    bottom: 32,
-    alignItems: 'center',
-    paddingHorizontal: 32,
   },
   footerText: {
     fontFamily: FONTS.serifItalic,
@@ -151,6 +147,10 @@ const useStyles = makeStyles((AXM) => ({
     color: AXM.bone,
     textAlign: 'center',
     lineHeight: 17,
-    opacity: 0.7,
+    opacity: 0.85,
+    maxWidth: 320,
+    textShadowColor: 'rgba(0,0,0,0.9)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
 }));

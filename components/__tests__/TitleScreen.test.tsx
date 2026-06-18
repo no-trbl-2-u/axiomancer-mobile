@@ -23,7 +23,7 @@ describe('TitleScreen', () => {
     return <GameStoreProvider store={store}>{children}</GameStoreProvider>;
   };
 
-  it('renders title and flavor text', () => {
+  it('renders the tagline and footer flavor text', () => {
     const mockOnContinue = jest.fn();
     const { getByText } = render(
       <TestWrapper>
@@ -31,13 +31,11 @@ describe('TitleScreen', () => {
       </TestWrapper>
     );
 
-    expect(getByText('AXIOMANCER')).toBeTruthy();
-    expect(getByText('· MOBILE ·')).toBeTruthy();
-    expect(getByText(/You are a PILGRIM/)).toBeTruthy();
+    expect(getByText(/The cursed lands await/)).toBeTruthy();
     expect(getByText(/fishing village/)).toBeTruthy();
   });
 
-  it('renders begin journey button with accessibility', () => {
+  it('renders embark button with accessibility', () => {
     const mockOnContinue = jest.fn();
     const { getByRole, getByText } = render(
       <TestWrapper>
@@ -47,11 +45,11 @@ describe('TitleScreen', () => {
 
     const button = getByRole('button');
     expect(button).toBeTruthy();
-    expect(button.props.accessibilityLabel).toBe('Begin your journey');
-    expect(getByText('BEGIN JOURNEY')).toBeTruthy();
+    expect(button.props.accessibilityLabel).toBe('Embark on your journey');
+    expect(getByText('EMBARK…')).toBeTruthy();
   });
 
-  it('calls onContinue when begin journey button is pressed', () => {
+  it('calls onContinue when embark button is pressed', () => {
     const mockOnContinue = jest.fn();
     const { getByRole } = render(
       <TestWrapper>
@@ -61,11 +59,11 @@ describe('TitleScreen', () => {
 
     const button = getByRole('button');
     fireEvent.press(button);
-    
+
     expect(mockOnContinue).toHaveBeenCalledTimes(1);
   });
 
-  it('applies correct styling and theme colors', () => {
+  it('applies the embark button styling and theme colors', () => {
     const mockOnContinue = jest.fn();
     const { getByText } = render(
       <TestWrapper>
@@ -73,10 +71,10 @@ describe('TitleScreen', () => {
       </TestWrapper>
     );
 
-    const title = getByText('AXIOMANCER');
-    expect(title.props.style).toMatchObject({
+    const label = getByText('EMBARK…');
+    expect(label.props.style).toMatchObject({
       fontFamily: expect.any(String),
-      fontSize: 48,
+      fontSize: 20,
       color: expect.any(String),
     });
   });

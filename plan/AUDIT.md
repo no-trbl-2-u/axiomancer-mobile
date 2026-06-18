@@ -50,7 +50,7 @@
 - suggested fix: Create state/presenters/__tests__/village.engine.test.ts covering the EMPTY_VM gate, resolveWareItem (real consumable id, real equipment-template id, unknown-id null), merchant line/hasDialogue derivation, unknown-ware filtering, and the affordability threshold, following the presenter Pick<AppStoreState> fixture pattern
 - source: audit
 - issue: #451
-- addressed: 2026-06-18 via commit <pending>
+- addressed: 2026-06-18 via commit 956d3d0
 - fix: Added state/presenters/__tests__/village.engine.test.ts (13 hermetic cases) pinning resolveWareItem (real consumable id, real equipment-template id, unknown-id -> null), the EMPTY_VM gate (no-pending + encounter kind), the active villageName/body/currency mapping, merchant line/hasDialogue derivation (dialogue-tree root text, no-tree, empty-text node), real-ware resolution dropping unknown ids, the affordability threshold (9 vs 10 against price 10, exact boundary affordable), missing-currency-as-zero, and the no-shop empty ware list. Real library ids read at test time so the suite survives content churn. Verify green (242 suites / 2560 tests, +13).
 
 ### [x] [6.0] tutorial-steps (gathering guided-first-gleaning step-predicate engine) missing direct unit-test coverage affecting gathering-onboarding maintainability

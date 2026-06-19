@@ -60,7 +60,26 @@
 
 > **Audit update (2026-06-19, twenty-second tick).** hazard/palette.ts addressed last tick. The twenty-first tick explicitly deferred the near-identical sibling `components/gathering/palette.ts` (66 lines) to this tick — it carried zero test references of any kind. It owns the `FAMILY` per-material colorway+glyph map (bloom/resin/vein/bone, each pairing a colour with a distinct glyph shape — sprig/drop/shard/knuckle — as the non-colour channel for colour-blind play), the `GL` site hues, `TRAIT_UI` (gift/lure/breath/tangle accents), the plot/card-stock ink constants, and the live-palette `approachAccent(AXM)` function (`glean` ← `AXM.bone` tracks the active theme, `strip` pinned to acid-green). A regression that drops a family, duplicates a glyph, or mis-derives `approachAccent`'s theme-tracking GLEAN accent silently mis-paints the gathering minigame with no failing test. The pre-scoped, gameplay-biased, near-zero-cost follow-up named by the prior tick — picked this tick.
 
+> **Audit update (2026-06-19, twenty-third tick).** gathering/palette.ts addressed last tick — the player-facing component layer (including both minigame palettes) is now drained of logic-bearing untested code; the residual `components/` set is pure static SVG art (`glyphs`/`figures`/`danger-art`/`Filigree`/`TitleEmblem`/`VictoryWreath`/`PlayerPortrait`/`CreatureScene`). A fresh repo-wide untested-source scan (basenames cross-referenced against every `*.test.ts(x)` import) leaves only five source files with zero test references: `components/hazard/danger-art.tsx` + `theme/web-scrollbar.ts` + `hooks/useFontFallbacks.tsx` + `hooks/useReducedMotion.ts` (pure static art / side-effect / trivial pass-throughs), and one genuinely logic-bearing module — `state/dev/item-by-id.ts` (119 lines), the Phase 131 "add item by id" inventory-injection tool used in the **Kid playthrough evidence matrix** (a user-facing evidence workflow, not mere dev convenience). It owns `addItemByIdAction`'s branchy resolution: the empty/whitespace-id guard, the equipment-template → unique-template → consumable priority resolution against engine truth, the `rarity: 'unique'` tag on unique drops, the unknown-id graceful failure, and the try/catch console-error path — yet its sibling dev tool `state/dev/loot-rarity.ts` carries a colocated test while this one had none. A regression (priority reorder, dropped branch, missing unique tag) silently breaks the user's deterministic evidence runs. Scored impact 4 (user evidence workflow) × ease 9 → 3.6, clears the 3.0 floor — picked this tick.
+
 ## Top 5 findings (scored)
+
+### [x] [3.6] state/dev/item-by-id.ts (Phase 131 add-item-by-id evidence tool) missing test coverage affecting Kid playthrough evidence runs
+- category: tests
+- impact: 4
+- ease: 9
+- base-score: 3.6
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.0 (tests category; dev-tooling does not take the gameplay 1.5× nor the docs 0.5× — neutral)
+- final-score: 3.6
+- next: Add a colocated state/dev/__tests__/item-by-id.test.ts mirroring the loot-rarity sibling — real store + real engine, no mocks — pinning empty/whitespace-id guard, equipment resolution (iron-blade), unique resolution + rarity:'unique' tag (axioms-edge), consumable resolution (healing-potion), trim-before-resolve, and unknown-id graceful failure with no inventory change
+- observation: state/dev/item-by-id.ts (119 lines) is the Phase 131 add-item-by-id inventory-injection tool used in the Kid playthrough evidence matrix; it owns addItemByIdAction's branchy resolution (empty-id guard → equipment-template → unique-template → consumable priority, rarity:'unique' tagging, unknown-id graceful failure, try/catch path) yet carried zero test references of any kind
+- evidence: a basename cross-reference of every *.test.ts(x) import surfaced item-by-id.ts as logic-bearing with no colocated __tests__ entry and no e2e import; its sibling state/dev/loot-rarity.ts carries state/dev/__tests__/loot-rarity.test.ts while this one had none
+- suggested fix: Create state/dev/__tests__/item-by-id.test.ts pinning the four resolution branches + guards against real engine truth so a priority reorder, dropped branch, or missing unique tag fails a test rather than silently breaking deterministic evidence runs
+- source: audit
+- issue: #474
+- addressed: 2026-06-19 via commit (this tick)
+- fix: Added state/dev/__tests__/item-by-id.test.ts (7 hermetic cases, real store + real engine) pinning the empty/whitespace-id guard, equipment resolution (iron-blade), unique resolution + rarity:'unique' tag (axioms-edge), consumable resolution (healing-potion), trim-before-resolve, and unknown-id graceful failure with no inventory change. Verify green (257 suites / 2714 tests, +7).
 
 ### [x] [6.0] gathering/palette.ts (gathering-minigame family colorway + approach-accent palette) missing test coverage affecting gathering-minigame visual integrity
 - category: tests

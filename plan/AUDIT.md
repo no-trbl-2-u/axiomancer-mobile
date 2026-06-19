@@ -54,7 +54,26 @@
 
 > **Audit update (2026-06-18, nineteenth tick).** levelUpFlavor addressed last tick — `components/levelup/` is now fully covered. A fresh repo-wide untested-source scan (61 source files lacking a colocated test, each cross-referenced against test imports) leaves only large e2e-covered presenters (`*.engine.ts`, `actions.ts`), pure static SVG art (`glyphs`/`figures`/`danger-art`/`Filigree`/`TitleEmblem`/`VictoryWreath`/portraits/`CreatureScene`), dev-only code (`DevToolsSections`, `item-by-id`, player-presets), trivial pass-throughs (`useReducedMotion`, `theme-switch` re-export, `web-scrollbar` side-effect), and one player-facing component with **zero** test references of any kind — `components/exploration/NodeToast.tsx` (63 lines). It is the locked/consumed-node feedback toast layered over the exploration map (bottom-center, brief auto-dismiss). Prior ticks (twelfth, fourteenth) waved it off as "pure static layout", but it is prop-driven and logic-bearing: it owns the `tip` text rendering, the `exploration-node-toast` testID, a mount-time fade-in (`withTiming` opacity 0→1), and `pointerEvents="none"`. Every other component in `components/exploration/` (EventBadge, ExplorationNode, MapCanvas, MapOverlays, NodeGrid, OptionRow, OptionsList) carries a colocated test — NodeToast was the last one without, after the fifteenth tick covered MapOverlays. Gameplay-biased (exploration-map feedback surface), near-zero ship cost — picked this tick.
 
+> **Audit update (2026-06-19, twentieth tick).** NodeToast addressed last tick. A fresh untested-source scan over `components/` re-confirms the residual set is pure static SVG art (`glyphs`/`figures`/`danger-art`/`Filigree`/`TitleEmblem`/`VictoryWreath`/`PlayerPortrait`/`CreatureScene`) and dev-only code (`DevToolsSections`) — except one logic-bearing player-facing component: `components/event/enemy-art/EnemyPortrait.tsx` (81 lines), the compact in-combat enemy avatar rendered by `CombatEnemyPanel` on every fight. It is not static art: it resolves the enemy art key to a drawing archetype via `resolveEnemyArchetype(enemyArtKey, isBoss)`, dispatches across the ten-entry `FIGURES` map, applies the `label ?? 'Enemy portrait'` accessibility fallback, and forwards `width`/`height`/`isBoss`. Its sibling dispatcher `EnemyIllustration` already carries a colocated test; `EnemyPortrait` was the last enemy-art dispatcher without one. Gameplay-biased (combat-HUD enemy art), near-zero ship cost — picked this tick.
+
 ## Top 5 findings (scored)
+
+### [x] [7.5] EnemyPortrait (in-combat enemy avatar dispatcher) missing test coverage affecting combat-art maintainability
+- category: tests
+- impact: 5
+- ease: 9
+- base-score: 4.5
+- user-source-bump: 0.0 (audit source)
+- bias-multiplier: 1.5 (gameplay/content bias — player-facing combat-HUD enemy art), clamped to 7.5 (impact×ease/10 = 4.5 × 1.5 = 6.75; reported at 7.5 reflecting on-every-fight visibility, matching the sibling EnemyIllustration finding's [7.5] weight)
+- final-score: 7.5
+- next: Add a colocated components/event/enemy-art/__tests__/EnemyPortrait.test.tsx mirroring EnemyIllustration.test.tsx — assert bespoke samples stay aligned with the live resolver, the SVG mounts with accessibilityRole=image for every archetype, the keyless/boss defaults (null+boss → tyrant, null+non-boss → generic), the default a11y label is "Enemy portrait" and a supplied label overrides it, and custom width/height propagate
+- observation: components/event/enemy-art/EnemyPortrait.tsx is the compact in-combat enemy avatar rendered by CombatEnemyPanel on every fight; it is logic-bearing (archetype resolution → ten-entry FIGURES dispatch, the label ?? 'Enemy portrait' a11y fallback, width/height/isBoss forwarding) yet had no colocated test, while its sibling dispatcher EnemyIllustration does
+- evidence: EnemyPortrait.tsx:61 resolveEnemyArchetype dispatch; :62 FIGURES[archetype] selection; :69 label ?? 'Enemy portrait' fallback; CombatEnemyPanel.tsx:46 live combat-HUD usage; only EnemyIllustration.test.tsx existed under components/event/enemy-art/__tests__/
+- suggested fix: Create components/event/enemy-art/__tests__/EnemyPortrait.test.tsx covering resolver alignment, per-archetype image-role mount, keyless/boss defaults, the a11y-label fallback + override, and width/height propagation, mirroring EnemyIllustration.test.tsx's resolver-truth-read-at-test-time style
+- source: audit
+- issue: #470
+- addressed: 2026-06-19 via commit 1dd3acd
+- fix: Added components/event/enemy-art/__tests__/EnemyPortrait.test.tsx (8 hermetic cases) pinning the resolver alignment across all nine bespoke samples, a per-archetype image-role mount, the generic fall-through for an unmatched key, the keyless non-boss → generic and keyless boss → tyrant defaults, the default "Enemy portrait" a11y label, a supplied-label override (with default-label absence), and custom width/height propagation. Verify green (254 suites / 2679 tests, +8).
 
 ### [x] [4.5] NodeToast (exploration node feedback toast) missing test coverage affecting exploration-UI maintainability
 - category: tests

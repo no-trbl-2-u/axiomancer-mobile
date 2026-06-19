@@ -80,7 +80,7 @@
 - suggested fix: Add placement-math cases passing an explicit windowSize and a stub measurable anchorRef, asserting the resulting tooltip left/top against each branch, plus a retry case where the first measureInWindow returns (0,0,0,0) and the rAF retry yields real coords
 - source: audit
 - issue: #475
-- addressed: 2026-06-19 via commit <pending>
+- addressed: 2026-06-19 via commit 718a841
 - fix: Extended components/tooltip/__tests__/TooltipProvider.test.tsx with a `<TooltipProvider> placement math` suite (7 new cases) that mounts the provider directly with an explicit `windowSize` and a stub measurable anchorRef, reading the rendered tooltip's resolved left/top: above-anchor default, flip-below at y<100, bottom-edge re-flip + top clamp, horizontal clamp at both edges, the measureInWindow (0,0,0) one-frame requestAnimationFrame retry positioning from the retry coords, and the retry-runs-exactly-once contract (second zero box taken at face value via isRetry, positions at the clamped 16/16 origin). Verify green (257 suites / 2721 tests, +7).
 
 ### [x] [3.6] state/dev/item-by-id.ts (Phase 131 add-item-by-id evidence tool) missing test coverage affecting Kid playthrough evidence runs

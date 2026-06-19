@@ -1,7 +1,7 @@
 # Phase candidates
 
-> Last pass: 2026-06-18 at commit 0b36aa2
-> Pass count: 81
+> Last pass: 2026-06-19 at commit 4f0a41e
+> Pass count: 82
 > Posture: aggressive (set via /oversight 2026-05-24, 37th call —
 >   threshold ≥ 2.5, cap 5/pass, accepts smells)
 
@@ -637,7 +637,97 @@
 
 **Resolution:** Shipped in Phase 103 (`plan/steps/01_build_plan.md`). Candidate removed from Pending during Glanton cleanup because it was no longer engine-gated marching work. Remaining doctrine gap is mobile's local simulation vs engine truth, tracked separately by the doctrine-alignment audit.
 
+### [ ] [score 4.5] Typed engine-store bridge accessor — drain `state/actions.ts` `as unknown as GameState` cast cluster
+- proposed: 2026-06-19, expand pass 82
+- source signals:
+  - **Smell (§4.I `as any`/`as unknown` cluster):** `state/actions.ts`
+    carries 16 `as any` / `as unknown` casts (threshold is 5+ in one
+    file). The dominant pattern is the engine-store bridge:
+    `store.getState() as unknown as GameState` and
+    `state as unknown as GameState` at lines 745, 806, 836, 1396,
+    1408, 1419, 1983, 2238, 2297, plus
+    `entry as unknown as BattleLogEntry` at 939, 2325, 2351. Several
+    in-file comments already flag the casts as known debt ("earlier
+    triplet of `as any` casts", line 1213; "closed via [2.5]
+    event-audit row 4", line 2154) — prior per-cast drains landed, but
+    the structural `GameState` store-bridge cast remains uncentralised.
+  - **Precedent:** Phase 69 shipped a typed `setState` wrapper that
+    drained an analogous repeated-cast cluster — the same shape of fix.
+- rationale: This is a *specific, evidenced* cast cluster (file + lines
+  + count cited), not a generic re-tread of the archived `as any`
+  drain the do-not-re-propose guard closes. A single typed bridge
+  accessor (e.g. `getEngineState(): GameState` / a typed
+  `appendBattleLog` helper) consolidates the repeated structural casts
+  into one audited boundary, so future call sites inherit the type
+  without re-casting. High-leverage because the engine-bridge accessor
+  is the seam every mobile action crosses.
+- proposed scope: 1 phase — introduce a typed engine-state bridge
+  accessor (and a typed battle-log append helper) in the state layer,
+  migrate the `as unknown as GameState` / `as unknown as BattleLogEntry`
+  call sites in `state/actions.ts` to it, keep verify green.
+- estimated phases: 1
+- conflicts: none — the do-not-re-propose guard permits `as any`
+  candidates filed *with a specific file + line count*, which this is.
+
+### [ ] [needs-user-call] [score 3.5] Fresh-maintainer testing-prerequisite docs (GH #350)
+- proposed: 2026-06-19, expand pass 82
+- source signals:
+  - **Triage backlog (§4.C):** GH issue #350 "Testing prerequisite
+    unclear for fresh maintainers" sits `triage:loop-queued`.
+  - **Critique theme (§4.B):** the repo-proxy critique runs as the
+    "fresh maintainer" proxy (CRITIQUE pass 44 framing); maintainer
+    comprehension is a standing critique lens, so the issue corroborates
+    an existing review axis rather than standing alone.
+- rationale: An onboarding/docs gap an external maintainer actually
+  hit. Likely a single short docs phase (clarify the test-run
+  prerequisite — Node/pnpm/jest setup — in README/CONTRIBUTING or the
+  docs the critique reader proxies). Marked `[needs-user-call]` only
+  because the *exact* prerequisite to document should be confirmed
+  against the issue body during promotion, not because of a spec
+  conflict.
+- proposed scope: 1 docs phase — document the testing prerequisite
+  clearly for fresh maintainers, resolving #350.
+- estimated phases: 1
+- conflicts: none.
+
+### [ ] [needs-user-call] [score 3.0] Coverage-crawl exhaustion — the loop needs a substantive next direction
+- proposed: 2026-06-19, expand pass 82
+- source signals:
+  - **Commit-pattern (§4.G):** all 19 commits since expand pass 81
+    (commit db24bd8) are coverage-drain pairs (`audit: finding […]
+    addressed` + `test: cover …`) plus one blocked-critique heartbeat —
+    zero substantive product/feature commits.
+  - **Plan gap (§4.H):** the AUDIT 21st-tick note states the
+    player-facing logic-bearing layer "is now drained of untested
+    logic-bearing code; what remains there is pure static SVG art …
+    and dev-only code." A repo-wide scan this pass confirms exactly one
+    untested player-facing source file remains —
+    `components/hazard/danger-art.tsx` (203 lines, pure static SVG art,
+    explicitly out of coverage scope).
+  - **Smell (§4.I test:code crawl):** the iterate audit is bottoming
+    out — its next picks are diminishing-return coverage of static art,
+    after which it cascades to expand on empty.
+- rationale: This is a *meta* signal, not a concrete phase: the loop
+  has run its coverage-completion crawl to the floor and now needs a
+  product-direction decision (more content? a new feature surface?
+  perf/polish? engine-consumer work?). `/oversight` / the user is the
+  right place to pick the substance — `/expand` surfaces the moment,
+  it does not invent the direction. Filed `[needs-user-call]` so the
+  next oversight pass sees that delivery fuel, not coverage, is what's
+  scarce.
+- proposed scope: direction call — pick the next substantive theme;
+  may reshape several phases.
+- estimated phases: unknown (depends on the direction chosen).
+- conflicts: none — surfaces a posture/direction question, proposes no
+  spec change.
+
 ## Considered (below threshold)
+
+- **[below 2.5] character/index.tsx file-length (610 lines)** (expand
+  pass 82, 2026-06-19) — just over the ~600-line outlier line but a
+  cohesive SELF-tab screen, not 4 unrelated sections; per §4.I "don't
+  recommend splitting code that's logically cohesive." Re-evaluate only
+  if it grows materially or sprouts unrelated concerns.
 
 - **[score 3.0] Hex color token migration (PlaceholderIllustration /
   EncounterModalOverlay)** (expand pass 54, commit 3ddd842) —

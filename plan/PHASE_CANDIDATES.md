@@ -1357,6 +1357,30 @@ warranted a full phase promotion:
 
 ## Promoted
 
+### Phase 138 — Memoir inner tabs: Quests
+- promoted: 2026-06-19 by T direct steering; first of four Memoir inner-tab phases.
+- source: T directed Memoir inner tabs for Quests / Alliances / Philosophy / Effects; clarified the tabs are read-only for now.
+- brief: `plan/phases/phase_138_memoir_inner_tabs_quests.md`
+- build-plan row: `plan/steps/01_build_plan.md`
+
+### Phase 139 — Memoir inner tab: Alliances
+- promoted: 2026-06-19 by T direct steering; second of four Memoir inner-tab phases.
+- source: T directed an Alliances inner tab and clarified the surface is read-only for now.
+- brief: `plan/phases/phase_139_memoir_inner_tab_alliances.md`
+- build-plan row: `plan/steps/01_build_plan.md`
+
+### Phase 140 — Memoir inner tab: Philosophy
+- promoted: 2026-06-19 by T direct steering; third of four Memoir inner-tab phases.
+- source: T directed a Philosophy inner tab and clarified the surface is read-only for now.
+- brief: `plan/phases/phase_140_memoir_inner_tab_philosophy.md`
+- build-plan row: `plan/steps/01_build_plan.md`
+
+### Phase 141 — Memoir inner tab: Effects
+- promoted: 2026-06-19 by T direct steering; fourth of four Memoir inner-tab phases.
+- source: T directed an Effects inner tab with Known/Unknown effect sections, accordion rows, `???` unknown entries, and known effects limited to what the player can currently cause or has encountered. T also clarified that Known/Unknown sections must be collapsible/expandable.
+- brief: `plan/phases/phase_141_memoir_inner_tab_effects.md`
+- build-plan row: `plan/steps/01_build_plan.md`
+
 ### Phase 136 — Dev loot rarity controls
 - promoted: 2026-06-17 by T direct steering; priority override top of queue.
 - source: T clarified POPULATE should provide common/base + unique items because uncommon/rare are generated at drop time, then directed two new dev buttons: `LOOT UNCOMMON` and `LOOT RARE`.

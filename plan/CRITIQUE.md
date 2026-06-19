@@ -72,7 +72,7 @@
      setup/, SVG_ASSET_SPEC.md, package.json, plan/README.md.
      3 findings filed below. Pass 43 HIGH finding resolved (setup files created). -->
 
-### [MED] /README.md — Engine version pinning documentation inconsistent
+### [x] [MED] /README.md — Engine version pinning documentation inconsistent ✅
 - pass: 44 (commit 2da7843)
 - viewport: desktop
 - auth_state: anonymous
@@ -81,6 +81,7 @@
 - evidence: README line 233 states "Current engine version: axiomancer-mechanics ^0.21.0" but bearings.md lines 79-80 specify "exact" pinning after drift incident and package.json shows caret usage
 - suggested fix: Align documentation to clarify exact vs caret pinning strategy
 - source: file-read
+- addressed: 2026-06-19 via commit d88ace6 (issue #473). README "Current engine version" corrected to ^0.22.0 to match package.json; 0.21.0→0.22.0 upgrade doc surfaced as the latest reference.
 
 ### [MED] /docs/README.md — Engine upgrade documentation outdated for current version
 - pass: 44 (commit 2da7843)
@@ -113,7 +114,7 @@
 - suggested fix: Clarify distinct purposes or consolidate into single testing reference
 - source: file-read
 
-### [MED] /README.md — Engine version mismatch between documentation and package.json
+### [x] [MED] /README.md — Engine version mismatch between documentation and package.json ✅
 - pass: 41 (commit a185532)
 - viewport: repository
 - auth_state: anonymous
@@ -122,6 +123,7 @@
 - evidence: Line 233: 'Current engine version: `axiomancer-mechanics ^0.20.0`' vs package.json line 41: 'axiomancer-mechanics': '^0.21.0'
 - suggested fix: Update README.md line 233 to reflect actual engine version ^0.21.0
 - source: repo-proxy
+- addressed: 2026-06-19 via commit d88ace6 (issue #473). README "Current engine version" now reads ^0.22.0 (current package.json truth, two minors ahead of this finding's snapshot); upgrade-doc list updated to surface 0.21.0→0.22.0 as the latest.
 
 
 ### [MED] /SVG_ASSET_SPEC.md — Asset specification unclear when relevant for new maintainers

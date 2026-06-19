@@ -78,7 +78,7 @@
 - suggested fix: Create state/dev/__tests__/item-by-id.test.ts pinning the four resolution branches + guards against real engine truth so a priority reorder, dropped branch, or missing unique tag fails a test rather than silently breaking deterministic evidence runs
 - source: audit
 - issue: #474
-- addressed: 2026-06-19 via commit (this tick)
+- addressed: 2026-06-19 via commit ff157da
 - fix: Added state/dev/__tests__/item-by-id.test.ts (7 hermetic cases, real store + real engine) pinning the empty/whitespace-id guard, equipment resolution (iron-blade), unique resolution + rarity:'unique' tag (axioms-edge), consumable resolution (healing-potion), trim-before-resolve, and unknown-id graceful failure with no inventory change. Verify green (257 suites / 2714 tests, +7).
 
 ### [x] [6.0] gathering/palette.ts (gathering-minigame family colorway + approach-accent palette) missing test coverage affecting gathering-minigame visual integrity

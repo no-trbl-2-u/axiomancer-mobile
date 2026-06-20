@@ -57,7 +57,6 @@ describe('applyCharacterPreset: replaces player with engine preset', () => {
         expect(player.derivedStats).toBeDefined();
         expect(player.derivedStats.physicalDefense).toBeGreaterThan(0);
         expect(player.knownSkills?.length ?? 0).toBeGreaterThan(0);
-        expect(player.equippedSkills?.length ?? 0).toBeGreaterThan(0);
         expect(player.inventory?.length ?? 0).toBeGreaterThan(0);
     });
 

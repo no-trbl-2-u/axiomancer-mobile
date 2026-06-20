@@ -44,7 +44,6 @@ export function DebugPlaythroughPresets() {
                 availableStatPoints: 0,
                 baseStats: { heart: 3, body: 3, mind: 3 },
                 knownSkills: [],
-                equippedSkills: [],
                 inventory: [], // Empty inventory for fresh start
                 currency: 0,
                 effects: [],
@@ -95,12 +94,6 @@ export function DebugPlaythroughPresets() {
                     'sorites-cascade',
                     'straw-giant',
                     'bootstrap-paradox',
-                ],
-                equippedSkills: [
-                    'sorites-cascade',
-                    'straw-giant',
-                    'bootstrap-paradox',
-                    'mob-appeal',
                 ],
                 inventory: endgameInventory,
                 currency: 500,

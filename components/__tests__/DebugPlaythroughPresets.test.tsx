@@ -71,7 +71,6 @@ describe('DebugPlaythroughPresets', () => {
         expect(state.player.experience).toBe(0);
         expect(state.player.baseStats).toEqual({ heart: 3, body: 3, mind: 3 });
         expect(state.player.knownSkills).toEqual([]);
-        expect(state.player.equippedSkills).toEqual([]);
         expect(state.player.currency).toBe(0);
         expect(state.player.inventory).toEqual([]);
         expect(state.combat).toBe(null);
@@ -93,7 +92,6 @@ describe('DebugPlaythroughPresets', () => {
         expect(state.player.baseStats).toEqual({ heart: 15, body: 15, mind: 15 });
         expect(state.player.knownSkills).toContain('sorites-cascade');
         expect(state.player.knownSkills).toContain('bootstrap-paradox');
-        expect(state.player.equippedSkills).toContain('sorites-cascade');
         expect(state.player.currency).toBe(500);
         expect(state.player.inventory.length).toBeGreaterThan(0);
         expect(state.combat).toBe(null);

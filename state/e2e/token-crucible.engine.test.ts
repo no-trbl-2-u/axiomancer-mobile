@@ -8,6 +8,8 @@
 
 import { describe, it, expect } from '@jest/globals';
 
+import { skillLibrary } from 'axiomancer-mechanics';
+
 import {
     selectTokenCrucibleViewModel,
     type TokenCrucibleViewModel,
@@ -15,6 +17,7 @@ import {
 import {
     TOKEN_KEYS,
     type TokenCounts,
+    type TokenKey,
 } from '@/state/mocks/tokens.fixture';
 
 const FULL_POOL: TokenCounts = { body: 9, mind: 9, heart: 9, fallacy: 9, paradox: 9 };
@@ -57,14 +60,35 @@ describe('selectTokenCrucibleViewModel: shape contract', () => {
 });
 
 describe('selectTokenCrucibleViewModel: skill partition', () => {
-    it('totalSkillCount equals 12 and skillsByStance partitions add up', () => {
+    it('totalSkillCount tracks the engine skillLibrary and partitions add up', () => {
         const vm = selectTokenCrucibleViewModel(DEFAULT_POOL);
         const sum =
             vm.skillsByStance.heart.length +
             vm.skillsByStance.body.length +
             vm.skillsByStance.mind.length;
         expect(sum).toBe(vm.totalSkillCount);
-        expect(vm.totalSkillCount).toBe(12);
+        // Every skill the engine library exposes for one of the three
+        // stances (philosophicalAspect) is surfaced — no hand-authored list.
+        const engineStanceSkills = skillLibrary.filter((s) =>
+            ['heart', 'body', 'mind'].includes(s.philosophicalAspect),
+        ).length;
+        expect(vm.totalSkillCount).toBe(engineStanceSkills);
+        expect(vm.totalSkillCount).toBeGreaterThan(0);
+    });
+
+    it('skill rows carry engine ids, costs, and tiers (not a local copy)', () => {
+        const vm = selectTokenCrucibleViewModel(DEFAULT_POOL);
+        const ad = [...vm.skillsByStance.body, ...vm.skillsByStance.heart, ...vm.skillsByStance.mind].find(
+            (r) => r.id === 'ad-hominem-strike',
+        );
+        const engine = skillLibrary.find((s) => s.id === 'ad-hominem-strike')!;
+        expect(ad).toBeDefined();
+        expect(ad!.tier).toBe(engine.tier);
+        expect(ad!.cat).toBe(engine.category);
+        // cost entries reflect the engine resourceCost exactly
+        const reconstructed: Record<string, number> = {};
+        for (const e of ad!.costEntries) reconstructed[e.kind] = e.amount;
+        expect(reconstructed).toEqual(engine.resourceCost);
     });
 
     it('every skill row has stable id / name / tier / costEntries / castableNow', () => {
@@ -126,18 +150,23 @@ describe('selectTokenCrucibleViewModel: canAfford matrix', () => {
         }
     });
 
-    it('an exact-cost pool makes only that one skill castable', () => {
-        // 'appeal-to-pity' costs { heart: 1 } only.
-        const exactPool: TokenCounts = { body: 0, mind: 0, heart: 1, fallacy: 0, paradox: 0 };
-        const vm = selectTokenCrucibleViewModel(exactPool);
-        const target = vm.skillsByStance.heart.find((r) => r.id === 'appeal-to-pity');
-        expect(target?.castableNow).toBe(true);
-        // Every other heart skill (which needs fallacy / paradox alongside) is uncastable.
-        const others = vm.skillsByStance.heart.filter((r) => r.id !== 'appeal-to-pity');
-        for (const r of others) {
-            expect(r.castableNow).toBe(false);
-        }
-        expect(vm.castableSkillCount).toBe(1);
+    it('a pool exactly matching a skill cost makes it castable; one short does not', () => {
+        // Drive entirely off engine data so the test never re-hardcodes costs.
+        const engine = skillLibrary.find((s) => s.id === 'appeal-to-pity')!;
+        const cost = engine.resourceCost as Partial<TokenCounts>;
+        const exactPool: TokenCounts = { body: 0, mind: 0, heart: 0, fallacy: 0, paradox: 0 };
+        for (const k of TOKEN_KEYS) exactPool[k] = cost[k] ?? 0;
+
+        const vmExact = selectTokenCrucibleViewModel(exactPool);
+        const targetExact = vmExact.skillsByStance.heart.find((r) => r.id === 'appeal-to-pity');
+        expect(targetExact?.castableNow).toBe(true);
+
+        // Knock one token off the first cost kind → no longer affordable.
+        const firstKind = (Object.keys(cost) as TokenKey[])[0]!;
+        const shortPool: TokenCounts = { ...exactPool, [firstKind]: (exactPool[firstKind] ?? 0) - 1 };
+        const vmShort = selectTokenCrucibleViewModel(shortPool);
+        const targetShort = vmShort.skillsByStance.heart.find((r) => r.id === 'appeal-to-pity');
+        expect(targetShort?.castableNow).toBe(false);
     });
 });
 

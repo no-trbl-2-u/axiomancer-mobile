@@ -7,7 +7,13 @@
  * Phase 42, mobile Phase 51 bump from 0.7.0 → 0.10.0).
  */
 
-import { defaultAlignment, deriveStats, deriveNonCombatStats } from 'axiomancer-mechanics';
+import {
+    defaultAlignment,
+    deriveStats,
+    deriveNonCombatStats,
+    createNewGameState,
+    GAME_STATE_VERSION,
+} from 'axiomancer-mechanics';
 import { unwrap, wrap, CURRENT_SCHEMA_VERSION, DEFAULT_MIGRATIONS, type StoredEnvelope } from '../migrations';
 
 describe('migrations.engine', () => {
@@ -217,6 +223,36 @@ describe('migrations.engine', () => {
         test('rejects non-object state', () => {
             const envelope: StoredEnvelope = { schemaVersion: 2, state: null };
             expect(() => unwrap(envelope)).toThrow('Migration v2→v3: invalid state object');
+        });
+    });
+
+    describe('engine migration delegation (engine owns GameState versioning)', () => {
+        test('an engine-shaped save below GAME_STATE_VERSION is migrated up by the engine', () => {
+            // Take a current engine state, knock it back to an older engine
+            // version, and strip a field a later engine migration adds. The
+            // adapter must delegate to the engine `migrate`, which re-adds it —
+            // proving mobile no longer needs per-engine-version steps.
+            const current = createNewGameState() as unknown as Record<string, unknown>;
+            const stale = {
+                ...current,
+                version: 9, // engine v9 → factionReputations added at v9→v10
+            };
+            delete (stale as Record<string, unknown>).factionReputations;
+
+            const result = unwrap({ schemaVersion: CURRENT_SCHEMA_VERSION, state: stale }) as unknown as Record<
+                string,
+                unknown
+            >;
+
+            expect(result.version).toBe(GAME_STATE_VERSION);
+            expect(result.factionReputations).toBeDefined();
+        });
+
+        test('a current-version engine save passes through untouched', () => {
+            const current = createNewGameState();
+            const result = unwrap({ schemaVersion: CURRENT_SCHEMA_VERSION, state: current });
+
+            expect(result.version).toBe(GAME_STATE_VERSION);
         });
     });
 

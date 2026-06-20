@@ -1,12 +1,19 @@
 /**
- * Token system fixture — palette, key list, 12-skill library, accrual rules.
+ * Token **presentation meta** — palette, key list, accrual-rule copy.
  *
- * Mirrors the engine's `Skill.resourceCost` shape on
- * `axiomancer-mechanics@0.6.x`. Engine work to re-export `skillLibrary`
- * top-level is tracked in ROADMAP.md (gap G); until that lands, this
- * fixture is the consumer-side source of truth for the token UI.
+ * Skill data (ids, costs, tiers, stances, descriptions) is NO LONGER
+ * defined here: the Token Crucible presenter
+ * (`state/presenters/token-crucible.engine.ts`) sources skills from the
+ * engine's `skillLibrary`, which is the single source of truth. The
+ * previously-local `TOKEN_SKILLS` list had drifted out of sync with the
+ * engine (wrong costs / tiers / stances) and was removed.
  *
- * Ported from `axiomancer/project/screens/tokens.jsx` in the design handoff.
+ * What remains here is genuinely mobile-side:
+ *  - `TOKEN` / `TOKEN_KEYS` / `tokenColor` — token palette + labels (UI chrome).
+ *  - `TOKEN_RULES` — token-accrual explainer copy. **Scaffolding** (per
+ *    ADR-0003): the engine ships no token-accrual ruleset yet, so this is
+ *    a mobile-authored design proposal pending engine support. Replace
+ *    with an engine export when one lands; do not treat as truth.
  *
  * Accent foregrounds track the active theme's AXM accents (body→blood,
  * heart→rust, fallacy→parchment, paradox→sulfur) so the skill-fuel row
@@ -68,38 +75,6 @@ export const TOKEN: Record<TokenKey, TokenMeta> = {
 
 export type TokenCounts = Record<TokenKey, number>;
 
-export interface TokenSkillFixture {
-    id: string;
-    name: string;
-    cat: 'fallacy' | 'paradox';
-    stance: 'heart' | 'body' | 'mind';
-    tier: 1 | 2 | 3;
-    cost: Partial<TokenCounts>;
-    desc: string;
-}
-
-/**
- * 12 skills — 4 per stance, 6 fallacy / 6 paradox, tiers 1–3.
- * Shape mirrors `axiomancer-mechanics@0.6 skillLibrary`.
- */
-export const TOKEN_SKILLS: readonly TokenSkillFixture[] = [
-    // ── HEART (4) ──
-    { id: 'appeal-to-pity',    name: 'APPEAL TO PITY', cat: 'fallacy', stance: 'heart', tier: 1, cost: { heart: 1 },                       desc: 'Sway with sorrow. Foe holds blow if charmed.' },
-    { id: 'ad-hominem-strike', name: 'AD HOMINEM',     cat: 'fallacy', stance: 'heart', tier: 2, cost: { heart: 1, fallacy: 1 },           desc: 'Strike the speaker. +2 dmg if foe wounded.' },
-    { id: 'ship-of-theseus',   name: 'OF THESEUS',     cat: 'paradox', stance: 'heart', tier: 2, cost: { heart: 1, paradox: 1 },           desc: 'Replace foe limb. Disarm 2 rounds.' },
-    { id: 'bootstrap-paradox', name: 'BOOTSTRAP',      cat: 'paradox', stance: 'heart', tier: 3, cost: { heart: 1, paradox: 2 },           desc: 'Pull tomorrow into now. Reroll the round.' },
-    // ── BODY (4) ──
-    { id: 'straw-man',         name: 'STRAW MAN',      cat: 'fallacy', stance: 'body',  tier: 1, cost: { body: 1 },                        desc: 'Conjure decoy. Absorb next blow.' },
-    { id: 'no-true-scotsman',  name: 'NO TRUE SCOT',   cat: 'fallacy', stance: 'body',  tier: 2, cost: { body: 1, fallacy: 1 },            desc: 'Reframe the wound — heal 4 by denial.' },
-    { id: 'zenos-blade',       name: "ZENO'S BLADE",   cat: 'paradox', stance: 'body',  tier: 2, cost: { body: 1, paradox: 1 },            desc: 'Halve distance forever. Pierce.' },
-    { id: 'grandfather',       name: 'GRANDFATHER',    cat: 'paradox', stance: 'body',  tier: 3, cost: { body: 2, paradox: 1 },            desc: 'Undo foe ancestor. –10 max HP.' },
-    // ── MIND (4) ──
-    { id: 'circular-logic',    name: 'CIRCULAR LOGIC', cat: 'fallacy', stance: 'mind',  tier: 1, cost: { mind: 1 },                        desc: 'Foe loses next action. Costs 1 HP.' },
-    { id: 'sorites-cascade',   name: 'SORITES HEAP',   cat: 'paradox', stance: 'mind',  tier: 2, cost: { mind: 1, paradox: 1 },            desc: 'Wear foe down. +1 stack each round.' },
-    { id: 'gamblers-fallacy',  name: "GAMBLER'S",      cat: 'fallacy', stance: 'mind',  tier: 2, cost: { mind: 1, fallacy: 1 },            desc: 'Force a re-roll on foe — keep worse.' },
-    { id: 'eternal-regress',   name: 'ETERNAL REGRESS', cat: 'paradox', stance: 'mind', tier: 3, cost: { mind: 2, paradox: 1, fallacy: 1 }, desc: 'Foe argues itself to dust. 3 turns, ramp.' },
-];
-
 export interface TokenAccrualRule {
     kind: TokenKey;
     when: string;
@@ -123,11 +98,3 @@ export const TOKEN_RULES: readonly TokenAccrualRule[] = [
     { kind: 'fallacy', when: 'Successfully cast any fallacy',      amount: '+1 (banked)' },
     { kind: 'paradox', when: 'Successfully cast any paradox',      amount: '+1 (banked)' },
 ];
-
-/** Does the player's pool cover this skill's cost? */
-export function canAfford(cost: Partial<TokenCounts> = {}, tokens: Partial<TokenCounts> = {}): boolean {
-    for (const k of TOKEN_KEYS) {
-        if ((cost[k] ?? 0) > (tokens[k] ?? 0)) return false;
-    }
-    return true;
-}

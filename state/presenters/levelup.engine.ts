@@ -5,8 +5,8 @@
  * Uses engine truth via deriveStats for accurate preview calculations.
  */
 
-import type { BaseStats, Character, GameStore, deriveStats } from 'axiomancer-mechanics';
-import { deriveStats as engineDeriveStats } from 'axiomancer-mechanics';
+import type { BaseStats, GameStore } from 'axiomancer-mechanics';
+import { previewStatAllocation } from 'axiomancer-mechanics';
 import { freezeViewModel } from './freeze';
 
 export interface PreviewAllocation {
@@ -85,30 +85,33 @@ export function selectLevelUpViewModel(
 
 /**
  * Calculate derived stats preview using engine truth.
- * Applies allocation to base stats and uses engine deriveStats for accurate preview.
- * 
- * NOTE: The engine has no cross-stat effects. Each base stat only affects its primary category:
+ *
+ * Delegates the apply-allocation-then-derive orchestration to the engine's
+ * dedicated `previewStatAllocation` (rather than re-implementing the
+ * additive projection locally). The engine owns both the projection and the
+ * derivation, so cross-stat effects — if the engine ever adds them — ride
+ * through automatically.
+ *
+ * NOTE: The engine currently has no cross-stat effects. Each base stat only
+ * affects its primary category:
  * - Heart only affects emotional stats (emotionalAttack/Skill/Defense)
- * - Body only affects physical stats (physicalAttack/Skill/Defense)  
+ * - Body only affects physical stats (physicalAttack/Skill/Defense)
  * - Mind only affects mental stats (mentalAttack/Skill/Defense)
+ *
+ * `level` is forwarded to the engine API; derived attack/skill/defense are
+ * level-independent today, so it defaults to the character's level when known.
  */
 export function calculateDerivedPreview(
     baseStats: BaseStats,
-    allocation: PreviewAllocation
+    allocation: PreviewAllocation,
+    level: number = 1
 ): {
     heart: { attack: number; skill: number; defense: number };
     body: { attack: number; skill: number; defense: number };
     mind: { attack: number; skill: number; defense: number };
 } {
-    // Apply allocation to base stats
-    const projectedStats: BaseStats = {
-        heart: baseStats.heart + allocation.heart,
-        body: baseStats.body + allocation.body,
-        mind: baseStats.mind + allocation.mind,
-    };
-
-    // Use engine truth for derived stats calculation
-    const derivedStats = engineDeriveStats(projectedStats);
+    // Engine owns the apply-allocation + derive orchestration.
+    const { derivedStats } = previewStatAllocation(baseStats, level, allocation);
 
     // Map engine derived stats to our preview format
     return {

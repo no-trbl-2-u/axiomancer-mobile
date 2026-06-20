@@ -816,21 +816,16 @@ function bankCombatTokenCarry(store: AppStore): void {
 // ---------------------------------------------------------------------------
 
 /**
- * Starter repertoire — the engine's tier-1 set (mirrors the preset
- * baseline). New games create the player with `knownSkills: []` and
- * the normal flow never applies a preset, so the first combat / first
- * level-up seeds these. `engineLearnSkill` enforces requirements, so
- * anything the level-1 player doesn't qualify for is skipped.
+ * Starter repertoire — sourced from the engine's level-1 `apprentice`
+ * preset (`getPresetById('apprentice').knownSkills`) so the engine remains
+ * the single source of truth for the starting skill set. New games create
+ * the player with `knownSkills: []` and the normal flow never applies a
+ * preset, so the first combat / first level-up seeds these.
+ * `engineLearnSkill` enforces requirements, so anything the level-1 player
+ * doesn't qualify for is skipped.
  */
-const STARTER_SKILL_IDS = [
-    'ad-hominem-strike',
-    'false-dilemma',
-    'appeal-to-pity',
-    'achilles-gambit',
-    'liars-echo',
-    'ship-of-theseus',
-    'befriend',
-];
+const STARTER_SKILL_IDS: readonly string[] =
+    getPresetById('apprentice')?.knownSkills ?? [];
 
 function currentAlignment(store: AppStore): PhilosophicalAlignment {
     const state = store.getState() as unknown as GameState;

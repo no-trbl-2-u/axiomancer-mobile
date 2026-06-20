@@ -1,9 +1,25 @@
 import type { GameState } from 'axiomancer-mechanics';
-import { defaultAlignment, deriveStats, deriveNonCombatStats } from 'axiomancer-mechanics';
+import {
+    defaultAlignment,
+    deriveStats,
+    deriveNonCombatStats,
+    migrate,
+    GAME_STATE_VERSION,
+} from 'axiomancer-mechanics';
 
 /**
- * Bump when the on-disk save shape changes. Add a migration entry
- * keyed by the *source* version below.
+ * Envelope-format version for the *mobile-only* legacy bridge.
+ *
+ * This is **frozen at 3** and is NOT the source of truth for GameState
+ * migration. The engine owns that (`migrate` / `GAME_STATE_VERSION`).
+ * The steps below (v1→v2→v3) exist solely to normalise pre-engine save
+ * *shapes* — saves that predate the engine store and carry a string
+ * `version` (e.g. `'0.4.0'`) with no engine numeric `version` field —
+ * up to a baseline the engine's `migrate` can take over from. All NEW
+ * migrations belong in `axiomancer-mechanics`, keyed on the engine
+ * `GameState.version`, and ride through `unwrap` automatically (see
+ * the `migrate()` delegation at the bottom of `unwrap`). Do not add
+ * entries here.
  */
 export const CURRENT_SCHEMA_VERSION = 3;
 
@@ -106,7 +122,19 @@ export function wrap(state: GameState): StoredEnvelope {
 }
 
 /**
- * Apply migrations forward to `CURRENT_SCHEMA_VERSION`.
+ * Load an on-disk save into a current-version `GameState`.
+ *
+ * Two stages:
+ *  1. **Legacy envelope bridge** — applies the frozen v1→v3 mobile steps
+ *     to normalise pre-engine save *shapes* (string `version`, missing
+ *     `derivedStats` / `philosophicalAlignment`). No new steps are added
+ *     here.
+ *  2. **Engine migration (source of truth)** — delegates to the engine's
+ *     `migrate`, keyed on the engine numeric `GameState.version`, to bring
+ *     the save up to `GAME_STATE_VERSION`. This is what makes future engine
+ *     schema bumps ride through without any mobile change; mobile no longer
+ *     maintains per-engine-version migration logic.
+ *
  * Throws on malformed envelopes and on saves from a future version.
  */
 export function unwrap(
@@ -127,6 +155,7 @@ export function unwrap(
             `asyncStorageAdapter: save schema v${v} is from a future version (current v${CURRENT_SCHEMA_VERSION})`,
         );
     }
+    // Stage 1 — legacy mobile-shape bridge (frozen).
     while (v < CURRENT_SCHEMA_VERSION) {
         const m = migrations[v];
         if (!m) {
@@ -134,6 +163,13 @@ export function unwrap(
         }
         state = m(state);
         v++;
+    }
+    // Stage 2 — engine owns GameState migration. Only engine-shaped saves
+    // carry a numeric `version`; legacy bridged saves (string `version`)
+    // are left to the engine reducer's own tolerance, as before.
+    const engineVersion = (state as { version?: unknown } | null)?.version;
+    if (typeof engineVersion === 'number' && engineVersion < GAME_STATE_VERSION) {
+        state = migrate(state, engineVersion);
     }
     return state as GameState;
 }

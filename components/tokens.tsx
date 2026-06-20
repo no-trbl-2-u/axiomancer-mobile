@@ -6,7 +6,8 @@
  * `axiomancer-mechanics@0.6.x`), not a single mana number.
  *
  * Pure UI: no store reads, no engine calls. Caller passes `tokens` and
- * `cost` in; helpers like `canAfford` live alongside in tokens.fixture.
+ * `cost` in; the affordability check lives in the Token Crucible presenter,
+ * which reads skill costs from the engine `skillLibrary`.
  *
  * Ported from `axiomancer/project/screens/tokens.jsx` in the design handoff,
  * adapted for React Native + react-native-svg.

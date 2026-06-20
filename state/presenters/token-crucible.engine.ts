@@ -2,11 +2,16 @@
  * Token Crucible presenter (Phase 28).
  *
  * Composes the view-model for the Token Crucible screen
- * (`app/crucible.tsx` → `components/TokenCrucible.tsx`) from the
- * `state/mocks/tokens.fixture.ts` fixture data + a caller-supplied
- * `pool` of current token counts.
+ * (`app/crucible.tsx` → `components/TokenCrucible.tsx`) from the engine's
+ * `skillLibrary` (the source of truth for skill identity, category,
+ * philosophical aspect, tier, and `resourceCost`) plus token-presentation
+ * meta + a caller-supplied `pool` of current token counts.
  *
- * **Pool is an argument, not state.** Engine 0.7 doesn't ship a
+ * **Engine owns the skill data.** Skills, costs, tiers, and stance
+ * assignments come straight from `skillLibrary` — the screen no longer
+ * carries a hand-authored (and previously divergent) skill list.
+ *
+ * **Pool is an argument, not state.** The engine doesn't ship a
  * player-resource surface yet; the Crucible renders against a default
  * pool prop today. When the engine drops a resource API, this
  * presenter swaps to a state-driven selector.
@@ -15,19 +20,16 @@
  * `plan/phases/phase_17_token_crucible.md`.
  */
 
-import type { Stance } from 'axiomancer-mechanics';
+import { skillLibrary, type Skill, type Stance } from 'axiomancer-mechanics';
 
 import {
     TOKEN,
     TOKEN_KEYS,
     TOKEN_RULES,
-    TOKEN_SKILLS,
-    canAfford,
     type TokenAccrualRule,
     type TokenCounts,
     type TokenKey,
     type TokenMeta,
-    type TokenSkillFixture,
 } from '../mocks/tokens.fixture';
 import { freezeViewModel } from './freeze';
 import { STANCES } from './stances';
@@ -36,8 +38,8 @@ import { STANCES } from './stances';
 export interface CrucibleSkillRow {
     id: string;
     name: string;
-    tier: TokenSkillFixture['tier'];
-    cat: TokenSkillFixture['cat'];
+    tier: Skill['tier'];
+    cat: Skill['category'];
     /** Stable cost entries, in TOKEN_KEYS order. Each carries `{ kind, amount }`. */
     costEntries: ReadonlyArray<{ kind: TokenKey; amount: number }>;
     desc: string;
@@ -66,7 +68,7 @@ export interface TokenCrucibleViewModel {
     tokenKeys: ReadonlyArray<TokenKey>;
     /** Skills partitioned by stance, in fixture order. */
     skillsByStance: Record<Stance, ReadonlyArray<CrucibleSkillRow>>;
-    /** Total number of skills surfaced (currently 12). */
+    /** Total number of skills surfaced (the engine `skillLibrary` size). */
     totalSkillCount: number;
     /** Count of skills the caller's pool can currently cover. */
     castableSkillCount: number;
@@ -87,15 +89,29 @@ function buildCostEntries(
     return out;
 }
 
-function buildSkillRow(skill: TokenSkillFixture, pool: TokenCounts): CrucibleSkillRow {
+/**
+ * Display-only affordability flag: does the caller's pool cover the
+ * engine `resourceCost`? This is a pure containment check over engine
+ * cost data (mirrors `combat.engine.ts`'s `canAffordSkill`), not a game
+ * rule — the engine owns real spending via `canUseSkill`/`spendResources`.
+ */
+function poolCoversCost(cost: Partial<TokenCounts>, pool: TokenCounts): boolean {
+    for (const kind of TOKEN_KEYS) {
+        if ((cost[kind] ?? 0) > (pool[kind] ?? 0)) return false;
+    }
+    return true;
+}
+
+function buildSkillRow(skill: Skill, pool: TokenCounts): CrucibleSkillRow {
+    const cost = skill.resourceCost as Partial<TokenCounts>;
     return {
         id: skill.id,
-        name: skill.name,
+        name: skill.name.toUpperCase(),
         tier: skill.tier,
-        cat: skill.cat,
-        costEntries: buildCostEntries(skill.cost),
-        desc: skill.desc,
-        castableNow: canAfford(skill.cost, pool),
+        cat: skill.category,
+        costEntries: buildCostEntries(cost),
+        desc: skill.description,
+        castableNow: poolCoversCost(cost, pool),
     };
 }
 
@@ -112,9 +128,13 @@ export function selectTokenCrucibleViewModel(pool: TokenCounts): TokenCrucibleVi
         mind: [],
     };
     let castableSkillCount = 0;
-    for (const skill of TOKEN_SKILLS) {
+    let totalSkillCount = 0;
+    for (const skill of skillLibrary) {
+        const stance = skill.philosophicalAspect as Stance;
+        if (!skillsByStance[stance]) continue;
         const row = buildSkillRow(skill, pool);
-        skillsByStance[skill.stance].push(row);
+        skillsByStance[stance].push(row);
+        totalSkillCount += 1;
         if (row.castableNow) castableSkillCount += 1;
     }
 
@@ -130,7 +150,7 @@ export function selectTokenCrucibleViewModel(pool: TokenCounts): TokenCrucibleVi
             body: skillsByStance.body,
             mind: skillsByStance.mind,
         },
-        totalSkillCount: TOKEN_SKILLS.length,
+        totalSkillCount,
         castableSkillCount,
         rules,
         legend,

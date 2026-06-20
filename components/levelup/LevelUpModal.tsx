@@ -119,7 +119,7 @@ export function LevelUpModal({
         }
         
         try {
-            return calculateDerivedPreview(current, spent);
+            return calculateDerivedPreview(current, spent, fromLevel);
         } catch (error) {
             // Error fallback: show current stats without preview
             if (__DEV__) {
@@ -127,7 +127,7 @@ export function LevelUpModal({
             }
             return currentDerived;
         }
-    }, [current, currentDerived, spent]);
+    }, [current, currentDerived, spent, fromLevel]);
 
     const styles = useStyles();
 

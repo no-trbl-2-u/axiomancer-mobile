@@ -21,7 +21,7 @@ import {
 } from 'axiomancer-mechanics';
 
 import { freezeViewModel } from './freeze';
-import { firstEquippedPerSlot } from '../selectors/equipment';
+import { firstEquippedPerSlot } from 'axiomancer-mechanics';
 
 export type StanceKey = 'heart' | 'body' | 'mind';
 export type EffectKind = 'buff' | 'debuff' | 'poison' | 'bleed';

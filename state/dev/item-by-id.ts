@@ -20,7 +20,7 @@ import {
 } from 'axiomancer-mechanics';
 
 import type { AppStore } from '@/state/store';
-import { templateToEquipment } from '@/state/selectors/equipment';
+import { equipmentFromTemplate as templateToEquipment } from 'axiomancer-mechanics';
 
 export type AddItemByIdKind = 'equipment' | 'unique' | 'consumable';
 

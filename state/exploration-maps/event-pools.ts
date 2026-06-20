@@ -40,7 +40,7 @@ import {
 import { fishingVillageLayout } from './fishing-village.layout';
 import { northernForestLayout } from './northern-forest.layout';
 import type { NodeType } from '@/state/presenters/exploration.engine';
-import { templateToEquipment } from '@/state/selectors/equipment';
+import { equipmentFromTemplate as templateToEquipment } from 'axiomancer-mechanics';
 
 const CONTINENT = 'coastal-continent';
 

@@ -20,7 +20,7 @@ import { getTemplatesBySlot } from 'axiomancer-mechanics';
 
 import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { useGameStore } from '@/state/GameStoreProvider';
-import { templateToEquipment } from '@/state/selectors/equipment';
+import { equipmentFromTemplate as templateToEquipment } from 'axiomancer-mechanics';
 import { FONTS } from '@/theme/axm';
 import { makeStyles } from '@/theme/runtime';
 

@@ -1367,6 +1367,12 @@ warranted a full phase promotion:
 
 ## Promoted
 
+### Phase 156 — Combat resources mobile migration
+- promoted: 2026-06-20 by T direct steering from `NEEDS_ATTENTION.md` §1.
+- source: T directed setting a phase for mobile attention item #1. The mobile-only `combatMana` slice is deprecated since Phase 105 but still load-bearing; this phase migrates HUD/dev-control/presenter/test usage to engine `CombatState.combatResources` and removes the local slice as doctrine.
+- brief: `plan/phases/phase_156_combat_resources_mobile_migration.md`
+- build-plan row: `plan/steps/01_build_plan.md` (placed at the top of "Next up")
+
 ### Phase 155 — Affix-provenance labels on the inventory ItemCard (Phase 154 follow-up)
 - promoted: 2026-06-20 via `/oversight` (general audit), from expand pass 80 candidate [5.5].
 - source: T direction at the oversight pass — refill with Phase-154 follow-ups ahead of the Memoir queue. Phase 154 (PR #476) made mobile presentation-only and deleted `state/presenters/equipDelta.ts`, leaving no surface where a player can read an affix label; this re-surfaces engine-owned (`^0.24.0`) affix provenance on the always-visible `ItemCard`.

@@ -19,6 +19,10 @@ presenters, and `state/actions.ts` all still read/write it.
 and the dev controls. This is real work, not a deletion — budget a
 phase.
 
+> **Promoted to Phase 156** by T direct steering 2026-06-20. Close this
+> entry when `plan/phases/phase_156_combat_resources_mobile_migration.md`
+> ships.
+
 ## 2. The generic `/event` modal is a fallback that may deserve deletion
 
 **What:** after Phase 137, nothing routes to `/event` in production

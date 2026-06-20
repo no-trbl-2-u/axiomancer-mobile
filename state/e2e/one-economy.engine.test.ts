@@ -21,7 +21,7 @@ import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals
 import { createEnemy } from 'axiomancer-mechanics';
 
 import { createAppStore } from '../store';
-import { createAppActions, TOKEN_CARRY_FLAG_PREFIX, type AppActions } from '../actions';
+import { createAppActions, type AppActions } from '../actions';
 import {
     HAZARD_HEXED_FLAG,
     HAZARD_TOKEN_FLAG_PREFIX,
@@ -107,41 +107,46 @@ describe('combat-start bridges: hazard omens', () => {
 // Token carry between combats
 // ---------------------------------------------------------------------------
 
-describe('combat token carry (half, floored)', () => {
-    it('endCombat banks half the unspent tokens; the next combat starts with them', () => {
+describe('combat resource carry (engine-owned: fallacy/paradox only)', () => {
+    it('a won combat carries unspent fallacy/paradox into the next combat seed', () => {
         actions.startCombat(makeEnemy());
         const combat = store.getState().combat!;
         store.setState({
             combat: {
                 ...combat,
                 combatResources: { heart: 4, body: 3, mind: 0, fallacy: 1, paradox: 5 },
+                enemy: { ...combat.enemy, health: 0 }, // force a victory
             },
         } as never);
         actions.endCombat();
-        const carry = flags().find((f) => f.startsWith(TOKEN_CARRY_FLAG_PREFIX));
-        // order is body:mind:heart:fallacy:paradox
-        expect(carry).toBe(`${TOKEN_CARRY_FLAG_PREFIX}1:0:2:0:2`);
+
+        // The engine carries floor(0.5×) of the skill-fuel resources only,
+        // capped at 3: fallacy floor(0.5)=0 (omitted), paradox floor(2.5)=2.
+        // Stance tokens (heart/body/mind) never carry.
+        expect(store.getState().player.carriedResources).toEqual({ paradox: 2 });
 
         actions.startCombat(makeEnemy());
         const next = store.getState().combat!;
-        expect(next.combatResources).toEqual({
-            heart: 2, body: 1, mind: 0, fallacy: 0, paradox: 2,
-        });
-        // consumed — no double-dipping on the combat after that
-        expect(flags().find((f) => f.startsWith(TOKEN_CARRY_FLAG_PREFIX))).toBeUndefined();
+        expect(next.combatResources.paradox).toBeGreaterThanOrEqual(2);
+        expect(next.combatResources.heart).toBe(0);
+        expect(next.combatResources.body).toBe(0);
+        expect(next.combatResources.mind).toBe(0);
+        // consumed — cleared from the player once the next combat seeds it
+        expect(store.getState().player.carriedResources).toBeUndefined();
     });
 
-    it('banks nothing when every pool floors to zero', () => {
+    it('a lost combat carries nothing', () => {
         actions.startCombat(makeEnemy());
         const combat = store.getState().combat!;
         store.setState({
             combat: {
                 ...combat,
-                combatResources: { heart: 1, body: 1, mind: 1, fallacy: 1, paradox: 1 },
+                combatResources: { heart: 0, body: 0, mind: 0, fallacy: 8, paradox: 8 },
+                player: { ...combat.player, health: 0 }, // defeat
             },
         } as never);
         actions.endCombat();
-        expect(flags().find((f) => f.startsWith(TOKEN_CARRY_FLAG_PREFIX))).toBeUndefined();
+        expect(store.getState().player.carriedResources ?? undefined).toBeUndefined();
     });
 });
 

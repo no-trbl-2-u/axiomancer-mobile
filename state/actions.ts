@@ -705,37 +705,20 @@ function findSkill(skillId: string): CombatSkill | null {
 // hazard deck does.
 // ---------------------------------------------------------------------------
 
-/** Flag carrying half of the previous combat's unspent tokens:
- *  `combat-tokens-carried:<body>:<mind>:<heart>:<fallacy>:<paradox>`. */
-export const TOKEN_CARRY_FLAG_PREFIX = 'combat-tokens-carried:';
-
-const RESOURCE_KEYS = ['body', 'mind', 'heart', 'fallacy', 'paradox'] as const;
-type ResourceKey = (typeof RESOURCE_KEYS)[number];
-type ResourceMap = Record<ResourceKey, number>;
-
-function parseTokenCarryFlag(flag: string): ResourceMap {
-    const parts = flag.slice(TOKEN_CARRY_FLAG_PREFIX.length).split(':');
-    const out = { body: 0, mind: 0, heart: 0, fallacy: 0, paradox: 0 };
-    RESOURCE_KEYS.forEach((key, i) => {
-        const n = Number(parts[i]);
-        out[key] = Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0;
-    });
-    return out;
-}
-
 /**
- * Fires once per combat, right after the engine's `startCombat`
- * snapshots the player. Consumes the pending hazard omens and the
- * previous combat's token carry, applying them to the live combat
- * slice:
+ * Fires once per combat, right after the engine's `startCombat` snapshots the
+ * player. Bridges the HAZARD minigame's lingering omens into combat — a
+ * hazard→combat hand-off the engine does NOT own:
  *
- *  - `hazard-hexed` → Allais' Curse (`debuff_hex`) opens on the
- *    player. The hazard's curse consequence finally lands where its
- *    catalogue copy always promised: "Begin your next combat with a
- *    hostile Curse die."
+ *  - `hazard-hexed` → Allais' Curse (`debuff_hex`) opens on the player. The
+ *    hazard's curse consequence lands where its catalogue copy promised:
+ *    "Begin your next combat with a hostile Curse die."
  *  - `hazard-token-banked:*` → +1 PARADOX each in `combatResources`.
- *  - `combat-tokens-carried:*` → half the previous combat's unspent
- *    tokens, pre-halved at bank time.
+ *
+ * Cross-combat RESOURCE CARRY is no longer applied here — the engine owns it
+ * (`Character.carriedResources` + `carryPhilosophicalResources`, folded into
+ * the combat seed by the engine reducer). Re-applying a client carry would
+ * double-count it.
  */
 function applyCombatStartBridges(store: AppStore): void {
     const state = store.getState();
@@ -745,12 +728,7 @@ function applyCombatStartBridges(store: AppStore): void {
 
     const hexed = flags.includes(HAZARD_HEXED_FLAG);
     const bankedParadox = flags.filter((f) => f.startsWith(HAZARD_TOKEN_FLAG_PREFIX)).length;
-    const carryFlag = flags.find((f) => f.startsWith(TOKEN_CARRY_FLAG_PREFIX));
-    if (!hexed && bankedParadox === 0 && carryFlag === undefined) return;
-
-    const carried: ResourceMap = carryFlag
-        ? parseTokenCarryFlag(carryFlag)
-        : { body: 0, mind: 0, heart: 0, fallacy: 0, paradox: 0 };
+    if (!hexed && bankedParadox === 0) return;
 
     let next: CombatState = combat;
 
@@ -767,47 +745,19 @@ function applyCombatStartBridges(store: AppStore): void {
         }
     }
 
-    const tokenGain = { ...carried, paradox: carried.paradox + bankedParadox };
-    const anyTokens = RESOURCE_KEYS.some((k) => tokenGain[k] > 0);
-    if (anyTokens) {
-        const resources = { ...next.combatResources };
-        for (const key of RESOURCE_KEYS) resources[key] += tokenGain[key];
+    if (bankedParadox > 0) {
+        const resources = {
+            ...next.combatResources,
+            paradox: (next.combatResources.paradox ?? 0) + bankedParadox,
+        };
         next = { ...next, combatResources: resources };
-        if (bankedParadox > 0) {
-            next = pushLog(next, 'system', `Banked paradox answers the call — +${bankedParadox} PARADOX.`);
-        }
-        const carryTotal = RESOURCE_KEYS.reduce((sum, k) => sum + carried[k], 0);
-        if (carryTotal > 0) {
-            next = pushLog(next, 'system', `Embers of the last strife — ${carryTotal} token${carryTotal > 1 ? 's' : ''} carried in.`);
-        }
+        next = pushLog(next, 'system', `Banked paradox answers the call — +${bankedParadox} PARADOX.`);
     }
 
     const nextFlags = flags.filter(
-        (f) =>
-            f !== HAZARD_HEXED_FLAG &&
-            !f.startsWith(HAZARD_TOKEN_FLAG_PREFIX) &&
-            !f.startsWith(TOKEN_CARRY_FLAG_PREFIX),
+        (f) => f !== HAZARD_HEXED_FLAG && !f.startsWith(HAZARD_TOKEN_FLAG_PREFIX),
     );
     store.setState({ combat: next, flags: nextFlags } as never);
-}
-
-/**
- * Banks half of the combat's unspent tokens (floored, per pool) into
- * a carry flag for the next combat. Called just before the engine's
- * `endCombat` clears the slice — any outcome carries.
- */
-function bankCombatTokenCarry(store: AppStore): void {
-    const state = store.getState();
-    const combat = state.combat;
-    if (!combat?.combatResources) return;
-    const halved = RESOURCE_KEYS.map((k) => Math.floor((combat.combatResources[k] ?? 0) / 2));
-    if (halved.every((n) => n <= 0)) return;
-    const flags = ((state as unknown as GameState).flags ?? []).filter(
-        (f) => !f.startsWith(TOKEN_CARRY_FLAG_PREFIX),
-    );
-    store.setState({
-        flags: [...flags, `${TOKEN_CARRY_FLAG_PREFIX}${halved.join(':')}`],
-    } as never);
 }
 
 // ---------------------------------------------------------------------------
@@ -1174,9 +1124,9 @@ export function createAppActions(store: AppStore): AppActions {
             }
         },
         endCombat: () => {
-            // One-economy pass — bank half the unspent tokens for the
-            // next combat before the engine clears the slice.
-            bankCombatTokenCarry(store);
+            // Cross-combat resource carry is engine-owned now (the reducer's
+            // END_COMBAT banks unspent philosophical resources onto the player
+            // and folds them into the next combat's seed) — no client carry.
             // Phase 78 — surface the engine `CombatEndReport` so
             // callers can read post-combat metadata (codex unlock,
             // alignment shift, narrative). Engine returns a stub

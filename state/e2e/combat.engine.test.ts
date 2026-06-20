@@ -430,21 +430,21 @@ describe('selectCombatViewModel: skill picker', () => {
         }
     });
 
-    it('disables every skill when mana < skillCost (invariant: mana=0 ⇒ none castable)', () => {
+    it('disables every skill when resources are empty (invariant: 0 resources ⇒ none castable)', () => {
         mockFixedRng(0.5);
         const adapter = createMemoryAdapter();
         const store = createAppStore({ adapter });
         const actions = createAppActions(store);
         actions.startCombat(makeEnemy());
 
-        // Phase 60d — drain mana via the mobile-only `combatMana`
-        // slice. The previous form wrote `mana`/`maxMana` to
-        // `combat.player`; that field is gone post-lift, so the
-        // drain happens via store.setState directly.
+        // Empty the engine `combatResources` pool — the skill picker reads
+        // affordability straight off it, so every costed skill becomes
+        // 'insufficient-resources'.
         const c = store.getState().combat;
         if (c === null) throw new Error('combat slice not initialised');
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        store.setState({ combatMana: { current: 0, max: 14 } } as any);
+        store.setState({
+            combat: { ...c, combatResources: { heart: 0, body: 0, mind: 0, fallacy: 0, paradox: 0 } },
+        } as never);
 
         const vm = selectCombatViewModel(store.getState(), { selectedStance: 'heart' });
         const allDisabled = vm.skillPicker.skills.every((s) => !s.enabled);
@@ -1144,27 +1144,18 @@ describe('selectCombatViewModel: resolve.nextActionLabel', () => {
 // ---------------------------------------------------------------------------
 
 describe('resolveRound: engine-driven skill resolution', () => {
-    it('routes `action: skill` through the engine and burns mana from the mobile slice', () => {
-        // Pin the Phase 21 contract: a skill pick reaches the engine
-        // resolver as `action: 'skill'` (not downgraded to 'attack')
-        // and `getSkillById` is the lookup, so the engine can apply
-        // real skill effects. Observable side effect: the mobile
-        // combatMana slice's `current` drops by the skill's manaCost
-        // — the burnCombatMana branch only runs when findSkill /
-        // getCombatSkillById returns non-null, which proves the
-        // engine-library lookup wired up.
+    it('routes `action: skill` through the engine resolver (not downgraded to attack)', () => {
+        // Pin the contract: a skill pick reaches the engine resolver as
+        // `action: 'skill'` (not downgraded to 'attack') with its skillId, so
+        // the engine applies real skill effects and debits its `resourceCost`
+        // from `combatResources` itself (the client keeps no parallel pool).
         mockFixedRng(0.5);
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
         actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
 
-        // Pick the cheapest heart-stance skill so the deduction is
-        // unambiguously the engine library's manaCost.
-        const heartSkill = COMBAT_SKILLS
-            .filter((s) => s.stance === 'heart')
-            .sort((a, b) => a.manaCost - b.manaCost)[0];
+        const heartSkill = COMBAT_SKILLS.filter((s) => s.stance === 'heart')[0];
         expect(heartSkill).toBeDefined();
-        expect(heartSkill!.manaCost).toBeGreaterThan(0);
 
         actions.setPlayerStance('heart');
         actions.setPlayerAction('skill', heartSkill!.id);
@@ -1175,19 +1166,9 @@ describe('resolveRound: engine-driven skill resolution', () => {
         expect(choiceBefore.action).toBe('skill');
         expect(choiceBefore.skillId).toBe(heartSkill!.id);
 
-        const manaBefore = store.getState().combatMana;
         const result = actions.resolveRound();
-
         // Round resolves cleanly (no engine throws on the skill path).
         expect(result.combatEnded).toBe(false);
-
-        // Mana drained by exactly the skill's manaCost — proves the
-        // skillId branch of resolveRound ran end-to-end through the
-        // engine library.
-        const manaAfter = store.getState().combatMana;
-        expect(manaAfter).not.toBeNull();
-        const startCurrent = manaBefore?.current ?? manaAfter!.max;
-        expect(manaAfter!.current).toBe(Math.max(0, startCurrent - heartSkill!.manaCost));
     });
 
     it('handles unknown skillIds without throwing (engine lookup returns undefined)', () => {

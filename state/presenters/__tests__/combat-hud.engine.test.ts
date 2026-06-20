@@ -126,9 +126,8 @@ describe('selectCombatHudViewModel: effects list', () => {
 });
 
 describe('selectCombatHudViewModel: dev overrides (Phase 87)', () => {
-    it('hideMana override forces manaPercent to 1.0 regardless of actual mana', () => {
+    it('hideMana override forces manaPercent to 1.0 regardless of actual resources', () => {
         const state = makeBaseState();
-        state.combatMana = { current: 10, max: 100 }; // Should be 0.1
         state.devOverrides = {
             hud: { hideMana: true, hideEffects: false, hideStance: false },
         };

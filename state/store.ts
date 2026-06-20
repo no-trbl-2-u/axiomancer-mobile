@@ -148,8 +148,6 @@ export type AppStoreState = GameStore & {
     rest: MobileRestSlice;
     cache: MobileCacheSlice;
     notifications: MobileNotificationsSlice;
-    /** @deprecated Phase 105 — replaced with engine CombatState.combatResources. Remove in follow-up. */
-    combatMana?: { current: number; max: number } | null;
     /** Phase 87 — dev-only overrides for testing empty-state branches. */
     devOverrides: DevOverridesSlice;
     /**
@@ -277,7 +275,6 @@ export function createAppStore(options: CreateAppStoreOptions = {}): AppStore {
         rest: EMPTY_REST_SLICE,
         cache: EMPTY_CACHE_SLICE,
         notifications: DEFAULT_NOTIFICATIONS_SLICE,
-        combatMana: null,
         devOverrides: DEFAULT_DEV_OVERRIDES_SLICE,
         _recentEvents: [],
     });

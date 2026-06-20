@@ -227,11 +227,9 @@ describe('integration: combat lifecycle — prelude through aftermath', () => {
         
         // Dev overrides should remain stable
         expect(state.devOverrides).toBeDefined();
-        
-        // Combat mana slice should be populated during combat (Phase 60d legacy)
-        if (state.combatMana) {
-            expect(typeof state.combatMana.current).toBe('number');
-            expect(typeof state.combatMana.max).toBe('number');
-        }
+
+        // Combat resources live on the engine combat slice now (not a mobile
+        // mana slice).
+        expect(state.combat?.combatResources).toBeDefined();
     });
 });

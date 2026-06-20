@@ -1512,27 +1512,21 @@ export function useCombatViewModel(localUi: CombatLocalUi = {}): CombatViewModel
     'use no memo';
     const combat = useGameState((s) => s.combat);
     const player = useGameState((s) => s.player);
-    const combatMana = useGameState((s) => s.combatMana);
     const selectedStance = localUi.selectedStance;
     const selectedSkillId = localUi.selectedSkillId;
     return useMemo(
         () => {
-            // Build a synthetic state object from the subscribed
-            // slices instead of reading `store.getState()`. The
-            // selector + `selectCombatHudViewModel` only read these
-            // three fields off `state`, so the cast is sound. The
-            // important consequence is that `combat`, `player`, and
-            // `combatMana` are now *real* data dependencies of the
-            // factory body — both the `react-hooks/exhaustive-deps`
-            // lint and the React Compiler can see them being read
-            // here, which they could not see through the previous
-            // opaque `store.getState()` call. Combined with the
-            // `'use no memo'` directive above, this guarantees the
-            // memo recomputes whenever any subscribed slice changes
-            // reference. Phase 65 Tick A.
-            const state = { combat, player, combatMana } as unknown as AppStoreState;
+            // Build a synthetic state object from the subscribed slices
+            // instead of reading `store.getState()`. The selector only reads
+            // `combat` + `player` (combat resources live on
+            // `combat.combatResources`), so the cast is sound and both the
+            // `react-hooks/exhaustive-deps` lint and the React Compiler can see
+            // these as real data dependencies of the factory body. Combined
+            // with the `'use no memo'` directive above, the memo recomputes
+            // whenever a subscribed slice changes reference. Phase 65 Tick A.
+            const state = { combat, player } as unknown as AppStoreState;
             return selectCombatViewModel(state, { selectedStance, selectedSkillId });
         },
-        [combat, player, combatMana, selectedStance, selectedSkillId],
+        [combat, player, selectedStance, selectedSkillId],
     );
 }

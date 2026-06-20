@@ -39,7 +39,6 @@ const DebugQuestState = lazy(() => import('@/components/DebugQuestState').then(m
 const DebugTriggerEncounter = lazy(() => import('@/components/DebugTriggerEncounter').then(m => ({ default: m.DebugTriggerEncounter })));
 const DebugFriendship = lazy(() => import('@/components/DebugFriendship').then(m => ({ default: m.DebugFriendship })));
 const DebugHudOverrides = lazy(() => import('@/components/DebugHudOverrides').then(m => ({ default: m.DebugHudOverrides })));
-const DebugManaControl = lazy(() => import('@/components/DebugManaControl').then(m => ({ default: m.DebugManaControl })));
 const DebugMapResetButton = lazy(() => import('@/components/DebugMapResetButton').then(m => ({ default: m.DebugMapResetButton })));
 const DebugPlaythroughPresets = lazy(() => import('@/components/DebugPlaythroughPresets').then(m => ({ default: m.DebugPlaythroughPresets })));
 const DebugPresetPicker = lazy(() => import('@/components/DebugPresetPicker').then(m => ({ default: m.DebugPresetPicker })));
@@ -116,7 +115,6 @@ export function DevToolsSections() {
                 </DevSection>
 
                 <DevSection label="COMBAT SETUP" testID="dev-section-combat">
-                    <DebugManaControl />
                     <DebugEffectApply />
                 </DevSection>
 

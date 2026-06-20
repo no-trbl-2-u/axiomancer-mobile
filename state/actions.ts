@@ -90,7 +90,6 @@ import {
     getCombatSkillById,
     skillCostText,
     skillEffectText,
-    type CombatSkill,
 } from '@/state/selectors/combat-skills';
 import { equipmentFromTemplate as templateToEquipment } from 'axiomancer-mechanics';
 import { resolveWareItem } from '@/state/presenters/village.engine';
@@ -658,44 +657,6 @@ export interface UseItemResult {
 }
 
 // ---------------------------------------------------------------------------
-// Combat mana scaffolding (Phase 60d — lifted to mobile-only slice)
-// ---------------------------------------------------------------------------
-
-/**
- * Default-max + starting current for the mobile-side combat mana
- * scaffolding. The values match the prior `ensureManaOnCombatPlayer`
- * scaffolding so existing tests and presenters land on the same
- * numbers. Both will be replaced when Phase 21 wires the engine's
- * per-resource pools.
- */
-export const PLAYER_MANA_DEFAULT_MAX = 14;
-export const PLAYER_MANA_DEFAULT_START = 9;
-
-function seedCombatMana(store: AppStore): void {
-    const cur = store.getState().combatMana;
-    if (cur !== null && cur !== undefined) return;
-    store.setState({
-        combatMana: { current: PLAYER_MANA_DEFAULT_START, max: PLAYER_MANA_DEFAULT_MAX },
-    });
-}
-
-function clearCombatMana(store: AppStore): void {
-    store.setState({ combatMana: null });
-}
-
-function burnCombatMana(store: AppStore, cost: number): void {
-    const cur = store.getState().combatMana;
-    if (cur === null || cur === undefined) return;
-    store.setState({
-        combatMana: { current: Math.max(0, cur.current - cost), max: cur.max },
-    });
-}
-
-function findSkill(skillId: string): CombatSkill | null {
-    return getCombatSkillById(skillId);
-}
-
-// ---------------------------------------------------------------------------
 // Hazard ⇄ combat bridges (one-economy pass)
 //
 // Hazards and combat share one economy: what a hazard leaves behind
@@ -1115,11 +1076,9 @@ export function createAppActions(store: AppStore): AppActions {
             // both read the snapshot's knownSkills.
             ensureStarterSkills(store);
             store.getState().startCombat(enemy);
-            // Phase 60d — seed mobile-only mana slice rather than
-            // mutating Character. Idempotent; subsequent re-entries
-            // during the same combat keep the prior current value.
+            // The engine seeds combat resources (incl. carried fallacy/paradox)
+            // in its reducer; the client only bridges the hazard omens in.
             if (store.getState().combat !== null) {
-                seedCombatMana(store);
                 applyCombatStartBridges(store);
             }
         },
@@ -1127,14 +1086,11 @@ export function createAppActions(store: AppStore): AppActions {
             // Cross-combat resource carry is engine-owned now (the reducer's
             // END_COMBAT banks unspent philosophical resources onto the player
             // and folds them into the next combat's seed) — no client carry.
-            // Phase 78 — surface the engine `CombatEndReport` so
-            // callers can read post-combat metadata (codex unlock,
-            // alignment shift, narrative). Engine returns a stub
-            // 'flee' report when called outside combat; we still
-            // forward it. Mana slice clears after the engine call
-            // so the next encounter starts fresh (Phase 60d).
+            // Phase 78 — surface the engine `CombatEndReport` so callers can
+            // read post-combat metadata (codex unlock, alignment shift,
+            // narrative). Engine returns a stub 'flee' report when called
+            // outside combat; we still forward it.
             const report = store.getState().endCombat();
-            clearCombatMana(store);
             return report ?? null;
         },
         setCombatPhase: (phase) => {
@@ -1266,17 +1222,9 @@ export function createAppActions(store: AppStore): AppActions {
                 },
             };
 
-            // Phase 60d — mana accounting on the mobile-only
-            // `combatMana` slice (lifted from Character). Idempotent
-            // seed (no-op if startCombat already seeded); then burn
-            // the skill's cost.
-            seedCombatMana(store);
-            if (skillId) {
-                const skill = findSkill(skillId);
-                if (skill !== null) {
-                    burnCombatMana(store, skill.manaCost);
-                }
-            }
+            // Resource spending is engine-owned: `resolveCombatRound` debits
+            // the skill's `resourceCost` from `combatResources` as part of
+            // round resolution. The client no longer keeps a parallel pool.
 
             nextWithEnemy = setLastResolution(nextWithEnemy, summary);
 
@@ -2095,11 +2043,9 @@ function pickEventChoiceAction(store: AppStore, choiceId: string): void {
                     const enemy = processed.encounter.enemies[0];
                     ensureStarterSkills(store);
                     store.getState().startCombat(enemy);
-                    // Phase 60d — seed mobile-only mana slice after the
-                    // encounter-prelude path starts combat. Matches the
-                    // direct `actions.startCombat` branch above.
+                    // Bridge hazard omens into the freshly-seeded combat
+                    // (matches the direct `actions.startCombat` branch above).
                     if (store.getState().combat !== null) {
-                        seedCombatMana(store);
                         applyCombatStartBridges(store);
                     }
                     clearEventSlice(store);

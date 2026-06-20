@@ -50,7 +50,6 @@ export function DebugPlaythroughPresets() {
             },
             // Reset combat state if any
             combat: null,
-            combatMana: null,
         });
         setActive('fresh');
     };
@@ -101,7 +100,6 @@ export function DebugPlaythroughPresets() {
             },
             // Reset combat state if any
             combat: null,
-            combatMana: null,
         });
         setActive('endgame');
     };

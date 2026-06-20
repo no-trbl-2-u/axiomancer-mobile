@@ -112,7 +112,13 @@
 > from this batch.
 
 
-### [ ] [score 5.5] Affix-provenance labels on the inventory ItemCard (read structured prefix/suffix, never parse names)
+### [promoted 2026-06-20 → Phase 155] [score 5.5] Affix-provenance labels on the inventory ItemCard (read structured prefix/suffix, never parse names)
+> Promoted via `/oversight` 2026-06-20 as the Phase 154 follow-up, placed ahead of the
+> Memoir queue per T's direction to refill with 154 follow-ups first. NOTE: Phase 154
+> (PR #476) deleted `state/presenters/equipDelta.ts`, so the source-signal references to
+> that module below are now historical — the affix fields are read off the engine
+> `Equipment` instance under `axiomancer-mechanics@^0.24.0`; confirm the exact 0.24.0
+> field names at ship time. See ## Promoted + the build-plan Phase 155 row.
 - proposed: 2026-06-17, expand pass 80
 - source signals:
   - **Engine-bump cliff (§4 I)**: `axiomancer-mechanics ^0.22.0` (the affix release) landed structured `prefixName`/`suffixName`/`prefixId`/`suffixId` on `Equipment` (`docs/engine-upgrade-0.21.0-to-0.22.0.md:26-46`). Phase 134 was the catch-up but explicitly scoped the affix *read* to the equip-delta surface only ("the Phase 133 equip-change delta surface already reads these fields structurally" — upgrade doc line 42); the base item card was out of scope.
@@ -494,6 +500,10 @@
 > promotes from this batch.**
 
 ### [ ] [score 4.5] Engine-version doc-drift reconciliation (README/docs vs package.json 0.22.0)
+> Update (/oversight 2026-06-20): drift WIDENED — Phase 154 (PR #476) bumped `package.json`
+> to `axiomancer-mechanics@^0.24.0`, so `README.md` (still `^0.21.0`) is now two minors stale
+> and the upgrade-guide pointer should target the 0.24.0 path. Re-score on promotion; the
+> docs sweep should land 0.24.0, not 0.22.0.
 - proposed: 2026-06-18, expand pass 81
 - source signals:
   - **Critique clustering (§4 B) — 4 pending rows, same family**: `plan/CRITIQUE.md` Pending carries four unresolved comprehension findings all naming engine-version doc drift: `[MED] /README.md — Engine version pinning documentation inconsistent` (pass 44), `[MED] /docs/README.md — Engine upgrade documentation outdated` (pass 44), `[MED] /README.md — Engine version mismatch between documentation and package.json` (pass 41), plus the related caret-vs-exact confusion (pass 44). Repeatedly surfaced across two independent critique passes.
@@ -1356,6 +1366,12 @@ warranted a full phase promotion:
   `with-env.mjs`" was moot — the second arm was already done.
 
 ## Promoted
+
+### Phase 155 — Affix-provenance labels on the inventory ItemCard (Phase 154 follow-up)
+- promoted: 2026-06-20 via `/oversight` (general audit), from expand pass 80 candidate [5.5].
+- source: T direction at the oversight pass — refill with Phase-154 follow-ups ahead of the Memoir queue. Phase 154 (PR #476) made mobile presentation-only and deleted `state/presenters/equipDelta.ts`, leaving no surface where a player can read an affix label; this re-surfaces engine-owned (`^0.24.0`) affix provenance on the always-visible `ItemCard`.
+- brief: `plan/phases/phase_155_affix_provenance_item_card.md`
+- build-plan row: `plan/steps/01_build_plan.md` (placed at the top of "Next up", ahead of Phase 138)
 
 ### Phase 138 — Memoir inner tabs: Quests
 - promoted: 2026-06-19 by T direct steering; first of four Memoir inner-tab phases.

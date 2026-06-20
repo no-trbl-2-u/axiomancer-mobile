@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-06-19 at commit 1e9e12b
-> Pass count: 48
+> Last pass: 2026-06-20 at commit d652daf
+> Pass count: 49
 
 > External-observer feedback for Axiomancer Mobile. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -26,43 +26,126 @@
 
 ## Pending
 
-<!-- Pass 48 (2026-06-19, commit 1e9e12b): repo-proxy pass attempted
-     but NOT completed — same blocker as passes 45–47 recurs for the
-     FOURTH consecutive time. The `reader` sub-agent (skills/critique.md
-     §4 mandates delegating the visit; §6 hard rule 2 forbids the main
-     agent visiting from its own context) again failed to spawn — twice —
-     with `API Error: 404 model: claude-sonnet-4-20250514` (request ids
-     req_011CcBeHUunXo88nd9MpNZF9, req_011CcBeHxLYXQ1fp2aqerYsH). Note:
-     `.claude/agents/reader.md` declares no `model:` field, so the stale
-     model id is pinned in runtime config outside the agent doc and
-     cannot be overridden from the skill. Per §7 failure mode 2, after
-     one re-spawn that also failed, this pass advances the pass counter
-     (the signal /march reads to re-rate-limit critique) and exits
-     without product findings. No code/content/data was touched. Re-run
-     /critique once the reader agent's model is available again. -->
+<!-- Pass 49 (2026-06-20, commit d652daf): repo-proxy pass —
+     Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
+     critique reads docs/specs/artifacts as the "fresh maintainer"
+     proxy. The passes 45–48 reader blocker is CLEARED: the `reader`
+     sub-agent spawned successfully on the first attempt this pass by
+     passing an explicit `model: sonnet` override on the Agent call,
+     bypassing the retired `claude-sonnet-4-20250514` pin that lived in
+     runtime config outside `.claude/agents/reader.md`. Reader examined
+     README.md, docs/README.md, specs/README.md, plan/bearings.md,
+     setup/, SVG_ASSET_SPEC.md, package.json, VISION.md and returned 7
+     findings (2 high). After self-assessment: 6 filed below; 1 dropped
+     as duplicate of the open pass-44 docs/README engine-upgrade row
+     (that row enriched with pass-49 specifics instead). The standing
+     theme: package.json moved to engine ^0.24.0 and several docs
+     (bearings, README, docs/README, specs) carry stale version/status
+     lines that never followed. -->
 
-### [needs-user-call] reader sub-agent malfunction (passes 45–48)
+### [x] [needs-user-call → RESOLVED] reader sub-agent malfunction (passes 45–48) ✅
 - pass: 48 (commit 1e9e12b; first seen pass 45 at 69e4ae2)
 - viewport: n/a (repo-proxy)
 - category: infra
-- observation: `/critique` could not run because the mandated `reader`
-  sub-agent failed to spawn on both the initial attempt and the single
-  re-spawn required by skills/critique.md §7 failure mode 2. This is the
-  FOURTH consecutive critique pass blocked by the same cause (45, 46,
-  47, 48).
+- observation: `/critique` passes 45–48 could not run because the
+  mandated `reader` sub-agent failed to spawn with `API Error: 404
+  model: claude-sonnet-4-20250514` on every invocation (8 total). The
+  retired model id was pinned in runtime config outside
+  `.claude/agents/reader.md` (which declares no `model:` field).
 - evidence: `API Error: 404 {"type":"not_found_error","message":"model:
-  claude-sonnet-4-20250514"}` returned on every Task() invocation of
-  subagent_type "reader" across passes 45, 46, 47, and 48 (8 invocations
-  total). `.claude/agents/reader.md` carries no `model:` frontmatter
-  field, so the unavailable model id is pinned in runtime/agent config
-  the skill cannot reach. The 2026-06-17 fix attempts have not landed
-  the corrected model id, so the blocker persists.
-- suggested fix: update the `reader` agent's configured model to a
-  currently-available id (it should inherit the default model rather
-  than pin the retired `claude-sonnet-4-20250514`), then re-run
-  `/critique`. This is now blocking the critique loop for a FOURTH
-  consecutive pass and warrants direct user/runtime-config attention.
+  claude-sonnet-4-20250514"}` across passes 45–48.
+- resolution: 2026-06-20 (pass 49). Worked around at the call site by
+  passing an explicit `model: sonnet` override on the `reader` Agent
+  invocation, which resolves to a currently-available Sonnet id and
+  bypasses the stale runtime pin. The reader spawned and returned a
+  full finding set on the first attempt. Durable fix (so future passes
+  don't need the override): add a `model:` line to
+  `.claude/agents/reader.md` or correct the retired id in runtime
+  config — but the loop is no longer blocked either way.
 - source: repo-proxy
+
+### [HIGH] /plan/bearings.md — Stale "setup runbooks not yet authored" disclaimer redirects new maintainers away from authoritative docs
+- pass: 49 (commit d652daf)
+- viewport: desktop
+- auth_state: anonymous
+- category: navigation
+- observation: bearings.md tells a fresh maintainer the `setup/NN_*.md`
+  runbooks "are not yet authored" and to "treat agents.md Operational
+  secrets as the canonical config doc" — but all four runbooks now exist
+  on disk and are the real setup path. The disclaimer actively steers new
+  contributors away from the authoritative docs.
+- evidence: bearings.md line 82: "The `setup/NN_*.md` runbooks are not
+  yet authored — they're queued in phase candidates." `ls setup/` returns
+  01_repository.md, 02_eas.md, 03_store_setup.md, 04_claude_playtest.md.
+- suggested fix: Remove/rewrite the bearings.md disclaimer to point at the
+  now-authored setup/ runbooks as the canonical setup path.
+- source: file-read
+
+### [MED] /plan/bearings.md + /README.md — Engine version drift: package.json on ^0.24.0, README says ^0.22.0, bearings says ^0.21.0
+- pass: 49 (commit d652daf)
+- viewport: desktop
+- auth_state: anonymous
+- category: comprehension
+- observation: Three documents disagree on the current engine pin.
+  package.json has moved to ^0.24.0, but README's "Current engine
+  version" line still reads ^0.22.0 (its pass-44 fix is stale again after
+  two more bumps) and the bearings Stack table + setup note still cite
+  ^0.21.0. A new maintainer cannot tell which is authoritative.
+- evidence: package.json line 43 `"axiomancer-mechanics": "^0.24.0"`;
+  README.md line 260 `Current engine version: axiomancer-mechanics
+  ^0.22.0`; bearings.md line 62 `pinned ^0.21.0` and line 79 `currently
+  ^0.21.0`.
+- suggested fix: Update README.md line 260 and bearings.md lines 62/79 to
+  ^0.24.0 to match package.json (single source of truth).
+- source: file-read
+
+### [MED] /specs/README.md — Spec 12 shown as open/"ready to start" but it was implemented at b0572aa
+- pass: 49 (commit d652daf)
+- viewport: desktop
+- auth_state: anonymous
+- category: navigation
+- observation: specs/README.md "Next recommended work" says "Specs 10-12
+  remain open and are ready to start" and the Spec 12 row carries no
+  [DONE] tag, but plan/CRITIQUE.md records Spec 12 (accessibility &
+  theming) implemented at commit b0572aa. A maintainer would pick up
+  already-shipped work.
+- evidence: specs/README.md line 61 "Specs 10-12 remain open and are ready
+  to start"; line 87 Spec 12 row has no [DONE] marker. CRITIQUE.md line
+  439 records `[HIGH] /specs/12 ... ✅ addressed at commit b0572aa`.
+- suggested fix: Add a `[DONE on … — see commit b0572aa]` tag to the Spec
+  12 row and drop 12 from the "remain open" list (verify 10/11 status too).
+- source: file-read
+
+### [MED] /specs/README.md — Intro references two files that do not exist in the repo (GAME-ROADMAP.md, Knowledge-Gaps.md)
+- pass: 49 (commit d652daf)
+- viewport: desktop
+- auth_state: anonymous
+- category: comprehension
+- observation: The specs/README.md intro — the entry point to the spec
+  set — points readers at `GAME-ROADMAP.md` and `Knowledge-Gaps.md` as if
+  present and readable. Neither file exists anywhere in the repo, so a new
+  maintainer hits two dead references on the first paragraph they read.
+- evidence: specs/README.md lines 10-11 reference `GAME-ROADMAP.md` and
+  `Knowledge-Gaps.md`; `ls specs/GAME-ROADMAP.md specs/Knowledge-Gaps.md`
+  returns no such files (exit 2).
+- suggested fix: Either create the two files (even as stubs) or rewrite the
+  intro to drop the references to non-existent docs.
+- source: file-read
+
+### [LOW] /README.md — Scripts table omits four e2e scripts that exist in package.json
+- pass: 49 (commit d652daf)
+- viewport: desktop
+- auth_state: anonymous
+- category: navigation
+- observation: The README Scripts table documents `e2e:hazard` but omits
+  four sibling e2e scripts defined in package.json, so `npm run` surfaces
+  undocumented commands to a new maintainer.
+- evidence: package.json lines 26-29 define `e2e:gathering`,
+  `e2e:encounters`, `e2e:theme`, `e2e:minigames`; README.md line 114 lists
+  only `e2e:hazard`.
+- suggested fix: Add rows for the four missing e2e scripts to the README
+  Scripts table, matching the one-line `e2e:hazard` description pattern.
+- source: file-read
 
 <!-- Pass 44 (2026-06-15, commit 2da7843): repo-proxy pass —
      Auth: none, no live URL (mobile/EAS). Per plan/bearings.md,
@@ -92,6 +175,14 @@
 - evidence: Shows upgrade paths from 0.7.0-0.16.0 in lines 24-33 but current is 0.21.0, missing recent upgrade documentation chain
 - suggested fix: Add note indicating which upgrade docs are historical vs current or provide 0.20.0-to-0.21.0 reference
 - source: file-read
+- pass-49 re-confirmed (commit d652daf): still open and now further out of
+  date. The docs/README.md engine-upgrade table line 27 still labels
+  `0.15.1-to-0.16.0.md` as "Latest upgrade to 0.16.0" (HELPFUL), yet two
+  newer guides exist on disk — `docs/engine-upgrade-0.20.0-to-0.21.0.md`
+  and `docs/engine-upgrade-0.21.0-to-0.22.0.md` — neither listed in the
+  table. Fix should add rows for both newer guides and demote the 0.16.0
+  row from "Latest" to REFERENCE. (Pass-49 reader finding merged here as
+  duplicate rather than filed separately.)
 
 ### [LOW] /SVG_ASSET_SPEC.md — Asset completion checklist lacks context
 - pass: 44 (commit 2da7843)

@@ -28,7 +28,9 @@ import { describe, expect, it } from '@jest/globals';
 import {
     createMapState,
     getMapDefinition,
+    getNodePrimaryEventKind,
     type GameState,
+    type MapEventKind,
 } from 'axiomancer-mechanics';
 
 import { createAppActions } from '@/state/actions';
@@ -39,10 +41,6 @@ import { selectHasActiveCache } from '@/state/presenters/cache.engine';
 import { selectHasActiveRest } from '@/state/presenters/rest.engine';
 import { selectHasActiveGathering } from '@/state/presenters/gathering.engine';
 import { selectHasActiveQuestBoard } from '@/state/presenters/quest.engine';
-import { fishingVillageLayout } from '@/state/exploration-maps/fishing-village.layout';
-import { northernForestLayout } from '@/state/exploration-maps/northern-forest.layout';
-// Side-effect: register the pools so `resolveMapEvent` resolves real kinds.
-import '@/state/exploration-maps/event-pools';
 
 function makeStoreAndActions() {
     const store = createAppStore({ adapter: createMemoryAdapter() });
@@ -60,20 +58,22 @@ function seatAt(store: AppStore, mapName: CoastalMap, nodeId: string) {
     } as never);
 }
 
-/** First node of a given type in a layout (post one-quest-per-map retype). */
-function firstNodeOfType(
-    layout: typeof fishingVillageLayout,
-    type: string,
-): string {
-    const node = layout.nodes.find((n) => n.type === type);
-    if (!node) throw new Error(`no ${type} node in ${layout.mapId}`);
+/** First node resolving to a given engine event kind (the engine owns kind). */
+function firstNodeOfKind(mapName: CoastalMap, kind: MapEventKind): string {
+    const def = getMapDefinition('coastal-continent', mapName);
+    const node = def.nodes.find(
+        (n) => getNodePrimaryEventKind('coastal-continent', mapName, n.id) === kind,
+    );
+    if (!node) throw new Error(`no ${kind} node in ${mapName}`);
     return node.id;
 }
 
-describe('map encounter → minigame routing (fishing-village)', () => {
-    it('treasure node opens the loot-cache, not a paced /event', () => {
+// The varied minigame kinds live on northern-forest; fishing-village is the
+// new-player combat gauntlet (encounters + one quest + one boss).
+describe('map encounter → minigame routing (northern-forest)', () => {
+    it('loot-cache node opens the loot-cache, not a paced /event', () => {
         const { store, actions } = makeStoreAndActions();
-        seatAt(store, 'fishing-village', firstNodeOfType(fishingVillageLayout, 'treasure'));
+        seatAt(store, 'northern-forest', firstNodeOfKind('northern-forest', 'loot-cache'));
 
         expect(actions.resolveCurrentMapEvent('treasure')).toBe(true);
 
@@ -84,7 +84,7 @@ describe('map encounter → minigame routing (fishing-village)', () => {
 
     it('rest node opens "The Night Watch", not a paced /event', () => {
         const { store, actions } = makeStoreAndActions();
-        seatAt(store, 'fishing-village', firstNodeOfType(fishingVillageLayout, 'rest'));
+        seatAt(store, 'northern-forest', firstNodeOfKind('northern-forest', 'rest'));
 
         expect(actions.resolveCurrentMapEvent('rest')).toBe(true);
 
@@ -94,17 +94,18 @@ describe('map encounter → minigame routing (fishing-village)', () => {
 
     it('gather node opens "The Gleaning", not a paced /event', () => {
         const { store, actions } = makeStoreAndActions();
-        seatAt(store, 'fishing-village', firstNodeOfType(fishingVillageLayout, 'gather'));
+        seatAt(store, 'northern-forest', firstNodeOfKind('northern-forest', 'gathering'));
 
         expect(actions.resolveCurrentMapEvent('gather')).toBe(true);
 
         expect(selectHasActiveGathering(store.getState())).toBe(true);
         expect(selectPacedEventRoute(store.getState())).toBeNull();
     });
+});
 
-    it('the lone quest node opens the build-the-boat board', () => {
+describe('fishing-village gauntlet routing', () => {
+    it('the lone quest node (fv-15) opens the build-the-boat board', () => {
         const { store, actions } = makeStoreAndActions();
-        // fv-15 "Sea Cave" — the village's single story beat.
         seatAt(store, 'fishing-village', 'fv-15');
 
         expect(actions.resolveCurrentMapEvent('quest')).toBe(true);
@@ -113,34 +114,14 @@ describe('map encounter → minigame routing (fishing-village)', () => {
         expect(store.getState().quest.session?.boardId).toBe('build-the-boat');
         expect(selectPacedEventRoute(store.getState())).toBeNull();
     });
-});
 
-describe('one-quest-per-map design invariant', () => {
-    it.each([
-        ['fishing-village', fishingVillageLayout],
-        ['northern-forest', northernForestLayout],
-    ])('%s has exactly one quest node', (_name, layout) => {
-        const questNodes = layout.nodes.filter((n) => n.type === 'quest');
-        expect(questNodes).toHaveLength(1);
-    });
-});
-
-describe('northern-forest quest interaction (nf-6 forgotten-pilgrim)', () => {
-    it('shows real mobile dialogue instead of the empty "A figure waits." card', () => {
-        const { store, actions } = makeStoreAndActions();
-        seatAt(store, 'northern-forest', 'nf-6');
-
-        expect(actions.resolveCurrentMapEvent('quest')).toBe(true);
-
-        // Engine returns an interaction with no tree (no NPC in the map
-        // def); the mobile fallback seeds a real dialogue cursor.
-        const slice = store.getState().event;
-        expect(slice.pending?.event.kind).toBe('interaction');
-        expect(slice.dialogueCursor).not.toBeNull();
-        const tree = slice.dialogueCursor!.tree;
-        expect(tree.id).toBe('forgotten-pilgrim');
-        // A real conversation: the root node offers more than one reply.
-        const root = tree.nodes[tree.rootId];
-        expect(root.choices && root.choices.length).toBeGreaterThan(1);
+    it('has exactly one quest node and one boss node (engine-authored)', () => {
+        const def = getMapDefinition('coastal-continent', 'fishing-village');
+        const kinds = def.nodes.map((n) =>
+            getNodePrimaryEventKind('coastal-continent', 'fishing-village', n.id),
+        );
+        expect(kinds.filter((k) => k === 'quest')).toHaveLength(1);
+        // Boss is an `encounter` kind flagged isBoss; the rest are encounters.
+        expect(kinds.filter((k) => k === 'encounter').length).toBeGreaterThanOrEqual(23);
     });
 });

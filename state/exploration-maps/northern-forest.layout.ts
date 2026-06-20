@@ -96,5 +96,23 @@ export const northernForestLayout: MapLayout = {
             connectedNodes: [],
             description: 'A causeway leading north. The way out, if there is one.',
         },
+        // ── Districts (nf-11..nf-25) — positions placed off the engine's
+        // location grid; kind + edges come from the engine. Labels/blurbs
+        // authored in the game's voice. ──
+        { id: 'nf-11', x: 178, y: 280, label: 'Ranger’s Rest', description: 'An old ranger’s lean-to, still dry beneath the boughs.' },
+        { id: 'nf-12', x: 67,  y: 280, label: 'Thornbrake', description: 'A snarl of black thorn that grabs at the careless.' },
+        { id: 'nf-13', x: 104, y: 280, label: 'The Mossbeds', description: 'Soft green hummocks, thick with useful growth.' },
+        { id: 'nf-14', x: 141, y: 285, label: 'Hermit’s Hollow', description: 'A reed hut tucked where the pines lean close.' },
+        { id: 'nf-15', x: 141, y: 140, label: 'Bramble Snare', description: 'The undergrowth here keeps teeth of its own.' },
+        { id: 'nf-16', x: 200, y: 130, label: 'Hunter’s Cache', description: 'A waxed bundle wedged in a hollow trunk.' },
+        { id: 'nf-17', x: 245, y: 120, label: 'The Standing Stones', description: 'Grey monoliths older than the forest. They watch.' },
+        { id: 'nf-18', x: 195, y: 270, label: 'Glen Market', description: 'A handful of stalls where two trails cross.' },
+        { id: 'nf-19', x: 235, y: 285, label: 'Shadewood', description: 'The canopy closes; something stirs against the dark.' },
+        { id: 'nf-20', x: 67,  y: 350, label: 'Sunken Reliquary', description: 'A stone box half-swallowed by the loam.' },
+        { id: 'nf-21', x: 110, y: 360, label: 'Echo Stone', description: 'Speak here and the forest answers — late, and wrong.' },
+        { id: 'nf-22', x: 255, y: 205, label: 'Moonbell Glade', description: 'Pale flowers that open only after dusk.' },
+        { id: 'nf-23', x: 290, y: 200, label: 'Wanderer’s Fire', description: 'A philosopher tends a small fire, glad of company.' },
+        { id: 'nf-24', x: 300, y: 270, label: 'Keeper’s Cairn', description: 'A watch-cairn where the old rangers slept in turns.' },
+        { id: 'nf-25', x: 335, y: 285, label: 'Mist Pools', description: 'Cold pools that breathe a fog to turn you around.' },
     ],
 };

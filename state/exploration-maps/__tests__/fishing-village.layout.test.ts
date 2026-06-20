@@ -266,7 +266,7 @@ describe('fishingVillageLayout: regression prevention', () => {
         const allIds = new Set(fishingVillageLayout.nodes.map(n => n.id));
         
         for (const node of fishingVillageLayout.nodes) {
-            for (const connectedId of node.connectedNodes) {
+            for (const connectedId of node.connectedNodes ?? []) {
                 expect(allIds.has(connectedId)).toBe(true);
                 if (!allIds.has(connectedId)) {
                     throw new Error(`Node ${node.id} references non-existent node ${connectedId}`);

@@ -9,10 +9,11 @@
  * (Q5=B) — the screen renders locked nodes desaturated to convey state.
  */
 
-import type { GameStore } from 'axiomancer-mechanics';
+import type { GameStore, MapEventKind } from 'axiomancer-mechanics';
+import { getMapDefinition, getNodePrimaryEventKind, getNodeEventPool } from 'axiomancer-mechanics';
 
 import { readCurrentNodeId } from '../actions';
-import { getMapLayout, type NodeLayout } from '@/state/exploration-maps';
+import { getMapLayout } from '@/state/exploration-maps';
 import { freezeViewModel } from './freeze';
 
 export type NodeKind = 'completed' | 'current' | 'available' | 'locked';
@@ -146,20 +147,61 @@ const ACTION_TAG_BY_TYPE: Record<NodeType, string> = {
 
 const ENCOUNTER_NODE_TYPES = new Set<NodeType>(['encounter', 'boss']);
 
+// Maps the engine's authored MapEvent kind to a display NodeType (icon).
+// The engine owns which kind fires at each node; mobile only chooses the
+// glyph. `encounter` is promoted to `boss` when the node's pool is a boss
+// fight (see `engineNodeType`). interaction/village/cutscene have no bespoke
+// glyph yet, so they borrow the nearest narrative/utility icon.
+const KIND_TO_NODE_TYPE: Record<MapEventKind, NodeType> = {
+    encounter: 'encounter',
+    gathering: 'gather',
+    rest: 'rest',
+    'loot-cache': 'treasure',
+    quest: 'quest',
+    hazard: 'hazard',
+    interaction: 'quest',
+    village: 'treasure',
+    cutscene: 'quest',
+};
+
+/** Node display type, sourced from the engine's authored event pools. */
+function engineNodeType(continent: string, mapName: string, nodeId: string): NodeType {
+    const kind = getNodePrimaryEventKind(continent, mapName, nodeId);
+    if (!kind) return 'encounter';
+    if (kind === 'encounter') {
+        const pool = getNodeEventPool(continent, mapName, nodeId);
+        const isBoss = pool?.entries.some(
+            (e) => e.kind === 'encounter' && (e.payload as { isBoss?: boolean }).isBoss === true,
+        );
+        return isBoss ? 'boss' : 'encounter';
+    }
+    return KIND_TO_NODE_TYPE[kind];
+}
+
 function classifyNode(
-    layout: NodeLayout,
+    nodeId: string,
     currentNodeId: string,
     completed: readonly string[],
     available: readonly string[],
 ): NodeKind {
-    if (layout.id === currentNodeId) return 'current';
-    if (completed.includes(layout.id)) return 'completed';
-    if (available.includes(layout.id)) return 'available';
+    if (nodeId === currentNodeId) return 'current';
+    if (completed.includes(nodeId)) return 'completed';
+    if (available.includes(nodeId)) return 'available';
     return 'locked';
 }
 
+/** Resolved per-node display metadata (position + copy + engine-sourced kind). */
+interface ResolvedNodeMeta {
+    x: number;
+    y: number;
+    label: string;
+    description: string;
+    type: NodeType;
+}
+
+// Edges come from the ENGINE graph (`getMapDefinition().nodes[].connectedNodes`).
 function buildEdges(
-    nodes: readonly NodeLayout[],
+    nodes: ReadonlyArray<{ id: string; connectedNodes: readonly string[] }>,
     completed: readonly string[],
     locked: readonly string[],
 ): ExplorationEdge[] {
@@ -193,23 +235,23 @@ function leaguesFromDistance(d: number): LeagueBucket {
 }
 
 function buildOptions(
-    layout: readonly NodeLayout[],
+    metaById: ReadonlyMap<string, ResolvedNodeMeta>,
+    orderById: ReadonlyMap<string, number>,
     available: readonly string[],
     currentNodeId: string,
 ): ExplorationOption[] {
-    const order = new Map(layout.map((n, i) => [n.id, i] as const));
-    const current = layout.find((n) => n.id === currentNodeId) ?? null;
+    const current = metaById.get(currentNodeId) ?? null;
     return available
-        .filter((id) => order.has(id))
-        .sort((a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0))
+        // Don't offer the node the player is standing on (reusable encounter
+        // nodes stay in `availableNodes`, but you're already there).
+        .filter((id) => id !== currentNodeId && metaById.has(id))
+        .sort((a, b) => (orderById.get(a) ?? 0) - (orderById.get(b) ?? 0))
         .map((id) => {
-            const n = layout.find((node) => node.id === id)!;
+            const n = metaById.get(id)!;
             const distance =
-                current === null
-                    ? 0
-                    : Math.hypot(n.x - current.x, n.y - current.y);
+                current === null ? 0 : Math.hypot(n.x - current.x, n.y - current.y);
             return {
-                nodeId: n.id,
+                nodeId: id,
                 label: n.label,
                 type: n.type,
                 description: n.description,
@@ -291,33 +333,71 @@ function computeExplorationViewModel(state: GameStore): ExplorationViewModel {
         });
     }
 
+    // The node GRAPH (ids + edges) is the engine's; the mobile layout supplies
+    // only pixel positions + display copy. Resolve the engine map definition.
+    const continent = world.currentMap.continent;
+    const mapName = world.currentMap.name;
+    let def: ReturnType<typeof getMapDefinition> | null = null;
+    try {
+        def = getMapDefinition(continent, mapName);
+    } catch {
+        def = null;
+    }
+    if (def === null) {
+        return freezeViewModel({
+            ...FALLBACK_VM,
+            continent: layout.continent,
+            region: layout.region,
+            mapId: mapName,
+            currentNodeId: readCurrentNodeId(world),
+        });
+    }
+
     const completed = world.currentMap.completedNodes as readonly string[];
     const available = world.currentMap.availableNodes as readonly string[];
     const locked = world.currentMap.lockedNodes as readonly string[];
     const currentNodeId = readCurrentNodeId(world);
 
-    const nodes: ExplorationNode[] = layout.nodes.map((n) => {
-        const kind = classifyNode(n, currentNodeId, completed, available);
+    // Per-node display meta: position/label/blurb from the mobile layout (by id),
+    // kind/icon from the engine's authored event pools. Nodes without an authored
+    // layout entry fall back to the canvas centre + their id.
+    const layoutById = new Map(layout.nodes.map((n) => [n.id, n] as const));
+    const orderById = new Map(def.nodes.map((n, i) => [n.id, i] as const));
+    const metaById = new Map<string, ResolvedNodeMeta>();
+    for (const eng of def.nodes) {
+        const lay = layoutById.get(eng.id);
+        metaById.set(eng.id, {
+            x: lay?.x ?? 180,
+            y: lay?.y ?? 200,
+            label: lay?.label ?? eng.id,
+            description: lay?.description ?? '',
+            type: engineNodeType(continent, mapName, eng.id),
+        });
+    }
+
+    const nodes: ExplorationNode[] = def.nodes.map((eng) => {
+        const meta = metaById.get(eng.id)!;
+        const nodeKind = classifyNode(eng.id, currentNodeId, completed, available);
         return {
-            id: n.id,
-            x: n.x,
-            y: n.y,
-            kind,
-            label: n.label,
-            type: n.type,
-            triggersCombat: kind === 'available' && ENCOUNTER_NODE_TYPES.has(n.type),
+            id: eng.id,
+            x: meta.x,
+            y: meta.y,
+            kind: nodeKind,
+            label: meta.label,
+            type: meta.type,
+            triggersCombat: nodeKind === 'available' && ENCOUNTER_NODE_TYPES.has(meta.type),
         };
     });
 
-    const options = buildOptions(layout.nodes, available, currentNodeId);
+    const options = buildOptions(metaById, orderById, available, currentNodeId);
     const actions = buildActions(options);
-    const edges = buildEdges(layout.nodes, completed, locked);
+    const edges = buildEdges(def.nodes, completed, locked);
 
     return freezeViewModel({
         continent: layout.continent,
         region: layout.region,
         regionProgress: layout.regionProgress,
-        mapId: world.currentMap.name,
+        mapId: mapName,
         currentNodeId,
         nodes,
         edges,
@@ -327,7 +407,7 @@ function computeExplorationViewModel(state: GameStore): ExplorationViewModel {
         eventCallout: null,
         legend: {
             left: '● TRODDEN  ◌ OPEN  ✕ SHUT',
-            right: `${layout.nodes.length} nodes · ${locked.length} sealed`,
+            right: `${def.nodes.length} nodes · ${locked.length} sealed`,
         },
     });
 }

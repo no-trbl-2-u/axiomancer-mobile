@@ -18,10 +18,9 @@ import { AestheticModeProvider } from '@/state/aesthetic-mode';
 import { CombatModeProvider } from '@/state/combat-mode';
 import { GameStoreProvider } from '@/state/GameStoreProvider';
 import { FontProvider } from '@/hooks/useFontFallbacks';
-// Side-effect import: registers exploration map event pools with
-// the engine so walking onto encounter / rest / treasure / quest
-// nodes fires the appropriate event. See state/exploration-maps/event-pools.ts.
-import '@/state/exploration-maps/event-pools';
+// Map event pools are authored and self-registered by the engine
+// (axiomancer-mechanics → World/MapEvents/content); the client no longer
+// registers a parallel pool set.
 // Side-effect: skin the web scrollbar to match the gothic chrome.
 import '@/theme/web-scrollbar';
 import { createAsyncStorageAdapter } from '@/state/persistence/asyncStorageAdapter';

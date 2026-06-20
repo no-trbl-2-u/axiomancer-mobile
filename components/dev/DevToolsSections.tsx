@@ -26,7 +26,6 @@ import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { FONTS } from '@/theme/axm';
 import { makeStyles, usePalette } from '@/theme/runtime';
 
-const DebugChaosToggle = lazy(() => import('@/components/DebugChaosToggle').then(m => ({ default: m.DebugChaosToggle })));
 const DebugCombatButton = lazy(() => import('@/components/DebugCombatButton').then(m => ({ default: m.DebugCombatButton })));
 const DebugHazardButton = lazy(() => import('@/components/DebugHazardButton').then(m => ({ default: m.DebugHazardButton })));
 const DebugHazardDeckRandomize = lazy(() => import('@/components/DebugHazardDeckRandomize').then(m => ({ default: m.DebugHazardDeckRandomize })));
@@ -37,7 +36,6 @@ const DebugCurrencyControl = lazy(() => import('@/components/DebugCurrencyContro
 const DebugDialogueJump = lazy(() => import('@/components/DebugDialogueJump').then(m => ({ default: m.DebugDialogueJump })));
 const DebugEffectApply = lazy(() => import('@/components/DebugEffectApply').then(m => ({ default: m.DebugEffectApply })));
 const DebugQuestState = lazy(() => import('@/components/DebugQuestState').then(m => ({ default: m.DebugQuestState })));
-const DebugEventKindForce = lazy(() => import('@/components/DebugEventKindForce').then(m => ({ default: m.DebugEventKindForce })));
 const DebugTriggerEncounter = lazy(() => import('@/components/DebugTriggerEncounter').then(m => ({ default: m.DebugTriggerEncounter })));
 const DebugFriendship = lazy(() => import('@/components/DebugFriendship').then(m => ({ default: m.DebugFriendship })));
 const DebugHudOverrides = lazy(() => import('@/components/DebugHudOverrides').then(m => ({ default: m.DebugHudOverrides })));
@@ -133,7 +131,6 @@ export function DevToolsSections() {
                 <DevSection label="WORLD & STORY TOOLS" testID="dev-section-world">
                     <DebugMapResetButton />
                     <DebugAlignmentShift />
-                    <DebugEventKindForce />
                     <DebugDialogueJump />
                     <DebugQuestState />
                     <DebugFriendship />
@@ -141,7 +138,6 @@ export function DevToolsSections() {
 
                 <DevSection label="MISC & SYSTEM" testID="dev-section-system">
                     <AestheticDevToggle />
-                    <DebugChaosToggle />
                     <DebugHudOverrides />
                 </DevSection>
             </Suspense>

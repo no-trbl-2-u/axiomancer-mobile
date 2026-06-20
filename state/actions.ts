@@ -47,6 +47,7 @@ import {
     getDialogueNode,
     getTemplatesBySlot,
     getMapDefinition,
+    getNodePrimaryEventKind,
     getPresetById,
     getSkillById,
     healCharacter,
@@ -83,8 +84,6 @@ import {
     type WorldState,
 } from 'axiomancer-mechanics';
 
-import { getMapLayout } from '@/state/exploration-maps';
-import { questNpcDialogueFor } from '@/state/exploration-maps/quest-dialogue';
 
 import {
     COMBAT_SKILLS,
@@ -1682,11 +1681,12 @@ function moveToAction(store: AppStore, nodeId: string): MoveToResult {
         return { moved: false, currentNodeId, locked: isLocked };
     }
 
-    // Check if this node is an encounter type that should remain reusable
-    const layout = getMapLayout(map.name);
-    const nodeLayout = layout?.nodes.find((n) => n.id === nodeId);
-    const isEncounterNode = nodeLayout && ['encounter', 'boss'].includes(nodeLayout.type);
-    
+    // Node kind comes from the engine's authored event pools. Encounter /
+    // boss nodes (both resolve to the `encounter` kind) stay reusable — they
+    // are not completed/consumed on entry; every other kind completes.
+    const nodeKind = getNodePrimaryEventKind(map.continent, map.name, nodeId);
+    const isEncounterNode = nodeKind === 'encounter';
+
     // Only complete/consume nodes that aren't encounters
     let nextWorld: WorldState = world;
     if (!isEncounterNode) {
@@ -1704,20 +1704,16 @@ function moveToAction(store: AppStore, nodeId: string): MoveToResult {
         };
     }
 
-    // Propagate unlocks for outbound edges declared in the layout fixture
-    // (legacy `availableNodes` population — the screen reads this for
-    // the visual graph). The mobile fixture is the source of truth for
-    // the *visual* layout (positions + hand-drawn edges); the engine's
-    // `MapDefinition` registry is the source of truth for the unlock
-    // graph itself (Phase 27).
-    if (layout !== null) {
-        const moved = nodeLayout;
-        const connected = moved?.connectedNodes ?? [];
-        for (const targetId of connected) {
-            if (completed.includes(targetId)) continue;
-            if (nextWorld.currentMap.availableNodes.includes(targetId)) continue;
-            nextWorld = worldUnlockNode(nextWorld, targetId);
-        }
+    // Populate `availableNodes` (the screen's reachable set) from the ENGINE
+    // graph's outbound edges — `getMapDefinition` is the single source of truth
+    // for the unlock graph, so the client no longer carries its own edge list.
+    const engineNode = getMapDefinition(map.continent, map.name).nodes.find(
+        (n) => n.id === nodeId,
+    );
+    for (const targetId of engineNode?.connectedNodes ?? []) {
+        if (completed.includes(targetId)) continue;
+        if (nextWorld.currentMap.availableNodes.includes(targetId)) continue;
+        nextWorld = worldUnlockNode(nextWorld, targetId);
     }
 
     nextWorld = {
@@ -2097,17 +2093,14 @@ function resolveCurrentMapEventAction(store: AppStore, sourceNodeType?: string):
 
         // Spread the advanced state onto the store. `event` is mobile-only
         // and survives because `result.state` does not include it.
-        // If the resolved event is an interaction, seed the dialogue
-        // cursor at the tree's root so `selectEventViewModel` composes
-        // against the right node. Prefer the engine-supplied tree; when
-        // the engine returns no tree (the map definition carries no NPC
-        // for this `npcName`), fall back to a mobile-authored tree so the
-        // card shows real replies instead of the bare "A figure waits."
-        // empty state (e.g. nf-6 forgotten-pilgrim — see quest-dialogue.ts).
+        // If the resolved event is an interaction, seed the dialogue cursor at
+        // the tree's root so `selectEventViewModel` composes against the right
+        // node. The engine supplies the authored tree (its map definition owns
+        // the NPCs); when it carries none, the card shows its default copy.
         let dialogueCursor: { tree: DialogueTree; nodeId: string } | null = null;
-        if (result.event.kind === 'interaction') {
-            const tree = result.event.dialogue ?? questNpcDialogueFor(result.event.npcName);
-            if (tree) dialogueCursor = { tree, nodeId: tree.rootId };
+        if (result.event.kind === 'interaction' && result.event.dialogue) {
+            const tree = result.event.dialogue;
+            dialogueCursor = { tree, nodeId: tree.rootId };
         }
 
         const nextEvent = {

@@ -15,7 +15,6 @@ import { createAppActions } from '@/state/actions';
 import { createAppStore } from '@/state/store';
 // Side-effect: registers exploration map event pools so resolveMapEvent
 // produces real events in the travel-to-event path tests below.
-import '@/state/exploration-maps/event-pools';
 import {
     selectExplorationViewModel,
     type ExplorationViewModel,
@@ -116,21 +115,26 @@ describe('selectExplorationViewModel: engine reads', () => {
         expect(vm.options[0].description.length).toBeGreaterThan(0);
     });
 
-    it('marks encounter/boss available nodes as triggersCombat', () => {
+    it('marks available encounter nodes as triggersCombat; the quest node does not', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
-        // Walk to fv-2 so fv-3 (encounter) and fv-12 (rest) become available.
+        // fishing-village is the combat gauntlet, so fv-2's neighbours fv-3
+        // and fv-12 both resolve to engine `encounter` kinds.
         actions.moveTo('fv-2');
 
         const vm = selectExplorationViewModel(store.getState());
         const fv3 = vm.nodes.find((n) => n.id === 'fv-3')!;
         const fv12 = vm.nodes.find((n) => n.id === 'fv-12')!;
-
         expect(fv3.kind).toBe('available');
         expect(fv3.triggersCombat).toBe(true);
         expect(fv12.kind).toBe('available');
-        expect(fv12.triggersCombat).toBe(false);
+        expect(fv12.triggersCombat).toBe(true);
+
+        // The single quest node (fv-15) is never a combat trigger.
+        const fv15 = vm.nodes.find((n) => n.id === 'fv-15')!;
+        expect(fv15.type).toBe('quest');
+        expect(fv15.triggersCombat).toBe(false);
     });
 
     it('encounter step-card icon is "sword", NOT "flee" — exploration-audit [3.5] DRIFT fix', () => {
@@ -218,14 +222,16 @@ describe('moveTo action: locked / invalid targets', () => {
         expect(result.moved).toBe(false);
     });
 
-    it('refuses to revisit an already-completed node', () => {
+    it('allows re-entering a reusable encounter node (gauntlet re-fight)', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
+        // fv-2 resolves to an engine `encounter` kind, so it is not completed
+        // on entry — it stays reachable and can be re-entered.
         actions.moveTo('fv-2');
         const result = actions.moveTo('fv-2');
 
-        expect(result.moved).toBe(false);
+        expect(result.moved).toBe(true);
     });
 
     it('exposes locked nodes through the VM so the screen can desaturate them', () => {
@@ -289,23 +295,23 @@ describe('changeMap action: map transition', () => {
 // ---------------------------------------------------------------------------
 
 describe('exploration lifecycle: multi-step navigation', () => {
-    it('navigating to gather then encounter nodes - gather completes, encounter remains reusable', () => {
+    it('encounter gauntlet nodes stay reusable and unlock their engine neighbours', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
-        actions.moveTo('fv-2'); // gather node - should be completed
-        actions.moveTo('fv-3'); // encounter node - should remain reusable
+        actions.moveTo('fv-2'); // encounter — not completed
+        actions.moveTo('fv-3'); // encounter — not completed
 
         const completed = store.getState().world.currentMap.completedNodes;
-        // fv-2 (gather) should be completed, fv-3 (encounter) should not be
-        expect(completed).toEqual(expect.arrayContaining(['fv-2']));
+        // Both are engine `encounter` kinds, so neither completes on entry.
+        expect(completed).not.toContain('fv-2');
         expect(completed).not.toContain('fv-3');
 
         const vm = selectExplorationViewModel(store.getState());
         const byId = Object.fromEntries(vm.nodes.map((n) => [n.id, n]));
-        expect(byId['fv-2'].kind).toBe('completed');
+        expect(byId['fv-2'].kind).toBe('available'); // reusable, left behind
         expect(byId['fv-3'].kind).toBe('current');
-        // fv-4, fv-13 and fv-16 are downstream of fv-3 per the layout fixture.
+        // fv-4, fv-13 and fv-16 are fv-3's neighbours in the ENGINE graph.
         expect(byId['fv-4'].kind).toBe('available');
         expect(byId['fv-13'].kind).toBe('available');
         expect(byId['fv-16'].kind).toBe('available');

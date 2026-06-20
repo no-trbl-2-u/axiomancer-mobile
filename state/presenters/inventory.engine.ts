@@ -23,10 +23,10 @@ import {
 } from 'axiomancer-mechanics';
 
 import { freezeViewModel } from './freeze';
-import { computeEquipDelta, type EquipDelta } from './equipDelta';
-import { firstEquippedPerSlot } from '../selectors/equipment';
+import { computeEquipDelta, type EquipDelta } from 'axiomancer-mechanics';
+import { firstEquippedPerSlot } from 'axiomancer-mechanics';
 
-export type { EquipDelta } from './equipDelta';
+export type { EquipDelta } from 'axiomancer-mechanics';
 
 // ---------------------------------------------------------------------------
 // Public types

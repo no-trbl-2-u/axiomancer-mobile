@@ -11,7 +11,7 @@ import {
     type Item,
     type ShopWare,
 } from 'axiomancer-mechanics';
-import { templateToEquipment } from '@/state/selectors/equipment';
+import { equipmentFromTemplate as templateToEquipment } from 'axiomancer-mechanics';
 import type { AppStoreState } from '@/state/store';
 
 export interface VillageMerchantVM {

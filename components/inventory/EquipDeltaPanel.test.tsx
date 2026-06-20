@@ -22,7 +22,7 @@ import React from 'react';
 import { EquipDeltaPanel } from '@/components/inventory/EquipDeltaPanel';
 import { withAllProviders } from '@/test-utils/withAllProviders';
 import { AXM } from '@/theme/axm';
-import type { EquipDelta, EquipDeltaSide } from '@/state/presenters/equipDelta';
+import type { EquipDelta, EquipDeltaSide } from 'axiomancer-mechanics';
 
 function textColor(node: { props?: { style?: unknown } }): string | undefined {
     return (StyleSheet.flatten(node.props?.style as TextStyle) as TextStyle)?.color as

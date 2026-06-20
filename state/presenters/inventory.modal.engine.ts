@@ -21,11 +21,11 @@ import {
 
 import { freezeViewModel } from './freeze';
 import { parseHealAmount } from '../actions';
-import { computeEquipDelta, type EquipDeltaSide } from './equipDelta';
+import { computeEquipDelta, type EquipDeltaSide } from 'axiomancer-mechanics';
 import {
     findEquippedInSlot as selectFindEquippedInSlot,
     isEquippedFirstOfSlot as selectIsEquippedFirstOfSlot,
-} from '../selectors/equipment';
+} from 'axiomancer-mechanics';
 
 /**
  * Modal mode discriminator. The screen branches on this to pick

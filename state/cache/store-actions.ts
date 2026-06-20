@@ -24,7 +24,7 @@ import {
 import type { CacheItemRef, LootCacheOutcomeTier, LootCacheSession } from 'axiomancer-mechanics';
 import { resolveMinigameSeed } from '../minigame-seeds';
 import { EMPTY_CACHE_SLICE, type AppStore } from '../store';
-import { rollCacheLoot, type CacheLootTier } from './loot-table';
+import { rollCacheLoot, type CacheLootTier } from 'axiomancer-mechanics';
 
 /** Flag prefix banking a keeper's keepsake. */
 export const CACHE_KEEPSAKE_FLAG_PREFIX = 'cache-keepsake:';

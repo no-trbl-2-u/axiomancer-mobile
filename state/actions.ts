@@ -93,7 +93,7 @@ import {
     skillEffectText,
     type CombatSkill,
 } from '@/state/selectors/combat-skills';
-import { templateToEquipment } from '@/state/selectors/equipment';
+import { equipmentFromTemplate as templateToEquipment } from 'axiomancer-mechanics';
 import { resolveWareItem } from '@/state/presenters/village.engine';
 import { EMPTY_EVENT_SLICE, type AppStore } from './store';
 import {
@@ -175,7 +175,7 @@ import {
     type BeginLootCacheOptions,
     type ClaimLootCacheResult,
 } from './cache/store-actions';
-import type { CacheLootTier } from './cache/loot-table';
+import type { CacheLootTier } from 'axiomancer-mechanics';
 import {
     applyPlayerTierPresetAction,
     type ApplyPlayerTierPresetResult,

@@ -14,6 +14,7 @@ describe('smoke-screens helpers', () => {
         { name: 'inventory', path: '/inventory' },
         { name: 'exploration', path: '/exploration' },
         { name: 'combat', path: '/combat' },
+        { name: 'combat-encounter', path: '/combat-encounter' },
         { name: 'memoir', path: '/memoir' },
     ]
 

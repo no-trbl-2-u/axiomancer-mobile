@@ -38,6 +38,7 @@ export const ROUTES = [
     { name: 'inventory', path: '/inventory' },
     { name: 'exploration', path: '/exploration' },
     { name: 'combat', path: '/combat' },
+    { name: 'combat-encounter', path: '/combat-encounter' },
     { name: 'memoir', path: '/memoir' },
     // `/event` is gated by `selectHasActiveEvent`; smoke skips it until
     // a state-seed hook lands. Add it back here once the seed exists.

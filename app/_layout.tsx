@@ -183,6 +183,10 @@ export default function RootLayout() {
                 options={{ headerShown: false, presentation: 'fullScreenModal', gestureEnabled: false }}
               />
               <Stack.Screen
+                name="combat-encounter/index"
+                options={{ headerShown: false, presentation: 'fullScreenModal', gestureEnabled: false }}
+              />
+              <Stack.Screen
                 name="hazard-deck/index"
                 options={{ headerShown: false, presentation: 'fullScreenModal' }}
               />

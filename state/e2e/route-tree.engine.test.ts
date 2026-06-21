@@ -89,6 +89,10 @@ const EXPECTED_ROUTE_FILES: ReadonlySet<string> = new Set([
     './event/index.tsx',
     // Hazard minigame (design handoff 2026-06-10).
     './hazard/index.tsx',
+    // Spec 25 — Hazard-Pattern Combat: card-and-dice status combat,
+    // launched from the dev tools (DebugCombatEncounterButton) and the
+    // forthcoming encounter wiring.
+    './combat-encounter/index.tsx',
     // Phase 126 — persistent Hazard deck / library + remove-card grid,
     // reachable from the SELF tab outside an encounter.
     './hazard-deck/index.tsx',

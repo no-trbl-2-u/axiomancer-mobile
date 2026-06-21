@@ -24,7 +24,7 @@ describe('ExplorationNode', () => {
             <ExplorationNode
                 node={mockNode}
                 onNodePress={mockOnNodePress}
-                shouldShowLabel={false}
+                isSelected={false}
             />
         );
 
@@ -36,7 +36,7 @@ describe('ExplorationNode', () => {
             <ExplorationNode
                 node={mockNode}
                 onNodePress={mockOnNodePress}
-                shouldShowLabel={false}
+                isSelected={false}
             />
         );
 
@@ -44,29 +44,27 @@ describe('ExplorationNode', () => {
         expect(mockOnNodePress).toHaveBeenCalledWith(mockNode);
     });
 
-    it('shows label when shouldShowLabel is true', () => {
+    it('shows the node label when selected', () => {
         const { getByText } = render(
             <ExplorationNode
                 node={mockNode}
                 onNodePress={mockOnNodePress}
-                shouldShowLabel={true}
+                isSelected={true}
             />
         );
 
         expect(getByText('Test Node')).toBeDefined();
-        expect(getByText('ENCOUNTER')).toBeDefined();
     });
 
-    it('does not show label when shouldShowLabel is false', () => {
+    it('does not show the label when not selected', () => {
         const { queryByText } = render(
             <ExplorationNode
                 node={mockNode}
                 onNodePress={mockOnNodePress}
-                shouldShowLabel={false}
+                isSelected={false}
             />
         );
 
         expect(queryByText('Test Node')).toBeNull();
-        expect(queryByText('ENCOUNTER')).toBeNull();
     });
 });

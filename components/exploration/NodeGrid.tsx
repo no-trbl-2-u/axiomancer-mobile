@@ -5,10 +5,11 @@ import type { ExplorationNode as ExplorationNodeType } from '@/state/presenters/
 interface NodeGridProps {
     nodes: readonly ExplorationNodeType[];
     onNodePress: (node: ExplorationNodeType) => void;
-    labeledNodeIds: Set<string>;
+    /** The node the player has tapped but not yet confirmed (or null). */
+    selectedNodeId: string | null;
 }
 
-export function NodeGrid({ nodes, onNodePress, labeledNodeIds }: NodeGridProps) {
+export function NodeGrid({ nodes, onNodePress, selectedNodeId }: NodeGridProps) {
     return (
         <>
             {/* Node markers */}
@@ -17,7 +18,7 @@ export function NodeGrid({ nodes, onNodePress, labeledNodeIds }: NodeGridProps) 
                     key={n.id}
                     node={n}
                     onNodePress={onNodePress}
-                    shouldShowLabel={labeledNodeIds.has(n.id)}
+                    isSelected={n.id === selectedNodeId}
                 />
             ))}
         </>

@@ -78,8 +78,9 @@ describe('hazard out-of-combat death', () => {
         const { store, actions } = makeStoreAndActions();
         const levelBefore = gameState(store).player.level;
         const shillingsBefore = gameState(store).player.currency;
-        // Default 15 VITAE — a −20 swing crosses the isDefeated threshold.
-        expect(gameState(store).player.health).toBe(15);
+        // Wound the player low so the failing crossing's −20 swing crosses the
+        // isDefeated threshold (the fresh-game default is now 75 VITAE).
+        setHealth(store, 15, gameState(store).player.maxHealth);
 
         driveFailingCrossing(store, actions);
         const result = actions.claimHazardRewards(null);

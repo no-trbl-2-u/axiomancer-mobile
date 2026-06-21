@@ -123,13 +123,16 @@ export interface ExplorationViewModel {
 // combat". Swapped to `'sword'` so the encounter + boss
 // step-cards share the same combat-stakes vocabulary; matches
 // the combat tab's ATTACK action icon.
-const ACTION_ICON_BY_TYPE: Record<NodeType, string> = {
+// Exported so the map nodes can render the same kind-icon the option cards use,
+// giving adjacent nodes an at-a-glance "what is this" glyph. Boss uses a
+// distinct `crown` (not the encounter `sword`) so the climax is signposted.
+export const ACTION_ICON_BY_TYPE: Record<NodeType, string> = {
     rest: 'flame',
     gather: 'bag',
     current: 'eye',
     encounter: 'sword',
     treasure: 'scroll',
-    boss: 'sword',
+    boss: 'crown',
     quest: 'scroll',
     hazard: 'arcane',
 };

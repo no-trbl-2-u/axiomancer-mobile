@@ -3,13 +3,19 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { FONTS } from '@/theme/axm';
 import { makeStyles, usePalette } from '@/theme/runtime';
 import { NodeMark } from '@/components/NodeMark';
+import { ActionIcon } from '@/components/ActionIcon';
 import { useTooltip } from '@/hooks/useTooltip';
-import type { ExplorationNode as ExplorationNodeType, NodeType } from '@/state/presenters/exploration.engine';
+import {
+    ACTION_ICON_BY_TYPE,
+    type ExplorationNode as ExplorationNodeType,
+    type NodeType,
+} from '@/state/presenters/exploration.engine';
 
 interface ExplorationNodeProps {
     node: ExplorationNodeType;
     onNodePress: (n: ExplorationNodeType) => void;
-    shouldShowLabel: boolean;
+    /** True for the node the player has tapped but not yet confirmed. */
+    isSelected: boolean;
 }
 
 /**
@@ -28,26 +34,30 @@ interface ExplorationNodeProps {
 // map is spread across (see MapCanvas SPREAD).
 const NODE_SIZE = 44;
 
-export function ExplorationNode({ node: n, onNodePress, shouldShowLabel }: ExplorationNodeProps) {
+export function ExplorationNode({ node: n, onNodePress, isSelected }: ExplorationNodeProps) {
     const styles = useStyles();
     const AXM = usePalette();
-    const EVENT_BADGE: Record<NodeType, { c: string; label: string }> = {
-        encounter: { c: AXM.blood, label: 'ENCOUNTER' },
-        treasure: { c: AXM.sulfur, label: 'TREASURE' },
-        boss: { c: AXM.blood, label: 'BOSS' },
-        quest: { c: AXM.sulfur, label: 'QUEST' },
-        rest: { c: AXM.rust, label: 'REST' },
-        gather: { c: AXM.bone, label: 'GATHER' },
-        current: { c: AXM.sulfur, label: 'HERE' },
-        hazard: { c: AXM.rust, label: 'HAZARD' },
+    const EVENT_COLOR: Record<NodeType, string> = {
+        encounter: AXM.blood,
+        treasure: AXM.sulfur,
+        boss: AXM.blood,
+        quest: AXM.sulfur,
+        rest: AXM.rust,
+        gather: AXM.bone,
+        current: AXM.sulfur,
+        hazard: AXM.rust,
     };
     const tooltip = useTooltip();
     const ref = useRef<View | null>(null);
-    const ev = EVENT_BADGE[n.type] ?? EVENT_BADGE.encounter;
+    const color = EVENT_COLOR[n.type] ?? EVENT_COLOR.encounter;
+    const iconKey = ACTION_ICON_BY_TYPE[n.type] ?? 'sword';
     const left = (n.x / 360) * 100;
     const top = (n.y / 400) * 100;
     const dim = n.kind === 'locked';
-    
+    // Adjacent (reachable) nodes show a kind glyph so the player can see what
+    // each one is before choosing it.
+    const showKindIcon = n.kind === 'available' || n.kind === 'current';
+
     return (
         <TouchableOpacity
             ref={ref}
@@ -56,10 +66,10 @@ export function ExplorationNode({ node: n, onNodePress, shouldShowLabel }: Explo
                 n.kind === 'locked' ? 'sealed'
                     : n.kind === 'completed' ? 'walked'
                         : n.kind === 'current' ? 'here'
-                            : 'open'
+                            : `open, ${n.type}`
             }`}
             accessibilityHint="hold to read node type description"
-            accessibilityState={{ disabled: n.kind !== 'available' }}
+            accessibilityState={{ disabled: n.kind !== 'available', selected: isSelected }}
             onPress={() => onNodePress(n)}
             onLongPress={() => tooltip.show({ kind: 'map-node', id: n.type, anchorRef: ref })}
             activeOpacity={n.kind === 'available' ? 0.7 : 1}
@@ -70,17 +80,19 @@ export function ExplorationNode({ node: n, onNodePress, shouldShowLabel }: Explo
                 dim && styles.nodeWrapLocked,
             ]}
         >
-            <NodeMark kind={n.kind} size={NODE_SIZE} />
-            {n.kind === 'available' && shouldShowLabel && (
+            <View style={[styles.glyphWrap, isSelected && { borderColor: AXM.sulfur, borderWidth: 2 }]}>
+                <NodeMark kind={n.kind} size={NODE_SIZE} />
+                {showKindIcon && (
+                    <View style={styles.kindIcon} pointerEvents="none">
+                        <ActionIcon kind={iconKey} size={18} color={color} />
+                    </View>
+                )}
+            </View>
+            {isSelected && (
                 <View style={[styles.nodeLabel, { backgroundColor: AXM.nodeBg }]}>
-                    <Text style={[styles.nodeLabelText, { color: dim ? AXM.bone : AXM.parchment }]}>
+                    <Text style={[styles.nodeLabelText, { color: AXM.parchment }]}>
                         {n.label}
                     </Text>
-                </View>
-            )}
-            {n.kind === 'available' && shouldShowLabel && (
-                <View style={[styles.nodeTypeBadge, { backgroundColor: ev.c }]}>
-                    <Text style={styles.nodeTypeBadgeText}>{ev.label}</Text>
                 </View>
             )}
         </TouchableOpacity>
@@ -100,6 +112,19 @@ const useStyles = makeStyles((AXM) => ({
     nodeWrapLocked: {
         opacity: 0.45,
     },
+    glyphWrap: {
+        width: NODE_SIZE,
+        height: NODE_SIZE,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: NODE_SIZE / 2,
+        borderColor: 'transparent',
+    },
+    kindIcon: {
+        ...({ position: 'absolute' } as const),
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     nodeLabel: {
         marginTop: 2,
         paddingHorizontal: 4,
@@ -111,16 +136,5 @@ const useStyles = makeStyles((AXM) => ({
         fontSize: 9,
         letterSpacing: 1.4,
         textTransform: 'uppercase',
-    },
-    nodeTypeBadge: {
-        marginTop: 1,
-        paddingHorizontal: 3,
-        paddingVertical: 1,
-    },
-    nodeTypeBadgeText: {
-        fontFamily: FONTS.sans,
-        fontSize: 8,
-        letterSpacing: 1,
-        color: AXM.bg,
     },
 }));

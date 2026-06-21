@@ -8,7 +8,7 @@ import { SectionLabel } from '@/components/SectionLabel';
 import { ExplorationCodexHeader } from '@/components/ExplorationCodexHeader';
 import { MapCanvas } from '@/components/exploration/MapCanvas';
 import { NodeGrid } from '@/components/exploration/NodeGrid';
-import { OptionsList } from '@/components/exploration/OptionsList';
+import { NodeConfirmPanel } from '@/components/exploration/NodeConfirmPanel';
 import { EventBadge } from '@/components/exploration/EventBadge';
 import { NodeToast } from '@/components/exploration/NodeToast';
 import { MapOverlays } from '@/components/exploration/MapOverlays';
@@ -39,6 +39,7 @@ export default function ExplorationScreen() {
     } = useCombatMode();
     const { mode: aesthetic } = useAesthetic();
     const [nodeTip, setNodeTip] = useState<string | null>(null);
+    const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
     useEffect(() => {
         if (nodeTip !== null) {
@@ -94,19 +95,16 @@ export default function ExplorationScreen() {
         }
     }, [inEncounterModal, preludeReady, combat, lastOutcome, closeEncounterModal]);
 
-    // Phase 107 — Create set of node IDs that should show labels
-    // (only unvisited available nodes that are currently shown as options)
-    const labeledNodeIds = useMemo(() => {
-        return new Set(vm.options.slice(0, 4).map(opt => opt.nodeId));
-    }, [vm.options]);
+    // The node the player has tapped but not yet confirmed; resolved against
+    // the current options so a stale selection (after a move) falls away.
+    const selectedOption = useMemo(
+        () => vm.options.find((o) => o.nodeId === selectedNodeId) ?? null,
+        [vm.options, selectedNodeId],
+    );
 
+    // Tapping a node SELECTS it (showing the confirm panel) rather than moving
+    // immediately; locked / completed taps surface a brief toast.
     const onNodePress = (node: ExplorationNode) => {
-        // Per the prototype.jsx flow (design handoff 2026-05-19 entry
-        // file): tapping a locked or completed node surfaces a brief
-        // toast acknowledging the no-op, then auto-dismisses. Previous
-        // behavior returned silently — players couldn't tell whether
-        // the tap registered. Sealed node message updated to match
-        // Phase 94 specification.
         if (node.kind === 'locked') {
             setNodeTip('This path is sealed.');
             return;
@@ -116,25 +114,25 @@ export default function ExplorationScreen() {
             return;
         }
         if (node.kind !== 'available') return;
-        const result = actions.moveTo(node.id);
-        // Phase 70 Tick C — run-stats counter. Each successful move
-        // updates the deepest-node-id reading; the defeat panel
-        // surfaces it in the run-summary ledger. Records on move,
-        // not on node-tap, so failed taps (locked / completed) don't
-        // bump the figure.
-        if (result.moved) {
-            recordDeepestNode(node.id);
+        setSelectedNodeId((prev) => (prev === node.id ? null : node.id));
+    };
+
+    // Confirm: commit the move to the selected node, then resolve its event.
+    const onConfirmMove = () => {
+        if (selectedNodeId === null) return;
+        const node = vm.nodes.find((n) => n.id === selectedNodeId);
+        if (!node || node.kind !== 'available') {
+            setSelectedNodeId(null);
+            return;
         }
-        // Temporary non-combat event shell: resolve the map event for
-        // every node type after a successful move, not just
-        // encounter/boss nodes. Combat-prelude events are handled by
-        // <EncounterModalOverlay> (kind === 'combat-prelude'); all other
-        // paced/narrative events route to /event via <EventGate>.
-        // This is a rudimentary shell, not the final board-game/minigame
-        // event design — see task "non-combat event shell" (2026-06-08).
-        // Phase 32 / 63b: encounter/boss path unchanged (FIGHT/FLEE
-        // inside modal; FIGHT transitions 'prelude' → 'combat' in-place).
+        const result = actions.moveTo(node.id);
+        setSelectedNodeId(null);
         if (result.moved) {
+            // Run-stats: track the deepest node reached (records on move, not
+            // on tap, so cancelled selections don't bump the figure).
+            recordDeepestNode(node.id);
+            // Resolve the node's event (combat-prelude handled by the encounter
+            // modal; other kinds route to their minigame / event).
             actions.resolveCurrentMapEvent(node.type);
         }
     };
@@ -151,12 +149,6 @@ export default function ExplorationScreen() {
 
     const onEncounterFlee = () => {
         actions.pickEventChoice('flee');
-    };
-
-    const onOptionPress = (option: ExplorationOption) => {
-        const node = vm.nodes.find(n => n.id === option.nodeId);
-        if (!node) return;
-        onNodePress(node);
     };
 
     return (
@@ -183,7 +175,7 @@ export default function ExplorationScreen() {
                 <NodeGrid
                     nodes={vm.nodes}
                     onNodePress={onNodePress}
-                    labeledNodeIds={labeledNodeIds}
+                    selectedNodeId={selectedNodeId}
                 />
             </MapCanvas>
 
@@ -191,11 +183,12 @@ export default function ExplorationScreen() {
                 <EventBadge eventCallout={vm.eventCallout} />
             )}
 
-            {/* Node options drawer (Q6) — available next steps with thematic blurb */}
-            <OptionsList
-                options={vm.options}
-                onOptionPress={onOptionPress}
-                drawerCopy={vm.drawerCopy}
+            {/* Select a node on the map → name + brief explanation + confirm. */}
+            <NodeConfirmPanel
+                selected={selectedOption}
+                onConfirm={onConfirmMove}
+                onCancel={() => setSelectedNodeId(null)}
+                emptyMessage={vm.drawerCopy.emptyMessage}
             />
 
             {showEncounterModal && (

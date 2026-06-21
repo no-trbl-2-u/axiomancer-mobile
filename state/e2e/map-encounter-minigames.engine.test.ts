@@ -115,13 +115,18 @@ describe('fishing-village gauntlet routing', () => {
         expect(selectPacedEventRoute(store.getState())).toBeNull();
     });
 
-    it('has exactly one quest node and one boss node (engine-authored)', () => {
+    it('is combat-focused but varied: one quest, encounters dominate, plus recovery/texture nodes', () => {
         const def = getMapDefinition('coastal-continent', 'fishing-village');
         const kinds = def.nodes.map((n) =>
             getNodePrimaryEventKind('coastal-continent', 'fishing-village', n.id),
         );
-        expect(kinds.filter((k) => k === 'quest')).toHaveLength(1);
-        // Boss is an `encounter` kind flagged isBoss; the rest are encounters.
-        expect(kinds.filter((k) => k === 'encounter').length).toBeGreaterThanOrEqual(23);
+        const count = (k: string) => kinds.filter((x) => x === k).length;
+        // Exactly one quest; encounters (incl. the isBoss encounter) dominate;
+        // a few rest / gathering / hazard nodes give recovery + texture.
+        expect(count('quest')).toBe(1);
+        expect(count('encounter')).toBeGreaterThanOrEqual(12);
+        expect(count('rest')).toBeGreaterThanOrEqual(1);
+        expect(count('gathering')).toBeGreaterThanOrEqual(1);
+        expect(count('hazard')).toBeGreaterThanOrEqual(1);
     });
 });

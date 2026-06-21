@@ -1,5 +1,19 @@
 # Engine MapDefinition reconciliation — fishing-village
 
+> **RESOLVED 2026-06-20.** Option A/C was taken: the engine's
+> `MapDefinition` is the sole source of truth for the node graph (ids +
+> edges + unlock); the mobile fixtures supply only visual positions and
+> copy. Both maps are now 25 nodes (`fv-1..fv-25`, `nf-1..nf-25`) and the
+> id-sets match the engine exactly. The presenter
+> (`state/presenters/exploration.engine.ts`) reads edges from
+> `getMapDefinition().nodes[].connectedNodes`; the layout's old
+> `connectedNodes`/`type` fields have been deleted as dead data. A new
+> guard — `state/exploration-maps/__tests__/layout-engine-parity.test.ts`
+> — fails CI if the layout id-set ever drifts from the engine's. The rest
+> of this doc is retained as the historical decision record.
+
+---
+
 > Phase 81a Tick A artifact. Diffing mobile layout fixture vs
 > engine source MapDefinition. Northern-forest is already in sync
 > (same 10 nodes, same edges). Only fishing-village diverges.

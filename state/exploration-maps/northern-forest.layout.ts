@@ -11,8 +11,6 @@ export const northernForestLayout: MapLayout = {
             x: 60,
             y: 360,
             label: 'Forest Edge',
-            type: 'rest',
-            connectedNodes: ['nf-2', 'nf-3'],
             description: 'Where the pines first taste the salt wind.',
         },
         {
@@ -20,8 +18,6 @@ export const northernForestLayout: MapLayout = {
             x: 140,
             y: 300,
             label: 'Foxglove Hollow',
-            type: 'gather',
-            connectedNodes: ['nf-4'],
             description: 'A hollow thick with foxglove and adder-tongue.',
         },
         {
@@ -29,8 +25,6 @@ export const northernForestLayout: MapLayout = {
             x: 220,
             y: 320,
             label: 'Hangman’s Oak',
-            type: 'encounter',
-            connectedNodes: ['nf-5'],
             description: 'An old oak. Old rope still bites into its bark.',
         },
         {
@@ -38,8 +32,6 @@ export const northernForestLayout: MapLayout = {
             x: 80,
             y: 220,
             label: 'Iron Spring',
-            type: 'treasure',
-            connectedNodes: ['nf-6'],
             description: 'A spring that runs red with iron. Or with worse.',
         },
         {
@@ -47,8 +39,6 @@ export const northernForestLayout: MapLayout = {
             x: 260,
             y: 240,
             label: 'Wolf’s Den',
-            type: 'encounter',
-            connectedNodes: ['nf-7'],
             description: 'A reek of wet fur. Bone splinters at the threshold.',
         },
         {
@@ -56,8 +46,6 @@ export const northernForestLayout: MapLayout = {
             x: 150,
             y: 170,
             label: 'Pilgrim’s Cairn',
-            type: 'quest',
-            connectedNodes: ['nf-8'],
             description: 'A cairn raised by some earlier pilgrim. Names worn flat.',
         },
         {
@@ -65,8 +53,6 @@ export const northernForestLayout: MapLayout = {
             x: 290,
             y: 160,
             label: 'Brokenstag',
-            type: 'boss',
-            connectedNodes: ['nf-9'],
             description: 'Antlered shape in the gloom. It does not move.',
         },
         {
@@ -74,8 +60,6 @@ export const northernForestLayout: MapLayout = {
             x: 90,
             y: 90,
             label: 'Cold Hearth',
-            type: 'rest',
-            connectedNodes: ['nf-10'],
             description: 'A cold hearth in a roofless house. Sleep light.',
         },
         {
@@ -83,8 +67,6 @@ export const northernForestLayout: MapLayout = {
             x: 220,
             y: 80,
             label: 'Black Hollow',
-            type: 'encounter',
-            connectedNodes: ['nf-10'],
             description: 'A hollow the locals will not name in daylight.',
         },
         {
@@ -92,8 +74,6 @@ export const northernForestLayout: MapLayout = {
             x: 310,
             y: 50,
             label: 'The Causeway',
-            type: 'boss',
-            connectedNodes: [],
             description: 'A causeway leading north. The way out, if there is one.',
         },
         // ── Districts (nf-11..nf-25) — positions placed off the engine's

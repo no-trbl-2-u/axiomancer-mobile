@@ -6,14 +6,13 @@ export const fishingVillageLayout: MapLayout = {
     region: 'Fishing Village',
     regionProgress: 'Map i of ii · 24 paths remain',
     nodes: [
-        // Spine nodes (fv-1..fv-10) - aligned with engine source edges
+        // Spine nodes (fv-1..fv-10) — visual positions only; the node graph
+        // (ids + edges) is the engine's MapDefinition. See ./types.ts.
         {
             id: 'fv-1',
             x: 60,
             y: 360,
             label: 'Hovel',
-            type: 'rest',
-            connectedNodes: ['fv-2', 'fv-11'],
             description: 'Your salt-scoured hovel. The hearth still gutters.',
         },
         {
@@ -21,8 +20,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 140,
             y: 320,
             label: 'Crossing',
-            type: 'gather',
-            connectedNodes: ['fv-3', 'fv-12'],
             description: 'The plank crossing. Gulls scream over the rocks.',
         },
         {
@@ -30,8 +27,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 180,
             y: 280,
             label: 'Hanged Wood',
-            type: 'encounter',
-            connectedNodes: ['fv-4', 'fv-13', 'fv-16'],
             description: 'A copse where the fishers hang their drowned dead.',
         },
         {
@@ -39,8 +34,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 180,
             y: 240,
             label: 'Drowned Shrine',
-            type: 'treasure',
-            connectedNodes: ['fv-5', 'fv-17'],
             description: 'A half-sunk shrine. Old coin gleams beneath the silt.',
         },
         {
@@ -48,8 +41,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 180,
             y: 200,
             label: 'Black Cairn',
-            type: 'boss',
-            connectedNodes: ['fv-6', 'fv-18'],
             description: 'A cairn of black river-stones. Something watches.',
         },
         {
@@ -60,8 +51,6 @@ export const fishingVillageLayout: MapLayout = {
             // One-quest-per-map (2026-06-14): the boat quest at Sea Cave
             // (fv-15) is the village's single story beat. This node, once
             // a second quest stub, is now a standard encounter.
-            type: 'encounter',
-            connectedNodes: ['fv-7'],
             description: 'Something heavy shifts in the ash-choked mire.',
         },
         {
@@ -69,8 +58,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 180,
             y: 120,
             label: 'Old Pier',
-            type: 'gather',
-            connectedNodes: ['fv-8', 'fv-21'],
             description: 'A pier half-eaten by tides. Crabs in the pilings.',
         },
         {
@@ -78,8 +65,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 180,
             y: 80,
             label: 'Bone Reach',
-            type: 'encounter',
-            connectedNodes: ['fv-9', 'fv-22'],
             description: 'A reach of bleached driftwood and bleached bones.',
         },
         {
@@ -87,8 +72,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 180,
             y: 40,
             label: 'Tavern',
-            type: 'rest',
-            connectedNodes: ['fv-10'],
             description: 'A tavern. Stale ale and stale prayer.',
         },
         {
@@ -96,8 +79,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 180,
             y: 10,
             label: 'Gate',
-            type: 'boss',
-            connectedNodes: [],
             description: 'A door you do not yet have the right to open.',
         },
 
@@ -107,8 +88,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 20,
             y: 340,
             label: 'Dock',
-            type: 'gather',
-            connectedNodes: ['fv-1', 'fv-12', 'fv-14'],
             description: 'Fishing boats bob against the rotting pier.',
         },
         {
@@ -116,8 +95,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 60,
             y: 300,
             label: 'Market',
-            type: 'rest',
-            connectedNodes: ['fv-2', 'fv-11', 'fv-13'],
             description: 'Salt-fish and rusty tools spread on weathered planks.',
         },
         {
@@ -125,8 +102,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 100,
             y: 260,
             label: 'Harbor Gate',
-            type: 'treasure',
-            connectedNodes: ['fv-3', 'fv-12'],
             description: 'Iron gates green with sea-rust. Something gleams within.',
         },
         {
@@ -134,8 +109,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 20,
             y: 280,
             label: 'Tide Pool',
-            type: 'hazard',
-            connectedNodes: ['fv-11', 'fv-15'],
             description: 'The tide turns without warning here. Linger and the water climbs past your knees.',
         },
         {
@@ -143,8 +116,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 20,
             y: 240,
             label: 'Sea Cave',
-            type: 'quest',
-            connectedNodes: ['fv-14'],
             description: 'A cave that breathes with the tide. Old songs echo within.',
         },
 
@@ -154,8 +125,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 260,
             y: 260,
             label: 'Chapel',
-            type: 'rest',
-            connectedNodes: ['fv-3', 'fv-17'],
             description: 'A chapel of bleached coral. Prayer-bones hang from hooks.',
         },
         {
@@ -163,8 +132,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 280,
             y: 220,
             label: 'Crossroads',
-            type: 'gather',
-            connectedNodes: ['fv-4', 'fv-16', 'fv-18', 'fv-19'],
             description: 'Four paths meet. Signposts point to forgotten places.',
         },
         {
@@ -172,8 +139,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 260,
             y: 180,
             label: 'Stone Circle',
-            type: 'encounter',
-            connectedNodes: ['fv-5', 'fv-17', 'fv-19'],
             description: 'Standing stones worn smooth by salt winds.',
         },
         {
@@ -181,8 +146,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 320,
             y: 200,
             label: 'Ancient Well',
-            type: 'treasure',
-            connectedNodes: ['fv-17', 'fv-18', 'fv-20'],
             description: 'A well that goes deeper than memory. Coins shine below.',
         },
         {
@@ -192,8 +155,6 @@ export const fishingVillageLayout: MapLayout = {
             label: 'Hermit Hut',
             // One-quest-per-map (2026-06-14): re-typed from a second quest
             // stub to a treasure cache — the hermit's abandoned hoard.
-            type: 'treasure',
-            connectedNodes: ['fv-19'],
             description: 'A hermit dwelt here once. Their hoard outlasted them.',
         },
 
@@ -203,8 +164,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 280,
             y: 100,
             label: 'Cliff Path',
-            type: 'gather',
-            connectedNodes: ['fv-7', 'fv-22', 'fv-24'],
             description: 'A narrow path carved into the cliff face.',
         },
         {
@@ -212,8 +171,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 260,
             y: 60,
             label: 'Eagles Nest',
-            type: 'encounter',
-            connectedNodes: ['fv-8', 'fv-21', 'fv-23'],
             description: 'An abandoned eyrie. Bones litter the rocky ledge.',
         },
         {
@@ -221,8 +178,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 300,
             y: 40,
             label: 'Wind Shrine',
-            type: 'rest',
-            connectedNodes: ['fv-22', 'fv-24'],
             description: 'A shrine to the four winds. Prayer flags snap in the gale.',
         },
         {
@@ -230,8 +185,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 320,
             y: 80,
             label: 'Peak View',
-            type: 'treasure',
-            connectedNodes: ['fv-21', 'fv-23', 'fv-25'],
             description: 'The highest point. All the village spreads below.',
         },
         {
@@ -239,8 +192,6 @@ export const fishingVillageLayout: MapLayout = {
             x: 340,
             y: 40,
             label: 'Lighthouse',
-            type: 'boss',
-            connectedNodes: ['fv-24'],
             description: 'A lighthouse dark for decades. Something stirs within.',
         },
     ],

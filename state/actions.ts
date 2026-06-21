@@ -1663,9 +1663,10 @@ function changeMapAction(store: AppStore, mapName: MapName): void {
 // ---------------------------------------------------------------------------
 
 // `templateToEquipment` extracted to `state/selectors/equipment.ts`
-// (AUDIT [4.0] engine-duplication fix 2026-05-22). Both this
-// debug-seed path and `state/exploration-maps/event-pools.ts`
-// (treasure-pool synthesis) now route through the shared helper.
+// (AUDIT [4.0] engine-duplication fix 2026-05-22). This debug-seed
+// path still routes through the shared helper; mobile's former
+// `state/exploration-maps/event-pools.ts` override was deleted in
+// Phase 161 when map-event content moved fully to engine truth.
 
 function debugSeedAction(store: AppStore): DebugSeedResult {
     let itemsAdded = 0;
@@ -1786,8 +1787,8 @@ function debugSeedAction(store: AppStore): DebugSeedResult {
  * `equipmentTemplates` (base equipment), `uniqueTemplates` (uniques,
  * marked `rarity: 'unique'`), and `consumableLibrary`. Materials
  * and quest-items aren't in central registries (materials are
- * constructed inline in `event-pools.ts`; quest-items live per
- * quest), so they're out of scope.
+ * authored per engine event payload; quest-items live per quest),
+ * so they're out of scope.
  */
 function populateAllItemsAction(store: AppStore): PopulateAllItemsResult {
     let equipment = 0;

@@ -38,21 +38,14 @@ route + ~350 lines + tests) or delete it and make the fallback a no-op
 with a logged warning. Either is fine; decide once a new paced kind
 actually ships.
 
-## 3. Village and cutscene events have NO authored source in mobile
-
-**What:** the new `/village` and `/cutscene` screens are production-
-unreachable today. Mobile registers per-node pool overrides for **every**
-node in both map layouts (`state/exploration-maps/event-pools.ts`), and
-none of its pools contain a `village` or `cutscene` entry — while the
-engine's own per-node content (`MapEvents/content.ts`, which DOES author
-them) is fully shadowed by those overrides. The screens are covered by
-hermetic tests and the dialogue/leave plumbing works, but no map node can
-fire either kind.
-
-**Pending decision:** the content source-of-truth question — either
-consume the engine's authored pools (drop or narrow mobile's blanket
-overrides) or author village/cutscene entries in mobile's pools.
-Cross-filed in mechanics' NEEDS_ATTENTION.md §5.
+> **§3 (Village/cutscene event source-of-truth) — RESOLVED in Phase 161 (2026-06-21).**
+> Mobile no longer carries the blanket per-node pool override that shadowed
+> engine-authored village/cutscene pools: `state/exploration-maps/event-pools.ts`
+> is gone. Exploration presentation now reads event kinds/content from the engine
+> through `getNodePrimaryEventKind` / `getNodeEventPool`, and map graph truth
+> through `getMapDefinition`. `state/e2e/map-encounter-minigames.engine.test.ts`
+> covers the engine-backed routing, including northern-forest village/cutscene
+> visibility. Cross-filed mechanics `NEEDS_ATTENTION.md` §5 is also closed.
 
 ## 4. Village shop has no sell side
 

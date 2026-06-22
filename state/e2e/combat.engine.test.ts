@@ -1316,6 +1316,10 @@ describe('resolveRound: token resource accumulation (Phase 116)', () => {
         mockFixedRng(0.5);
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
+        // This test asserts HEART-skill affordability; the starter now grants a
+        // single skill (Spec 26b §D), so seed heart skills explicitly.
+        const p0 = store.getState().player;
+        store.setState({ player: { ...p0, knownSkills: Array.from(new Set([...p0.knownSkills, 'appeal-to-pity', 'eternal-regress', 'befriend'])) } });
         actions.startCombat(makeEnemy({ baseStats: { heart: 5, body: 5, mind: 5 } }));
 
         // Initially, no skills should be affordable (zero resources)

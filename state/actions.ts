@@ -734,8 +734,13 @@ function applyCombatStartBridges(store: AppStore): void {
  * `engineLearnSkill` enforces requirements, so anything the level-1 player
  * doesn't qualify for is skipped.
  */
+// Spec 26b §D — the player starts with a SINGLE skill; every subsequent skill is
+// unlocked later (the plan: ethical-dilemma events, not yet implemented — they
+// will call the engine's `unlockSkillViaDilemma`). We seed the first apprentice
+// tier-1 skill (guaranteed learnable at level 1); the deckbuilder card rewards
+// grow the deck in the meantime.
 const STARTER_SKILL_IDS: readonly string[] =
-    getPresetById('apprentice')?.knownSkills ?? [];
+    (getPresetById('apprentice')?.knownSkills ?? []).slice(0, 1);
 
 function currentAlignment(store: AppStore): PhilosophicalAlignment {
     const state = store.getState() as unknown as GameState;

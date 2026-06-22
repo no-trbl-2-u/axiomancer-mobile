@@ -28,6 +28,7 @@ import { makeStyles, usePalette } from '@/theme/runtime';
 
 const DebugCombatButton = lazy(() => import('@/components/DebugCombatButton').then(m => ({ default: m.DebugCombatButton })));
 const DebugCombatEncounterButton = lazy(() => import('@/components/DebugCombatEncounterButton').then(m => ({ default: m.DebugCombatEncounterButton })));
+const DebugCombatTutorialButton = lazy(() => import('@/components/DebugCombatTutorialButton').then(m => ({ default: m.DebugCombatTutorialButton })));
 const DebugHazardButton = lazy(() => import('@/components/DebugHazardButton').then(m => ({ default: m.DebugHazardButton })));
 const DebugHazardDeckRandomize = lazy(() => import('@/components/DebugHazardDeckRandomize').then(m => ({ default: m.DebugHazardDeckRandomize })));
 const DebugGatheringButton = lazy(() => import('@/components/DebugGatheringButton').then(m => ({ default: m.DebugGatheringButton })));
@@ -105,6 +106,7 @@ export function DevToolsSections() {
                     <DebugEncounterButtons />
                     <DebugCombatButton />
                     <DebugCombatEncounterButton />
+                    <DebugCombatTutorialButton />
                 </DevSection>
 
                 <DevSection label="HAZARD SETUP" testID="dev-section-hazard">

@@ -27,7 +27,7 @@
  * in `components/event/__tests__/EncounterModalOverlay.test.tsx`.
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import Animated, {
     useAnimatedStyle,
     useSharedValue,
@@ -36,6 +36,8 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { CombatPanel } from '@/components/combat/CombatPanel';
+import { CombatEncounterPanel } from '@/components/combat/encounter/CombatEncounterPanel';
+import { ScreenBg } from '@/components/ScreenBg';
 import { CombatDefeatPanel } from '@/components/event/aftermath/CombatDefeatPanel';
 import { CombatFriendshipPanel } from '@/components/event/aftermath/CombatFriendshipPanel';
 import { CombatVictoryPanel } from '@/components/event/aftermath/CombatVictoryPanel';
@@ -51,6 +53,7 @@ import {
     type EncounterSealMode,
 } from '@/state/presenters/encounter-seal.engine';
 import type { EventViewModel } from '@/state/presenters/event.engine';
+import type { CombatOutcome, Enemy } from 'axiomancer-mechanics';
 
 /**
  * Modal mode state machine (Phase 63b).
@@ -68,12 +71,15 @@ export type EncounterModalMode = 'prelude' | 'combat' | 'aftermath';
 
 interface EncounterModalOverlayProps {
     vm: EventViewModel;
+    /** Phase 200 — the foe for the in-place hazard combat (null until FIGHT). */
+    encounterEnemy?: Enemy | null;
     onFight: () => void;
     onFlee: () => void;
 }
 
 export function EncounterModalOverlay({
     vm,
+    encounterEnemy,
     onFight,
     onFlee,
 }: EncounterModalOverlayProps) {
@@ -93,6 +99,8 @@ export function EncounterModalOverlay({
         aftermathData,
         dismissAftermath,
         resetRunStats,
+        exitCombat,
+        closeEncounterModal,
     } = useCombatMode();
     const handleFight = useCallback(() => {
         onFight();
@@ -127,6 +135,24 @@ export function EncounterModalOverlay({
         resetRunStats();
         dismissAftermath();
     }, [actions, resetRunStats, dismissAftermath]);
+
+    // Phase 200 — the player snapshot the in-place hazard combat (Spec 26b)
+    // initialises from (live map encounters).
+    const player = useGameState((s) => s.player);
+
+    // Phase 200 — teardown for the in-place hazard combat. The panel already
+    // persisted HP/XP/loot on the terminal outcome; here we mirror the legacy
+    // defeat BEGIN AGAIN (reset the run, keep the character — full heal +
+    // regenerate world/quests) and tear the modal session down for any
+    // outcome.
+    const handleHazardExit = useCallback((outcome: CombatOutcome | null) => {
+        if (outcome === 'defeat') {
+            actions.resetRun({ keepCharacter: true });
+            resetRunStats();
+        }
+        exitCombat();
+        closeEncounterModal();
+    }, [actions, resetRunStats, exitCombat, closeEncounterModal]);
 
     const aftermathVm = selectAftermathViewModel(aftermathData);
 
@@ -194,6 +220,32 @@ export function EncounterModalOverlay({
         // aftermath when aftermathData is non-null. If it does (e.g.
         // a stale outcome signal), fall back to closing the modal.
         return null;
+    }
+
+    // Phase 200 — live hazard-pattern combat (Spec 26b). When the player chose
+    // FIGHT and exploration captured the foe, render the new card-and-dice
+    // combat as a FULL-SCREEN layer over the dimmed map: the board's drag uses
+    // window coords, so it must mount from the window origin rather than inside
+    // the inset seal panel. The map stays mounted underneath — modal-contained,
+    // not a route push. Legacy <CombatPanel> (below) stays as the fallback for
+    // any path that reaches combat mode without a captured foe.
+    if (mode === 'combat' && encounterEnemy && player) {
+        return (
+            <View style={styles.overlay} testID="encounter-modal-overlay">
+                <Animated.View style={[styles.backdrop, backdropStyle]} />
+                <View style={StyleSheet.absoluteFill} testID="encounter-modal-hazard-combat">
+                    <ScreenBg>
+                        <CombatEncounterPanel
+                            key={encounterEnemy.id}
+                            enemy={encounterEnemy}
+                            bootstrapPlayer={player}
+                            persistOutcome
+                            onExit={handleHazardExit}
+                        />
+                    </ScreenBg>
+                </View>
+            </View>
+        );
     }
     return (
         <View

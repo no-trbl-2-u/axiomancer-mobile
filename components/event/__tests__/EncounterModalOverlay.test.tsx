@@ -34,6 +34,7 @@ import { GameStoreProvider } from '@/state/GameStoreProvider';
 import { createAppStore } from '@/state/store';
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
 import type { EventViewModel } from '@/state/presenters/event.engine';
+import { createMockEncounterEnemy } from '@/state/mocks/combat.mock';
 
 // Phase 64 follow-up: overlay now reads `useGameState((s) => s.combat?.phase)`
 // for the auto-scroll-on-phase-change effect, so it requires
@@ -771,5 +772,78 @@ describe('EncounterModalOverlay: phase-aware seal chrome', () => {
         expect(tree.queryByText('CARRY ON')).not.toBeNull();
         // Old labels are gone.
         expect(tree.queryByText('SEALED · AT ARMS')).toBeNull();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 200 — in-place hazard-pattern combat (Spec 26b) wired into the modal.
+// Live map encounters now run the NEW combat full-screen over the dimmed map
+// (legacy <CombatPanel> stays only as the no-foe fallback / dev /combat tab).
+// ---------------------------------------------------------------------------
+
+describe('EncounterModalOverlay: in-place hazard combat (Phase 200)', () => {
+    function withAllProviders(child: React.ReactNode, store: ReturnType<typeof createAppStore>) {
+        return (
+            <AestheticModeProvider initialMode="canonical" skipHydration>
+                <CombatModeProvider>
+                    <GameStoreProvider store={store}>{child}</GameStoreProvider>
+                </CombatModeProvider>
+            </AestheticModeProvider>
+        );
+    }
+
+    // Mirror the real `beginHazardEncounter` → ensureStarterSkills fallback so
+    // the panel boots from a player with a real deck.
+    function seedPlayerWithDeck(store: ReturnType<typeof createAppStore>) {
+        const p = store.getState().player;
+        store.setState({
+            player: {
+                ...p,
+                knownSkills: Array.from(new Set([
+                    ...(p.knownSkills ?? []),
+                    'slippery-slope', 'eternal-regress', 'achilles-gambit',
+                ])),
+            },
+        });
+    }
+
+    it('renders the FULL-SCREEN hazard combat (not legacy CombatPanel) after FIGHT when a foe is supplied', () => {
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        seedPlayerWithDeck(store);
+        const tree = render(
+            withAllProviders(
+                <EncounterModalOverlay
+                    vm={makeCombatPreludeVm()}
+                    encounterEnemy={createMockEncounterEnemy()}
+                    onFight={() => {}}
+                    onFlee={() => {}}
+                />,
+                store,
+            ),
+        );
+        fireEvent.press(tree.getByTestId('encounter-modal-fight'));
+
+        // New hazard layer mounts; the legacy combat-mode ScrollView does NOT.
+        expect(tree.queryByTestId('encounter-modal-hazard-combat')).not.toBeNull();
+        expect(tree.queryByTestId('encounter-modal-combat-mode')).toBeNull();
+        // The new board opens on its reveal screen (read the foe before committing).
+        expect(tree.queryByTestId('combat-reveal')).not.toBeNull();
+    });
+
+    it('falls back to legacy combat mode when no foe is supplied (encounterEnemy null)', () => {
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const tree = render(
+            withAllProviders(
+                <EncounterModalOverlay
+                    vm={makeCombatPreludeVm()}
+                    onFight={() => {}}
+                    onFlee={() => {}}
+                />,
+                store,
+            ),
+        );
+        fireEvent.press(tree.getByTestId('encounter-modal-fight'));
+        expect(tree.queryByTestId('encounter-modal-hazard-combat')).toBeNull();
+        expect(tree.queryByTestId('encounter-modal-combat-mode')).not.toBeNull();
     });
 });

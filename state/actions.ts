@@ -281,6 +281,17 @@ export interface ResolveRoundResult {
 export interface AppActions {
     startCombat: (enemy: Enemy) => void;
     /**
+     * Phase 200 — begin a LIVE map encounter on the new hazard-pattern
+     * combat (Spec 26b) instead of legacy `startCombat`. Pulls the foe out
+     * of the pending combat-prelude event, guarantees starter skills (the
+     * real-deck safe fallback), clears the event slice, and returns the
+     * `Enemy` for the in-place `<CombatEncounterPanel>` to initialise from.
+     * Deliberately does NOT touch the engine `combat` slice — the new
+     * engine state lives in the panel's local React state. Returns `null`
+     * when there's no pending encounter.
+     */
+    beginHazardEncounter: () => Enemy | null;
+    /**
      * Phase 78 — returns the engine `CombatEndReport` (was `void`).
      * Callers that need post-combat metadata (codex unlock, alignment
      * shift, narrative) read it off the return value; legacy callers
@@ -1086,6 +1097,23 @@ export function createAppActions(store: AppStore): AppActions {
             if (store.getState().combat !== null) {
                 applyCombatStartBridges(store);
             }
+        },
+        beginHazardEncounter: () => {
+            // Live map encounters now run the new hazard-pattern combat
+            // (Spec 26b), not the legacy stance engine. Pull the foe out of
+            // the pending combat-prelude event, guarantee a real deck via
+            // starter skills, clear the event slice, and hand the enemy back
+            // for the in-place panel to bootstrap. Crucially we do NOT call
+            // the legacy `startCombat` — the new engine state is owned by the
+            // panel's local React state, so `state.combat` stays null.
+            const slice = store.getState().event;
+            const pending = slice?.pending ?? null;
+            if (!pending || pending.event.kind !== 'encounter') return null;
+            const enemy = pending.event.encounter.enemies[0] ?? null;
+            if (!enemy) return null;
+            ensureStarterSkills(store);
+            clearEventSlice(store);
+            return enemy;
         },
         endCombat: () => {
             // Cross-combat resource carry is engine-owned now (the reducer's

@@ -229,10 +229,11 @@ describe('moveTo action: locked / invalid targets', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
-        // fv-2 resolves to an engine `encounter` kind, so it is not completed
-        // on entry — it stays reachable and can be re-entered.
+        // fv-12 resolves to an engine `encounter` kind (reached via fv-2), so it
+        // is not completed on entry — it stays reachable and can be re-entered.
         actions.moveTo('fv-2');
-        const result = actions.moveTo('fv-2');
+        actions.moveTo('fv-12');
+        const result = actions.moveTo('fv-12');
 
         expect(result.moved).toBe(true);
     });
@@ -302,17 +303,16 @@ describe('exploration lifecycle: multi-step navigation', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
-        actions.moveTo('fv-2');  // encounter — not completed
-        actions.moveTo('fv-12'); // encounter — not completed
+        actions.moveTo('fv-2');  // loot-cache — consumed on entry
+        actions.moveTo('fv-12'); // encounter — reusable, not completed
 
         const completed = store.getState().world.currentMap.completedNodes;
-        // Both are engine `encounter` kinds, so neither completes on entry.
-        expect(completed).not.toContain('fv-2');
+        // fv-12 is an engine `encounter` kind, so it does not complete on entry —
+        // it stays re-fightable (the loot-cache fv-2 is a one-shot).
         expect(completed).not.toContain('fv-12');
 
         const vm = selectExplorationViewModel(store.getState());
         const byId = Object.fromEntries(vm.nodes.map((n) => [n.id, n]));
-        expect(byId['fv-2'].kind).toBe('available'); // reusable, left behind
         expect(byId['fv-12'].kind).toBe('current');
         // fv-11 and fv-13 are fv-12's neighbours in the ENGINE graph.
         expect(byId['fv-11'].kind).toBe('available');

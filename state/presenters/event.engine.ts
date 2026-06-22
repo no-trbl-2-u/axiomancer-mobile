@@ -282,6 +282,7 @@ export function selectPacedEventRoute(state: AppStoreState): PacedEventRoute | n
     if (kind === 'interaction') return '/dialogue';
     if (kind === 'village') return '/village';
     if (kind === 'cutscene') return '/cutscene';
+    if (kind === 'narration') return '/dialogue';
     return '/event';
 }
 
@@ -615,6 +616,7 @@ function composeNarrative(resolved: ResolvedEvent): Omit<EventViewModel, 'prelud
         case 'hazard':
         case 'quest':
         case 'encounter':
+        case 'narration':
         case 'none':
             return EMPTY_VM;
     }

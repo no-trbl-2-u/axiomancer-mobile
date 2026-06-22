@@ -49,6 +49,7 @@ import {
     getMapDefinition,
     getNodePrimaryEventKind,
     getPresetById,
+    STARTING_SKILL_IDS,
     getSkillById,
     healCharacter,
     incrementFriendship as combatIncrementFriendship,
@@ -750,8 +751,10 @@ function applyCombatStartBridges(store: AppStore): void {
 // will call the engine's `unlockSkillViaDilemma`). We seed the first apprentice
 // tier-1 skill (guaranteed learnable at level 1); the deckbuilder card rewards
 // grow the deck in the meantime.
-const STARTER_SKILL_IDS: readonly string[] =
-    (getPresetById('apprentice')?.knownSkills ?? []).slice(0, 1);
+// Owner: defense belongs in the starter — source from the engine's exported
+// STARTING_SKILL_IDS (slippery-slope + brace-for-impact), the single source of
+// truth, so every new player can GUARD from their first fight.
+const STARTER_SKILL_IDS: readonly string[] = STARTING_SKILL_IDS;
 
 function currentAlignment(store: AppStore): PhilosophicalAlignment {
     const state = store.getState() as unknown as GameState;
@@ -2030,7 +2033,7 @@ function resolveCurrentMapEventAction(store: AppStore, sourceNodeType?: string):
         // node. The engine supplies the authored tree (its map definition owns
         // the NPCs); when it carries none, the card shows its default copy.
         let dialogueCursor: { tree: DialogueTree; nodeId: string } | null = null;
-        if (result.event.kind === 'interaction' && result.event.dialogue) {
+        if ((result.event.kind === 'interaction' || result.event.kind === 'narration') && result.event.dialogue) {
             const tree = result.event.dialogue;
             dialogueCursor = { tree, nodeId: tree.rootId };
         }

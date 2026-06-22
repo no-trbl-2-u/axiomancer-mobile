@@ -331,7 +331,7 @@ export function CombatEncounterPanel({
                 <Pressable style={styles.backdrop} testID="combat-card-detail" onPress={() => setDetailCard(null)}>
                     <View style={[styles.modal, { borderColor: detailCard.stanceColor }]}>
                         <Text style={styles.modalTitle}>{detailCard.name}</Text>
-                        <Text style={styles.detailMeta}>{detailCard.stance.toUpperCase()} · TIER {detailCard.tier} · {detailCard.track.toUpperCase()}</Text>
+                        <Text style={styles.detailMeta}>{detailCard.rarity === 'gold' ? '★ GOLD · ' : ''}{detailCard.stance.toUpperCase()} · TIER {detailCard.tier} · {detailCard.effectKind.toUpperCase()}</Text>
                         <Text style={styles.detailLine}>{detailCard.bottomActionText}</Text>
                         <Text style={styles.detailHint}>drag the card up to stage it, drag a die onto it, then APPLY</Text>
                     </View>

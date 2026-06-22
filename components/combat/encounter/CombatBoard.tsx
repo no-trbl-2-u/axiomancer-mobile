@@ -195,7 +195,7 @@ function StagedCard({
                     <>
                         <Text style={[styles.previewRead, { color: readColor }]}>IF APPLIED · POWERED · {READ_LABEL[read] ?? READ_LABEL.none}</Text>
                         <Text style={styles.previewLine} numberOfLines={3}>{card.bottomActionText}</Text>
-                        {card.track !== 'none' && <Text style={styles.previewDmg}>≈ {card.bottomPressurePreview} {card.track === 'dot' ? 'damage over time' : 'effect'}{read === 'advantage' ? ' (boosted)' : read === 'disadvantage' ? ' (reduced)' : ''}</Text>}
+                        {card.effectKind !== 'none' && <Text style={styles.previewDmg}>≈ {card.bottomDamagePreview} {card.effectKind === 'dot' ? 'damage over time' : 'effect'}{read === 'advantage' ? ' (boosted)' : read === 'disadvantage' ? ' (reduced)' : ''}</Text>}
                     </>
                 ) : (
                     <>
@@ -422,7 +422,7 @@ export const CombatBoard = React.memo(function CombatBoard({
                                 }}
                                 testID={`combat-hand-${card.uid}`}
                                 accessible accessibilityRole="button"
-                                accessibilityLabel={`${card.name}, ${card.stance} ${card.track} card. ${card.bottomActionText}`}
+                                accessibilityLabel={`${card.name}, ${card.stance} ${card.effectKind} card. ${card.bottomActionText}`}
                                 accessibilityHint="Drag up to stage, or tap to read"
                             >
                                 <HandCard card={card} />
@@ -440,13 +440,14 @@ export const CombatBoard = React.memo(function CombatBoard({
 
 function HandCard({ card }: { card: CombatCardVM }) {
     const styles = useStyles();
-    const TRACK_GLYPH: Record<string, string> = { dot: '🔥', control: '⛓', none: '◆' };
+    const EFFECT_GLYPH: Record<string, string> = { dot: '🔥', control: '⛓', none: '◆' };
+    const gold = card.rarity === 'gold';
     return (
-        <View style={[styles.handCard, { borderColor: card.stanceColor }]}>
+        <View style={[styles.handCard, { borderColor: gold ? '#d9b44a' : card.stanceColor }]}>
             <View style={[styles.cardStanceBar, { backgroundColor: card.stanceColor }]} />
-            <Text style={styles.handName} numberOfLines={2}>{card.name}</Text>
-            <Text style={[styles.handTrack, { color: card.stanceColor }]}>{TRACK_GLYPH[card.track]} {card.stance[0].toUpperCase()}</Text>
-            {card.track !== 'none' && <Text style={styles.handPrev}>+{card.bottomPressurePreview}</Text>}
+            <Text style={styles.handName} numberOfLines={2}>{gold ? '★ ' : ''}{card.name}</Text>
+            <Text style={[styles.handTrack, { color: card.stanceColor }]}>{EFFECT_GLYPH[card.effectKind]} {card.stance[0].toUpperCase()}</Text>
+            {card.effectKind !== 'none' && <Text style={styles.handPrev}>+{card.bottomDamagePreview}</Text>}
         </View>
     );
 }

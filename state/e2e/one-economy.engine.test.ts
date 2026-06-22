@@ -198,7 +198,7 @@ describe('starter skills + learn-skill flow', () => {
         actions.startCombat(makeEnemy());
         const known = store.getState().player.knownSkills ?? [];
         expect(known.length).toBeGreaterThan(0);
-        expect(known).toContain('ad-hominem-strike');
+        expect(known).toContain('brace-for-impact');
         // the in-combat snapshot carries the same set — the engine
         // accepts these skills without the resolveRound bridge
         const snapshot = store.getState().combat!.player.knownSkills ?? [];

@@ -11,7 +11,7 @@ import { FONTS } from '@/theme/axm';
 import { makeStyles, usePalette } from '@/theme/runtime';
 import type { CombatRewardOfferVM } from '@/state/presenters/combat-encounter.engine';
 
-const TRACK_GLYPH: Record<string, string> = { dot: '🔥 DoT', control: '⛓ Control', none: '◆ Utility' };
+const EFFECT_GLYPH: Record<string, string> = { dot: '🔥 DoT', control: '⛓ Control', none: '◆ Utility' };
 
 export function CombatRewardsOverlay({ offers, onPick }: { offers: CombatRewardOfferVM[]; onPick: (cardId: string | null) => void }) {
     const AXM = usePalette();
@@ -33,14 +33,14 @@ export function CombatRewardsOverlay({ offers, onPick }: { offers: CombatRewardO
                                 testID={`combat-reward-${o.cardId}`}
                                 accessibilityRole="button"
                                 accessibilityState={{ selected: on }}
-                                accessibilityLabel={`${o.name}, ${o.stance} ${o.track} card. ${o.text}${on ? ', selected' : ''}`}
+                                accessibilityLabel={`${o.name}, ${o.stance} ${o.effectKind} card. ${o.text}${on ? ', selected' : ''}`}
                                 style={[styles.offer, { borderColor: on ? AXM.sulfur : o.stanceColor, backgroundColor: on ? 'rgba(212,192,38,0.16)' : '#16130c' }]}
                             >
                                 <View style={[styles.stanceBar, { backgroundColor: o.stanceColor }]} />
                                 <Text style={styles.offerName} numberOfLines={2}>{o.name}</Text>
-                                <Text style={[styles.offerTrack, { color: o.stanceColor }]}>{TRACK_GLYPH[o.track] ?? o.track}</Text>
-                                <Text style={styles.offerMeta}>{o.stance.toUpperCase()} · T{o.tier}</Text>
-                                {o.track !== 'none' ? <Text style={styles.offerPrev}>+{o.preview} pressure</Text> : null}
+                                <Text style={[styles.offerTrack, { color: o.stanceColor }]}>{EFFECT_GLYPH[o.effectKind] ?? o.effectKind}</Text>
+                                <Text style={styles.offerMeta}>{o.rarity === 'gold' ? '★ GOLD · ' : ''}{o.stance.toUpperCase()} · T{o.tier}</Text>
+                                {o.effectKind !== 'none' ? <Text style={styles.offerPrev}>+{o.preview} {o.effectKind === 'dot' ? 'damage' : 'effect'}</Text> : null}
                             </Pressable>
                         );
                     })}

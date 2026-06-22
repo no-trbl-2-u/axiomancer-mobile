@@ -106,6 +106,7 @@ export function CombatCombatantPane({
                     </View>
                 </View>
                 <HpBar pct={player.hpPct} value={player.hp} max={player.maxHp} color="#5bbf6a" />
+                {player.guard > 0 ? <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: '#6fb3e0', marginTop: 3, letterSpacing: 0.5 }} testID="combat-guard">🛡 {player.guard} GUARD</Text> : null}
                 <View style={styles.stanceRow}><Text style={styles.youLabel}>your status</Text></View>
                 <EffectChips effects={player.effects} onChip={onChip} emptyLabel="clear — no debuffs on you" />
             </View>

@@ -43,6 +43,37 @@
      (bearings, README, docs/README, specs) carry stale version/status
      lines that never followed. -->
 
+### [MED] Hazard reward preview serializes keyword objects as `[object Object]` (Kid playthrough 2026-06-22)
+- category: bug
+- impact: 6 (hazard reward choice comprehension is degraded at exactly the moment deck-growth meaning should be clearest)
+- ease: ? (likely reward keyword normalization/rendering in `components/hazard/RewardsOverlay.tsx` or engine keyword shape)
+- observed: daily Kid hazard ladder 2026-06-22 on exported web main `a6cff8a`.
+  - Repro: `/dev` → `DEBUG · TRIGGER ENCOUNTER` → `HAZARD`, set/drive Cracked Cliff Safe seed `1`, reach rewards, preview `SWIFT CURRENT` or related reward.
+  - Observed preview line: `KEYWORDS: [object Object], [object Object], [object Object]`.
+  - Reward tiles remained selectable and the minigame could close cleanly; this is comprehension debt, not a hard blocker.
+- next: normalize keyword labels before render and cover reward preview with a component/e2e assertion.
+- source: Kid daily playthrough (2026-06-22)
+
+### [LOW] Hazard staged-card trash gesture silently unstages instead of explaining discard behavior (Kid playthrough 2026-06-22)
+- category: UX
+- impact: 3 (players can mistake unstage for discard or think trash failed)
+- ease: ? (needs doctrine decision: forbid with feedback or support explicit staged discard)
+- observed: daily Kid hazard ladder 2026-06-22 on exported web main `a6cff8a`.
+  - Repro: enter Hazard board, stage one card, drag staged card to trash.
+  - Observed: staged count returned to hand and discard count stayed unchanged (`DECK 20 · DISCARD 0`, staged `1 → 0`, hand `4 → 5`) with no explicit feedback.
+- next: add feedback or formalize staged-card-to-trash behavior in UI copy/tests.
+- source: Kid daily playthrough (2026-06-22)
+
+### [LOW] Hazard/dev menu accessibility route can no-op under browser automation while direct `/dev` works (Kid playthrough 2026-06-22)
+- category: tests
+- impact: 2 (daily evidence can fall back to `/dev`, but the player/dev path is brittle for automation)
+- ease: ?
+- observed: daily Kid hazard ladder 2026-06-22 on exported web main `a6cff8a`.
+  - Repro: `/character` → SELF → click `Open dev tools` with accessibility/browser tooling; in several runs the snapshot remained on SELF.
+  - Direct `/dev` route and Playwright/test-id activation of hazard controls still worked; committed `npm run e2e:hazard` passed.
+- next: keep committed e2e route truth current and consider a narrow accessibility/navigation assertion for `self-dev-tools-link`.
+- source: Kid daily playthrough (2026-06-22)
+
 ### [x] [needs-user-call → RESOLVED] reader sub-agent malfunction (passes 45–48) ✅
 - pass: 48 (commit 1e9e12b; first seen pass 45 at 69e4ae2)
 - viewport: n/a (repo-proxy)

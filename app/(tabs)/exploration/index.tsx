@@ -26,11 +26,13 @@ import {
     selectHasActiveEvent,
 } from '@/state/presenters/event.engine';
 import { EncounterModalOverlay } from '@/components/event/EncounterModalOverlay';
+import type { Enemy } from 'axiomancer-mechanics';
 
 export default function ExplorationScreen() {
     const styles = useStyles();
     const {
         enterCombat,
+        inCombat,
         inEncounterModal,
         openEncounterModal,
         closeEncounterModal,
@@ -40,6 +42,9 @@ export default function ExplorationScreen() {
     const { mode: aesthetic } = useAesthetic();
     const [nodeTip, setNodeTip] = useState<string | null>(null);
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+    // Phase 200 — the foe for the in-place hazard combat, captured at FIGHT
+    // (the event slice is cleared by then) and fed to the encounter modal.
+    const [activeEnemy, setActiveEnemy] = useState<Enemy | null>(null);
 
     useEffect(() => {
         if (nodeTip !== null) {
@@ -89,11 +94,23 @@ export default function ExplorationScreen() {
     // modal is showing the aftermath panel — `lastOutcome` is non-null
     // in exactly that window and the panel's own CARRY ON drives the
     // dismissal. Closing here would swallow the aftermath entirely.
+    // Phase 200 — `!inCombat` guard. The new hazard combat keeps its state
+    // in the panel's local React state, so `state.combat` stays null during
+    // a live encounter — without this clause the teardown would slam the
+    // modal shut the instant FIGHT clears the event slice. `inCombat` is true
+    // for the whole hazard fight (set by `enterCombat`, cleared on exit), so
+    // the modal survives until the panel resolves. Flee (never entered
+    // combat) still closes correctly.
     useEffect(() => {
-        if (inEncounterModal && !preludeReady && !combat && lastOutcome === null) {
+        if (inEncounterModal && !preludeReady && !combat && lastOutcome === null && !inCombat) {
             closeEncounterModal();
         }
-    }, [inEncounterModal, preludeReady, combat, lastOutcome, closeEncounterModal]);
+    }, [inEncounterModal, preludeReady, combat, lastOutcome, inCombat, closeEncounterModal]);
+    // Phase 200 — drop the captured foe once the modal session fully closes,
+    // so the next encounter bootstraps clean.
+    useEffect(() => {
+        if (!inEncounterModal) setActiveEnemy(null);
+    }, [inEncounterModal]);
 
     // The node the player has tapped but not yet confirmed; resolved against
     // the current options so a stale selection (after a move) falls away.
@@ -138,12 +155,15 @@ export default function ExplorationScreen() {
     };
 
     const onEncounterFight = () => {
-        // Phase 63b — modal-contained encounter. Drop the
-        // `router.replace('/combat')` call; the EncounterModalOverlay
-        // now transitions its internal mode 'prelude' → 'combat' on
-        // FIGHT and renders <CombatPanel> in-place. Aftermath +
-        // dismissal back to exploration land in Phase 63c.
-        actions.pickEventChoice('fight');
+        // Phase 200 — live encounters now run the new hazard-pattern combat
+        // (Spec 26b) in-place. `beginHazardEncounter` pulls the foe, guarantees
+        // a real deck, and clears the event WITHOUT starting legacy combat; we
+        // hand the foe to the modal and flip the combat-mode flag. The
+        // EncounterModalOverlay swaps prelude → combat and renders
+        // <CombatEncounterPanel> full-screen over the still-mounted map.
+        const enemy = actions.beginHazardEncounter();
+        if (!enemy) return;
+        setActiveEnemy(enemy);
         enterCombat();
     };
 
@@ -194,6 +214,7 @@ export default function ExplorationScreen() {
             {showEncounterModal && (
                 <EncounterModalOverlay
                     vm={eventVm}
+                    encounterEnemy={activeEnemy}
                     onFight={onEncounterFight}
                     onFlee={onEncounterFlee}
                 />

@@ -1,42 +1,27 @@
 /**
- * Spec 26 / 26b — Combat encounter screen.
+ * Spec 26 / 26b — Combat encounter screen (DEV route).
  *
- * Phase orchestration for the redesigned card-and-dice combat (the engine
- * `CombatEncounterState` is pure, so the screen holds it in local state and
- * dispatches engine transitions — mirroring the Hazard screen's role). The
- * screen owns the drag ghost; the engine owns every rule; the presenter
- * (`buildCombatViewModel`) owns the mapping.
+ * Phase 200: the combat surface itself now lives in the reusable
+ * `<CombatEncounterPanel>` so the LIVE map flow can host it in-place inside
+ * the encounter modal. This route is the dev-only launcher: it bootstraps a
+ * mock foe + demo deck and does NOT persist the outcome (a sandbox), so
+ * playing here never mutates the real player's progression. The live map
+ * path (EncounterModalOverlay) feeds the panel the real enemy + player and
+ * sets `persistOutcome`.
  *
  * Turn flow (Spec 26b): reveal → roll 2 → DRAFT one (the other → ◆) → POWER a
- * card with your stance die (chain while statuses land) → END TURN to re-roll →
- * END PHASE to resolve.
+ * card with your stance die → END TURN to re-roll → END PHASE to resolve.
  */
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
-import {
-    initializeCombatEncounter, rollEncounterDice, playCombatCard, resolveThreatPhase,
-    startTurn, endTurn, draftStanceDie, discardCombatCard, playSignatureSkill,
-    selectEncounterMercyChoice, buildCombatSummary, rollCombatCardRewards, addRewardCard,
-    type CombatEncounterState,
-} from 'axiomancer-mechanics';
 
 import { ScreenBg } from '@/components/ScreenBg';
-import { CombatBoard, type DragController, type DragPayload } from '@/components/combat/encounter/CombatBoard';
-import { CombatSummaryModal } from '@/components/combat/encounter/CombatSummaryModal';
-import { CombatRewardsOverlay } from '@/components/combat/encounter/CombatRewardsOverlay';
-import { CombatTutorialPrimer } from '@/components/combat/encounter/CombatTutorialPrimer';
-import { CombatTutorialCoach } from '@/components/combat/encounter/CombatTutorialCoach';
-import { currentCombatTutorialStep } from '@/components/combat/encounter/combat-tutorial-steps';
-import { EnemyPortrait } from '@/components/event/enemy-art/EnemyPortrait';
-import { INTENT_ICONS, buildCombatViewModel, rewardOfferVMs, type CombatCardVM, type CombatEffectChipVM } from '@/state/presenters/combat-encounter.engine';
-import { useGameState, useGameStore } from '@/state/GameStoreProvider';
-import { COMBAT_TUTORIAL_FLAG, completeCombatTutorialAction } from '@/state/combat/store-actions';
+import { CombatEncounterPanel } from '@/components/combat/encounter/CombatEncounterPanel';
 import { createMockEncounterEnemy } from '@/state/mocks/combat.mock';
-import { FONTS } from '@/theme/axm';
-import { makeStyles, usePalette } from '@/theme/runtime';
+import { useGameState } from '@/state/GameStoreProvider';
+import { makeStyles } from '@/theme/runtime';
 
 function readSeed(explicit?: string): number {
     const g = (globalThis as { __AXM_COMBAT_SEED__?: number }).__AXM_COMBAT_SEED__;
@@ -52,272 +37,32 @@ function withDemoDeck<T extends { knownSkills?: string[]; baseStats?: { heart: n
     return { ...player, knownSkills: Array.from(new Set([...known, ...DEMO_SKILLS])), baseStats: { heart: 12, body: 12, mind: 12 }, health: 160, maxHealth: 160 };
 }
 
-type DropResolver = (payload: DragPayload, x: number, y: number) => void | Promise<void>;
-
 export default function CombatEncounterScreen() {
     const styles = useStyles();
-    const AXM = usePalette();
     const router = useRouter();
     const params = useLocalSearchParams<{ seed?: string; tutorial?: string }>();
     const player = useGameState((s) => s.player);
-    const store = useGameStore();
 
-    // ── first-fight tutorial (primer panels → turn-one coach) ──
-    // Auto-runs on the player's first hazard-pattern combat (gated by a
-    // persisted flag); the dev menu force-replays it with `?tutorial=1`.
-    const seenTutorial = useGameState(
-        (s) => ((s as unknown as { flags?: string[] }).flags ?? []).includes(COMBAT_TUTORIAL_FLAG),
-    );
-    const forceTutorial = params.tutorial === '1';
-    const [primerDone, setPrimerDone] = useState(false);
-    const [tutorialDismissed, setTutorialDismissed] = useState(false);
-    const tutorialActive = (forceTutorial || !seenTutorial) && !tutorialDismissed;
-    const finishTutorial = useCallback((skipped: boolean) => {
-        setTutorialDismissed(true);
-        completeCombatTutorialAction(store, skipped);
-    }, [store]);
-
-    const [state, setState] = useState<CombatEncounterState | null>(null);
-    const [stagedUid, setStagedUid] = useState<string | null>(null);
-    const [detailCard, setDetailCard] = useState<CombatCardVM | null>(null);
-    const [tipEffect, setTipEffect] = useState<CombatEffectChipVM | null>(null);
-    // Deckbuilder reward (Spec 26b §C) — rolled once on victory, claimed before the summary.
-    const [rewardOffers, setRewardOffers] = useState<string[]>([]);
-    const [rewardsClaimed, setRewardsClaimed] = useState(false);
-
-    const initial = useMemo(() => {
-        if (!player) return null;
-        const enemy = createMockEncounterEnemy();
-        return initializeCombatEncounter(withDemoDeck(player), enemy, undefined, readSeed(params.seed));
-    }, [player, params.seed]);
-
-    const live = state ?? initial;
-    const vm = useMemo(() => (live ? buildCombatViewModel(live) : null), [live]);
-
-    // ── screen-level drag controller (cards only) ──
-    const [dragActive, setDragActive] = useState<DragPayload | null>(null);
-    const dragRef = useRef<DragPayload | null>(null);
-    const dragX = useSharedValue(0);
-    const dragY = useSharedValue(0);
-    const dragShown = useSharedValue(0);
-    const begin = useCallback((payload: DragPayload, x: number, y: number) => {
-        dragRef.current = payload; dragX.value = x; dragY.value = y; dragShown.value = 1; setDragActive(payload);
-    }, [dragX, dragY, dragShown]);
-    const move = useCallback((x: number, y: number) => { dragX.value = x; dragY.value = y; }, [dragX, dragY]);
-    const drag: DragController = useMemo(() => ({ begin, move, end: () => undefined, active: dragActive }), [begin, move, dragActive]);
-    const end = useCallback((x: number, y: number) => {
-        const payload = dragRef.current; dragRef.current = null; dragShown.value = 0; setDragActive(null);
-        if (!payload) return;
-        const resolver = (drag as DragController & { resolveDrop?: DropResolver }).resolveDrop;
-        if (resolver) void resolver(payload, x, y);
-    }, [drag, dragShown]);
-    drag.end = end;
-    const ghostStyle = useAnimatedStyle(() => ({ opacity: dragShown.value, transform: [{ translateX: dragX.value - 37 }, { translateY: dragY.value - 60 }] }));
-
-    // ── engine wiring ──
-    const apply = useCallback((fn: (s: CombatEncounterState) => CombatEncounterState) => {
-        setState((prev) => { const s = prev ?? initial; return s ? fn(s) : s; });
-    }, [initial]);
-
-    const onEnter = useCallback(() => apply((s) => rollEncounterDice(s).state), [apply]);
-    const onDraft = useCallback((dieId: string) => apply((s) => draftStanceDie(s, dieId).state), [apply]);
-    const onStage = useCallback((uid: string) => setStagedUid(uid), []);
-    const onUnstage = useCallback(() => setStagedUid(null), []);
-    const onPlayCard = useCallback((uid: string, useBottom: boolean) => {
-        apply((s) => playCombatCard(s, { uid }, useBottom).state); setStagedUid(null);
-    }, [apply]);
-    const onDiscard = useCallback((uid: string) => { apply((s) => discardCombatCard(s, uid).state); setStagedUid(null); }, [apply]);
-    const onSignature = useCallback((id: string) => apply((s) => playSignatureSkill(s, id).state), [apply]);
-    const onNewTurn = useCallback(() => { apply((s) => startTurn(endTurn(s).state).state); setStagedUid(null); }, [apply]);
-    const onEndPhase = useCallback(() => {
-        apply((s) => {
-            let ns = resolveThreatPhase(s).state;
-            if (ns.phase === 'phase-play' && ns.dice.length === 0) ns = startTurn(ns).state;
-            return ns;
-        });
-        setStagedUid(null);
-    }, [apply]);
-    const onMercy = useCallback((choice: 'spare' | 'exploit') => apply((s) => selectEncounterMercyChoice(s, choice).state), [apply]);
-    const onClose = useCallback(() => { if (router.canGoBack()) router.back(); }, [router]);
-
-    // Roll the deckbuilder reward once, on victory.
-    useEffect(() => {
-        if (live?.finalOutcome === 'victory' && rewardOffers.length === 0 && !rewardsClaimed && player) {
-            setRewardOffers(rollCombatCardRewards(player, Math.random, 3));
-        }
-    }, [live?.finalOutcome, rewardOffers.length, rewardsClaimed, player]);
-
-    // Tutorial completes itself once the turn-one coach script is exhausted.
-    useEffect(() => {
-        if (tutorialActive && primerDone && live && vm && live.phase !== 'reveal'
-            && currentCombatTutorialStep(live, vm) === -1) {
-            finishTutorial(false);
-        }
-    }, [tutorialActive, primerDone, live, vm, finishTutorial]);
-
-    const onRewardPick = useCallback((cardId: string | null) => {
-        if (cardId) store.setState((s) => (s.player ? { player: addRewardCard(s.player, cardId) } : {}));
-        setRewardsClaimed(true);
-    }, [store]);
-
-    if (!live || !vm) {
+    if (!player) {
         return <ScreenBg><View style={styles.root} testID="combat-encounter-empty" /></ScreenBg>;
     }
-
-    const summary = live.finalOutcome ? buildCombatSummary(live) : null;
-    const mercy = live.phase === 'mercy-choice' && !live.finalOutcome;
-    const showReveal = live.phase === 'reveal';
 
     return (
         <ScreenBg>
             <View style={styles.root}>
-                {!showReveal && (
-                    <CombatBoard
-                        vm={vm}
-                        drag={drag}
-                        stagedUid={stagedUid}
-                        onDraft={onDraft}
-                        onStage={onStage}
-                        onUnstage={onUnstage}
-                        onPlayCard={onPlayCard}
-                        onDiscard={onDiscard}
-                        onSignature={onSignature}
-                        onNewTurn={onNewTurn}
-                        onEndPhase={onEndPhase}
-                        onInspect={setDetailCard}
-                        onChip={setTipEffect}
-                    />
-                )}
-
-                {/* CombatRevealOverlay (Spec 26 §7) — read the foe before you commit */}
-                {showReveal && (
-                    <View style={styles.reveal} testID="combat-reveal">
-                        <ScrollView contentContainerStyle={styles.revealScroll}>
-                            <Text style={styles.revealEyebrow}>⚔ A FOE BARS THE WAY</Text>
-                            <View style={[styles.revealPortrait, { borderColor: AXM.blood }]}>
-                                <EnemyPortrait enemyArtKey={vm.enemy.artKey} isBoss={vm.enemy.isBoss} width={120} height={140} label={vm.enemy.name} />
-                            </View>
-                            <Text style={styles.revealName}>{vm.enemy.name}</Text>
-                            <Text style={styles.revealHp}>♥ {vm.enemy.hp} / {vm.enemy.maxHp}</Text>
-                            {vm.enemy.stanceHint ? <Text style={styles.revealTell}>“{vm.enemy.stanceHint}”</Text> : null}
-                            <Text style={styles.revealSection}>THREAT SEQUENCE — they telegraph WHAT, not their stance</Text>
-                            {live.threatPhases.map((p, i) => {
-                                const meta = INTENT_ICONS[p.intentType ?? 'pass'];
-                                return (
-                                    <View key={i} style={styles.revealPhase}>
-                                        <Text style={[styles.revealPhaseIcon, { color: meta.color }]}>{meta.icon}</Text>
-                                        <View style={{ flex: 1 }}>
-                                            <Text style={styles.revealPhaseLabel}>PHASE {p.index} · {meta.label} · clear D{p.dotPressureRequired}/C{p.controlPressureRequired}</Text>
-                                            <Text style={styles.revealPhaseText} numberOfLines={2}>{p.threatAction.description}</Text>
-                                            {p.stanceHint ? <Text style={styles.revealPhaseTell}>🜲 stance hidden — {p.stanceHint}</Text> : null}
-                                        </View>
-                                    </View>
-                                );
-                            })}
-                            <Pressable onPress={onEnter} testID="combat-enter" accessibilityRole="button" accessibilityLabel="Enter combat and roll your first dice" style={[styles.revealBtn, { borderColor: AXM.sulfur }]}>
-                                <Text style={[styles.revealBtnText, { color: AXM.sulfur }]}>ENTER COMBAT ›</Text>
-                            </Pressable>
-                        </ScrollView>
-                    </View>
-                )}
-
-                {/* mercy choice */}
-                {mercy && (
-                    <View style={styles.backdrop} testID="combat-mercy">
-                        <View style={[styles.modal, { borderColor: '#a86bdc' }]}>
-                            <Text style={styles.modalTitle}>{live.enemy.name} is overwhelmed.</Text>
-                            <Text style={styles.modalSub}>The will to fight has drained away.</Text>
-                            <View style={styles.modalBtns}>
-                                <Pressable onPress={() => onMercy('spare')} testID="combat-mercy-spare" accessibilityRole="button" accessibilityLabel="Spare" style={[styles.modalBtn, { borderColor: '#5bbf6a' }]}><Text style={[styles.modalBtnText, { color: '#5bbf6a' }]}>SPARE</Text></Pressable>
-                                <Pressable onPress={() => onMercy('exploit')} testID="combat-mercy-exploit" accessibilityRole="button" accessibilityLabel="Exploit" style={[styles.modalBtn, { borderColor: AXM.blood }]}><Text style={[styles.modalBtnText, { color: AXM.blood }]}>EXPLOIT</Text></Pressable>
-                            </View>
-                        </View>
-                    </View>
-                )}
-
-                {/* card detail */}
-                {detailCard && (
-                    <Pressable style={styles.backdrop} testID="combat-card-detail" onPress={() => setDetailCard(null)}>
-                        <View style={[styles.modal, { borderColor: detailCard.stanceColor }]}>
-                            <Text style={styles.modalTitle}>{detailCard.name}</Text>
-                            <Text style={styles.detailMeta}>{detailCard.stance.toUpperCase()} · TIER {detailCard.tier} · {detailCard.track.toUpperCase()}</Text>
-                            <Text style={styles.detailLine}>FREE — {detailCard.topActionText}</Text>
-                            <Text style={styles.detailLine}>POWER — {detailCard.bottomActionText}</Text>
-                            <Text style={styles.detailHint}>drag the card up to stage it, then FREE or POWER it</Text>
-                        </View>
-                    </Pressable>
-                )}
-
-                {/* effect tooltip */}
-                {tipEffect && (
-                    <Pressable style={styles.backdrop} testID="combat-effect-tip" onPress={() => setTipEffect(null)}>
-                        <View style={[styles.modal, { borderColor: tipEffect.glyph.color }]}>
-                            <Text style={[styles.modalTitle, { color: tipEffect.glyph.color }]}>{tipEffect.glyph.glyph} {tipEffect.glyph.label}</Text>
-                            <Text style={styles.detailMeta}>intensity {tipEffect.intensity}{tipEffect.isMax ? ' (MAX)' : ''} · {tipEffect.duration} turns left</Text>
-                        </View>
-                    </Pressable>
-                )}
-
-                {/* deckbuilder reward — claimed before the summary on a win */}
-                {live.finalOutcome === 'victory' && !rewardsClaimed && rewardOffers.length > 0 && (
-                    <CombatRewardsOverlay offers={rewardOfferVMs(rewardOffers)} onPick={onRewardPick} />
-                )}
-
-                {summary && (rewardsClaimed || live.finalOutcome !== 'victory') && (
-                    <CombatSummaryModal summary={summary} onClose={onClose} />
-                )}
-
-                {/* first-fight tutorial — primer panels, then the turn-one coach */}
-                {tutorialActive && !primerDone && (
-                    <CombatTutorialPrimer onBegin={() => setPrimerDone(true)} onSkip={() => finishTutorial(true)} />
-                )}
-                {tutorialActive && primerDone && !showReveal && !summary && !mercy && (
-                    <CombatTutorialCoach state={live} vm={vm} onSkip={() => finishTutorial(true)} />
-                )}
-
-                {/* drag ghost */}
-                {dragActive && (
-                    <Animated.View pointerEvents="none" style={[styles.ghost, ghostStyle]}>
-                        <View style={[styles.ghostCard, { borderColor: dragActive.card.stanceColor }]}>
-                            <Text style={styles.ghostName} numberOfLines={2}>{dragActive.card.name}</Text>
-                        </View>
-                    </Animated.View>
-                )}
+                <CombatEncounterPanel
+                    enemy={createMockEncounterEnemy()}
+                    bootstrapPlayer={withDemoDeck(player)}
+                    seed={readSeed(params.seed)}
+                    forceTutorial={params.tutorial === '1'}
+                    persistOutcome={false}
+                    onExit={() => { if (router.canGoBack()) router.back(); }}
+                />
             </View>
         </ScreenBg>
     );
 }
 
-const useStyles = makeStyles((AXM) => ({
+const useStyles = makeStyles(() => ({
     root: { flex: 1 },
-    backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.8)', alignItems: 'center', justifyContent: 'center', padding: 20, zIndex: 50 },
-    modal: { width: '100%', maxWidth: 380, borderWidth: 2, backgroundColor: AXM.panelBg, padding: 18, alignItems: 'center' },
-    modalTitle: { fontFamily: FONTS.gothic, fontSize: 18, color: AXM.parchment, textAlign: 'center' },
-    modalSub: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 13, color: AXM.bone, textAlign: 'center', marginTop: 4, marginBottom: 14 },
-    modalBtns: { flexDirection: 'row', gap: 12, marginTop: 6 },
-    modalBtn: { borderWidth: 2, paddingHorizontal: 22, paddingVertical: 9 },
-    modalBtnText: { fontFamily: FONTS.gothic, fontSize: 16, letterSpacing: 1 },
-    detailMeta: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone, letterSpacing: 0.6, marginTop: 4, marginBottom: 8 },
-    detailLine: { fontFamily: FONTS.serif, fontSize: 13, color: AXM.parchment, alignSelf: 'stretch', marginBottom: 6, lineHeight: 17 },
-    detailHint: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 11, color: AXM.bone, marginTop: 6, textAlign: 'center' },
-
-    reveal: { flex: 1, backgroundColor: '#0c0a08' },
-    revealScroll: { alignItems: 'center', padding: 22, paddingBottom: 40 },
-    revealEyebrow: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 2, color: AXM.blood, marginBottom: 14, marginTop: 8 },
-    revealPortrait: { borderWidth: 2, borderRadius: 6, padding: 6, backgroundColor: AXM.deepBg },
-    revealName: { fontFamily: FONTS.gothic, fontSize: 24, color: AXM.parchment, marginTop: 12, textAlign: 'center' },
-    revealHp: { fontFamily: FONTS.mono, fontSize: 13, color: AXM.blood, marginTop: 2 },
-    revealTell: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 14, color: AXM.bone, textAlign: 'center', marginTop: 10, marginHorizontal: 10, lineHeight: 19 },
-    revealSection: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1.2, color: AXM.sulfur, marginTop: 20, marginBottom: 8, alignSelf: 'stretch' },
-    revealPhase: { flexDirection: 'row', gap: 10, alignSelf: 'stretch', borderWidth: 1, borderColor: AXM.ash, backgroundColor: 'rgba(0,0,0,0.35)', padding: 9, marginBottom: 7 },
-    revealPhaseIcon: { fontSize: 20, lineHeight: 22 },
-    revealPhaseLabel: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 0.6, color: AXM.parchment },
-    revealPhaseText: { fontFamily: FONTS.serif, fontSize: 12, color: AXM.bone, marginTop: 2, lineHeight: 15 },
-    revealPhaseTell: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 10, color: AXM.ash, marginTop: 3, lineHeight: 13 },
-    revealBtn: { borderWidth: 2, paddingHorizontal: 30, paddingVertical: 12, marginTop: 22, backgroundColor: 'rgba(212,192,38,0.12)' },
-    revealBtnText: { fontFamily: FONTS.gothic, fontSize: 18, letterSpacing: 1 },
-
-    ghost: { position: 'absolute', top: 0, left: 0, zIndex: 999 },
-    ghostCard: { width: 74, height: 104, borderWidth: 2, borderRadius: 4, backgroundColor: '#16130c', padding: 6, transform: [{ scale: 1.05 }], shadowColor: '#000', shadowOpacity: 0.6, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } },
-    ghostName: { fontFamily: FONTS.gothic, fontSize: 12, color: AXM.parchment },
 }));

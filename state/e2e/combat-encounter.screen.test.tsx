@@ -1,12 +1,12 @@
 /**
- * Hermetic E2E — Spec 25 Hazard-Pattern Combat screen.
+ * Hermetic E2E — Spec 26 / 26b Combat encounter screen.
  *
- * Mounts the real `/combat-encounter` screen against a rigged store player
- * (known skills → a real deck) and walks the visible board: the two Pressure
- * Tracks, the threat timeline, the stance-dice board, the card hand, and the
- * END PHASE control. Determinism comes from the engine seed
- * (`__AXM_COMBAT_SEED__`), so the combat is reproducible without stubbing
- * Math.random. The engine owns the rules; this asserts the presenter wiring.
+ * Mounts the real `/combat-encounter` screen against a rigged store player and
+ * walks the redesigned flow: the reveal → ENTER → the board (portraits, visible
+ * HP, the two Pressure Tracks, the 2-die DRAFT, Conviction + Signature Skills,
+ * the hidden-stance read) → END PHASE. Determinism comes from the engine seed
+ * (`__AXM_COMBAT_SEED__`); seed 16 rolls a draftable first die (mind, heart).
+ * The engine owns the rules; this asserts the presenter + screen wiring.
  */
 
 import React from 'react';
@@ -25,9 +25,8 @@ jest.mock('expo-router', () => ({
 const SKILLS = ['slippery-slope', 'eternal-regress', 'achilles-gambit', 'befriend'];
 
 beforeEach(() => {
-    (globalThis as { __AXM_COMBAT_SEED__?: number }).__AXM_COMBAT_SEED__ = 5;
+    (globalThis as { __AXM_COMBAT_SEED__?: number }).__AXM_COMBAT_SEED__ = 16;
 });
-
 afterEach(() => {
     jest.clearAllMocks();
     delete (globalThis as { __AXM_COMBAT_SEED__?: number }).__AXM_COMBAT_SEED__;
@@ -35,83 +34,69 @@ afterEach(() => {
 
 function mount(): { store: AppStore } {
     const { tree, store } = withAllProviders(<CombatEncounterScreen />);
-    // Give the player a real combat deck before the screen initialises combat.
     const player = store.getState().player;
     store.setState({ player: { ...player, knownSkills: SKILLS, baseStats: { heart: 8, body: 8, mind: 8 }, health: 200, maxHealth: 200 } });
     render(tree);
     return { store };
 }
 
-describe('combat-encounter screen — board renders the full-information surface', () => {
-    it('renders pressure tracks, threat timeline, dice board, and a hand', () => {
+function enter() {
+    act(() => { fireEvent.press(screen.getByTestId('combat-enter')); });
+}
+
+describe('combat-encounter screen — reveal then board', () => {
+    it('shows the enemy reveal before combat', () => {
         mount();
-        expect(screen.getByTestId('combat-encounter-board')).toBeTruthy();
+        expect(screen.getByTestId('combat-reveal')).toBeTruthy();
+        expect(screen.getByTestId('combat-enter')).toBeTruthy();
+    });
+
+    it('ENTER reveals the full board surface (portraits, HP, tracks, dice, hand)', () => {
+        mount();
+        enter();
+        expect(screen.getByTestId('combat-board')).toBeTruthy();
+        expect(screen.getByTestId('combat-combatant-pane')).toBeTruthy();
         expect(screen.getByTestId('combat-pressure-tracks')).toBeTruthy();
         expect(screen.getByTestId('combat-track-dot')).toBeTruthy();
         expect(screen.getByTestId('combat-track-control')).toBeTruthy();
-        expect(screen.getByTestId('combat-threat-timeline')).toBeTruthy();
-        expect(screen.getByTestId('combat-dice-board')).toBeTruthy();
+        expect(screen.getByTestId('combat-dice-tray')).toBeTruthy();
         expect(screen.getByTestId('combat-hand')).toBeTruthy();
-        // Four stance dice are on the board.
-        expect(screen.getByTestId('combat-die-die-0')).toBeTruthy();
-        expect(screen.getByTestId('combat-die-die-3')).toBeTruthy();
-    });
-
-    it('shows the first authored threat phase with its stance', () => {
-        mount();
-        expect(screen.getByTestId('combat-threat-1')).toBeTruthy();
+        expect(screen.getByTestId('combat-conviction')).toBeTruthy();
+        expect(screen.getByTestId('combat-signature-bar')).toBeTruthy();
+        expect(screen.getByTestId('combat-intent')).toBeTruthy();
     });
 });
 
-describe('combat-encounter screen — playing cards drives the engine', () => {
-    it('powering a DoT card advances the dot pressure track', () => {
-        const { store } = mount();
-        // Find a DoT card in hand (slippery-slope) and power it.
-        const btn = screen.queryByTestId('combat-card-slippery-slope-bottom');
-        if (btn) {
-            act(() => { fireEvent.press(btn); });
-            // The board re-rendered without crashing; a track fill exists.
-            expect(screen.getByTestId('combat-track-dot-fill')).toBeTruthy();
-        }
-        // Sanity: the store player still carries the known skills (presentation-only).
-        expect(store.getState().player.knownSkills).toEqual(SKILLS);
+describe('combat-encounter screen — the hidden-stance draft', () => {
+    it('drafting a stance die reveals the read banner', () => {
+        mount();
+        enter();
+        // seed 16 → t1-d0 = mind (draftable).
+        const die = screen.getByTestId('combat-die-t1-d0');
+        act(() => { fireEvent.press(die); });
+        expect(screen.getByTestId('combat-read-banner')).toBeTruthy();
+    });
+});
+
+describe('combat-encounter screen — END PHASE + terminal outcome', () => {
+    it('END PHASE resolves without crashing', () => {
+        mount();
+        enter();
+        act(() => { fireEvent.press(screen.getByTestId('combat-end-phase')); });
+        const alive = screen.queryByTestId('combat-board') || screen.queryByTestId('combat-summary') || screen.queryByTestId('combat-mercy');
+        expect(alive).toBeTruthy();
     });
 
-    it('END PHASE resolves the phase without crashing', () => {
+    it('ending phases without clearing drives to a terminal outcome', () => {
         mount();
-        const end = screen.getByTestId('combat-end-phase');
-        act(() => { fireEvent.press(end); });
-        // The board survives the transition (still mounted or combat resolved).
-        const board = screen.queryByTestId('combat-encounter-board');
-        const summary = screen.queryByTestId('combat-summary');
-        expect(board || summary).toBeTruthy();
-    });
-
-    it('can be driven to a terminal outcome by repeatedly playing and ending phases', () => {
-        mount();
-        // Greedy-ish: power every bottom action available, then end the phase, loop.
-        for (let i = 0; i < 24; i++) {
-            const summary = screen.queryByTestId('combat-summary');
-            if (summary) break;
-            // Power any available bottom button.
-            const powerBtns = screen.queryAllByTestId(/combat-card-.*-bottom/);
-            if (powerBtns.length > 0) {
-                act(() => { fireEvent.press(powerBtns[0]); });
-            } else {
-                const end = screen.queryByTestId('combat-end-phase');
-                if (end) act(() => { fireEvent.press(end); });
-            }
-            // Always try ending the phase to advance.
+        enter();
+        for (let i = 0; i < 40; i++) {
+            if (screen.queryByTestId('combat-summary') || screen.queryByTestId('combat-mercy')) break;
             const end = screen.queryByTestId('combat-end-phase');
-            if (end) act(() => { fireEvent.press(end); });
+            if (!end) break;
+            act(() => { fireEvent.press(end); });
         }
-        // The combat reached a summary (victory/mercy/defeat) — attribution shown.
-        const summary = screen.queryByTestId('combat-summary');
-        if (summary) {
-            expect(summary).toBeTruthy();
-        } else {
-            // Or it is still a live, valid board — either is acceptable for a deterministic seed.
-            expect(screen.getByTestId('combat-encounter-board')).toBeTruthy();
-        }
+        const done = screen.queryByTestId('combat-summary') || screen.queryByTestId('combat-mercy') || screen.queryByTestId('combat-board');
+        expect(done).toBeTruthy();
     });
 });

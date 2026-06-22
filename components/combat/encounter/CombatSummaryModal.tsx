@@ -27,7 +27,10 @@ export function CombatSummaryModal({ summary, onClose }: { summary: CombatSummar
 
                 <View style={styles.rows}>
                     {summary.rows.length === 0 && (
-                        <Text style={styles.noRows}>No status effects contributed.</Text>
+                        <>
+                            <Text style={styles.noRows}>No status effects contributed.</Text>
+                            <Text style={styles.coach}>Draft a stance die each turn, then POWER a status card to build DoT or Control pressure — that is the only way to win.</Text>
+                        </>
                     )}
                     {summary.rows.slice(0, 6).map(row => (
                         <View key={row.cardId} style={styles.row} testID={`combat-summary-row-${row.cardId}`}>
@@ -67,6 +70,7 @@ const useStyles = makeStyles((AXM) => ({
     rowName: { flex: 1, fontFamily: FONTS.serif, fontSize: 14, color: AXM.parchment },
     rowVal: { fontFamily: FONTS.mono, fontSize: 12, color: AXM.sulfur },
     noRows: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 13, color: AXM.bone, textAlign: 'center' },
+    coach: { fontFamily: FONTS.sans, fontSize: 11, color: '#c2a14e', textAlign: 'center', lineHeight: 15, marginTop: 6, paddingHorizontal: 4, letterSpacing: 0.2 },
     totals: { gap: 2, marginBottom: 8 },
     total: { fontFamily: FONTS.mono, fontSize: 12, color: AXM.bone },
     best: { fontFamily: FONTS.sans, fontSize: 13, letterSpacing: 0.6, textAlign: 'center', marginBottom: 12 },

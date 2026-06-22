@@ -23,7 +23,7 @@
 
 import { spawnSync } from 'node:child_process'
 import { createServer } from 'node:http'
-import { readFile, stat } from 'node:fs/promises'
+import { readFile, stat, mkdir } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { resolve, dirname, join, extname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -31,8 +31,10 @@ import { fileURLToPath } from 'node:url'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(__dirname, '..')
 const EXPORT_DIR = resolve(REPO_ROOT, '.smoke-dist')
+const SHOT_DIR = resolve(REPO_ROOT, 'screenshots/combat-redesign')
 const VIEWPORT = { width: 390, height: 844 }
-const SEED = 12025
+// Seed 16 rolls a draftable first die (t1-d0 = mind) for the 5-card demo deck.
+const SEED = 16
 
 const MIME = {
     '.html': 'text/html; charset=utf-8',
@@ -99,70 +101,78 @@ function startStaticServer(rootDir) {
     })
 }
 
-async function trackFill(page, key) {
-    // The fill View width is a percentage style; read it from the DOM.
-    const el = page.getByTestId(`combat-track-${key}-fill`)
-    if (!(await el.count())) return 0
-    const w = await el.evaluate((n) => n.style.width || '0%').catch(() => '0%')
-    return Number(String(w).replace('%', '')) || 0
+async function shot(page, name) {
+    await mkdir(SHOT_DIR, { recursive: true })
+    const path = join(SHOT_DIR, `${name}.png`)
+    await page.screenshot({ path, fullPage: false })
+    log(`screenshot → ${path}`)
 }
 
 async function playCombat(page, baseUrl) {
-    log(`=== playing hazard-pattern combat (seed ${SEED}) ===`)
-    // The combat screen self-bootstraps a demo deck from the live player, so we
-    // navigate straight to the route — no dev-menu dependency (which keeps this
-    // hermetic and runnable both locally and in CI).
+    log(`=== Spec 26 combat board — browser smoke (seed ${SEED}) ===`)
+    // The screen self-bootstraps a demo deck from the live player, so we navigate
+    // straight to the route — no dev-menu dependency (hermetic, CI-safe).
     await page.addInitScript((s) => { globalThis.__AXM_COMBAT_SEED__ = s }, SEED)
     await page.goto(`${baseUrl}/combat-encounter`, { waitUntil: 'networkidle' })
 
-    // The board renders the full-information surface.
-    await page.getByTestId('combat-encounter-board').waitFor({ state: 'visible', timeout: 15000 })
-    for (const id of ['combat-pressure-tracks', 'combat-track-dot', 'combat-track-control', 'combat-threat-timeline', 'combat-dice-board', 'combat-hand', 'combat-threat-1']) {
+    // 1) Reveal — read the foe (portrait, threat sequence, thematic tells).
+    await page.getByTestId('combat-reveal').waitFor({ state: 'visible', timeout: 15000 })
+    await page.waitForTimeout(250)
+    await shot(page, '01-reveal')
+    // Dismiss the combat tutorial primer if it overlays the reveal/board (it can
+    // animate in over either, intercepting taps).
+    const killPrimer = async () => {
+        for (let k = 0; k < 4; k++) {
+            await page.waitForTimeout(300)
+            const skip = page.getByTestId('combat-primer-skip')
+            if (await skip.count()) { await skip.click({ timeout: 2000, force: true }).catch(() => {}) } else break
+        }
+    }
+    await killPrimer()
+    await page.getByTestId('combat-enter').click({ timeout: 8000, force: true }).catch(() => {})
+    await killPrimer()
+
+    // 2) The board renders the full Spec 26 surface.
+    await page.getByTestId('combat-board').waitFor({ state: 'visible', timeout: 15000 })
+    for (const id of ['combat-combatant-pane', 'combat-pressure-tracks', 'combat-track-dot', 'combat-track-control', 'combat-dice-tray', 'combat-hand', 'combat-conviction', 'combat-signature-bar', 'combat-intent']) {
         if (!(await page.getByTestId(id).count())) fail(`missing board element: ${id}`)
     }
-    log('board renders pressure tracks + threat timeline + dice + hand ✅')
+    await page.waitForTimeout(200)
+    await shot(page, '02-board')
+    log('board renders portraits + HP + intent + tracks + 2-die draft + signatures ✅')
 
-    // Drive the combat: power any available bottom action, end phases, repeat,
-    // until the post-combat summary appears (or a generous guard trips). Re-check
-    // for the summary before each click — once it mounts it overlays the board.
-    const done = async () => (await page.getByTestId('combat-summary').count()) > 0
-    // Prefer real skill cards over Retreat (we want the status-effect win path).
-    const realBottoms = () => page.locator('[data-testid$="-bottom"][data-testid^="combat-card-"]:not([data-testid="combat-card-card-retreat-bottom"])')
-    let sawPressure = false
-    let maxDot = 0
-    // Per phase: power every affordable skill card (accumulating pressure within
-    // the phase, like the greedy sim), then END PHASE. Loop until a summary.
-    for (let phase = 0; phase < 14; phase++) {
-        if (await done()) break
-        if (await page.getByTestId('combat-mercy').count()) {
-            await page.getByTestId('combat-mercy-spare').click({ timeout: 3000 }).catch(() => {})
-            await page.waitForTimeout(120)
-            continue
-        }
-        // One pass over the hand: try to power each non-retreat card once.
-        const btns = await realBottoms().all()
-        for (const b of btns) {
-            if (await done()) break
-            const before = await trackFill(page, 'dot')
-            await b.click({ timeout: 2500 }).catch(() => {})
-            await page.waitForTimeout(60)
-            const after = await trackFill(page, 'dot')
-            if (after > before) sawPressure = true
-            maxDot = Math.max(maxDot, after)
-        }
-        if (await done()) break
-        const end = page.getByTestId('combat-end-phase')
-        if (await end.count()) { await end.click({ timeout: 3000 }).catch(() => {}); await page.waitForTimeout(150) }
+    // 3) Draft the stance die → the hidden-stance read banner fires.
+    const die = page.getByTestId('combat-die-t1-d0')
+    if (await die.count()) {
+        await die.click({ timeout: 3000 }).catch(() => {})
+        await page.waitForTimeout(200)
+        if (!(await page.getByTestId('combat-read-banner').count())) fail('drafting a die did not surface the read banner')
+        await shot(page, '03-drafted-read')
+        log('drafting a die surfaces the hidden-stance read ✅')
     }
-    log(`peak dot-track fill: ${maxDot}%`)
 
-    if (!sawPressure) log('note: dot track did not visibly advance (control/HP path or RNG) — non-fatal')
-
+    // 4) Drive to a terminal outcome by ending phases (card POWER needs a drag
+    //    gesture not reliably simulable here; the jest suite covers the play path).
+    //    Without pressure the phases overwhelm → defeat → the attribution summary.
+    const terminal = async () => (await page.getByTestId('combat-summary').count()) > 0 || (await page.getByTestId('combat-mercy').count()) > 0
+    for (let i = 0; i < 30; i++) {
+        if (await terminal()) break
+        const end = page.getByTestId('combat-end-phase')
+        if (!(await end.count())) break
+        await end.click({ timeout: 3000 }).catch(() => {})
+        await page.waitForTimeout(120)
+    }
+    if (await page.getByTestId('combat-mercy').count()) {
+        await shot(page, '04-mercy')
+        await page.getByTestId('combat-mercy-spare').click({ timeout: 3000 }).catch(() => {})
+        await page.waitForTimeout(150)
+    }
     if (!(await page.getByTestId('combat-summary').count())) {
         fail('combat never reached the post-combat attribution summary')
     }
+    await shot(page, '05-summary')
     const summaryText = await page.getByTestId('combat-summary').innerText()
-    if (!/Erosion|Saturation|Defeat|Retreat/i.test(summaryText)) {
+    if (!/Erosion|Saturation|Defeat|Retreat|Mercy/i.test(summaryText)) {
         fail(`summary missing an outcome headline: ${summaryText.slice(0, 80)}`)
     }
     log(`combat resolved → summary shown ✅ (${summaryText.split('\n')[0]})`)

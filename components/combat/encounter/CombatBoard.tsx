@@ -22,7 +22,7 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -106,13 +106,13 @@ function SignatureBar({ conviction, signatures, onCast }: { conviction: number; 
 // ── Die tray (drag a die onto your staged card) ──────────────────────────────
 
 function DiceTray({
-    vm, dieGesture, onNewTurn, draggingDieId, assignedDieId,
+    vm, dieGesture, onNewTurn, draggingDieId, assignedDieIds,
 }: {
     vm: CombatViewModel;
     dieGesture: (die: CombatDieVM) => ReturnType<typeof Gesture.Exclusive>;
     onNewTurn: () => void;
     draggingDieId: string | null;
-    assignedDieId: string | null;
+    assignedDieIds: Set<string>;
 }) {
     const AXM = usePalette();
     const styles = useStyles();
@@ -127,7 +127,7 @@ function DiceTray({
             <View style={styles.trayDice}>
                 {vm.dice.map((die) => {
                     const draggable = !vm.hasDraft && !die.isX && !die.drafted && !die.spent;
-                    const isAssigned = die.id === assignedDieId;
+                    const isAssigned = assignedDieIds.has(die.id);
                     const node = (
                         <View style={isAssigned ? styles.dieAssigned : undefined}>
                             <CombatDie die={die} size={56} dimmed={(vm.hasDraft && !die.drafted) || draggingDieId === die.id} />
@@ -159,13 +159,14 @@ function DiceTray({
 // ── Staged card (die slot · PREVIEW · APPLY) ─────────────────────────────────
 
 function StagedCard({
-    card, assignedDie, read, onApply, gesture,
+    card, assignedDie, read, onApply, gesture, register,
 }: {
     card: CombatCardVM;
     assignedDie: CombatDieVM | null;
     read: string;
     onApply: () => void;
     gesture: ReturnType<typeof Gesture.Exclusive>;
+    register: (node: View | null) => void;
 }) {
     const AXM = usePalette();
     const styles = useStyles();
@@ -175,7 +176,7 @@ function StagedCard({
     return (
         <View style={styles.stagedCol}>
             <GestureDetector gesture={gesture}>
-                <Animated.View entering={FadeInDown.duration(180)} style={[styles.stagedCard, { borderColor: armed ? readColor : card.stanceColor }]} testID={`combat-staged-${card.uid}`}>
+                <Animated.View ref={(node) => register(node as unknown as View | null)} entering={FadeInDown.duration(180)} style={[styles.stagedCard, { borderColor: armed ? readColor : card.stanceColor }]} testID={`combat-staged-${card.uid}`}>
                     <View style={[styles.cardStanceBar, { backgroundColor: card.stanceColor }]} />
                     {/* the dragged die rides the card's corner (no separate slot) */}
                     {assignedDie && (
@@ -245,7 +246,7 @@ function EndPhaseButton({ onPress }: { onPress: () => void }) {
 export interface CombatBoardProps {
     vm: CombatViewModel;
     drag: DragController;
-    stagedUid: string | null;
+    stagedUids: string[];
     /** Commit the staged card. `power` true → power it with `dieId` (null when a die
      *  is already drafted, the combo case); `power` false → the FREE base action,
      *  no die (hazard model — the die is optional). */
@@ -261,36 +262,77 @@ export interface CombatBoardProps {
 }
 
 export const CombatBoard = React.memo(function CombatBoard({
-    vm, drag, stagedUid, onApply, onStage, onUnstage, onDiscard, onSignature, onNewTurn, onEndPhase, onInspect, onChip,
+    vm, drag, stagedUids, onApply, onStage, onUnstage, onDiscard, onSignature, onNewTurn, onEndPhase, onInspect, onChip,
 }: CombatBoardProps) {
     const AXM = usePalette();
     const styles = useStyles();
     const playAreaRef = useRef<View | null>(null);
     const trashRef = useRef<View | null>(null);
+    // Per-staged-card measurable frames — used to drop a die onto a SPECIFIC card.
+    const stagedRefs = useRef<Map<string, View>>(new Map());
 
-    // The die the player has dragged onto the staged card but not yet APPLYd.
-    // Local UI state — selecting/re-selecting is free; APPLY is the commit.
-    const [pendingDieId, setPendingDieId] = useState<string | null>(null);
-    // Clear the pending selection whenever the staged card or the turn's dice change.
-    useEffect(() => { setPendingDieId(null); }, [stagedUid, vm.turnLabel]);
+    // Per-card die selection: the die the player has dragged onto each staged card
+    // but not yet APPLYd. Local UI state — selecting/re-selecting is free; APPLY is
+    // the commit. (Combat drafts ONE stance die per turn, so once a die is drafted
+    // it — or its combo refresh — powers whichever card APPLYs next; before that,
+    // each staged card shows the die dragged onto it.)
+    const [pendingDieByUid, setPendingDieByUid] = useState<Record<string, string>>({});
+    const stagedKey = stagedUids.join(',');
+    // Clear pending selections when the turn's dice change…
+    useEffect(() => { setPendingDieByUid({}); }, [vm.turnLabel]);
+    // …and drop entries for cards that are no longer staged.
+    useEffect(() => {
+        setPendingDieByUid((prev) => {
+            const next: Record<string, string> = {};
+            for (const uid of stagedUids) if (prev[uid]) next[uid] = prev[uid];
+            return next;
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [stagedKey]);
 
     const draftedDie = vm.dice.find((d) => d.drafted && !d.spent) ?? null;
-    const pendingDie = pendingDieId ? (vm.dice.find((d) => d.id === pendingDieId) ?? null) : null;
-    // A combo-refreshed drafted die powers the next card straight away; otherwise
-    // the player's dragged (pending) die does.
-    const assignedDie = draftedDie ?? pendingDie;
-    const previewRead: string = (assignedDie
-        ? (assignedDie.drafted ? vm.read.result : assignedDie.readPip)
-        : 'none') ?? 'none';
+    // The die that will power a staged card: a combo-refreshed drafted die powers
+    // the next card straight away; otherwise the die dragged onto THAT card (if it's
+    // still usable). null → the card APPLYs FREE (no die).
+    const assignedDieFor = (uid: string): CombatDieVM | null => {
+        if (draftedDie) return draftedDie;
+        const pid = pendingDieByUid[uid];
+        if (!pid) return null;
+        const d = vm.dice.find((x) => x.id === pid) ?? null;
+        return d && !d.spent && !d.isX && !d.drafted ? d : null;
+    };
+    const readFor = (die: CombatDieVM | null): string =>
+        (die ? (die.drafted ? vm.read.result : die.readPip) : 'none') ?? 'none';
+    // Dim every die that's already drafted or pending-assigned to some card.
+    const assignedDieIds = new Set<string>(
+        [draftedDie?.id, ...Object.values(pendingDieByUid)].filter(Boolean) as string[],
+    );
 
     const resolveDrop = useCallback(async (payload: DragPayload, x: number, y: number) => {
         if (x < 0 && y < 0) return;
         if (payload.type === 'die') {
-            // Dropping a die on the play area selects it for the staged card.
-            const playRect = await measureRect(playAreaRef);
-            if (stagedUid && rectContains(playRect, x, y, 24)) {
+            // Per-card targeting: drop a die onto a SPECIFIC staged card to power it.
+            let target: string | null = null;
+            for (const uid of stagedUids) {
+                const node = stagedRefs.current.get(uid);
+                if (!node) continue;
+                const rect = await measureRect({ current: node });
+                if (rectContains(rect, x, y, 16)) { target = uid; break; }
+            }
+            // Forgiveness: a die dropped loosely in the play area lands on the one
+            // eligible card (the single staged card, else the first still without a die).
+            if (!target) {
+                const playRect = await measureRect(playAreaRef);
+                if (rectContains(playRect, x, y, 24) && stagedUids.length > 0) {
+                    target = stagedUids.length === 1
+                        ? stagedUids[0]
+                        : (stagedUids.find((u) => !pendingDieByUid[u]) ?? stagedUids[0]);
+                }
+            }
+            if (target) {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid).catch(() => undefined);
-                setPendingDieId(payload.dieId);
+                const t = target;
+                setPendingDieByUid((prev) => ({ ...prev, [t]: payload.dieId }));
             }
             return;
         }
@@ -313,7 +355,8 @@ export const CombatBoard = React.memo(function CombatBoard({
             const playRect = await measureRect(playAreaRef);
             if (!rectContains(playRect, x, y)) onUnstage(payload.uid);
         }
-    }, [onDiscard, onStage, onUnstage, onInspect, stagedUid]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [onDiscard, onStage, onUnstage, onInspect, stagedKey, pendingDieByUid]);
 
     (drag as DragController & { resolveDrop?: typeof resolveDrop }).resolveDrop = resolveDrop;
 
@@ -346,25 +389,26 @@ export const CombatBoard = React.memo(function CombatBoard({
         return Gesture.Exclusive(pan);
     };
 
-    const fan = vm.hand.filter((c) => c.uid !== stagedUid);
-    const staged = stagedUid ? vm.hand.find((c) => c.uid === stagedUid) ?? null : null;
+    const stagedSet = new Set(stagedUids);
+    // Staged cards, in stage order (filtered to those still in hand).
+    const stagedCards = stagedUids
+        .map((uid) => vm.hand.find((c) => c.uid === uid))
+        .filter((c): c is CombatCardVM => Boolean(c));
+    const fan = vm.hand.filter((c) => !stagedSet.has(c.uid));
     const n = fan.length;
     const mid = (n - 1) / 2;
     const overlap = n > 6 ? 48 : n > 4 ? 34 : 18;
     const draggingDieId = drag.active?.type === 'die' ? drag.active.dieId : null;
     const draggingCardUid = drag.active?.type === 'card' ? drag.active.uid : null;
 
-    const handleApply = useCallback(() => {
-        if (!staged) return;
-        if (assignedDie) {
-            // Powered: draft the dragged die (unless already drafted — combo) + power.
-            onApply(staged.uid, assignedDie.drafted ? null : assignedDie.id, true);
-        } else {
-            // No die → FREE base action (the die is optional, like hazard).
-            onApply(staged.uid, null, false);
-        }
-        setPendingDieId(null);
-    }, [staged, assignedDie, onApply]);
+    // Commit ONE staged card: powered with its assigned die (drafting it first
+    // unless one is already drafted — the combo case), else the FREE base action.
+    const handleApply = (uid: string) => {
+        const adie = assignedDieFor(uid);
+        if (adie) onApply(uid, adie.drafted ? null : adie.id, true);
+        else onApply(uid, null, false);
+        setPendingDieByUid((prev) => { const next = { ...prev }; delete next[uid]; return next; });
+    };
 
     return (
         <View style={styles.root} testID="combat-board">
@@ -386,19 +430,34 @@ export const CombatBoard = React.memo(function CombatBoard({
 
             <SignatureBar conviction={vm.conviction} signatures={vm.signatures} onCast={onSignature} />
 
-            <DiceTray vm={vm} dieGesture={dieGesture} onNewTurn={onNewTurn} draggingDieId={draggingDieId} assignedDieId={assignedDie?.id ?? null} />
+            <DiceTray vm={vm} dieGesture={dieGesture} onNewTurn={onNewTurn} draggingDieId={draggingDieId} assignedDieIds={assignedDieIds} />
 
             {/* play area — fills the modal */}
-            <View ref={playAreaRef} style={[styles.playArea, { borderColor: staged ? `${AXM.sulfur}88` : AXM.ash }]} testID="combat-play-area">
+            <View ref={playAreaRef} style={[styles.playArea, { borderColor: stagedCards.length ? `${AXM.sulfur}88` : AXM.ash }]} testID="combat-play-area">
                 <View style={styles.playHead}>
-                    <Text style={[styles.playLabel, { color: staged ? AXM.sulfur : AXM.bone }]}>PLAY AREA</Text>
+                    <Text style={[styles.playLabel, { color: stagedCards.length ? AXM.sulfur : AXM.bone }]}>PLAY AREA{stagedCards.length > 1 ? ` · ${stagedCards.length} STAGED` : ''}</Text>
                     <Text style={styles.deckCounts}>DECK {vm.deckCount} · DISCARD {vm.discardCount}</Text>
                 </View>
-                {staged ? (
-                    <StagedCard card={staged} assignedDie={assignedDie} read={previewRead} onApply={handleApply} gesture={stagedGesture(staged)} />
+                {stagedCards.length > 0 ? (
+                    <ScrollView contentContainerStyle={styles.stagedScroll} showsVerticalScrollIndicator={false}>
+                        {stagedCards.map((card) => {
+                            const adie = assignedDieFor(card.uid);
+                            return (
+                                <StagedCard
+                                    key={card.uid}
+                                    card={card}
+                                    assignedDie={adie}
+                                    read={readFor(adie)}
+                                    onApply={() => handleApply(card.uid)}
+                                    gesture={stagedGesture(card)}
+                                    register={(node) => { if (node) stagedRefs.current.set(card.uid, node); else stagedRefs.current.delete(card.uid); }}
+                                />
+                            );
+                        })}
+                    </ScrollView>
                 ) : (
                     <View style={styles.playEmpty}>
-                        <Text style={styles.playEmptyText}>drag a card up to stage it,{'\n'}then drag a die onto it to power it</Text>
+                        <Text style={styles.playEmptyText}>drag cards up to stage them,{'\n'}then drag a die onto a card to power it</Text>
                     </View>
                 )}
             </View>
@@ -488,7 +547,10 @@ const useStyles = makeStyles((AXM) => ({
     playEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     playEmptyText: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 14, color: AXM.ash, textAlign: 'center', lineHeight: 20 },
 
-    stagedCol: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10 },
+    // The staged cards scroll vertically when several are staged; a single card
+    // centres (flexGrow + centred content). Each card column is natural height.
+    stagedScroll: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', gap: 16, paddingVertical: 4 },
+    stagedCol: { width: '100%', alignItems: 'center', justifyContent: 'center', gap: 10 },
     stagedCard: { width: '100%', maxWidth: 320, borderWidth: 2, borderRadius: 5, backgroundColor: '#1a160f', paddingLeft: 12, paddingRight: 62, paddingVertical: 12, overflow: 'hidden' },
     // The dragged die rides the card's top-right corner (no separate slot).
     cardDie: { position: 'absolute', top: 8, right: 8, zIndex: 2 },

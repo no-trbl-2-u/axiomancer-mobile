@@ -147,7 +147,9 @@ export function CombatEncounterPanel({
     }, [store]);
 
     const [state, setState] = useState<CombatEncounterState | null>(null);
-    const [stagedUid, setStagedUid] = useState<string | null>(null);
+    // Multi-card staging (hazard model): several cards can be staged at once; each
+    // is APPLYd individually (powered by the die dragged onto it, or FREE).
+    const [stagedUids, setStagedUids] = useState<string[]>([]);
     const [detailCard, setDetailCard] = useState<CombatCardVM | null>(null);
     const [tipEffect, setTipEffect] = useState<CombatEffectChipVM | null>(null);
     // Deckbuilder reward (Spec 26b §C) — rolled once on victory, claimed before the summary.
@@ -192,30 +194,32 @@ export function CombatEncounterPanel({
         setState((prev) => { const s = prev ?? initial; return fn(s); });
     }, [initial]);
 
+    const unstageUid = useCallback((uid: string) => setStagedUids((prev) => prev.filter((u) => u !== uid)), []);
     const onEnter = useCallback(() => apply((s) => rollEncounterDice(s).state), [apply]);
-    const onStage = useCallback((uid: string) => setStagedUid(uid), []);
-    const onUnstage = useCallback(() => setStagedUid(null), []);
-    // APPLY (hazard model — the die is OPTIONAL). `power` true → draft the dragged
-    // die (unless one is already drafted, the combo case) + power the card (bottom
-    // action); `power` false → the FREE base action (top action, no die). One commit.
+    const onStage = useCallback((uid: string) => setStagedUids((prev) => (prev.includes(uid) ? prev : [...prev, uid])), []);
+    const onUnstage = useCallback((uid: string) => unstageUid(uid), [unstageUid]);
+    // APPLY one staged card (hazard model — the die is OPTIONAL). `power` true →
+    // draft the dragged die (unless one is already drafted, the combo case) + power
+    // the card (bottom action); `power` false → the FREE base action (top action,
+    // no die). One commit; the card leaves staging.
     const onApply = useCallback((uid: string, dieId: string | null, power: boolean) => {
         apply((s) => {
             let ns = s;
             if (power && dieId && s.draftedDieId === null) ns = draftStanceDie(ns, dieId).state;
             return playCombatCard(ns, { uid }, power).state;
         });
-        setStagedUid(null);
-    }, [apply]);
-    const onDiscard = useCallback((uid: string) => { apply((s) => discardCombatCard(s, uid).state); setStagedUid(null); }, [apply]);
+        unstageUid(uid);
+    }, [apply, unstageUid]);
+    const onDiscard = useCallback((uid: string) => { apply((s) => discardCombatCard(s, uid).state); unstageUid(uid); }, [apply, unstageUid]);
     const onSignature = useCallback((id: string) => apply((s) => playSignatureSkill(s, id).state), [apply]);
-    const onNewTurn = useCallback(() => { apply((s) => startTurn(endTurn(s).state).state); setStagedUid(null); }, [apply]);
+    const onNewTurn = useCallback(() => { apply((s) => startTurn(endTurn(s).state).state); setStagedUids([]); }, [apply]);
     const onEndPhase = useCallback(() => {
         apply((s) => {
             let ns = resolveThreatPhase(s).state;
             if (ns.phase === 'phase-play' && ns.dice.length === 0) ns = startTurn(ns).state;
             return ns;
         });
-        setStagedUid(null);
+        setStagedUids([]);
     }, [apply]);
     const onMercy = useCallback((choice: 'spare' | 'exploit') => apply((s) => selectEncounterMercyChoice(s, choice).state), [apply]);
 
@@ -267,7 +271,7 @@ export function CombatEncounterPanel({
                 <CombatBoard
                     vm={vm}
                     drag={drag}
-                    stagedUid={stagedUid}
+                    stagedUids={stagedUids}
                     onApply={onApply}
                     onStage={onStage}
                     onUnstage={onUnstage}

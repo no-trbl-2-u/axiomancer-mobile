@@ -51,14 +51,13 @@ describe('combat-encounter screen — reveal then board', () => {
         expect(screen.getByTestId('combat-enter')).toBeTruthy();
     });
 
-    it('ENTER reveals the full board surface (portraits, HP, tracks, dice, hand)', () => {
+    it('ENTER reveals the full board surface (portraits, HP, dice, hand) — HP is the only enemy bar', () => {
         mount();
         enter();
         expect(screen.getByTestId('combat-board')).toBeTruthy();
         expect(screen.getByTestId('combat-combatant-pane')).toBeTruthy();
-        expect(screen.getByTestId('combat-pressure-tracks')).toBeTruthy();
-        expect(screen.getByTestId('combat-track-dot')).toBeTruthy();
-        expect(screen.getByTestId('combat-track-control')).toBeTruthy();
+        // HP is the sole enemy bar now — the DoT / Control pressure tracks are gone.
+        expect(screen.queryByTestId('combat-pressure-tracks')).toBeNull();
         expect(screen.getByTestId('combat-dice-tray')).toBeTruthy();
         expect(screen.getByTestId('combat-hand')).toBeTruthy();
         expect(screen.getByTestId('combat-conviction')).toBeTruthy();

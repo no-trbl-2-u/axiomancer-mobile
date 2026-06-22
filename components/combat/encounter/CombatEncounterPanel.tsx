@@ -291,7 +291,7 @@ export function CombatEncounterPanel({
                                 <View key={i} style={styles.revealPhase}>
                                     <Text style={[styles.revealPhaseIcon, { color: meta.color }]}>{meta.icon}</Text>
                                     <View style={{ flex: 1 }}>
-                                        <Text style={styles.revealPhaseLabel}>PHASE {p.index} · {meta.label} · clear D{p.dotPressureRequired}/C{p.controlPressureRequired}</Text>
+                                        <Text style={styles.revealPhaseLabel}>PHASE {p.index} · {meta.label}</Text>
                                         <Text style={styles.revealPhaseText} numberOfLines={2}>{p.threatAction.description}</Text>
                                         {p.stanceHint ? <Text style={styles.revealPhaseTell}>🜲 stance hidden — {p.stanceHint}</Text> : null}
                                     </View>

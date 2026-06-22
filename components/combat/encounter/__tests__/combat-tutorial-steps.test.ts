@@ -38,7 +38,7 @@ type StateParts = Partial<{
     currentPhaseIndex: number;
     threatMarks: unknown[];
     finalOutcome: unknown;
-    pressureTracks: { dot: number; control: number };
+    enemy: { health: number; maxHealth: number; effects: unknown[] };
 }>;
 
 /** A state with every predicate-relevant field at its initial (unmet) value: the
@@ -54,7 +54,7 @@ function freshState(overrides: StateParts = {}): CombatEncounterState {
         currentPhaseIndex: 0,
         threatMarks: ['pending', 'pending', 'pending'],
         finalOutcome: null,
-        pressureTracks: { dot: 0, control: 0 },
+        enemy: { health: 100, maxHealth: 100, effects: [] },
         ...overrides,
     } as unknown as CombatEncounterState;
 }
@@ -84,11 +84,13 @@ describe('combat tutorial-steps predicates', () => {
         expect(done(freshState({ discard: ['card-1'] }), vm)).toBe(true);
     });
 
-    it('tracks: false at zero pressure, true once either track is fed', () => {
+    it('tracks: false until the enemy is damaged or a status lands', () => {
         const done = step('tracks').done;
         expect(done(freshState(), vm)).toBe(false);
-        expect(done(freshState({ pressureTracks: { dot: 1, control: 0 } }), vm)).toBe(true);
-        expect(done(freshState({ pressureTracks: { dot: 0, control: 1 } }), vm)).toBe(true);
+        // damaged enemy HP → the status is working
+        expect(done(freshState({ enemy: { health: 90, maxHealth: 100, effects: [] } }), vm)).toBe(true);
+        // a status landed on the enemy → also counts
+        expect(done(freshState({ enemy: { health: 100, maxHealth: 100, effects: [{ effectId: 'debuff_bleed' }] } }), vm)).toBe(true);
     });
 
     it('advance: false on turn one, true on a new turn / phase / outcome', () => {
@@ -117,12 +119,12 @@ describe('currentCombatTutorialStep', () => {
         // drafted but nothing played → step 1 (spend)
         expect(currentCombatTutorialStep(freshState({ draftedDieId: 'die-1' }), vm))
             .toBe(COMBAT_TUTORIAL_STEPS.findIndex((s) => s.id === 'spend'));
-        // a card played but no pressure yet → step 2 (tracks)
+        // a card played but the enemy not yet damaged → step 2 (tracks)
         expect(currentCombatTutorialStep(freshState({ draftedDieId: 'die-1', discard: ['c'] }), vm))
             .toBe(COMBAT_TUTORIAL_STEPS.findIndex((s) => s.id === 'tracks'));
-        // pressure banked → step 3 (advance)
+        // enemy damaged → step 3 (advance)
         expect(currentCombatTutorialStep(
-            freshState({ draftedDieId: 'die-1', discard: ['c'], pressureTracks: { dot: 2, control: 0 } }),
+            freshState({ draftedDieId: 'die-1', discard: ['c'], enemy: { health: 90, maxHealth: 100, effects: [] } }),
             vm,
         )).toBe(COMBAT_TUTORIAL_STEPS.findIndex((s) => s.id === 'advance'));
     });

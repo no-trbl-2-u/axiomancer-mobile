@@ -19,34 +19,27 @@ import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { FONTS } from '@/theme/axm';
 import { makeStyles } from '@/theme/runtime';
 
-const DOT_COLOR = '#e2543b'; // DoT Erosion — matches the board's track colour
-const CONTROL_COLOR = '#a86bdc'; // Control Saturation — matches the board's track colour
-
 interface PrimerPanel {
     eyebrow: string;
     title: string;
     body: string;
-    /** Optional decorative win-condition bars (panel 2). */
-    showTracks?: boolean;
 }
 
 const PANELS: PrimerPanel[] = [
     {
         eyebrow: '⚔ A NEW KIND OF FIGHT',
-        title: 'PRESSURE, NOT BLOOD',
+        title: 'STATUS DOES THE WORK',
         body:
-            'Their health is an ocean — you will not drain it with blades. ' +
-            'You win by applying PRESSURE: stacking status effects until the body ' +
-            'rots away or the will caves in.',
+            'The enemy has ONE bar: HEALTH. Wear it to nothing — but basic blows are weak. ' +
+            'Status effects do the real damage, and a clever read turns the fight.',
     },
     {
-        eyebrow: 'TWO WAYS TO WIN',
-        title: 'EROSION & SATURATION',
+        eyebrow: 'BLEED & BIND',
+        title: 'POISON, THEN STEAL THEIR TURN',
         body:
-            'Poisons and bleeds fill DoT Erosion — grind it to the top for a KILL. ' +
-            'Stuns and fear fill Control Saturation — fill it and they break for MERCY. ' +
-            'Each phase, reach a track’s target to CLEAR it, or the threat lands.',
-        showTracks: true,
+            'A DoT (poison, bleed) drains their HEALTH every turn — your main damage. ' +
+            'Control (stun, fear) STEALS their attack: a hindered enemy skips its telegraphed ' +
+            'turn. Lead with status; strikes alone won’t close it. Befriend a low-HP foe to spare it.',
     },
     {
         eyebrow: 'DICE & CARDS',
@@ -54,7 +47,7 @@ const PANELS: PrimerPanel[] = [
         body:
             'Each turn you roll two stance dice — keep one, bank the other as ◆ Conviction. ' +
             'Every card plays FREE (no die, weaker) or POWER (spend your stance die, full effect). ' +
-            'Land a status and your die REFRESHES — so you can chain another.',
+            'Land a NEW status and your die REFRESHES — so you can chain another.',
     },
 ];
 
@@ -87,13 +80,6 @@ export function CombatTutorialPrimer({
             <Animated.View key={page} entering={FadeInDown.duration(300)} style={styles.panel}>
                 <Text style={styles.eyebrow}>{panel.eyebrow}</Text>
                 <Text style={styles.title}>{panel.title}</Text>
-
-                {panel.showTracks ? (
-                    <View style={styles.tracks}>
-                        <TrackMock label="DoT Erosion" color={DOT_COLOR} pct={0.78} win="KILL" />
-                        <TrackMock label="Control Saturation" color={CONTROL_COLOR} pct={0.42} win="MERCY" />
-                    </View>
-                ) : null}
 
                 <Text style={styles.body}>{panel.body}</Text>
 
@@ -128,21 +114,6 @@ export function CombatTutorialPrimer({
     );
 }
 
-function TrackMock({ label, color, pct, win }: { label: string; color: string; pct: number; win: string }) {
-    const styles = useStyles();
-    return (
-        <View style={styles.trackMock}>
-            <View style={styles.trackHead}>
-                <Text style={[styles.trackLabel, { color }]}>{label}</Text>
-                <Text style={[styles.trackWin, { color }]}>▸ {win}</Text>
-            </View>
-            <View style={styles.barTrack}>
-                <View style={[styles.barFill, { width: `${Math.round(pct * 100)}%`, backgroundColor: color }]} />
-            </View>
-        </View>
-    );
-}
-
 const useStyles = makeStyles((AXM) => ({
     root: {
         ...StyleSheet.absoluteFillObject,
@@ -172,13 +143,6 @@ const useStyles = makeStyles((AXM) => ({
         textAlign: 'center',
         marginTop: 6,
     },
-    tracks: { alignSelf: 'stretch', marginTop: 16, gap: 10 },
-    trackMock: {},
-    trackHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-    trackLabel: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 1.2 },
-    trackWin: { fontFamily: FONTS.mono, fontSize: 11, letterSpacing: 0.8 },
-    barTrack: { height: 12, backgroundColor: 'rgba(0,0,0,0.5)', borderWidth: 1, borderColor: AXM.ash, marginTop: 3, overflow: 'hidden' },
-    barFill: { height: '100%' },
     body: {
         fontFamily: FONTS.serifItalic,
         fontStyle: 'italic',

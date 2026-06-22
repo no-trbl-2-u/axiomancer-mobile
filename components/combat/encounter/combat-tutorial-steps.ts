@@ -46,9 +46,10 @@ const advanced = (s: CombatEncounterState): boolean =>
     s.currentPhaseIndex >= 1 ||
     !!s.finalOutcome ||
     s.threatMarks.some((m) => m === 'clear' || m === 'overwhelmed');
-/** Any pressure has been banked toward a win condition — monotonic (cumulative). */
+/** The enemy has taken damage or a status has landed on it — monotonic-ish
+ *  (HP only falls; a landed status latches the lesson). */
 const pressured = (s: CombatEncounterState): boolean =>
-    s.pressureTracks.dot >= 1 || s.pressureTracks.control >= 1;
+    s.enemy.health < s.enemy.maxHealth || s.enemy.effects.length > 0;
 
 export const COMBAT_TUTORIAL_STEPS: CombatTutorialStep[] = [
     {
@@ -73,12 +74,12 @@ export const COMBAT_TUTORIAL_STEPS: CombatTutorialStep[] = [
     },
     {
         id: 'tracks',
-        title: 'PRESSURE, NOT BLOOD',
+        title: 'STATUS DOES THE WORK',
         body:
-            'Their health is an ocean — you will not drain it. Watch the two bars instead. ' +
-            'DoT Erosion grinds them toward a kill; Control Saturation crushes their will toward ' +
-            'mercy. Fill a phase’s target on either track to CLEAR it before the threat lands.',
-        lookFor: 'the DoT Erosion / Control Saturation bars',
+            'Wear their HEALTH down to nothing — it is the only bar. Status effects do the heavy ' +
+            'lifting: a DoT bleeds them every turn, and control STEALS their attack (it skips its ' +
+            'telegraphed turn). Basic strikes alone are weak — lead with status.',
+        lookFor: 'the enemy HEALTH bar',
         done: (s) => pressured(s) || advanced(s),
     },
     {

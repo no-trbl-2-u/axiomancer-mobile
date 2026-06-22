@@ -14,7 +14,7 @@
 
 import {
     handCards as engineHandCards, getCard,
-    getDraftedDie, isPhaseStanceRevealed, cardReadPreview, projectCardPressure,
+    getDraftedDie, isPhaseStanceRevealed, cardReadPreview,
     revealedCurrentStance, resolveRead, getSignatureSkill,
     lookupEffect,
     type CombatEncounterState, type CombatCard, type CombatManaDie,
@@ -76,10 +76,6 @@ export interface CombatDieVM {
     /** Read vs the (revealed) enemy stance: advantage/neutral/disadvantage/none/null(hidden). */
     readPip: CombatReadResult | null;
 }
-export interface CombatTrackVM {
-    key: 'dot' | 'control'; label: string; value: number; threshold: number;
-    pct: number; phaseProgress: number; phaseReq: number; phaseReqPct: number; phaseMet: boolean; reached: boolean; color: string;
-}
 export interface CombatCardVM {
     uid: string; cardId: string; name: string; stance: string; stanceColor: string;
     verbClass: string; track: 'dot' | 'control' | 'none'; tier: 1 | 2 | 3;
@@ -87,9 +83,6 @@ export interface CombatCardVM {
     topActionText: string; bottomActionText: string; bottomPressurePreview: number;
     /** Read tier if powered with the current drafted die (null until a die is drafted). */
     read: CombatReadResult | null; colorMatch: boolean;
-    /** Projected track + pressure if POWERed right now (engine-computed, honours
-     *  read/match/diminishing/synergy). For the real-time track projection. */
-    projected: { track: 'dot' | 'control' | 'none'; amount: number };
 }
 export interface CombatSignatureVM {
     id: string; name: string; description: string; cost: number; affordable: boolean; icon: string;
@@ -98,19 +91,10 @@ export interface CombatReadVM {
     active: boolean; result: CombatReadResult; dieStance: string; enemyStance: string | null;
     text: string;
 }
-/** One phase of the always-revealed threat timeline (the learnable pattern). */
-export interface CombatThresholdPhaseVM {
-    index: number;
-    dot: number;
-    control: number;
-    /** clear = already passed · overwhelmed = failed · current = being fought · pending = ahead. */
-    mark: 'clear' | 'overwhelmed' | 'current' | 'pending';
-}
 export interface CombatViewModel {
     phase: CombatEncounterState['phase'];
     enemy: CombatEnemyPaneVM;
     player: CombatPlayerPaneVM;
-    tracks: CombatTrackVM[];
     dice: CombatDieVM[];
     drafted: boolean;           // a USABLE drafted die exists (powers a card)
     hasDraft: boolean;          // a die has been drafted this turn (may be spent)
@@ -126,9 +110,6 @@ export interface CombatViewModel {
     turnLabel: string;
     deckCount: number;
     discardCount: number;
-    momentumNote: string | null;
-    thresholdLadder: string;
-    thresholdPhases: CombatThresholdPhaseVM[];
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -195,27 +176,6 @@ function playerPane(state: CombatEncounterState): CombatPlayerPaneVM {
     };
 }
 
-function tracksVM(state: CombatEncounterState): CombatTrackVM[] {
-    const t = state.pressureTracks;
-    const phase = currentPhase(state);
-    const mk = (key: 'dot' | 'control', label: string, color: string, phaseReq: number): CombatTrackVM => {
-        const value = state.phaseProgress[key];
-        const threshold = key === 'dot' ? t.dotThreshold : t.controlThreshold;
-        const cumulative = t[key];
-        return {
-            key, label, value: cumulative, threshold,
-            pct: threshold > 0 ? Math.min(1, cumulative / threshold) : 0,
-            phaseProgress: value,
-            phaseReq, phaseReqPct: phaseReq > 0 ? Math.min(1, value / phaseReq) : 0,
-            phaseMet: value >= phaseReq, reached: cumulative >= threshold, color,
-        };
-    };
-    return [
-        mk('dot', 'DoT Erosion', '#e2543b', phase?.dotPressureRequired ?? 0),
-        mk('control', 'Control Saturation', '#a86bdc', phase?.controlPressureRequired ?? 0),
-    ];
-}
-
 function diceVM(state: CombatEncounterState): CombatDieVM[] {
     const drafted = getDraftedDie(state);
     // Per-die read pip — only once the phase stance is known (revealed/scouted).
@@ -239,7 +199,6 @@ function handVM(state: CombatEncounterState): CombatCardVM[] {
             topActionText: card.topActionText, bottomActionText: card.bottomActionText,
             bottomPressurePreview: card.bottomPressurePreview,
             read: preview?.read ?? null, colorMatch: preview?.colorMatch ?? false,
-            projected: projectCardPressure(state, card),
         };
     });
 }
@@ -307,27 +266,12 @@ export function rewardOfferVMs(ids: string[]): CombatRewardOfferVM[] {
 export function buildCombatViewModel(state: CombatEncounterState): CombatViewModel {
     const total = state.threatPhases.length;
     const idx = Math.min(state.currentPhaseIndex, total - 1);
-    const momentum = state.momentumCarry;
-    const momentumNote = momentum.dot > 0 || momentum.control > 0
-        ? `+${momentum.dot} DoT · +${momentum.control} Ctrl carried`
-        : null;
-    const ladder = state.threatPhases
-        .map((p, i) => `${i === idx ? '▸' : ' '}P${p.index} D${p.dotPressureRequired}/C${p.controlPressureRequired}`)
-        .join('  ');
-    const thresholdPhases: CombatThresholdPhaseVM[] = state.threatPhases.map((p, i) => {
-        const m = state.threatMarks[i];
-        const mark: CombatThresholdPhaseVM['mark'] = i === idx && state.phase !== 'complete'
-            ? 'current'
-            : m === 'clear' ? 'clear' : m === 'overwhelmed' ? 'overwhelmed' : 'pending';
-        return { index: p.index, dot: p.dotPressureRequired, control: p.controlPressureRequired, mark };
-    });
     const draftedDie = getDraftedDie(state);
     const usableDraft = !!draftedDie && draftedDie.state === 'available' && draftedDie.color !== 'x';
     return {
         phase: state.phase,
         enemy: enemyPane(state),
         player: playerPane(state),
-        tracks: tracksVM(state),
         dice: diceVM(state),
         drafted: usableDraft,
         hasDraft: !!state.draftedDieId,
@@ -343,8 +287,5 @@ export function buildCombatViewModel(state: CombatEncounterState): CombatViewMod
         turnLabel: `TURN ${state.turn}`,
         deckCount: state.drawPile.length,
         discardCount: state.discard.length,
-        momentumNote,
-        thresholdLadder: ladder,
-        thresholdPhases,
     };
 }

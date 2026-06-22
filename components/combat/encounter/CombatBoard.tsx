@@ -27,8 +27,8 @@ import Animated, {
 import { FONTS } from '@/theme/axm';
 import { makeStyles, usePalette } from '@/theme/runtime';
 import type {
-    CombatViewModel, CombatCardVM, CombatTrackVM, CombatDieVM,
-    CombatSignatureVM, CombatEffectChipVM, CombatThresholdPhaseVM,
+    CombatViewModel, CombatCardVM, CombatDieVM,
+    CombatSignatureVM, CombatEffectChipVM,
 } from '@/state/presenters/combat-encounter.engine';
 import { TrashGlyph, LedgerMark } from '@/components/hazard/glyphs';
 import { CombatCombatantPane } from './CombatCombatantPane';
@@ -61,65 +61,6 @@ function measureRect(ref: React.RefObject<View | null>): Promise<Rect | null> {
 const READ_ACCENT: Record<string, string> = {
     advantage: '#5bbf6a', neutral: '#c2a14e', disadvantage: '#e2543b', none: '#8a8273',
 };
-
-// ── Pressure track ───────────────────────────────────────────────────────────
-
-function PressureTrack({ track, projected }: { track: CombatTrackVM; projected: number }) {
-    const AXM = usePalette();
-    const styles = useStyles();
-    const projPct = track.threshold > 0 ? Math.min(1, (track.value + projected) / track.threshold) : track.pct;
-    return (
-        <View style={styles.track} testID={`combat-track-${track.key}`}>
-            <View style={styles.trackHead}>
-                <Text style={[styles.trackLabel, { color: track.color }]}>{track.label}</Text>
-                <Text style={styles.trackVal}>
-                    <Text style={{ color: track.reached ? track.color : AXM.parchment }}>{track.value}</Text>
-                    {projected > 0 ? <Text style={{ color: track.color }}> +{projected}</Text> : null}
-                    <Text style={{ color: AXM.bone }}> / {track.threshold} WIN{track.reached ? ' ✓' : ''}</Text>
-                </Text>
-            </View>
-            <View style={styles.barTrack} testID={`combat-track-${track.key}-fill`}>
-                {projected > 0 ? <View style={[styles.barProj, { width: `${Math.round(projPct * 100)}%`, backgroundColor: track.color }]} /> : null}
-                <Animated.View layout={LinearTransition.duration(160)} style={[styles.barFill, { width: `${Math.round(track.pct * 100)}%`, backgroundColor: track.color }]} />
-            </View>
-            <Text style={[styles.phaseClear, { color: track.phaseMet ? '#5bbf6a' : AXM.bone }]}>
-                phase clear {track.phaseProgress}/{track.phaseReq}{track.phaseMet ? ' ✓ CLEARED' : ''}
-            </Text>
-        </View>
-    );
-}
-
-// ── Threat timeline (the always-revealed, learnable pattern) ─────────────────
-
-const TL_ACCENT: Record<CombatThresholdPhaseVM['mark'], string> = {
-    current: '#d4c026', clear: '#5bbf6a', overwhelmed: '#e2543b', pending: '#8a8273',
-};
-
-function ThreatTimeline({ phases, momentumNote }: { phases: CombatThresholdPhaseVM[]; momentumNote: string | null }) {
-    const styles = useStyles();
-    return (
-        <View style={styles.timelineWrap} testID="combat-threat-timeline">
-            <View style={styles.timelineRow}>
-                {phases.map((p) => {
-                    const accent = TL_ACCENT[p.mark];
-                    const mark = p.mark === 'clear' ? '✓' : p.mark === 'overwhelmed' ? '✗' : p.mark === 'current' ? '▸' : '·';
-                    return (
-                        <View
-                            key={p.index}
-                            style={[styles.tlChip, { borderColor: accent, opacity: p.mark === 'pending' ? 0.6 : 1, backgroundColor: p.mark === 'current' ? 'rgba(212,192,38,0.14)' : 'transparent' }]}
-                            accessibilityRole="text"
-                            accessibilityLabel={`Phase ${p.index}: clear ${p.dot} DoT or ${p.control} Control. ${p.mark}`}
-                        >
-                            <Text style={[styles.tlPhase, { color: accent }]}>{mark} P{p.index}</Text>
-                            <Text style={styles.tlReq}>🔥{p.dot} ⛓{p.control}</Text>
-                        </View>
-                    );
-                })}
-            </View>
-            {momentumNote && <Text style={styles.momentum}>⟜ {momentumNote}</Text>}
-        </View>
-    );
-}
 
 // ── Signature Skills bar ─────────────────────────────────────────────────────
 
@@ -343,14 +284,6 @@ export const CombatBoard = React.memo(function CombatBoard({
 
             <CombatCombatantPane enemy={vm.enemy} player={vm.player} conviction={vm.conviction} onChip={onChip} />
 
-            {/* pressure tracks (with the staged card's real-time projection) */}
-            <View style={styles.tracksPanel} testID="combat-pressure-tracks">
-                {vm.tracks.map((t) => (
-                    <PressureTrack key={t.key} track={t} projected={staged && staged.projected.track === t.key ? staged.projected.amount : 0} />
-                ))}
-                <ThreatTimeline phases={vm.thresholdPhases} momentumNote={vm.momentumNote} />
-            </View>
-
             <SignatureBar conviction={vm.conviction} signatures={vm.signatures} onCast={onSignature} />
 
             <DiceTray vm={vm} onDraft={onDraft} onNewTurn={onNewTurn} />
@@ -425,21 +358,6 @@ const useStyles = makeStyles((AXM) => ({
     phaseBadge: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1.2, color: AXM.bg, paddingHorizontal: 5, paddingVertical: 1, overflow: 'hidden' },
     roundLabel: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone, letterSpacing: 0.8 },
 
-    tracksPanel: { paddingHorizontal: 12, paddingVertical: 7, backgroundColor: 'rgba(6,5,4,0.82)', borderBottomWidth: 1, borderBottomColor: AXM.ash, gap: 6 },
-    track: {},
-    trackHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-    trackLabel: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 1.2 },
-    trackVal: { fontFamily: FONTS.mono, fontSize: 13 },
-    barTrack: { height: 10, backgroundColor: 'rgba(0,0,0,0.5)', borderWidth: 1, borderColor: AXM.ash, marginTop: 2, overflow: 'hidden', position: 'relative' },
-    barFill: { position: 'absolute', left: 0, top: 0, bottom: 0 },
-    barProj: { position: 'absolute', left: 0, top: 0, bottom: 0, opacity: 0.4 },
-    phaseClear: { fontFamily: FONTS.mono, fontSize: 10, letterSpacing: 0.4, marginTop: 1 },
-    momentum: { fontFamily: FONTS.mono, fontSize: 10, color: '#c2a14e', letterSpacing: 0.4, marginTop: 3, textAlign: 'center' },
-    timelineWrap: { marginTop: 3 },
-    timelineRow: { flexDirection: 'row', gap: 5, justifyContent: 'space-between' },
-    tlChip: { flex: 1, borderWidth: 1, borderRadius: 3, paddingVertical: 2, paddingHorizontal: 3, alignItems: 'center' },
-    tlPhase: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 0.5 },
-    tlReq: { fontFamily: FONTS.mono, fontSize: 10, color: AXM.parchment, letterSpacing: 0.2, marginTop: 1 },
 
     sigPanel: { paddingHorizontal: 12, paddingVertical: 5, backgroundColor: 'rgba(212,192,38,0.07)', borderBottomWidth: 1, borderBottomColor: AXM.ash },
     sigHead: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1.2, color: AXM.sulfur, marginBottom: 4 },

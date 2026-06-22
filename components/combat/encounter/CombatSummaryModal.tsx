@@ -29,14 +29,14 @@ export function CombatSummaryModal({ summary, onClose }: { summary: CombatSummar
                     {summary.rows.length === 0 && (
                         <>
                             <Text style={styles.noRows}>No status effects contributed.</Text>
-                            <Text style={styles.coach}>Draft a stance die each turn, then POWER a status card to build DoT or Control pressure — that is the only way to win.</Text>
+                            <Text style={styles.coach}>Draft a stance die each turn, then POWER a status card — DoT wears the enemy down and control skips its turns. Basic strikes alone will not close it.</Text>
                         </>
                     )}
                     {summary.rows.slice(0, 6).map(row => (
                         <View key={row.cardId} style={styles.row} testID={`combat-summary-row-${row.cardId}`}>
                             <Text style={styles.rowName} numberOfLines={1}>{row.name}</Text>
                             <Text style={styles.rowVal}>
-                                {row.dotDamage > 0 ? `${row.dotDamage} dmg` : `${row.pressureContributed} pr`}
+                                {row.dotDamage > 0 ? `${row.dotDamage} dmg` : `${row.damageDealt} dmg`}
                                 <Text style={{ color: AXM.bone }}> · {row.phases}ph</Text>
                             </Text>
                         </View>
@@ -46,7 +46,6 @@ export function CombatSummaryModal({ summary, onClose }: { summary: CombatSummar
                 <View style={styles.totals}>
                     <Text style={styles.total}>Total DoT damage: <Text style={{ color: AXM.parchment }}>{summary.totalDotDamage}</Text></Text>
                     <Text style={styles.total}>Direct damage: <Text style={{ color: AXM.parchment }}>{summary.directDamage}</Text></Text>
-                    <Text style={styles.total}>Control peak: <Text style={{ color: AXM.parchment }}>{summary.controlPeak} / {summary.controlThreshold}</Text></Text>
                 </View>
 
                 {summary.bestCard.length > 0 && (

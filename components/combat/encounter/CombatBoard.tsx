@@ -1,21 +1,27 @@
 /**
- * Spec 26 / 26b — the Combat board. A direct structural adaptation of
- * `HazardBoard.tsx`: same drag model (drag a card up to stage; drag to SCRAP to
- * discard; tap to read), same fanned hand dock, same segmented meters — with
- * combat sections replacing the hazard ones:
+ * Spec 26 / 26b — the Combat board (HP model + drag-to-power UX, 2026-06-22).
+ *
+ * Adapted from `HazardBoard.tsx`'s drag model. The interaction is now:
+ *   1. drag a card UP into the play area to STAGE it (drag to SCRAP to discard);
+ *   2. drag a DIE onto the staged card to power it (the die is *selected*, not
+ *      yet committed — you can re-drag a different die);
+ *   3. read the PREVIEW ("if you apply this") — the stance-read + projected hit;
+ *   4. tap APPLY to commit — drafts the die + powers the card in ONE step.
+ *      Applying is irreversible; there is no FREE/POWER split and no undo.
+ * A landed status refreshes the drafted die (the combo loop) so the next staged
+ * card can be APPLYd straight away without dragging a new die.
  *
  *   header (enemy · phase · round · ledger)
- *   combatant pane (portraits, enemy HP, player HP, status FRONT AND CENTRE)
- *   pressure tracks (DoT Erosion + Control Saturation)
+ *   combatant pane (portraits, enemy HP — the SOLE bar, player HP, statuses)
  *   conviction + Signature Skills bar
- *   2-die DRAFT tray (tap one → your stance; the other → ◆) + the read banner
- *   play area (the staged card → FREE / POWER with your drafted die)
+ *   die tray (drag a die onto your card · NEW TURN)
+ *   play area (the staged card → its die slot → PREVIEW → APPLY) — fills the modal
  *   dock (SCRAP · fanned hand · END PHASE)
  *
- * The drag ghost renders at screen level in `app/combat-encounter/index.tsx`.
+ * The drag ghost renders at screen level in `CombatEncounterPanel`.
  */
 
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -34,9 +40,11 @@ import { TrashGlyph, LedgerMark } from '@/components/hazard/glyphs';
 import { CombatCombatantPane } from './CombatCombatantPane';
 import { CombatDie } from './CombatDie';
 
-// ── Drag plumbing (cards only — dice are tapped to draft) ────────────────────
+// ── Drag plumbing (cards AND dice) ───────────────────────────────────────────
 
-export type DragPayload = { type: 'card'; from: 'hand' | 'play'; uid: string; card: CombatCardVM };
+export type DragPayload =
+    | { type: 'card'; from: 'hand' | 'play'; uid: string; card: CombatCardVM }
+    | { type: 'die'; dieId: string; die: CombatDieVM };
 
 export interface DragController {
     begin: (payload: DragPayload, x: number, y: number) => void;
@@ -60,6 +68,9 @@ function measureRect(ref: React.RefObject<View | null>): Promise<Rect | null> {
 
 const READ_ACCENT: Record<string, string> = {
     advantage: '#5bbf6a', neutral: '#c2a14e', disadvantage: '#e2543b', none: '#8a8273',
+};
+const READ_LABEL: Record<string, string> = {
+    advantage: '▲ ADVANTAGE', neutral: '— EVEN', disadvantage: '▼ DISADVANTAGE', none: '? UNKNOWN',
 };
 
 // ── Signature Skills bar ─────────────────────────────────────────────────────
@@ -92,79 +103,117 @@ function SignatureBar({ conviction, signatures, onCast }: { conviction: number; 
     );
 }
 
-// ── Dice draft tray ──────────────────────────────────────────────────────────
+// ── Die tray (drag a die onto your staged card) ──────────────────────────────
 
-function DiceTray({ vm, onDraft, onNewTurn }: { vm: CombatViewModel; onDraft: (id: string) => void; onNewTurn: () => void }) {
+function DiceTray({
+    vm, dieGesture, onNewTurn, draggingDieId, assignedDieId,
+}: {
+    vm: CombatViewModel;
+    dieGesture: (die: CombatDieVM) => ReturnType<typeof Gesture.Exclusive>;
+    onNewTurn: () => void;
+    draggingDieId: string | null;
+    assignedDieId: string | null;
+}) {
     const AXM = usePalette();
     const styles = useStyles();
-    const readColor = READ_ACCENT[vm.read.result] ?? AXM.bone;
     return (
         <View style={styles.tray} testID="combat-dice-tray">
             <View style={styles.trayHead}>
-                <Text style={styles.trayLabel}>⬡ DRAFT YOUR STANCE — TAP ONE DIE</Text>
-                <Pressable onPress={onNewTurn} testID="combat-new-turn" accessibilityRole="button" accessibilityLabel="New turn — roll two fresh dice" style={styles.newTurn}>
-                    <Text style={styles.newTurnText}>↻ NEW TURN</Text>
+                <Text style={styles.trayLabel}>⬡ DRAG A DIE ONTO YOUR CARD</Text>
+                <Pressable onPress={onNewTurn} testID="combat-new-turn" accessibilityRole="button" accessibilityLabel="End turn — discard your dice and roll two fresh ones" style={styles.newTurn}>
+                    <Text style={styles.newTurnText}>↻ END TURN</Text>
                 </Pressable>
             </View>
             <View style={styles.trayDice}>
-                {vm.dice.map((die) => (
-                    <Pressable
-                        key={die.id}
-                        disabled={vm.hasDraft || die.isX}
-                        onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid).catch(() => undefined); onDraft(die.id); }}
-                        accessibilityRole="button"
-                    >
-                        <CombatDie die={die} size={56} dimmed={vm.hasDraft} />
-                        {!vm.hasDraft && die.readPip && die.readPip !== 'none' ? (
-                            <Text style={[styles.diePip, { color: READ_ACCENT[die.readPip] }]}>
-                                {die.readPip === 'advantage' ? '▲ ADV' : die.readPip === 'disadvantage' ? '▼ DIS' : '— EVEN'}
-                            </Text>
-                        ) : null}
-                        {vm.hasDraft && !die.drafted && <Text style={styles.dieConv}>→ +1 ◆</Text>}
-                        {die.drafted && <Text style={[styles.dieConv, { color: AXM.sulfur }]}>{die.spent ? 'SPENT' : 'STANCE'}</Text>}
-                    </Pressable>
-                ))}
-                {vm.dice.length === 0 && <Text style={styles.trayEmpty}>press NEW TURN to roll</Text>}
+                {vm.dice.map((die) => {
+                    const draggable = !vm.hasDraft && !die.isX && !die.drafted && !die.spent;
+                    const isAssigned = die.id === assignedDieId;
+                    const node = (
+                        <View style={isAssigned ? styles.dieAssigned : undefined}>
+                            <CombatDie die={die} size={56} dimmed={(vm.hasDraft && !die.drafted) || draggingDieId === die.id} />
+                            {draggable && die.readPip && die.readPip !== 'none' ? (
+                                <Text style={[styles.diePip, { color: READ_ACCENT[die.readPip] }]}>
+                                    {die.readPip === 'advantage' ? '▲ ADV' : die.readPip === 'disadvantage' ? '▼ DIS' : '— EVEN'}
+                                </Text>
+                            ) : null}
+                            {vm.hasDraft && !die.drafted && <Text style={styles.dieConv}>→ +1 ◆</Text>}
+                            {die.drafted && <Text style={[styles.dieConv, { color: AXM.sulfur }]}>{die.spent ? 'SPENT' : 'STANCE'}</Text>}
+                        </View>
+                    );
+                    return draggable ? (
+                        <GestureDetector key={die.id} gesture={dieGesture(die)}>
+                            <Animated.View accessible accessibilityRole="button" accessibilityLabel={`${die.color} die. Drag it onto your staged card to power it.`}>
+                                {node}
+                            </Animated.View>
+                        </GestureDetector>
+                    ) : (
+                        <View key={die.id}>{node}</View>
+                    );
+                })}
+                {vm.dice.length === 0 && <Text style={styles.trayEmpty}>press END TURN to roll</Text>}
             </View>
-            {vm.hasDraft ? (
-                <View style={[styles.readBanner, { borderColor: readColor }]} testID="combat-read-banner">
-                    <Text style={[styles.readText, { color: readColor }]}>READ: {vm.read.text}</Text>
-                    {!vm.drafted && <Text style={styles.spentHint}>stance die spent — POWER landed nothing, or press ↻ NEW TURN</Text>}
-                </View>
-            ) : (
-                <Text style={styles.draftHint}>the die you pick is your stance · the other becomes ◆ Conviction</Text>
-            )}
         </View>
     );
 }
 
-// ── Staged card (FREE / POWER) ───────────────────────────────────────────────
+// ── Staged card (die slot · PREVIEW · APPLY) ─────────────────────────────────
 
-function StagedCard({ card, drafted, onPlay, gesture }: { card: CombatCardVM; drafted: boolean; onPlay: (uid: string, useBottom: boolean) => void; gesture: ReturnType<typeof Gesture.Exclusive> }) {
+function StagedCard({
+    card, assignedDie, read, onApply, gesture,
+}: {
+    card: CombatCardVM;
+    assignedDie: CombatDieVM | null;
+    read: string;
+    onApply: () => void;
+    gesture: ReturnType<typeof Gesture.Exclusive>;
+}) {
     const AXM = usePalette();
     const styles = useStyles();
-    const readBorder = card.read ? READ_ACCENT[card.read] : card.stanceColor;
+    const ready = assignedDie !== null;
+    const readColor = ready ? (READ_ACCENT[read] ?? AXM.bone) : AXM.ash;
     return (
         <View style={styles.stagedCol}>
             <GestureDetector gesture={gesture}>
-                <Animated.View entering={FadeInDown.duration(180)} style={[styles.stagedCard, { borderColor: readBorder }]} testID={`combat-staged-${card.uid}`}>
+                <Animated.View entering={FadeInDown.duration(180)} style={[styles.stagedCard, { borderColor: readColor }]} testID={`combat-staged-${card.uid}`}>
                     <View style={[styles.cardStanceBar, { backgroundColor: card.stanceColor }]} />
                     <Text style={styles.cardName} numberOfLines={1}>{card.name}</Text>
                     <Text style={styles.cardTier}>{card.stance.toUpperCase()} · T{card.tier}{card.colorMatch ? ' · MATCH' : ''}</Text>
-                    <Text style={styles.cardBody} numberOfLines={3}>{card.bottomActionText}</Text>
+                    <Text style={styles.cardBody} numberOfLines={4}>{card.bottomActionText}</Text>
                 </Animated.View>
             </GestureDetector>
-            <View style={styles.actionRow}>
-                <Pressable onPress={() => { Haptics.selectionAsync().catch(() => undefined); onPlay(card.uid, false); }} testID={`combat-free-${card.uid}`} accessibilityRole="button" accessibilityLabel={`Free action: ${card.topActionText}`} style={[styles.actBtn, { borderColor: AXM.bone }]}>
-                    <Text style={[styles.actText, { color: AXM.parchment }]}>FREE</Text>
-                </Pressable>
-                <Pressable disabled={!drafted} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => undefined); onPlay(card.uid, true); }} testID={`combat-power-${card.uid}`} accessibilityRole="button" accessibilityState={{ disabled: !drafted }} accessibilityLabel={drafted ? `Power action with your stance die: ${card.bottomActionText}` : `Power is locked — draft a stance die first. ${card.bottomActionText}`} style={[styles.actBtn, { borderColor: drafted ? readBorder : AXM.ash, opacity: drafted ? 1 : 0.5 }]}>
-                    <Text style={[styles.actText, { color: drafted ? readBorder : AXM.bone }]}>POWER{drafted && card.track !== 'none' ? ` +${card.bottomPressurePreview}` : ''}</Text>
-                </Pressable>
+
+            {/* die slot */}
+            <View style={[styles.dieSlot, { borderColor: ready ? readColor : AXM.ash }]} testID="combat-die-slot">
+                {assignedDie ? (
+                    <CombatDie die={assignedDie} size={48} />
+                ) : (
+                    <Text style={styles.dieSlotEmpty}>drag a die here</Text>
+                )}
             </View>
-            {drafted
-                ? <Text style={styles.actHint}>POWER spends your stance die · FREE plays for +1, no die</Text>
-                : <Text style={[styles.actHint, { color: '#c2a14e' }]}>↑ draft a stance die above to POWER this card — or play FREE for +1</Text>}
+
+            {/* preview — "if you apply this" */}
+            {ready ? (
+                <View style={[styles.preview, { borderColor: readColor }]} testID="combat-apply-preview">
+                    <Text style={[styles.previewRead, { color: readColor }]}>IF APPLIED · {READ_LABEL[read] ?? READ_LABEL.none}</Text>
+                    <Text style={styles.previewLine} numberOfLines={3}>{card.bottomActionText}</Text>
+                    {card.track !== 'none' && <Text style={styles.previewDmg}>≈ {card.bottomPressurePreview} {card.track === 'dot' ? 'damage over time' : 'effect'}{read === 'advantage' ? ' (boosted)' : read === 'disadvantage' ? ' (reduced)' : ''}</Text>}
+                </View>
+            ) : (
+                <Text style={styles.actHint}>drag a stance die onto this card, then APPLY</Text>
+            )}
+
+            <Pressable
+                disabled={!ready}
+                onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => undefined); onApply(); }}
+                testID={`combat-apply-${card.uid}`}
+                accessibilityRole="button"
+                accessibilityState={{ disabled: !ready }}
+                accessibilityLabel={ready ? `Apply: ${card.bottomActionText}. This cannot be undone.` : 'Apply is locked — drag a die onto the card first.'}
+                style={[styles.applyBtn, { borderColor: ready ? readColor : AXM.ash, opacity: ready ? 1 : 0.5, backgroundColor: ready ? 'rgba(91,191,106,0.12)' : 'rgba(0,0,0,0.4)' }]}
+            >
+                <Text style={[styles.applyText, { color: ready ? readColor : AXM.bone }]}>APPLY ✓</Text>
+            </Pressable>
+            {ready && <Text style={styles.applyWarn}>applying is final — no undo</Text>}
         </View>
     );
 }
@@ -181,7 +230,7 @@ function EndPhaseButton({ onPress }: { onPress: () => void }) {
     const glow = useAnimatedStyle(() => ({ shadowOpacity: 0.3 + pulse.value * 0.4 }));
     return (
         <Animated.View style={[styles.playWrap, glow]}>
-            <Pressable onPress={onPress} testID="combat-end-phase" accessibilityRole="button" accessibilityLabel="End phase — resolve pressure against the threat thresholds" style={[styles.playBtn, { borderColor: AXM.sulfur, backgroundColor: 'rgba(212,192,38,0.16)' }]}>
+            <Pressable onPress={onPress} testID="combat-end-phase" accessibilityRole="button" accessibilityLabel="End phase — the enemy acts, then the next phase begins" style={[styles.playBtn, { borderColor: AXM.sulfur, backgroundColor: 'rgba(212,192,38,0.16)' }]}>
                 <Text style={[styles.playText, { color: AXM.sulfur }]}>END</Text>
                 <Text style={[styles.playSub, { color: AXM.sulfur }]}>PHASE</Text>
             </Pressable>
@@ -195,10 +244,10 @@ export interface CombatBoardProps {
     vm: CombatViewModel;
     drag: DragController;
     stagedUid: string | null;
-    onDraft: (dieId: string) => void;
+    /** Commit the staged card with `dieId` drafted (null = a die is already drafted). */
+    onApply: (uid: string, dieId: string | null) => void;
     onStage: (uid: string) => void;
     onUnstage: (uid: string) => void;
-    onPlayCard: (uid: string, useBottom: boolean) => void;
     onDiscard: (uid: string) => void;
     onSignature: (id: string) => void;
     onNewTurn: () => void;
@@ -208,15 +257,39 @@ export interface CombatBoardProps {
 }
 
 export const CombatBoard = React.memo(function CombatBoard({
-    vm, drag, stagedUid, onDraft, onStage, onUnstage, onPlayCard, onDiscard, onSignature, onNewTurn, onEndPhase, onInspect, onChip,
+    vm, drag, stagedUid, onApply, onStage, onUnstage, onDiscard, onSignature, onNewTurn, onEndPhase, onInspect, onChip,
 }: CombatBoardProps) {
     const AXM = usePalette();
     const styles = useStyles();
     const playAreaRef = useRef<View | null>(null);
     const trashRef = useRef<View | null>(null);
 
+    // The die the player has dragged onto the staged card but not yet APPLYd.
+    // Local UI state — selecting/re-selecting is free; APPLY is the commit.
+    const [pendingDieId, setPendingDieId] = useState<string | null>(null);
+    // Clear the pending selection whenever the staged card or the turn's dice change.
+    useEffect(() => { setPendingDieId(null); }, [stagedUid, vm.turnLabel]);
+
+    const draftedDie = vm.dice.find((d) => d.drafted && !d.spent) ?? null;
+    const pendingDie = pendingDieId ? (vm.dice.find((d) => d.id === pendingDieId) ?? null) : null;
+    // A combo-refreshed drafted die powers the next card straight away; otherwise
+    // the player's dragged (pending) die does.
+    const assignedDie = draftedDie ?? pendingDie;
+    const previewRead: string = (assignedDie
+        ? (assignedDie.drafted ? vm.read.result : assignedDie.readPip)
+        : 'none') ?? 'none';
+
     const resolveDrop = useCallback(async (payload: DragPayload, x: number, y: number) => {
         if (x < 0 && y < 0) return;
+        if (payload.type === 'die') {
+            // Dropping a die on the play area selects it for the staged card.
+            const playRect = await measureRect(playAreaRef);
+            if (stagedUid && rectContains(playRect, x, y, 24)) {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid).catch(() => undefined);
+                setPendingDieId(payload.dieId);
+            }
+            return;
+        }
         if (payload.from === 'hand') {
             const trashRect = await measureRect(trashRef);
             if (rectContains(trashRect, x, y, 18)) {
@@ -236,7 +309,7 @@ export const CombatBoard = React.memo(function CombatBoard({
             const playRect = await measureRect(playAreaRef);
             if (!rectContains(playRect, x, y)) onUnstage(payload.uid);
         }
-    }, [onDiscard, onStage, onUnstage, onInspect]);
+    }, [onDiscard, onStage, onUnstage, onInspect, stagedUid]);
 
     (drag as DragController & { resolveDrop?: typeof resolveDrop }).resolveDrop = resolveDrop;
 
@@ -260,11 +333,29 @@ export const CombatBoard = React.memo(function CombatBoard({
         return Gesture.Exclusive(pan, tap);
     };
 
+    const dieGesture = (die: CombatDieVM) => {
+        const pan = Gesture.Pan().minDistance(8)
+            .onStart((e) => { runOnJS(drag.begin)({ type: 'die', dieId: die.id, die }, e.absoluteX, e.absoluteY); })
+            .onUpdate((e) => { runOnJS(drag.move)(e.absoluteX, e.absoluteY); })
+            .onEnd((e) => { runOnJS(drag.end)(e.absoluteX, e.absoluteY); })
+            .onFinalize((e, ok) => { if (!ok) runOnJS(drag.end)(-1, -1); });
+        return Gesture.Exclusive(pan);
+    };
+
     const fan = vm.hand.filter((c) => c.uid !== stagedUid);
     const staged = stagedUid ? vm.hand.find((c) => c.uid === stagedUid) ?? null : null;
     const n = fan.length;
     const mid = (n - 1) / 2;
     const overlap = n > 6 ? 48 : n > 4 ? 34 : 18;
+    const draggingDieId = drag.active?.type === 'die' ? drag.active.dieId : null;
+    const draggingCardUid = drag.active?.type === 'card' ? drag.active.uid : null;
+
+    const handleApply = useCallback(() => {
+        if (!staged || !assignedDie) return;
+        // null when a die is already drafted (combo chain) → APPLY just powers.
+        onApply(staged.uid, assignedDie.drafted ? null : assignedDie.id);
+        setPendingDieId(null);
+    }, [staged, assignedDie, onApply]);
 
     return (
         <View style={styles.root} testID="combat-board">
@@ -286,28 +377,28 @@ export const CombatBoard = React.memo(function CombatBoard({
 
             <SignatureBar conviction={vm.conviction} signatures={vm.signatures} onCast={onSignature} />
 
-            <DiceTray vm={vm} onDraft={onDraft} onNewTurn={onNewTurn} />
+            <DiceTray vm={vm} dieGesture={dieGesture} onNewTurn={onNewTurn} draggingDieId={draggingDieId} assignedDieId={assignedDie?.id ?? null} />
 
-            {/* play area */}
+            {/* play area — fills the modal */}
             <View ref={playAreaRef} style={[styles.playArea, { borderColor: staged ? `${AXM.sulfur}88` : AXM.ash }]} testID="combat-play-area">
                 <View style={styles.playHead}>
                     <Text style={[styles.playLabel, { color: staged ? AXM.sulfur : AXM.bone }]}>PLAY AREA</Text>
                     <Text style={styles.deckCounts}>DECK {vm.deckCount} · DISCARD {vm.discardCount}</Text>
                 </View>
                 {staged ? (
-                    <StagedCard card={staged} drafted={vm.drafted} onPlay={onPlayCard} gesture={stagedGesture(staged)} />
+                    <StagedCard card={staged} assignedDie={assignedDie} read={previewRead} onApply={handleApply} gesture={stagedGesture(staged)} />
                 ) : (
                     <View style={styles.playEmpty}>
-                        <Text style={styles.playEmptyText}>drag a card up — POWER it with your stance die</Text>
+                        <Text style={styles.playEmptyText}>drag a card up to stage it,{'\n'}then drag a die onto it to power it</Text>
                     </View>
                 )}
             </View>
 
             {/* dock */}
             <View style={styles.dock}>
-                <View ref={trashRef} style={[styles.trashBin, drag.active ? { borderColor: AXM.blood, backgroundColor: AXM.bloodSubtle, borderStyle: 'solid' } : null]} testID="combat-trash" accessible accessibilityLabel="Scrap bin. Drag a card here to discard it.">
-                    <TrashGlyph size={20} color={drag.active ? AXM.blood : AXM.bone} />
-                    <Text style={[styles.trashLabel, drag.active ? { color: AXM.blood } : null]}>SCRAP</Text>
+                <View ref={trashRef} style={[styles.trashBin, draggingCardUid ? { borderColor: AXM.blood, backgroundColor: AXM.bloodSubtle, borderStyle: 'solid' } : null]} testID="combat-trash" accessible accessibilityLabel="Scrap bin. Drag a card here to discard it.">
+                    <TrashGlyph size={20} color={draggingCardUid ? AXM.blood : AXM.bone} />
+                    <Text style={[styles.trashLabel, draggingCardUid ? { color: AXM.blood } : null]}>SCRAP</Text>
                 </View>
                 <View style={styles.fan} testID="combat-hand">
                     {fan.map((card, i) => (
@@ -316,8 +407,8 @@ export const CombatBoard = React.memo(function CombatBoard({
                                 entering={FadeIn.duration(180)} layout={LinearTransition.duration(160)}
                                 style={{
                                     marginLeft: i === 0 ? 0 : -overlap,
-                                    zIndex: drag.active?.uid === card.uid ? 30 : i,
-                                    opacity: drag.active?.uid === card.uid ? 0.3 : 1,
+                                    zIndex: draggingCardUid === card.uid ? 30 : i,
+                                    opacity: draggingCardUid === card.uid ? 0.3 : 1,
                                     transform: [{ translateY: Math.abs(i - mid) * 8 }, { rotate: `${(i - mid) * 5}deg` }],
                                 }}
                                 testID={`combat-hand-${card.uid}`}
@@ -353,13 +444,12 @@ function HandCard({ card }: { card: CombatCardVM }) {
 
 const useStyles = makeStyles((AXM) => ({
     root: { flex: 1, backgroundColor: '#0c0a08' },
-    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingTop: 8, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: AXM.ash },
+    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingTop: 8, paddingBottom: 6, borderBottomWidth: 1, borderBottomColor: AXM.ash },
     headerTitle: { fontFamily: FONTS.gothic, fontSize: 17, color: AXM.parchment, letterSpacing: 0.5 },
     phaseBadge: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1.2, color: AXM.bg, paddingHorizontal: 5, paddingVertical: 1, overflow: 'hidden' },
     roundLabel: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone, letterSpacing: 0.8 },
 
-
-    sigPanel: { paddingHorizontal: 12, paddingVertical: 5, backgroundColor: 'rgba(212,192,38,0.07)', borderBottomWidth: 1, borderBottomColor: AXM.ash },
+    sigPanel: { paddingHorizontal: 12, paddingVertical: 4, backgroundColor: 'rgba(212,192,38,0.07)', borderBottomWidth: 1, borderBottomColor: AXM.ash },
     sigHead: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1.2, color: AXM.sulfur, marginBottom: 4 },
     sigRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 5 },
     sigChip: { flexDirection: 'row', alignItems: 'center', gap: 3, borderWidth: 1, borderRadius: 3, paddingHorizontal: 5, paddingVertical: 3, backgroundColor: 'rgba(0,0,0,0.4)' },
@@ -367,39 +457,49 @@ const useStyles = makeStyles((AXM) => ({
     sigName: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 0.4, maxWidth: 96 },
     sigCost: { fontFamily: FONTS.mono, fontSize: 10 },
 
-    tray: { paddingHorizontal: 12, paddingTop: 7, paddingBottom: 6, backgroundColor: 'rgba(0,0,0,0.35)' },
-    trayHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 },
+    // Compact die tray — leaves the vertical budget to the play area.
+    tray: { paddingHorizontal: 12, paddingTop: 6, paddingBottom: 6, backgroundColor: 'rgba(0,0,0,0.35)', borderBottomWidth: 1, borderBottomColor: AXM.ash },
+    trayHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
     trayLabel: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1, color: AXM.bone },
     newTurn: { borderWidth: 1, borderColor: AXM.bone, paddingHorizontal: 7, paddingVertical: 2 },
     newTurnText: { fontFamily: FONTS.mono, fontSize: 10, color: AXM.parchment, letterSpacing: 0.8 },
-    trayDice: { flexDirection: 'row', gap: 22, justifyContent: 'center', alignItems: 'flex-start', minHeight: 70 },
+    trayDice: { flexDirection: 'row', gap: 22, justifyContent: 'center', alignItems: 'flex-start', minHeight: 68 },
+    dieAssigned: { opacity: 0.4 },
     dieConv: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone, textAlign: 'center', marginTop: 2, letterSpacing: 0.5 },
     diePip: { fontFamily: FONTS.sans, fontSize: 10, textAlign: 'center', marginTop: 2, letterSpacing: 0.6 },
     trayEmpty: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 13, color: AXM.ash, alignSelf: 'center' },
-    readBanner: { borderWidth: 1, paddingVertical: 3, paddingHorizontal: 8, marginTop: 5, alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.4)' },
-    readText: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 0.8, textAlign: 'center' },
-    spentHint: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone, textAlign: 'center', marginTop: 2 },
-    draftHint: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 11, color: AXM.bone, textAlign: 'center', marginTop: 5 },
 
-    playArea: { flex: 1, marginHorizontal: 10, marginVertical: 7, borderWidth: 1.5, borderStyle: 'dashed', backgroundColor: 'rgba(212,192,38,0.04)', paddingHorizontal: 8, paddingVertical: 6 },
-    playHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 },
+    // Play area — the staging zone. flex:1 so it FILLS the modal between the
+    // die tray and the dock; the staged column centres inside it.
+    playArea: { flex: 1, marginHorizontal: 10, marginVertical: 8, borderWidth: 1.5, borderStyle: 'dashed', backgroundColor: 'rgba(212,192,38,0.04)', paddingHorizontal: 10, paddingTop: 8, paddingBottom: 10 },
+    playHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
     playLabel: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1.2 },
     deckCounts: { fontFamily: FONTS.mono, fontSize: 10, color: AXM.bone, letterSpacing: 1 },
     playEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-    playEmptyText: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 13, color: AXM.ash, textAlign: 'center' },
-    stagedCol: { alignItems: 'center', gap: 5 },
-    stagedCard: { width: 200, borderWidth: 2, borderRadius: 4, backgroundColor: '#1a160f', paddingHorizontal: 9, paddingVertical: 7, overflow: 'hidden' },
-    cardStanceBar: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 4 },
-    cardName: { fontFamily: FONTS.gothic, fontSize: 15, color: AXM.parchment, marginLeft: 4 },
-    cardTier: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone, letterSpacing: 0.6, marginLeft: 4, marginTop: 1 },
-    cardBody: { fontFamily: FONTS.serif, fontSize: 11, color: AXM.bone, marginLeft: 4, marginTop: 4, lineHeight: 14 },
-    actionRow: { flexDirection: 'row', gap: 7 },
-    actBtn: { borderWidth: 1.5, paddingHorizontal: 18, paddingVertical: 4, alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.4)' },
-    actText: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 1.4 },
-    actHint: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone, textAlign: 'center', marginTop: 3, letterSpacing: 0.3 },
+    playEmptyText: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 14, color: AXM.ash, textAlign: 'center', lineHeight: 20 },
 
-    dock: { height: 150, borderTopWidth: 1, borderTopColor: AXM.ash },
-    trashBin: { position: 'absolute', left: 8, bottom: 10, zIndex: 40, width: 60, height: 60, borderRadius: 30, borderWidth: 1.5, borderStyle: 'dashed', borderColor: AXM.ash, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },
+    stagedCol: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10 },
+    stagedCard: { width: '100%', maxWidth: 320, borderWidth: 2, borderRadius: 5, backgroundColor: '#1a160f', paddingHorizontal: 12, paddingVertical: 12, overflow: 'hidden' },
+    cardStanceBar: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 5 },
+    cardName: { fontFamily: FONTS.gothic, fontSize: 19, color: AXM.parchment, marginLeft: 6 },
+    cardTier: { fontFamily: FONTS.mono, fontSize: 10, color: AXM.bone, letterSpacing: 0.6, marginLeft: 6, marginTop: 2 },
+    cardBody: { fontFamily: FONTS.serif, fontSize: 13, color: AXM.bone, marginLeft: 6, marginTop: 8, lineHeight: 18 },
+
+    dieSlot: { width: 72, height: 72, borderWidth: 2, borderStyle: 'dashed', borderRadius: 6, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.3)' },
+    dieSlotEmpty: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 10, color: AXM.ash, textAlign: 'center', paddingHorizontal: 4 },
+
+    preview: { width: '100%', maxWidth: 320, borderWidth: 1, borderRadius: 4, paddingHorizontal: 10, paddingVertical: 8, backgroundColor: 'rgba(0,0,0,0.4)', gap: 3 },
+    previewRead: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 0.8 },
+    previewLine: { fontFamily: FONTS.serif, fontSize: 12, color: AXM.parchment, lineHeight: 16 },
+    previewDmg: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone },
+    actHint: { fontFamily: FONTS.mono, fontSize: 11, color: '#c2a14e', textAlign: 'center', letterSpacing: 0.3, paddingHorizontal: 12 },
+
+    applyBtn: { borderWidth: 2, borderRadius: 4, paddingHorizontal: 40, paddingVertical: 11, alignItems: 'center' },
+    applyText: { fontFamily: FONTS.gothic, fontSize: 18, letterSpacing: 1.5 },
+    applyWarn: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone, letterSpacing: 0.4, marginTop: -4 },
+
+    dock: { height: 148, borderTopWidth: 1, borderTopColor: AXM.ash },
+    trashBin: { position: 'absolute', left: 8, bottom: 10, zIndex: 40, width: 58, height: 58, borderRadius: 29, borderWidth: 1.5, borderStyle: 'dashed', borderColor: AXM.ash, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },
     trashLabel: { fontFamily: FONTS.mono, fontSize: 9, letterSpacing: 1, color: AXM.bone, marginTop: 1 },
     fan: { ...StyleSheet.absoluteFillObject, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 10 },
     handCard: { width: 86, height: 112, borderWidth: 1.5, borderRadius: 4, backgroundColor: '#16130c', paddingHorizontal: 7, paddingVertical: 7, overflow: 'hidden', justifyContent: 'flex-start' },
@@ -408,7 +508,7 @@ const useStyles = makeStyles((AXM) => ({
     handPrev: { fontFamily: FONTS.mono, fontSize: 12, color: AXM.parchment, marginLeft: 4, marginTop: 'auto' },
 
     playWrap: { position: 'absolute', right: 10, bottom: 12, zIndex: 40, shadowColor: AXM.sulfur, shadowRadius: 14, shadowOffset: { width: 0, height: 0 }, elevation: 8 },
-    playBtn: { width: 74, height: 74, borderRadius: 37, borderWidth: 2.5, alignItems: 'center', justifyContent: 'center' },
+    playBtn: { width: 72, height: 72, borderRadius: 36, borderWidth: 2.5, alignItems: 'center', justifyContent: 'center' },
     playText: { fontFamily: FONTS.gothic, fontSize: 16, letterSpacing: 1, lineHeight: 17 },
     playSub: { fontFamily: FONTS.mono, fontSize: 10, letterSpacing: 1, marginTop: 1 },
 }));

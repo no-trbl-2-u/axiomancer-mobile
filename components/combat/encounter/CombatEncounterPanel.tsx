@@ -33,6 +33,7 @@ import {
 } from 'axiomancer-mechanics';
 
 import { CombatBoard, type DragController, type DragPayload } from '@/components/combat/encounter/CombatBoard';
+import { CombatDie } from '@/components/combat/encounter/CombatDie';
 import { CombatSummaryModal } from '@/components/combat/encounter/CombatSummaryModal';
 import { CombatRewardsOverlay } from '@/components/combat/encounter/CombatRewardsOverlay';
 import { CombatTutorialPrimer } from '@/components/combat/encounter/CombatTutorialPrimer';
@@ -192,11 +193,18 @@ export function CombatEncounterPanel({
     }, [initial]);
 
     const onEnter = useCallback(() => apply((s) => rollEncounterDice(s).state), [apply]);
-    const onDraft = useCallback((dieId: string) => apply((s) => draftStanceDie(s, dieId).state), [apply]);
     const onStage = useCallback((uid: string) => setStagedUid(uid), []);
     const onUnstage = useCallback(() => setStagedUid(null), []);
-    const onPlayCard = useCallback((uid: string, useBottom: boolean) => {
-        apply((s) => playCombatCard(s, { uid }, useBottom).state); setStagedUid(null);
+    // Drag-to-power APPLY: draft the dragged die (unless one is already drafted —
+    // the combo-loop refresh case) then power the staged card, in ONE commit.
+    // Powering always uses the bottom action now (FREE/POWER split removed).
+    const onApply = useCallback((uid: string, dieId: string | null) => {
+        apply((s) => {
+            let ns = s;
+            if (dieId && s.draftedDieId === null) ns = draftStanceDie(ns, dieId).state;
+            return playCombatCard(ns, { uid }, true).state;
+        });
+        setStagedUid(null);
     }, [apply]);
     const onDiscard = useCallback((uid: string) => { apply((s) => discardCombatCard(s, uid).state); setStagedUid(null); }, [apply]);
     const onSignature = useCallback((id: string) => apply((s) => playSignatureSkill(s, id).state), [apply]);
@@ -260,10 +268,9 @@ export function CombatEncounterPanel({
                     vm={vm}
                     drag={drag}
                     stagedUid={stagedUid}
-                    onDraft={onDraft}
+                    onApply={onApply}
                     onStage={onStage}
                     onUnstage={onUnstage}
-                    onPlayCard={onPlayCard}
                     onDiscard={onDiscard}
                     onSignature={onSignature}
                     onNewTurn={onNewTurn}
@@ -325,9 +332,8 @@ export function CombatEncounterPanel({
                     <View style={[styles.modal, { borderColor: detailCard.stanceColor }]}>
                         <Text style={styles.modalTitle}>{detailCard.name}</Text>
                         <Text style={styles.detailMeta}>{detailCard.stance.toUpperCase()} · TIER {detailCard.tier} · {detailCard.track.toUpperCase()}</Text>
-                        <Text style={styles.detailLine}>FREE — {detailCard.topActionText}</Text>
-                        <Text style={styles.detailLine}>POWER — {detailCard.bottomActionText}</Text>
-                        <Text style={styles.detailHint}>drag the card up to stage it, then FREE or POWER it</Text>
+                        <Text style={styles.detailLine}>{detailCard.bottomActionText}</Text>
+                        <Text style={styles.detailHint}>drag the card up to stage it, drag a die onto it, then APPLY</Text>
                     </View>
                 </Pressable>
             )}
@@ -362,9 +368,13 @@ export function CombatEncounterPanel({
             {/* drag ghost */}
             {dragActive && (
                 <Animated.View pointerEvents="none" style={[styles.ghost, ghostStyle]}>
-                    <View style={[styles.ghostCard, { borderColor: dragActive.card.stanceColor }]}>
-                        <Text style={styles.ghostName} numberOfLines={2}>{dragActive.card.name}</Text>
-                    </View>
+                    {dragActive.type === 'card' ? (
+                        <View style={[styles.ghostCard, { borderColor: dragActive.card.stanceColor }]}>
+                            <Text style={styles.ghostName} numberOfLines={2}>{dragActive.card.name}</Text>
+                        </View>
+                    ) : (
+                        <CombatDie die={dragActive.die} size={56} />
+                    )}
                 </Animated.View>
             )}
         </View>

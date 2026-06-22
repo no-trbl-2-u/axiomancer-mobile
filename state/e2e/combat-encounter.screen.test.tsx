@@ -66,14 +66,23 @@ describe('combat-encounter screen — reveal then board', () => {
     });
 });
 
-describe('combat-encounter screen — the hidden-stance draft', () => {
-    it('drafting a stance die reveals the read banner', () => {
+describe('combat-encounter screen — drag-to-power flow (2026-06-22)', () => {
+    it('renders draggable dice + the empty play area; the FREE/POWER split + read banner are gone', () => {
         mount();
         enter();
-        // seed 16 → t1-d0 = mind (draftable).
-        const die = screen.getByTestId('combat-die-t1-d0');
-        act(() => { fireEvent.press(die); });
-        expect(screen.getByTestId('combat-read-banner')).toBeTruthy();
+        // The 2 turn dice render in the tray, to be DRAGGED onto a staged card.
+        expect(screen.getByTestId('combat-dice-tray')).toBeTruthy();
+        expect(screen.getByTestId('combat-die-t1-d0')).toBeTruthy();
+        // The play area is the staging zone (empty until a card is dragged up).
+        expect(screen.getByTestId('combat-play-area')).toBeTruthy();
+        // The redesign removes the tap-draft read banner and the FREE/POWER buttons.
+        expect(screen.queryByTestId('combat-read-banner')).toBeNull();
+        expect(screen.queryByTestId('combat-free-slippery-slope')).toBeNull();
+        expect(screen.queryByTestId('combat-power-slippery-slope')).toBeNull();
+        // END TURN (re-roll) + END PHASE + SCRAP stay visible.
+        expect(screen.getByTestId('combat-new-turn')).toBeTruthy();
+        expect(screen.getByTestId('combat-end-phase')).toBeTruthy();
+        expect(screen.getByTestId('combat-trash')).toBeTruthy();
     });
 });
 

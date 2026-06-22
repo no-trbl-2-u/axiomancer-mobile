@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path as SvgPath } from 'react-native-svg';
 import { EventArt } from '@/components/event/EventArt';
 import { EventCodexHeader } from '@/components/event/EventCodexHeader';
@@ -35,7 +35,8 @@ export function EncounterPreludeContent({
     const fleeDecode = fleeChoice?.decode ?? null;
 
     return (
-        <>
+        <View style={styles.preludeRoot}>
+            <ScrollView style={styles.preludeScroll} contentContainerStyle={styles.preludeScrollPad} showsVerticalScrollIndicator={false}>
             {aesthetic === 'codex' && (() => {
                 const { left, right } = selectEventCodexHeader(vm);
                 return <EventCodexHeader left={left} right={right} />;
@@ -85,11 +86,14 @@ export function EncounterPreludeContent({
                     {vm.preludeChrome!.doomLine}
                 </Text>
             </View>
+            </ScrollView>
 
+            {/* ENGAGE / FLEE are PINNED below the scroll — always visible, never
+              * scrolled off (the modal is full-height; you never scroll to act). */}
             <View style={styles.choices}>
                 <TouchableOpacity
                     accessibilityRole="button"
-                    accessibilityLabel="Fight"
+                    accessibilityLabel="Engage"
                     onPress={onFight}
                     style={[styles.choiceRow, { borderColor: AXM.blood, borderLeftColor: AXM.blood }]}
                     testID="encounter-modal-fight"
@@ -97,7 +101,7 @@ export function EncounterPreludeContent({
                     <ActionIcon kind="sword" size={20} color={AXM.blood} />
                     <View style={{ flex: 1 }}>
                         <View style={styles.choiceLabelRow}>
-                            <Text style={[styles.choiceLabel, { color: AXM.blood }]}>FIGHT</Text>
+                            <Text style={[styles.choiceLabel, { color: AXM.blood }]}>ENGAGE</Text>
                             {fightSubtitle !== null && (
                                 <Text style={styles.choiceSubtitle} testID="encounter-modal-fight-subtitle">
                                     {fightSubtitle}
@@ -147,7 +151,7 @@ export function EncounterPreludeContent({
                     </View>
                 </TouchableOpacity>
             </View>
-        </>
+        </View>
     );
 }
 
@@ -211,7 +215,10 @@ const useStyles = makeStyles((AXM) => ({
         color: AXM.bone,
         marginTop: 2,
     },
-    body: { paddingHorizontal: 14, paddingTop: 6, flex: 1 },
+    preludeRoot: { flex: 1 },
+    preludeScroll: { flex: 1 },
+    preludeScrollPad: { paddingBottom: 4 },
+    body: { paddingHorizontal: 14, paddingTop: 6, paddingBottom: 4 },
     bodyText: {
         fontFamily: FONTS.serif,
         fontSize: 12,

@@ -83,7 +83,7 @@ describe('EncounterPreludeContent', () => {
         
         expect(tree.getByTestId('encounter-modal-fight')).toBeTruthy();
         expect(tree.getByTestId('encounter-modal-flee')).toBeTruthy();
-        expect(tree.getByText('FIGHT')).toBeTruthy();
+        expect(tree.getByText('ENGAGE')).toBeTruthy();
         expect(tree.getByText('FLEE')).toBeTruthy();
     });
 

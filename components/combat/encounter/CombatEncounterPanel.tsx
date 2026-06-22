@@ -195,14 +195,14 @@ export function CombatEncounterPanel({
     const onEnter = useCallback(() => apply((s) => rollEncounterDice(s).state), [apply]);
     const onStage = useCallback((uid: string) => setStagedUid(uid), []);
     const onUnstage = useCallback(() => setStagedUid(null), []);
-    // Drag-to-power APPLY: draft the dragged die (unless one is already drafted —
-    // the combo-loop refresh case) then power the staged card, in ONE commit.
-    // Powering always uses the bottom action now (FREE/POWER split removed).
-    const onApply = useCallback((uid: string, dieId: string | null) => {
+    // APPLY (hazard model — the die is OPTIONAL). `power` true → draft the dragged
+    // die (unless one is already drafted, the combo case) + power the card (bottom
+    // action); `power` false → the FREE base action (top action, no die). One commit.
+    const onApply = useCallback((uid: string, dieId: string | null, power: boolean) => {
         apply((s) => {
             let ns = s;
-            if (dieId && s.draftedDieId === null) ns = draftStanceDie(ns, dieId).state;
-            return playCombatCard(ns, { uid }, true).state;
+            if (power && dieId && s.draftedDieId === null) ns = draftStanceDie(ns, dieId).state;
+            return playCombatCard(ns, { uid }, power).state;
         });
         setStagedUid(null);
     }, [apply]);

@@ -190,7 +190,11 @@ function diceVM(state: CombatEncounterState): CombatDieVM[] {
 
 function handVM(state: CombatEncounterState): CombatCardVM[] {
     const drafted = getDraftedDie(state);
-    return engineHandCards(state).map(({ uid, card }: { uid: string; card: CombatCard }) => {
+    return engineHandCards(state)
+        // Retreat is no longer an in-combat card — fleeing is offered at the
+        // encounter prelude (ENGAGE / FLEE), not from the hand.
+        .filter(({ card }: { card: CombatCard }) => card.id !== 'card-retreat' && card.verbClass !== 'retreat')
+        .map(({ uid, card }: { uid: string; card: CombatCard }) => {
         const preview = drafted ? cardReadPreview(state, card) : null;
         return {
             uid, cardId: card.id, name: card.name, stance: card.stance,

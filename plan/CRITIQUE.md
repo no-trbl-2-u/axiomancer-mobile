@@ -47,7 +47,7 @@
 - category: bug
 - impact: 6 (hazard reward choice comprehension is degraded at exactly the moment deck-growth meaning should be clearest)
 - ease: ? (likely reward keyword normalization/rendering in `components/hazard/RewardsOverlay.tsx` or engine keyword shape)
-- observed: daily Kid hazard ladder 2026-06-22 on exported web main `a6cff8a`.
+- observed: daily Kid hazard ladder 2026-06-22 on exported web main `a6cff8a` before later rebase to `acdc632`.
   - Repro: `/dev` → `DEBUG · TRIGGER ENCOUNTER` → `HAZARD`, set/drive Cracked Cliff Safe seed `1`, reach rewards, preview `SWIFT CURRENT` or related reward.
   - Observed preview line: `KEYWORDS: [object Object], [object Object], [object Object]`.
   - Reward tiles remained selectable and the minigame could close cleanly; this is comprehension debt, not a hard blocker.
@@ -58,7 +58,7 @@
 - category: UX
 - impact: 3 (players can mistake unstage for discard or think trash failed)
 - ease: ? (needs doctrine decision: forbid with feedback or support explicit staged discard)
-- observed: daily Kid hazard ladder 2026-06-22 on exported web main `a6cff8a`.
+- observed: daily Kid hazard ladder 2026-06-22 on exported web main `a6cff8a` before later rebase to `acdc632`.
   - Repro: enter Hazard board, stage one card, drag staged card to trash.
   - Observed: staged count returned to hand and discard count stayed unchanged (`DECK 20 · DISCARD 0`, staged `1 → 0`, hand `4 → 5`) with no explicit feedback.
 - next: add feedback or formalize staged-card-to-trash behavior in UI copy/tests.
@@ -68,7 +68,7 @@
 - category: tests
 - impact: 2 (daily evidence can fall back to `/dev`, but the player/dev path is brittle for automation)
 - ease: ?
-- observed: daily Kid hazard ladder 2026-06-22 on exported web main `a6cff8a`.
+- observed: daily Kid hazard ladder 2026-06-22 on exported web main `a6cff8a` before later rebase to `acdc632`.
   - Repro: `/character` → SELF → click `Open dev tools` with accessibility/browser tooling; in several runs the snapshot remained on SELF.
   - Direct `/dev` route and Playwright/test-id activation of hazard controls still worked; committed `npm run e2e:hazard` passed.
 - next: keep committed e2e route truth current and consider a narrow accessibility/navigation assertion for `self-dev-tools-link`.

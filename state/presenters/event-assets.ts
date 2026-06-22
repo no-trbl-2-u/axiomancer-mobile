@@ -53,6 +53,7 @@ export function selectEventArtSlug(event: ResolvedEvent): EventArtSlug {
         case 'loot-cache':
         case 'hazard':
         case 'quest':
+        case 'narration':
         case 'none':
             return 'interaction-generic';
     }
@@ -73,6 +74,7 @@ const DEFAULT_BODY_BY_KIND: Record<ResolvedEvent['kind'], string> = {
     hazard: 'The air turns.',
     'loot-cache': 'Forgotten goods.',
     quest: 'A plan, drawn as a game.',
+    narration: 'A voice speaks, unbidden.',
     none: '',
 };
 

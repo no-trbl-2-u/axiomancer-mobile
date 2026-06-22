@@ -27,7 +27,8 @@ import { resolveEnemyArchetype } from '@/state/presenters/enemy-art';
 // ── Stance palette (Heart/Body/Mind/Wild/X) ──────────────────────────────────
 
 export const STANCE_COLORS: Record<string, string> = {
-    heart: '#d6543f', body: '#4f7fd6', mind: '#9a5fd0', wild: '#d9b44a', x: '#5a5a5a',
+    // Body=RED, Mind=BLUE, Heart=PURPLE, Wild=GOLD (owner-specified dice palette).
+    heart: '#9a5fd0', body: '#d6543f', mind: '#4f7fd6', wild: '#d9b44a', x: '#5a5a5a',
 };
 const DIE_GLYPHS: Record<string, string> = { heart: '♥', body: '⚡', mind: '★', wild: '✦', x: '✕' };
 const STANCE_LABELS: Record<string, string> = { heart: 'HEART', body: 'BODY', mind: 'MIND', wild: 'WILD', x: 'X' };
@@ -68,7 +69,7 @@ export interface CombatEnemyPaneVM {
     stanceHint: string;       // the thematic tell (always shown)
 }
 export interface CombatPlayerPaneVM {
-    name: string; hp: number; maxHp: number; hpPct: number; effects: CombatEffectChipVM[];
+    name: string; hp: number; maxHp: number; hpPct: number; guard: number; effects: CombatEffectChipVM[];
 }
 export interface CombatDieVM {
     id: string; color: string; colorHex: string; glyph: string; stanceLabel: string;
@@ -78,9 +79,9 @@ export interface CombatDieVM {
 }
 export interface CombatCardVM {
     uid: string; cardId: string; name: string; stance: string; stanceColor: string;
-    verbClass: string; track: 'dot' | 'control' | 'none'; tier: 1 | 2 | 3;
+    verbClass: string; effectKind: 'dot' | 'control' | 'none'; rarity?: 'gold'; tier: 1 | 2 | 3;
     category: 'fallacy' | 'paradox' | null;
-    topActionText: string; bottomActionText: string; bottomPressurePreview: number;
+    topActionText: string; bottomActionText: string; bottomDamagePreview: number;
     /** Read tier if powered with the current drafted die (null until a die is drafted). */
     read: CombatReadResult | null; colorMatch: boolean;
 }
@@ -172,6 +173,7 @@ function playerPane(state: CombatEncounterState): CombatPlayerPaneVM {
     return {
         name: p.name ?? 'You', hp: Math.max(0, p.health), maxHp: p.maxHealth,
         hpPct: p.maxHealth > 0 ? Math.max(0, p.health) / p.maxHealth : 0,
+        guard: state.guard ?? 0,
         effects: chips(p.effects),
     };
 }
@@ -190,21 +192,25 @@ function diceVM(state: CombatEncounterState): CombatDieVM[] {
 
 function handVM(state: CombatEncounterState): CombatCardVM[] {
     const drafted = getDraftedDie(state);
-    return engineHandCards(state).map(({ uid, card }: { uid: string; card: CombatCard }) => {
+    return engineHandCards(state)
+        // Retreat is no longer an in-combat card — fleeing is offered at the
+        // encounter prelude (ENGAGE / FLEE), not from the hand.
+        .filter(({ card }: { card: CombatCard }) => card.id !== 'card-retreat' && card.verbClass !== 'retreat')
+        .map(({ uid, card }: { uid: string; card: CombatCard }) => {
         const preview = drafted ? cardReadPreview(state, card) : null;
         return {
             uid, cardId: card.id, name: card.name, stance: card.stance,
             stanceColor: STANCE_COLORS[card.stance] ?? '#888',
-            verbClass: card.verbClass, track: card.track, tier: card.tier, category: card.category,
+            verbClass: card.verbClass, effectKind: card.effectKind, rarity: card.rarity, tier: card.tier, category: card.category,
             topActionText: card.topActionText, bottomActionText: card.bottomActionText,
-            bottomPressurePreview: card.bottomPressurePreview,
+            bottomDamagePreview: card.bottomDamagePreview,
             read: preview?.read ?? null, colorMatch: preview?.colorMatch ?? false,
         };
     });
 }
 
 const SIG_ICON: Record<string, string> = {
-    scout: '👁', pressure: '✸', sustain: '✚', control: '⛓', dot: '☠', mercy: '🕊', strike: '⚔', draw: '🎴',
+    scout: '👁', reroll: '🎲', sustain: '✚', control: '⛓', dot: '☠', mercy: '🕊', strike: '⚔', draw: '🎴',
 };
 
 function signaturesVM(state: CombatEncounterState): CombatSignatureVM[] {
@@ -243,7 +249,7 @@ function readVM(state: CombatEncounterState): CombatReadVM {
 
 export interface CombatRewardOfferVM {
     cardId: string; name: string; stance: string; stanceColor: string;
-    track: 'dot' | 'control' | 'none'; verbClass: string; tier: number; preview: number; text: string;
+    effectKind: 'dot' | 'control' | 'none'; rarity?: 'gold'; verbClass: string; tier: number; preview: number; text: string;
 }
 
 /** Maps reward card ids (from rollCombatCardRewards) into display VMs. */
@@ -254,7 +260,7 @@ export function rewardOfferVMs(ids: string[]): CombatRewardOfferVM[] {
         if (!c) continue;
         out.push({
             cardId: id, name: c.name, stance: c.stance, stanceColor: STANCE_COLORS[c.stance] ?? '#888',
-            track: c.track, verbClass: c.verbClass, tier: c.tier, preview: c.bottomPressurePreview,
+            effectKind: c.effectKind, rarity: c.rarity, verbClass: c.verbClass, tier: c.tier, preview: c.bottomDamagePreview,
             text: c.bottomActionText,
         });
     }

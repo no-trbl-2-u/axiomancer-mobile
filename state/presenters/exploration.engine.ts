@@ -165,6 +165,7 @@ const KIND_TO_NODE_TYPE: Record<MapEventKind, NodeType> = {
     interaction: 'quest',
     village: 'treasure',
     cutscene: 'quest',
+    narration: 'quest',
 };
 
 /** Node display type, sourced from the engine's authored event pools. */

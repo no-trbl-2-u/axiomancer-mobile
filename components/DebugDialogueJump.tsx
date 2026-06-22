@@ -63,16 +63,41 @@ const FRIEND_TREE: DialogueTree = {
     },
 };
 
+// The fishing-village fv-14 narration node's authored monologue
+// (engine content `fv-14.narration` → tree `fv-strand-recollection`).
+// Mirrored here so the narration → /dialogue render path can be
+// eyeballed in isolation without walking the map to fv-14.
+const STRAND_NARRATION_TREE: DialogueTree = {
+    rootId: 'line-1',
+    nodes: {
+        'line-1': {
+            id: 'line-1',
+            text: 'The tide has gone out, and the strand lies bare to the grey morning.',
+        },
+        'line-2': {
+            id: 'line-2',
+            text: 'Somewhere a gull cries, and you remember why you came so far north.',
+        },
+        'line-3': {
+            id: 'line-3',
+            text: 'The sea keeps its own counsel. You walk on.',
+        },
+    },
+};
+
 interface TreeOption {
     key: string;
     label: string;
     tree: DialogueTree;
     npcName: string;
+    /** Event-slice kind. Narration nodes ride the `narration` kind. */
+    kind: 'interaction' | 'narration';
 }
 
 const TREES: readonly TreeOption[] = [
-    { key: 'omen', label: 'OMEN', tree: OMEN_TREE, npcName: 'forgotten-pilgrim' },
-    { key: 'friend', label: 'FRIEND', tree: FRIEND_TREE, npcName: 'boy-priest' },
+    { key: 'omen', label: 'OMEN', tree: OMEN_TREE, npcName: 'forgotten-pilgrim', kind: 'interaction' },
+    { key: 'friend', label: 'FRIEND', tree: FRIEND_TREE, npcName: 'boy-priest', kind: 'interaction' },
+    { key: 'narration', label: 'NARRATION', tree: STRAND_NARRATION_TREE, npcName: 'fv-14-strand', kind: 'narration' },
 ];
 
 export function DebugDialogueJump() {
@@ -83,15 +108,18 @@ export function DebugDialogueJump() {
 
     const onJump = (option: TreeOption) => {
         const state = store.getState();
-        const interaction = {
-            kind: 'interaction' as const,
+        // Narration nodes ride the `narration` kind; NPC trees the
+        // `interaction` kind. Both seed a `dialogueCursor`, which the event
+        // presenter prioritises to render the tree on the /dialogue screen.
+        const event = {
+            kind: option.kind,
             npcName: option.npcName,
             dialogue: option.tree,
         };
-         
+
         store.setState({
             event: {
-                pending: { state, event: interaction },
+                pending: { state, event },
                 dialogueCursor: { tree: option.tree, nodeId: option.tree.rootId },
                 history: [],
                 sourceNodeType: null,

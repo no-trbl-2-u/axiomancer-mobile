@@ -30,6 +30,16 @@ function readSeed(explicit?: string): number {
     return Number.isFinite(n) ? n : 12025;
 }
 
+// Dev/e2e-only deck override. Mirrors `readSeed`'s `__AXM_COMBAT_SEED__`
+// test-global pattern: a browser harness can pin the demo deck (e.g. to
+// surface a defend/GUARD card or a gold card) by setting
+// `globalThis.__AXM_COMBAT_DECK__` before this sandbox route boots. Inert
+// in production — nothing sets the global there, and this route is dev-only.
+function readDeckOverride(): string[] | undefined {
+    const g = (globalThis as { __AXM_COMBAT_DECK__?: unknown }).__AXM_COMBAT_DECK__;
+    return Array.isArray(g) && g.every((x) => typeof x === 'string') ? (g as string[]) : undefined;
+}
+
 const DEMO_SKILLS = ['slippery-slope', 'eternal-regress', 'achilles-gambit', 'befriend'];
 function withDemoDeck<T extends { knownSkills?: string[]; baseStats?: { heart: number; body: number; mind: number }; health?: number; maxHealth?: number }>(player: T): T {
     const known = player.knownSkills ?? [];
@@ -47,12 +57,22 @@ export default function CombatEncounterScreen() {
         return <ScreenBg><View style={styles.root} testID="combat-encounter-empty" /></ScreenBg>;
     }
 
+    // Dev/e2e deck override (see `readDeckOverride`): when pinned, the overridden
+    // ids are also marked known so the player's archetype/signatures resolve
+    // against them. Inert without the global.
+    const deckOverride = readDeckOverride();
+    const base = withDemoDeck(player);
+    const bootstrapPlayer = deckOverride
+        ? { ...base, knownSkills: Array.from(new Set([...(base.knownSkills ?? []), ...deckOverride])) }
+        : base;
+
     return (
         <ScreenBg>
             <View style={styles.root}>
                 <CombatEncounterPanel
                     enemy={createMockEncounterEnemy()}
-                    bootstrapPlayer={withDemoDeck(player)}
+                    bootstrapPlayer={bootstrapPlayer}
+                    deck={deckOverride}
                     seed={readSeed(params.seed)}
                     forceTutorial={params.tutorial === '1'}
                     persistOutcome={false}

@@ -22,7 +22,7 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -159,7 +159,7 @@ function DiceTray({
 // ── Staged card (die slot · PREVIEW · APPLY) ─────────────────────────────────
 
 function StagedCard({
-    card, assignedDie, read, onApply, gesture, register,
+    card, assignedDie, read, onApply, gesture, register, compact = false,
 }: {
     card: CombatCardVM;
     assignedDie: CombatDieVM | null;
@@ -167,56 +167,57 @@ function StagedCard({
     onApply: () => void;
     gesture: ReturnType<typeof Gesture.Exclusive>;
     register: (node: View | null) => void;
+    compact?: boolean;
 }) {
     const AXM = usePalette();
     const styles = useStyles();
-    // Hazard model: a die is OPTIONAL — it POWERS the card. APPLY always works.
     const armed = assignedDie !== null;
     const readColor = armed ? (READ_ACCENT[read] ?? AXM.bone) : AXM.bone;
+    const cardW = compact ? 70 : 88;
     return (
         <View style={styles.stagedCol}>
             <GestureDetector gesture={gesture}>
-                <Animated.View ref={(node) => register(node as unknown as View | null)} entering={FadeInDown.duration(180)} style={[styles.stagedCard, { borderColor: armed ? readColor : card.stanceColor }]} testID={`combat-staged-${card.uid}`}>
+                <Animated.View
+                    ref={(node) => register(node as unknown as View | null)}
+                    entering={FadeInDown.duration(180)}
+                    style={[
+                        styles.stagedCard,
+                        { borderColor: armed ? readColor : card.stanceColor, width: cardW },
+                        compact && { paddingRight: 22, minHeight: 78 },
+                    ]}
+                    testID={`combat-staged-${card.uid}`}
+                    accessible
+                    accessibilityRole="button"
+                    accessibilityLabel={`${card.name} staged. Tap to unstage.`}
+                >
                     <View style={[styles.cardStanceBar, { backgroundColor: card.stanceColor }]} />
-                    {/* the dragged die rides the card's corner (no separate slot) */}
                     {assignedDie && (
                         <View style={styles.cardDie} testID="combat-staged-die">
-                            <CombatDie die={assignedDie} size={46} />
+                            <CombatDie die={assignedDie} size={compact ? 22 : 28} />
                         </View>
                     )}
-                    <Text style={styles.cardName} numberOfLines={1}>{card.name}</Text>
-                    <Text style={styles.cardTier}>{card.stance.toUpperCase()} · T{card.tier}{card.colorMatch ? ' · MATCH' : ''}</Text>
-                    <Text style={styles.cardBody} numberOfLines={4}>{card.bottomActionText}</Text>
+                    <Text style={[styles.cardName, compact && { fontSize: 10, lineHeight: 11 }]} numberOfLines={2}>{card.name}</Text>
+                    <Text style={[styles.cardTier, compact && { fontSize: 8 }]}>{card.stance[0].toUpperCase()} · T{card.tier}</Text>
+                    {armed && (
+                        <Text style={[styles.cardRead, { color: readColor }, compact && { fontSize: 8 }]}>
+                            {read === 'advantage' ? '▲ ADV' : read === 'disadvantage' ? '▼ DIS' : '— EVN'}
+                        </Text>
+                    )}
                 </Animated.View>
             </GestureDetector>
-
-            {/* preview — "if you apply this" (powered vs free) */}
-            <View style={[styles.preview, { borderColor: armed ? readColor : AXM.ash }]} testID="combat-apply-preview">
-                {armed ? (
-                    <>
-                        <Text style={[styles.previewRead, { color: readColor }]}>IF APPLIED · POWERED · {READ_LABEL[read] ?? READ_LABEL.none}</Text>
-                        <Text style={styles.previewLine} numberOfLines={3}>{card.bottomActionText}</Text>
-                        {card.effectKind !== 'none' && <Text style={styles.previewDmg}>≈ {card.bottomDamagePreview} {card.effectKind === 'dot' ? 'damage over time' : 'effect'}{read === 'advantage' ? ' (boosted)' : read === 'disadvantage' ? ' (reduced)' : ''}</Text>}
-                    </>
-                ) : (
-                    <>
-                        <Text style={[styles.previewRead, { color: AXM.bone }]}>IF APPLIED · FREE (no die)</Text>
-                        <Text style={styles.previewLine} numberOfLines={2}>{card.topActionText}</Text>
-                        <Text style={styles.previewDmg}>drag a die onto the card to POWER it for more</Text>
-                    </>
-                )}
-            </View>
-
             <Pressable
                 onPress={() => { Haptics.impactAsync(armed ? Haptics.ImpactFeedbackStyle.Heavy : Haptics.ImpactFeedbackStyle.Medium).catch(() => undefined); onApply(); }}
                 testID={`combat-apply-${card.uid}`}
                 accessibilityRole="button"
-                accessibilityLabel={armed ? `Apply powered: ${card.bottomActionText}. Cannot be undone.` : `Apply free, no die: ${card.topActionText}. Cannot be undone.`}
-                style={[styles.applyBtn, { borderColor: armed ? readColor : AXM.bone, backgroundColor: armed ? 'rgba(91,191,106,0.14)' : 'rgba(0,0,0,0.4)' }]}
+                accessibilityLabel={armed ? `Apply powered: ${card.bottomActionText}` : `Apply free: ${card.topActionText}`}
+                style={[
+                    styles.applyBtn,
+                    { borderColor: armed ? readColor : AXM.bone, backgroundColor: armed ? 'rgba(91,191,106,0.14)' : 'rgba(0,0,0,0.4)', width: cardW },
+                    compact && { paddingVertical: 3 },
+                ]}
             >
-                <Text style={[styles.applyText, { color: armed ? readColor : AXM.parchment }]}>{armed ? 'APPLY ✦ POWERED' : 'APPLY · FREE'}</Text>
+                <Text style={[styles.applyText, { color: armed ? readColor : AXM.parchment }, compact && { fontSize: 10 }]}>APPLY</Text>
             </Pressable>
-            <Text style={styles.applyWarn}>applying is final — no undo</Text>
         </View>
     );
 }
@@ -428,39 +429,42 @@ export const CombatBoard = React.memo(function CombatBoard({
 
             <CombatCombatantPane enemy={vm.enemy} player={vm.player} conviction={vm.conviction} onChip={onChip} />
 
+            {/* play area — fixed-height zone, flex:1 wrapper absorbs leftover space */}
+            <View style={{ flex: 1 }}>
+                <View ref={playAreaRef} style={[styles.playArea, { borderColor: stagedCards.length ? `${AXM.sulfur}88` : AXM.ash }]} testID="combat-play-area">
+                    <View style={styles.playHead}>
+                        <Text style={[styles.playLabel, { color: stagedCards.length ? AXM.sulfur : AXM.bone }]}>PLAY AREA{stagedCards.length > 1 ? ` · ${stagedCards.length} STAGED` : ''}</Text>
+                        <Text style={styles.deckCounts}>DECK {vm.deckCount} · DISCARD {vm.discardCount}</Text>
+                    </View>
+                    {stagedCards.length > 0 ? (
+                        <View style={[styles.playCards, stagedCards.length > 3 && { gap: 6 }]}>
+                            {stagedCards.map((card) => {
+                                const adie = assignedDieFor(card.uid);
+                                return (
+                                    <StagedCard
+                                        key={card.uid}
+                                        card={card}
+                                        assignedDie={adie}
+                                        read={readFor(adie)}
+                                        onApply={() => handleApply(card.uid)}
+                                        gesture={stagedGesture(card)}
+                                        register={(node) => { if (node) stagedRefs.current.set(card.uid, node); else stagedRefs.current.delete(card.uid); }}
+                                        compact={stagedCards.length > 3}
+                                    />
+                                );
+                            })}
+                        </View>
+                    ) : (
+                        <View style={styles.playEmpty}>
+                            <Text style={styles.playEmptyText}>drag cards up to stage them</Text>
+                        </View>
+                    )}
+                </View>
+            </View>
+
             <SignatureBar conviction={vm.conviction} signatures={vm.signatures} onCast={onSignature} />
 
             <DiceTray vm={vm} dieGesture={dieGesture} onNewTurn={onNewTurn} draggingDieId={draggingDieId} assignedDieIds={assignedDieIds} />
-
-            {/* play area — fills the modal */}
-            <View ref={playAreaRef} style={[styles.playArea, { borderColor: stagedCards.length ? `${AXM.sulfur}88` : AXM.ash }]} testID="combat-play-area">
-                <View style={styles.playHead}>
-                    <Text style={[styles.playLabel, { color: stagedCards.length ? AXM.sulfur : AXM.bone }]}>PLAY AREA{stagedCards.length > 1 ? ` · ${stagedCards.length} STAGED` : ''}</Text>
-                    <Text style={styles.deckCounts}>DECK {vm.deckCount} · DISCARD {vm.discardCount}</Text>
-                </View>
-                {stagedCards.length > 0 ? (
-                    <ScrollView contentContainerStyle={styles.stagedScroll} showsVerticalScrollIndicator={false}>
-                        {stagedCards.map((card) => {
-                            const adie = assignedDieFor(card.uid);
-                            return (
-                                <StagedCard
-                                    key={card.uid}
-                                    card={card}
-                                    assignedDie={adie}
-                                    read={readFor(adie)}
-                                    onApply={() => handleApply(card.uid)}
-                                    gesture={stagedGesture(card)}
-                                    register={(node) => { if (node) stagedRefs.current.set(card.uid, node); else stagedRefs.current.delete(card.uid); }}
-                                />
-                            );
-                        })}
-                    </ScrollView>
-                ) : (
-                    <View style={styles.playEmpty}>
-                        <Text style={styles.playEmptyText}>drag cards up to stage them,{'\n'}then drag a die onto a card to power it</Text>
-                    </View>
-                )}
-            </View>
 
             {/* dock */}
             <View style={styles.dock}>
@@ -538,37 +542,27 @@ const useStyles = makeStyles((AXM) => ({
     diePip: { fontFamily: FONTS.sans, fontSize: 10, textAlign: 'center', marginTop: 2, letterSpacing: 0.6 },
     trayEmpty: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 13, color: AXM.ash, alignSelf: 'center' },
 
-    // Play area — the staging zone. flex:1 so it FILLS the modal between the
-    // die tray and the dock; the staged column centres inside it.
-    playArea: { flex: 1, marginHorizontal: 10, marginVertical: 8, borderWidth: 1.5, borderStyle: 'dashed', backgroundColor: 'rgba(212,192,38,0.04)', paddingHorizontal: 10, paddingTop: 8, paddingBottom: 10 },
-    playHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
+    // Play area — fixed height for two card rows (flex wrapper above absorbs leftover space).
+    playArea: { height: 290, marginHorizontal: 10, marginTop: 8, borderWidth: 1.5, borderStyle: 'dashed', backgroundColor: 'rgba(212,192,38,0.04)', paddingHorizontal: 8, paddingTop: 6, paddingBottom: 6 },
+    playHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 },
     playLabel: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1.2 },
     deckCounts: { fontFamily: FONTS.mono, fontSize: 10, color: AXM.bone, letterSpacing: 1 },
     playEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-    playEmptyText: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 14, color: AXM.ash, textAlign: 'center', lineHeight: 20 },
+    playEmptyText: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 13, color: AXM.ash, textAlign: 'center' },
 
-    // The staged cards scroll vertically when several are staged; a single card
-    // centres (flexGrow + centred content). Each card column is natural height.
-    stagedScroll: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', gap: 16, paddingVertical: 4 },
-    stagedCol: { width: '100%', alignItems: 'center', justifyContent: 'center', gap: 10 },
-    stagedCard: { width: '100%', maxWidth: 320, borderWidth: 2, borderRadius: 5, backgroundColor: '#1a160f', paddingLeft: 12, paddingRight: 62, paddingVertical: 12, overflow: 'hidden' },
-    // The dragged die rides the card's top-right corner (no separate slot).
-    cardDie: { position: 'absolute', top: 8, right: 8, zIndex: 2 },
-    cardStanceBar: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 5 },
-    cardName: { fontFamily: FONTS.gothic, fontSize: 19, color: AXM.parchment, marginLeft: 6 },
-    cardTier: { fontFamily: FONTS.mono, fontSize: 10, color: AXM.bone, letterSpacing: 0.6, marginLeft: 6, marginTop: 2 },
-    cardBody: { fontFamily: FONTS.serif, fontSize: 13, color: AXM.bone, marginLeft: 6, marginTop: 8, lineHeight: 18 },
-
-
-    preview: { width: '100%', maxWidth: 320, borderWidth: 1, borderRadius: 4, paddingHorizontal: 10, paddingVertical: 8, backgroundColor: 'rgba(0,0,0,0.4)', gap: 3 },
-    previewRead: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 0.8 },
-    previewLine: { fontFamily: FONTS.serif, fontSize: 12, color: AXM.parchment, lineHeight: 16 },
-    previewDmg: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone },
+    // Compact row-wrap play area — small fixed-width cards laid out in rows.
+    playCards: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center', alignContent: 'flex-start', paddingTop: 2 },
+    stagedCol: { alignItems: 'center', gap: 3 },
+    stagedCard: { width: 88, minHeight: 95, borderWidth: 2, borderRadius: 4, backgroundColor: '#1a160f', paddingLeft: 6, paddingRight: 30, paddingTop: 7, paddingBottom: 6, overflow: 'hidden' },
+    cardDie: { position: 'absolute', top: 5, right: 4, zIndex: 2 },
+    cardStanceBar: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 4 },
+    cardName: { fontFamily: FONTS.gothic, fontSize: 12, color: AXM.parchment, marginLeft: 3, lineHeight: 13 },
+    cardTier: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone, letterSpacing: 0.4, marginLeft: 3, marginTop: 3 },
+    cardRead: { fontFamily: FONTS.sans, fontSize: 9, letterSpacing: 0.8, marginLeft: 3, marginTop: 2 },
     actHint: { fontFamily: FONTS.mono, fontSize: 11, color: '#c2a14e', textAlign: 'center', letterSpacing: 0.3, paddingHorizontal: 12 },
 
-    applyBtn: { borderWidth: 2, borderRadius: 4, paddingHorizontal: 40, paddingVertical: 11, alignItems: 'center' },
-    applyText: { fontFamily: FONTS.gothic, fontSize: 18, letterSpacing: 1.5 },
-    applyWarn: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone, letterSpacing: 0.4, marginTop: -4 },
+    applyBtn: { width: 88, borderWidth: 1.5, borderRadius: 3, paddingVertical: 4, alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.4)' },
+    applyText: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1.4 },
 
     dock: { height: 148, borderTopWidth: 1, borderTopColor: AXM.ash },
     trashBin: { position: 'absolute', left: 8, bottom: 10, zIndex: 40, width: 58, height: 58, borderRadius: 29, borderWidth: 1.5, borderStyle: 'dashed', borderColor: AXM.ash, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },

@@ -386,7 +386,7 @@ export function CombatEncounterPanel({
 }
 
 const useStyles = makeStyles((AXM) => ({
-    root: { flex: 1 },
+    root: { flex: 1, width: '100%', height: '100%' },
     backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.8)', alignItems: 'center', justifyContent: 'center', padding: 20, zIndex: 50 },
     modal: { width: '100%', maxWidth: 380, borderWidth: 2, backgroundColor: AXM.panelBg, padding: 18, alignItems: 'center' },
     modalTitle: { fontFamily: FONTS.gothic, fontSize: 18, color: AXM.parchment, textAlign: 'center' },

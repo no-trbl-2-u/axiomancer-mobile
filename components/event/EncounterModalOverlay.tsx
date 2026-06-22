@@ -37,7 +37,6 @@ import Animated, {
 
 import { CombatPanel } from '@/components/combat/CombatPanel';
 import { CombatEncounterPanel } from '@/components/combat/encounter/CombatEncounterPanel';
-import { ScreenBg } from '@/components/ScreenBg';
 import { CombatDefeatPanel } from '@/components/event/aftermath/CombatDefeatPanel';
 import { CombatFriendshipPanel } from '@/components/event/aftermath/CombatFriendshipPanel';
 import { CombatVictoryPanel } from '@/components/event/aftermath/CombatVictoryPanel';
@@ -234,15 +233,13 @@ export function EncounterModalOverlay({
             <View style={styles.overlay} testID="encounter-modal-overlay">
                 <Animated.View style={[styles.backdrop, backdropStyle]} />
                 <View style={StyleSheet.absoluteFill} testID="encounter-modal-hazard-combat">
-                    <ScreenBg>
-                        <CombatEncounterPanel
-                            key={encounterEnemy.id}
-                            enemy={encounterEnemy}
-                            bootstrapPlayer={player}
-                            persistOutcome
-                            onExit={handleHazardExit}
-                        />
-                    </ScreenBg>
+                    <CombatEncounterPanel
+                        key={encounterEnemy.id}
+                        enemy={encounterEnemy}
+                        bootstrapPlayer={player}
+                        persistOutcome
+                        onExit={handleHazardExit}
+                    />
                 </View>
             </View>
         );

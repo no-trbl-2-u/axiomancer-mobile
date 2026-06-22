@@ -170,7 +170,7 @@ const useStyles = makeStyles((AXM) => ({
     graphWrap: {
         marginHorizontal: 10,
         marginVertical: 6,
-        height: 400,
+        flex: 1,
         position: 'relative',
         overflow: 'hidden',
     },

@@ -172,7 +172,7 @@ export default function ExplorationScreen() {
     };
 
     return (
-        <ScreenBg>
+        <ScreenBg scrollable={false}>
             <StatusCard />
 
             {aesthetic === 'codex' && (() => {

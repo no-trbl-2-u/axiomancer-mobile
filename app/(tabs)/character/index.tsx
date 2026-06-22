@@ -124,22 +124,42 @@ export default function CharacterScreen() {
         accessible
         accessibilityLabel={`${vm.a11y.characterName}. ${vm.a11y.level}. ${vm.a11y.experience}.`}
       >
-        <View style={styles.portraitFrame}>
-          <PlayerPortrait width={132} height={160} />
-        </View>
-        <View style={styles.identityCol}>
-          <SectionLabel size={9} color={AXM.bone}>{vm.subtitle}</SectionLabel>
-          <Text style={styles.characterName} numberOfLines={1}>{vm.displayName}</Text>
-          <Text style={styles.identityAlignment} numberOfLines={1}>{vm.alignment.cellName}</Text>
-          <View style={styles.xpRow}>
-            <Text style={styles.xpLabel}>XP · LVL {vm.level + 1}</Text>
-            <Text style={styles.xpValue}>{vm.xp} / {vm.xpMax}</Text>
+        <View style={styles.sheetHeaderTopRow}>
+          <View style={styles.portraitFrame}>
+            <PlayerPortrait width={176} height={212} />
           </View>
-          <XpChain value={vm.xp} max={vm.xpMax} />
+          <View style={styles.identityCol}>
+            <SectionLabel size={9} color={AXM.bone}>{vm.subtitle}</SectionLabel>
+            <Text style={styles.characterName} numberOfLines={1}>{vm.displayName}</Text>
+            <Text style={styles.identityAlignment} numberOfLines={1}>{vm.alignment.cellName}</Text>
+            <View style={styles.xpRow}>
+              <Text style={styles.xpLabel}>XP · LVL {vm.level + 1}</Text>
+              <Text style={styles.xpValue}>{vm.xp} / {vm.xpMax}</Text>
+            </View>
+            <XpChain value={vm.xp} max={vm.xpMax} />
+          </View>
+          <View style={styles.levelBox}>
+            <Text style={styles.levelText}>{vm.level}</Text>
+            <Text style={styles.levelCaption}>LVL</Text>
+          </View>
         </View>
-        <View style={styles.levelBox}>
-          <Text style={styles.levelText}>{vm.level}</Text>
-          <Text style={styles.levelCaption}>LVL</Text>
+        <View style={styles.baseRow} accessible accessibilityLabel={vm.a11y.baseStats}>
+          {vm.base.map((r) => (
+            <TooltipTarget
+              key={r.stanceKey}
+              kind="stat"
+              id={r.stanceKey.toUpperCase()}
+              accessibilityLabel={`Explain ${r.label} stat`}
+              accessibilityHint="tap to read description"
+              testID={`self-base-${r.stanceKey}`}
+            >
+              <View style={styles.baseCard}>
+                <StanceGlyph kind={r.stanceKey} size={28} color={AXM.parchment} />
+                <Text style={styles.baseStatLabel}>{r.label}</Text>
+                <Text style={styles.baseStatValue}>{r.value}</Text>
+              </View>
+            </TooltipTarget>
+          ))}
         </View>
       </View>
 
@@ -204,34 +224,6 @@ export default function CharacterScreen() {
         />
       )}
 
-      {/* Base Stats */}
-      <View style={styles.section} accessible accessibilityLabel={vm.a11y.baseStats}>
-        <SectionLabel size={10}>✠ ABILITIES</SectionLabel>
-        <View style={styles.baseRow}>
-          {vm.base.map((r) => (
-            // Phase 74 follow-up walkthrough Tick 1: wrap the base
-            // stat card in a TooltipTarget so a tap fires the
-            // existing kind:'stat' content (Phase 74 Tick A
-            // authored HEART/BODY/MIND). id is the uppercased
-            // stance key, matching STAT_CONTENT's keys.
-            <TooltipTarget
-              key={r.stanceKey}
-              kind="stat"
-              id={r.stanceKey.toUpperCase()}
-              accessibilityLabel={`Explain ${r.label} stat`}
-              accessibilityHint="tap to read description"
-              testID={`self-base-${r.stanceKey}`}
-            >
-              <View style={styles.baseCard}>
-                <StanceGlyph kind={r.stanceKey} size={28} color={AXM.parchment} />
-                <Text style={styles.baseStatLabel}>{r.label}</Text>
-                <Text style={styles.baseStatValue}>{r.value}</Text>
-              </View>
-            </TooltipTarget>
-          ))}
-        </View>
-      </View>
-
       {/* Hazard deck — persistent library / remove-card surface
           (Phase 126). Always available outside an encounter. */}
       <Pressable
@@ -251,7 +243,7 @@ export default function CharacterScreen() {
 
       {/* Pools — VITAE + MORALE (Problem 6 design) */}
       <View style={styles.section}>
-        <SectionLabel size={10}>✠ POOLS</SectionLabel>
+        <SectionLabel size={13}>✠ POOLS</SectionLabel>
         <View style={styles.poolsCard}>
           {[
             { label: 'VITAE', value: player?.health ?? 0, max: player?.maxHealth ?? 1, color: AXM.blood, gloss: 'flesh holds' },
@@ -318,7 +310,7 @@ export default function CharacterScreen() {
       <View style={styles.section}>
        <View style={styles.twoCol}>
         <View style={styles.colHalf} accessible accessibilityLabel={vm.a11y.derivedStats}>
-        <SectionLabel size={10}>✠ DERIVED</SectionLabel>
+        <SectionLabel size={13}>✠ DERIVED</SectionLabel>
         <View style={styles.derivedTable}>
           <View style={[styles.derivedRow, styles.derivedHeader]}>
             <Text style={[styles.derivedCell, styles.derivedRowLabel]} />
@@ -347,7 +339,7 @@ export default function CharacterScreen() {
         </View>
         </View>
         <View style={styles.colHalf} accessible accessibilityLabel={vm.a11y.saves}>
-        <SectionLabel size={10}>✠ SAVES &amp; TESTS</SectionLabel>
+        <SectionLabel size={13}>✠ SAVES &amp; TESTS</SectionLabel>
         <View style={styles.savesGrid}>
           {vm.saves.map((s) => (
             // Phase 74 follow-up walkthrough Tick 4: wrap each
@@ -374,36 +366,9 @@ export default function CharacterScreen() {
        </View>
       </View>
 
-      {/* Philosophical Alignment (Phase 52, engine 0.10.0 Philosophy module) */}
-      <View style={styles.section} accessible accessibilityLabel={vm.a11y.alignment}>
-        <SectionLabel size={10}>✠ ALIGNMENT</SectionLabel>
-        <Text style={styles.alignmentCellName}>{vm.alignment.cellName}</Text>
-        <View style={styles.alignmentAxesRow}>
-          {vm.alignment.axes.map((axis) => (
-            // Phase 74 follow-up walkthrough Tick 2: wrap each
-            // axis chip in a TooltipTarget pointing at the new
-            // kind:'alignment' content (epistemology / outlook /
-            // scope). Tap explains the axis dimension.
-            <TooltipTarget
-              key={axis.axisKey}
-              kind="alignment"
-              id={axis.axisKey}
-              accessibilityLabel={`Explain ${axis.label.toLowerCase()} axis`}
-              accessibilityHint="tap to read description"
-              testID={`self-alignment-${axis.axisKey}`}
-            >
-              <View style={styles.alignmentAxisChip}>
-                <Text style={styles.alignmentAxisLabel}>{axis.label}</Text>
-                <Text style={styles.alignmentAxisBucket}>{axis.bucket}</Text>
-              </View>
-            </TooltipTarget>
-          ))}
-        </View>
-      </View>
-
       {/* Phase 92 — Morale */}
-      <View style={styles.section}>
-        <SectionLabel size={10}>✠ MORALE</SectionLabel>
+      <View style={[styles.section, { marginTop: -18 }]}>
+        <SectionLabel size={13}>✠ MORALE</SectionLabel>
         <View style={styles.moraleRow}>
           <Text style={styles.moraleValue}>{Number.isFinite(vm.morale) ? vm.morale : 0}</Text>
           <Text style={styles.moraleLabel}>willpower</Text>
@@ -412,7 +377,7 @@ export default function CharacterScreen() {
 
       {/* Afflictions & Blessings */}
       <View style={styles.section} accessible accessibilityLabel={vm.a11y.effects}>
-        <SectionLabel size={10}>✠ AFFLICTIONS &amp; BLESSINGS</SectionLabel>
+        <SectionLabel size={13}>✠ AFFLICTIONS &amp; BLESSINGS</SectionLabel>
         <View style={styles.effectsList}>
           {vm.effects.length === 0 ? (
             <Text style={styles.emptyLabel}>{vm.emptyEffectsMessage}</Text>
@@ -465,7 +430,7 @@ export default function CharacterScreen() {
       {/* Skills */}
       {vm.skills.length > 0 && (
         <View style={styles.section}>
-          <SectionLabel size={10}>✠ FALLACIES &amp; PARADOXES</SectionLabel>
+          <SectionLabel size={13}>✠ FALLACIES &amp; PARADOXES</SectionLabel>
           <View style={styles.skillsGrid}>
             {vm.skills.map((s) => (
               // Phase 74 follow-up walkthrough Tick 2: wrap each
@@ -515,13 +480,14 @@ const useStyles = makeStyles((AXM) => ({
   // hero-element sizes so the whole SELF tab fits a 390×844 screen
   // without scrolling. Kept legible — only spacing/scale shrank.
   // D&D character-sheet header: portrait bust + identity + level box.
-  sheetHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingHorizontal: 12, paddingTop: 12 },
-  portraitFrame: { width: 136, height: 164, borderWidth: 1, borderColor: AXM.ash, backgroundColor: AXM.deepBg, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  sheetHeader: { flexDirection: 'column', paddingHorizontal: 12, paddingTop: 4, paddingBottom: 0 },
+  sheetHeaderTopRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
+  portraitFrame: { width: 180, height: 216, borderWidth: 1, borderColor: AXM.ash, backgroundColor: AXM.deepBg, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   identityCol: { flex: 1, paddingTop: 2 },
   identityAlignment: { fontFamily: FONTS.serifItalic, fontSize: 11, color: AXM.bone, marginTop: 1, marginBottom: 4 },
   characterName: { fontFamily: FONTS.gothic, fontSize: 22, lineHeight: 24, color: AXM.parchment, marginTop: 1 },
-  levelBox: { width: 46, height: 52, borderWidth: 2, borderColor: AXM.parchment, backgroundColor: AXM.deepBg, alignItems: 'center', justifyContent: 'center' },
-  levelText: { fontFamily: FONTS.gothic, fontSize: 26, lineHeight: 28, color: AXM.sulfur },
+  levelBox: { width: 60, height: 66, borderWidth: 2, borderColor: AXM.parchment, backgroundColor: AXM.deepBg, alignItems: 'center', justifyContent: 'center' },
+  levelText: { fontFamily: FONTS.gothic, fontSize: 34, lineHeight: 36, color: AXM.sulfur },
   levelCaption: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 2, color: AXM.bone },
   twoCol: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
   colHalf: { flex: 1 },
@@ -530,14 +496,14 @@ const useStyles = makeStyles((AXM) => ({
   xpRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 },
   xpLabel: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone, letterSpacing: 1 },
   xpValue: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.sulfur },
-  section: { paddingTop: 6, paddingHorizontal: 12, paddingBottom: 0 },
-  deckLink: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 12, marginTop: 12, paddingVertical: 12, paddingHorizontal: 14, borderWidth: 1, borderColor: AXM.ash, backgroundColor: AXM.panelBg },
+  section: { paddingTop: 4, paddingHorizontal: 12, paddingBottom: 0 },
+  deckLink: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 12, marginTop: 6, paddingVertical: 10, paddingHorizontal: 14, borderWidth: 1, borderColor: AXM.ash, backgroundColor: AXM.panelBg },
   deckLinkText: { flex: 1 },
   deckLinkLabel: { fontFamily: FONTS.gothic, fontSize: 15, letterSpacing: 1, color: AXM.parchment },
   deckLinkSub: { fontFamily: FONTS.mono, fontSize: 10, letterSpacing: 0.5, color: AXM.bone, marginTop: 2 },
   deckLinkChevron: { fontFamily: FONTS.gothic, fontSize: 22, color: AXM.bone },
-  baseRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4, justifyContent: 'space-evenly' },
-  baseCard: { width: 100, paddingVertical: 11, paddingHorizontal: 6, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, alignItems: 'center' },
+  baseRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: -52, justifyContent: 'flex-end' },
+  baseCard: { width: 118, paddingVertical: 10, paddingHorizontal: 6, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, alignItems: 'center' },
   baseStatLabel: { fontFamily: FONTS.sans, fontSize: 13, letterSpacing: 2, color: AXM.bone, marginTop: 3 },
   baseStatValue: { fontFamily: FONTS.gothic, fontSize: 32, color: AXM.sulfur, lineHeight: 34, marginTop: 2 },
   derivedTable: { marginTop: 3, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, padding: 5, paddingHorizontal: 8 },
@@ -589,7 +555,7 @@ const useStyles = makeStyles((AXM) => ({
   skillCard: { width: '48%', borderWidth: 2, padding: 4, paddingHorizontal: 6, backgroundColor: AXM.bg, flexDirection: 'row', alignItems: 'center', gap: 6 },
   skillName: { fontFamily: FONTS.gothic, fontSize: 12, color: AXM.parchment, lineHeight: 14 },
   skillCat: { fontFamily: FONTS.mono, fontSize: 8, letterSpacing: 1 },
-  poolsCard: { marginTop: 3, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, paddingVertical: 7, paddingHorizontal: 12, gap: 5 },
+  poolsCard: { marginTop: 3, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, paddingVertical: 5, paddingHorizontal: 12, gap: 4 },
   poolRow: {},
   poolHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 2 },
   poolLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },

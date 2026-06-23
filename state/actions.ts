@@ -49,7 +49,6 @@ import {
     getMapDefinition,
     getNodePrimaryEventKind,
     getPresetById,
-    STARTING_SKILL_IDS,
     getSkillById,
     healCharacter,
     incrementFriendship as combatIncrementFriendship,
@@ -746,15 +745,36 @@ function applyCombatStartBridges(store: AppStore): void {
  * `engineLearnSkill` enforces requirements, so anything the level-1 player
  * doesn't qualify for is skipped.
  */
-// Spec 26b §D — the player starts with a SINGLE skill; every subsequent skill is
-// unlocked later (the plan: ethical-dilemma events, not yet implemented — they
-// will call the engine's `unlockSkillViaDilemma`). We seed the first apprentice
-// tier-1 skill (guaranteed learnable at level 1); the deckbuilder card rewards
-// grow the deck in the meantime.
-// Owner: defense belongs in the starter — source from the engine's exported
-// STARTING_SKILL_IDS (slippery-slope + brace-for-impact), the single source of
-// truth, so every new player can GUARD from their first fight.
-const STARTER_SKILL_IDS: readonly string[] = STARTING_SKILL_IDS;
+// Spec 26b §D — the new player's starting combat repertoire.
+//
+// In this engine a combat *card* is the draw-able projection of a *skill*: the
+// draw pile is built from `player.knownSkills` (`buildCombatDeck`), and a card's
+// POWERED action runs `executeSkill`, which THROWS unless the player knows that
+// skill. So the hand can only be as varied — and as effective — as the set of
+// skills the level-1 player actually KNOWS.
+//
+// We can NOT source these from the engine's exported `STARTING_SKILL_IDS`: that
+// set lists `slippery-slope`, which has a level-14 learning requirement, so a
+// level-1 player silently fails to learn it (engine `meetsLearningRequirement`).
+// That collapsed the starter deck to a single card (`brace-for-impact`), the
+// engine padded the 6-card hand with duplicates, and every card was a 0-power
+// guard — i.e. the player drew the same ~3 do-nothing cards every turn.
+//
+// Instead we seed an explicit set of five tier-1 skills that are ALL learnable
+// at level 1, span every stance (body / mind / heart), and mix attack, defense
+// and control so cards have a real, varied effect from the first fight. Five
+// skills + the synthetic `card-retreat` = a six-card deck against a six-card
+// hand, so the player draws all five action cards (retreat is hidden in the UI)
+// with no duplicates; the deckbuilder card rewards grow the deck from there.
+// `engineLearnSkill` re-checks each requirement, so anything unlearnable is
+// skipped safely.
+const STARTER_SKILL_IDS: readonly string[] = [
+    'ad-hominem-strike', // body · attack (strips a random enemy buff)
+    'brace-for-impact',  // body · defense (guard)
+    'false-dilemma',     // mind · attack + control (confusion)
+    'suspend-judgment',  // mind · defense (guard)
+    'ship-of-theseus',   // heart · attack (direct HP damage)
+];
 
 function currentAlignment(store: AppStore): PhilosophicalAlignment {
     const state = store.getState() as unknown as GameState;

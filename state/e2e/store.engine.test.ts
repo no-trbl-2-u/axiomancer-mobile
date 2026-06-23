@@ -10,7 +10,11 @@
 
 import { afterEach, beforeEach, describe, it, expect, jest } from '@jest/globals';
 import {
+    buildCombatDeck,
     createEnemy,
+    getSkillById,
+    initializeCombatEncounter,
+    handCards,
     selectCombat,
     selectIsInCombat,
     selectPlayer,
@@ -89,6 +93,45 @@ describe('createAppActions: dispatch', () => {
         expect(selectIsInCombat(store.getState())).toBe(true);
         expect(combat!.phase).toBe('choosing_stance');
         expect(combat!.enemy.name).toBe('Test Lich');
+    });
+
+    // Regression: a level-1 player's starter skills must ALL be learnable at
+    // level 1 and yield a varied, powerable card hand. The old starter sourced
+    // the engine's STARTING_SKILL_IDS, which included a level-14 skill the
+    // player silently failed to learn — collapsing the deck to a single 0-power
+    // guard card, so the hand drew the same ~3 do-nothing duplicates each turn.
+    it('seeds a varied, effective starter deck for a fresh level-1 player', () => {
+        const store = createAppStore({ adapter });
+        const actions = createAppActions(store);
+
+        // startCombat runs ensureStarterSkills for a skill-less new player.
+        actions.startCombat(makeEnemy());
+        const player = selectPlayer(store.getState());
+
+        // Every seeded starter skill must actually have been learned (none
+        // silently dropped by an unmet learning requirement).
+        expect(player.knownSkills.length).toBeGreaterThanOrEqual(5);
+        for (const id of player.knownSkills) {
+            expect(getSkillById(id)).toBeTruthy();
+        }
+
+        // The card deck is built from those known skills; after the synthetic
+        // retreat card, the player must draw 5 distinct action cards (the hand
+        // size) with no duplicates.
+        const deck = buildCombatDeck(player);
+        const encounter = initializeCombatEncounter(player, makeEnemy(), undefined, 7);
+        const visible = handCards(encounter).filter(
+            ({ card }) => card.id !== 'card-retreat' && card.verbClass !== 'retreat',
+        );
+        expect(deck.length).toBeGreaterThanOrEqual(6);
+        expect(visible.length).toBeGreaterThanOrEqual(5);
+        const distinct = new Set(visible.map(({ card }) => card.id));
+        expect(distinct.size).toBe(visible.length);
+        // At least one card must deal damage and at least one must defend —
+        // i.e. the hand is actually playable, not all 0-power guards.
+        const verbs = visible.map(({ card }) => card.verbClass);
+        expect(verbs.some((v) => v.startsWith('direct'))).toBe(true);
+        expect(verbs).toContain('defend');
     });
 
     it('endCombat clears the combat slice and preserves player progress', () => {

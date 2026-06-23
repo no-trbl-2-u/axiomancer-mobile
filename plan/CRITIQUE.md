@@ -43,6 +43,28 @@
      (bearings, README, docs/README, specs) carry stale version/status
      lines that never followed. -->
 
+### [MED] Gathering tutorial allows early descent and leaves stale TAKE copy (Kid playthrough 2026-06-23)
+- category: bug
+- impact: 5 (first-time Gathering instruction can tell the player to act on Verge plots after the board has already moved to Wet Hollow)
+- ease: ? (likely tutorial-step gating/copy in `components/gathering/tutorial-steps.ts` / gathering screen controls)
+- observed: daily Kid gathering ladder 2026-06-23 on exported web main `59efe7e`.
+  - Repro: `/dev` → `DEBUG · GATHERING` → `GO GLEANING` → start tutorial → choose `THE TENDER HAND` → at `FIRST GLEANING 2/7 TAKE SOMETHING`, click `DESCEND` before taking a plot.
+  - Observed: board moves to `THE WET HOLLOW`, but coach remains on `TAKE SOMETHING` and still says `WAX SHELF is free; the moss costs 1`, referring to the prior Verge spread.
+  - Harness status: `npm run e2e:gathering` still passes; current harness does not catch this out-of-order tutorial path.
+- next: disable/soft-block `DESCEND` until the tutorial reaches the descent step, or make the tutorial copy derive from the current spread/depth; add a regression assertion.
+- source: Kid daily playthrough (2026-06-23)
+
+### [LOW] Gathering disabled offerings explain cost but not why unavailable (Kid playthrough 2026-06-23)
+- category: UX
+- impact: 3 (players can infer affordability, but the restraint economy is strongest when offerings explain exact missing cost/material)
+- ease: ?
+- observed: daily Kid gathering ladder 2026-06-23.
+  - Repro: enter Gathering via `/dev` → `DEBUG · GATHERING`, inspect disabled offering chips such as `THE COIN TOLL`, `THE SWEET SMOKE`, or `THE BLOOD TITHE` when shillings/materials are insufficient.
+  - Observed: disabled offerings are visibly dimmed and functionally no-op when clicked, but aria/copy primarily states the demand (`pay 6 shillings`, `pay a RESIN piece`) rather than why it is currently unavailable.
+  - Positive control: `WARDEN'S BELL` and `HORN SICKLE` functioned in bug-hunt/regression checks; this is clarity debt, not a hard blocker.
+- next: add disabled reason text/aria (`need N shillings`, `no RESIN piece in satchel`, etc.) and keep no-op behavior covered.
+- source: Kid daily playthrough (2026-06-23)
+
 ### [MED] Hazard reward preview serializes keyword objects as `[object Object]` (Kid playthrough 2026-06-22)
 - category: bug
 - impact: 6 (hazard reward choice comprehension is degraded at exactly the moment deck-growth meaning should be clearest)

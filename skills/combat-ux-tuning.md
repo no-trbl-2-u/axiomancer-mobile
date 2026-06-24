@@ -51,6 +51,12 @@ Focus values narrow the probe but do not loosen the evidence requirements.
   Keep the change only if friction improves and gates remain green.
 - **Automated witness is law:** screenshots/videos are supporting artifacts only.
   They are not the success metric.
+- **No questions.** When invoked manually, by `/march`, or by GitHub Actions,
+  decide from evidence and proceed. Do not pause for clarification. Only stop
+  for destructive, costly, secret-bearing, public-release, production, or
+  major-product-direction actions.
+- **PR delivery.** Successful non-dry-run changes must be committed on a fresh
+  branch and opened as a GitHub pull request. Do not push directly to `main`.
 - **Fail together:** if the harness cannot measure the friction yet, build or
   file the smallest measurement harness gap rather than pretending the UX is
   tuned.
@@ -230,11 +236,13 @@ Classify `verify:visual` precisely:
 - browser policy noise such as blocked `navigator.vibrate` is not a product
   failure unless paired with visible breakage.
 
-### Step 7 — Report and commit
+### Step 7 — Report, commit, push branch, open PR
 
-If a change is kept:
+If a change is kept, create a fresh branch and open a pull request:
 
 ```bash
+BRANCH="combat-ux-tuning/<focus-slug>-$(date -u +%Y%m%d%H%M%S)"
+git checkout -b "$BRANCH"
 git add <files>
 git commit -m "$(cat <<'EOF'
 combat-ux-tuning: <focus> friction improvement
@@ -254,11 +262,35 @@ Verification:
 - <commands>
 EOF
 )"
-git push origin main
+git push -u origin "$BRANCH"
+cat > /tmp/combat-ux-tuning-pr.md <<'EOF'
+## Summary
+- <one-line change>
+
+## Baseline
+- command: `<command>`
+- metric: <before>
+
+## After
+- command: `<same command>`
+- metric: <after>
+
+## Verification
+- <commands>
+
+## Notes
+- VITAE/STANCE copy checked.
+EOF
+gh pr create --base main --head "$BRANCH" --title "combat-ux-tuning: <focus>" --body-file /tmp/combat-ux-tuning-pr.md
 ```
 
-If no change is kept but a durable finding remains, file it to `plan/AUDIT.md` or
-`plan/CRITIQUE.md` with the exact witness and metric. If `dry-run`, print only.
+Never ask whether to open the PR. Opening the PR is part of the skill contract.
+Do not push directly to `main`. If no code change is kept but a durable finding
+is filed, open a PR for that evidence/documentation change too unless running
+`dry-run`.
+
+If no change is kept and no durable finding is warranted, leave no branch and
+print the measured result. If `dry-run`, print only.
 
 ## 7. Report format
 

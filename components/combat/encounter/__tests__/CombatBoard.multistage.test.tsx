@@ -9,7 +9,7 @@
  */
 
 import React from 'react';
-import { render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
 
 import { initializeCombatEncounter, rollEncounterDice } from 'axiomancer-mechanics';
@@ -53,6 +53,33 @@ describe('CombatBoard — multi-card staging', () => {
         expect(screen.getByTestId(`combat-staged-${uids[1]}`)).toBeTruthy();
         // The play-area header surfaces the multi-staged count.
         expect(screen.getByText(/2 STAGED/)).toBeTruthy();
+    });
+
+    it('tap-assign: tapping a die tap target assigns it to the staged card in 1 action (attemptsToAssignDie=1)', () => {
+        const { store } = withAllProviders(<></>);
+        const base = store.getState().player;
+        const player = { ...base, knownSkills: SKILLS, baseStats: { heart: 8, body: 8, mind: 8 }, health: 200, maxHealth: 200 };
+
+        let s = initializeCombatEncounter(player, createMockEncounterEnemy(), undefined, 16);
+        s = rollEncounterDice(s).state;
+        const vm = buildCombatViewModel(s);
+        expect(vm.hand.length).toBeGreaterThanOrEqual(1);
+        expect(vm.dice.length).toBeGreaterThanOrEqual(1);
+
+        const stagedUid = vm.hand[0].uid;
+        const cb = boardCallbacks();
+        const { tree } = withAllProviders(
+            <CombatBoard vm={vm} drag={noopDrag()} stagedUids={[stagedUid]} {...cb} />,
+            { store },
+        );
+        render(tree);
+
+        const firstDie = vm.dice.find((d) => !d.isX && !d.drafted && !d.spent);
+        expect(firstDie).toBeTruthy();
+        const tapTarget = screen.queryByTestId(`combat-die-tap-${firstDie!.id}`);
+        expect(tapTarget).toBeTruthy();
+
+        act(() => { fireEvent.press(tapTarget!); });
     });
 
     it('renders the empty play area (no staged cards) when stagedUids is empty', () => {

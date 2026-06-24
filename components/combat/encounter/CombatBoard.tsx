@@ -106,20 +106,22 @@ function SignatureBar({ conviction, signatures, onCast }: { conviction: number; 
 // ── Die tray (drag a die onto your staged card) ──────────────────────────────
 
 function DiceTray({
-    vm, dieGesture, onNewTurn, draggingDieId, assignedDieIds,
+    vm, dieGesture, onNewTurn, draggingDieId, assignedDieIds, stagedUids, onTapAssignDie,
 }: {
     vm: CombatViewModel;
     dieGesture: (die: CombatDieVM) => ReturnType<typeof Gesture.Exclusive>;
     onNewTurn: () => void;
     draggingDieId: string | null;
     assignedDieIds: Set<string>;
+    stagedUids: string[];
+    onTapAssignDie: (dieId: string, targetUid: string) => void;
 }) {
     const AXM = usePalette();
     const styles = useStyles();
     return (
         <View style={styles.tray} testID="combat-dice-tray">
             <View style={styles.trayHead}>
-                <Text style={styles.trayLabel}>⬡ DRAG A DIE ONTO YOUR CARD</Text>
+                <Text style={styles.trayLabel}>⬡ DRAG OR TAP A DIE TO ASSIGN IT</Text>
                 <Pressable onPress={onNewTurn} testID="combat-new-turn" accessibilityRole="button" accessibilityLabel="End turn — discard your dice and roll two fresh ones" style={styles.newTurn}>
                     <Text style={styles.newTurnText}>↻ END TURN</Text>
                 </Pressable>
@@ -128,6 +130,8 @@ function DiceTray({
                 {vm.dice.map((die) => {
                     const draggable = !vm.hasDraft && !die.isX && !die.drafted && !die.spent;
                     const isAssigned = assignedDieIds.has(die.id);
+                    const firstUnassignedStaged = stagedUids.find((u) => !assignedDieIds.has(u));
+                    const tapTarget = firstUnassignedStaged ?? stagedUids[0] ?? null;
                     const node = (
                         <View style={isAssigned ? styles.dieAssigned : undefined}>
                             <CombatDie die={die} size={56} dimmed={(vm.hasDraft && !die.drafted) || draggingDieId === die.id} />
@@ -142,8 +146,21 @@ function DiceTray({
                     );
                     return draggable ? (
                         <GestureDetector key={die.id} gesture={dieGesture(die)}>
-                            <Animated.View accessible accessibilityRole="button" accessibilityLabel={`${die.color} die. Drag it onto your staged card to power it.`}>
-                                {node}
+                            <Animated.View
+                                accessible
+                                accessibilityRole="button"
+                                accessibilityLabel={`${die.color} die. Drag or tap to assign it to your staged card.`}
+                                testID={`combat-die-tap-${die.id}`}
+                            >
+                                <Pressable
+                                    onPress={tapTarget ? () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid).catch(() => undefined); onTapAssignDie(die.id, tapTarget); } : undefined}
+                                    disabled={!tapTarget}
+                                    accessibilityRole="button"
+                                    accessibilityLabel={tapTarget ? `Tap to assign ${die.color} die to staged card` : `${die.color} die — stage a card first`}
+                                    accessibilityHint={tapTarget ? 'Assigns this die to the first unassigned staged card' : undefined}
+                                >
+                                    {node}
+                                </Pressable>
                             </Animated.View>
                         </GestureDetector>
                     ) : (
@@ -464,7 +481,7 @@ export const CombatBoard = React.memo(function CombatBoard({
 
             <SignatureBar conviction={vm.conviction} signatures={vm.signatures} onCast={onSignature} />
 
-            <DiceTray vm={vm} dieGesture={dieGesture} onNewTurn={onNewTurn} draggingDieId={draggingDieId} assignedDieIds={assignedDieIds} />
+            <DiceTray vm={vm} dieGesture={dieGesture} onNewTurn={onNewTurn} draggingDieId={draggingDieId} assignedDieIds={assignedDieIds} stagedUids={stagedUids} onTapAssignDie={(dieId, targetUid) => { setPendingDieByUid((prev) => ({ ...prev, [targetUid]: dieId })); }} />
 
             {/* dock */}
             <View style={styles.dock}>

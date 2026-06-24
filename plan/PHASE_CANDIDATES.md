@@ -1367,6 +1367,18 @@ warranted a full phase promotion:
 
 ## Promoted
 
+### Phase 158 — Combat card compact glyphs + keyword chips
+- promoted: 2026-06-24 by T direct steering.
+- source: T requested mobile phases to make combat cards clearer when small, including direct-damage glyphs such as a sword, card keywords, and better legibility on the new Hazard-style combat board.
+- brief: `plan/phases/phase_158_combat_card_compact_glyph_keywords.md`
+- build-plan row: `plan/steps/01_build_plan.md` (queued after Phase 156 and before Phase 155)
+
+### Phase 159 — Combat card detail keyword glossary
+- promoted: 2026-06-24 by T direct steering.
+- source: T requested that selected combat-card details show keywords and explanations of those keywords, not only raw action copy.
+- brief: `plan/phases/phase_159_combat_card_detail_keyword_glossary.md`
+- build-plan row: `plan/steps/01_build_plan.md` (queued after Phase 158 and before Phase 155)
+
 ### Phase 156 — Combat resources mobile migration
 - promoted: 2026-06-20 by T direct steering from `NEEDS_ATTENTION.md` §1.
 - source: T directed setting a phase for mobile attention item #1. The mobile-only `combatMana` slice is deprecated since Phase 105 but still load-bearing; this phase migrates HUD/dev-control/presenter/test usage to engine `CombatState.combatResources` and removes the local slice as doctrine.

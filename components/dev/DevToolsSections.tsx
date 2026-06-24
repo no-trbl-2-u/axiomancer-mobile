@@ -36,6 +36,7 @@ const DebugEncounterButtons = lazy(() => import('@/components/DebugEncounterButt
 const DebugAlignmentShift = lazy(() => import('@/components/DebugAlignmentShift').then(m => ({ default: m.DebugAlignmentShift })));
 const DebugCurrencyControl = lazy(() => import('@/components/DebugCurrencyControl').then(m => ({ default: m.DebugCurrencyControl })));
 const DebugDialogueJump = lazy(() => import('@/components/DebugDialogueJump').then(m => ({ default: m.DebugDialogueJump })));
+const DebugCombatDeck = lazy(() => import('@/components/DebugCombatDeck').then(m => ({ default: m.DebugCombatDeck })));
 const DebugEffectApply = lazy(() => import('@/components/DebugEffectApply').then(m => ({ default: m.DebugEffectApply })));
 const DebugQuestState = lazy(() => import('@/components/DebugQuestState').then(m => ({ default: m.DebugQuestState })));
 const DebugTriggerEncounter = lazy(() => import('@/components/DebugTriggerEncounter').then(m => ({ default: m.DebugTriggerEncounter })));
@@ -119,6 +120,7 @@ export function DevToolsSections() {
                 </DevSection>
 
                 <DevSection label="COMBAT SETUP" testID="dev-section-combat">
+                    <DebugCombatDeck />
                     <DebugEffectApply />
                 </DevSection>
 

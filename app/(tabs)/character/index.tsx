@@ -320,7 +320,7 @@ export default function CharacterScreen() {
           </View>
           {vm.derived.map((row) => (
             <View key={row.label} style={[styles.derivedRow, styles.derivedDataRow]}>
-              <Text style={[styles.derivedCell, styles.derivedRowLabel]}>{row.label}</Text>
+              <Text style={[styles.derivedCell, styles.derivedRowLabel]}>{row.label.slice(0, 4)}</Text>
               <TooltipTarget kind="item-stat" id={row.attackId} style={styles.derivedCell} accessibilityLabel={`Explain ${row.label} attack`} accessibilityHint="tap to read description" testID={`self-derived-${row.attackId}`}>
                 <Text style={styles.derivedData}>{row.attack}</Text>
               </TooltipTarget>
@@ -333,7 +333,7 @@ export default function CharacterScreen() {
             </View>
           ))}
           <View style={styles.luckRow}>
-            <Text style={styles.luckLabel}>LUCK · AVG OF THREE</Text>
+            <Text style={styles.luckLabel}>LUCK · AVG</Text>
             <Text style={styles.luckValue}>{vm.luck}</Text>
           </View>
         </View>
@@ -503,7 +503,7 @@ const useStyles = makeStyles((AXM) => ({
   deckLinkSub: { fontFamily: FONTS.mono, fontSize: 10, letterSpacing: 0.5, color: AXM.bone, marginTop: 2 },
   deckLinkChevron: { fontFamily: FONTS.gothic, fontSize: 22, color: AXM.bone },
   baseRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: -52, justifyContent: 'flex-end' },
-  baseCard: { width: 118, paddingVertical: 10, paddingHorizontal: 6, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, alignItems: 'center' },
+  baseCard: { flex: 1, paddingVertical: 10, paddingHorizontal: 6, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, alignItems: 'center' },
   baseStatLabel: { fontFamily: FONTS.sans, fontSize: 13, letterSpacing: 2, color: AXM.bone, marginTop: 3 },
   baseStatValue: { fontFamily: FONTS.gothic, fontSize: 32, color: AXM.sulfur, lineHeight: 34, marginTop: 2 },
   derivedTable: { marginTop: 3, backgroundColor: AXM.panelBg, borderWidth: 1, borderColor: AXM.ash, padding: 5, paddingHorizontal: 8 },
@@ -514,12 +514,12 @@ const useStyles = makeStyles((AXM) => ({
   // Larger type across the sheet for low-vision readability (visual-audit
   // 2026-06) — the freed space (no WORN & WIELDED, two columns) is spent
   // on legibility, not density.
-  derivedRowLabel: { fontFamily: FONTS.sans, fontSize: 13, color: AXM.parchment, letterSpacing: 1, flex: 1.3 },
-  derivedHeaderCell: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone, textAlign: 'center', letterSpacing: 1 },
-  derivedData: { fontFamily: FONTS.gothic, fontSize: 18, color: AXM.parchment, textAlign: 'center' },
+  derivedRowLabel: { fontFamily: FONTS.sans, fontSize: 11, color: AXM.parchment, letterSpacing: 0.5, flex: 1.8 },
+  derivedHeaderCell: { fontFamily: FONTS.mono, fontSize: 10, color: AXM.bone, textAlign: 'center', letterSpacing: 1 },
+  derivedData: { fontFamily: FONTS.gothic, fontSize: 15, color: AXM.parchment, textAlign: 'center' },
   luckRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 5, paddingTop: 4 },
-  luckLabel: { fontFamily: FONTS.sans, fontSize: 12, color: AXM.bone, letterSpacing: 1 },
-  luckValue: { fontFamily: FONTS.gothic, fontSize: 20, color: AXM.sulfur },
+  luckLabel: { fontFamily: FONTS.sans, fontSize: 11, color: AXM.bone, letterSpacing: 1 },
+  luckValue: { fontFamily: FONTS.gothic, fontSize: 17, color: AXM.sulfur },
   // SAVES & TESTS — a clean single-column list (was a cramped 3-up grid of
   // tiny chips): label left, value right, hairline-separated rows.
   savesGrid: { marginTop: 4, borderWidth: 1, borderColor: AXM.ash, backgroundColor: AXM.panelBg, paddingHorizontal: 8 },

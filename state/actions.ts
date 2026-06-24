@@ -93,6 +93,12 @@ import {
 } from '@/state/selectors/combat-skills';
 import { equipmentFromTemplate as templateToEquipment } from 'axiomancer-mechanics';
 import { resolveWareItem } from '@/state/presenters/village.engine';
+import {
+    applyCombatDeckPresetAction,
+    randomizeCombatDeckAction,
+    type CombatDeckPresetId,
+    type CombatDeckPresetResult,
+} from './combat/store-actions';
 import { EMPTY_EVENT_SLICE, type AppStore } from './store';
 import {
     abandonHazardAction,
@@ -534,6 +540,17 @@ export interface AppActions {
     randomizeHazardDeck: () => string[];
     /** Dev tool — apply one deterministic Kid strategy deck preset. */
     applyHazardDeckPreset: (presetId: HazardDeckPresetId) => HazardDeckPresetResult;
+    /**
+     * Dev tool — swap the player's combat deck for a preset: replaces
+     * `knownSkills` with the preset's card ids and clears earned reward
+     * cards, so the next encounter deals exactly that deck.
+     */
+    applyCombatDeckPreset: (presetId: CombatDeckPresetId) => CombatDeckPresetResult;
+    /**
+     * Dev tool — rebuild the combat deck as a random pull from every
+     * defined combat card (starter + reward pool). Returns the granted ids.
+     */
+    randomizeCombatDeck: () => string[];
 
     // -----------------------------------------------------------------
     // Gathering minigame ("The Gleaning" — see state/gathering/). The
@@ -1391,6 +1408,8 @@ export function createAppActions(store: AppStore): AppActions {
         abandonHazard: () => abandonHazardAction(store),
         randomizeHazardDeck: () => randomizeHazardDeckAction(store),
         applyHazardDeckPreset: (presetId) => applyHazardDeckPresetAction(store, presetId),
+        applyCombatDeckPreset: (presetId) => applyCombatDeckPresetAction(store, presetId),
+        randomizeCombatDeck: () => randomizeCombatDeckAction(store),
         beginGathering: (options) => beginGatheringAction(store, options),
         selectGatheringApproach: (approach) => selectGatheringApproachAction(store, approach),
         harvestGatheringPlot: (uid) => harvestGatheringPlotAction(store, uid),

@@ -80,14 +80,11 @@ export function CombatCombatantPane({
                     </View>
                 </View>
                 <HpBar pct={enemy.hpPct} value={enemy.hp} max={enemy.maxHp} color={AXM.blood} />
-                {/* hidden-stance read */}
+                {/* hidden-stance read — badge only, no text telegraph */}
                 <View style={styles.stanceRow}>
                     <Text style={[styles.stanceBadge, { color: enemy.revealedStance ? enemy.stanceColor : AXM.bone, borderColor: enemy.revealedStance ? enemy.stanceColor : AXM.ash }]}>
                         🜲 {enemy.stanceLabel}
                     </Text>
-                    {!enemy.revealedStance && enemy.stanceHint ? (
-                        <Text style={styles.tell} numberOfLines={3}>🔍 {enemy.stanceHint}</Text>
-                    ) : null}
                 </View>
                 <EffectChips effects={enemy.effects} onChip={onChip} emptyLabel="▸ land DoT / Control to erode them" />
             </View>
@@ -127,9 +124,8 @@ const useStyles = makeStyles((AXM) => ({
     hpTrack: { height: 9, backgroundColor: 'rgba(0,0,0,0.55)', borderWidth: 1, borderColor: AXM.ash, overflow: 'hidden' },
     hpFill: { height: '100%' },
     hpText: { fontFamily: FONTS.mono, fontSize: 11, marginTop: 2 },
-    stanceRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 5, marginTop: 4, minHeight: 40 },
+    stanceRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 5, marginTop: 4, minHeight: 24 },
     stanceBadge: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 1, borderWidth: 1, paddingHorizontal: 5, paddingVertical: 1, overflow: 'hidden' },
-    tell: { flex: 1, fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 11, color: AXM.parchment, lineHeight: 13 },
     youLabel: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1, color: AXM.ash },
     chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4, minHeight: 24 },
     noEffects: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 10, color: AXM.ash, marginTop: 6 },

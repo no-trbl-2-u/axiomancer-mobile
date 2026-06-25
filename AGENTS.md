@@ -23,6 +23,8 @@ See [`README.md`](./README.md) for architecture docs and [`plan/bearings.md`](./
 - If `verify:visual` is red only on `root` / `character` with clean export and zero console errors, inspect the screenshot diffs and decide approve-vs-regression; do not report it as a build/runtime failure.
 - Minigame e2e harnesses must follow current dev-control routing. Current route truth is SELF → `self-dev-tools-link` → `/dev`; failures waiting for retired `dev-menu-header` are harness drift, not proof that Hazard/Gathering product routes are absent.
 - If typecheck errors cite newly shipped engine fields, verify installed `axiomancer-mechanics` package truth with a fresh install before changing mobile tests.
+- Hazard-style combat evidence must use current HP-only board selectors and player-flow truth. An e2e harness waiting for removed `combat-pressure-tracks` is stale harness debt, not proof the screen is broken. Browser evidence that reaches the in-place board proves entry only; do not claim full combat resolution until card/die controls complete an outcome.
+- The HP-only combat model does not by itself repeal canon copy. Keep `VITAE` for player-facing combat copy unless T explicitly approves a narrower `Health`/`HP` exception for enemy or accessibility labels.
 
 ## Key development commands
 

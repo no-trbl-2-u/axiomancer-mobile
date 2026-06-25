@@ -14,7 +14,11 @@ One PNG per route, named after the route's stable `name` in
 | `character.png` | `/character` | `app/(tabs)/character/index.tsx` |
 | `inventory.png` | `/inventory` | `app/(tabs)/inventory/index.tsx` |
 | `exploration.png` | `/exploration` | `app/(tabs)/exploration/index.tsx` |
-| `combat.png` | `/combat` | `app/(tabs)/combat.tsx` |
+| `combat-encounter.png` | `/combat-encounter` | `app/combat-encounter/index.tsx` |
+
+`/combat` is intentionally not a visual-smoke baseline route while it renders
+the unseeded placeholder `THE FIELD STIRS.`. The canonical combat screenshot is
+`combat-encounter.png`, which exercises the seeded Hazard-style combat surface.
 
 Add a row when you add a route. PNGs are 390×844 (iPhone-13-ish
 portrait, `deviceScaleFactor: 1`).

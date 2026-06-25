@@ -13,7 +13,6 @@ describe('smoke-screens helpers', () => {
         { name: 'character', path: '/character' },
         { name: 'inventory', path: '/inventory' },
         { name: 'exploration', path: '/exploration' },
-        { name: 'combat', path: '/combat' },
         { name: 'combat-encounter', path: '/combat-encounter' },
         { name: 'memoir', path: '/memoir' },
     ]
@@ -88,7 +87,7 @@ describe('smoke-screens helpers', () => {
     }
 
     describe('ROUTES', () => {
-        test('covers all six primary surfaces (root + 5 tabs)', () => {
+        test('covers primary routed surfaces with seeded combat encounter evidence', () => {
             const names = ROUTES.map((r) => r.name)
             expect(names).toEqual(
                 expect.arrayContaining([
@@ -96,7 +95,7 @@ describe('smoke-screens helpers', () => {
                     'character',
                     'inventory',
                     'exploration',
-                    'combat',
+                    'combat-encounter',
                     'memoir',
                 ]),
             )

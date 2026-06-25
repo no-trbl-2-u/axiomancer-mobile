@@ -30,16 +30,16 @@ const PANELS: PrimerPanel[] = [
         eyebrow: '⚔ A NEW KIND OF FIGHT',
         title: 'STATUS DOES THE WORK',
         body:
-            'The enemy has ONE bar: HEALTH. Wear it to nothing — but basic blows are weak. ' +
+            'The enemy has ONE bar: VITAE. Wear it to nothing — but basic blows are weak. ' +
             'Status effects do the real damage, and a clever read turns the fight.',
     },
     {
         eyebrow: 'BLEED & BIND',
         title: 'POISON, THEN STEAL THEIR TURN',
         body:
-            'A DoT (poison, bleed) drains their HEALTH every turn — your main damage. ' +
+            'A DoT (poison, bleed) drains their VITAE every turn — your main damage. ' +
             'Control (stun, fear) STEALS their attack: a hindered enemy skips its telegraphed ' +
-            'turn. Lead with status; strikes alone won’t close it. Befriend a low-HP foe to spare it.',
+            'turn. Lead with status; strikes alone won’t close it. Befriend a low-VITAE foe to spare it.',
     },
     {
         eyebrow: 'DICE & CARDS',

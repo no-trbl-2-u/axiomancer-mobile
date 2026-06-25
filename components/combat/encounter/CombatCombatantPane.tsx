@@ -24,7 +24,7 @@ function HpBar({ pct, value, max, color }: { pct: number; value: number; max: nu
     const AXM = usePalette();
     const styles = useStyles();
     return (
-        <View style={styles.hpWrap} accessible accessibilityRole="progressbar" accessibilityLabel={`Health ${value} of ${max}`} accessibilityValue={{ min: 0, max, now: value }}>
+        <View style={styles.hpWrap} accessible accessibilityRole="progressbar" accessibilityLabel={`VITAE ${value} of ${max}`} accessibilityValue={{ min: 0, max, now: value }}>
             <View style={styles.hpTrack}>
                 <View style={[styles.hpFill, { width: `${Math.round(pct * 100)}%`, backgroundColor: color }]} />
             </View>

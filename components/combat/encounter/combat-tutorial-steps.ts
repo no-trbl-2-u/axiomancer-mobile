@@ -76,10 +76,10 @@ export const COMBAT_TUTORIAL_STEPS: CombatTutorialStep[] = [
         id: 'tracks',
         title: 'STATUS DOES THE WORK',
         body:
-            'Wear their HEALTH down to nothing — it is the only bar. Status effects do the heavy ' +
+            'Wear their VITAE down to nothing — it is the only bar. Status effects do the heavy ' +
             'lifting: a DoT bleeds them every turn, and control STEALS their attack (it skips its ' +
             'telegraphed turn). Basic strikes alone are weak — lead with status.',
-        lookFor: 'the enemy HEALTH bar',
+        lookFor: 'the enemy VITAE bar',
         done: (s) => pressured(s) || advanced(s),
     },
     {

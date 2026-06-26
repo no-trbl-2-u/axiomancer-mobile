@@ -347,9 +347,9 @@ export const CombatBoard = React.memo(function CombatBoard({
             if (rectContains(playRect, x, y)) {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
                 onStage(payload.uid);
-            } else {
-                onInspect(payload.card);
             }
+            // Drag that misses the play area is a no-op — the pan gesture already
+            // fired, so the Exclusive tap handler is suppressed. Inspect is tap-only.
             return;
         }
         if (payload.from === 'play') {
@@ -505,11 +505,12 @@ function HandCard({ card }: { card: CombatCardVM }) {
     const styles = useStyles();
     const EFFECT_GLYPH: Record<string, string> = { dot: '🔥', control: '⛓', none: '◆' };
     const gold = card.rarity === 'gold';
+    const effectLabel = card.effectName ?? card.stance[0].toUpperCase();
     return (
         <View style={[styles.handCard, { borderColor: gold ? '#d9b44a' : card.stanceColor }]}>
             <View style={[styles.cardStanceBar, { backgroundColor: card.stanceColor }]} />
             <Text style={styles.handName} numberOfLines={2}>{gold ? '★ ' : ''}{card.name}</Text>
-            <Text style={[styles.handTrack, { color: card.stanceColor }]}>{EFFECT_GLYPH[card.effectKind]} {card.stance[0].toUpperCase()}</Text>
+            <Text style={[styles.handTrack, { color: card.stanceColor }]} numberOfLines={1}>{EFFECT_GLYPH[card.effectKind]} {effectLabel}</Text>
             {card.effectKind !== 'none' && <Text style={styles.handPrev}>+{card.bottomDamagePreview}</Text>}
         </View>
     );
@@ -543,7 +544,7 @@ const useStyles = makeStyles((AXM) => ({
     trayEmpty: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 13, color: AXM.ash, alignSelf: 'center' },
 
     // Play area — fixed height for two card rows (flex wrapper above absorbs leftover space).
-    playArea: { height: 265, marginHorizontal: 10, marginTop: 8, borderWidth: 1.5, borderStyle: 'dashed', backgroundColor: 'rgba(212,192,38,0.04)', paddingHorizontal: 8, paddingTop: 6, paddingBottom: 6 },
+    playArea: { height: 305, marginHorizontal: 10, marginTop: 8, borderWidth: 1.5, borderStyle: 'dashed', backgroundColor: 'rgba(212,192,38,0.04)', paddingHorizontal: 8, paddingTop: 6, paddingBottom: 6 },
     playHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 },
     playLabel: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1.2 },
     deckCounts: { fontFamily: FONTS.mono, fontSize: 10, color: AXM.bone, letterSpacing: 1 },
@@ -570,7 +571,7 @@ const useStyles = makeStyles((AXM) => ({
     fan: { ...StyleSheet.absoluteFillObject, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 10 },
     handCard: { width: 86, height: 112, borderWidth: 1.5, borderRadius: 4, backgroundColor: '#16130c', paddingHorizontal: 7, paddingVertical: 7, overflow: 'hidden', justifyContent: 'flex-start' },
     handName: { fontFamily: FONTS.gothic, fontSize: 13, color: AXM.parchment, marginLeft: 4, lineHeight: 15 },
-    handTrack: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 0.5, marginLeft: 4, marginTop: 5 },
+    handTrack: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 0.3, marginLeft: 4, marginTop: 5 },
     handPrev: { fontFamily: FONTS.mono, fontSize: 12, color: AXM.parchment, marginLeft: 4, marginTop: 'auto' },
 
     playWrap: { position: 'absolute', right: 10, bottom: 12, zIndex: 40, shadowColor: AXM.sulfur, shadowRadius: 14, shadowOffset: { width: 0, height: 0 }, elevation: 8 },

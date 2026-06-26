@@ -82,6 +82,8 @@ export interface CombatCardVM {
     verbClass: string; effectKind: 'dot' | 'control' | 'none'; rarity?: 'gold'; tier: 1 | 2 | 3;
     category: 'fallacy' | 'paradox' | null;
     topActionText: string; bottomActionText: string; bottomDamagePreview: number;
+    /** Human-readable name of the primary status effect this card applies (e.g. "Slippery Slope"). */
+    effectName: string | null;
     /** Read tier if powered with the current drafted die (null until a die is drafted). */
     read: CombatReadResult | null; colorMatch: boolean;
 }
@@ -204,6 +206,7 @@ function handVM(state: CombatEncounterState): CombatCardVM[] {
             verbClass: card.verbClass, effectKind: card.effectKind, rarity: card.rarity, tier: card.tier, category: card.category,
             topActionText: card.topActionText, bottomActionText: card.bottomActionText,
             bottomDamagePreview: card.bottomDamagePreview,
+            effectName: card.primaryEffectId ? (lookupEffect(card.primaryEffectId)?.name ?? null) : null,
             read: preview?.read ?? null, colorMatch: preview?.colorMatch ?? false,
         };
     });

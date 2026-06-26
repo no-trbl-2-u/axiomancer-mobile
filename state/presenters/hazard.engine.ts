@@ -237,10 +237,30 @@ const DIE_WORD: Record<HazardDieKind, string> = {
     hex: 'Blocked hex',
 };
 
+function riderLabel(def: HazardCardDef, powered: boolean): string | null {
+    const major = powered || def.majorEffect === true;
+    const segs: string[] = [];
+    if (def.jeopardyForce) segs.push(`+${def.jeopardyForce} FOR if behind`);
+    if (def.jeopardyEscape) segs.push(`+${def.jeopardyEscape} ESC if behind`);
+    if ((def.firstPlayForce || def.firstPlayEscape) && !def.jeopardyForce && !def.jeopardyEscape) {
+        if (def.firstPlayForce) segs.push(`+${def.firstPlayForce} FOR if first`);
+        if (def.firstPlayEscape) segs.push(`+${def.firstPlayEscape} ESC if first`);
+    } else if (def.firstPlayForce || def.firstPlayEscape) {
+        if (def.firstPlayForce) segs.push(`+${def.firstPlayForce} FOR if first`);
+        if (def.firstPlayEscape) segs.push(`+${def.firstPlayEscape} ESC if first`);
+    }
+    if (def.buyback) segs.push(major ? 'RETURNS to hand' : 'BUYBACK (needs die)');
+    if (def.delveForce) segs.push(`+${def.delveForce} FOR/discard`);
+    if (def.delveEscape) segs.push(`+${def.delveEscape} ESC/discard`);
+    return segs.length > 0 ? segs.join(' · ') : null;
+}
+
 function effectLabel(def: HazardCardDef, powered: boolean): string | null {
-    if (!def.effect) return null;
     // Gold cards are major-tier even on the free row (the die buys numbers).
     const major = powered || def.majorEffect === true;
+    if (!def.effect) {
+        return riderLabel(def, powered);
+    }
     if (def.effect === 'draw') return `DRAW ${major ? def.drawPowered ?? def.drawBase ?? 1 : def.drawBase ?? 1}`;
     if (def.effect === 'convert') return major ? 'CONVERT ✕→◆ ALL' : 'CONVERT 1 ✕→◆';
     if (def.effect === 'recast') return major ? 'RE-CAST +DIE' : 'RE-CAST';
@@ -265,13 +285,15 @@ function effectLabel(def: HazardCardDef, powered: boolean): string | null {
             return `ECHO ${segs.join('/')} /card${mendSeg}`;
         }
         const pl = major ? def.burstPowered ?? def.burstBase : def.burstBase;
-        const segs: string[] = [];
-        if (pl?.force) segs.push(`+${pl.force} FOR`);
-        if (pl?.escape) segs.push(`+${pl.escape} ESC`);
+        const burstSegs: string[] = [];
+        if (pl?.force) burstSegs.push(`+${pl.force} FOR`);
+        if (pl?.escape) burstSegs.push(`+${pl.escape} ESC`);
+        if (def.delveForce) burstSegs.push(`+${def.delveForce} FOR/discard`);
+        if (def.delveEscape) burstSegs.push(`+${def.delveEscape} ESC/discard`);
         const cost = def.vitaeCost ? `−${def.vitaeCost}♥ ` : '';
         const mend = major ? (def.burstMendPowered ?? def.burstMendBase ?? 0) : (def.burstMendBase ?? 0);
         const mendSeg = mend > 0 ? ` ·+${mend}♥` : '';
-        return `${cost}BURST ${segs.join(' ')}${mendSeg}`.trim();
+        return `${cost}BURST ${burstSegs.join(' ')}${mendSeg}`.trim();
     }
     if (def.effect === 'goldvow') {
         return def.goldVow ? `VOW +${def.goldVow.force}/+${def.goldVow.escape} on gold` : null;
@@ -304,8 +326,13 @@ function effectLabel(def: HazardCardDef, powered: boolean): string | null {
         const scourTag = def.foretellScour ? 'SCOUR' : 'FORETELL';
         const base = `${scourTag} ${drawN}`;
         const afterDraw = major ? (def.foretellDrawCount ?? 0) : 0;
-        return afterDraw > 0 ? `${base} · DRAW ${afterDraw}` : base;
+        const foretellLabel = afterDraw > 0 ? `${base} · DRAW ${afterDraw}` : base;
+        const rider = riderLabel(def, powered);
+        return rider ? `${foretellLabel} · ${rider}` : foretellLabel;
     }
+    // For any effect card that also has new mechanic riders, append them.
+    const rider = riderLabel(def, powered);
+    if (rider) return rider;
     return null;
 }
 

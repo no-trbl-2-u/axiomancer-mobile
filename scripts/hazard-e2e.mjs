@@ -409,7 +409,9 @@ async function playHazard(page, baseUrl, route, seed) {
     await shot(page, `${route}-rewards`)
     const offers = page.locator('[data-testid^="hazard-offer-"]')
     if ((await offers.count()) > 0) {
+        // Clicking an offer card opens the full-screen preview overlay; confirm from there.
         await offers.first().click()
+        await page.getByTestId('hazard-preview-confirm').click()
     }
     await page.getByTestId('hazard-rewards-confirm').click()
     await page.getByTestId('hazard-rewards').waitFor({ state: 'hidden', timeout: 5000 })

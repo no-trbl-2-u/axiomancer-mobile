@@ -119,6 +119,7 @@ import {
     selectHazardRouteAction,
     stageHazardCardAction,
     unstageHazardCardAction,
+    confirmHazardForetellAction,
     type BeginHazardOptions,
     type ClaimHazardRewardsResult,
     type HazardDeckPresetId,
@@ -518,6 +519,8 @@ export interface AppActions {
     applyHazardCard: (uid: string) => void;
     /** CHOOSE card (TWIN PATHS): pick which meter its surge value feeds. */
     chooseHazardCardKey: (uid: string, key: HazardProgressKey) => void;
+    /** Confirm FORETELL/SCOUR: pass kept card ids in draw-order; omitted ids go to discard. */
+    confirmHazardForetell: (orderedIds: string[]) => void;
     /** Commit the staged set; the engine stamps O or X. */
     resolveHazardRound: () => void;
     /** Dismiss the resolve flash; advances the round or computes the outcome. */
@@ -1400,6 +1403,7 @@ export function createAppActions(store: AppStore): AppActions {
         discardHazardCard: (uid) => discardHazardCardAction(store, uid),
         powerHazardCard: (uid, dieId) => powerHazardCardAction(store, uid, dieId),
         applyHazardCard: (uid) => applyHazardCardAction(store, uid),
+        confirmHazardForetell: (orderedIds) => confirmHazardForetellAction(store, orderedIds),
         chooseHazardCardKey: (uid, key) => chooseHazardCardKeyAction(store, uid, key),
         resolveHazardRound: () => resolveHazardRoundAction(store),
         continueHazardAfterResolve: () => continueHazardAfterResolveAction(store),

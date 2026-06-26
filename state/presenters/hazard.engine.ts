@@ -84,6 +84,15 @@ export interface HazardCardVM {
     vowBonus: { force: number; escape: number } | null;
 }
 
+export interface HazardForetellVM {
+    /** Cards revealed by the foretell, in current draw-order. */
+    revealed: HazardCardVM[];
+    /** SCOUR mode: player may permanently discard any subset. */
+    scour: boolean;
+    /** How many cards to draw after the foretell resolves. */
+    drawCount: number;
+}
+
 export interface HazardMeterVM {
     key: 'force' | 'escape' | 'passage';
     label: string;
@@ -211,6 +220,7 @@ export interface HazardViewModel {
     resolveFlash: HazardResolveFlashVM | null;
     outcome: HazardOutcomeVM | null;
     rewards: HazardRewardsVM | null;
+    foretellPending: HazardForetellVM | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -244,17 +254,32 @@ function effectLabel(def: HazardCardDef, powered: boolean): string | null {
     }
     if (def.effect === 'burst') {
         if (def.burstPerUnspentDieForce) return `RALLY +${def.burstPerUnspentDieForce} FOR / die`;
+        if (def.echoPerCardForce || def.echoPerCardEscape) {
+            const f = def.echoPerCardForce ?? 0;
+            const e = def.echoPerCardEscape ?? 0;
+            const segs: string[] = [];
+            if (f) segs.push(`+${f} FOR`);
+            if (e) segs.push(`+${e} ESC`);
+            const mend = major ? (def.burstMendPowered ?? def.burstMendBase ?? 0) : (def.burstMendBase ?? 0);
+            const mendSeg = mend > 0 ? ` ·+${mend}♥` : '';
+            return `ECHO ${segs.join('/')} /card${mendSeg}`;
+        }
         const pl = major ? def.burstPowered ?? def.burstBase : def.burstBase;
         const segs: string[] = [];
         if (pl?.force) segs.push(`+${pl.force} FOR`);
         if (pl?.escape) segs.push(`+${pl.escape} ESC`);
         const cost = def.vitaeCost ? `−${def.vitaeCost}♥ ` : '';
-        return `${cost}BURST ${segs.join(' ')}`.trim();
+        const mend = major ? (def.burstMendPowered ?? def.burstMendBase ?? 0) : (def.burstMendBase ?? 0);
+        const mendSeg = mend > 0 ? ` ·+${mend}♥` : '';
+        return `${cost}BURST ${segs.join(' ')}${mendSeg}`.trim();
     }
     if (def.effect === 'goldvow') {
         return def.goldVow ? `VOW +${def.goldVow.force}/+${def.goldVow.escape} on gold` : null;
     }
-    if (def.effect === 'purge') return major ? 'PURGE ALL CRACKS' : 'PURGE 1 CRACK';
+    if (def.effect === 'purge') {
+        const draw = def.purgeDrawCount ? ` +DRAW ${def.purgeDrawCount}` : '';
+        return major ? `PURGE ALL CRACKS${draw}` : `PURGE 1 CRACK${draw}`;
+    }
     if (def.effect === 'transmute') {
         return major ? `TRANSMUTE ALL → ${DIE_LABEL[def.kind]}` : `TRANSMUTE 1 → ${DIE_LABEL[def.kind]}`;
     }
@@ -273,6 +298,13 @@ function effectLabel(def: HazardCardDef, powered: boolean): string | null {
     if (def.effect === 'anchor') {
         const n = (major ? def.anchorPowered ?? def.anchorBase : def.anchorBase) ?? 0;
         return n > 0 ? `ANCHOR carry ≥ ${n}` : null;
+    }
+    if (def.effect === 'foretell') {
+        const drawN = def.drawBase ?? 2;
+        const scourTag = def.foretellScour ? 'SCOUR' : 'FORETELL';
+        const base = `${scourTag} ${drawN}`;
+        const afterDraw = major ? (def.foretellDrawCount ?? 0) : 0;
+        return afterDraw > 0 ? `${base} · DRAW ${afterDraw}` : base;
     }
     return null;
 }
@@ -480,6 +512,7 @@ const EMPTY_VM: HazardViewModel = Object.freeze({
     resolveFlash: null,
     outcome: null,
     rewards: null,
+    foretellPending: null,
 }) as HazardViewModel;
 
 // ---------------------------------------------------------------------------
@@ -683,6 +716,15 @@ export function selectHazardViewModel(state: Pick<AppStoreState, 'hazard'>): Haz
         resolveFlash,
         outcome: outcomeVM,
         rewards: session.phase === 'rewards' || session.phase === 'done' ? rewardsVM : null,
+        foretellPending: session.foretellPending
+            ? {
+                  revealed: session.foretellPending.revealed.map((cardId) =>
+                      offerCardVM(getHazardCardDef(cardId)),
+                  ),
+                  scour: session.foretellPending.scour,
+                  drawCount: session.foretellPending.drawCount,
+              }
+            : null,
     };
 }
 

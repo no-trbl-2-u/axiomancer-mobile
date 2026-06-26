@@ -128,6 +128,7 @@ const mockHazardViewModel: HazardViewModel = {
     subquests: [],
     goldVowNote: null,
     rewards: null,
+    foretellPending: null,
 };
 
 const mockDragController: DragController = {

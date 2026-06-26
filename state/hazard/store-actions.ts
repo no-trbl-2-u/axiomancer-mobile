@@ -27,6 +27,7 @@ import {
     selectHazardRoute as engineSelectRoute,
     stageHazardCard as engineStageCard,
     unstageHazardCard as engineUnstageCard,
+    confirmHazardForetell as engineConfirmForetell,
 } from 'axiomancer-mechanics';
 import {
     HAZARD_CACHE_SHILLINGS,
@@ -387,6 +388,12 @@ export function acknowledgeHazardOutcomeAction(store: AppStore): void {
     const s = store.getState().hazard?.session;
     if (!s) return;
     setSession(store, engineAcknowledgeOutcome(s));
+}
+
+export function confirmHazardForetellAction(store: AppStore, orderedIds: string[]): void {
+    const s = store.getState().hazard?.session;
+    if (!s) return;
+    setSession(store, engineConfirmForetell(s, orderedIds, currentBag(store)));
 }
 
 export interface ClaimHazardRewardsResult {

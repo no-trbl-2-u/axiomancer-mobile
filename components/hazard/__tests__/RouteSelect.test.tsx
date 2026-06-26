@@ -89,6 +89,7 @@ const mockViewModel: HazardViewModel = {
     subquests: [],
     goldVowNote: null,
     rewards: null,
+    foretellPending: null,
 };
 
 describe('RouteSelect', () => {

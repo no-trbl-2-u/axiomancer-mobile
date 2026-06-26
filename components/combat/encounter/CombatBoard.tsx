@@ -501,17 +501,37 @@ export const CombatBoard = React.memo(function CombatBoard({
 
 // ── A small fanned hand card ─────────────────────────────────────────────────
 
+const EFFECT_GLYPH: Record<string, string> = { dot: '🔥', control: '⛓', none: '◆' };
+
+function cardFaceShortLines(card: CombatCardVM): { freeShort: string; powerShort: string } {
+    const eff = card.effectName;
+    const prev = card.bottomDamagePreview;
+    switch (card.verbClass) {
+        case 'direct-dot':     return { freeShort: `weak ${eff ?? 'DoT'}`, powerShort: `${EFFECT_GLYPH.dot} ${eff ?? 'DoT'} +${prev}` };
+        case 'direct-control':
+        case 'stat-debuff':    return { freeShort: `weak ${eff ?? 'control'}`, powerShort: `${EFFECT_GLYPH.control} ${eff ?? 'ctrl'} +${prev}` };
+        case 'direct-damage':  return { freeShort: 'small hit', powerShort: `${EFFECT_GLYPH.none} +${prev} HP` };
+        case 'buff-self':      return { freeShort: 'weak self-buff', powerShort: `${EFFECT_GLYPH.none} full self-buff` };
+        case 'defend':         return { freeShort: 'small GUARD', powerShort: `${EFFECT_GLYPH.none} GUARD shield` };
+        case 'befriend':       return { freeShort: 'mercy (weak)', powerShort: `${EFFECT_GLYPH.none} befriend` };
+        default:               return { freeShort: 'free action', powerShort: `${EFFECT_GLYPH[card.effectKind] ?? '◆'} powered` };
+    }
+}
+
 function HandCard({ card }: { card: CombatCardVM }) {
     const styles = useStyles();
-    const EFFECT_GLYPH: Record<string, string> = { dot: '🔥', control: '⛓', none: '◆' };
     const gold = card.rarity === 'gold';
-    const effectLabel = card.effectName ?? card.stance[0].toUpperCase();
+    const { freeShort, powerShort } = cardFaceShortLines(card);
     return (
         <View style={[styles.handCard, { borderColor: gold ? '#d9b44a' : card.stanceColor }]}>
             <View style={[styles.cardStanceBar, { backgroundColor: card.stanceColor }]} />
             <Text style={styles.handName} numberOfLines={2}>{gold ? '★ ' : ''}{card.name}</Text>
-            <Text style={[styles.handTrack, { color: card.stanceColor }]} numberOfLines={1}>{EFFECT_GLYPH[card.effectKind]} {effectLabel}</Text>
-            {card.effectKind !== 'none' && <Text style={styles.handPrev}>+{card.bottomDamagePreview}</Text>}
+            <View style={styles.handDivider} />
+            <Text style={styles.handFreeLabel}>FREE</Text>
+            <Text style={styles.handFreeDesc} numberOfLines={1}>{freeShort}</Text>
+            <View style={styles.handDivider} />
+            <Text style={[styles.handPowerLabel, { color: card.stanceColor }]}>POWER</Text>
+            <Text style={styles.handPowerDesc} numberOfLines={1}>{powerShort}</Text>
         </View>
     );
 }
@@ -569,10 +589,13 @@ const useStyles = makeStyles((AXM) => ({
     trashBin: { position: 'absolute', left: 8, bottom: 10, zIndex: 40, width: 58, height: 58, borderRadius: 29, borderWidth: 1.5, borderStyle: 'dashed', borderColor: AXM.ash, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },
     trashLabel: { fontFamily: FONTS.mono, fontSize: 9, letterSpacing: 1, color: AXM.bone, marginTop: 1 },
     fan: { ...StyleSheet.absoluteFillObject, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 10 },
-    handCard: { width: 86, height: 112, borderWidth: 1.5, borderRadius: 4, backgroundColor: '#16130c', paddingHorizontal: 7, paddingVertical: 7, overflow: 'hidden', justifyContent: 'flex-start' },
-    handName: { fontFamily: FONTS.gothic, fontSize: 13, color: AXM.parchment, marginLeft: 4, lineHeight: 15 },
-    handTrack: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 0.3, marginLeft: 4, marginTop: 5 },
-    handPrev: { fontFamily: FONTS.mono, fontSize: 12, color: AXM.parchment, marginLeft: 4, marginTop: 'auto' },
+    handCard: { width: 86, height: 112, borderWidth: 1.5, borderRadius: 4, backgroundColor: '#16130c', paddingHorizontal: 6, paddingVertical: 6, overflow: 'hidden', justifyContent: 'flex-start' },
+    handName: { fontFamily: FONTS.gothic, fontSize: 12, color: AXM.parchment, marginLeft: 3, lineHeight: 14 },
+    handDivider: { height: 1, backgroundColor: '#2a2620', marginVertical: 3, marginHorizontal: 2 },
+    handFreeLabel: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 0.8, color: AXM.bone, marginLeft: 3, opacity: 0.7 },
+    handFreeDesc: { fontFamily: FONTS.serif, fontSize: 9, color: AXM.bone, marginLeft: 3, lineHeight: 11 },
+    handPowerLabel: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 0.8, marginLeft: 3, marginTop: 1 },
+    handPowerDesc: { fontFamily: FONTS.serif, fontSize: 9, color: AXM.parchment, marginLeft: 3, lineHeight: 11 },
 
     playWrap: { position: 'absolute', right: 10, bottom: 12, zIndex: 40, shadowColor: AXM.sulfur, shadowRadius: 14, shadowOffset: { width: 0, height: 0 }, elevation: 8 },
     playBtn: { width: 72, height: 72, borderRadius: 36, borderWidth: 2.5, alignItems: 'center', justifyContent: 'center' },

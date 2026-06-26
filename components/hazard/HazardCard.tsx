@@ -300,6 +300,16 @@ export const HazardCard = React.memo(function HazardCard({
                             </Text>
                         </View>
                     )}
+                    {card.keywords.filter(kw => kw.id !== 'salvage').length > 0 && (
+                        <View style={{ marginTop: 8, gap: 4 }}>
+                            {card.keywords.filter(kw => kw.id !== 'salvage').map(kw => (
+                                <View key={kw.id} style={{ flexDirection: 'row', gap: 6, alignItems: 'flex-start' }}>
+                                    <Text style={{ fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1.2, color: CARD_INK2, minWidth: 64, paddingTop: 1 }}>{kw.name}</Text>
+                                    <Text style={{ fontFamily: FONTS.serif, fontSize: 11, color: CARD_INK, flex: 1, lineHeight: 14 }}>{kw.desc}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    )}
                     <Text style={{ fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 13, color: CARD_INK2, marginTop: 8, lineHeight: 17, textAlign: 'center' }}>
                         “{card.flavor}”
                     </Text>

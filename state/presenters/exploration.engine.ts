@@ -275,7 +275,7 @@ function buildActions(options: readonly ExplorationOption[]): ExplorationAction[
 }
 
 const DRAWER_COPY = {
-    emptyMessage: 'the paths close.',
+    emptyMessage: 'the paths close as you go deeper — tap a glowing node to travel.',
     title: '✠ WHITHER, PILGRIM?',
     leaguesLabel: 'LEAGUES',
 } as const;

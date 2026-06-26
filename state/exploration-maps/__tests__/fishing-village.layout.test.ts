@@ -27,7 +27,7 @@ describe('fishingVillageLayout: structure validation', () => {
         expect(fishingVillageLayout.mapId).toBe('fishing-village');
         expect(fishingVillageLayout.continent).toBe('CONTINENT · COASTAL');
         expect(fishingVillageLayout.region).toBe('Fishing Village');
-        expect(fishingVillageLayout.regionProgress).toBe('Map i of ii · 24 paths remain');
+        expect(fishingVillageLayout.regionProgress).toBe('Map i of ii · 24 paths open');
     });
 
     it('all nodes have required presentation properties on-canvas', () => {

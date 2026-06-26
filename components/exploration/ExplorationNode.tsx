@@ -1,5 +1,6 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { FONTS } from '@/theme/axm';
 import { makeStyles, usePalette } from '@/theme/runtime';
 import { NodeMark } from '@/components/NodeMark';
@@ -50,6 +51,24 @@ export function ExplorationNode({ node: n, onNodePress, isSelected }: Exploratio
     const tooltip = useTooltip();
     const ref = useRef<View | null>(null);
     const color = EVENT_COLOR[n.type] ?? EVENT_COLOR.encounter;
+
+    // Pulse glow for available (tappable) nodes so new players see they're interactive.
+    const pulseOpacity = useSharedValue(1);
+    useEffect(() => {
+        if (n.kind === 'available') {
+            pulseOpacity.value = withRepeat(
+                withSequence(
+                    withTiming(0.45, { duration: 900 }),
+                    withTiming(1, { duration: 900 }),
+                ),
+                -1,
+                false,
+            );
+        } else {
+            pulseOpacity.value = 1;
+        }
+    }, [n.kind, pulseOpacity]);
+    const pulseStyle = useAnimatedStyle(() => ({ opacity: pulseOpacity.value }));
     const iconKey = ACTION_ICON_BY_TYPE[n.type] ?? 'sword';
     const left = (n.x / 360) * 100;
     const top = (n.y / 400) * 100;
@@ -80,14 +99,14 @@ export function ExplorationNode({ node: n, onNodePress, isSelected }: Exploratio
                 dim && styles.nodeWrapLocked,
             ]}
         >
-            <View style={[styles.glyphWrap, isSelected && { borderColor: AXM.sulfur, borderWidth: 2 }]}>
+            <Animated.View style={[styles.glyphWrap, isSelected && { borderColor: AXM.sulfur, borderWidth: 2 }, n.kind === 'available' && pulseStyle]}>
                 <NodeMark kind={n.kind} size={NODE_SIZE} />
                 {showKindIcon && (
                     <View style={styles.kindIcon} pointerEvents="none">
                         <ActionIcon kind={iconKey} size={18} color={color} />
                     </View>
                 )}
-            </View>
+            </Animated.View>
             {isSelected && (
                 <View style={[styles.nodeLabel, { backgroundColor: AXM.nodeBg }]}>
                     <Text style={[styles.nodeLabelText, { color: AXM.parchment }]}>

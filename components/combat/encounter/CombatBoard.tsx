@@ -142,7 +142,7 @@ function DiceTray({
                     );
                     return draggable ? (
                         <GestureDetector key={die.id} gesture={dieGesture(die)}>
-                            <Animated.View accessible accessibilityRole="button" accessibilityLabel={`${die.color} die. Drag it onto your staged card to power it.`}>
+                            <Animated.View>
                                 {node}
                             </Animated.View>
                         </GestureDetector>
@@ -398,7 +398,7 @@ export const CombatBoard = React.memo(function CombatBoard({
     const fan = vm.hand.filter((c) => !stagedSet.has(c.uid));
     const n = fan.length;
     const mid = (n - 1) / 2;
-    const overlap = n > 6 ? 48 : n > 4 ? 34 : 18;
+    const overlap = n > 6 ? 36 : n > 4 ? 26 : 14;
     const draggingDieId = drag.active?.type === 'die' ? drag.active.dieId : null;
     const draggingCardUid = drag.active?.type === 'card' ? drag.active.uid : null;
 

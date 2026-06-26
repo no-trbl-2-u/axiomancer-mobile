@@ -334,10 +334,27 @@ export function CombatEncounterPanel({
             {detailCard && (
                 <Pressable style={styles.backdrop} testID="combat-card-detail" onPress={() => setDetailCard(null)}>
                     <View style={[styles.modal, { borderColor: detailCard.stanceColor }]}>
-                        <Text style={styles.modalTitle}>{detailCard.name}</Text>
-                        <Text style={styles.detailMeta}>{detailCard.rarity === 'gold' ? '★ GOLD · ' : ''}{detailCard.stance.toUpperCase()} · TIER {detailCard.tier} · {detailCard.effectKind.toUpperCase()}</Text>
-                        <Text style={styles.detailLine}>{detailCard.bottomActionText}</Text>
-                        <Text style={styles.detailHint}>drag the card up to stage it, drag a die onto it, then APPLY</Text>
+                        <Text style={styles.modalTitle}>{detailCard.rarity === 'gold' ? '★ ' : ''}{detailCard.name}</Text>
+                        <Text style={styles.detailMeta}>{detailCard.stance.toUpperCase()} · TIER {detailCard.tier} · {detailCard.verbClass.toUpperCase()}</Text>
+
+                        <View style={[styles.detailSection, { borderColor: AXM.bone }]}>
+                            <Text style={styles.detailSectionLabel}>FREE — no die required</Text>
+                            <Text style={styles.detailLine}>{detailCard.freeLine}</Text>
+                        </View>
+
+                        <View style={[styles.detailSection, { borderColor: detailCard.stanceColor }]}>
+                            <Text style={[styles.detailSectionLabel, { color: detailCard.stanceColor }]}>WITH DIE — 1 {detailCard.stance.toUpperCase()} die required</Text>
+                            <Text style={styles.detailLine}>{detailCard.poweredLine}</Text>
+                        </View>
+
+                        {detailCard.mechanicalDesc && (
+                            <View style={styles.detailMechBox}>
+                                <Text style={styles.detailMechLabel}>{detailCard.effectName ?? 'EFFECT'}</Text>
+                                <Text style={styles.detailMechDesc}>{detailCard.mechanicalDesc}</Text>
+                            </View>
+                        )}
+
+                        <Text style={styles.detailHint}>tap anywhere to dismiss · drag card up to stage it</Text>
                     </View>
                 </Pressable>
             )}
@@ -394,9 +411,14 @@ const useStyles = makeStyles((AXM) => ({
     modalBtns: { flexDirection: 'row', gap: 12, marginTop: 6 },
     modalBtn: { borderWidth: 2, paddingHorizontal: 22, paddingVertical: 9 },
     modalBtnText: { fontFamily: FONTS.gothic, fontSize: 16, letterSpacing: 1 },
-    detailMeta: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone, letterSpacing: 0.6, marginTop: 4, marginBottom: 8 },
-    detailLine: { fontFamily: FONTS.serif, fontSize: 13, color: AXM.parchment, alignSelf: 'stretch', marginBottom: 6, lineHeight: 17 },
-    detailHint: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 11, color: AXM.bone, marginTop: 6, textAlign: 'center' },
+    detailMeta: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone, letterSpacing: 0.6, marginTop: 4, marginBottom: 10 },
+    detailSection: { alignSelf: 'stretch', borderWidth: 1, borderRadius: 3, padding: 10, marginBottom: 8 },
+    detailSectionLabel: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1, color: AXM.bone, marginBottom: 5 },
+    detailLine: { fontFamily: FONTS.serif, fontSize: 13, color: AXM.parchment, lineHeight: 18 },
+    detailMechBox: { alignSelf: 'stretch', backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: 10, marginBottom: 8 },
+    detailMechLabel: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1, color: AXM.sulfur, marginBottom: 4 },
+    detailMechDesc: { fontFamily: FONTS.serif, fontSize: 12, color: AXM.bone, lineHeight: 17 },
+    detailHint: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 11, color: AXM.bone, marginTop: 4, textAlign: 'center' },
 
     reveal: { flex: 1, backgroundColor: '#0c0a08' },
     revealScroll: { alignItems: 'center', padding: 22, paddingBottom: 40 },

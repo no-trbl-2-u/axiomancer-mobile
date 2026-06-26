@@ -82,8 +82,14 @@ export interface CombatCardVM {
     verbClass: string; effectKind: 'dot' | 'control' | 'none'; rarity?: 'gold'; tier: 1 | 2 | 3;
     category: 'fallacy' | 'paradox' | null;
     topActionText: string; bottomActionText: string; bottomDamagePreview: number;
-    /** Human-readable name of the primary status effect this card applies (e.g. "Slippery Slope"). */
+    /** Human-readable name of the primary status effect this card applies (e.g. "Theseus' Dissolution"). */
     effectName: string | null;
+    /** One-liner for the FREE (no-die) action — plain mechanical language, zero thematic. */
+    freeLine: string;
+    /** One-liner for the POWERED (with-die) action — plain mechanical language, zero thematic. */
+    poweredLine: string;
+    /** Mechanical description of the primary effect from its payload (HP/turn, stuns, etc.). Null for utility/self cards. */
+    mechanicalDesc: string | null;
     /** Read tier if powered with the current drafted die (null until a die is drafted). */
     read: CombatReadResult | null; colorMatch: boolean;
 }
@@ -192,6 +198,81 @@ function diceVM(state: CombatEncounterState): CombatDieVM[] {
     }));
 }
 
+/** Derive a plain-English mechanical description from the effect's payload. */
+function buildMechanicalDesc(effectId: string | null): string | null {
+    if (!effectId) return null;
+    const eff = lookupEffect(effectId);
+    if (!eff) return null;
+    const p = eff.payload as {
+        damageOverTime?: { damagePerRound: number };
+        actionRestriction?: { skipTurn?: boolean; forcedStance?: string; blockedStances?: string[] };
+        statModifiers?: { stat: string; value: number }[];
+        rollModifier?: number;
+        defenseModifier?: number;
+    };
+    const parts: string[] = [];
+    if (p.damageOverTime) {
+        parts.push(`Deals ${p.damageOverTime.damagePerRound} HP per turn for ${eff.duration} turns per stack`);
+    }
+    if (p.actionRestriction) {
+        const r = p.actionRestriction;
+        if (r.skipTurn) parts.push('Enemy loses their action for the phase (1 phase per stack)');
+        if (r.forcedStance) parts.push(`Forces enemy into ${r.forcedStance} stance`);
+        if (r.blockedStances?.length) parts.push(`Blocks enemy ${r.blockedStances.join('/')} stance`);
+    }
+    if (p.statModifiers?.length) {
+        const mods = p.statModifiers.map(m => `${m.stat} ${m.value > 0 ? '+' : ''}${m.value}`).join(', ');
+        parts.push(`Enemy stats: ${mods}`);
+    }
+    if ((p.rollModifier ?? 0) < 0) parts.push(`Enemy roll modifier: ${p.rollModifier}`);
+    if ((p.defenseModifier ?? 0) < 0) parts.push(`Enemy defense: ${p.defenseModifier}`);
+    if (eff.stacking === 'intensity') parts.push('Stacks up to 10×');
+    return parts.length ? parts.join('. ') + '.' : null;
+}
+
+/** Generate the FREE and POWERED one-liners for the card detail and face split. */
+function buildActionLines(card: CombatCard): { freeLine: string; poweredLine: string } {
+    const stanceLabel = STANCE_LABELS[card.stance] ?? card.stance.toUpperCase();
+    const eff = card.primaryEffectId ? lookupEffect(card.primaryEffectId) : null;
+    const effName = eff?.name ?? null;
+    const preview = card.bottomDamagePreview;
+    switch (card.verbClass) {
+        case 'direct-dot':
+            return {
+                freeLine: `Apply ${effName ?? 'DoT'} ×1 (weak) — ticks HP each turn — no die needed`,
+                poweredLine: `Apply ${effName ?? 'DoT'} ×full (~${preview} total impact) — requires 1 ${stanceLabel} die`,
+            };
+        case 'direct-control':
+        case 'stat-debuff':
+            return {
+                freeLine: `Apply ${effName ?? 'control effect'} ×1 (weak) — hinders the enemy — no die needed`,
+                poweredLine: `Apply ${effName ?? 'control effect'} ×full (~${preview} control impact) — requires 1 ${stanceLabel} die`,
+            };
+        case 'direct-damage':
+            return {
+                freeLine: `Deal a small amount of direct HP damage to the enemy — no die needed`,
+                poweredLine: `Deal ~${preview} direct HP damage to the enemy — requires 1 ${stanceLabel} die`,
+            };
+        case 'buff-self':
+            return {
+                freeLine: `Apply a weak self-buff / heal to yourself — no die needed`,
+                poweredLine: `Apply full self-buff / heal to yourself — requires 1 ${stanceLabel} die`,
+            };
+        case 'defend':
+            return {
+                freeLine: `Gain a small GUARD shield — absorbs the enemy's next attack — no die needed`,
+                poweredLine: `Gain a GUARD shield — fully absorbs the enemy's next attack — requires 1 ${stanceLabel} die`,
+            };
+        case 'befriend':
+            return {
+                freeLine: `Attempt mercy — weak chance if enemy is near defeat — no die needed`,
+                poweredLine: `If enemy HP is low: end combat peacefully (befriend them) — requires 1 ${stanceLabel} die`,
+            };
+        default:
+            return { freeLine: card.topActionText, poweredLine: card.bottomActionText };
+    }
+}
+
 function handVM(state: CombatEncounterState): CombatCardVM[] {
     const drafted = getDraftedDie(state);
     return engineHandCards(state)
@@ -207,6 +288,8 @@ function handVM(state: CombatEncounterState): CombatCardVM[] {
             topActionText: card.topActionText, bottomActionText: card.bottomActionText,
             bottomDamagePreview: card.bottomDamagePreview,
             effectName: card.primaryEffectId ? (lookupEffect(card.primaryEffectId)?.name ?? null) : null,
+            ...buildActionLines(card),
+            mechanicalDesc: buildMechanicalDesc(card.primaryEffectId),
             read: preview?.read ?? null, colorMatch: preview?.colorMatch ?? false,
         };
     });

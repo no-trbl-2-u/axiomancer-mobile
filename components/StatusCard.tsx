@@ -71,13 +71,16 @@ export function StatusCard(props: StatusCardProps = {}) {
               <Text style={styles.moraleGloss}>· RESOLVE TO WALK</Text>
             </View>
             <Text style={styles.moraleValue}>
-              {['', 'i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix', 'x'][moraleDisplay] || 'x'}<Text style={styles.moraleMax}> / x</Text>
+              {['', 'i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix', 'x'][moraleDisplay] || 'x'}<Text style={styles.moraleMax}> of x</Text>
             </Text>
           </View>
           <View style={styles.moraleTrack}>
             <View style={[styles.moraleFill, { width: `${moraleFillPercent}%` }]} />
             <View style={[styles.moraleBreakTic, { left: `${moraleBreakPercent}%` }]} />
           </View>
+          {moraleDisplay <= 2 && (
+            <Text style={styles.moraleWarning}>the road begins to lie.</Text>
+          )}
         </View>
       </View>
     </View>
@@ -183,5 +186,11 @@ const useStyles = makeStyles((AXM) => ({
   },
   moraleMax: {
     color: AXM.bone,
+  },
+  moraleWarning: {
+    fontFamily: FONTS.serifItalic,
+    fontSize: 9,
+    color: AXM.blood,
+    marginTop: 2,
   },
 }));

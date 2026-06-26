@@ -247,13 +247,12 @@ export default function CharacterScreen() {
         <View style={styles.poolsCard}>
           {[
             { label: 'VITAE', value: player?.health ?? 0, max: player?.maxHealth ?? 1, color: AXM.blood, gloss: 'flesh holds' },
-            { label: 'MORALE', value: Math.max(1, Math.min(10, Math.round(((Number.isFinite(vm.morale) ? vm.morale : 0) + 100) / 20))), max: 10, color: AXM.sulfur, gloss: 'resolve to walk', isNew: true, breakAt: 2 },
+            { label: 'MORALE', value: Math.max(1, Math.min(10, Math.round(((Number.isFinite(vm.morale) ? vm.morale : 0) + 100) / 20))), max: 10, color: AXM.sulfur, gloss: 'resolve to walk', breakAt: 2 },
           ].map((pool) => (
             <View key={pool.label} style={styles.poolRow}>
               <View style={styles.poolHeader}>
                 <View style={styles.poolLabelRow}>
                   <Text style={[styles.poolLabel, { color: pool.color }]}>{pool.label}</Text>
-                  {'isNew' in pool && pool.isNew && <Text style={styles.poolNewBadge}>NEW</Text>}
                   <Text style={styles.poolGloss}>· {pool.gloss}</Text>
                 </View>
                 <Text style={styles.poolValue}>{pool.value}<Text style={styles.boneText}> / {pool.max}</Text></Text>

@@ -42,6 +42,13 @@ export default function ExplorationScreen() {
     const { mode: aesthetic } = useAesthetic();
     const [nodeTip, setNodeTip] = useState<string | null>(null);
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+    // First-visit hint: shown once on mount, auto-dismissed after 5s or on first node tap.
+    const [showMapHint, setShowMapHint] = useState(true);
+
+    useEffect(() => {
+        const t = setTimeout(() => setShowMapHint(false), 5000);
+        return () => clearTimeout(t);
+    }, []);
     // Phase 200 — the foe for the in-place hazard combat, captured at FIGHT
     // (the event slice is cleared by then) and fed to the encounter modal.
     const [activeEnemy, setActiveEnemy] = useState<Enemy | null>(null);
@@ -131,6 +138,7 @@ export default function ExplorationScreen() {
             return;
         }
         if (node.kind !== 'available') return;
+        setShowMapHint(false);
         setSelectedNodeId((prev) => (prev === node.id ? null : node.id));
     };
 
@@ -220,6 +228,11 @@ export default function ExplorationScreen() {
                 />
             )}
             {nodeTip !== null && <NodeToast tip={nodeTip} />}
+            {showMapHint && (
+                <View style={styles.mapHint} pointerEvents="none">
+                    <Text style={styles.mapHintText}>Tap a glowing node to travel there</Text>
+                </View>
+            )}
             {/* Phase 70 Tick B — `<AftermathBanner>` retired. Both
               * victory and parley outcomes now render inside
               * `<EncounterModalOverlay>` via `<CombatVictoryPanel>`
@@ -256,5 +269,23 @@ const useStyles = makeStyles((AXM) => ({
     },
     continentLabel: {
         color: AXM.bone,
+    },
+    mapHint: {
+        position: 'absolute',
+        bottom: 80,
+        left: 0,
+        right: 0,
+        alignItems: 'center',
+    },
+    mapHintText: {
+        fontFamily: FONTS.serifItalic,
+        fontSize: 13,
+        color: AXM.parchment,
+        backgroundColor: 'rgba(10,10,10,0.72)',
+        paddingHorizontal: 14,
+        paddingVertical: 6,
+        borderWidth: 1,
+        borderColor: AXM.ash,
+        textAlign: 'center',
     },
 }));

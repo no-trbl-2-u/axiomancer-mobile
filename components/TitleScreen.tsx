@@ -60,6 +60,7 @@ export function TitleScreen({ onContinue }: TitleScreenProps) {
           accessibilityLabel="Embark on your journey"
         >
           <Text style={styles.embarkButtonText}>EMBARK…</Text>
+          <Text style={styles.embarkHint}>tap a glowing node on the map to begin</Text>
         </Pressable>
 
         <Text style={styles.footerText}>
@@ -140,6 +141,15 @@ const useStyles = makeStyles((AXM) => ({
     color: AXM.bg,
     letterSpacing: 4,
     textAlign: 'center',
+  },
+  embarkHint: {
+    fontFamily: FONTS.serifItalic,
+    fontSize: 11,
+    color: AXM.bg,
+    letterSpacing: 0.5,
+    textAlign: 'center',
+    opacity: 0.7,
+    marginTop: 4,
   },
   footerText: {
     fontFamily: FONTS.serifItalic,

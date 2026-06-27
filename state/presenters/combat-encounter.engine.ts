@@ -13,15 +13,16 @@
  */
 
 import {
-    handCards as engineHandCards, getCard,
+    handCards as engineHandCards, getCard, getSkillById,
     getDraftedDie, isPhaseStanceRevealed, cardReadPreview,
     revealedCurrentStance, resolveRead, getSignatureSkill,
-    lookupEffect,
+    lookupEffect, READ_DAMAGE_MULT, COLOR_MATCH_DAMAGE_BONUS,
     type CombatEncounterState, type CombatCard, type CombatManaDie,
     type CombatThreatPhase, type CombatIntentType, type CombatReadResult,
     type CombatSummary, type SignatureSkill, type Stance,
+    type Skill, type SkillCombatEffects,
 } from 'axiomancer-mechanics';
-import { effectGlyph, type StatusGlyph } from '@/components/combat/statusGlyphs';
+import { effectGlyph, GLYPH_COLORS, type StatusGlyph } from '@/components/combat/statusGlyphs';
 import { keywordForEffect, keywordForVerb, keywordGloss } from '@/state/combat/keywords';
 import { resolveEnemyArchetype } from '@/state/presenters/enemy-art';
 
@@ -33,6 +34,15 @@ export const STANCE_COLORS: Record<string, string> = {
 };
 const DIE_GLYPHS: Record<string, string> = { heart: '♥', body: '⚡', mind: '★', wild: '✦', x: '✕' };
 const STANCE_LABELS: Record<string, string> = { heart: 'HEART', body: 'BODY', mind: 'MIND', wild: 'WILD', x: 'X' };
+
+// Mirror of the engine's TOP_ACTION_CHIP — the HP a FREE (no-die) action chips.
+// Not on the public barrel, so duplicated here (kept in sync by hand).
+const FREE_CHIP_HP = 2;
+// Verb-class card colours (these map to verbs, not Effects, so they aren't in GLYPH_COLORS).
+const GUARD_COLOR = '#9aa0a6';
+const STRIKE_COLOR = '#c2a14e';
+const BEFRIEND_COLOR = '#5bbf6a';
+const INERT_COLOR = '#6b6257';
 
 // ── Intent vocabulary (Spec 26 §2.4) ─────────────────────────────────────────
 
@@ -80,21 +90,52 @@ export interface CombatDieVM {
     /** Read vs the (revealed) enemy stance: advantage/neutral/disadvantage/none/null(hidden). */
     readPip: CombatReadResult | null;
 }
+export type CombatCardKind = 'dot' | 'stun' | 'regen' | 'guard' | 'strike' | 'weaken' | 'inert' | 'befriend';
+
+/** Render-ready, HONEST card FACE. Every number is a real unit derived from the
+ *  skill's AUTHORED effect (never the abstract "impact"). `heroText` is '' when the
+ *  kind has no honest number (strike/weaken/inert/befriend) — the face renders a
+ *  qualitative word there instead. Real-units-or-no-number: never a fabricated value. */
+export interface CombatCardFaceVM {
+    kind: CombatCardKind;
+    keyword: string | null;        // UPPERCASE keyword for the face (e.g. 'BLEED')
+    glyph: string;                 // sourced from statusGlyphs → matches the board chip
+    categoryColor: string;
+    stanceColor: string;
+    heroText: string;              // POWER value in real units; '' = no honest number
+    heroSub: string | null;        // e.g. '(18)'
+    freeHeroText: string;          // the no-die value
+    freeHeroSub: string | null;
+    verbLine: string;              // plain who/what
+    powerRail: string;
+    readDependent: boolean;        // guard/strike scale with the read; dot/stun/regen do not
+    inert: boolean;                // engine doesn't read it yet → greyed, no number
+    guardBase: number | null;
+}
+
+/** Render-ready card DETAIL (the inspect modal) — the SAME numbers as the face. */
+export interface CombatCardDetailVM {
+    subtitle: string;
+    metaChip: string;
+    outcomeLine: string;
+    outcomeStats: { label: string; value: string }[];
+    stacksText: string | null;
+    freeLine: string;
+    powerLine: string;
+    readNote: string;
+    mathLine: string;
+    keywords: { name: string; def: string; minor: boolean }[];
+}
+
 export interface CombatCardVM {
     uid: string; cardId: string; name: string; stance: string; stanceColor: string;
     verbClass: string; effectKind: 'dot' | 'control' | 'none'; rarity?: 'gold'; tier: 1 | 2 | 3;
     category: 'fallacy' | 'paradox' | null;
     topActionText: string; bottomActionText: string; bottomDamagePreview: number;
-    /** The keyword for the primary status effect this card applies (e.g. "Bleed"), or null. */
-    effectName: string | null;
-    /** One-liner for the FREE (no-die) action — plain mechanical language, zero thematic. */
-    freeLine: string;
-    /** One-liner for the POWERED (with-die) action — plain mechanical language, zero thematic. */
-    poweredLine: string;
-    /** Mechanical description of the primary effect from its payload (HP/turn, stuns, etc.). Null for utility/self cards. */
-    mechanicalDesc: string | null;
-    /** Keyword glossary entries for this card (status keyword + verb-class keyword like GUARD). */
-    keywords: { name: string; def: string }[];
+    /** Honest, render-ready 5-zone face — real units, zero abstraction. */
+    face: CombatCardFaceVM;
+    /** Honest, render-ready inspect detail (outcome + free/die + math + keywords). */
+    detail: CombatCardDetailVM;
     /** Read tier if powered with the current drafted die (null until a die is drafted). */
     read: CombatReadResult | null; colorMatch: boolean;
 }
@@ -207,94 +248,213 @@ function diceVM(state: CombatEncounterState): CombatDieVM[] {
     }));
 }
 
-/** Derive a plain-English mechanical description from the effect's payload. */
-function buildMechanicalDesc(effectId: string | null): string | null {
+// ── Honest card view-models (face + detail) ──────────────────────────────────
+
+type EffectPayloadLike = {
+    damageOverTime?: { damagePerRound: number };
+    actionRestriction?: { skipTurn?: boolean };
+    regeneration?: { healthPerRound?: number };
+    rollModifier?: number;
+    rollModifierPerIntensity?: number;
+};
+
+/** THE single forward-compat honesty gate: the kind of HONEST, engine-read effect,
+ *  or null for effects the live HP engine still doesn't quantify (→ greyed, number-
+ *  less). Widened for mechanics 0.33.0: a negative roll modifier now weakens (and a
+ *  variety denies) the enemy's turn, so it counts as 'weaken'. */
+export function engineHonestKind(effectId: string | null | undefined): 'dot' | 'stun' | 'regen' | 'weaken' | null {
     if (!effectId) return null;
-    const eff = lookupEffect(effectId);
-    if (!eff) return null;
-    const p = eff.payload as {
-        damageOverTime?: { damagePerRound: number };
-        actionRestriction?: { skipTurn?: boolean; forcedStance?: string; blockedStances?: string[] };
-        statModifiers?: { stat: string; value: number }[];
-        rollModifier?: number;
-        defenseModifier?: number;
-    };
-    const parts: string[] = [];
-    if (p.damageOverTime) {
-        parts.push(`Deals ${p.damageOverTime.damagePerRound} HP per turn for ${eff.duration} turns per stack`);
-    }
-    if (p.actionRestriction) {
-        const r = p.actionRestriction;
-        if (r.skipTurn) parts.push('Enemy loses their action for the phase (1 phase per stack)');
-        if (r.forcedStance) parts.push(`Forces enemy into ${r.forcedStance} stance`);
-        if (r.blockedStances?.length) parts.push(`Blocks enemy ${r.blockedStances.join('/')} stance`);
-    }
-    if (p.statModifiers?.length) {
-        const mods = p.statModifiers.map(m => `${m.stat} ${m.value > 0 ? '+' : ''}${m.value}`).join(', ');
-        parts.push(`Enemy stats: ${mods}`);
-    }
-    if ((p.rollModifier ?? 0) < 0) parts.push(`Enemy roll modifier: ${p.rollModifier}`);
-    if ((p.defenseModifier ?? 0) < 0) parts.push(`Enemy defense: ${p.defenseModifier}`);
-    if (eff.stacking === 'intensity') parts.push('Stacks up to 10×');
-    return parts.length ? parts.join('. ') + '.' : null;
+    const e = lookupEffect(effectId);
+    if (!e) return null;
+    const p = (e.payload ?? {}) as EffectPayloadLike;
+    if (p.damageOverTime) return 'dot';
+    if (p.actionRestriction?.skipTurn) return 'stun';
+    if ((p.regeneration?.healthPerRound ?? 0) > 0) return 'regen';
+    if ((p.rollModifier ?? 0) < 0 || (p.rollModifierPerIntensity ?? 0) < 0) return 'weaken';
+    return null;
 }
 
-/** Generate the FREE and POWERED one-liners for the card detail and face split. */
-function buildActionLines(card: CombatCard): { freeLine: string; poweredLine: string } {
-    const stanceLabel = STANCE_LABELS[card.stance] ?? card.stance.toUpperCase();
-    const kw = keywordForEffect(card.primaryEffectId)
-        ?? (card.primaryEffectId ? lookupEffect(card.primaryEffectId)?.name ?? null : null);
-    const preview = card.bottomDamagePreview;
-    switch (card.verbClass) {
-        case 'direct-dot':
-            return {
-                freeLine: `Apply ${kw ?? 'a DoT'} ×1 (weak) — ticks HP each turn — no die needed`,
-                poweredLine: `Apply ${kw ?? 'a DoT'} ×full (~${preview} total impact) — needs 1 die — any colour (${stanceLabel} = bonus)`,
-            };
-        case 'direct-control':
-        case 'stat-debuff':
-            return {
-                freeLine: `Apply ${kw ?? 'a debuff'} ×1 (weak) — hinders the enemy — no die needed`,
-                poweredLine: `Apply ${kw ?? 'a debuff'} ×full (~${preview} control impact) — needs 1 die — any colour (${stanceLabel} = bonus)`,
-            };
-        case 'direct-damage':
-            return {
-                freeLine: `Deal a small amount of direct HP damage to the enemy — no die needed`,
-                poweredLine: `Deal ~${preview} direct HP damage to the enemy — needs 1 die — any colour (${stanceLabel} = bonus)`,
-            };
-        case 'buff-self':
-            return {
-                freeLine: `Apply ${kw ?? 'a buff'} (weak) to yourself — no die needed`,
-                poweredLine: `Apply ${kw ?? 'a buff'} (full) to yourself — needs 1 die — any colour (${stanceLabel} = bonus)`,
-            };
-        case 'defend':
-            return {
-                freeLine: `Gain GUARD (weak) — absorbs the enemy's next attack — no die needed`,
-                poweredLine: `Gain GUARD — fully absorbs the enemy's next attack — needs 1 die — any colour (${stanceLabel} = bonus)`,
-            };
+function glyphFor(effectId: string): string {
+    const e = lookupEffect(effectId);
+    return e ? effectGlyph(e as Parameters<typeof effectGlyph>[0]).glyph : '◆';
+}
+
+interface PrimaryResolution {
+    kind: CombatCardKind;
+    ce: SkillCombatEffects | null;
+    guardAmount: number | null;
+    riders: SkillCombatEffects[];
+}
+
+/** Resolve a card's PRIMARY combat effect + its kind. Reads the skill's
+ *  combatEffects / specialMechanics directly — NOT card.primaryEffectId, which is
+ *  null for guard/regen cards (it = primaryEnemyEffectId). */
+export function resolvePrimary(card: CombatCard, skill: Skill | undefined): PrimaryResolution {
+    const vc = card.verbClass;
+    if (vc === 'defend') {
+        const g = (skill?.specialMechanics ?? []).find(m => m.kind === 'guard') as { amount?: number } | undefined;
+        return { kind: 'guard', ce: null, guardAmount: g?.amount ?? 0, riders: [] };
+    }
+    if (vc === 'befriend') return { kind: 'befriend', ce: null, guardAmount: null, riders: [] };
+    if (vc === 'direct-damage') return { kind: 'strike', ce: null, guardAmount: null, riders: [] };
+    if (vc === 'buff-self') {
+        const self = (skill?.combatEffects ?? []).filter(e => e.appliedTo === 'self');
+        const primary = self.find(s => engineHonestKind(s.effectId) === 'regen') ?? self[0] ?? null;
+        const kind: CombatCardKind = engineHonestKind(primary?.effectId) === 'regen' ? 'regen' : 'inert';
+        return { kind, ce: primary, guardAmount: null, riders: self.filter(s => s !== primary) };
+    }
+    // direct-dot | direct-control | stat-debuff → opponent effects
+    const opp = (skill?.combatEffects ?? []).filter(e => e.appliedTo === 'opponent');
+    const primary = opp.find(o => engineHonestKind(o.effectId)) ?? opp[0] ?? null;
+    const k = engineHonestKind(primary?.effectId);
+    const kind: CombatCardKind = k === 'dot' ? 'dot' : k === 'stun' ? 'stun' : k === 'weaken' ? 'weaken' : 'inert';
+    return { kind, ce: primary, guardAmount: null, riders: opp.filter(o => o !== primary) };
+}
+
+interface CardCalc extends PrimaryResolution {
+    keyword: string | null;
+    glyph: string;
+    categoryColor: string;
+    perTurn: number; turns: number; total: number;
+    freePerTurn: number; freeTurns: number; freeTotal: number;
+    skips: number;
+    dpr: number; intensity: number; stacks: boolean;
+}
+
+/** Single source of the numbers — faceStats AND detailStats both read this, so the
+ *  face and the inspect modal can never drift. All values are AUTHORED units from
+ *  getSkillById(card.skillId).combatEffects (not effect-library defaults). */
+function cardCalc(card: CombatCard, skill: Skill | undefined): CardCalc {
+    const pr = resolvePrimary(card, skill);
+    const out: CardCalc = {
+        ...pr, keyword: null, glyph: '◆', categoryColor: STRIKE_COLOR,
+        perTurn: 0, turns: 0, total: 0, freePerTurn: 0, freeTurns: 0, freeTotal: 0,
+        skips: 0, dpr: 0, intensity: 1, stacks: false,
+    };
+    const eff = pr.ce ? lookupEffect(pr.ce.effectId) : undefined;
+    switch (pr.kind) {
+        case 'dot': {
+            const p = (eff?.payload ?? {}) as EffectPayloadLike;
+            out.intensity = pr.ce?.intensity ?? 1;
+            out.turns = pr.ce?.duration ?? eff?.duration ?? 0;
+            out.dpr = p.damageOverTime?.damagePerRound ?? 0;
+            out.perTurn = out.dpr * out.intensity;
+            out.total = out.perTurn * out.turns;
+            out.keyword = keywordForEffect(pr.ce?.effectId);
+            out.glyph = pr.ce ? glyphFor(pr.ce.effectId) : '🔥';
+            out.categoryColor = GLYPH_COLORS.dot;
+            out.stacks = eff?.stacking === 'intensity';
+            break;
+        }
+        case 'regen': {
+            const p = (eff?.payload ?? {}) as EffectPayloadLike;
+            out.intensity = pr.ce?.intensity ?? 1;
+            out.turns = pr.ce?.duration ?? eff?.duration ?? 0;
+            out.dpr = p.regeneration?.healthPerRound ?? 0;
+            out.perTurn = out.dpr * out.intensity;
+            out.total = out.perTurn * out.turns;
+            out.freePerTurn = out.dpr;
+            out.freeTurns = eff?.duration ?? 0;
+            out.freeTotal = out.dpr * out.freeTurns;
+            out.keyword = keywordForEffect(pr.ce?.effectId);
+            out.glyph = pr.ce ? glyphFor(pr.ce.effectId) : '✚';
+            out.categoryColor = GLYPH_COLORS.regen;
+            break;
+        }
+        case 'stun': {
+            out.skips = pr.ce?.duration ?? eff?.duration ?? 1;
+            out.keyword = keywordForEffect(pr.ce?.effectId);
+            out.glyph = pr.ce ? glyphFor(pr.ce.effectId) : '💫';
+            out.categoryColor = GLYPH_COLORS.control;
+            break;
+        }
+        case 'weaken': {
+            out.keyword = keywordForEffect(pr.ce?.effectId);
+            out.glyph = pr.ce ? glyphFor(pr.ce.effectId) : '⛓';
+            out.categoryColor = GLYPH_COLORS.control;
+            break;
+        }
+        case 'guard':
+            out.keyword = 'Guard'; out.glyph = '🛡'; out.categoryColor = GUARD_COLOR; break;
+        case 'strike':
+            out.keyword = null; out.glyph = '◆'; out.categoryColor = STRIKE_COLOR; break;
         case 'befriend':
-            return {
-                freeLine: `Attempt mercy — weak chance if enemy is near defeat — no die needed`,
-                poweredLine: `If enemy HP is low: end combat peacefully (befriend them) — needs 1 die — any colour (${stanceLabel} = bonus)`,
-            };
+            out.keyword = null; out.glyph = '🕊'; out.categoryColor = BEFRIEND_COLOR; break;
+        case 'inert':
         default:
-            return { freeLine: card.topActionText, poweredLine: card.bottomActionText };
+            out.keyword = keywordForEffect(pr.ce?.effectId);
+            out.glyph = eff && pr.ce ? glyphFor(pr.ce.effectId) : '▽';
+            out.categoryColor = INERT_COLOR;
+            break;
+    }
+    return out;
+}
+
+function buildDetailKeywords(card: CombatCard, c: CardCalc): { name: string; def: string; minor: boolean }[] {
+    const out: { name: string; def: string; minor: boolean }[] = [];
+    const seen = new Set<string>();
+    const push = (kw: string | null, minor: boolean) => {
+        if (!kw) return;
+        const up = kw.toUpperCase();
+        if (seen.has(up)) return;
+        seen.add(up);
+        out.push({ name: up, def: keywordGloss(kw) ?? '', minor });
+    };
+    if (c.kind === 'guard') push(keywordForVerb(card.verbClass), false);
+    else push(c.keyword, c.kind === 'inert');
+    // A rider is "minor" only if the engine still doesn't read it (engineHonestKind null).
+    for (const r of c.riders) push(keywordForEffect(r.effectId), engineHonestKind(r.effectId) === null);
+    return out;
+}
+
+/** Honest card FACE view-model (the 5-zone hand card). */
+export function faceStats(card: CombatCard, skill?: Skill): CombatCardFaceVM {
+    const c = cardCalc(card, skill);
+    const stanceColor = STANCE_COLORS[card.stance] ?? '#888';
+    const kw = c.keyword ? c.keyword.toUpperCase() : null;
+    const free = `${FREE_CHIP_HP} HP`;
+    const base = { glyph: c.glyph, categoryColor: c.categoryColor, stanceColor };
+    switch (c.kind) {
+        case 'dot': return { ...base, kind: 'dot', keyword: kw, heroText: `${c.perTurn}/t·${c.turns}t`, heroSub: `(${c.total})`, freeHeroText: free, freeHeroSub: null, verbLine: 'foe loses HP each turn', powerRail: c.keyword ?? 'DoT', readDependent: false, inert: false, guardBase: null };
+        case 'stun': return { ...base, kind: 'stun', keyword: kw, heroText: `skip ${c.skips}t`, heroSub: null, freeHeroText: free, freeHeroSub: null, verbLine: "the foe can't act", powerRail: c.keyword ?? 'Stun', readDependent: false, inert: false, guardBase: null };
+        case 'weaken': return { ...base, kind: 'weaken', keyword: kw, heroText: '', heroSub: null, freeHeroText: free, freeHeroSub: null, verbLine: "weakens the foe's hit", powerRail: c.keyword ?? 'Weaken', readDependent: false, inert: false, guardBase: null };
+        case 'regen': return { ...base, kind: 'regen', keyword: kw, heroText: `${c.perTurn}/t·${c.turns}t`, heroSub: `(${c.total})`, freeHeroText: `${c.freePerTurn}/t·${c.freeTurns}t`, freeHeroSub: `(${c.freeTotal})`, verbLine: 'heal yourself each turn', powerRail: c.keyword ?? 'Regen', readDependent: false, inert: false, guardBase: null };
+        case 'guard': { const b = c.guardAmount ?? 0; return { ...base, kind: 'guard', keyword: 'GUARD', heroText: `Guard ${b}`, heroSub: null, freeHeroText: `Guard ${Math.max(1, Math.round(b * 0.5))}`, freeHeroSub: null, verbLine: 'block the next hit', powerRail: `${b} ↑read`, readDependent: true, inert: false, guardBase: b }; }
+        case 'strike': return { ...base, kind: 'strike', keyword: null, heroText: '', heroSub: null, freeHeroText: 'small chip', freeHeroSub: null, verbLine: 'a small direct hit', powerRail: 'full ↑read', readDependent: true, inert: false, guardBase: null };
+        case 'befriend': return { ...base, kind: 'befriend', keyword: null, heroText: '', heroSub: null, freeHeroText: 'mercy', freeHeroSub: null, verbLine: 'spare a near-dead foe', powerRail: 'mercy', readDependent: false, inert: false, guardBase: null };
+        case 'inert':
+        default: return { ...base, kind: 'inert', keyword: kw ?? 'DEBUFF', heroText: '', heroSub: null, freeHeroText: card.verbClass === 'buff-self' ? 'weak buff' : free, freeHeroSub: null, verbLine: card.verbClass === 'buff-self' ? 'buff yourself' : 'weakens the foe', powerRail: c.keyword ?? '—', readDependent: false, inert: true, guardBase: null };
     }
 }
 
-/** Glossary entries for a card's inspect overlay — its status keyword and any
- *  verb-class keyword (e.g. a defend card grants GUARD). Deduped, uppercased. */
-function cardKeywords(card: CombatCard): { name: string; def: string }[] {
-    const out: { name: string; def: string }[] = [];
-    const seen = new Set<string>();
-    const push = (kw: string | null) => {
-        if (!kw || seen.has(kw)) return;
-        seen.add(kw);
-        out.push({ name: kw.toUpperCase(), def: keywordGloss(kw) ?? '' });
-    };
-    push(keywordForEffect(card.primaryEffectId));
-    push(keywordForVerb(card.verbClass));
-    return out;
+/** Honest card DETAIL view-model (the inspect modal) — same numbers as the face. */
+export function detailStats(card: CombatCard, skill?: Skill): CombatCardDetailVM {
+    const c = cardCalc(card, skill);
+    const Title = c.keyword ?? '';
+    const STANCE = STANCE_LABELS[card.stance] ?? card.stance.toUpperCase();
+    const metaChip = `${card.stance.toUpperCase()} · TIER ${card.tier} · ${card.effectKind === 'dot' ? 'DOT' : card.effectKind === 'control' ? 'CONTROL' : card.verbClass.toUpperCase()}`;
+    const keywords = buildDetailKeywords(card, c);
+    const free = FREE_CHIP_HP;
+    const match = `Any die works; a ${STANCE} die matches (+${COLOR_MATCH_DAMAGE_BONUS} and a stronger read).`;
+    switch (c.kind) {
+        case 'dot': return { subtitle: `${Title} the enemy — damage over time.`, metaChip, outcomeLine: `${Title} the enemy: ${c.perTurn} HP/turn for ${c.turns} turns — ${c.total} HP total.`, outcomeStats: [{ label: 'PER TURN', value: `${c.perTurn}` }, { label: 'TURNS', value: `${c.turns}` }, { label: 'TOTAL', value: `${c.total}` }], stacksText: c.stacks ? 'Stacks up to 10× — re-applying piles on more.' : null, freeLine: `◇ FREE (no die): deal ${free} HP now. No ${Title} lands without a die.`, powerLine: `◆ WITH A DIE: apply ${Title} — ${c.perTurn} HP/turn for ${c.turns} turns (${c.total} total), plus a small hit. ${match}`, readNote: `The read scales only the small strike, not the ${Title} — ${c.total} is exact.`, mathLine: `${c.perTurn}/turn = ${c.dpr} base × ${c.intensity} intensity · ${c.turns} turns · ${c.total} HP total${c.stacks ? ' · stacks to 10×' : ''}.`, keywords };
+        case 'stun': return { subtitle: `${Title} the enemy — it loses its turns.`, metaChip, outcomeLine: `The enemy skips its next ${c.skips} turns — ${c.skips} telegraphed attacks it never makes.`, outcomeStats: [{ label: 'SKIPS', value: `${c.skips} turns` }], stacksText: null, freeLine: `◇ FREE (no die): deal ${free} HP now. No ${Title} without a die.`, powerLine: `◆ WITH A DIE: ${Title} — the foe skips its next ${c.skips} actions, plus a small hit. ${match}`, readNote: `The read scales only the small strike, not the ${Title} — skip ${c.skips} is exact.`, mathLine: `skip ${c.skips}t = ${Title.toLowerCase()} duration ${c.skips} (each turn it would act is cancelled).`, keywords };
+        case 'weaken': return { subtitle: `${Title} the enemy — its attacks hit softer.`, metaChip, outcomeLine: `Weaken the enemy: its next telegraphed attack hits softer. Stack a VARIETY of controls to deny its turn entirely.`, outcomeStats: [], stacksText: null, freeLine: `◇ FREE (no die): deal ${free} HP now. No ${Title} without a die.`, powerLine: `◆ WITH A DIE: apply ${Title} — the foe's next hit is weakened, plus a small hit. ${match}`, readNote: `${Title} weakens the enemy's hit; pile on different controls to deny the turn outright.`, mathLine: `${Title} lowers the enemy's attack roll; combined controls past a threshold deny the turn (exact amount is engine-tuned).`, keywords };
+        case 'regen': return { subtitle: 'Heal yourself over time.', metaChip, outcomeLine: `Regenerate: heal ${c.perTurn} HP/turn for ${c.turns} turns — ${c.total} HP total.`, outcomeStats: [{ label: 'PER TURN', value: `${c.perTurn}` }, { label: 'TURNS', value: `${c.turns}` }, { label: 'TOTAL', value: `${c.total}` }], stacksText: null, freeLine: `◇ FREE (no die): a weak regen — ${c.freePerTurn} HP/turn for ${c.freeTurns} turns (${c.freeTotal} total).`, powerLine: `◆ WITH A DIE: regenerate ${c.perTurn} HP/turn for ${c.turns} turns (${c.total} total). Any die; a ${STANCE} die matches.`, readNote: `Heals YOU — no read needed; ${c.total} is exact.`, mathLine: `${c.perTurn}/turn = ${c.dpr} base × ${c.intensity} intensity · ${c.turns} turns · ${c.total} total. FREE = ${c.dpr} base × 1 · ${c.freeTurns} turns · ${c.freeTotal}.`, keywords };
+        case 'guard': { const b = c.guardAmount ?? 0; const freeG = Math.max(1, Math.round(b * 0.5)); const adv = Math.max(1, Math.round(b * READ_DAMAGE_MULT.advantage)); const dis = Math.max(1, Math.round(b * READ_DAMAGE_MULT.disadvantage)); return { subtitle: 'Guard yourself — soak the next hit.', metaChip, outcomeLine: `Gain Guard ${b} — absorbs up to ${b} damage from the enemy's NEXT attack, then it's gone. One-shot; does not stack.`, outcomeStats: [{ label: 'GUARD', value: `${b} (▲${adv} · —${b} · ▼${dis})` }], stacksText: null, freeLine: `◇ FREE (no die): a weak brace — Guard ${freeG}.`, powerLine: `◆ WITH A DIE: Guard ${b}; ▲ read raises it to ${adv}, ▼ read drops it to ${dis}; +${COLOR_MATCH_DAMAGE_BONUS} if a ${STANCE} die matches.`, readNote: `The read scales this: ▲ advantage ×${READ_DAMAGE_MULT.advantage}, ▼ disadvantage ×${READ_DAMAGE_MULT.disadvantage}.`, mathLine: `FREE = round(${b} × ½) = ${freeG}.  POWER = round(${b} × read) + ${COLOR_MATCH_DAMAGE_BONUS} on a colour match.`, keywords }; }
+        case 'strike': return { subtitle: 'A small direct hit.', metaChip, outcomeLine: 'A small direct hit — the weak baseline; status erodes faster.', outcomeStats: [], stacksText: null, freeLine: '◇ FREE (no die): chip a sliver of HP.', powerLine: `◆ WITH A DIE: a full direct hit (scales with your ${skill?.scalingStat ?? 'stat'}); ▲ read ×${READ_DAMAGE_MULT.advantage}, ▼ ×${READ_DAMAGE_MULT.disadvantage}.`, readNote: `The read scales this hit: ▲ ×${READ_DAMAGE_MULT.advantage}, ▼ ×${READ_DAMAGE_MULT.disadvantage}.`, mathLine: `≈ (basePower ${skill?.basePower ?? '?'} + your ${skill?.scalingStat ?? 'stat'}) × 0.25 × read — needs live stats, so no fixed number.`, keywords };
+        case 'befriend': return { subtitle: 'Spare a near-dead foe.', metaChip, outcomeLine: 'Befriend — usable when the enemy is near defeat (low HP); ends the fight peacefully (mercy) instead of a kill.', outcomeStats: [], stacksText: null, freeLine: '◇ FREE (no die): attempt mercy on a near-dead foe.', powerLine: '◆ WITH A DIE: if the enemy HP is low, end combat peacefully (befriend).', readNote: 'Watch the enemy HP bar — befriend lands only when it is low.', mathLine: 'No fixed number — a conditional outcome gated on low enemy HP.', keywords };
+        case 'inert':
+        default: return { subtitle: `${Title || 'Effect'} — minor right now.`, metaChip, outcomeLine: `${Title || 'This effect'} — minor right now. The live engine does not read it yet, so it is shown without a number (no fabricated value).`, outcomeStats: [], stacksText: null, freeLine: `◇ FREE (no die): deal ${free} HP now.`, powerLine: `◆ WITH A DIE: apply ${Title || 'the effect'}, plus a small hit. ${match}`, readNote: 'The read scales only the small strike.', mathLine: `${Title || 'This effect'} is not read by the live HP engine yet — no number shown.`, keywords };
+    }
+}
+
+/** Exact powered Guard value at the moment of commit (read known) — StagedCard only.
+ *  null for non-read-dependent kinds (dot/stun/regen show their static hero) and for
+ *  strike (which stays qualitative 'HIT' + a read pip). */
+export function armedReadValue(face: CombatCardFaceVM, read: CombatReadResult, colorMatch: boolean): number | null {
+    if (face.kind !== 'guard' || face.guardBase == null) return null;
+    return Math.max(1, Math.round(face.guardBase * READ_DAMAGE_MULT[read])) + (colorMatch ? COLOR_MATCH_DAMAGE_BONUS : 0);
 }
 
 function handVM(state: CombatEncounterState): CombatCardVM[] {
@@ -305,17 +465,15 @@ function handVM(state: CombatEncounterState): CombatCardVM[] {
         .filter(({ card }: { card: CombatCard }) => card.id !== 'card-retreat' && card.verbClass !== 'retreat')
         .map(({ uid, card }: { uid: string; card: CombatCard }) => {
         const preview = drafted ? cardReadPreview(state, card) : null;
+        const skill = card.skillId ? getSkillById(card.skillId) : undefined;
         return {
             uid, cardId: card.id, name: card.name, stance: card.stance,
             stanceColor: STANCE_COLORS[card.stance] ?? '#888',
             verbClass: card.verbClass, effectKind: card.effectKind, rarity: card.rarity, tier: card.tier, category: card.category,
             topActionText: card.topActionText, bottomActionText: card.bottomActionText,
             bottomDamagePreview: card.bottomDamagePreview,
-            effectName: keywordForEffect(card.primaryEffectId)
-                ?? (card.primaryEffectId ? lookupEffect(card.primaryEffectId)?.name ?? null : null),
-            ...buildActionLines(card),
-            mechanicalDesc: buildMechanicalDesc(card.primaryEffectId),
-            keywords: cardKeywords(card),
+            face: faceStats(card, skill),
+            detail: detailStats(card, skill),
             read: preview?.read ?? null, colorMatch: preview?.colorMatch ?? false,
         };
     });

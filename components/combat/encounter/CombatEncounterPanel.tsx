@@ -332,41 +332,56 @@ export function CombatEncounterPanel({
                 </View>
             )}
 
-            {/* card detail */}
+            {/* card detail — outcome-first, honest real-units (scrollable) */}
             {detailCard && (
                 <Pressable style={styles.backdrop} testID="combat-card-detail" onPress={() => setDetailCard(null)}>
-                    <View style={[styles.modal, { borderColor: detailCard.stanceColor }]}>
+                    <ScrollView
+                        style={styles.detailScroll}
+                        contentContainerStyle={[styles.modal, { borderColor: detailCard.rarity === 'gold' ? '#d9b44a' : detailCard.face.categoryColor }]}
+                        onStartShouldSetResponder={() => true}
+                    >
                         <Text style={styles.modalTitle}>{detailCard.rarity === 'gold' ? '★ ' : ''}{detailCard.name}</Text>
-                        <Text style={styles.detailMeta}>{detailCard.stance.toUpperCase()} · TIER {detailCard.tier} · {detailCard.verbClass.toUpperCase()}</Text>
+                        <Text style={styles.detailSubtitle}>{detailCard.detail.subtitle}</Text>
+                        <Text style={styles.detailMeta}>{detailCard.detail.metaChip}</Text>
 
-                        <View style={[styles.detailSection, { borderColor: AXM.bone }]}>
-                            <Text style={styles.detailSectionLabel}>FREE — no die required</Text>
-                            <Text style={styles.detailLine}>{detailCard.freeLine}</Text>
+                        <View style={[styles.detailOutcomeBox, { borderColor: detailCard.face.categoryColor }]}>
+                            <Text style={styles.detailOutcomeHead}>WHAT HAPPENS</Text>
+                            <Text style={styles.detailLine}>{detailCard.detail.outcomeLine}</Text>
+                            {detailCard.detail.outcomeStats.length > 0 && (
+                                <View style={styles.detailStatRow}>
+                                    {detailCard.detail.outcomeStats.map((s) => (
+                                        <Text key={s.label} style={styles.detailStat}>
+                                            <Text style={styles.detailStatLabel}>{s.label} </Text>
+                                            <Text style={styles.detailStatValue}>{s.value}</Text>
+                                        </Text>
+                                    ))}
+                                </View>
+                            )}
+                            {detailCard.detail.stacksText ? <Text style={styles.detailStacks}>{detailCard.detail.stacksText}</Text> : null}
                         </View>
 
-                        <View style={[styles.detailSection, { borderColor: detailCard.stanceColor }]}>
-                            <Text style={[styles.detailSectionLabel, { color: detailCard.stanceColor }]}>WITH DIE — any colour ({detailCard.stance.toUpperCase()} die = bonus)</Text>
-                            <Text style={styles.detailLine}>{detailCard.poweredLine}</Text>
+                        <View style={styles.detailFreeBox}>
+                            <Text style={styles.detailFreeLine}>{detailCard.detail.freeLine}</Text>
+                            <Text style={[styles.detailPowerLine, { color: detailCard.face.categoryColor }]}>{detailCard.detail.powerLine}</Text>
+                            <Text style={styles.detailReadNote}>{detailCard.detail.readNote}</Text>
                         </View>
 
-                        {detailCard.keywords.length > 0 && (
+                        <Text style={styles.detailMath}>{detailCard.detail.mathLine}</Text>
+
+                        {detailCard.detail.keywords.length > 0 && (
                             <View style={styles.detailKeywords}>
                                 <Text style={styles.detailKeywordsHead}>KEYWORDS</Text>
-                                {detailCard.keywords.map((k) => (
+                                {detailCard.detail.keywords.map((k) => (
                                     <View key={k.name} style={styles.detailKeywordRow}>
-                                        <Text style={styles.detailKeywordName}>{k.name}</Text>
-                                        <Text style={styles.detailKeywordDef}>{k.def}</Text>
+                                        <Text style={[styles.detailKeywordName, k.minor ? { color: AXM.ash } : null]}>{k.name}</Text>
+                                        <Text style={styles.detailKeywordDef}>{k.def}{k.minor ? ' (minor right now)' : ''}</Text>
                                     </View>
                                 ))}
                             </View>
                         )}
 
-                        {detailCard.mechanicalDesc && (
-                            <Text style={styles.detailMechLine}>{detailCard.mechanicalDesc}</Text>
-                        )}
-
-                        <Text style={styles.detailHint}>tap anywhere to dismiss · drag card up to stage it</Text>
-                    </View>
+                        <Text style={styles.detailHint}>tap outside to dismiss · drag the card up to play it</Text>
+                    </ScrollView>
                 </Pressable>
             )}
 
@@ -424,15 +439,26 @@ const useStyles = makeStyles((AXM) => ({
     modalBtn: { borderWidth: 2, paddingHorizontal: 22, paddingVertical: 9 },
     modalBtnText: { fontFamily: FONTS.gothic, fontSize: 16, letterSpacing: 1 },
     detailMeta: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone, letterSpacing: 0.6, marginTop: 4, marginBottom: 10 },
-    detailSection: { alignSelf: 'stretch', borderWidth: 1, borderRadius: 3, padding: 10, marginBottom: 8 },
-    detailSectionLabel: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1, color: AXM.bone, marginBottom: 5 },
+    detailScroll: { width: '100%', maxWidth: 380, maxHeight: '86%' },
+    detailSubtitle: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 13, color: AXM.parchment, textAlign: 'center', marginTop: 3 },
+    detailOutcomeBox: { alignSelf: 'stretch', borderWidth: 1, borderRadius: 3, padding: 10, marginBottom: 8 },
+    detailOutcomeHead: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1.5, color: AXM.bone, opacity: 0.7, marginBottom: 5 },
+    detailStatRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 7 },
+    detailStat: { fontFamily: FONTS.mono, fontSize: 12 },
+    detailStatLabel: { fontFamily: FONTS.sans, fontSize: 9, letterSpacing: 0.8, color: AXM.bone },
+    detailStatValue: { fontFamily: FONTS.mono, fontSize: 13, color: AXM.parchment },
+    detailStacks: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 11, color: AXM.bone, marginTop: 6 },
+    detailFreeBox: { alignSelf: 'stretch', marginBottom: 8 },
+    detailFreeLine: { fontFamily: FONTS.serif, fontSize: 12.5, color: AXM.bone, lineHeight: 17, marginBottom: 5 },
+    detailPowerLine: { fontFamily: FONTS.serif, fontSize: 12.5, lineHeight: 17, marginBottom: 5 },
+    detailReadNote: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 11, color: AXM.bone, lineHeight: 15 },
     detailLine: { fontFamily: FONTS.serif, fontSize: 13, color: AXM.parchment, lineHeight: 18 },
     detailKeywords: { alignSelf: 'stretch', backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: 10, marginBottom: 8 },
     detailKeywordsHead: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1.5, color: AXM.bone, opacity: 0.7, marginBottom: 7 },
     detailKeywordRow: { flexDirection: 'row', gap: 9, marginBottom: 6 },
     detailKeywordName: { fontFamily: FONTS.mono, fontSize: 12, letterSpacing: 0.8, color: AXM.sulfur, width: 78 },
     detailKeywordDef: { fontFamily: FONTS.serif, fontSize: 11.5, color: AXM.bone, lineHeight: 15, flex: 1 },
-    detailMechLine: { alignSelf: 'stretch', fontFamily: FONTS.mono, fontSize: 11, color: AXM.sulfur, lineHeight: 15, marginBottom: 8 },
+    detailMath: { alignSelf: 'stretch', fontFamily: FONTS.mono, fontSize: 10.5, color: AXM.bone, opacity: 0.85, lineHeight: 15, marginBottom: 8 },
     detailTipGloss: { fontFamily: FONTS.serif, fontSize: 12, color: AXM.parchment, textAlign: 'center', marginTop: 6, lineHeight: 16 },
     detailHint: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 11, color: AXM.bone, marginTop: 4, textAlign: 'center' },
 

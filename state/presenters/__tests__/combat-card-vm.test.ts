@@ -1,0 +1,126 @@
+/**
+ * Hermetic unit tests for the honest card view-model helpers
+ * (engineHonestKind / resolvePrimary / faceStats / detailStats / armedReadValue).
+ *
+ * Fixtures are the four verified sample cards from the card-rework design spec,
+ * read live from the installed engine so the assertions stay true to real data:
+ *   - slippery-slope    Bleed 2× dur3 (dpr 3)  → 6/t·3t = 18
+ *   - brace-for-impact  Guard 12               → free Guard 6
+ *   - eternal-recurrence Regen 3× dur4 (dpr 4) → 12/t·4t = 48, free 4/t·6t = 24
+ *   - buridans-impasse  Stun dur2              → skip 2t
+ *   - achilles-gambit   Strike                 → no fabricated number
+ *
+ * Core invariant under test: real-units-or-no-number (never a fabricated value),
+ * and face↔detail numbers agree.
+ */
+
+import { describe, it, expect } from '@jest/globals';
+import { getCard, getSkillById } from 'axiomancer-mechanics';
+import {
+    faceStats, detailStats, engineHonestKind, resolvePrimary, armedReadValue,
+} from '@/state/presenters/combat-encounter.engine';
+
+const cardOf = (id: string) => {
+    const card = getCard(id);
+    if (!card) throw new Error(`fixture card missing: ${id}`);
+    const skill = card.skillId ? getSkillById(card.skillId) : undefined;
+    return { card, skill };
+};
+
+describe('engineHonestKind — the honesty gate', () => {
+    it('classifies DoT / stun / regen / weaken, and leaves the pure-defense bucket inert', () => {
+        expect(engineHonestKind('debuff_bleed')).toBe('dot');
+        expect(engineHonestKind('debuff_stun')).toBe('stun');
+        expect(engineHonestKind('buff_regeneration')).toBe('regen');
+        expect(engineHonestKind('debuff_slow')).toBe('weaken');           // negative roll mod (0.33.0 de-inert)
+        expect(engineHonestKind('debuff_confusion')).toBe('weaken');
+        expect(engineHonestKind('debuff_vulnerability_body')).toBeNull(); // pure defense → still inert
+        expect(engineHonestKind(null)).toBeNull();
+    });
+});
+
+describe('faceStats — honest real-unit faces', () => {
+    it('Slippery Slope (Bleed) → 6/t·3t (18), FREE 2 HP', () => {
+        const { card, skill } = cardOf('slippery-slope');
+        const f = faceStats(card, skill);
+        expect(f.kind).toBe('dot');
+        expect(f.keyword).toBe('BLEED');
+        expect(f.heroText).toBe('6/t·3t');
+        expect(f.heroSub).toBe('(18)');
+        expect(f.freeHeroText).toBe('2 HP');
+        expect(f.readDependent).toBe(false);
+        expect(f.inert).toBe(false);
+    });
+    it('Brace for Impact (Guard) → Guard 12, FREE Guard 6, read-dependent', () => {
+        const { card, skill } = cardOf('brace-for-impact');
+        const f = faceStats(card, skill);
+        expect(f.kind).toBe('guard');
+        expect(f.heroText).toBe('Guard 12');
+        expect(f.freeHeroText).toBe('Guard 6');
+        expect(f.readDependent).toBe(true);
+        expect(f.guardBase).toBe(12);
+    });
+    it('Eternal Recurrence (Regen) → 12/t·4t (48), FREE 4/t·6t (24)', () => {
+        const { card, skill } = cardOf('eternal-recurrence');
+        const f = faceStats(card, skill);
+        expect(f.kind).toBe('regen');
+        expect(f.heroText).toBe('12/t·4t');
+        expect(f.heroSub).toBe('(48)');
+        expect(f.freeHeroText).toBe('4/t·6t');
+        expect(f.freeHeroSub).toBe('(24)');
+    });
+    it("Buridan's Impasse (Stun) → skip 2t", () => {
+        const { card, skill } = cardOf('buridans-impasse');
+        const f = faceStats(card, skill);
+        expect(f.kind).toBe('stun');
+        expect(f.heroText).toBe('skip 2t');
+    });
+    it('Achilles Gambit (Strike) → no fabricated number', () => {
+        const { card, skill } = cardOf('achilles-gambit');
+        const f = faceStats(card, skill);
+        expect(f.kind).toBe('strike');
+        expect(f.heroText).toBe('');               // real-units-or-no-number
+        expect(f.freeHeroText).toBe('small chip');
+        expect(f.readDependent).toBe(true);
+    });
+});
+
+describe('detailStats — same numbers as the face', () => {
+    it('Slippery Slope outcome + stats + math all agree on 18', () => {
+        const { card, skill } = cardOf('slippery-slope');
+        const d = detailStats(card, skill);
+        expect(d.outcomeLine).toContain('6 HP/turn for 3 turns');
+        expect(d.outcomeLine).toContain('18 HP total');
+        expect(d.outcomeStats).toEqual([
+            { label: 'PER TURN', value: '6' },
+            { label: 'TURNS', value: '3' },
+            { label: 'TOTAL', value: '18' },
+        ]);
+        expect(d.stacksText).toContain('Stacks up to 10×');
+        expect(d.mathLine).toContain('3 base × 2 intensity');
+    });
+    it('Eternal Recurrence shows the 48 power total and the 24 FREE total', () => {
+        const { card, skill } = cardOf('eternal-recurrence');
+        const d = detailStats(card, skill);
+        expect(d.outcomeLine).toContain('48 HP total');
+        expect(d.mathLine).toContain('24');
+    });
+});
+
+describe('resolvePrimary + armedReadValue', () => {
+    it('resolvePrimary routes by verb-class + honesty', () => {
+        expect(resolvePrimary(getCard('brace-for-impact')!, getSkillById('brace-for-impact')).kind).toBe('guard');
+        expect(resolvePrimary(getCard('achilles-gambit')!, getSkillById('achilles-gambit')).kind).toBe('strike');
+        expect(resolvePrimary(getCard('befriend')!, getSkillById('befriend')).kind).toBe('befriend');
+        expect(resolvePrimary(getCard('slippery-slope')!, getSkillById('slippery-slope')).kind).toBe('dot');
+    });
+    it('armedReadValue scales Guard by the read (+colour match); null for non-guard', () => {
+        const guard = faceStats(getCard('brace-for-impact')!, getSkillById('brace-for-impact'));
+        expect(armedReadValue(guard, 'neutral', false)).toBe(12);       // 12 × 1.0
+        expect(armedReadValue(guard, 'advantage', false)).toBe(18);     // 12 × 1.5
+        expect(armedReadValue(guard, 'disadvantage', false)).toBe(6);   // 12 × 0.5
+        expect(armedReadValue(guard, 'neutral', true)).toBe(15);        // + colour-match bonus
+        const dot = faceStats(getCard('slippery-slope')!, getSkillById('slippery-slope'));
+        expect(armedReadValue(dot, 'advantage', true)).toBeNull();      // DoT is read-independent
+    });
+});

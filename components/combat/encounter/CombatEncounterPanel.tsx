@@ -347,10 +347,15 @@ export function CombatEncounterPanel({
                             <Text style={styles.detailLine}>{detailCard.poweredLine}</Text>
                         </View>
 
-                        {detailCard.mechanicalDesc && (
-                            <View style={styles.detailMechBox}>
-                                <Text style={styles.detailMechLabel}>{detailCard.effectName ?? 'EFFECT'}</Text>
-                                <Text style={styles.detailMechDesc}>{detailCard.mechanicalDesc}</Text>
+                        {detailCard.keywords.length > 0 && (
+                            <View style={styles.detailKeywords}>
+                                <Text style={styles.detailKeywordsHead}>KEYWORDS</Text>
+                                {detailCard.keywords.map((k) => (
+                                    <View key={k.name} style={styles.detailKeywordRow}>
+                                        <Text style={styles.detailKeywordName}>{k.name}</Text>
+                                        <Text style={styles.detailKeywordDef}>{k.def}</Text>
+                                    </View>
+                                ))}
                             </View>
                         )}
 
@@ -415,9 +420,11 @@ const useStyles = makeStyles((AXM) => ({
     detailSection: { alignSelf: 'stretch', borderWidth: 1, borderRadius: 3, padding: 10, marginBottom: 8 },
     detailSectionLabel: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1, color: AXM.bone, marginBottom: 5 },
     detailLine: { fontFamily: FONTS.serif, fontSize: 13, color: AXM.parchment, lineHeight: 18 },
-    detailMechBox: { alignSelf: 'stretch', backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: 10, marginBottom: 8 },
-    detailMechLabel: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1, color: AXM.sulfur, marginBottom: 4 },
-    detailMechDesc: { fontFamily: FONTS.serif, fontSize: 12, color: AXM.bone, lineHeight: 17 },
+    detailKeywords: { alignSelf: 'stretch', backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: 10, marginBottom: 8 },
+    detailKeywordsHead: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1.5, color: AXM.bone, opacity: 0.7, marginBottom: 7 },
+    detailKeywordRow: { flexDirection: 'row', gap: 9, marginBottom: 6 },
+    detailKeywordName: { fontFamily: FONTS.mono, fontSize: 12, letterSpacing: 0.8, color: AXM.sulfur, width: 78 },
+    detailKeywordDef: { fontFamily: FONTS.serif, fontSize: 11.5, color: AXM.bone, lineHeight: 15, flex: 1 },
     detailHint: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 11, color: AXM.bone, marginTop: 4, textAlign: 'center' },
 
     reveal: { flex: 1, backgroundColor: '#0c0a08' },

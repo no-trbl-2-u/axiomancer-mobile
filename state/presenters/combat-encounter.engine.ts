@@ -22,6 +22,7 @@ import {
     type CombatSummary, type SignatureSkill, type Stance,
 } from 'axiomancer-mechanics';
 import { effectGlyph, type StatusGlyph } from '@/components/combat/statusGlyphs';
+import { keywordForEffect, keywordForVerb, keywordGloss } from '@/state/combat/keywords';
 import { resolveEnemyArchetype } from '@/state/presenters/enemy-art';
 
 // ── Stance palette (Heart/Body/Mind/Wild/X) ──────────────────────────────────
@@ -82,7 +83,7 @@ export interface CombatCardVM {
     verbClass: string; effectKind: 'dot' | 'control' | 'none'; rarity?: 'gold'; tier: 1 | 2 | 3;
     category: 'fallacy' | 'paradox' | null;
     topActionText: string; bottomActionText: string; bottomDamagePreview: number;
-    /** Human-readable name of the primary status effect this card applies (e.g. "Theseus' Dissolution"). */
+    /** The keyword for the primary status effect this card applies (e.g. "Bleed"), or null. */
     effectName: string | null;
     /** One-liner for the FREE (no-die) action — plain mechanical language, zero thematic. */
     freeLine: string;
@@ -90,6 +91,8 @@ export interface CombatCardVM {
     poweredLine: string;
     /** Mechanical description of the primary effect from its payload (HP/turn, stuns, etc.). Null for utility/self cards. */
     mechanicalDesc: string | null;
+    /** Keyword glossary entries for this card (status keyword + verb-class keyword like GUARD). */
+    keywords: { name: string; def: string }[];
     /** Read tier if powered with the current drafted die (null until a die is drafted). */
     read: CombatReadResult | null; colorMatch: boolean;
 }
@@ -130,10 +133,13 @@ function currentPhase(state: CombatEncounterState): CombatThreatPhase | undefine
 function chips(effects: { effectId: string; intensity: number; remainingDuration: number }[]): CombatEffectChipVM[] {
     return effects.map(ae => {
         const def = lookupEffect(ae.effectId) ?? { id: ae.effectId };
+        const glyph = effectGlyph(def as Parameters<typeof effectGlyph>[0]);
+        const kw = keywordForEffect(ae.effectId);
         return {
             effectId: ae.effectId, intensity: ae.intensity, duration: ae.remainingDuration,
             isMax: ae.intensity >= 10,
-            glyph: effectGlyph(def as Parameters<typeof effectGlyph>[0]),
+            // Show the keyword on the chip's label (a11y/tooltip) instead of the thematic name.
+            glyph: kw ? { ...glyph, label: kw } : glyph,
         };
     });
 }
@@ -233,20 +239,20 @@ function buildMechanicalDesc(effectId: string | null): string | null {
 /** Generate the FREE and POWERED one-liners for the card detail and face split. */
 function buildActionLines(card: CombatCard): { freeLine: string; poweredLine: string } {
     const stanceLabel = STANCE_LABELS[card.stance] ?? card.stance.toUpperCase();
-    const eff = card.primaryEffectId ? lookupEffect(card.primaryEffectId) : null;
-    const effName = eff?.name ?? null;
+    const kw = keywordForEffect(card.primaryEffectId)
+        ?? (card.primaryEffectId ? lookupEffect(card.primaryEffectId)?.name ?? null : null);
     const preview = card.bottomDamagePreview;
     switch (card.verbClass) {
         case 'direct-dot':
             return {
-                freeLine: `Apply ${effName ?? 'DoT'} ×1 (weak) — ticks HP each turn — no die needed`,
-                poweredLine: `Apply ${effName ?? 'DoT'} ×full (~${preview} total impact) — requires 1 ${stanceLabel} die`,
+                freeLine: `Apply ${kw ?? 'a DoT'} ×1 (weak) — ticks HP each turn — no die needed`,
+                poweredLine: `Apply ${kw ?? 'a DoT'} ×full (~${preview} total impact) — requires 1 ${stanceLabel} die`,
             };
         case 'direct-control':
         case 'stat-debuff':
             return {
-                freeLine: `Apply ${effName ?? 'control effect'} ×1 (weak) — hinders the enemy — no die needed`,
-                poweredLine: `Apply ${effName ?? 'control effect'} ×full (~${preview} control impact) — requires 1 ${stanceLabel} die`,
+                freeLine: `Apply ${kw ?? 'a debuff'} ×1 (weak) — hinders the enemy — no die needed`,
+                poweredLine: `Apply ${kw ?? 'a debuff'} ×full (~${preview} control impact) — requires 1 ${stanceLabel} die`,
             };
         case 'direct-damage':
             return {
@@ -255,13 +261,13 @@ function buildActionLines(card: CombatCard): { freeLine: string; poweredLine: st
             };
         case 'buff-self':
             return {
-                freeLine: `Apply a weak self-buff / heal to yourself — no die needed`,
-                poweredLine: `Apply full self-buff / heal to yourself — requires 1 ${stanceLabel} die`,
+                freeLine: `Apply ${kw ?? 'a buff'} (weak) to yourself — no die needed`,
+                poweredLine: `Apply ${kw ?? 'a buff'} (full) to yourself — requires 1 ${stanceLabel} die`,
             };
         case 'defend':
             return {
-                freeLine: `Gain a small GUARD shield — absorbs the enemy's next attack — no die needed`,
-                poweredLine: `Gain a GUARD shield — fully absorbs the enemy's next attack — requires 1 ${stanceLabel} die`,
+                freeLine: `Gain GUARD (weak) — absorbs the enemy's next attack — no die needed`,
+                poweredLine: `Gain GUARD — fully absorbs the enemy's next attack — requires 1 ${stanceLabel} die`,
             };
         case 'befriend':
             return {
@@ -271,6 +277,21 @@ function buildActionLines(card: CombatCard): { freeLine: string; poweredLine: st
         default:
             return { freeLine: card.topActionText, poweredLine: card.bottomActionText };
     }
+}
+
+/** Glossary entries for a card's inspect overlay — its status keyword and any
+ *  verb-class keyword (e.g. a defend card grants GUARD). Deduped, uppercased. */
+function cardKeywords(card: CombatCard): { name: string; def: string }[] {
+    const out: { name: string; def: string }[] = [];
+    const seen = new Set<string>();
+    const push = (kw: string | null) => {
+        if (!kw || seen.has(kw)) return;
+        seen.add(kw);
+        out.push({ name: kw.toUpperCase(), def: keywordGloss(kw) ?? '' });
+    };
+    push(keywordForEffect(card.primaryEffectId));
+    push(keywordForVerb(card.verbClass));
+    return out;
 }
 
 function handVM(state: CombatEncounterState): CombatCardVM[] {
@@ -287,9 +308,11 @@ function handVM(state: CombatEncounterState): CombatCardVM[] {
             verbClass: card.verbClass, effectKind: card.effectKind, rarity: card.rarity, tier: card.tier, category: card.category,
             topActionText: card.topActionText, bottomActionText: card.bottomActionText,
             bottomDamagePreview: card.bottomDamagePreview,
-            effectName: card.primaryEffectId ? (lookupEffect(card.primaryEffectId)?.name ?? null) : null,
+            effectName: keywordForEffect(card.primaryEffectId)
+                ?? (card.primaryEffectId ? lookupEffect(card.primaryEffectId)?.name ?? null : null),
             ...buildActionLines(card),
             mechanicalDesc: buildMechanicalDesc(card.primaryEffectId),
+            keywords: cardKeywords(card),
             read: preview?.read ?? null, colorMatch: preview?.colorMatch ?? false,
         };
     });

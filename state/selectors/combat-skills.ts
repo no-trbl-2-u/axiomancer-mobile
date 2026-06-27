@@ -30,6 +30,7 @@ import {
     type SkillsStatType,
 } from 'axiomancer-mechanics';
 
+import { keywordForEffect } from '@/state/combat/keywords';
 import type { StanceKey } from '@/state/presenters/combat.engine';
 
 export type SkillCategoryKey = 'fallacy' | 'paradox';
@@ -78,9 +79,9 @@ export function skillCostText(cost: ResourceCost): string {
     return parts.length > 0 ? parts.join(' · ') : 'FREE';
 }
 
-/** Prettify an engine effect id for the stat line: 'mind-static' → 'MIND STATIC'. */
+/** The keyword for an effect id (e.g. 'debuff_bleed' → 'BLEED'), or a humanised id. */
 function effectName(effectId: string): string {
-    return effectId.replace(/[-_]/g, ' ').toUpperCase();
+    return keywordForEffect(effectId)?.toUpperCase() ?? effectId.replace(/[-_]/g, ' ').toUpperCase();
 }
 
 /**

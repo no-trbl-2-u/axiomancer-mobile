@@ -19,6 +19,7 @@ import {
     type Item,
 } from 'axiomancer-mechanics';
 
+import { keywordForEffect } from '@/state/combat/keywords';
 import { freezeViewModel } from './freeze';
 import { parseHealAmount } from '../actions';
 import { computeEquipDelta, type EquipDeltaSide } from 'axiomancer-mechanics';
@@ -431,10 +432,10 @@ function signed(n: number): string {
     return r >= 0 ? `+${r}` : `${r}`;
 }
 
-/** Resolve an effect id to its engine name, gracefully null on miss. */
+/** Resolve an effect id to its player-facing keyword (falling back to engine name). */
 function effectName(id: string): string {
     try {
-        return lookupEffect(id)?.name ?? id;
+        return keywordForEffect(id) ?? lookupEffect(id)?.name ?? id;
     } catch {
         return id;
     }

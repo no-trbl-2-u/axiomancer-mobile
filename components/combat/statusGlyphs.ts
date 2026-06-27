@@ -67,15 +67,15 @@ export const GLYPH_COLORS: Record<StatusGlyphKind, string> = {
 const EFFECT_GLYPHS: Record<string, string> = {
     // ── DoT ──
     debuff_poison: '☠',
-    debuff_strong_poison: '🜻',
+    debuff_strong_poison: '☣',
     debuff_bleed: '🩸',
     debuff_burn: '🔥',
     debuff_frostbite: '❄',
     debuff_shock: '⚡',
     debuff_disease: '🦠',
-    debuff_hex: '🜸',
+    debuff_hex: '🕯',
     debuff_hp_decay: '⌛',
-    debuff_tartarus_rot: '🜔',
+    debuff_tartarus_rot: '🦴',
     debuff_basilisk_venom: '🐍',
     debuff_acid: '🧪',
     // ── Control ──
@@ -92,8 +92,8 @@ const EFFECT_GLYPHS: Record<string, string> = {
     debuff_root: '⚓',
     debuff_knockdown: '⬇',
     debuff_moral_learning: '⚖',
-    debuff_transformative: '🜍',
-    debuff_causal_emergence: '🜂',
+    debuff_transformative: '🔄',
+    debuff_causal_emergence: '🌋',
     debuff_category_error: '⁇',
     debuff_lethe_fog: '🌫',
     debuff_gorgon_gaze: '🐍',
@@ -102,7 +102,7 @@ const EFFECT_GLYPHS: Record<string, string> = {
     // ── Stat-down / marks ──
     tier1_mind_mark: '◎',
     debuff_all_stats_down: '▽',
-    debuff_curse: '🜄',
+    debuff_curse: '🧿',
     debuff_wound: '🩹',
     debuff_berserk: '💢',
     debuff_fatigue: '😩',

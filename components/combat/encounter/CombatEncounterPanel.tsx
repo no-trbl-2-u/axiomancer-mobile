@@ -345,7 +345,7 @@ export function CombatEncounterPanel({
                         </View>
 
                         <View style={[styles.detailSection, { borderColor: detailCard.stanceColor }]}>
-                            <Text style={[styles.detailSectionLabel, { color: detailCard.stanceColor }]}>WITH DIE — 1 {detailCard.stance.toUpperCase()} die required</Text>
+                            <Text style={[styles.detailSectionLabel, { color: detailCard.stanceColor }]}>WITH DIE — any colour ({detailCard.stance.toUpperCase()} die = bonus)</Text>
                             <Text style={styles.detailLine}>{detailCard.poweredLine}</Text>
                         </View>
 
@@ -361,6 +361,10 @@ export function CombatEncounterPanel({
                             </View>
                         )}
 
+                        {detailCard.mechanicalDesc && (
+                            <Text style={styles.detailMechLine}>{detailCard.mechanicalDesc}</Text>
+                        )}
+
                         <Text style={styles.detailHint}>tap anywhere to dismiss · drag card up to stage it</Text>
                     </View>
                 </Pressable>
@@ -372,6 +376,7 @@ export function CombatEncounterPanel({
                     <View style={[styles.modal, { borderColor: tipEffect.glyph.color }]}>
                         <Text style={[styles.modalTitle, { color: tipEffect.glyph.color }]}>{tipEffect.glyph.glyph} {tipEffect.glyph.label}</Text>
                         <Text style={styles.detailMeta}>intensity {tipEffect.intensity}{tipEffect.isMax ? ' (MAX)' : ''} · {tipEffect.duration} turns left</Text>
+                        {tipEffect.gloss && <Text style={styles.detailTipGloss}>{tipEffect.gloss}</Text>}
                     </View>
                 </Pressable>
             )}
@@ -427,6 +432,8 @@ const useStyles = makeStyles((AXM) => ({
     detailKeywordRow: { flexDirection: 'row', gap: 9, marginBottom: 6 },
     detailKeywordName: { fontFamily: FONTS.mono, fontSize: 12, letterSpacing: 0.8, color: AXM.sulfur, width: 78 },
     detailKeywordDef: { fontFamily: FONTS.serif, fontSize: 11.5, color: AXM.bone, lineHeight: 15, flex: 1 },
+    detailMechLine: { alignSelf: 'stretch', fontFamily: FONTS.mono, fontSize: 11, color: AXM.sulfur, lineHeight: 15, marginBottom: 8 },
+    detailTipGloss: { fontFamily: FONTS.serif, fontSize: 12, color: AXM.parchment, textAlign: 'center', marginTop: 6, lineHeight: 16 },
     detailHint: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 11, color: AXM.bone, marginTop: 4, textAlign: 'center' },
 
     reveal: { flex: 1, backgroundColor: '#0c0a08' },

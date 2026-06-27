@@ -47,7 +47,8 @@ const PANELS: PrimerPanel[] = [
         body:
             'Each turn you roll two stance dice — keep one, bank the other as ◆ Conviction. ' +
             'Every card plays FREE (no die, weaker) or POWER (spend your stance die, full effect). ' +
-            'Land a NEW status and your die REFRESHES — so you can chain another.',
+            'Land a NEW status and your die REFRESHES — so you can chain another. ' +
+            'Tap any card to read its keywords and full effect.',
     },
 ];
 

@@ -10,6 +10,7 @@
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { FONTS } from '@/theme/axm';
 import { makeStyles } from '@/theme/runtime';
+import { getCard } from 'axiomancer-mechanics';
 import { STARTER_BUNDLES, type StarterBundle } from '@/state/combat/store-actions';
 
 // Accent per path, aligned to the stance palette (Heart purple / Body red /
@@ -55,6 +56,9 @@ export function BundleSelectScreen({ onPick }: BundleSelectScreenProps) {
                                     <Text key={p} style={[styles.pill, { color: accent, borderColor: accent }]}>{p}</Text>
                                 ))}
                             </View>
+                            <Text style={styles.cards} numberOfLines={2}>
+                                {b.cardIds.map((id) => getCard(id)?.name).filter(Boolean).join(' · ')}
+                            </Text>
                             <Text style={[styles.choose, { color: accent }]}>CHOOSE ›</Text>
                         </Pressable>
                     );
@@ -81,5 +85,6 @@ const useStyles = makeStyles((AXM) => ({
         fontFamily: FONTS.mono, fontSize: 10, letterSpacing: 1, borderWidth: 1, borderRadius: 2,
         paddingHorizontal: 6, paddingVertical: 2, overflow: 'hidden',
     },
-    choose: { fontFamily: FONTS.sans, fontSize: 13, letterSpacing: 1.5, marginTop: 14, textAlign: 'right' },
+    cards: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 11, color: AXM.bone, marginTop: 10, lineHeight: 15 },
+    choose: { fontFamily: FONTS.sans, fontSize: 13, letterSpacing: 1.5, marginTop: 12, textAlign: 'right' },
 }));

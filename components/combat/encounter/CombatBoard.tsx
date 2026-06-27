@@ -120,8 +120,8 @@ function DiceTray({
         <View style={styles.tray} testID="combat-dice-tray">
             <View style={styles.trayHead}>
                 <Text style={styles.trayLabel}>⬡ DRAG A DIE ONTO YOUR CARD</Text>
-                <Pressable onPress={onNewTurn} testID="combat-new-turn" accessibilityRole="button" accessibilityLabel="End turn — discard your dice and roll two fresh ones" style={styles.newTurn}>
-                    <Text style={styles.newTurnText}>↻ END TURN</Text>
+                <Pressable onPress={onNewTurn} testID="combat-new-turn" accessibilityRole="button" accessibilityLabel="New turn — discard your dice and roll two fresh ones (the enemy does NOT act)" style={styles.newTurn}>
+                    <Text style={styles.newTurnText}>↻ NEW TURN</Text>
                 </Pressable>
             </View>
             <View style={styles.trayDice}>
@@ -150,7 +150,7 @@ function DiceTray({
                         <View key={die.id}>{node}</View>
                     );
                 })}
-                {vm.dice.length === 0 && <Text style={styles.trayEmpty}>press END TURN to roll</Text>}
+                {vm.dice.length === 0 && <Text style={styles.trayEmpty}>press NEW TURN to roll</Text>}
             </View>
         </View>
     );
@@ -174,6 +174,9 @@ function StagedCard({
     const armed = assignedDie !== null;
     const readColor = armed ? (READ_ACCENT[read] ?? AXM.bone) : AXM.bone;
     const cardW = compact ? 70 : 88;
+    // Keep the card's meaning visible at the moment of commit (the same short line
+    // the hand shows): powered line when armed, free line otherwise.
+    const { freeShort, powerShort } = cardFaceShortLines(card);
     return (
         <View style={styles.stagedCol}>
             <GestureDetector gesture={gesture}>
@@ -198,6 +201,7 @@ function StagedCard({
                     )}
                     <Text style={[styles.cardName, compact && { fontSize: 10, lineHeight: 11 }]} numberOfLines={2}>{card.name}</Text>
                     <Text style={[styles.cardTier, compact && { fontSize: 8 }]}>{card.stance[0].toUpperCase()} · T{card.tier}</Text>
+                    <Text style={[styles.cardEffectLine, compact && { fontSize: 8 }]} numberOfLines={1}>{armed ? powerShort : freeShort}</Text>
                     {armed && (
                         <Text style={[styles.cardRead, { color: readColor }, compact && { fontSize: 8 }]}>
                             {read === 'advantage' ? '▲ ADV' : read === 'disadvantage' ? '▼ DIS' : '— EVN'}
@@ -210,13 +214,14 @@ function StagedCard({
                 testID={`combat-apply-${card.uid}`}
                 accessibilityRole="button"
                 accessibilityLabel={armed ? `Apply powered: ${card.bottomActionText}` : `Apply free: ${card.topActionText}`}
+                hitSlop={8}
                 style={[
                     styles.applyBtn,
                     { borderColor: armed ? readColor : AXM.bone, backgroundColor: armed ? 'rgba(91,191,106,0.14)' : 'rgba(0,0,0,0.4)', width: cardW },
                     compact && { paddingVertical: 3 },
                 ]}
             >
-                <Text style={[styles.applyText, { color: armed ? readColor : AXM.parchment }, compact && { fontSize: 10 }]}>APPLY</Text>
+                <Text style={[styles.applyText, { color: armed ? readColor : AXM.parchment }, compact && { fontSize: 10 }]} numberOfLines={1} adjustsFontSizeToFit>{armed ? 'APPLY · POWER' : 'APPLY · FREE'}</Text>
             </Pressable>
         </View>
     );
@@ -456,7 +461,7 @@ export const CombatBoard = React.memo(function CombatBoard({
                         </View>
                     ) : (
                         <View style={styles.playEmpty}>
-                            <Text style={styles.playEmptyText}>drag cards up to stage them</Text>
+                            <Text style={styles.playEmptyText}>drag cards up to stage · tap a card to read it</Text>
                         </View>
                     )}
                 </View>
@@ -587,6 +592,7 @@ const useStyles = makeStyles((AXM) => ({
     cardName: { fontFamily: FONTS.gothic, fontSize: 12, color: AXM.parchment, marginLeft: 3, lineHeight: 13 },
     cardTier: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone, letterSpacing: 0.4, marginLeft: 3, marginTop: 3 },
     cardRead: { fontFamily: FONTS.sans, fontSize: 9, letterSpacing: 0.8, marginLeft: 3, marginTop: 2 },
+    cardEffectLine: { fontFamily: FONTS.serif, fontSize: 9, color: AXM.bone, marginLeft: 3, marginTop: 3, lineHeight: 11 },
     actHint: { fontFamily: FONTS.mono, fontSize: 11, color: '#c2a14e', textAlign: 'center', letterSpacing: 0.3, paddingHorizontal: 12 },
 
     applyBtn: { width: 88, borderWidth: 1.5, borderRadius: 3, paddingVertical: 4, alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.4)' },

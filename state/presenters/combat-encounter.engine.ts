@@ -49,6 +49,8 @@ export const INTENT_ICONS: Record<CombatIntentType, { icon: string; label: strin
 
 export interface CombatEffectChipVM {
     effectId: string; glyph: StatusGlyph; intensity: number; duration: number; isMax: boolean;
+    /** General keyword definition for the on-board status tooltip (null if unmapped). */
+    gloss: string | null;
 }
 export interface CombatIntentVM {
     type: CombatIntentType; icon: string; label: string; color: string; description: string;
@@ -140,6 +142,7 @@ function chips(effects: { effectId: string; intensity: number; remainingDuration
             isMax: ae.intensity >= 10,
             // Show the keyword on the chip's label (a11y/tooltip) instead of the thematic name.
             glyph: kw ? { ...glyph, label: kw } : glyph,
+            gloss: keywordGloss(kw),
         };
     });
 }
@@ -246,33 +249,33 @@ function buildActionLines(card: CombatCard): { freeLine: string; poweredLine: st
         case 'direct-dot':
             return {
                 freeLine: `Apply ${kw ?? 'a DoT'} ×1 (weak) — ticks HP each turn — no die needed`,
-                poweredLine: `Apply ${kw ?? 'a DoT'} ×full (~${preview} total impact) — requires 1 ${stanceLabel} die`,
+                poweredLine: `Apply ${kw ?? 'a DoT'} ×full (~${preview} total impact) — needs 1 die — any colour (${stanceLabel} = bonus)`,
             };
         case 'direct-control':
         case 'stat-debuff':
             return {
                 freeLine: `Apply ${kw ?? 'a debuff'} ×1 (weak) — hinders the enemy — no die needed`,
-                poweredLine: `Apply ${kw ?? 'a debuff'} ×full (~${preview} control impact) — requires 1 ${stanceLabel} die`,
+                poweredLine: `Apply ${kw ?? 'a debuff'} ×full (~${preview} control impact) — needs 1 die — any colour (${stanceLabel} = bonus)`,
             };
         case 'direct-damage':
             return {
                 freeLine: `Deal a small amount of direct HP damage to the enemy — no die needed`,
-                poweredLine: `Deal ~${preview} direct HP damage to the enemy — requires 1 ${stanceLabel} die`,
+                poweredLine: `Deal ~${preview} direct HP damage to the enemy — needs 1 die — any colour (${stanceLabel} = bonus)`,
             };
         case 'buff-self':
             return {
                 freeLine: `Apply ${kw ?? 'a buff'} (weak) to yourself — no die needed`,
-                poweredLine: `Apply ${kw ?? 'a buff'} (full) to yourself — requires 1 ${stanceLabel} die`,
+                poweredLine: `Apply ${kw ?? 'a buff'} (full) to yourself — needs 1 die — any colour (${stanceLabel} = bonus)`,
             };
         case 'defend':
             return {
                 freeLine: `Gain GUARD (weak) — absorbs the enemy's next attack — no die needed`,
-                poweredLine: `Gain GUARD — fully absorbs the enemy's next attack — requires 1 ${stanceLabel} die`,
+                poweredLine: `Gain GUARD — fully absorbs the enemy's next attack — needs 1 die — any colour (${stanceLabel} = bonus)`,
             };
         case 'befriend':
             return {
                 freeLine: `Attempt mercy — weak chance if enemy is near defeat — no die needed`,
-                poweredLine: `If enemy HP is low: end combat peacefully (befriend them) — requires 1 ${stanceLabel} die`,
+                poweredLine: `If enemy HP is low: end combat peacefully (befriend them) — needs 1 die — any colour (${stanceLabel} = bonus)`,
             };
         default:
             return { freeLine: card.topActionText, poweredLine: card.bottomActionText };

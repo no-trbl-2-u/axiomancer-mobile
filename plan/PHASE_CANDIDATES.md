@@ -1367,6 +1367,13 @@ warranted a full phase promotion:
 
 ## Promoted
 
+### Phase 160 — Skills ≠ Cards mobile copy boundary
+- promoted: 2026-06-27 via T direct steering.
+- source: T corrected legacy-combat vocabulary: skills are always-available token-used effects; cards are Hazard-style deck/hand/reward objects; **Skills != Cards**.
+- scope: Audit mobile combat/deck/dev copy, accessibility labels, presenters, tests, and docs so cards are not called skills and actual token-spending skills remain distinct.
+- build-plan row: `plan/steps/01_build_plan.md`.
+- brief: `plan/phases/phase_160_skills_cards_mobile_copy_boundary.md`.
+
 ### Phase 158 — Combat card compact glyphs + keyword chips
 - promoted: 2026-06-24 by T direct steering.
 - source: T requested mobile phases to make combat cards clearer when small, including direct-damage glyphs such as a sword, card keywords, and better legibility on the new Hazard-style combat board.

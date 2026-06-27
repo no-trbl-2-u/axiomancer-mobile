@@ -10,7 +10,7 @@
  */
 
 import { afterEach, describe, it, expect, jest } from '@jest/globals';
-import { render, act } from '@testing-library/react-native';
+import { render, act, fireEvent } from '@testing-library/react-native';
 import React from 'react';
 
 // Mock expo-router and related navigation modules
@@ -72,10 +72,21 @@ jest.mock('@expo-google-fonts/jetbrains-mono', () => ({
 jest.mock('@/components/TitleScreen', () => ({
     TitleScreen: ({ onContinue }: { onContinue: () => void }) => {
         const mockReact = require('react');
-        return mockReact.createElement('view', { 
+        return mockReact.createElement('view', {
             testID: 'title-screen',
-            onPress: onContinue 
+            onPress: onContinue
         }, 'Title Screen');
+    },
+}));
+
+// Mock BundleSelectScreen — pressing it picks the first bundle.
+jest.mock('@/components/BundleSelectScreen', () => ({
+    BundleSelectScreen: ({ onPick }: { onPick: (id: string) => void }) => {
+        const mockReact = require('react');
+        return mockReact.createElement('view', {
+            testID: 'bundle-select',
+            onPress: () => onPick('bleeding-edge'),
+        }, 'Bundle Select');
     },
 }));
 
@@ -128,6 +139,26 @@ describe('app/index.tsx: onboarding flow', () => {
         const { getByTestId } = render(withProviders(store, <IndexScreen />));
         
         expect(getByTestId('title-screen')).toBeTruthy();
+    });
+
+    it('offers a starter bundle after a new player dismisses the title', () => {
+        const store = makeStore();
+        const { getByTestId } = render(withProviders(store, <IndexScreen />));
+
+        // Dismiss the title → new players choose a starter bundle next.
+        fireEvent.press(getByTestId('title-screen'));
+
+        expect(getByTestId('bundle-select')).toBeTruthy();
+    });
+
+    it('proceeds to the map once a starter bundle is chosen', () => {
+        const store = makeStore();
+        const { getByTestId } = render(withProviders(store, <IndexScreen />));
+
+        fireEvent.press(getByTestId('title-screen'));
+        fireEvent.press(getByTestId('bundle-select'));
+
+        expect(getByTestId('redirect-/exploration')).toBeTruthy();
     });
 
     it('redirects to active tab for returning player (leveled up)', () => {

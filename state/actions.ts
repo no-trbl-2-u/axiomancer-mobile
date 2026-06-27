@@ -95,6 +95,7 @@ import { equipmentFromTemplate as templateToEquipment } from 'axiomancer-mechani
 import { resolveWareItem } from '@/state/presenters/village.engine';
 import {
     applyCombatDeckPresetAction,
+    chosenStarterBundle,
     randomizeCombatDeckAction,
     type CombatDeckPresetId,
     type CombatDeckPresetResult,
@@ -801,10 +802,19 @@ function currentAlignment(store: AppStore): PhilosophicalAlignment {
     return state.philosophicalAlignment ?? defaultAlignment();
 }
 
-/** Seeds the tier-1 starter skills when the player knows nothing yet. */
+/** Seeds the starter deck when the player knows nothing yet — the chosen
+ *  starter bundle if one was picked (deck identity), else the tier-1 default. */
 function ensureStarterSkills(store: AppStore): void {
     const player = store.getState().player;
     if (!player || (player.knownSkills?.length ?? 0) > 0) return;
+    // Deck-identity path: a bundle was chosen pre-run. Direct-set its curated
+    // deck (the cards are valid engine ids; learn-requirements don't gate the
+    // combat deal — knownSkills IS the deck source).
+    const bundle = chosenStarterBundle(store);
+    if (bundle) {
+        store.setState({ player: { ...player, knownSkills: [...bundle.cardIds], combatRewardCards: [] } });
+        return;
+    }
     const alignment = currentAlignment(store);
     let next = player;
     for (const id of STARTER_SKILL_IDS) {

@@ -218,3 +218,140 @@ export function randomizeCombatDeckAction(store: AppStore): string[] {
     }
     return granted;
 }
+
+// ---------------------------------------------------------------------------
+// Starter bundles (deck identity) — the pre-run "choose your path" decks.
+//
+// A bundle is just a curated knownSkills deck (built from engine card metadata,
+// exactly like the dev presets above) plus a HIDDEN archetype tag. The tag is
+// never shown to the player; it biases combat-card rewards toward the kind of
+// cards their chosen path wants (see `skewRewardsByArchetype`). Mobile invents
+// no cards — every id comes from the engine's own pool.
+// ---------------------------------------------------------------------------
+
+export type StarterArchetype = 'bleeder' | 'guardian' | 'controller';
+
+export interface StarterBundle {
+    id: string;
+    name: string;
+    description: string;
+    /** Hidden archetype tag — never surfaced in the UI. */
+    archetype: StarterArchetype;
+    /** Keyword pills shown on the selection tile. */
+    pills: readonly string[];
+    /** The seeded knownSkills deck (valid engine card ids). */
+    cardIds: string[];
+}
+
+/** Persisted once the player picks (or is migrated past) a starter bundle. */
+export const BUNDLE_CHOSEN_FLAG = 'starter-bundle-chosen';
+const BUNDLE_FLAG_PREFIX = 'bundle:';
+const ARCHETYPE_FLAG_PREFIX = 'archetype:';
+
+// Build a playable level-1 deck: a themed core (≤ tier 2) plus an attack and a
+// guard staple so every path can both threaten and survive, padded from the
+// proven baseline starters so a thin category never yields a stub deck.
+function bundleDeck(themed: (c: CombatCard) => boolean): string[] {
+    const ids: string[] = [];
+    const add = (id: string | undefined): void => { if (id && !ids.includes(id)) ids.push(id); };
+    poolMatching((c) => themed(c) && c.tier <= 2).slice(0, 3).forEach(add);
+    add(poolMatching((c) => c.verbClass === 'direct-damage' && c.tier === 1)[0]);
+    add(poolMatching((c) => c.verbClass === 'defend' && c.tier === 1)[0]);
+    for (const id of STARTER_DECK_IDS) { if (ids.length >= 5) break; add(id); }
+    return ids;
+}
+
+export const STARTER_BUNDLES: readonly StarterBundle[] = Object.freeze([
+    {
+        id: 'bleeding-edge',
+        name: 'The Bleeding Edge',
+        description: 'Aggressive. Stack damage-over-time and erode the foe turn by turn.',
+        archetype: 'bleeder',
+        pills: ['BLEED', 'POISON', 'DoT'],
+        cardIds: bundleDeck((c) => c.effectKind === 'dot'),
+    },
+    {
+        id: 'patient-defender',
+        name: 'The Patient Defender',
+        description: 'Reactive. Absorb attacks, mend, and outlast the enemy.',
+        archetype: 'guardian',
+        pills: ['GUARD', 'REGENERATE', 'FORTIFY'],
+        cardIds: bundleDeck((c) => c.verbClass === 'defend' || c.verbClass === 'buff-self'),
+    },
+    {
+        id: 'minds-unraveling',
+        name: "Mind's Unraveling",
+        description: 'Control. Confuse, slow, and dominate the enemy mind.',
+        archetype: 'controller',
+        pills: ['CONFUSE', 'STUN', 'SLOW'],
+        cardIds: bundleDeck((c) => c.effectKind === 'control'),
+    },
+]);
+
+export function starterBundleById(id: string): StarterBundle | null {
+    return STARTER_BUNDLES.find((b) => b.id === id) ?? null;
+}
+
+/** The starter bundle chosen this run (read from flags), or null. */
+export function chosenStarterBundle(store: AppStore): StarterBundle | null {
+    const flags = (store.getState() as unknown as GameState).flags ?? [];
+    const tag = flags.find((f) => f.startsWith(BUNDLE_FLAG_PREFIX));
+    return tag ? starterBundleById(tag.slice(BUNDLE_FLAG_PREFIX.length)) : null;
+}
+
+/** The hidden archetype tag for this run, or null. Drives the reward skew. */
+export function runArchetype(store: AppStore): StarterArchetype | null {
+    const flags = (store.getState() as unknown as GameState).flags ?? [];
+    const tag = flags.find((f) => f.startsWith(ARCHETYPE_FLAG_PREFIX));
+    return tag ? (tag.slice(ARCHETYPE_FLAG_PREFIX.length) as StarterArchetype) : null;
+}
+
+/**
+ * Records the player's starter-bundle choice: seeds the bundle deck onto the
+ * player (when one is loaded and skill-less), and persists the bundle + hidden
+ * archetype tag + the "chosen" flag so the picker never re-shows. Seeding also
+ * happens lazily at first combat via `ensureStarterSkills`, so a null/!loaded
+ * player here is safe — the choice still rides the save as a flag.
+ */
+export function seedStarterBundleAction(store: AppStore, bundleId: string): void {
+    const bundle = starterBundleById(bundleId);
+    if (!bundle) return;
+    const state = store.getState() as unknown as GameState;
+    const flags = new Set(state.flags ?? []);
+    flags.add(BUNDLE_CHOSEN_FLAG);
+    flags.add(`${BUNDLE_FLAG_PREFIX}${bundle.id}`);
+    flags.add(`${ARCHETYPE_FLAG_PREFIX}${bundle.archetype}`);
+    const player = state.player;
+    const patch: Record<string, unknown> = { flags: [...flags] };
+    if (player && (player.knownSkills?.length ?? 0) === 0) {
+        patch.player = { ...player, knownSkills: [...bundle.cardIds], combatRewardCards: [] };
+    }
+    store.setState(patch as never);
+    try { store.getState().save(); } catch { /* persistence must not block the run */ }
+}
+
+/** Coarse archetype a reward card belongs to, from its engine metadata. */
+function cardArchetypeOf(card: CombatCard | null | undefined): StarterArchetype | null {
+    if (!card) return null;
+    if (card.effectKind === 'dot') return 'bleeder';
+    if (card.effectKind === 'control') return 'controller';
+    if (card.verbClass === 'defend' || card.verbClass === 'buff-self') return 'guardian';
+    return null;
+}
+
+/**
+ * Bias a pool of reward ids ~60% toward the run's hidden archetype, returning
+ * `n` ids. A no-op (first `n`, original order) when there is no archetype tag —
+ * so non-bundle runs keep today's behaviour exactly.
+ */
+export function skewRewardsByArchetype(ids: string[], archetype: StarterArchetype | null, n: number): string[] {
+    if (!archetype) return ids.slice(0, n);
+    const match = ids.filter((id) => cardArchetypeOf(getCard(id)) === archetype);
+    const rest = ids.filter((id) => !match.includes(id));
+    const out: string[] = [];
+    const add = (id: string): void => { if (!out.includes(id) && out.length < n) out.push(id); };
+    match.slice(0, Math.min(match.length, Math.round(n * 0.6))).forEach(add);
+    rest.forEach(add);
+    match.forEach(add); // pad from any remaining matches if `rest` was short
+    return out.slice(0, n);
+}

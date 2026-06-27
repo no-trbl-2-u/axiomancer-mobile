@@ -42,7 +42,7 @@ import { currentCombatTutorialStep } from '@/components/combat/encounter/combat-
 import { EnemyPortrait } from '@/components/event/enemy-art/EnemyPortrait';
 import { INTENT_ICONS, buildCombatViewModel, rewardOfferVMs, type CombatCardVM, type CombatEffectChipVM } from '@/state/presenters/combat-encounter.engine';
 import { useGameState, useGameStore } from '@/state/GameStoreProvider';
-import { COMBAT_TUTORIAL_FLAG, completeCombatTutorialAction } from '@/state/combat/store-actions';
+import { COMBAT_TUTORIAL_FLAG, completeCombatTutorialAction, runArchetype, skewRewardsByArchetype } from '@/state/combat/store-actions';
 import { FONTS } from '@/theme/axm';
 import { makeStyles, usePalette } from '@/theme/runtime';
 
@@ -237,12 +237,14 @@ export function CombatEncounterPanel({
         if (persistOutcome) applyHazardOutcome(store, live.finalOutcome, live, enemy);
     }, [live.finalOutcome, live, persistOutcome, store, enemy]);
 
-    // Roll the deckbuilder reward once, on victory.
+    // Roll the deckbuilder reward once, on victory. Roll a wider pool, then bias
+    // it ~60% toward the run's hidden archetype (a no-op for non-bundle runs).
     useEffect(() => {
         if (live.finalOutcome === 'victory' && rewardOffers.length === 0 && !rewardsClaimed && player) {
-            setRewardOffers(rollCombatCardRewards(player, Math.random, 3));
+            const pool = rollCombatCardRewards(player, Math.random, 8);
+            setRewardOffers(skewRewardsByArchetype(pool, runArchetype(store), 3));
         }
-    }, [live.finalOutcome, rewardOffers.length, rewardsClaimed, player]);
+    }, [live.finalOutcome, rewardOffers.length, rewardsClaimed, player, store]);
 
     // Tutorial completes itself once the turn-one coach script is exhausted.
     useEffect(() => {

@@ -178,14 +178,13 @@ function StagedCard({
     const readColor = armed ? (READ_ACCENT[read] ?? AXM.bone) : AXM.bone;
     const cardW = compact ? 78 : 96;
     const kwColor = f.inert ? AXM.ash : f.categoryColor;
-    // The hero shows the value that will ACTUALLY apply: FREE when unarmed, POWER
-    // when armed — and for read-dependent kinds (guard) recomputed live at the
-    // known read so the staged number is exact at the moment of commit.
-    let hero = armed ? (f.heroText || heroFace(f)) : (f.freeHeroText || heroFace(f));
+    // The PAID line shows the POWER value; for read-dependent kinds (guard) it is
+    // recomputed live at the known read so the staged number is exact at commit.
+    let paidHero = f.heroText || heroFace(f);
     if (armed && f.readDependent) {
         const colorMatch = assignedDie!.color === card.stance || assignedDie!.color === 'wild';
         const g = armedReadValue(f, read as CombatReadResult, colorMatch);
-        hero = g != null ? `Guard ${g}` : heroFace(f);
+        paidHero = g != null ? `Guard ${g}` : (f.heroText || heroFace(f));
     }
     return (
         <View style={styles.stagedCol}>
@@ -203,24 +202,29 @@ function StagedCard({
                     accessibilityRole="button"
                     accessibilityLabel={`${card.name} staged — ${f.verbLine}. Tap to unstage.`}
                 >
-                    <View style={[styles.cardStanceBar, { backgroundColor: f.stanceColor }]} />
+                    <CardArtPlaceholder tint={f.stanceColor} />
                     {assignedDie && (
                         <View style={styles.cardDie} testID="combat-staged-die">
                             <CombatDie die={assignedDie} size={compact ? 22 : 28} />
                         </View>
                     )}
-                    <View style={styles.zKwRow}>
-                        <Text style={styles.zGlyph}>{f.glyph}</Text>
-                        {f.keyword ? <Text style={[styles.zKeyword, { color: kwColor }]} numberOfLines={1}>{f.keyword}</Text> : null}
+                    <Text style={[styles.glyphCorner, f.inert && { opacity: 0.55 }]}>{f.glyph}</Text>
+                    <View style={styles.freeSection}>
+                        <Text style={styles.sectLabel}>FREE</Text>
+                        <Text style={[styles.freeVal, compact && { fontSize: 10 }]} numberOfLines={1} adjustsFontSizeToFit>{f.freeHeroText}</Text>
                     </View>
-                    <Text style={[styles.stagedHero, { color: armed ? readColor : kwColor }, compact && { fontSize: 13 }]} numberOfLines={1} adjustsFontSizeToFit>{hero}</Text>
-                    <Text style={[styles.zVerb, compact && { fontSize: 8 }]} numberOfLines={2}>{f.verbLine}</Text>
-                    <Text style={[styles.cardName, compact && { fontSize: 9, lineHeight: 11 }]} numberOfLines={1}>{card.name}</Text>
-                    {armed && f.readDependent && (
-                        <Text style={[styles.cardRead, { color: readColor }, compact && { fontSize: 8 }]}>
-                            {read === 'advantage' ? '▲ ADV' : read === 'disadvantage' ? '▼ DIS' : '— EVN'}
-                        </Text>
-                    )}
+                    <View style={[styles.nameBand, { backgroundColor: f.stanceColor }]}>
+                        <Text style={[styles.nameText, compact && { fontSize: 9 }]} numberOfLines={1}>{card.name}</Text>
+                    </View>
+                    <View style={styles.paidSection}>
+                        <View style={styles.paidRow}>
+                            {f.keyword ? <Text style={[styles.paidKw, { color: armed ? readColor : kwColor }]} numberOfLines={1}>{f.keyword}</Text> : null}
+                            {armed && f.readDependent ? (
+                                <Text style={[styles.paidPip, { color: readColor }]}>{read === 'advantage' ? '▲' : read === 'disadvantage' ? '▼' : '—'}</Text>
+                            ) : null}
+                        </View>
+                        <Text style={[styles.paidVal, { color: armed ? readColor : kwColor }, compact && { fontSize: 11 }]} numberOfLines={1} adjustsFontSizeToFit>{paidValueText(f, paidHero)}</Text>
+                    </View>
                 </Animated.View>
             </GestureDetector>
             <Pressable
@@ -531,31 +535,56 @@ function heroFace(f: CombatCardFaceVM): string {
     }
 }
 
-// The fanned hand card: a left-anchored outcome stack (the fan occludes each
-// card's RIGHT edge, so every load-bearing token lives in the left ~50px).
-// Zone 1 keyword · Zone 2 real-units hero · Zone 3 plain verb · Zone 4 name ·
-// Zone 5 FREE↔POWER strength rail. Numbers are honest or absent — never faked.
+// Coded ART placeholder for a card — a dark, stance-tinted panel with a faint
+// watermark. Real per-card art slots in here later: drop an <Image>/expo-image
+// in place of this View (or swap via the asset workflow / SVG_ASSET_SPEC.md).
+function CardArtPlaceholder({ tint }: { tint: string }) {
+    const styles = useStyles();
+    return (
+        <View style={styles.cardArt} pointerEvents="none">
+            <View style={[styles.cardArtTint, { backgroundColor: tint }]} />
+            <Text style={styles.cardArtMark}>◈</Text>
+        </View>
+    );
+}
+
+// The PAID line reads "KEYWORD value"; strip a leading keyword word from the
+// hero string so it doesn't double (keyword GUARD + "Guard 12" → "12").
+function paidValueText(f: CombatCardFaceVM, hero?: string): string {
+    const base = hero ?? (f.heroText || heroFace(f));
+    if (f.keyword) {
+        const stripped = base.replace(new RegExp('^' + f.keyword + '\\s*', 'i'), '');
+        return stripped || base;
+    }
+    return base;
+}
+
+// The fanned hand card — Mage-Knight "advanced action" shape: category glyph in
+// the top-left corner, a placeholder ART panel behind, the card NAME on a band
+// in the stance/die colour across the middle, the FREE (no-die) value above it
+// and the PAID (with-die) "KEYWORD value" below. Terse; the verb-line explanation
+// lives off-card (on select), not on the face.
 function HandCard({ card }: { card: CombatCardVM }) {
     const AXM = usePalette();
     const styles = useStyles();
     const f = card.face;
     const gold = card.rarity === 'gold';
-    const accent = gold ? '#d9b44a' : f.categoryColor;
+    const band = gold ? '#d9b44a' : f.stanceColor;
     const kwColor = f.inert ? AXM.ash : f.categoryColor;
     return (
-        <View style={[styles.handCard, { borderColor: accent }]}>
-            <View style={[styles.cardStanceBar, { backgroundColor: f.stanceColor }]} />
-            <View style={styles.zKwRow}>
-                <Text style={styles.zGlyph}>{f.glyph}</Text>
-                {f.keyword ? <Text style={[styles.zKeyword, { color: kwColor }]} numberOfLines={1}>{f.keyword}</Text> : null}
+        <View style={[styles.handCard, { borderColor: band }]}>
+            <CardArtPlaceholder tint={f.stanceColor} />
+            <Text style={[styles.glyphCorner, f.inert && { opacity: 0.55 }]}>{f.glyph}</Text>
+            <View style={styles.freeSection}>
+                <Text style={styles.sectLabel}>FREE</Text>
+                <Text style={styles.freeVal} numberOfLines={1} adjustsFontSizeToFit>{f.freeHeroText}</Text>
             </View>
-            <Text style={[styles.zHero, { color: kwColor }]} numberOfLines={1} adjustsFontSizeToFit>{heroFace(f)}</Text>
-            {f.heroSub ? <Text style={styles.zHeroSub} numberOfLines={1}>{f.heroSub}</Text> : null}
-            <Text style={styles.zVerb} numberOfLines={2}>{f.verbLine}</Text>
-            <Text style={styles.zName} numberOfLines={1}>{gold ? '★ ' : ''}{card.name}</Text>
-            <View style={styles.strengthRail}>
-                <Text style={styles.railFree} numberOfLines={1}>◇ {f.freeHeroText}</Text>
-                <Text style={[styles.railPower, { color: kwColor }]} numberOfLines={1}>◆ {f.powerRail}</Text>
+            <View style={[styles.nameBand, { backgroundColor: band }]}>
+                <Text style={styles.nameText} numberOfLines={1}>{gold ? '★ ' : ''}{card.name}</Text>
+            </View>
+            <View style={styles.paidSection}>
+                {f.keyword ? <Text style={[styles.paidKw, { color: kwColor }]} numberOfLines={1}>{f.keyword}</Text> : null}
+                <Text style={[styles.paidVal, { color: kwColor }]} numberOfLines={1} adjustsFontSizeToFit>{paidValueText(f)}</Text>
             </View>
         </View>
     );
@@ -599,13 +628,8 @@ const useStyles = makeStyles((AXM) => ({
     // Compact row-wrap play area — small fixed-width cards laid out in rows.
     playCards: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center', alignContent: 'flex-start', paddingTop: 2 },
     stagedCol: { alignItems: 'center', gap: 3 },
-    stagedCard: { width: 88, minHeight: 95, borderWidth: 2, borderRadius: 4, backgroundColor: '#1a160f', paddingLeft: 6, paddingRight: 30, paddingTop: 7, paddingBottom: 6, overflow: 'hidden' },
-    cardDie: { position: 'absolute', top: 5, right: 4, zIndex: 2 },
-    cardStanceBar: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 4 },
-    cardName: { fontFamily: FONTS.gothic, fontSize: 12, color: AXM.parchment, marginLeft: 3, lineHeight: 13 },
-    cardTier: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone, letterSpacing: 0.4, marginLeft: 3, marginTop: 3 },
-    cardRead: { fontFamily: FONTS.sans, fontSize: 9, letterSpacing: 0.8, marginLeft: 3, marginTop: 2 },
-    stagedHero: { fontFamily: FONTS.mono, fontSize: 16, lineHeight: 18, marginLeft: 3, marginTop: 2 },
+    stagedCard: { width: 88, minHeight: 95, borderWidth: 2, borderRadius: 4, backgroundColor: '#14110e', overflow: 'hidden' },
+    cardDie: { position: 'absolute', top: 4, right: 4, zIndex: 4 },
     actHint: { fontFamily: FONTS.mono, fontSize: 11, color: '#c2a14e', textAlign: 'center', letterSpacing: 0.3, paddingHorizontal: 12 },
 
     applyBtn: { width: 88, borderWidth: 1.5, borderRadius: 3, paddingVertical: 4, alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.4)' },
@@ -615,17 +639,22 @@ const useStyles = makeStyles((AXM) => ({
     trashBin: { position: 'absolute', left: 8, bottom: 10, zIndex: 40, width: 58, height: 58, borderRadius: 29, borderWidth: 1.5, borderStyle: 'dashed', borderColor: AXM.ash, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },
     trashLabel: { fontFamily: FONTS.mono, fontSize: 9, letterSpacing: 1, color: AXM.bone, marginTop: 1 },
     fan: { ...StyleSheet.absoluteFillObject, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 10 },
-    handCard: { width: 86, height: 112, borderWidth: 1.5, borderRadius: 4, backgroundColor: '#16130c', overflow: 'hidden', paddingLeft: 9, paddingRight: 4, paddingTop: 4, paddingBottom: 4 },
-    zKwRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-    zGlyph: { fontSize: 11 },
-    zKeyword: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1 },
-    zHero: { fontFamily: FONTS.mono, fontSize: 15, lineHeight: 17, marginTop: 1 },
-    zHeroSub: { fontFamily: FONTS.mono, fontSize: 9, color: AXM.bone, lineHeight: 10 },
-    zVerb: { fontFamily: FONTS.serif, fontSize: 9.5, color: AXM.bone, lineHeight: 11, marginTop: 2 },
-    zName: { fontFamily: FONTS.gothic, fontSize: 10, color: AXM.bone, lineHeight: 12, marginTop: 2 },
-    strengthRail: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: 2, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.07)' },
-    railFree: { fontFamily: FONTS.mono, fontSize: 8.5, color: AXM.bone },
-    railPower: { fontFamily: FONTS.mono, fontSize: 8.5, letterSpacing: 0.3 },
+    handCard: { width: 86, height: 112, borderWidth: 1.5, borderRadius: 4, backgroundColor: '#14110e', overflow: 'hidden' },
+    // Shared card-face styles (hand + staged) — Mage-Knight advanced-action shape.
+    cardArt: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center', backgroundColor: '#14110e' },
+    cardArtTint: { ...StyleSheet.absoluteFillObject, opacity: 0.18 },
+    cardArtMark: { fontSize: 40, color: '#f1e7d0', opacity: 0.10 },
+    glyphCorner: { position: 'absolute', top: 3, left: 5, fontSize: 12, zIndex: 3 },
+    freeSection: { flex: 1, paddingTop: 15, paddingHorizontal: 6, paddingBottom: 2, backgroundColor: 'rgba(10,8,6,0.40)' },
+    sectLabel: { fontFamily: FONTS.sans, fontSize: 7.5, letterSpacing: 1.2, color: AXM.bone, opacity: 0.85 },
+    freeVal: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.parchment, marginTop: 1 },
+    nameBand: { paddingVertical: 3, paddingHorizontal: 5, alignItems: 'center', justifyContent: 'center' },
+    nameText: { fontFamily: FONTS.gothic, fontSize: 10.5, lineHeight: 12.5, color: '#100d0a', textAlign: 'center' },
+    paidSection: { flex: 1, paddingHorizontal: 6, paddingBottom: 5, paddingTop: 2, backgroundColor: 'rgba(10,8,6,0.52)', justifyContent: 'flex-end' },
+    paidRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    paidKw: { fontFamily: FONTS.sans, fontSize: 8.5, letterSpacing: 1 },
+    paidPip: { fontFamily: FONTS.sans, fontSize: 9 },
+    paidVal: { fontFamily: FONTS.mono, fontSize: 13, lineHeight: 15, marginTop: 1 },
 
     playWrap: { position: 'absolute', right: 10, bottom: 12, zIndex: 40, shadowColor: AXM.sulfur, shadowRadius: 14, shadowOffset: { width: 0, height: 0 }, elevation: 8 },
     playBtn: { width: 72, height: 72, borderRadius: 36, borderWidth: 2.5, alignItems: 'center', justifyContent: 'center' },

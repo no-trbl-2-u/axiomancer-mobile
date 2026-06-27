@@ -59,7 +59,7 @@ against. The game has no online accounts; everything is local.
 | Runtime | React 19.1, React Native 0.81 | Pinned by Expo 54. |
 | Routing | expo-router (file-based) | Standard Expo idiom. |
 | State (UI) | `zustand` store wrapping `createGameStore` from `axiomancer-mechanics` (see spec 02) | Engine is the source of truth; the store is a thin reactive wrapper. |
-| Engine | `axiomancer-mechanics` npm package (pinned ^0.21.0) | Rules, RNG, reducers. **Never reimplemented in this repo.** |
+| Engine | `axiomancer-mechanics` npm package (pinned ^0.32.3) | Rules, RNG, reducers. **Never reimplemented in this repo.** |
 | Persistence | none yet → `AsyncStorage` adapter (spec 09) | Game state survives app restart. |
 | Test runner | Jest 29 + `jest-expo` + `@testing-library/react-native` | Already wired; canonical hermetic-e2e harness. |
 | Lint | `expo lint` (ESLint 9, `eslint-config-expo`) | Bundled with Expo. |
@@ -219,6 +219,17 @@ any time you encounter a recurring class of ambiguity.)
 
 - **State source of truth:** the `axiomancer-mechanics` engine.
   Anything that looks like a rule or RNG belongs there, not here.
+- **Combat keyword vocabulary is presentation (mobile-side).** The
+  player-facing keywords (BLEED / STUN / GUARD / BARRIER …) live in
+  `state/combat/keywords.ts` and map engine effect *ids* → terse labels +
+  glossary defs. The engine keeps its thematic effect names as lore — do
+  NOT rename engine effects for player-facing text; add to the mobile
+  registry instead. Starter bundles + the hidden archetype reward skew are
+  also mobile-side (`state/combat/store-actions.ts`). The mechanics-side
+  id-prefix-strip and engine reward-pool biasing remain deferred (they need
+  an `npm login` to publish and carry no player-facing benefit). Shipped
+  2026-06-27 (commits 7fc7ba4 keyword system + faces + glossary, 6e792aa
+  bundles + reward skew).
 - **Presenter purity:** presenters are pure
   `(state) → ViewModel`. No side effects, no I/O. Tests assert
   on the view-model.

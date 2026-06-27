@@ -59,7 +59,7 @@ against. The game has no online accounts; everything is local.
 | Runtime | React 19.1, React Native 0.81 | Pinned by Expo 54. |
 | Routing | expo-router (file-based) | Standard Expo idiom. |
 | State (UI) | `zustand` store wrapping `createGameStore` from `axiomancer-mechanics` (see spec 02) | Engine is the source of truth; the store is a thin reactive wrapper. |
-| Engine | `axiomancer-mechanics` npm package (pinned ^0.32.3) | Rules, RNG, reducers. **Never reimplemented in this repo.** |
+| Engine | `axiomancer-mechanics` npm package (pinned ^0.33.0) | Rules, RNG, reducers. **Never reimplemented in this repo.** |
 | Persistence | none yet → `AsyncStorage` adapter (spec 09) | Game state survives app restart. |
 | Test runner | Jest 29 + `jest-expo` + `@testing-library/react-native` | Already wired; canonical hermetic-e2e harness. |
 | Lint | `expo lint` (ESLint 9, `eslint-config-expo`) | Bundled with Expo. |
@@ -227,9 +227,16 @@ any time you encounter a recurring class of ambiguity.)
   registry instead. Starter bundles + the hidden archetype reward skew are
   also mobile-side (`state/combat/store-actions.ts`). The mechanics-side
   id-prefix-strip and engine reward-pool biasing remain deferred (they need
-  an `npm login` to publish and carry no player-facing benefit). Shipped
-  2026-06-27 (commits 7fc7ba4 keyword system + faces + glossary, 6e792aa
-  bundles + reward skew).
+  an `npm login` to publish. **UPDATE 2026-06-27:** npm gate resolved; mechanics
+  **0.33.0 published** (de-inert soft-controls — `resolveThreatPhase` reads the
+  enemy roll penalty so confusion/fear/etc. weaken & a variety denies the turn)
+  and consumed here (`^0.33.0`, app 1.4.0). The card VM now carries honest,
+  real-unit `face` + `detail` (helpers `engineHonestKind`/`resolvePrimary`/
+  `faceStats`/`detailStats`/`armedReadValue` read the skill's AUTHORED
+  intensity/duration via `getSkillById` — never the abstract "+N impact").
+  Honesty rule: real-units-or-no-number. See [[card-system-audit-and-npm-gate]].
+  Shipped: 7fc7ba4 keywords+faces+glossary, 6e792aa bundles+skew, cc84d2e audit
+  fixes, 37e5321 honest-units card rework.
 - **Presenter purity:** presenters are pure
   `(state) → ViewModel`. No side effects, no I/O. Tests assert
   on the view-model.

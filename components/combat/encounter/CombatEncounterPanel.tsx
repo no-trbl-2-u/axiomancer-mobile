@@ -23,16 +23,18 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import type { StyleProp, TextStyle } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import {
     initializeCombatEncounter, rollEncounterDice, playCombatCard, resolveThreatPhase,
     startTurn, endTurn, draftStanceDie, discardCombatCard, playSignatureSkill,
     selectEncounterMercyChoice, buildCombatSummary, rollCombatCardRewards, addRewardCard,
     rollLoot, addItem,
-    type CombatEncounterState, type CombatOutcome, type Character, type Enemy,
+    type CombatEncounterState, type CombatOutcome, type Character, type Enemy, type CombatEvent,
 } from 'axiomancer-mechanics';
 
-import { CombatBoard, type DragController, type DragPayload } from '@/components/combat/encounter/CombatBoard';
+import { CombatBoard, CombatCardFace, type DragController, type DragPayload } from '@/components/combat/encounter/CombatBoard';
+import { type CombatFx } from '@/components/combat/encounter/CombatCombatantPane';
 import { CombatDie } from '@/components/combat/encounter/CombatDie';
 import { CombatSummaryModal } from '@/components/combat/encounter/CombatSummaryModal';
 import { CombatRewardsOverlay } from '@/components/combat/encounter/CombatRewardsOverlay';
@@ -120,6 +122,35 @@ function applyHazardOutcome(
     }
 }
 
+// Per-keyword type tag for the inspect-modal definition panels. The PRIMARY keyword
+// (index 0) maps to the card's face kind; riders read as a generic EFFECT.
+function keywordTypeTag(kind: string, index: number): string {
+    if (index > 0) return 'EFFECT';
+    switch (kind) {
+        case 'dot': return 'DOT';
+        case 'stun':
+        case 'weaken': return 'CONTROL';
+        case 'guard': return 'GUARD';
+        case 'regen': return 'REGEN';
+        case 'strike': return 'STRIKE';
+        case 'befriend': return 'MERCY';
+        default: return 'EFFECT';
+    }
+}
+
+// Render the outcome line with each keyword name BOLDED (Sanguine-Step style).
+function OutcomeText({ text, names, base, bold }: { text: string; names: string[]; base: StyleProp<TextStyle>; bold: StyleProp<TextStyle> }) {
+    const escaped = names.map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).filter(Boolean);
+    if (escaped.length === 0) return <Text style={base}>{text}</Text>;
+    const upper = new Set(names.map((n) => n.toUpperCase()));
+    const parts = text.split(new RegExp(`(${escaped.join('|')})`, 'gi'));
+    return (
+        <Text style={base}>
+            {parts.map((p, i) => (upper.has(p.toUpperCase()) ? <Text key={i} style={bold}>{p}</Text> : <Text key={i}>{p}</Text>))}
+        </Text>
+    );
+}
+
 export function CombatEncounterPanel({
     enemy,
     bootstrapPlayer,
@@ -157,6 +188,11 @@ export function CombatEncounterPanel({
     const [rewardsClaimed, setRewardsClaimed] = useState(false);
     const wroteBackRef = useRef(false);
     const exitedRef = useRef(false);
+    // Resolution-feedback bridge: the latest resolved engine events + a rising seq.
+    // The events are stashed in a ref (set inside the state updater) and surfaced
+    // to the board via a bumped seq, so the pane animates exactly once per resolve.
+    const fxRef = useRef<CombatEvent[]>([]);
+    const [fxSeq, setFxSeq] = useState(0);
 
     // Bootstrap the encounter ONCE — combat must not restart when the store
     // player mutates (e.g. our own write-back) or props re-identify.
@@ -206,8 +242,11 @@ export function CombatEncounterPanel({
         apply((s) => {
             let ns = s;
             if (power && dieId && s.draftedDieId === null) ns = draftStanceDie(ns, dieId).state;
-            return playCombatCard(ns, { uid }, power).state;
+            const t = playCombatCard(ns, { uid }, power);
+            fxRef.current = t.events;
+            return t.state;
         });
+        setFxSeq((n) => n + 1);
         unstageUid(uid);
     }, [apply, unstageUid]);
     const onDiscard = useCallback((uid: string) => { apply((s) => discardCombatCard(s, uid).state); unstageUid(uid); }, [apply, unstageUid]);
@@ -215,13 +254,19 @@ export function CombatEncounterPanel({
     const onNewTurn = useCallback(() => { apply((s) => startTurn(endTurn(s).state).state); setStagedUids([]); }, [apply]);
     const onEndPhase = useCallback(() => {
         apply((s) => {
-            let ns = resolveThreatPhase(s).state;
+            const t = resolveThreatPhase(s);
+            fxRef.current = t.events;
+            let ns = t.state;
             if (ns.phase === 'phase-play' && ns.dice.length === 0) ns = startTurn(ns).state;
             return ns;
         });
+        setFxSeq((n) => n + 1);
         setStagedUids([]);
     }, [apply]);
     const onMercy = useCallback((choice: 'spare' | 'exploit') => apply((s) => selectEncounterMercyChoice(s, choice).state), [apply]);
+    // Stable resolution-feedback payload — recomputed only when a new resolve bumps
+    // the seq (captures the events stashed in fxRef just before).
+    const fx = useMemo<CombatFx>(() => ({ seq: fxSeq, events: fxRef.current }), [fxSeq]);
 
     const handleExit = useCallback(() => {
         if (exitedRef.current) return;
@@ -283,6 +328,7 @@ export function CombatEncounterPanel({
                     onEndPhase={onEndPhase}
                     onInspect={setDetailCard}
                     onChip={setTipEffect}
+                    fx={fx}
                 />
             )}
 
@@ -332,55 +378,71 @@ export function CombatEncounterPanel({
                 </View>
             )}
 
-            {/* card detail — outcome-first, honest real-units (scrollable) */}
+            {/* card detail — Sanguine-Step shape: keyword DEFINITIONS on top, ONE
+                large rendered card centrepiece, then the FREE-vs-POWER fork. The
+                developer-facing mathLine / subtitle / readNote are NEVER shown. */}
             {detailCard && (
                 <Pressable style={styles.backdrop} testID="combat-card-detail" onPress={() => setDetailCard(null)}>
                     <ScrollView
                         style={styles.detailScroll}
-                        contentContainerStyle={[styles.modal, { borderColor: detailCard.rarity === 'gold' ? '#d9b44a' : detailCard.face.categoryColor }]}
+                        contentContainerStyle={[styles.detailStack, { borderColor: detailCard.rarity === 'gold' ? '#d9b44a' : detailCard.face.categoryColor }]}
                         onStartShouldSetResponder={() => true}
                     >
-                        <Text style={styles.modalTitle}>{detailCard.rarity === 'gold' ? '★ ' : ''}{detailCard.name}</Text>
-                        <Text style={styles.detailSubtitle}>{detailCard.detail.subtitle}</Text>
-                        <Text style={styles.detailMeta}>{detailCard.detail.metaChip}</Text>
-
-                        <View style={[styles.detailOutcomeBox, { borderColor: detailCard.face.categoryColor }]}>
-                            <Text style={styles.detailOutcomeHead}>WHAT HAPPENS</Text>
-                            <Text style={styles.detailLine}>{detailCard.detail.outcomeLine}</Text>
-                            {detailCard.detail.outcomeStats.length > 0 && (
-                                <View style={styles.detailStatRow}>
-                                    {detailCard.detail.outcomeStats.map((s) => (
-                                        <Text key={s.label} style={styles.detailStat}>
-                                            <Text style={styles.detailStatLabel}>{s.label} </Text>
-                                            <Text style={styles.detailStatValue}>{s.value}</Text>
-                                        </Text>
-                                    ))}
-                                </View>
-                            )}
-                            {detailCard.detail.stacksText ? <Text style={styles.detailStacks}>{detailCard.detail.stacksText}</Text> : null}
-                        </View>
-
-                        <View style={styles.detailFreeBox}>
-                            <Text style={styles.detailFreeLine}>{detailCard.detail.freeLine}</Text>
-                            <Text style={[styles.detailPowerLine, { color: detailCard.face.categoryColor }]}>{detailCard.detail.powerLine}</Text>
-                            <Text style={styles.detailReadNote}>{detailCard.detail.readNote}</Text>
-                        </View>
-
-                        <Text style={styles.detailMath}>{detailCard.detail.mathLine}</Text>
-
+                        {/* (1) keyword DEFINITION panels at the top */}
                         {detailCard.detail.keywords.length > 0 && (
                             <View style={styles.detailKeywords}>
-                                <Text style={styles.detailKeywordsHead}>KEYWORDS</Text>
-                                {detailCard.detail.keywords.map((k) => (
+                                {detailCard.detail.keywords.map((k, i) => (
                                     <View key={k.name} style={styles.detailKeywordRow}>
-                                        <Text style={[styles.detailKeywordName, k.minor ? { color: AXM.ash } : null]}>{k.name}</Text>
+                                        <View style={styles.detailKeywordHead}>
+                                            <Text style={[styles.detailKeywordName, k.minor ? { color: AXM.ash } : null]}>{k.name}</Text>
+                                            <Text style={styles.detailKeywordTag}>{keywordTypeTag(detailCard.face.kind, i)}</Text>
+                                        </View>
                                         <Text style={styles.detailKeywordDef}>{k.def}{k.minor ? ' (minor right now)' : ''}</Text>
                                     </View>
                                 ))}
                             </View>
                         )}
 
-                        <Text style={styles.detailHint}>tap outside to dismiss · drag the card up to play it</Text>
+                        {/* (2) the LARGE rendered card — same face component as the hand */}
+                        <View style={styles.detailCardWrap}>
+                            <CombatCardFace card={detailCard} width={224} height={320} large />
+                        </View>
+                        <Text style={styles.detailTypeBanner}>{detailCard.detail.metaChip}</Text>
+                        <OutcomeText
+                            text={detailCard.detail.outcomeLine}
+                            names={detailCard.detail.keywords.map((k) => k.name)}
+                            base={styles.detailLine}
+                            bold={styles.detailBold}
+                        />
+                        {detailCard.detail.outcomeStats.length > 0 && (
+                            <View style={styles.detailStatRow}>
+                                {detailCard.detail.outcomeStats.map((s) => (
+                                    <Text key={s.label} style={styles.detailStat}>
+                                        <Text style={styles.detailStatLabel}>{s.label} </Text>
+                                        <Text style={styles.detailStatValue}>{s.value}</Text>
+                                    </Text>
+                                ))}
+                            </View>
+                        )}
+                        {detailCard.detail.stacksText ? <Text style={styles.detailStacks}>{detailCard.detail.stacksText}</Text> : null}
+
+                        {/* (3) the FREE-vs-POWER fork (the die-optional choice) */}
+                        <View style={styles.detailFreeBox}>
+                            <Text style={styles.detailFreeLine}>{detailCard.detail.freeLine}</Text>
+                            <Text style={[styles.detailPowerLine, { color: detailCard.face.categoryColor }]}>{detailCard.detail.powerLine}</Text>
+                        </View>
+
+                        {/* (4) explicit close */}
+                        <Pressable
+                            onPress={() => setDetailCard(null)}
+                            testID="combat-card-detail-close"
+                            accessibilityRole="button"
+                            accessibilityLabel="Close card detail"
+                            hitSlop={10}
+                            style={[styles.detailClose, { borderColor: detailCard.face.categoryColor }]}
+                        >
+                            <Text style={[styles.detailCloseText, { color: detailCard.face.categoryColor }]}>✕</Text>
+                        </Pressable>
                     </ScrollView>
                 </Pressable>
             )}
@@ -439,7 +501,16 @@ const useStyles = makeStyles((AXM) => ({
     modalBtn: { borderWidth: 2, paddingHorizontal: 22, paddingVertical: 9 },
     modalBtnText: { fontFamily: FONTS.gothic, fontSize: 16, letterSpacing: 1 },
     detailMeta: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone, letterSpacing: 0.6, marginTop: 4, marginBottom: 10 },
-    detailScroll: { width: '100%', maxWidth: 380, maxHeight: '86%' },
+    detailScroll: { width: '100%', maxWidth: 380, maxHeight: '90%' },
+    // Sanguine-Step inspect stack (keyword defs → large card → fork → close).
+    detailStack: { width: '100%', maxWidth: 380, borderWidth: 2, backgroundColor: AXM.panelBg, padding: 16, alignItems: 'center' },
+    detailCardWrap: { marginTop: 4, marginBottom: 6, shadowColor: '#000', shadowOpacity: 0.6, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 8 },
+    detailTypeBanner: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1.6, color: AXM.bone, marginBottom: 8, textAlign: 'center' },
+    detailBold: { fontFamily: FONTS.gothic, color: AXM.parchment },
+    detailKeywordHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 },
+    detailKeywordTag: { fontFamily: FONTS.sans, fontSize: 8.5, letterSpacing: 1.2, color: AXM.bone, opacity: 0.8, borderWidth: 1, borderColor: AXM.ash, borderRadius: 2, paddingHorizontal: 4, paddingVertical: 1 },
+    detailClose: { marginTop: 12, alignSelf: 'flex-end', width: 40, height: 40, borderRadius: 20, borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)' },
+    detailCloseText: { fontFamily: FONTS.sans, fontSize: 18, lineHeight: 20 },
     detailSubtitle: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 13, color: AXM.parchment, textAlign: 'center', marginTop: 3 },
     detailOutcomeBox: { alignSelf: 'stretch', borderWidth: 1, borderRadius: 3, padding: 10, marginBottom: 8 },
     detailOutcomeHead: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1.5, color: AXM.bone, opacity: 0.7, marginBottom: 5 },
@@ -453,11 +524,11 @@ const useStyles = makeStyles((AXM) => ({
     detailPowerLine: { fontFamily: FONTS.serif, fontSize: 12.5, lineHeight: 17, marginBottom: 5 },
     detailReadNote: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 11, color: AXM.bone, lineHeight: 15 },
     detailLine: { fontFamily: FONTS.serif, fontSize: 13, color: AXM.parchment, lineHeight: 18 },
-    detailKeywords: { alignSelf: 'stretch', backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: 10, marginBottom: 8 },
+    detailKeywords: { alignSelf: 'stretch', marginBottom: 10 },
     detailKeywordsHead: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1.5, color: AXM.bone, opacity: 0.7, marginBottom: 7 },
-    detailKeywordRow: { flexDirection: 'row', gap: 9, marginBottom: 6 },
-    detailKeywordName: { fontFamily: FONTS.mono, fontSize: 12, letterSpacing: 0.8, color: AXM.sulfur, width: 78 },
-    detailKeywordDef: { fontFamily: FONTS.serif, fontSize: 11.5, color: AXM.bone, lineHeight: 15, flex: 1 },
+    detailKeywordRow: { alignSelf: 'stretch', borderWidth: 1, borderColor: AXM.ash, borderRadius: 3, padding: 9, marginBottom: 6, backgroundColor: 'rgba(255,255,255,0.04)' },
+    detailKeywordName: { fontFamily: FONTS.mono, fontSize: 13, letterSpacing: 0.8, color: AXM.sulfur },
+    detailKeywordDef: { fontFamily: FONTS.serif, fontSize: 12, color: AXM.bone, lineHeight: 16 },
     detailMath: { alignSelf: 'stretch', fontFamily: FONTS.mono, fontSize: 10.5, color: AXM.bone, opacity: 0.85, lineHeight: 15, marginBottom: 8 },
     detailTipGloss: { fontFamily: FONTS.serif, fontSize: 12, color: AXM.parchment, textAlign: 'center', marginTop: 6, lineHeight: 16 },
     detailHint: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 11, color: AXM.bone, marginTop: 4, textAlign: 'center' },

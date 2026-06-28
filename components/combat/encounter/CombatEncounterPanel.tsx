@@ -23,7 +23,6 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import type { StyleProp, TextStyle } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import {
     initializeCombatEncounter, rollEncounterDice, playCombatCard, resolveThreatPhase,
@@ -136,19 +135,6 @@ function keywordTypeTag(kind: string, index: number): string {
         case 'befriend': return 'MERCY';
         default: return 'EFFECT';
     }
-}
-
-// Render the outcome line with each keyword name BOLDED (Sanguine-Step style).
-function OutcomeText({ text, names, base, bold }: { text: string; names: string[]; base: StyleProp<TextStyle>; bold: StyleProp<TextStyle> }) {
-    const escaped = names.map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).filter(Boolean);
-    if (escaped.length === 0) return <Text style={base}>{text}</Text>;
-    const upper = new Set(names.map((n) => n.toUpperCase()));
-    const parts = text.split(new RegExp(`(${escaped.join('|')})`, 'gi'));
-    return (
-        <Text style={base}>
-            {parts.map((p, i) => (upper.has(p.toUpperCase()) ? <Text key={i} style={bold}>{p}</Text> : <Text key={i}>{p}</Text>))}
-        </Text>
-    );
 }
 
 export function CombatEncounterPanel({
@@ -383,56 +369,44 @@ export function CombatEncounterPanel({
                 developer-facing mathLine / subtitle / readNote are NEVER shown. */}
             {detailCard && (
                 <Pressable style={styles.backdrop} testID="combat-card-detail" onPress={() => setDetailCard(null)}>
-                    <ScrollView
-                        style={styles.detailScroll}
-                        contentContainerStyle={[styles.detailStack, { borderColor: detailCard.rarity === 'gold' ? '#d9b44a' : detailCard.face.categoryColor }]}
-                        onStartShouldSetResponder={() => true}
-                    >
-                        {/* (1) keyword DEFINITION panels at the top */}
-                        {detailCard.detail.keywords.length > 0 && (
-                            <View style={styles.detailKeywords}>
-                                {detailCard.detail.keywords.map((k, i) => (
-                                    <View key={k.name} style={styles.detailKeywordRow}>
-                                        <View style={styles.detailKeywordHead}>
-                                            <Text style={[styles.detailKeywordName, k.minor ? { color: AXM.ash } : null]}>{k.name}</Text>
-                                            <Text style={styles.detailKeywordTag}>{keywordTypeTag(detailCard.face.kind, i)}</Text>
+                    <View style={styles.detailModalWrap} onStartShouldSetResponder={() => true}>
+                        <ScrollView
+                            style={styles.detailScroll}
+                            contentContainerStyle={[styles.detailStack, { borderColor: detailCard.rarity === 'gold' ? '#d9b44a' : detailCard.face.categoryColor }]}
+                        >
+                            {/* (1) keyword DEFINITION panels at the top */}
+                            {detailCard.detail.keywords.length > 0 && (
+                                <View style={styles.detailKeywords}>
+                                    {detailCard.detail.keywords.map((k, i) => (
+                                        <View key={k.name} style={styles.detailKeywordRow}>
+                                            <View style={styles.detailKeywordHead}>
+                                                <Text style={[styles.detailKeywordName, k.minor ? { color: AXM.ash } : null]}>{k.name}</Text>
+                                                <Text style={styles.detailKeywordTag}>{keywordTypeTag(detailCard.face.kind, i)}</Text>
+                                            </View>
+                                            <Text style={styles.detailKeywordDef}>{k.def}{k.minor ? ' (minor right now)' : ''}</Text>
                                         </View>
-                                        <Text style={styles.detailKeywordDef}>{k.def}{k.minor ? ' (minor right now)' : ''}</Text>
-                                    </View>
-                                ))}
+                                    ))}
+                                </View>
+                            )}
+
+                            {/* (2) the LARGE rendered card — the effect SENTENCE + the type-tab now
+                                live ON the card (define once / show once), so no restated outcome
+                                line or stat-chip row below it. */}
+                            <View style={styles.detailCardWrap}>
+                                <CombatCardFace card={detailCard} width={224} height={320} large showCostPip={false} />
                             </View>
-                        )}
+                            {detailCard.detail.stacksText ? <Text style={styles.detailStacks}>{detailCard.detail.stacksText}</Text> : null}
 
-                        {/* (2) the LARGE rendered card — same face component as the hand */}
-                        <View style={styles.detailCardWrap}>
-                            <CombatCardFace card={detailCard} width={224} height={320} large />
-                        </View>
-                        <Text style={styles.detailTypeBanner}>{detailCard.detail.metaChip}</Text>
-                        <OutcomeText
-                            text={detailCard.detail.outcomeLine}
-                            names={detailCard.detail.keywords.map((k) => k.name)}
-                            base={styles.detailLine}
-                            bold={styles.detailBold}
-                        />
-                        {detailCard.detail.outcomeStats.length > 0 && (
-                            <View style={styles.detailStatRow}>
-                                {detailCard.detail.outcomeStats.map((s) => (
-                                    <Text key={s.label} style={styles.detailStat}>
-                                        <Text style={styles.detailStatLabel}>{s.label} </Text>
-                                        <Text style={styles.detailStatValue}>{s.value}</Text>
-                                    </Text>
-                                ))}
+                            {/* (3) the FREE-vs-POWER fork (the die-optional choice; powerLine carries
+                                the ▲/▼ read-scaling math the cut stat chips could not express) */}
+                            <View style={styles.detailFreeBox}>
+                                <Text style={styles.detailFreeLine}>{detailCard.detail.freeLine}</Text>
+                                <Text style={[styles.detailPowerLine, { color: detailCard.face.categoryColor }]}>{detailCard.detail.powerLine}</Text>
                             </View>
-                        )}
-                        {detailCard.detail.stacksText ? <Text style={styles.detailStacks}>{detailCard.detail.stacksText}</Text> : null}
+                        </ScrollView>
 
-                        {/* (3) the FREE-vs-POWER fork (the die-optional choice) */}
-                        <View style={styles.detailFreeBox}>
-                            <Text style={styles.detailFreeLine}>{detailCard.detail.freeLine}</Text>
-                            <Text style={[styles.detailPowerLine, { color: detailCard.face.categoryColor }]}>{detailCard.detail.powerLine}</Text>
-                        </View>
-
-                        {/* (4) explicit close */}
+                        {/* close ✕ — pinned to the modal's top-right OUTSIDE the ScrollView so it
+                            never falls below the fold on a 320px card. */}
                         <Pressable
                             onPress={() => setDetailCard(null)}
                             testID="combat-card-detail-close"
@@ -443,7 +417,7 @@ export function CombatEncounterPanel({
                         >
                             <Text style={[styles.detailCloseText, { color: detailCard.face.categoryColor }]}>✕</Text>
                         </Pressable>
-                    </ScrollView>
+                    </View>
                 </Pressable>
             )}
 
@@ -501,15 +475,16 @@ const useStyles = makeStyles((AXM) => ({
     modalBtn: { borderWidth: 2, paddingHorizontal: 22, paddingVertical: 9 },
     modalBtnText: { fontFamily: FONTS.gothic, fontSize: 16, letterSpacing: 1 },
     detailMeta: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone, letterSpacing: 0.6, marginTop: 4, marginBottom: 10 },
-    detailScroll: { width: '100%', maxWidth: 380, maxHeight: '90%' },
-    // Sanguine-Step inspect stack (keyword defs → large card → fork → close).
+    // Relative wrapper so the close ✕ can pin to the top-right OUTSIDE the ScrollView.
+    detailModalWrap: { width: '100%', maxWidth: 380, maxHeight: '90%' },
+    detailScroll: { width: '100%' },
+    // Sanguine-Step inspect stack (keyword defs → large card → fork).
     detailStack: { width: '100%', maxWidth: 380, borderWidth: 2, backgroundColor: AXM.panelBg, padding: 16, alignItems: 'center' },
     detailCardWrap: { marginTop: 4, marginBottom: 6, shadowColor: '#000', shadowOpacity: 0.6, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 8 },
-    detailTypeBanner: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1.6, color: AXM.bone, marginBottom: 8, textAlign: 'center' },
     detailBold: { fontFamily: FONTS.gothic, color: AXM.parchment },
     detailKeywordHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 },
     detailKeywordTag: { fontFamily: FONTS.sans, fontSize: 8.5, letterSpacing: 1.2, color: AXM.bone, opacity: 0.8, borderWidth: 1, borderColor: AXM.ash, borderRadius: 2, paddingHorizontal: 4, paddingVertical: 1 },
-    detailClose: { marginTop: 12, alignSelf: 'flex-end', width: 40, height: 40, borderRadius: 20, borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)' },
+    detailClose: { position: 'absolute', top: 6, right: 6, zIndex: 10, width: 40, height: 40, borderRadius: 20, borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: AXM.panelBg },
     detailCloseText: { fontFamily: FONTS.sans, fontSize: 18, lineHeight: 20 },
     detailSubtitle: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 13, color: AXM.parchment, textAlign: 'center', marginTop: 3 },
     detailOutcomeBox: { alignSelf: 'stretch', borderWidth: 1, borderRadius: 3, padding: 10, marginBottom: 8 },

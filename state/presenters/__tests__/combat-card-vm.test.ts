@@ -46,7 +46,7 @@ describe('faceStats — honest real-unit faces', () => {
         expect(f.kind).toBe('dot');
         expect(f.keyword).toBe('BLEED');
         expect(f.heroText).toBe('18');
-        expect(f.heroSub).toBe('6/turn · 3 turns');
+        expect(f.heroSub).toBe('over 3 turns');
         expect(f.freeHeroText).toBe('2 HP');
         expect(f.readDependent).toBe(false);
         expect(f.inert).toBe(false);
@@ -65,7 +65,7 @@ describe('faceStats — honest real-unit faces', () => {
         const f = faceStats(card, skill);
         expect(f.kind).toBe('regen');
         expect(f.heroText).toBe('48');
-        expect(f.heroSub).toBe('12/turn · 4 turns');
+        expect(f.heroSub).toBe('over 4 turns');
         expect(f.freeHeroText).toBe('24');
         expect(f.freeHeroSub).toBe('4/turn · 6 turns');
     });

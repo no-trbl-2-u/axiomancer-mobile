@@ -23,6 +23,7 @@
 
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import type { StyleProp, TextStyle } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
@@ -80,6 +81,20 @@ function measureRect(ref: React.RefObject<View | null>): Promise<Rect | null> {
 const READ_ACCENT: Record<string, string> = {
     advantage: '#5bbf6a', neutral: '#c2a14e', disadvantage: '#e2543b', none: '#8a8273',
 };
+
+// Render a sentence with each keyword name BOLDED (Sanguine-Step style). Shared by
+// the large inspect card FACE (here) and the inspect modal (CombatEncounterPanel).
+export function OutcomeText({ text, names, base, bold }: { text: string; names: string[]; base: StyleProp<TextStyle>; bold: StyleProp<TextStyle> }) {
+    const escaped = names.map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).filter(Boolean);
+    if (escaped.length === 0) return <Text style={base}>{text}</Text>;
+    const upper = new Set(names.map((n) => n.toUpperCase()));
+    const parts = text.split(new RegExp(`(${escaped.join('|')})`, 'gi'));
+    return (
+        <Text style={base}>
+            {parts.map((p, i) => (upper.has(p.toUpperCase()) ? <Text key={i} style={bold}>{p}</Text> : <Text key={i}>{p}</Text>))}
+        </Text>
+    );
+}
 
 // ── Signature Skills bar ─────────────────────────────────────────────────────
 
@@ -176,7 +191,7 @@ function DiceTray({
 // ── Staged card (die slot · PREVIEW · APPLY) ─────────────────────────────────
 
 function StagedCard({
-    card, assignedDie, read, onApply, gesture, register, compact = false,
+    card, assignedDie, read, onApply, gesture, register, compact = false, dieReady = false,
 }: {
     card: CombatCardVM;
     assignedDie: CombatDieVM | null;
@@ -185,6 +200,9 @@ function StagedCard({
     gesture: ReturnType<typeof Gesture.Exclusive>;
     register: (node: View | null) => void;
     compact?: boolean;
+    /** A shared drafted die exists but this card is NOT the bright comboTarget — show a
+     *  dimmer additive 'die ready' ring + caption so APPLY-POWER legibly spends the die. */
+    dieReady?: boolean;
 }) {
     const AXM = usePalette();
     const styles = useStyles();
@@ -229,9 +247,13 @@ function StagedCard({
                                 <CombatDie die={assignedDie} size={compact ? 22 : 28} />
                             </View>
                         )}
+                        {/* die-ready ring: the shared drafted die will be spent on THIS card too if
+                            you APPLY-POWER it — a dimmer additive ring over the stance border. */}
+                        {dieReady && <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.dieReadyRing]} />}
                     </CombatCardFace>
                 </Animated.View>
             </GestureDetector>
+            {dieReady ? <Text style={styles.dieReadyCaption}>DIE READY</Text> : null}
             <Pressable
                 onPress={() => { Haptics.impactAsync(armed ? Haptics.ImpactFeedbackStyle.Heavy : Haptics.ImpactFeedbackStyle.Medium).catch(() => undefined); onApply(); }}
                 testID={`combat-apply-${card.uid}`}
@@ -440,7 +462,7 @@ export const CombatBoard = React.memo(function CombatBoard({
     const fan = vm.hand.filter((c) => !stagedSet.has(c.uid));
     const n = fan.length;
     const mid = (n - 1) / 2;
-    const overlap = n > 6 ? 36 : n > 4 ? 26 : 14;
+    const overlap = n > 6 ? 26 : n > 4 ? 18 : 12;
     const draggingDieId = drag.active?.type === 'die' ? drag.active.dieId : null;
     const draggingCardUid = drag.active?.type === 'card' ? drag.active.uid : null;
 
@@ -478,9 +500,17 @@ export const CombatBoard = React.memo(function CombatBoard({
 
             <CombatCombatantPane enemy={vm.enemy} player={vm.player} conviction={vm.conviction} onChip={onChip} fx={fx} />
 
-            {/* play area — fixed-height zone, flex:1 wrapper absorbs leftover space */}
+            {/* play area — collapses to a slim hint strip while empty, grows to flex:1
+                once a card is staged (LinearTransition animates the reflow so staged
+                cards never pop into a strip too small for them). The flex:1 wrapper
+                absorbs whatever the collapsed strip leaves behind. */}
             <View style={{ flex: 1 }}>
-                <View ref={playAreaRef} style={[styles.playArea, { borderColor: stagedCards.length ? `${AXM.sulfur}88` : AXM.ash }]} testID="combat-play-area">
+                <Animated.View
+                    ref={(node) => { playAreaRef.current = node as unknown as View | null; }}
+                    layout={LinearTransition.duration(220)}
+                    style={[styles.playArea, stagedCards.length ? styles.playAreaActive : styles.playAreaCollapsed, { borderColor: stagedCards.length ? `${AXM.sulfur}88` : AXM.ash }]}
+                    testID="combat-play-area"
+                >
                     <View style={styles.playHead}>
                         <Text style={[styles.playLabel, { color: stagedCards.length ? AXM.sulfur : AXM.bone }]}>PLAY AREA{stagedCards.length > 1 ? ` · ${stagedCards.length} STAGED` : ''}</Text>
                         <Text style={styles.deckCounts}>DECK {vm.deckCount} · DISCARD {vm.discardCount}</Text>
@@ -499,16 +529,15 @@ export const CombatBoard = React.memo(function CombatBoard({
                                         gesture={stagedGesture(card)}
                                         register={(node) => { if (node) stagedRefs.current.set(card.uid, node); else stagedRefs.current.delete(card.uid); }}
                                         compact={stagedCards.length > 3}
+                                        dieReady={!!draftedDie && card.uid !== comboTargetUid && !pendingDieByUid[card.uid]}
                                     />
                                 );
                             })}
                         </View>
                     ) : (
-                        <View style={styles.playEmpty}>
-                            <Text style={styles.playEmptyText}>drag cards up to stage · tap a card to read it</Text>
-                        </View>
+                        <Text style={styles.playEmptyStrip} numberOfLines={1}>drag a card up to stage · tap a card to read it</Text>
                     )}
-                </View>
+                </Animated.View>
             </View>
 
             <SignatureBar conviction={vm.conviction} signatures={vm.signatures} onCast={onSignature} />
@@ -540,7 +569,7 @@ export const CombatBoard = React.memo(function CombatBoard({
                                     marginLeft: i === 0 ? 0 : -overlap,
                                     zIndex: draggingCardUid === card.uid ? 30 : i,
                                     opacity: draggingCardUid === card.uid ? 0.3 : 1,
-                                    transform: [{ translateY: Math.abs(i - mid) * 5 }, { rotate: `${(i - mid) * 5}deg` }],
+                                    transform: [{ translateY: Math.abs(i - mid) * 3 }, { rotate: `${(i - mid) * 3}deg` }],
                                 }}
                                 testID={`combat-hand-${card.uid}`}
                                 accessible accessibilityRole="button"
@@ -619,24 +648,31 @@ export function CombatCardFace({
     const styles = useStyles();
     const f = card.face;
     const gold = card.rarity === 'gold';
+    // STANCE rides the name band + the art vignette; CATEGORY rides the frame (border)
+    // + the glyph watermark — two orthogonal identity axes until per-card art ships.
     const band = gold ? '#d9b44a' : f.stanceColor;
     const baseKw = f.inert ? AXM.ash : f.categoryColor;
     const kwColor = accent ?? baseKw;
-    const borderColor = accent ?? band;
+    const borderColor = accent ?? (gold ? '#d9b44a' : f.categoryColor);
     const dieGlyph = DIE_GLYPHS[card.stance] ?? '✦';
     const numberless = !f.heroText && !heroOverride;
     const value = numberless ? (f.keyword ?? heroFace(f)) : paidValueText(f, heroOverride);
     return (
         <View style={[styles.faceCard, { width, height, borderColor }]}>
-            {/* ART window — top ~48% behind a scrim + stance tint */}
+            {/* ART window — top ~58% behind a scrim + stance tint + stance vignette */}
             <View style={styles.faceArt} pointerEvents="none">
                 <Image source={CARD_ART} style={StyleSheet.absoluteFill} contentFit="cover" transition={0} />
                 <View style={[styles.faceArtTint, { backgroundColor: f.stanceColor }]} />
-                {/* TODO(gradient): a flat scrim approximates the rgba(10,8,6,0)→0.85
-                    fade (no expo-linear-gradient in the deps yet). */}
+                {/* TODO(gradient): a flat scrim + stance vignette approximates the
+                    rgba(10,8,6,0)→0.85 fade (no expo-linear-gradient in the deps yet). */}
                 <View style={styles.faceArtScrim} />
-                <Text style={[styles.glyphCorner, large && styles.glyphCornerLarge, f.inert && { opacity: 0.55 }]}>{f.glyph}</Text>
+                <View style={[styles.faceArtVignette, { backgroundColor: f.stanceColor }]} />
+                {large
+                    ? <Text style={[styles.glyphWatermark, f.inert && { opacity: 0.4 }]}>{f.glyph}</Text>
+                    : <Text style={[styles.glyphCorner, f.inert && { opacity: 0.55 }]}>{f.glyph}</Text>}
                 {showCostPip && (
+                    // Square stance TAB (not a round cost-orb): these cards have no cost; the
+                    // die is optional, so the round MTG/Hearthstone orb mis-read as a resource.
                     <View style={[styles.costPip, large && styles.costPipLarge, { backgroundColor: f.stanceColor }]}>
                         <Text style={[styles.costPipGlyph, large && styles.costPipGlyphLarge]}>{dieGlyph}</Text>
                     </View>
@@ -648,14 +684,35 @@ export function CombatCardFace({
                 <View style={[styles.nameBand, { backgroundColor: band }]}>
                     <Text style={[styles.nameText, large && styles.nameTextLarge]} numberOfLines={1}>{gold ? '★ ' : ''}{card.name}</Text>
                 </View>
-                <View style={[styles.paidSection, large && styles.paidSectionLarge]}>
-                    <View style={styles.paidRow}>
-                        {(!numberless && f.keyword) ? <Text style={[styles.paidKw, large && styles.paidKwLarge, { color: kwColor }]} numberOfLines={1}>{f.keyword}</Text> : null}
-                        {readPip ? <Text style={[styles.paidPip, { color: kwColor }]}>{readPip}</Text> : null}
+                {large ? (
+                    /* large inspect card: the effect SENTENCE (keywords bolded, hero number
+                       inside it) replaces the small card's terse keyword/value block — stated
+                       ONCE, on the card itself (Sanguine-Step shape). */
+                    <View style={styles.faceBody}>
+                        <OutcomeText
+                            text={card.detail.outcomeLine}
+                            names={card.detail.keywords.map((k) => k.name)}
+                            base={styles.faceEffect}
+                            bold={styles.faceEffectBold}
+                        />
                     </View>
-                    <Text style={[styles.paidVal, large && styles.paidValLarge, { color: kwColor }]} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
-                    {f.heroSub ? <Text style={[styles.paidSub, large && styles.paidSubLarge]} numberOfLines={1} adjustsFontSizeToFit>{f.heroSub}</Text> : null}
-                </View>
+                ) : (
+                    <View style={styles.paidSection}>
+                        <View style={styles.paidRow}>
+                            {(!numberless && f.keyword) ? <Text style={[styles.paidKw, { color: kwColor }]} numberOfLines={1}>{f.keyword}</Text> : null}
+                            {readPip ? <Text style={[styles.paidPip, { color: kwColor }]}>{readPip}</Text> : null}
+                        </View>
+                        <Text style={[styles.paidVal, { color: kwColor }]} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
+                        {f.heroSub ? <Text style={styles.paidSub} numberOfLines={1} adjustsFontSizeToFit>{f.heroSub}</Text> : null}
+                    </View>
+                )}
+                {/* large-only TYPE-TAB pinned to the card's bottom edge (replaces the floating
+                    detailTypeBanner in the modal). */}
+                {large ? (
+                    <View style={styles.typeTab}>
+                        <Text style={styles.typeTabText} numberOfLines={1}>{card.detail.metaChip}</Text>
+                    </View>
+                ) : null}
             </View>
         </View>
     );
@@ -663,7 +720,7 @@ export function CombatCardFace({
 
 // The fanned hand card — a small instance of the shared face.
 function HandCard({ card }: { card: CombatCardVM }) {
-    return <CombatCardFace card={card} width={88} height={118} />;
+    return <CombatCardFace card={card} width={104} height={140} />;
 }
 
 const useStyles = makeStyles((AXM) => ({
@@ -698,28 +755,35 @@ const useStyles = makeStyles((AXM) => ({
     diePip: { fontFamily: FONTS.sans, fontSize: 10, textAlign: 'center', marginTop: 2, letterSpacing: 0.6 },
     trayEmpty: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 13, color: AXM.ash, alignSelf: 'center' },
 
-    // Play area — flexes to absorb leftover space (CLIP FIX: a fixed height pushed the
-    // dock off-screen). Mirrors HazardBoard's playArea:{flex:1}; the flex:1 wrapper
-    // above lets it grow while the fixed dock below stays pinned and fully visible.
-    playArea: { flex: 1, minHeight: 120, marginHorizontal: 10, marginTop: 8, borderWidth: 1.5, borderStyle: 'dashed', backgroundColor: 'rgba(212,192,38,0.04)', paddingHorizontal: 8, paddingTop: 6, paddingBottom: 6 },
+    // Play area — collapses to a slim hint strip while empty (playAreaCollapsed) and
+    // grows to flex:1 once a card is staged (playAreaActive). The flex:1 wrapper above
+    // absorbs leftover; the fixed dock below stays pinned and fully visible.
+    playArea: { marginHorizontal: 10, marginTop: 8, borderWidth: 1.5, borderStyle: 'dashed', backgroundColor: 'rgba(212,192,38,0.04)', paddingHorizontal: 8, paddingTop: 6, paddingBottom: 6, overflow: 'hidden' },
+    playAreaActive: { flex: 1, minHeight: 120 },
+    playAreaCollapsed: { height: 64 },
     playHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 },
     playLabel: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1.2 },
     deckCounts: { fontFamily: FONTS.mono, fontSize: 10, color: AXM.bone, letterSpacing: 1 },
     playEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     playEmptyText: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 13, color: AXM.ash, textAlign: 'center' },
+    // Single-line hint shown inside the collapsed (empty) strip.
+    playEmptyStrip: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 12, color: AXM.ash },
 
     // Compact row-wrap play area — small fixed-width cards laid out in rows.
     playCards: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center', alignContent: 'flex-start', paddingTop: 2 },
     stagedCol: { alignItems: 'center', gap: 3 },
     stagedCard: { width: 88, minHeight: 95, borderWidth: 2, borderRadius: 4, backgroundColor: '#14110e', overflow: 'hidden' },
     cardDie: { position: 'absolute', top: 4, right: 4, zIndex: 4 },
+    // Dimmer additive 'die ready' ring (shared drafted die spends on this card too on APPLY-POWER).
+    dieReadyRing: { borderWidth: 1.5, borderColor: 'rgba(194,161,78,0.4)', borderRadius: 5, zIndex: 5 },
+    dieReadyCaption: { fontFamily: FONTS.mono, fontSize: 9, color: 'rgba(194,161,78,0.75)', letterSpacing: 0.8 },
     actHint: { fontFamily: FONTS.mono, fontSize: 11, color: '#c2a14e', textAlign: 'center', letterSpacing: 0.3, paddingHorizontal: 12 },
 
     applyBtn: { width: 88, borderWidth: 1.5, borderRadius: 3, paddingVertical: 4, alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.4)' },
     applyText: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1.4 },
 
     // Taller dock (CLIP FIX) so the enlarged hand clears the home indicator.
-    dock: { height: 180, borderTopWidth: 1, borderTopColor: AXM.ash },
+    dock: { height: 210, borderTopWidth: 1, borderTopColor: AXM.ash },
     trashBin: { position: 'absolute', left: 8, bottom: 10, zIndex: 40, width: 58, height: 58, borderRadius: 29, borderWidth: 1.5, borderStyle: 'dashed', borderColor: AXM.ash, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },
     trashLabel: { fontFamily: FONTS.mono, fontSize: 9, letterSpacing: 1, color: AXM.bone, marginTop: 1 },
     // Horizontal gutters (left: SCRAP, right: END PHASE) so the fan never lays a card
@@ -728,16 +792,24 @@ const useStyles = makeStyles((AXM) => ({
 
     // ── Shared card FACE (hand · staged · inspect modal) ──────────────────────
     faceCard: { borderWidth: 1.5, borderRadius: 5, backgroundColor: '#14110e', overflow: 'hidden' },
-    faceArt: { width: '100%', height: '48%', backgroundColor: '#0c0a08' },
-    faceArtTint: { ...StyleSheet.absoluteFillObject, opacity: 0.18 },
+    // Art raised to 58% (kills the dead mid-card black band) — the name band anchors
+    // directly beneath it, paidSection fills the remainder.
+    faceArt: { width: '100%', height: '58%', backgroundColor: '#0c0a08' },
+    faceArtTint: { ...StyleSheet.absoluteFillObject, opacity: 0.2 },
     faceArtScrim: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '62%', backgroundColor: 'rgba(10,8,6,0.6)' },
-    faceLower: { flex: 1, justifyContent: 'flex-end' },
+    // Stance vignette: a stance-tinted bottom-up wash (approximates a gradient) so each
+    // stance reads as a distinct hue behind the shared placeholder photo.
+    faceArtVignette: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '55%', opacity: 0.22 },
+    faceLower: { flex: 1 },
     glyphCorner: { position: 'absolute', top: 3, left: 5, fontSize: 12, zIndex: 3 },
-    glyphCornerLarge: { top: 8, left: 12, fontSize: 24 },
-    costPip: { position: 'absolute', top: 3, right: 3, width: 17, height: 17, borderRadius: 9, borderWidth: 1, borderColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center', zIndex: 4 },
-    costPipLarge: { top: 9, right: 9, width: 34, height: 34, borderRadius: 17, borderWidth: 1.5 },
+    // Large inspect card: the category glyph promoted to a faint centred watermark,
+    // CONFINED to the art window (never behind the keyword/value text).
+    glyphWatermark: { position: 'absolute', alignSelf: 'center', top: '24%', fontSize: 72, opacity: 0.16, zIndex: 2 },
+    // Square stance TAB (not a round cost-orb): these cards have no resource cost.
+    costPip: { position: 'absolute', top: 3, right: 3, width: 17, height: 17, borderRadius: 3, borderWidth: 1, borderColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center', zIndex: 4 },
+    costPipLarge: { top: 9, right: 9, width: 32, height: 32, borderRadius: 4, borderWidth: 1.5 },
     costPipGlyph: { fontFamily: FONTS.sans, fontSize: 10, color: '#100d0a' },
-    costPipGlyphLarge: { fontSize: 19 },
+    costPipGlyphLarge: { fontSize: 18 },
     freePip: { position: 'absolute', left: 3, top: '40%', maxWidth: '64%', backgroundColor: 'rgba(10,8,6,0.78)', borderRadius: 3, paddingHorizontal: 4, paddingVertical: 1, zIndex: 4 },
     freePipLarge: { left: 10, top: '40%', paddingHorizontal: 8, paddingVertical: 3 },
     freePipText: { fontFamily: FONTS.mono, fontSize: 8, color: AXM.bone, letterSpacing: 0.3 },
@@ -745,7 +817,7 @@ const useStyles = makeStyles((AXM) => ({
     nameBand: { paddingVertical: 3, paddingHorizontal: 5, alignItems: 'center', justifyContent: 'center' },
     nameText: { fontFamily: FONTS.gothic, fontSize: 11, lineHeight: 13, color: '#100d0a', textAlign: 'center' },
     nameTextLarge: { fontSize: 22, lineHeight: 26 },
-    paidSection: { paddingHorizontal: 6, paddingBottom: 5, paddingTop: 3, backgroundColor: 'rgba(10,8,6,0.62)' },
+    paidSection: { flex: 1, justifyContent: 'flex-end', paddingHorizontal: 6, paddingBottom: 5, paddingTop: 3, backgroundColor: 'rgba(10,8,6,0.62)' },
     paidSectionLarge: { paddingHorizontal: 14, paddingBottom: 13, paddingTop: 8 },
     paidRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
     paidKw: { fontFamily: FONTS.sans, fontSize: 8.5, letterSpacing: 1 },
@@ -755,6 +827,13 @@ const useStyles = makeStyles((AXM) => ({
     paidValLarge: { fontSize: 24, lineHeight: 28, marginTop: 3 },
     paidSub: { fontFamily: FONTS.mono, fontSize: 8, lineHeight: 10, color: AXM.bone, letterSpacing: 0.2, marginTop: 1 },
     paidSubLarge: { fontSize: 12, lineHeight: 15, marginTop: 2 },
+    // large-only effect body (Sanguine-Step shape) — fills the space under the name band.
+    faceBody: { flex: 1, justifyContent: 'center', paddingHorizontal: 8, paddingVertical: 8 },
+    faceEffect: { fontFamily: FONTS.serif, fontSize: 13.5, lineHeight: 19, color: AXM.parchment, textAlign: 'center' },
+    faceEffectBold: { fontFamily: FONTS.gothic, color: AXM.sulfur },
+    // large-only TYPE-TAB pinned to the card's bottom edge.
+    typeTab: { alignSelf: 'center', marginBottom: 10, borderWidth: 1, borderColor: 'rgba(0,0,0,0.5)', backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: 2, paddingHorizontal: 10, paddingVertical: 3 },
+    typeTabText: { fontFamily: FONTS.sans, fontSize: 9, letterSpacing: 1.4, color: AXM.bone },
 
     playWrap: { position: 'absolute', right: 10, bottom: 12, zIndex: 40, shadowColor: AXM.sulfur, shadowRadius: 14, shadowOffset: { width: 0, height: 0 }, elevation: 8 },
     playBtn: { width: 72, height: 72, borderRadius: 36, borderWidth: 2.5, alignItems: 'center', justifyContent: 'center' },

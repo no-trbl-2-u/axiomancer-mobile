@@ -71,6 +71,7 @@ const EFFECT_KEYWORD: Record<string, string> = {
     debuff_evasion_down: 'Expose',
     debuff_exposure: 'Expose',
     tier1_mind_mark: 'Expose',
+    debuff_vulnerable: 'Vulnerable',
     debuff_vulnerability_body: 'Vulnerable',
     debuff_vulnerability_mind: 'Vulnerable',
     debuff_vulnerability_heart: 'Vulnerable',
@@ -241,6 +242,11 @@ const KEYWORD_GLOSS: Record<string, string> = {
     Bolster: 'Maximum HP increased.',
     Cleanse: 'Removes negative effects from you.',
     'Open-Minded': 'Receptive — improved insight and dialogue.',
+    // ── 0.34.0 mechanics (special-mechanic keywords; not status effects) ──
+    Rupture: "Detonates ALL the foe's stacked damage-over-time as one instant burst.",
+    Compound: 'A hit that grows with each distinct debuff on the foe.',
+    Disrupt: 'Distinct soft-controls stack a meter; enough denies the foe its turn.',
+    Execute: 'A finisher: massive damage when the foe is low on HP or heavily DoT-stacked.',
     // Verb-class keyword
     Guard: "Absorbs the enemy's next attack, then fades. One-shot — does not stack.",
 };

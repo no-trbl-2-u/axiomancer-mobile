@@ -17,11 +17,16 @@ import {
     getDraftedDie, isPhaseStanceRevealed, cardReadPreview,
     revealedCurrentStance, resolveRead, getSignatureSkill,
     lookupEffect, READ_DAMAGE_MULT, COLOR_MATCH_DAMAGE_BONUS,
+    EXECUTE_DAMAGE_FRACTION, COMPOUND_COUNT_CAP, RUPTURE_BURST_CAP,
+    VULNERABLE_MAX_MULT, DISRUPT_DENY_AT,
     type CombatEncounterState, type CombatCard, type CombatManaDie,
     type CombatThreatPhase, type CombatIntentType, type CombatReadResult,
     type CombatSummary, type SignatureSkill, type Stance,
     type Skill, type SkillCombatEffects,
 } from 'axiomancer-mechanics';
+
+/** The barrel doesn't re-export the union, so derive it from Skill. */
+type SkillSpecialMechanic = NonNullable<Skill['specialMechanics']>[number];
 import { effectGlyph, GLYPH_COLORS, type StatusGlyph } from '@/components/combat/statusGlyphs';
 import { keywordForEffect, keywordForVerb, keywordGloss } from '@/state/combat/keywords';
 import { resolveEnemyArchetype } from '@/state/presenters/enemy-art';
@@ -90,7 +95,17 @@ export interface CombatDieVM {
     /** Read vs the (revealed) enemy stance: advantage/neutral/disadvantage/none/null(hidden). */
     readPip: CombatReadResult | null;
 }
-export type CombatCardKind = 'dot' | 'stun' | 'regen' | 'guard' | 'strike' | 'weaken' | 'inert' | 'befriend';
+export type CombatCardKind =
+    | 'dot' | 'stun' | 'regen' | 'guard' | 'strike' | 'weaken' | 'inert' | 'befriend'
+    // ── mechanics 0.34.0 — newly REAL in the HP engine ──
+    | 'vulnerable'   // debuff_vulnerable / debuff_vulnerability_* — foe takes +N% damage
+    | 'rupture'      // detonate stored DoT (live total → a word, no fabricated number)
+    | 'compound'     // bonus damage per distinct debuff on the foe
+    | 'barrier'      // stacking soak shield on YOU
+    | 'thorns'       // reflect attacker damage back
+    | 'siphon'       // heal for a % of the damage dealt
+    | 'riposte'      // counter the next hit + reduce it
+    | 'execute';     // finisher when the foe is low / heavily stacked
 
 /** Render-ready, HONEST card FACE. Every number is a real unit derived from the
  *  skill's AUTHORED effect (never the abstract "impact"). `heroText` is '' when the
@@ -256,13 +271,18 @@ type EffectPayloadLike = {
     regeneration?: { healthPerRound?: number };
     rollModifier?: number;
     rollModifierPerIntensity?: number;
+    // ── mechanics 0.34.0 ──
+    reflectDamage?: number;     // buff_brazen_thorns / tier1_body_defend → Thorns
+    damageTakenMult?: number;   // debuff_vulnerable / debuff_vulnerability_* → Vulnerable
 };
 
 /** THE single forward-compat honesty gate: the kind of HONEST, engine-read effect,
  *  or null for effects the live HP engine still doesn't quantify (→ greyed, number-
  *  less). Widened for mechanics 0.33.0: a negative roll modifier now weakens (and a
  *  variety denies) the enemy's turn, so it counts as 'weaken'. */
-export function engineHonestKind(effectId: string | null | undefined): 'dot' | 'stun' | 'regen' | 'weaken' | null {
+export function engineHonestKind(
+    effectId: string | null | undefined,
+): 'dot' | 'stun' | 'regen' | 'weaken' | 'vulnerable' | 'thorns' | null {
     if (!effectId) return null;
     const e = lookupEffect(effectId);
     if (!e) return null;
@@ -270,6 +290,9 @@ export function engineHonestKind(effectId: string | null | undefined): 'dot' | '
     if (p.damageOverTime) return 'dot';
     if (p.actionRestriction?.skipTurn) return 'stun';
     if ((p.regeneration?.healthPerRound ?? 0) > 0) return 'regen';
+    // 0.34.0: reflect + damage-amp are now read by the live HP engine, so they're honest.
+    if ((p.reflectDamage ?? 0) > 0) return 'thorns';
+    if ((p.damageTakenMult ?? 1) > 1) return 'vulnerable';
     if ((p.rollModifier ?? 0) < 0 || (p.rollModifierPerIntensity ?? 0) < 0) return 'weaken';
     return null;
 }
@@ -284,6 +307,9 @@ interface PrimaryResolution {
     ce: SkillCombatEffects | null;
     guardAmount: number | null;
     riders: SkillCombatEffects[];
+    /** The driving special mechanic for the 0.34.0 kinds (barrier/riposte/siphon/
+     *  rupture/compound/execute); null for effect- or verb-driven kinds. */
+    mech: SkillSpecialMechanic | null;
 }
 
 /** Resolve a card's PRIMARY combat effect + its kind. Reads the skill's
@@ -291,24 +317,55 @@ interface PrimaryResolution {
  *  null for guard/regen cards (it = primaryEnemyEffectId). */
 export function resolvePrimary(card: CombatCard, skill: Skill | undefined): PrimaryResolution {
     const vc = card.verbClass;
+    const mechs = skill?.specialMechanics ?? [];
+    const findMech = <K extends SkillSpecialMechanic['kind']>(k: K) =>
+        mechs.find(m => m.kind === k) as Extract<SkillSpecialMechanic, { kind: K }> | undefined;
+
     if (vc === 'defend') {
-        const g = (skill?.specialMechanics ?? []).find(m => m.kind === 'guard') as { amount?: number } | undefined;
-        return { kind: 'guard', ce: null, guardAmount: g?.amount ?? 0, riders: [] };
+        // 0.34.0: a defend card can carry barrier (stacking soak) or riposte (counter)
+        // instead of / on top of plain Guard. Headline the richer mechanic.
+        const barrier = findMech('barrier');
+        if (barrier) return { kind: 'barrier', ce: null, guardAmount: null, riders: [], mech: barrier };
+        const riposte = findMech('riposte');
+        if (riposte) return { kind: 'riposte', ce: null, guardAmount: findMech('guard')?.amount ?? null, riders: [], mech: riposte };
+        const g = findMech('guard');
+        return { kind: 'guard', ce: null, guardAmount: g?.amount ?? 0, riders: [], mech: null };
     }
-    if (vc === 'befriend') return { kind: 'befriend', ce: null, guardAmount: null, riders: [] };
-    if (vc === 'direct-damage') return { kind: 'strike', ce: null, guardAmount: null, riders: [] };
+    if (vc === 'befriend') return { kind: 'befriend', ce: null, guardAmount: null, riders: [], mech: null };
+    if (vc === 'direct-damage') {
+        // 0.34.0: rupture / compound / siphon ride a direct hit; their headline value
+        // is the AUTHORED mechanic param (the actual swing is live → not headlined).
+        const rupture = findMech('rupture');
+        if (rupture) return { kind: 'rupture', ce: null, guardAmount: null, riders: [], mech: rupture };
+        const compound = findMech('compound');
+        if (compound) return { kind: 'compound', ce: null, guardAmount: null, riders: [], mech: compound };
+        const siphon = findMech('siphon');
+        if (siphon) return { kind: 'siphon', ce: null, guardAmount: null, riders: [], mech: siphon };
+        return { kind: 'strike', ce: null, guardAmount: null, riders: [], mech: null };
+    }
     if (vc === 'buff-self') {
         const self = (skill?.combatEffects ?? []).filter(e => e.appliedTo === 'self');
+        // 0.34.0: a self-buff that reflects (Thorns) is now real.
+        const thorns = self.find(s => engineHonestKind(s.effectId) === 'thorns');
+        if (thorns) return { kind: 'thorns', ce: thorns, guardAmount: null, riders: self.filter(s => s !== thorns), mech: null };
         const primary = self.find(s => engineHonestKind(s.effectId) === 'regen') ?? self[0] ?? null;
         const kind: CombatCardKind = engineHonestKind(primary?.effectId) === 'regen' ? 'regen' : 'inert';
-        return { kind, ce: primary, guardAmount: null, riders: self.filter(s => s !== primary) };
+        return { kind, ce: primary, guardAmount: null, riders: self.filter(s => s !== primary), mech: null };
     }
     // direct-dot | direct-control | stat-debuff → opponent effects
     const opp = (skill?.combatEffects ?? []).filter(e => e.appliedTo === 'opponent');
+    // 0.34.0: execute is a finisher that rides whatever the card also applies (e.g. a DoT).
+    const execute = findMech('execute');
+    if (execute) return { kind: 'execute', ce: null, guardAmount: null, riders: opp, mech: execute };
     const primary = opp.find(o => engineHonestKind(o.effectId)) ?? opp[0] ?? null;
     const k = engineHonestKind(primary?.effectId);
-    const kind: CombatCardKind = k === 'dot' ? 'dot' : k === 'stun' ? 'stun' : k === 'weaken' ? 'weaken' : 'inert';
-    return { kind, ce: primary, guardAmount: null, riders: opp.filter(o => o !== primary) };
+    const kind: CombatCardKind =
+        k === 'dot' ? 'dot'
+            : k === 'stun' ? 'stun'
+                : k === 'weaken' ? 'weaken'
+                    : k === 'vulnerable' ? 'vulnerable'
+                        : 'inert';
+    return { kind, ce: primary, guardAmount: null, riders: opp.filter(o => o !== primary), mech: null };
 }
 
 interface CardCalc extends PrimaryResolution {
@@ -319,6 +376,16 @@ interface CardCalc extends PrimaryResolution {
     freePerTurn: number; freeTurns: number; freeTotal: number;
     skips: number;
     dpr: number; intensity: number; stacks: boolean;
+    // ── 0.34.0 authored statics (real units; live swings stay live) ──
+    vulnPct: number;       // +N% damage taken (from damageTakenMult)
+    reflectN: number;      // thorns reflect per hit (reflectDamage × intensity)
+    barrierAmt: number;    // soak granted (barrier.amount, base read)
+    siphonPct: number;     // % of damage healed (siphon.pct)
+    riposteDmg: number;    // counter damage (riposte.damage, base read)
+    riposteReduce: number; // incoming reduction (riposte.reduce, base read)
+    executeHpPct: number;  // foe-HP threshold for the finisher (execute.hpPct)
+    executeStacks: number; // OR ≥N DoT stacks (execute.dotStacks)
+    compoundPer: number;   // bonus damage per distinct debuff (compound.perDebuff)
 }
 
 /** Single source of the numbers — faceStats AND detailStats both read this, so the
@@ -330,6 +397,8 @@ function cardCalc(card: CombatCard, skill: Skill | undefined): CardCalc {
         ...pr, keyword: null, glyph: '◆', categoryColor: STRIKE_COLOR,
         perTurn: 0, turns: 0, total: 0, freePerTurn: 0, freeTurns: 0, freeTotal: 0,
         skips: 0, dpr: 0, intensity: 1, stacks: false,
+        vulnPct: 0, reflectN: 0, barrierAmt: 0, siphonPct: 0,
+        riposteDmg: 0, riposteReduce: 0, executeHpPct: 0, executeStacks: 0, compoundPer: 0,
     };
     const eff = pr.ce ? lookupEffect(pr.ce.effectId) : undefined;
     switch (pr.kind) {
@@ -374,6 +443,63 @@ function cardCalc(card: CombatCard, skill: Skill | undefined): CardCalc {
             out.categoryColor = GLYPH_COLORS.control;
             break;
         }
+        case 'vulnerable': {
+            const p = (eff?.payload ?? {}) as EffectPayloadLike;
+            out.turns = pr.ce?.duration ?? eff?.duration ?? 0;
+            out.vulnPct = Math.round(((p.damageTakenMult ?? 1) - 1) * 100);
+            out.keyword = keywordForEffect(pr.ce?.effectId) ?? 'Vulnerable';
+            out.glyph = pr.ce ? glyphFor(pr.ce.effectId) : '◎';
+            out.categoryColor = GLYPH_COLORS.statdown;
+            out.stacks = eff?.stacking === 'intensity';
+            break;
+        }
+        case 'thorns': {
+            const p = (eff?.payload ?? {}) as EffectPayloadLike;
+            out.intensity = pr.ce?.intensity ?? 1;
+            out.turns = pr.ce?.duration ?? eff?.duration ?? 0;
+            out.reflectN = (p.reflectDamage ?? 0) * out.intensity;
+            out.keyword = keywordForEffect(pr.ce?.effectId) ?? 'Thorns';
+            out.glyph = pr.ce ? glyphFor(pr.ce.effectId) : '✷';
+            out.categoryColor = GLYPH_COLORS.thorns;
+            break;
+        }
+        case 'barrier': {
+            const m = pr.mech?.kind === 'barrier' ? pr.mech : undefined;
+            out.barrierAmt = m?.amount ?? 0;
+            out.keyword = 'Barrier'; out.glyph = '⬡'; out.categoryColor = GUARD_COLOR;
+            break;
+        }
+        case 'riposte': {
+            const m = pr.mech?.kind === 'riposte' ? pr.mech : undefined;
+            out.riposteDmg = m?.damage ?? 0;
+            out.riposteReduce = m?.reduce ?? 0;
+            out.keyword = 'Riposte'; out.glyph = '⚔'; out.categoryColor = GUARD_COLOR;
+            break;
+        }
+        case 'siphon': {
+            const m = pr.mech?.kind === 'siphon' ? pr.mech : undefined;
+            out.siphonPct = Math.round((m?.pct ?? 0) * 100);
+            out.keyword = 'Siphon'; out.glyph = glyphFor('buff_life_steal'); out.categoryColor = GLYPH_COLORS.drain;
+            break;
+        }
+        case 'compound': {
+            const m = pr.mech?.kind === 'compound' ? pr.mech : undefined;
+            out.compoundPer = m?.perDebuff ?? 0;
+            out.keyword = 'Compound'; out.glyph = '⊕'; out.categoryColor = STRIKE_COLOR;
+            break;
+        }
+        case 'execute': {
+            const m = pr.mech?.kind === 'execute' ? pr.mech : undefined;
+            out.executeHpPct = Math.round((m?.hpPct ?? 0) * 100);
+            out.executeStacks = m?.dotStacks ?? 0;
+            out.keyword = 'Execute'; out.glyph = '☠'; out.categoryColor = GLYPH_COLORS.dot;
+            break;
+        }
+        case 'rupture': {
+            // Live-only value (detonates the foe's pending DoT) → a word, never a number.
+            out.keyword = 'Rupture'; out.glyph = '✸'; out.categoryColor = GLYPH_COLORS.dot;
+            break;
+        }
         case 'guard':
             out.keyword = 'Guard'; out.glyph = '🛡'; out.categoryColor = GUARD_COLOR; break;
         case 'strike':
@@ -402,6 +528,8 @@ function buildDetailKeywords(card: CombatCard, c: CardCalc): { name: string; def
     };
     if (c.kind === 'guard') push(keywordForVerb(card.verbClass), false);
     else push(c.keyword, c.kind === 'inert');
+    // A riposte card also grants Guard — surface it as a secondary keyword.
+    if (c.kind === 'riposte' && c.guardAmount) push(keywordForVerb('defend'), false);
     // A rider is "minor" only if the engine still doesn't read it (engineHonestKind null).
     for (const r of c.riders) push(keywordForEffect(r.effectId), engineHonestKind(r.effectId) === null);
     return out;
@@ -422,6 +550,14 @@ export function faceStats(card: CombatCard, skill?: Skill): CombatCardFaceVM {
         case 'guard': { const b = c.guardAmount ?? 0; return { ...base, kind: 'guard', keyword: 'GUARD', heroText: `Guard ${b}`, heroSub: null, freeHeroText: `Guard ${Math.max(1, Math.round(b * 0.5))}`, freeHeroSub: null, verbLine: 'block the next hit', powerRail: `${b} ↑read`, readDependent: true, inert: false, guardBase: b }; }
         case 'strike': return { ...base, kind: 'strike', keyword: 'STRIKE', heroText: '', heroSub: 'small direct hit', freeHeroText: 'small chip', freeHeroSub: null, verbLine: 'a small direct hit', powerRail: 'full ↑read', readDependent: true, inert: false, guardBase: null };
         case 'befriend': return { ...base, kind: 'befriend', keyword: 'SPARE', heroText: '', heroSub: 'spare a near-dead foe', freeHeroText: 'mercy', freeHeroSub: null, verbLine: 'spare a near-dead foe', powerRail: 'mercy', readDependent: false, inert: false, guardBase: null };
+        case 'vulnerable': return { ...base, kind: 'vulnerable', keyword: kw, heroText: `+${c.vulnPct}%`, heroSub: `dmg taken · ${c.turns}t`, freeHeroText: free, freeHeroSub: null, verbLine: 'foe takes more damage', powerRail: c.keyword ?? 'Vulnerable', readDependent: false, inert: false, guardBase: null };
+        case 'thorns': return { ...base, kind: 'thorns', keyword: kw, heroText: `Reflect ${c.reflectN}`, heroSub: `${c.turns}t`, freeHeroText: `Reflect ${c.reflectN}`, freeHeroSub: null, verbLine: 'reflect damage to attackers', powerRail: c.keyword ?? 'Thorns', readDependent: false, inert: false, guardBase: null };
+        case 'barrier': { const fg = Math.max(1, Math.round((c.guardAmount ?? 2) * 0.5)); return { ...base, kind: 'barrier', keyword: 'BARRIER', heroText: `Soak ${c.barrierAmt}`, heroSub: 'stacks', freeHeroText: `Guard ${fg}`, freeHeroSub: null, verbLine: 'soak incoming damage', powerRail: c.keyword ?? 'Barrier', readDependent: false, inert: false, guardBase: null }; }
+        case 'riposte': { const fg = Math.max(1, Math.round((c.guardAmount ?? 2) * 0.5)); return { ...base, kind: 'riposte', keyword: 'RIPOSTE', heroText: `${c.riposteDmg} / -${c.riposteReduce}`, heroSub: 'counter / reduce', freeHeroText: `Guard ${fg}`, freeHeroSub: null, verbLine: 'counter the next hit', powerRail: c.keyword ?? 'Riposte', readDependent: false, inert: false, guardBase: null }; }
+        case 'siphon': return { ...base, kind: 'siphon', keyword: 'SIPHON', heroText: `Heal ${c.siphonPct}%`, heroSub: 'of damage dealt', freeHeroText: 'small chip', freeHeroSub: null, verbLine: 'heal from the damage you deal', powerRail: c.keyword ?? 'Siphon', readDependent: false, inert: false, guardBase: null };
+        case 'compound': return { ...base, kind: 'compound', keyword: 'COMPOUND', heroText: `${c.compoundPer}/debuff`, heroSub: 'per foe debuff', freeHeroText: 'small chip', freeHeroSub: null, verbLine: 'more per debuff on the foe', powerRail: c.keyword ?? 'Compound', readDependent: false, inert: false, guardBase: null };
+        case 'execute': return { ...base, kind: 'execute', keyword: 'EXECUTE', heroText: 'finisher', heroSub: `foe < ${c.executeHpPct}% HP`, freeHeroText: free, freeHeroSub: null, verbLine: 'finish a low or stacked foe', powerRail: c.keyword ?? 'Execute', readDependent: false, inert: false, guardBase: null };
+        case 'rupture': return { ...base, kind: 'rupture', keyword: 'RUPTURE', heroText: 'detonate', heroSub: 'foe DoT', freeHeroText: 'small chip', freeHeroSub: null, verbLine: "detonate the foe's stored DoT", powerRail: c.keyword ?? 'Rupture', readDependent: false, inert: false, guardBase: null };
         case 'inert':
         default: return { ...base, kind: 'inert', keyword: kw ?? 'DEBUFF', heroText: '', heroSub: card.verbClass === 'buff-self' ? 'buff yourself' : 'weakens the foe', freeHeroText: card.verbClass === 'buff-self' ? 'weak buff' : free, freeHeroSub: null, verbLine: card.verbClass === 'buff-self' ? 'buff yourself' : 'weakens the foe', powerRail: c.keyword ?? '—', readDependent: false, inert: true, guardBase: null };
     }
@@ -444,6 +580,14 @@ export function detailStats(card: CombatCard, skill?: Skill): CombatCardDetailVM
         case 'guard': { const b = c.guardAmount ?? 0; const freeG = Math.max(1, Math.round(b * 0.5)); const adv = Math.max(1, Math.round(b * READ_DAMAGE_MULT.advantage)); const dis = Math.max(1, Math.round(b * READ_DAMAGE_MULT.disadvantage)); return { subtitle: 'Guard yourself — soak the next hit.', metaChip, outcomeLine: `Gain Guard ${b} — absorbs up to ${b} damage from the enemy's NEXT attack, then it's gone. One-shot; does not stack.`, outcomeStats: [{ label: 'GUARD', value: `${b} (▲${adv} · —${b} · ▼${dis})` }], stacksText: null, freeLine: `◇ FREE (no die): a weak brace — Guard ${freeG}.`, powerLine: `◆ WITH A DIE: Guard ${b}; ▲ read raises it to ${adv}, ▼ read drops it to ${dis}; +${COLOR_MATCH_DAMAGE_BONUS} if a ${STANCE} die matches.`, readNote: `The read scales this: ▲ advantage ×${READ_DAMAGE_MULT.advantage}, ▼ disadvantage ×${READ_DAMAGE_MULT.disadvantage}.`, mathLine: `FREE = round(${b} × ½) = ${freeG}.  POWER = round(${b} × read) + ${COLOR_MATCH_DAMAGE_BONUS} on a colour match.`, keywords }; }
         case 'strike': return { subtitle: 'A small direct hit.', metaChip, outcomeLine: 'A small direct hit — the weak baseline; status erodes faster.', outcomeStats: [], stacksText: null, freeLine: '◇ FREE (no die): chip a sliver of HP.', powerLine: `◆ WITH A DIE: a full direct hit (scales with your ${skill?.scalingStat ?? 'stat'}); ▲ read ×${READ_DAMAGE_MULT.advantage}, ▼ ×${READ_DAMAGE_MULT.disadvantage}.`, readNote: `The read scales this hit: ▲ ×${READ_DAMAGE_MULT.advantage}, ▼ ×${READ_DAMAGE_MULT.disadvantage}.`, mathLine: `≈ (basePower ${skill?.basePower ?? '?'} + your ${skill?.scalingStat ?? 'stat'}) × 0.25 × read — needs live stats, so no fixed number.`, keywords };
         case 'befriend': return { subtitle: 'Spare a near-dead foe.', metaChip, outcomeLine: 'Befriend — usable when the enemy is near defeat (low HP); ends the fight peacefully (mercy) instead of a kill.', outcomeStats: [], stacksText: null, freeLine: '◇ FREE (no die): attempt mercy on a near-dead foe.', powerLine: '◆ WITH A DIE: if the enemy HP is low, end combat peacefully (befriend).', readNote: 'Watch the enemy HP bar — befriend lands only when it is low.', mathLine: 'No fixed number — a conditional outcome gated on low enemy HP.', keywords };
+        case 'vulnerable': { const cap = Math.round((VULNERABLE_MAX_MULT - 1) * 100); return { subtitle: `${Title} the enemy — it takes more damage.`, metaChip, outcomeLine: `Apply ${Title}: the enemy takes +${c.vulnPct}% damage for ${c.turns} turns. Combined Vulnerable caps at +${cap}%.`, outcomeStats: [{ label: 'DMG TAKEN', value: `+${c.vulnPct}%` }, { label: 'TURNS', value: `${c.turns}` }], stacksText: `Re-applying refreshes the ${c.turns}-turn window; stacking different Vulnerable sources climbs toward the +${cap}% cap.`, freeLine: `◇ FREE (no die): deal ${free} HP now. No ${Title} lands without a die.`, powerLine: `◆ WITH A DIE: apply ${Title} — +${c.vulnPct}% damage taken for ${c.turns} turns, plus a small hit. ${match}`, readNote: `The read scales only the small strike, not ${Title} — +${c.vulnPct}% is exact.`, mathLine: `+${c.vulnPct}% = (damageTakenMult − 1) × 100; combined Vulnerable caps at +${cap}%.`, keywords }; }
+        case 'thorns': return { subtitle: `${Title} — attackers take damage back.`, metaChip, outcomeLine: `Gain ${Title}: reflect ${c.reflectN} damage to the enemy each time it hits you, for ${c.turns} turns.`, outcomeStats: [{ label: 'REFLECT', value: `${c.reflectN}` }, { label: 'TURNS', value: `${c.turns}` }], stacksText: c.intensity > 1 || (lookupEffect(c.ce?.effectId ?? '')?.stacking === 'intensity') ? 'Stacks — re-applying reflects more.' : null, freeLine: `◇ FREE (no die): still gain ${Title} — Reflect ${c.reflectN} for ${c.turns} turns (a self-buff lands without a die).`, powerLine: `◆ WITH A DIE: gain ${Title} (Reflect ${c.reflectN}) plus a small hit. ${match}`, readNote: 'Your reflect takes no read — Reflect is exact; the read scales only the small strike.', mathLine: `Reflect ${c.reflectN} returned per enemy hit, ${c.turns} turns; stacking raises the reflect.`, keywords };
+        case 'barrier': { const b = c.barrierAmt; const fg = Math.max(1, Math.round((c.guardAmount ?? 2) * 0.5)); const adv = Math.max(1, Math.round(b * READ_DAMAGE_MULT.advantage)); const dis = Math.max(1, Math.round(b * READ_DAMAGE_MULT.disadvantage)); return { subtitle: 'Barrier — a stacking shield that soaks damage.', metaChip, outcomeLine: `Gain Barrier ${b}: absorbs up to ${b} incoming damage. Unlike Guard it STACKS and persists until depleted.`, outcomeStats: [{ label: 'SOAK', value: `${b} (▲${adv} · —${b} · ▼${dis})` }], stacksText: 'Stacks — each cast adds more soak on top.', freeLine: `◇ FREE (no die): a weak brace — Guard ${fg}.`, powerLine: `◆ WITH A DIE: gain Barrier ${b}; ▲ read raises it to ${adv}, ▼ drops it to ${dis}; +${COLOR_MATCH_DAMAGE_BONUS} on a ${STANCE} match.`, readNote: `The read scales the Barrier granted: ▲ ×${READ_DAMAGE_MULT.advantage}, ▼ ×${READ_DAMAGE_MULT.disadvantage}.`, mathLine: `Soak ${b} base × read + ${COLOR_MATCH_DAMAGE_BONUS} on a colour match; barriers stack.`, keywords }; }
+        case 'riposte': { const fg = Math.max(1, Math.round((c.guardAmount ?? 2) * 0.5)); const guardLine = c.guardAmount ? ` Also gain Guard ${c.guardAmount}.` : ''; const stats = [{ label: 'COUNTER', value: `${c.riposteDmg}` }, { label: 'REDUCE', value: `-${c.riposteReduce}` }]; if (c.guardAmount) stats.push({ label: 'GUARD', value: `${c.guardAmount}` }); return { subtitle: 'Riposte — counter the next hit and blunt it.', metaChip, outcomeLine: `Arm Riposte: the enemy's next attack is reduced by ${c.riposteReduce} and it takes ${c.riposteDmg} back.${guardLine}`, outcomeStats: stats, stacksText: null, freeLine: `◇ FREE (no die): a weak brace — Guard ${fg} (no counter without a die).`, powerLine: `◆ WITH A DIE: arm Riposte — counter ${c.riposteDmg}, reduce ${c.riposteReduce}${c.guardAmount ? `, +Guard ${c.guardAmount}` : ''}; the read scales it. ${match}`, readNote: 'The read scales both the counter damage and the reduction.', mathLine: `Counter ${c.riposteDmg} & reduce ${c.riposteReduce}, each × read (+${COLOR_MATCH_DAMAGE_BONUS} counter on a colour match).`, keywords }; }
+        case 'siphon': return { subtitle: 'Siphon — heal for part of the damage you deal.', metaChip, outcomeLine: `A direct hit that heals you for ${c.siphonPct}% of the damage it deals.`, outcomeStats: [{ label: 'LIFESTEAL', value: `${c.siphonPct}%` }], stacksText: null, freeLine: '◇ FREE (no die): chip a sliver of HP — no Siphon without a die.', powerLine: `◆ WITH A DIE: a full hit (scales with your ${skill?.scalingStat ?? 'stat'}) that heals ${c.siphonPct}% of the damage dealt; ▲ read ×${READ_DAMAGE_MULT.advantage}, ▼ ×${READ_DAMAGE_MULT.disadvantage}.`, readNote: `The hit (and so the heal) scales with the read; the ${c.siphonPct}% rate is exact.`, mathLine: `Heal = ${c.siphonPct}% × (damage dealt this hit) — the hit is live, so no fixed heal number.`, keywords };
+        case 'compound': return { subtitle: 'Compound — punishes a debuff-laden foe.', metaChip, outcomeLine: `A direct hit that adds ${c.compoundPer} damage for EACH distinct debuff on the enemy (up to ${COMPOUND_COUNT_CAP}).`, outcomeStats: [{ label: 'PER DEBUFF', value: `${c.compoundPer}` }, { label: 'CAP', value: `${COMPOUND_COUNT_CAP}` }], stacksText: null, freeLine: '◇ FREE (no die): chip a sliver of HP — the compound bonus needs a die.', powerLine: `◆ WITH A DIE: base hit + ${c.compoundPer} × (distinct debuffs, max ${COMPOUND_COUNT_CAP}); the read scales it. ${match}`, readNote: 'Stack more DISTINCT debuffs first to maximise the bonus.', mathLine: `bonus = ${c.compoundPer} × debuff count (live, capped ${COMPOUND_COUNT_CAP}) × read — count is live, so no fixed number.`, keywords };
+        case 'execute': { const frac = Math.round(EXECUTE_DAMAGE_FRACTION * 100); return { subtitle: 'Execute — a finisher on a low or DoT-stacked foe.', metaChip, outcomeLine: `When the enemy is below ${c.executeHpPct}% HP (or carries ≥${c.executeStacks} DoT stacks), Execute deals ${frac}% of the foe's MAX HP.`, outcomeStats: [{ label: 'TRIGGER', value: `< ${c.executeHpPct}% HP` }, { label: 'OR DOT', value: `≥ ${c.executeStacks}` }, { label: 'HIT', value: `${frac}% max HP` }], stacksText: c.riders.length ? 'Also applies its on-hit effects (see keywords) every time.' : null, freeLine: `◇ FREE (no die): deal ${free} HP now — no Execute or its on-hit effects without a die.`, powerLine: `◆ WITH A DIE: if the foe is < ${c.executeHpPct}% HP or ≥${c.executeStacks} DoT stacks, Execute for ${frac}% of its max HP; otherwise its on-hit effects still land. ${match}`, readNote: 'Set it up with DoT, then fire when the foe is low or heavily stacked.', mathLine: `Execute = ${frac}% of the foe's MAX HP when armed (foe < ${c.executeHpPct}% HP OR ≥${c.executeStacks} DoT stacks).`, keywords }; }
+        case 'rupture': return { subtitle: "Rupture — detonate the foe's damage-over-time.", metaChip, outcomeLine: `Consumes ALL the enemy's stacked DoT and deals it instantly as a burst (capped at ${RUPTURE_BURST_CAP}).`, outcomeStats: [{ label: 'BURST', value: 'live total' }, { label: 'CAP', value: `${RUPTURE_BURST_CAP}` }], stacksText: null, freeLine: '◇ FREE (no die): chip a sliver of HP — Rupture needs a die.', powerLine: `◆ WITH A DIE: detonate the foe's pending DoT for a burst (up to ${RUPTURE_BURST_CAP}); the read scales it. ${match}`, readNote: 'Stack DoT first — the burst equals the pending DoT, so it has no fixed number until you fire it.', mathLine: `Burst = pending DoT × read (capped ${RUPTURE_BURST_CAP}) — pending DoT is live, so no fixed number (real-units-or-no-number).`, keywords };
         case 'inert':
         default: return { subtitle: `${Title || 'Effect'} — minor right now.`, metaChip, outcomeLine: `${Title || 'This effect'} — minor right now. The live engine does not read it yet, so it is shown without a number (no fabricated value).`, outcomeStats: [], stacksText: null, freeLine: `◇ FREE (no die): deal ${free} HP now.`, powerLine: `◆ WITH A DIE: apply ${Title || 'the effect'}, plus a small hit. ${match}`, readNote: 'The read scales only the small strike.', mathLine: `${Title || 'This effect'} is not read by the live HP engine yet — no number shown.`, keywords };
     }

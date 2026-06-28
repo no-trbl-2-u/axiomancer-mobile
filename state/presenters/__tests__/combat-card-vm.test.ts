@@ -28,13 +28,15 @@ const cardOf = (id: string) => {
 };
 
 describe('engineHonestKind — the honesty gate', () => {
-    it('classifies DoT / stun / regen / weaken, and leaves the pure-defense bucket inert', () => {
+    it('classifies DoT / stun / regen / weaken / vulnerable / thorns', () => {
         expect(engineHonestKind('debuff_bleed')).toBe('dot');
         expect(engineHonestKind('debuff_stun')).toBe('stun');
         expect(engineHonestKind('buff_regeneration')).toBe('regen');
-        expect(engineHonestKind('debuff_slow')).toBe('weaken');           // negative roll mod (0.33.0 de-inert)
+        expect(engineHonestKind('debuff_slow')).toBe('weaken');             // negative roll mod (0.33.0 de-inert)
         expect(engineHonestKind('debuff_confusion')).toBe('weaken');
-        expect(engineHonestKind('debuff_vulnerability_body')).toBeNull(); // pure defense → still inert
+        expect(engineHonestKind('debuff_vulnerable')).toBe('vulnerable');   // 0.34.0: damageTakenMult is now real
+        expect(engineHonestKind('debuff_vulnerability_body')).toBe('vulnerable'); // now carries damageTakenMult
+        expect(engineHonestKind('buff_brazen_thorns')).toBe('thorns');      // 0.34.0: reflectDamage is now real
         expect(engineHonestKind(null)).toBeNull();
     });
 });

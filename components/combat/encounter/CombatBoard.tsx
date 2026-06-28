@@ -640,9 +640,7 @@ export function CombatCardFace({
                         <Text style={[styles.costPipGlyph, large && styles.costPipGlyphLarge]}>{dieGlyph}</Text>
                     </View>
                 )}
-                <View style={[styles.freePip, large && styles.freePipLarge]} pointerEvents="none">
-                    <Text style={[styles.freePipText, large && styles.freePipTextLarge]} numberOfLines={1} adjustsFontSizeToFit>◇ {f.freeHeroText}</Text>
-                </View>
+                {/* FREE value lives in the detail FREE/POWER fork — a floating pip here read as a cost. */}
             </View>
             {children}
             <View style={styles.faceLower}>
@@ -655,6 +653,7 @@ export function CombatCardFace({
                         {readPip ? <Text style={[styles.paidPip, { color: kwColor }]}>{readPip}</Text> : null}
                     </View>
                     <Text style={[styles.paidVal, large && styles.paidValLarge, { color: kwColor }]} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
+                    {f.heroSub ? <Text style={[styles.paidSub, large && styles.paidSubLarge]} numberOfLines={1} adjustsFontSizeToFit>{f.heroSub}</Text> : null}
                 </View>
             </View>
         </View>
@@ -753,6 +752,8 @@ const useStyles = makeStyles((AXM) => ({
     paidPip: { fontFamily: FONTS.sans, fontSize: 9 },
     paidVal: { fontFamily: FONTS.mono, fontSize: 15, lineHeight: 17, marginTop: 1 },
     paidValLarge: { fontSize: 24, lineHeight: 28, marginTop: 3 },
+    paidSub: { fontFamily: FONTS.mono, fontSize: 8, lineHeight: 10, color: AXM.bone, letterSpacing: 0.2, marginTop: 1 },
+    paidSubLarge: { fontSize: 12, lineHeight: 15, marginTop: 2 },
 
     playWrap: { position: 'absolute', right: 10, bottom: 12, zIndex: 40, shadowColor: AXM.sulfur, shadowRadius: 14, shadowOffset: { width: 0, height: 0 }, elevation: 8 },
     playBtn: { width: 72, height: 72, borderRadius: 36, borderWidth: 2.5, alignItems: 'center', justifyContent: 'center' },

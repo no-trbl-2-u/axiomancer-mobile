@@ -40,13 +40,13 @@ describe('engineHonestKind — the honesty gate', () => {
 });
 
 describe('faceStats — honest real-unit faces', () => {
-    it('Slippery Slope (Bleed) → 6/t·3t (18), FREE 2 HP', () => {
+    it('Slippery Slope (Bleed) → 18 total · 6/turn · 3 turns, FREE 2 HP', () => {
         const { card, skill } = cardOf('slippery-slope');
         const f = faceStats(card, skill);
         expect(f.kind).toBe('dot');
         expect(f.keyword).toBe('BLEED');
-        expect(f.heroText).toBe('6/t·3t');
-        expect(f.heroSub).toBe('(18)');
+        expect(f.heroText).toBe('18');
+        expect(f.heroSub).toBe('6/turn · 3 turns');
         expect(f.freeHeroText).toBe('2 HP');
         expect(f.readDependent).toBe(false);
         expect(f.inert).toBe(false);
@@ -60,14 +60,14 @@ describe('faceStats — honest real-unit faces', () => {
         expect(f.readDependent).toBe(true);
         expect(f.guardBase).toBe(12);
     });
-    it('Eternal Recurrence (Regen) → 12/t·4t (48), FREE 4/t·6t (24)', () => {
+    it('Eternal Recurrence (Regen) → 48 total · 12/turn · 4 turns, FREE 24', () => {
         const { card, skill } = cardOf('eternal-recurrence');
         const f = faceStats(card, skill);
         expect(f.kind).toBe('regen');
-        expect(f.heroText).toBe('12/t·4t');
-        expect(f.heroSub).toBe('(48)');
-        expect(f.freeHeroText).toBe('4/t·6t');
-        expect(f.freeHeroSub).toBe('(24)');
+        expect(f.heroText).toBe('48');
+        expect(f.heroSub).toBe('12/turn · 4 turns');
+        expect(f.freeHeroText).toBe('24');
+        expect(f.freeHeroSub).toBe('4/turn · 6 turns');
     });
     it("Buridan's Impasse (Stun) → skip 2t", () => {
         const { card, skill } = cardOf('buridans-impasse');

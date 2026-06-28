@@ -624,7 +624,8 @@ export function CombatCardFace({
     const kwColor = accent ?? baseKw;
     const borderColor = accent ?? band;
     const dieGlyph = DIE_GLYPHS[card.stance] ?? '✦';
-    const value = paidValueText(f, heroOverride);
+    const numberless = !f.heroText && !heroOverride;
+    const value = numberless ? (f.keyword ?? heroFace(f)) : paidValueText(f, heroOverride);
     return (
         <View style={[styles.faceCard, { width, height, borderColor }]}>
             {/* ART window — top ~48% behind a scrim + stance tint */}
@@ -649,7 +650,7 @@ export function CombatCardFace({
                 </View>
                 <View style={[styles.paidSection, large && styles.paidSectionLarge]}>
                     <View style={styles.paidRow}>
-                        {f.keyword ? <Text style={[styles.paidKw, large && styles.paidKwLarge, { color: kwColor }]} numberOfLines={1}>{f.keyword}</Text> : null}
+                        {(!numberless && f.keyword) ? <Text style={[styles.paidKw, large && styles.paidKwLarge, { color: kwColor }]} numberOfLines={1}>{f.keyword}</Text> : null}
                         {readPip ? <Text style={[styles.paidPip, { color: kwColor }]}>{readPip}</Text> : null}
                     </View>
                     <Text style={[styles.paidVal, large && styles.paidValLarge, { color: kwColor }]} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>

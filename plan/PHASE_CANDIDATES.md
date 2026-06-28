@@ -1367,6 +1367,30 @@ warranted a full phase promotion:
 
 ## Promoted
 
+### Phase 161 — Combat card overhaul: finish UI polish to all-critics-shippable
+- promoted: 2026-06-28 by T direct steering (combat-overhaul campaign).
+- source: the harsh-critic loop (rounds 1-3, 2026-06-28) shipped the card-face / detail / layout / dice / fx overhaul to mobile main (`d019b0a..ffc8c8f`) but stopped at 1 minor-polish / 4 needs-work. Close the residual nits the critics flagged: END-PHASE/SCRAP occlusion at the fan edges, card-art proportions + any mid-card band residue, a dice drag-hover highlight before release, and per-channel animation polish (hitstop, sequenced cause->effect, status-keyword floats). Iterate (critic round or hand-polish) until ~no negatives.
+- brief: `plan/phases/phase_161_combat_card_polish_to_shippable.md`
+- build-plan row: `plan/steps/01_build_plan.md` ("Next up", top of the combat-overhaul follow-ups)
+
+### Phase 162 — Surface the 0.34.0 build-around cards in play
+- promoted: 2026-06-28 by T direct steering (combat-overhaul campaign).
+- source: mechanics 0.34.0 ships 7 new build-around cards (Resonance Rupture, Mounting Contradictions, Breach[VULNERABLE], Brazen Rebuttal[THORNS], Gabriel's Bulwark[BARRIER], Briar Riposte, Leeching Syllogism[SIPHON]) + Pyrrhic Victory[EXECUTE], and mobile lights them up honestly (`ffc8c8f`) — but they live only in the reward pool, so a player rarely encounters them. Make them reachable (starter-bundle inclusion or per-archetype reward weighting) and add a playtest/visual witness that a player can draft + play Breach/Rupture and SEE the new keywords light up.
+- brief: `plan/phases/phase_162_surface_034_buildaround_cards.md`
+- build-plan row: `plan/steps/01_build_plan.md` ("Next up", after Phase 161)
+
+### Phase 163 — Combat win-rate saturation tuning (mechanics-owned)
+- promoted: 2026-06-28 by T direct steering; owner = `axiomancer-mechanics` (cross-repo, not mobile-loop-actionable).
+- source: the 0.34.0 sim shows 100% win rate across policies — PRE-EXISTING saturation (pure-strike is also 100%; the witness bot grinds via shared signatures), NOT introduced by the status-depth epic. Long-flagged. Needs a `/combat-tuning` pass in the engine to introduce real failure pressure (full-hand-redraw / unlimited NEW TURN / enemy-only-on-END-PHASE root causes). Mobile is presentation-only here.
+- brief: `plan/phases/phase_163_combat_winrate_tuning.md`
+- build-plan row: `plan/steps/01_build_plan.md` (Carry-overs / known gaps)
+
+### Phase 164 — Engine-gated combat content backlog
+- promoted: 2026-06-28 by T direct steering; owner = mechanics-then-mobile (engine-gated).
+- source: the critic rounds surfaced strong content that needs new engine behavior before mobile can surface it: INVERT (flip the foe's telegraphed intent), VOLATILE (stronger on a disadvantage/off-color read), Oracle's Read (peek/lock the hidden stance), Overcharge (spend both dice on one card), dice-shaping TEMPER/BANK/SPLIT, ESCALATE (self-incrementing DoT), a DOOM delayed-bomb card, and a Conviction sink/Echo. Each is engine-first (new SkillSpecialMechanic / die op), then mobile honesty surfacing.
+- brief: `plan/phases/phase_164_engine_gated_combat_content.md`
+- build-plan row: `plan/steps/01_build_plan.md` (Carry-overs / known gaps)
+
 ### Phase 160 — Skills ≠ Cards mobile copy boundary
 - promoted: 2026-06-27 via T direct steering.
 - source: T corrected legacy-combat vocabulary: skills are always-available token-used effects; cards are Hazard-style deck/hand/reward objects; **Skills != Cards**.

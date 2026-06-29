@@ -92,21 +92,29 @@ describe('detailStats — same numbers as the face', () => {
     it('Slippery Slope outcome + stats + math all agree on 18', () => {
         const { card, skill } = cardOf('slippery-slope');
         const d = detailStats(card, skill);
-        expect(d.outcomeLine).toContain('6 HP/turn for 3 turns');
-        expect(d.outcomeLine).toContain('18 HP total');
+        expect(d.outcomeLine).toBe('Apply Bleed 18 over 3 turns.');
         expect(d.outcomeStats).toEqual([
             { label: 'PER TURN', value: '6' },
             { label: 'TURNS', value: '3' },
             { label: 'TOTAL', value: '18' },
         ]);
-        expect(d.stacksText).toContain('Stacks up to 10×');
+        expect(d.stacksText).toBe('Stacks up to 10×.');
         expect(d.mathLine).toContain('3 base × 2 intensity');
+        // §C: the +DIE read triplet surfaces the status read scaling, base = 18.
+        expect(d.diePill).toMatch(/^▲\d+ · —18 · ▼\d+$/);
+        expect(d.diePillKeyword).toBe('BLEED');
     });
     it('Eternal Recurrence shows the 48 power total and the 24 FREE total', () => {
         const { card, skill } = cardOf('eternal-recurrence');
         const d = detailStats(card, skill);
-        expect(d.outcomeLine).toContain('48 HP total');
+        expect(d.outcomeLine).toContain('48 over');
         expect(d.mathLine).toContain('24');
+    });
+    it('Brace for Impact (Guard) → terse "Gain Guard 12."', () => {
+        const { card, skill } = cardOf('brace-for-impact');
+        const d = detailStats(card, skill);
+        expect(d.outcomeLine).toBe('Gain Guard 12.');
+        expect(d.stacksText).toBeNull();
     });
 });
 

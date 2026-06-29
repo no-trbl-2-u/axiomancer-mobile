@@ -22,7 +22,7 @@
  */
 
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import type { StyleProp, TextStyle } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
@@ -327,6 +327,7 @@ export const CombatBoard = React.memo(function CombatBoard({
     const styles = useStyles();
     // Null-safe insets (the context is null with no SafeAreaProvider, e.g. in tests).
     const bottomInset = useContext(SafeAreaInsetsContext)?.bottom ?? 0;
+    const { width: screenW } = useWindowDimensions();
     const playAreaRef = useRef<View | null>(null);
     const trashRef = useRef<View | null>(null);
     // Per-staged-card measurable frames — used to drop a die onto a SPECIFIC card.
@@ -471,11 +472,18 @@ export const CombatBoard = React.memo(function CombatBoard({
     const fan = vm.hand.filter((c) => !stagedSet.has(c.uid));
     const n = fan.length;
     const mid = (n - 1) / 2;
-    // Width is the binding constraint on a ~390pt phone: the fan sits in the centered
-    // band between the SCRAP bin and the END PHASE disc. Small hands (≤5) keep a roomy
-    // peek; from 6 up we tighten progressively (and MONOTONICALLY — a 6-card hand must
-    // never spread wider than a 7) so the outermost cards never run off the screen edges.
-    const overlap = n <= 4 ? 12 : n === 5 ? 14 : Math.min(48, 14 + (n - 5) * 12);
+    // Width is the binding constraint. The fan is centered inside the BAND between the
+    // SCRAP gutter (paddingLeft 64) and the END PHASE disc gutter (paddingRight 96), so
+    // the whole fan must fit `band` to never spill off either screen edge OR under the
+    // disc — even at the DEFAULT 5-card opening hand (the first view of every combat).
+    // `step` = the visible width of each non-last card: clamped so small hands keep a
+    // roomy peek (≤ HAND_CARD_W-14) and large hands tighten to fit, never below a
+    // readable 20pt sliver. overlap = card width minus that step.
+    const band = screenW - 64 - 96;
+    const step = n > 1
+        ? Math.min(HAND_CARD_W - 14, Math.max(20, (band - HAND_CARD_W) / (n - 1)))
+        : HAND_CARD_W;
+    const overlap = HAND_CARD_W - step;
     const draggingDieId = drag.active?.type === 'die' ? drag.active.dieId : null;
     const draggingCardUid = drag.active?.type === 'card' ? drag.active.uid : null;
 
@@ -755,8 +763,13 @@ export function CombatCardFace({
 
 // The fanned hand card — a small instance of the shared face. Height grows into the
 // reclaimed play-area void; width stays ~108 (the binding constraint at ~390pt).
+// Hand-fan card footprint. Narrowed from 108 so five cards (the default opening
+// hand) fit the gutter band on a ~390pt phone without spilling off-screen. The
+// fan-overlap math (band fit) keys off this same constant — keep them in sync.
+const HAND_CARD_W = 96;
+const HAND_CARD_H = 135;
 function HandCard({ card }: { card: CombatCardVM }) {
-    return <CombatCardFace card={card} width={108} height={152} />;
+    return <CombatCardFace card={card} width={HAND_CARD_W} height={HAND_CARD_H} />;
 }
 
 const useStyles = makeStyles((AXM) => ({

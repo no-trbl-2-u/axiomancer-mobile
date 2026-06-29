@@ -471,9 +471,11 @@ export const CombatBoard = React.memo(function CombatBoard({
     const fan = vm.hand.filter((c) => !stagedSet.has(c.uid));
     const n = fan.length;
     const mid = (n - 1) / 2;
-    // Relaxed overlap for small hands (5-6 cards) so faces breathe; tight at 7+ (width
-    // is the binding constraint on a ~390pt phone — cap/scroll there rather than widen).
-    const overlap = n > 6 ? 26 : n > 4 ? 14 : 12;
+    // Width is the binding constraint on a ~390pt phone: the fan sits in the centered
+    // band between the SCRAP bin and the END PHASE disc. Small hands (≤5) keep a roomy
+    // peek; from 6 up we tighten progressively (and MONOTONICALLY — a 6-card hand must
+    // never spread wider than a 7) so the outermost cards never run off the screen edges.
+    const overlap = n <= 4 ? 12 : n === 5 ? 14 : Math.min(48, 14 + (n - 5) * 12);
     const draggingDieId = drag.active?.type === 'die' ? drag.active.dieId : null;
     const draggingCardUid = drag.active?.type === 'card' ? drag.active.uid : null;
 
@@ -491,6 +493,16 @@ export const CombatBoard = React.memo(function CombatBoard({
             else onApply(uid, null, false);
         }
         setPendingDieByUid((prev) => { const next = { ...prev }; delete next[uid]; return next; });
+    };
+
+    // A staged card is a committed intent — END PHASE must never silently drop it.
+    // Auto-APPLY every still-staged card first (each exactly as its own APPLY button
+    // would: honoring a dropped/drafted die, else FREE), THEN resolve the phase. The
+    // applies and the resolve all compose through the panel's functional setState, so
+    // cards land before the enemy acts.
+    const handleEndPhase = () => {
+        for (const uid of stagedUids) handleApply(uid);
+        onEndPhase();
     };
 
     return (
@@ -597,7 +609,7 @@ export const CombatBoard = React.memo(function CombatBoard({
                         </GestureDetector>
                     ))}
                 </View>
-                <EndPhaseButton onPress={onEndPhase} />
+                <EndPhaseButton onPress={handleEndPhase} />
             </View>
         </View>
     );

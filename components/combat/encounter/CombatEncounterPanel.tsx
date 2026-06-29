@@ -168,6 +168,9 @@ export function CombatEncounterPanel({
     // is APPLYd individually (powered by the die dragged onto it, or FREE).
     const [stagedUids, setStagedUids] = useState<string[]>([]);
     const [detailCard, setDetailCard] = useState<CombatCardVM | null>(null);
+    // Guard: the tap that OPENS the inspect modal can reach the backdrop and close it
+    // instantly ("blink"). Ignore backdrop dismiss for a moment after open (the ✕ always works).
+    const detailOpenedAt = useRef(0);
     const [tipEffect, setTipEffect] = useState<CombatEffectChipVM | null>(null);
     // Deckbuilder reward (Spec 26b §C) — rolled once on victory, claimed before the summary.
     const [rewardOffers, setRewardOffers] = useState<string[]>([]);
@@ -312,7 +315,7 @@ export function CombatEncounterPanel({
                     onSignature={onSignature}
                     onNewTurn={onNewTurn}
                     onEndPhase={onEndPhase}
-                    onInspect={setDetailCard}
+                    onInspect={(c) => { detailOpenedAt.current = Date.now(); setDetailCard(c); }}
                     onChip={setTipEffect}
                     fx={fx}
                 />
@@ -368,7 +371,7 @@ export function CombatEncounterPanel({
                 large rendered card centrepiece, then the FREE-vs-POWER fork. The
                 developer-facing mathLine / subtitle / readNote are NEVER shown. */}
             {detailCard && (
-                <Pressable style={styles.backdrop} testID="combat-card-detail" onPress={() => setDetailCard(null)}>
+                <Pressable style={styles.backdrop} testID="combat-card-detail" onPress={() => { if (Date.now() - detailOpenedAt.current > 350) setDetailCard(null); }}>
                     <View style={styles.detailModalWrap} onStartShouldSetResponder={() => true}>
                         <ScrollView
                             style={styles.detailScroll}

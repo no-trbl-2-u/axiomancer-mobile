@@ -520,11 +520,11 @@ export const CombatBoard = React.memo(function CombatBoard({
                 the reclaimed height routes to the dock (the fan grows + lifts) instead of
                 sitting as a dead band above the Signature bar. LinearTransition animates
                 the one reflow bidirectionally so staged cards never pop. */}
-            <View style={{ flex: stagedCards.length ? 1 : 0 }}>
+            <View style={{ flex: 1 }}>
                 <Animated.View
                     ref={(node) => { playAreaRef.current = node as unknown as View | null; }}
                     layout={LinearTransition.duration(220)}
-                    style={[styles.playArea, stagedCards.length ? styles.playAreaActive : styles.playAreaCollapsed, { borderColor: stagedCards.length ? `${AXM.sulfur}88` : AXM.ash }]}
+                    style={[styles.playArea, styles.playAreaActive, { borderColor: stagedCards.length ? `${AXM.sulfur}88` : AXM.ash }]}
                     testID="combat-play-area"
                 >
                     <View style={styles.playHead}>
@@ -561,7 +561,7 @@ export const CombatBoard = React.memo(function CombatBoard({
 
             {/* dock — claims the reclaimed flex while nothing is staged so the fan grows
                 + lifts into the void (instead of clipping off the bottom edge). */}
-            <View style={[styles.dock, stagedCards.length === 0 && styles.dockExpanded]}>
+            <View style={styles.dock}>
                 {/* SCRAP — only present while a card is being dragged (no permanent
                     footprint). Kept mounted/hidden rather than unmounted so the drop
                     measurement still resolves against its ref after the drag ends. */}
@@ -713,13 +713,20 @@ export function CombatCardFace({
                         />
                     </View>
                 ) : (
-                    <View style={styles.paidSection}>
-                        <View style={styles.paidRow}>
-                            {(!numberless && f.keyword) ? <Text style={[styles.paidKw, { color: kwColor }]} numberOfLines={1}>{f.keyword}</Text> : null}
-                            {readPip ? <Text style={[styles.paidPip, { color: kwColor }]}>{readPip}</Text> : null}
+                    <View style={styles.cardFooter}>
+                        <View style={styles.footCol}>
+                            <Text style={styles.footFreeLabel} numberOfLines={1}>◇ FREE</Text>
+                            <Text style={styles.footFreeVal} numberOfLines={1} adjustsFontSizeToFit>{f.freeHeroText}</Text>
                         </View>
-                        <Text style={[styles.paidVal, { color: kwColor }]} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
-                        {f.heroSub ? <Text style={styles.paidSub} numberOfLines={1} adjustsFontSizeToFit>{f.heroSub}</Text> : null}
+                        <View style={styles.footRule} />
+                        <View style={styles.footCol}>
+                            <View style={styles.footPaidLabelRow}>
+                                <Text style={[styles.footPaidLabel, { color: kwColor }]} numberOfLines={1} adjustsFontSizeToFit>◆ {f.keyword ?? 'DIE'}</Text>
+                                {readPip ? <Text style={[styles.paidPip, { color: kwColor }]}>{readPip}</Text> : null}
+                            </View>
+                            {!numberless ? <Text style={[styles.footPaidVal, { color: kwColor }]} numberOfLines={1} adjustsFontSizeToFit>{value}</Text> : null}
+                            {f.heroSub ? <Text style={styles.footSub} numberOfLines={1} adjustsFontSizeToFit>{f.heroSub}</Text> : null}
+                        </View>
                     </View>
                 )}
                 {/* large-only TYPE-TAB pinned to the card's bottom edge (replaces the floating
@@ -812,11 +819,12 @@ const useStyles = makeStyles((AXM) => ({
     // Art raised to 58% (kills the dead mid-card black band) — the name band anchors
     // directly beneath it, paidSection fills the remainder.
     faceArt: { width: '100%', height: '58%', backgroundColor: '#0c0a08' },
-    faceArtTint: { ...StyleSheet.absoluteFillObject, opacity: 0.3 },
-    faceArtScrim: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '62%', backgroundColor: 'rgba(10,8,6,0.6)' },
-    // Stance vignette: a stance-tinted bottom-up wash (approximates a gradient) so each
-    // stance reads as a distinct hue behind the shared placeholder photo.
-    faceArtVignette: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '55%', opacity: 0.22 },
+    faceArtTint: { ...StyleSheet.absoluteFillObject, opacity: 0.16 },
+    // Light bottom scrim only (was 62%/0.6 — that read as a gray wash over the art).
+    faceArtScrim: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '32%', backgroundColor: 'rgba(10,8,6,0.4)' },
+    // Stance vignette: a SUBTLE stance-tinted bottom wash so each stance reads as a distinct
+    // hue behind the shared placeholder photo — kept light so the art is not washed out.
+    faceArtVignette: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '42%', opacity: 0.12 },
     faceLower: { flex: 1 },
     glyphCorner: { position: 'absolute', top: 3, left: 5, fontSize: 12, zIndex: 3 },
     // Small face: the category glyph promoted from a tiny corner mark to a medium
@@ -851,6 +859,17 @@ const useStyles = makeStyles((AXM) => ({
     paidValLarge: { fontSize: 24, lineHeight: 28, marginTop: 3 },
     paidSub: { fontFamily: FONTS.mono, fontSize: 8, lineHeight: 10, color: AXM.bone, letterSpacing: 0.2, marginTop: 1 },
     paidSubLarge: { fontSize: 12, lineHeight: 15, marginTop: 2 },
+    // Two-column FREE | PAID footer (small hand/staged face) — both legible at one scale,
+    // paid value capped so it never dominates (was a single oversized 19px line).
+    cardFooter: { flex: 1, flexDirection: 'row', alignItems: 'stretch', backgroundColor: 'rgba(10,8,6,0.62)' },
+    footCol: { flex: 1, justifyContent: 'center', paddingHorizontal: 5, paddingVertical: 4 },
+    footRule: { width: StyleSheet.hairlineWidth, backgroundColor: 'rgba(255,255,255,0.14)', marginVertical: 5 },
+    footFreeLabel: { fontFamily: FONTS.sans, fontSize: 8, letterSpacing: 0.8, color: AXM.bone },
+    footFreeVal: { fontFamily: FONTS.mono, fontSize: 12, lineHeight: 14, color: AXM.parchment, marginTop: 1 },
+    footPaidLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+    footPaidLabel: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 0.6 },
+    footPaidVal: { fontFamily: FONTS.mono, fontSize: 15, lineHeight: 17, marginTop: 1 },
+    footSub: { fontFamily: FONTS.mono, fontSize: 8, lineHeight: 10, color: AXM.bone, marginTop: 1 },
     // large-only effect body (Sanguine-Step shape) — fills the space under the name band.
     // Warm parchment-tone panel behind the effect text (was transparent on dark — the
     // serif read as floating; the warm wash anchors it like the Sanguine-Step scroll).

@@ -223,7 +223,8 @@ function StagedCard({
     if (armed && f.readDependent) {
         const colorMatch = assignedDie!.color === card.stance || assignedDie!.color === 'wild';
         const g = armedReadValue(f, read as CombatReadResult, colorMatch);
-        if (g != null) heroOverride = `Guard ${g}`;
+        // Read-scaled commit value: Guard NN / +NN% Vulnerable / NN DoT total.
+        if (g != null) heroOverride = f.kind === 'guard' ? `Guard ${g}` : f.kind === 'vulnerable' ? `+${g}%` : `${g}`;
     }
     const readPip = armed && f.readDependent
         ? (read === 'advantage' ? '▲' : read === 'disadvantage' ? '▼' : '—')

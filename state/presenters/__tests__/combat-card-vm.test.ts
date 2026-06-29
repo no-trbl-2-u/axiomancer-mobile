@@ -50,7 +50,8 @@ describe('faceStats — honest real-unit faces', () => {
         expect(f.heroText).toBe('18');
         expect(f.heroSub).toBe('over 3 turns');
         expect(f.freeHeroText).toBe('2 HP');
-        expect(f.readDependent).toBe(false);
+        expect(f.readDependent).toBe(true);   // the read now scales status (depth epic)
+        expect(f.statusBase).toBe(18);
         expect(f.inert).toBe(false);
     });
     it('Brace for Impact (Guard) → Guard 12, FREE Guard 6, read-dependent', () => {
@@ -116,13 +117,18 @@ describe('resolvePrimary + armedReadValue', () => {
         expect(resolvePrimary(getCard('befriend')!, getSkillById('befriend')).kind).toBe('befriend');
         expect(resolvePrimary(getCard('slippery-slope')!, getSkillById('slippery-slope')).kind).toBe('dot');
     });
-    it('armedReadValue scales Guard by the read (+colour match); null for non-guard', () => {
+    it('armedReadValue scales Guard by the DAMAGE read (+colour match)', () => {
         const guard = faceStats(getCard('brace-for-impact')!, getSkillById('brace-for-impact'));
         expect(armedReadValue(guard, 'neutral', false)).toBe(12);       // 12 × 1.0
         expect(armedReadValue(guard, 'advantage', false)).toBe(18);     // 12 × 1.5
         expect(armedReadValue(guard, 'disadvantage', false)).toBe(6);   // 12 × 0.5
         expect(armedReadValue(guard, 'neutral', true)).toBe(15);        // + colour-match bonus
+    });
+    it('armedReadValue scales DoT total by the gentler STATUS read (the read now bites status)', () => {
         const dot = faceStats(getCard('slippery-slope')!, getSkillById('slippery-slope'));
-        expect(armedReadValue(dot, 'advantage', true)).toBeNull();      // DoT is read-independent
+        expect(armedReadValue(dot, 'neutral', false)).toBe(18);         // 18 × 1.0
+        expect(armedReadValue(dot, 'advantage', false)).toBe(24);       // 18 × 1.34 → 24
+        expect(armedReadValue(dot, 'disadvantage', false)).toBe(14);    // 18 × 0.75 → 14 (rounded)
+        expect(armedReadValue(dot, 'advantage', true)).toBe(24);        // no colour-match bonus on status
     });
 });

@@ -812,7 +812,7 @@ const useStyles = makeStyles((AXM) => ({
     trashLabel: { fontFamily: FONTS.mono, fontSize: 9, letterSpacing: 1, color: AXM.bone, marginTop: 1 },
     // Horizontal gutters (left: SCRAP, right: END PHASE) so the fan never lays a card
     // under either control. paddingBottom is applied inline (safe-area inset).
-    fan: { ...StyleSheet.absoluteFillObject, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', paddingHorizontal: 64 },
+    fan: { ...StyleSheet.absoluteFillObject, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', paddingLeft: 64, paddingRight: 96 },
 
     // ── Shared card FACE (hand · staged · inspect modal) ──────────────────────
     faceCard: { borderWidth: 1.5, borderRadius: 5, backgroundColor: '#14110e', overflow: 'hidden' },

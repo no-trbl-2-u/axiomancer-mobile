@@ -49,8 +49,6 @@ import { CombatDie } from './CombatDie';
 // CombatCardFace). Per-card differentiation is preserved via the stance tint +
 // the keyword/category glyph until per-card art exists.
 const CARD_ART = require('@/assets/images/cards/circe-placeholder.jpg');
-// Die glyph per stance (mirrors the engine's DIE_GLYPHS, kept local to the board).
-const DIE_GLYPHS: Record<string, string> = { heart: '♥', body: '⚡', mind: '★', wild: '✦', x: '✕' };
 
 // ── Drag plumbing (cards AND dice) ───────────────────────────────────────────
 
@@ -250,7 +248,6 @@ function StagedCard({
                         accent={armed ? readColor : null}
                         readPip={readPip}
                         heroOverride={heroOverride}
-                        showCostPip={false}
                     >
                         {assignedDie && (
                             <View style={styles.cardDie} testID="combat-staged-die">
@@ -665,7 +662,7 @@ function paidValueText(f: CombatCardFaceVM, hero?: string): string {
  * bands; drop frame PNGs into the corners/banner slots when they exist.
  */
 export function CombatCardFace({
-    card, width, height, large = false, accent = null, readPip = null, heroOverride, showCostPip = true, children,
+    card, width, height, large = false, accent = null, readPip = null, heroOverride, children,
 }: {
     card: CombatCardVM;
     width: number;
@@ -677,8 +674,6 @@ export function CombatCardFace({
     readPip?: string | null;
     /** Override the hero value text (e.g. the live-recomputed Guard number). */
     heroOverride?: string;
-    /** Hide the stance cost pip (the staged card shows the actual assigned die instead). */
-    showCostPip?: boolean;
     children?: React.ReactNode;
 }) {
     const AXM = usePalette();
@@ -691,7 +686,6 @@ export function CombatCardFace({
     const baseKw = f.inert ? AXM.ash : f.categoryColor;
     const kwColor = accent ?? baseKw;
     const borderColor = accent ?? (gold ? '#d9b44a' : f.categoryColor);
-    const dieGlyph = DIE_GLYPHS[card.stance] ?? '✦';
     const numberless = !f.heroText && !heroOverride;
     const value = numberless ? (f.keyword ?? heroFace(f)) : paidValueText(f, heroOverride);
     return (
@@ -700,21 +694,13 @@ export function CombatCardFace({
             <View style={styles.faceArt} pointerEvents="none">
                 <Image source={CARD_ART} style={StyleSheet.absoluteFill} contentFit="cover" transition={0} />
                 <View style={[styles.faceArtTint, { backgroundColor: f.stanceColor }]} />
-                {/* TODO(gradient): a flat scrim + stance vignette approximates the
-                    rgba(10,8,6,0)→0.85 fade (no expo-linear-gradient in the deps yet). */}
-                <View style={styles.faceArtScrim} />
-                <View style={[styles.faceArtVignette, { backgroundColor: f.stanceColor }]} />
-                {large
-                    ? <Text style={[styles.glyphWatermark, f.inert && { opacity: 0.4 }]}>{f.glyph}</Text>
-                    : <Text style={[styles.glyphWatermarkSmall, f.inert && { opacity: 0.4 }]}>{f.glyph}</Text>}
-                {showCostPip && (
-                    // Square stance TAB (not a round cost-orb): these cards have no cost; the
-                    // die is optional, so the round MTG/Hearthstone orb mis-read as a resource.
-                    <View style={[styles.costPip, large && styles.costPipLarge, { backgroundColor: f.stanceColor }]}>
-                        <Text style={[styles.costPipGlyph, large && styles.costPipGlyphLarge]}>{dieGlyph}</Text>
-                    </View>
-                )}
-                {/* FREE value lives in the detail FREE/POWER fork — a floating pip here read as a cost. */}
+                {/* Single identity glyph, top-LEFT: the EFFECT/category glyph COLOURED by
+                    stance (heart=purple · body=red · mind=blue) — one mark carries both
+                    "what it does" and "which stance", replacing the old centred watermark +
+                    separate stance die-pip. (The hard-edged bottom scrim/vignette that read
+                    as a line across the middle of the art were removed; the full-height
+                    stance tint above keeps each stance's hue.) */}
+                <Text style={[large ? styles.glyphCornerLarge : styles.glyphCorner, { color: f.inert ? AXM.ash : f.stanceColor }]}>{f.glyph}</Text>
             </View>
             {children}
             <View style={styles.faceLower}>
@@ -846,25 +832,9 @@ const useStyles = makeStyles((AXM) => ({
     // directly beneath it, paidSection fills the remainder.
     faceArt: { width: '100%', height: '58%', backgroundColor: '#0c0a08' },
     faceArtTint: { ...StyleSheet.absoluteFillObject, opacity: 0.16 },
-    // Light bottom scrim only (was 62%/0.6 — that read as a gray wash over the art).
-    faceArtScrim: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '32%', backgroundColor: 'rgba(10,8,6,0.4)' },
-    // Stance vignette: a SUBTLE stance-tinted bottom wash so each stance reads as a distinct
-    // hue behind the shared placeholder photo — kept light so the art is not washed out.
-    faceArtVignette: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '42%', opacity: 0.12 },
     faceLower: { flex: 1 },
-    glyphCorner: { position: 'absolute', top: 3, left: 5, fontSize: 12, zIndex: 3 },
-    // Small face: the category glyph promoted from a tiny corner mark to a medium
-    // centred watermark CONFINED to the art window — differentiates categories harder
-    // until per-card art ships (per-card art is the real fix; this is zero-dep/OTA-safe).
-    glyphWatermarkSmall: { position: 'absolute', alignSelf: 'center', top: '18%', fontSize: 38, opacity: 0.16, zIndex: 2 },
-    // Large inspect card: the category glyph promoted to a faint centred watermark,
-    // CONFINED to the art window (never behind the keyword/value text).
-    glyphWatermark: { position: 'absolute', alignSelf: 'center', top: '24%', fontSize: 72, opacity: 0.16, zIndex: 2 },
-    // Square stance TAB (not a round cost-orb): these cards have no resource cost.
-    costPip: { position: 'absolute', top: 3, right: 3, width: 17, height: 17, borderRadius: 3, borderWidth: 1, borderColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center', zIndex: 4 },
-    costPipLarge: { top: 9, right: 9, width: 32, height: 32, borderRadius: 4, borderWidth: 1.5 },
-    costPipGlyph: { fontFamily: FONTS.sans, fontSize: 10, color: '#100d0a' },
-    costPipGlyphLarge: { fontSize: 18 },
+    glyphCorner: { position: 'absolute', top: 4, left: 6, fontSize: 17, zIndex: 3, textShadowColor: 'rgba(0,0,0,0.85)', textShadowRadius: 3, textShadowOffset: { width: 0, height: 1 } },
+    glyphCornerLarge: { position: 'absolute', top: 10, left: 12, fontSize: 36, zIndex: 3, textShadowColor: 'rgba(0,0,0,0.85)', textShadowRadius: 4, textShadowOffset: { width: 0, height: 1 } },
     freePip: { position: 'absolute', left: 3, top: '40%', maxWidth: '64%', backgroundColor: 'rgba(10,8,6,0.78)', borderRadius: 3, paddingHorizontal: 4, paddingVertical: 1, zIndex: 4 },
     freePipLarge: { left: 10, top: '40%', paddingHorizontal: 8, paddingVertical: 3 },
     freePipText: { fontFamily: FONTS.mono, fontSize: 8, color: AXM.bone, letterSpacing: 0.3 },

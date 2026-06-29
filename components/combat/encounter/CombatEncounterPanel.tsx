@@ -212,7 +212,8 @@ export function CombatEncounterPanel({
         if (resolver) void resolver(payload, x, y);
     }, [drag, dragShown]);
     drag.end = end;
-    const ghostStyle = useAnimatedStyle(() => ({ opacity: dragShown.value, transform: [{ translateX: dragX.value - 37 }, { translateY: dragY.value - 60 }] }));
+    // Centre the 96×135 face under the finger (half-width 48 / half-height 67) and lift it slightly.
+    const ghostStyle = useAnimatedStyle(() => ({ opacity: dragShown.value, transform: [{ translateX: dragX.value - 48 }, { translateY: dragY.value - 67 }, { scale: 1.05 }] }));
 
     // ── engine wiring ──
     const apply = useCallback((fn: (s: CombatEncounterState) => CombatEncounterState) => {
@@ -396,7 +397,7 @@ export function CombatEncounterPanel({
                                 live ON the card (define once / show once), so no restated outcome
                                 line or stat-chip row below it. */}
                             <View style={styles.detailCardWrap}>
-                                <CombatCardFace card={detailCard} width={224} height={320} large showCostPip={false} />
+                                <CombatCardFace card={detailCard} width={224} height={320} large />
                             </View>
                             {detailCard.detail.stacksText ? <Text style={styles.detailStacks}>{detailCard.detail.stacksText}</Text> : null}
 
@@ -467,9 +468,9 @@ export function CombatEncounterPanel({
             {dragActive && (
                 <Animated.View pointerEvents="none" style={[styles.ghost, ghostStyle]}>
                     {dragActive.type === 'card' ? (
-                        <View style={[styles.ghostCard, { borderColor: dragActive.card.stanceColor }]}>
-                            <Text style={styles.ghostName} numberOfLines={2}>{dragActive.card.name}</Text>
-                        </View>
+                        // The dragged card keeps its real face (was a stripped name-only box
+                        // that looked like a different, "old" card mid-drag).
+                        <CombatCardFace card={dragActive.card} width={96} height={135} />
                     ) : (
                         <CombatDie die={dragActive.die} size={56} />
                     )}
@@ -546,6 +547,4 @@ const useStyles = makeStyles((AXM) => ({
     revealBtnText: { fontFamily: FONTS.gothic, fontSize: 18, letterSpacing: 1 },
 
     ghost: { position: 'absolute', top: 0, left: 0, zIndex: 999 },
-    ghostCard: { width: 74, height: 104, borderWidth: 2, borderRadius: 4, backgroundColor: '#16130c', padding: 6, transform: [{ scale: 1.05 }], shadowColor: '#000', shadowOpacity: 0.6, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } },
-    ghostName: { fontFamily: FONTS.gothic, fontSize: 12, color: AXM.parchment },
 }));

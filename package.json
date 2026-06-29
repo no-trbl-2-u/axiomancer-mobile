@@ -1,7 +1,7 @@
 {
   "name": "axiomancer-mobile",
   "main": "expo-router/entry",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "engines": {
     "node": ">=20.0.0",
     "npm": ">=10.0.0"
@@ -42,7 +42,7 @@
     "@expo-google-fonts/jetbrains-mono": "^0.4.1",
     "@expo-google-fonts/pirata-one": "^0.4.1",
     "@react-native-async-storage/async-storage": "2.2.0",
-    "axiomancer-mechanics": "^0.34.0",
+    "axiomancer-mechanics": "0.35.0-beta.0",
     "dotenv": "^17.4.2",
     "expo": "~54.0.33",
     "expo-constants": "~18.0.13",

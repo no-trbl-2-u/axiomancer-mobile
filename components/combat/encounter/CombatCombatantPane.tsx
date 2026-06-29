@@ -15,7 +15,7 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import Animated, {
     runOnJS, useAnimatedStyle, useSharedValue, withDelay, withSequence, withTiming,
@@ -133,6 +133,18 @@ export function CombatCombatantPane({
     const playerFlash = useSharedValue(0);
     const playerHit = useSharedValue(1);
     const contactFlash = useSharedValue(0);
+    // Board-level feedback: a damage-scaled screen shake + a red vignette flash.
+    const shake = useSharedValue(0);
+    const vignette = useSharedValue(0);
+    // Reduce-motion gate (recommended) — suppresses the shake + portrait lunge/recoil
+    // (the HP tween, floats + haptics still fire so the hit is never silent).
+    const reduceMotion = useRef(false);
+    useEffect(() => {
+        let alive = true;
+        AccessibilityInfo.isReduceMotionEnabled().then((on) => { if (alive) reduceMotion.current = on; }).catch(() => undefined);
+        const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', (on) => { reduceMotion.current = on; });
+        return () => { alive = false; sub?.remove?.(); };
+    }, []);
 
     const pushEnemy = useCallback((text: string, color: string, dx = 0) => {
         const id = (idRef.current += 1);
@@ -144,6 +156,14 @@ export function CombatCombatantPane({
     }, []);
     const dropEnemy = useCallback((id: number) => setEnemyFloats((p) => p.filter((f) => f.id !== id)), []);
     const dropPlayer = useCallback((id: number) => setPlayerFloats((p) => p.filter((f) => f.id !== id)), []);
+    // The -N float + Heavy haptic, fired from the reanimated impact callback (was a
+    // JS setTimeout that desynced from the portrait clock under load).
+    const landPlayerHit = useCallback((dmg: number, blocked: number, fired: boolean) => {
+        pushPlayer(`-${dmg}`, '#e2543b', 0);
+        if (fired && blocked > 0) pushPlayer(`BLOCKED ${blocked}`, '#9aa0a6', 34);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => undefined);
+    }, [pushPlayer]);
+    const impact = useSharedValue(0);
 
     useEffect(() => {
         if (!fx || fx.seq === 0 || fx.seq === lastSeq.current) return;
@@ -177,21 +197,32 @@ export function CombatCombatantPane({
         //     at the lunge apex; a short hitstop squash + one-frame contact flash on top.
         const IMPACT = 100;
         if (playerDmg > 0) {
-            enemyScale.value = withSequence(withTiming(0.96, { duration: 90 }), withTiming(1.12, { duration: 120 }), withTiming(1, { duration: 200 }));
-            enemyShift.value = withSequence(withTiming(-6, { duration: 90 }), withTiming(11, { duration: 120 }), withTiming(0, { duration: 220 }));
-            playerShift.value = withDelay(IMPACT, withSequence(withTiming(6, { duration: 70 }), withTiming(-4, { duration: 70 }), withTiming(0, { duration: 90 })));
-            playerFlash.value = withDelay(IMPACT, withSequence(withTiming(0.45, { duration: 90 }), withTiming(0, { duration: 260 })));
-            // (f) ~80ms hitstop squash synced to the -N pop.
-            playerHit.value = withDelay(IMPACT, withSequence(withTiming(0.9, { duration: 50 }), withTiming(1, { duration: 130 })));
-            // (e) one-frame contact flash/slash glyph at the player portrait on impact.
-            contactFlash.value = withDelay(IMPACT, withSequence(withTiming(1, { duration: 40 }), withTiming(0, { duration: 200 })));
+            // Normalise the hit to its share of max HP so a 4-dmg chip and a 40-dmg
+            // crusher no longer feel identical — every beat scales off `norm`.
+            const norm = Math.min(1, playerDmg / Math.max(1, player.maxHp));
             const blocked = enemy.intent.damage - playerDmg;
-            // Land the number + haptic at the apex (the JS twin of the withDelay above).
-            setTimeout(() => {
-                pushPlayer(`-${playerDmg}`, '#e2543b', 0);
-                if (threatFired && blocked > 0) pushPlayer(`BLOCKED ${blocked}`, '#9aa0a6', 34);
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => undefined);
-            }, IMPACT);
+            if (!reduceMotion.current) {
+                const lunge = 8 + norm * 10;        // 8–18px enemy lunge apex
+                const recoil = 4 + norm * 8;        // 4–12px player recoil
+                const flash = 0.35 + norm * 0.4;    // portrait flash strength
+                const squash = 0.94 - norm * 0.08;  // hitstop squash depth
+                const mag = 4 + norm * 4;           // 4–8px board shake
+                enemyScale.value = withSequence(withTiming(0.96, { duration: 90 }), withTiming(1 + norm * 0.14, { duration: 120 }), withTiming(1, { duration: 200 }));
+                enemyShift.value = withSequence(withTiming(-6, { duration: 90 }), withTiming(lunge, { duration: 120 }), withTiming(0, { duration: 220 }));
+                playerShift.value = withDelay(IMPACT, withSequence(withTiming(recoil, { duration: 70 }), withTiming(-recoil * 0.6, { duration: 70 }), withTiming(0, { duration: 90 })));
+                playerFlash.value = withDelay(IMPACT, withSequence(withTiming(flash, { duration: 90 }), withTiming(0, { duration: 260 })));
+                // (f) hitstop squash synced to the -N pop, depth ∝ damage.
+                playerHit.value = withDelay(IMPACT, withSequence(withTiming(squash, { duration: 50 }), withTiming(1, { duration: 130 })));
+                // (e) one-frame contact flash/slash glyph at the player portrait on impact.
+                contactFlash.value = withDelay(IMPACT, withSequence(withTiming(1, { duration: 40 }), withTiming(0, { duration: 200 })));
+                // board-level screen shake + red vignette at the impact apex (magnitude ∝ damage).
+                shake.value = withDelay(IMPACT, withSequence(withTiming(mag, { duration: 40 }), withTiming(-mag * 0.7, { duration: 40 }), withTiming(mag * 0.4, { duration: 40 }), withTiming(0, { duration: 50 })));
+                vignette.value = withDelay(IMPACT, withSequence(withTiming(Math.min(0.5, 0.18 + norm * 0.5), { duration: 80 }), withTiming(0, { duration: 360 })));
+            }
+            // Float + haptic ride the SAME reanimated clock as the lunge (a 1ms timer
+            // after the impact delay) so they can't desync from the portrait beats.
+            impact.value = 0;
+            impact.value = withDelay(IMPACT, withTiming(1, { duration: 1 }, (fin) => { if (fin) runOnJS(landPlayerHit)(playerDmg, blocked, threatFired); }));
         } else if (denied || (threatFired && enemy.intent.damage > 0)) {
             // (b) the turn resolved with no damage to the player → DENIED flourish
             //     over the enemy (teaches "variety / guard denies the turn").
@@ -217,15 +248,19 @@ export function CombatCombatantPane({
             if (s.side === 'player' && !playerHadFloat) pushPlayer(s.text, s.color, dx);
             else if (s.side === 'enemy' && !enemyHadFloat) pushEnemy(s.text, s.color, dx);
         });
-    }, [fx, enemy.intent.damage, AXM.parchment, enemyScale, enemyShift, playerShift, playerFlash, playerHit, contactFlash, pushEnemy, pushPlayer]);
+    }, [fx, enemy.intent.damage, player.maxHp, AXM.parchment, enemyScale, enemyShift, playerShift, playerFlash, playerHit, contactFlash, shake, vignette, impact, landPlayerHit, pushEnemy, pushPlayer]);
 
     const enemyAnim = useAnimatedStyle(() => ({ transform: [{ translateX: enemyShift.value }, { scale: enemyScale.value }] }));
     const playerAnim = useAnimatedStyle(() => ({ transform: [{ translateX: playerShift.value }, { scale: playerHit.value }] }));
     const flashAnim = useAnimatedStyle(() => ({ opacity: playerFlash.value }));
     const contactStyle = useAnimatedStyle(() => ({ opacity: contactFlash.value }));
+    const shakeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: shake.value }] }));
+    const vignetteStyle = useAnimatedStyle(() => ({ opacity: vignette.value }));
 
     return (
-        <View style={styles.pane} testID="combat-combatant-pane">
+        <Animated.View style={[styles.pane, shakeStyle]} testID="combat-combatant-pane">
+            {/* damage-scaled red vignette flash (pointer-transparent; gated by reduce-motion) */}
+            <Animated.View pointerEvents="none" style={[styles.vignette, vignetteStyle]} />
             {/* ENEMY */}
             <View style={styles.side}>
                 <View style={styles.floatLayer} pointerEvents="none">
@@ -233,7 +268,7 @@ export function CombatCombatantPane({
                 </View>
                 <View style={styles.headRow}>
                     <Animated.View style={[styles.portraitFrame, { borderColor: enemy.stanceColor }, enemyAnim]}>
-                        <EnemyPortrait enemyArtKey={enemy.artKey} isBoss={enemy.isBoss} width={52} height={62} label={`${enemy.name} portrait`} />
+                        <EnemyPortrait enemyArtKey={enemy.artKey} isBoss={enemy.isBoss} width={64} height={76} label={`${enemy.name} portrait`} />
                     </Animated.View>
                     <View style={styles.headText}>
                         <Text style={styles.name} numberOfLines={1}>{enemy.name}</Text>
@@ -259,7 +294,7 @@ export function CombatCombatantPane({
                 </View>
                 <View style={styles.headRow}>
                     <Animated.View style={[styles.portraitFrame, { borderColor: AXM.sulfur }, playerAnim]}>
-                        <PlayerPortrait width={52} height={62} />
+                        <PlayerPortrait width={64} height={76} />
                         {/* (b) hit flash scoped to the PORTRAIT (was an absoluteFill over the whole
                             player column, washing out the HP bar). */}
                         <Animated.View style={[styles.portraitFlash, flashAnim]} pointerEvents="none" />
@@ -278,12 +313,14 @@ export function CombatCombatantPane({
                 <View style={styles.stanceRow}><Text style={styles.youLabel}>your status</Text></View>
                 <EffectChips effects={player.effects} onChip={onChip} emptyLabel="clear — no debuffs on you" />
             </View>
-        </View>
+        </Animated.View>
     );
 }
 
 const useStyles = makeStyles((AXM) => ({
-    pane: { flexDirection: 'row', backgroundColor: 'rgba(8,6,5,0.9)', borderBottomWidth: 1, borderBottomColor: AXM.ash, paddingHorizontal: 8, paddingVertical: 7, minHeight: 146 },
+    pane: { flexDirection: 'row', backgroundColor: 'rgba(8,6,5,0.9)', borderBottomWidth: 1, borderBottomColor: AXM.ash, paddingHorizontal: 8, paddingVertical: 7, minHeight: 162 },
+    // Damage-scaled red vignette flash over the combatant pane.
+    vignette: { ...StyleSheet.absoluteFillObject, backgroundColor: '#7a1410', zIndex: 30 },
     side: { flex: 1, paddingHorizontal: 4 },
     divider: { width: 1, backgroundColor: AXM.ash, marginHorizontal: 2 },
     headRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },

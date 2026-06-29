@@ -397,12 +397,23 @@ export function CombatEncounterPanel({
                             </View>
                             {detailCard.detail.stacksText ? <Text style={styles.detailStacks}>{detailCard.detail.stacksText}</Text> : null}
 
-                            {/* (3) the FREE-vs-POWER fork (the die-optional choice; powerLine carries
-                                the ▲/▼ read-scaling math the cut stat chips could not express) */}
-                            <View style={styles.detailFreeBox}>
-                                <Text style={styles.detailFreeLine}>{detailCard.detail.freeLine}</Text>
-                                <Text style={[styles.detailPowerLine, { color: detailCard.face.categoryColor }]}>{detailCard.detail.powerLine}</Text>
+                            {/* (3) the die-optional choice as a compact two-row pill table (was two
+                                serif paragraphs that restated the face). The +DIE pill carries the
+                                real read-scaling math (guard ▲/▼ triplet, etc.) — the prose is
+                                flattened, NOT the math. */}
+                            <View style={styles.detailPills}>
+                                <View style={styles.detailPillRow}>
+                                    <Text style={styles.detailPillTag}>◇ NO DIE</Text>
+                                    <Text style={styles.detailPillVal} numberOfLines={2}>{detailCard.detail.freePill}</Text>
+                                </View>
+                                <View style={[styles.detailPillRow, { borderColor: `${detailCard.face.categoryColor}66` }]}>
+                                    <Text style={[styles.detailPillTag, { color: detailCard.face.categoryColor }]}>◆ +DIE</Text>
+                                    <Text style={[styles.detailPillKw, { color: detailCard.face.categoryColor }]} numberOfLines={1}>{detailCard.detail.diePillKeyword}</Text>
+                                    <Text style={styles.detailPillVal} numberOfLines={2}>{detailCard.detail.diePill}</Text>
+                                </View>
                             </View>
+                            {/* the colour-match rule — ONE global legend (was boilerplated onto every card) */}
+                            <Text style={styles.detailColorMatch}>{detailCard.detail.colorMatchHint}</Text>
                         </ScrollView>
 
                         {/* close ✕ — pinned to the modal's top-right OUTSIDE the ScrollView so it
@@ -497,6 +508,13 @@ const useStyles = makeStyles((AXM) => ({
     detailFreeBox: { alignSelf: 'stretch', marginBottom: 8 },
     detailFreeLine: { fontFamily: FONTS.serif, fontSize: 12.5, color: AXM.bone, lineHeight: 17, marginBottom: 5 },
     detailPowerLine: { fontFamily: FONTS.serif, fontSize: 12.5, lineHeight: 17, marginBottom: 5 },
+    // Compact NO-DIE / +DIE pill table (replaces the two prose paragraphs).
+    detailPills: { alignSelf: 'stretch', gap: 6, marginBottom: 8 },
+    detailPillRow: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: AXM.ash, borderRadius: 4, paddingHorizontal: 9, paddingVertical: 7, backgroundColor: 'rgba(0,0,0,0.35)' },
+    detailPillTag: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1, color: AXM.bone, minWidth: 56 },
+    detailPillKw: { fontFamily: FONTS.gothic, fontSize: 13, letterSpacing: 0.5 },
+    detailPillVal: { flex: 1, fontFamily: FONTS.mono, fontSize: 12.5, color: AXM.parchment, letterSpacing: 0.2 },
+    detailColorMatch: { alignSelf: 'stretch', fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 11, color: AXM.bone, lineHeight: 15, marginBottom: 4 },
     detailReadNote: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 11, color: AXM.bone, lineHeight: 15 },
     detailLine: { fontFamily: FONTS.serif, fontSize: 13, color: AXM.parchment, lineHeight: 18 },
     detailKeywords: { alignSelf: 'stretch', marginBottom: 10 },

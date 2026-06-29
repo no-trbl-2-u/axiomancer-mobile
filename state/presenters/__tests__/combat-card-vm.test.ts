@@ -75,7 +75,7 @@ describe('faceStats — honest real-unit faces', () => {
         const { card, skill } = cardOf('buridans-impasse');
         const f = faceStats(card, skill);
         expect(f.kind).toBe('stun');
-        expect(f.heroText).toBe('skip 2t');
+        expect(f.heroText).toBe('skip 2 turns');
     });
     it('Achilles Gambit (Strike) → no fabricated number', () => {
         const { card, skill } = cardOf('achilles-gambit');

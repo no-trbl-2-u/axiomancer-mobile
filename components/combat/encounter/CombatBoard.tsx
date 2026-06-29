@@ -191,7 +191,7 @@ function DiceTray({
 // ── Staged card (die slot · PREVIEW · APPLY) ─────────────────────────────────
 
 function StagedCard({
-    card, assignedDie, read, onApply, gesture, register, compact = false, dieReady = false,
+    card, assignedDie, read, onApply, gesture, register, compact = false, popKey = 0,
 }: {
     card: CombatCardVM;
     assignedDie: CombatDieVM | null;
@@ -200,13 +200,19 @@ function StagedCard({
     gesture: ReturnType<typeof Gesture.Exclusive>;
     register: (node: View | null) => void;
     compact?: boolean;
-    /** A shared drafted die exists but this card is NOT the bright comboTarget — show a
-     *  dimmer additive 'die ready' ring + caption so APPLY-POWER legibly spends the die. */
-    dieReady?: boolean;
+    /** Rising nonce: when it changes (>0) this card just received a dropped die →
+     *  a brief 1.05 scale-pop confirms the drop landed HERE (and only here). */
+    popKey?: number;
 }) {
     const AXM = usePalette();
     const styles = useStyles();
     const f = card.face;
+    // Drop-confirmation pop (120ms up / 120ms back) on the card the die landed on.
+    const pop = useSharedValue(1);
+    useEffect(() => {
+        if (popKey > 0) pop.value = withSequence(withTiming(1.05, { duration: 120 }), withTiming(1, { duration: 120 }));
+    }, [popKey, pop]);
+    const popStyle = useAnimatedStyle(() => ({ transform: [{ scale: pop.value }] }));
     const armed = assignedDie !== null;
     const readColor = armed ? (READ_ACCENT[read] ?? AXM.bone) : AXM.bone;
     const cardW = compact ? 78 : 96;
@@ -233,6 +239,9 @@ function StagedCard({
                     accessibilityRole="button"
                     accessibilityLabel={`${card.name} staged — ${f.verbLine}. Tap to unstage.`}
                 >
+                  {/* inner wrapper carries the drop-pop scale so it never fights the
+                      outer entering animation's transform. */}
+                  <Animated.View style={popStyle}>
                     <CombatCardFace
                         card={card}
                         width={cardW}
@@ -247,13 +256,10 @@ function StagedCard({
                                 <CombatDie die={assignedDie} size={compact ? 22 : 28} />
                             </View>
                         )}
-                        {/* die-ready ring: the shared drafted die will be spent on THIS card too if
-                            you APPLY-POWER it — a dimmer additive ring over the stance border. */}
-                        {dieReady && <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.dieReadyRing]} />}
                     </CombatCardFace>
+                  </Animated.View>
                 </Animated.View>
             </GestureDetector>
-            {dieReady ? <Text style={styles.dieReadyCaption}>DIE READY</Text> : null}
             <Pressable
                 onPress={() => { Haptics.impactAsync(armed ? Haptics.ImpactFeedbackStyle.Heavy : Haptics.ImpactFeedbackStyle.Medium).catch(() => undefined); onApply(); }}
                 testID={`combat-apply-${card.uid}`}
@@ -332,6 +338,8 @@ export const CombatBoard = React.memo(function CombatBoard({
     // it — or its combo refresh — powers whichever card APPLYs next; before that,
     // each staged card shows the die dragged onto it.)
     const [pendingDieByUid, setPendingDieByUid] = useState<Record<string, string>>({});
+    // Rising drop-confirmation nonce for the card a die just landed on (scale-pop).
+    const [dropPop, setDropPop] = useState<{ uid: string; n: number }>({ uid: '', n: 0 });
     const stagedKey = stagedUids.join(',');
     // Clear pending selections when the turn's dice change…
     useEffect(() => { setPendingDieByUid({}); }, [vm.turnLabel]);
@@ -398,6 +406,7 @@ export const CombatBoard = React.memo(function CombatBoard({
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid).catch(() => undefined);
                 const t = target;
                 setPendingDieByUid((prev) => ({ ...prev, [t]: payload.dieId }));
+                setDropPop((prev) => ({ uid: t, n: prev.n + 1 }));   // confirm the drop landed HERE
             }
             return;
         }
@@ -462,7 +471,9 @@ export const CombatBoard = React.memo(function CombatBoard({
     const fan = vm.hand.filter((c) => !stagedSet.has(c.uid));
     const n = fan.length;
     const mid = (n - 1) / 2;
-    const overlap = n > 6 ? 26 : n > 4 ? 18 : 12;
+    // Relaxed overlap for small hands (5-6 cards) so faces breathe; tight at 7+ (width
+    // is the binding constraint on a ~390pt phone — cap/scroll there rather than widen).
+    const overlap = n > 6 ? 26 : n > 4 ? 14 : 12;
     const draggingDieId = drag.active?.type === 'die' ? drag.active.dieId : null;
     const draggingCardUid = drag.active?.type === 'card' ? drag.active.uid : null;
 
@@ -493,18 +504,23 @@ export const CombatBoard = React.memo(function CombatBoard({
                         <Text style={styles.roundLabel}>{vm.roundLabel} · {vm.turnLabel}</Text>
                     </View>
                 </View>
-                <View style={{ flexDirection: 'row', gap: 4 }} testID="combat-ledger">
-                    {vm.ledger.map((m, i) => <LedgerMark key={i} kind={m === 'clear' ? 'O' : m === 'overwhelmed' ? 'X' : 'pending'} size={20} />)}
+                <View style={{ alignItems: 'flex-end', gap: 3 }}>
+                    <View style={{ flexDirection: 'row', gap: 4 }} testID="combat-ledger">
+                        {vm.ledger.map((m, i) => <LedgerMark key={i} kind={m === 'clear' ? 'O' : m === 'overwhelmed' ? 'X' : 'pending'} size={20} />)}
+                    </View>
+                    {/* DECK/DISCARD moved out of the collapsed play strip into the header. */}
+                    <Text style={styles.deckCounts}>DECK {vm.deckCount} · DISCARD {vm.discardCount}</Text>
                 </View>
             </View>
 
             <CombatCombatantPane enemy={vm.enemy} player={vm.player} conviction={vm.conviction} onChip={onChip} fx={fx} />
 
             {/* play area — collapses to a slim hint strip while empty, grows to flex:1
-                once a card is staged (LinearTransition animates the reflow so staged
-                cards never pop into a strip too small for them). The flex:1 wrapper
-                absorbs whatever the collapsed strip leaves behind. */}
-            <View style={{ flex: 1 }}>
+                once a card is staged. While empty the wrapper RELEASES its flex (0) so
+                the reclaimed height routes to the dock (the fan grows + lifts) instead of
+                sitting as a dead band above the Signature bar. LinearTransition animates
+                the one reflow bidirectionally so staged cards never pop. */}
+            <View style={{ flex: stagedCards.length ? 1 : 0 }}>
                 <Animated.View
                     ref={(node) => { playAreaRef.current = node as unknown as View | null; }}
                     layout={LinearTransition.duration(220)}
@@ -513,7 +529,6 @@ export const CombatBoard = React.memo(function CombatBoard({
                 >
                     <View style={styles.playHead}>
                         <Text style={[styles.playLabel, { color: stagedCards.length ? AXM.sulfur : AXM.bone }]}>PLAY AREA{stagedCards.length > 1 ? ` · ${stagedCards.length} STAGED` : ''}</Text>
-                        <Text style={styles.deckCounts}>DECK {vm.deckCount} · DISCARD {vm.discardCount}</Text>
                     </View>
                     {stagedCards.length > 0 ? (
                         <View style={[styles.playCards, stagedCards.length > 3 && { gap: 6 }]}>
@@ -529,7 +544,7 @@ export const CombatBoard = React.memo(function CombatBoard({
                                         gesture={stagedGesture(card)}
                                         register={(node) => { if (node) stagedRefs.current.set(card.uid, node); else stagedRefs.current.delete(card.uid); }}
                                         compact={stagedCards.length > 3}
-                                        dieReady={!!draftedDie && card.uid !== comboTargetUid && !pendingDieByUid[card.uid]}
+                                        popKey={dropPop.uid === card.uid ? dropPop.n : 0}
                                     />
                                 );
                             })}
@@ -544,8 +559,9 @@ export const CombatBoard = React.memo(function CombatBoard({
 
             <DiceTray vm={vm} dieGesture={dieGesture} onNewTurn={onNewTurn} draggingDieId={draggingDieId} assignedDieIds={assignedDieIds} />
 
-            {/* dock */}
-            <View style={styles.dock}>
+            {/* dock — claims the reclaimed flex while nothing is staged so the fan grows
+                + lifts into the void (instead of clipping off the bottom edge). */}
+            <View style={[styles.dock, stagedCards.length === 0 && styles.dockExpanded]}>
                 {/* SCRAP — only present while a card is being dragged (no permanent
                     footprint). Kept mounted/hidden rather than unmounted so the drop
                     measurement still resolves against its ref after the drag ends. */}
@@ -560,7 +576,7 @@ export const CombatBoard = React.memo(function CombatBoard({
                     <TrashGlyph size={20} color={draggingCardUid ? AXM.blood : AXM.bone} />
                     <Text style={[styles.trashLabel, draggingCardUid ? { color: AXM.blood } : null]}>SCRAP</Text>
                 </View>
-                <View style={[styles.fan, { paddingBottom: bottomInset + 14 }]} testID="combat-hand">
+                <View style={[styles.fan, { paddingBottom: Math.max(bottomInset, 24) + 14 }]} testID="combat-hand">
                     {fan.map((card, i) => (
                         <GestureDetector key={card.uid} gesture={handCardGesture(card)}>
                             <Animated.View
@@ -669,7 +685,7 @@ export function CombatCardFace({
                 <View style={[styles.faceArtVignette, { backgroundColor: f.stanceColor }]} />
                 {large
                     ? <Text style={[styles.glyphWatermark, f.inert && { opacity: 0.4 }]}>{f.glyph}</Text>
-                    : <Text style={[styles.glyphCorner, f.inert && { opacity: 0.55 }]}>{f.glyph}</Text>}
+                    : <Text style={[styles.glyphWatermarkSmall, f.inert && { opacity: 0.4 }]}>{f.glyph}</Text>}
                 {showCostPip && (
                     // Square stance TAB (not a round cost-orb): these cards have no cost; the
                     // die is optional, so the round MTG/Hearthstone orb mis-read as a resource.
@@ -718,9 +734,10 @@ export function CombatCardFace({
     );
 }
 
-// The fanned hand card — a small instance of the shared face.
+// The fanned hand card — a small instance of the shared face. Height grows into the
+// reclaimed play-area void; width stays ~108 (the binding constraint at ~390pt).
 function HandCard({ card }: { card: CombatCardVM }) {
-    return <CombatCardFace card={card} width={104} height={140} />;
+    return <CombatCardFace card={card} width={108} height={152} />;
 }
 
 const useStyles = makeStyles((AXM) => ({
@@ -774,9 +791,6 @@ const useStyles = makeStyles((AXM) => ({
     stagedCol: { alignItems: 'center', gap: 3 },
     stagedCard: { width: 88, minHeight: 95, borderWidth: 2, borderRadius: 4, backgroundColor: '#14110e', overflow: 'hidden' },
     cardDie: { position: 'absolute', top: 4, right: 4, zIndex: 4 },
-    // Dimmer additive 'die ready' ring (shared drafted die spends on this card too on APPLY-POWER).
-    dieReadyRing: { borderWidth: 1.5, borderColor: 'rgba(194,161,78,0.4)', borderRadius: 5, zIndex: 5 },
-    dieReadyCaption: { fontFamily: FONTS.mono, fontSize: 9, color: 'rgba(194,161,78,0.75)', letterSpacing: 0.8 },
     actHint: { fontFamily: FONTS.mono, fontSize: 11, color: '#c2a14e', textAlign: 'center', letterSpacing: 0.3, paddingHorizontal: 12 },
 
     applyBtn: { width: 88, borderWidth: 1.5, borderRadius: 3, paddingVertical: 4, alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.4)' },
@@ -784,6 +798,9 @@ const useStyles = makeStyles((AXM) => ({
 
     // Taller dock (CLIP FIX) so the enlarged hand clears the home indicator.
     dock: { height: 210, borderTopWidth: 1, borderTopColor: AXM.ash },
+    // While nothing is staged the dock claims the play-area's released flex so the
+    // fan enlarges + lifts into the reclaimed void.
+    dockExpanded: { flex: 1 },
     trashBin: { position: 'absolute', left: 8, bottom: 10, zIndex: 40, width: 58, height: 58, borderRadius: 29, borderWidth: 1.5, borderStyle: 'dashed', borderColor: AXM.ash, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },
     trashLabel: { fontFamily: FONTS.mono, fontSize: 9, letterSpacing: 1, color: AXM.bone, marginTop: 1 },
     // Horizontal gutters (left: SCRAP, right: END PHASE) so the fan never lays a card
@@ -795,13 +812,17 @@ const useStyles = makeStyles((AXM) => ({
     // Art raised to 58% (kills the dead mid-card black band) — the name band anchors
     // directly beneath it, paidSection fills the remainder.
     faceArt: { width: '100%', height: '58%', backgroundColor: '#0c0a08' },
-    faceArtTint: { ...StyleSheet.absoluteFillObject, opacity: 0.2 },
+    faceArtTint: { ...StyleSheet.absoluteFillObject, opacity: 0.3 },
     faceArtScrim: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '62%', backgroundColor: 'rgba(10,8,6,0.6)' },
     // Stance vignette: a stance-tinted bottom-up wash (approximates a gradient) so each
     // stance reads as a distinct hue behind the shared placeholder photo.
     faceArtVignette: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '55%', opacity: 0.22 },
     faceLower: { flex: 1 },
     glyphCorner: { position: 'absolute', top: 3, left: 5, fontSize: 12, zIndex: 3 },
+    // Small face: the category glyph promoted from a tiny corner mark to a medium
+    // centred watermark CONFINED to the art window — differentiates categories harder
+    // until per-card art ships (per-card art is the real fix; this is zero-dep/OTA-safe).
+    glyphWatermarkSmall: { position: 'absolute', alignSelf: 'center', top: '18%', fontSize: 38, opacity: 0.16, zIndex: 2 },
     // Large inspect card: the category glyph promoted to a faint centred watermark,
     // CONFINED to the art window (never behind the keyword/value text).
     glyphWatermark: { position: 'absolute', alignSelf: 'center', top: '24%', fontSize: 72, opacity: 0.16, zIndex: 2 },
@@ -814,21 +835,26 @@ const useStyles = makeStyles((AXM) => ({
     freePipLarge: { left: 10, top: '40%', paddingHorizontal: 8, paddingVertical: 3 },
     freePipText: { fontFamily: FONTS.mono, fontSize: 8, color: AXM.bone, letterSpacing: 0.3 },
     freePipTextLarge: { fontSize: 13 },
-    nameBand: { paddingVertical: 3, paddingHorizontal: 5, alignItems: 'center', justifyContent: 'center' },
-    nameText: { fontFamily: FONTS.gothic, fontSize: 11, lineHeight: 13, color: '#100d0a', textAlign: 'center' },
-    nameTextLarge: { fontSize: 22, lineHeight: 26 },
+    // Bevelled name banner — 1px top highlight + 1px bottom shadow reads as raised metal/wood.
+    nameBand: { paddingVertical: 3, paddingHorizontal: 5, alignItems: 'center', justifyContent: 'center', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.28)', borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.45)' },
+    nameText: { fontFamily: FONTS.gothic, fontSize: 12.5, lineHeight: 15, color: '#100d0a', textAlign: 'center' },
+    // Large banner: light parchment ink + a drop shadow for contrast (the dark ink on a
+    // saturated band was weak).
+    nameTextLarge: { fontSize: 22, lineHeight: 26, color: '#f3e9d2', textShadowColor: 'rgba(0,0,0,0.6)', textShadowRadius: 3, textShadowOffset: { width: 0, height: 1 } },
     paidSection: { flex: 1, justifyContent: 'flex-end', paddingHorizontal: 6, paddingBottom: 5, paddingTop: 3, backgroundColor: 'rgba(10,8,6,0.62)' },
     paidSectionLarge: { paddingHorizontal: 14, paddingBottom: 13, paddingTop: 8 },
     paidRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-    paidKw: { fontFamily: FONTS.sans, fontSize: 8.5, letterSpacing: 1 },
+    paidKw: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1 },
     paidKwLarge: { fontSize: 13, letterSpacing: 1.5 },
     paidPip: { fontFamily: FONTS.sans, fontSize: 9 },
-    paidVal: { fontFamily: FONTS.mono, fontSize: 15, lineHeight: 17, marginTop: 1 },
+    paidVal: { fontFamily: FONTS.mono, fontSize: 19, lineHeight: 21, marginTop: 1 },
     paidValLarge: { fontSize: 24, lineHeight: 28, marginTop: 3 },
     paidSub: { fontFamily: FONTS.mono, fontSize: 8, lineHeight: 10, color: AXM.bone, letterSpacing: 0.2, marginTop: 1 },
     paidSubLarge: { fontSize: 12, lineHeight: 15, marginTop: 2 },
     // large-only effect body (Sanguine-Step shape) — fills the space under the name band.
-    faceBody: { flex: 1, justifyContent: 'center', paddingHorizontal: 8, paddingVertical: 8 },
+    // Warm parchment-tone panel behind the effect text (was transparent on dark — the
+    // serif read as floating; the warm wash anchors it like the Sanguine-Step scroll).
+    faceBody: { flex: 1, justifyContent: 'center', paddingHorizontal: 10, paddingVertical: 8, backgroundColor: 'rgba(38,30,20,0.6)' },
     faceEffect: { fontFamily: FONTS.serif, fontSize: 13.5, lineHeight: 19, color: AXM.parchment, textAlign: 'center' },
     faceEffectBold: { fontFamily: FONTS.gothic, color: AXM.sulfur },
     // large-only TYPE-TAB pinned to the card's bottom edge.

@@ -183,10 +183,10 @@ const KEYWORD_GLOSS: Record<string, string> = {
     Disorient: 'Lost — cannot act cleanly.',
     // Soft control
     Daze: 'Aim and stats falter; attacks may miss.',
-    Confuse: 'Aim wanders; attacks may miss.',
+    Confuse: 'Aim wanders; attacks may miss. Stack a VARIETY of controls to deny its turn entirely.',
     Blind: 'Accuracy greatly reduced.',
     Fear: 'Shaken — weaker and less accurate.',
-    Slow: 'Acts later and less effectively.',
+    Slow: 'Acts later and less effectively. Stack a VARIETY of controls to deny its turn entirely.',
     Root: 'Cannot reposition; easier to hit.',
     Knockdown: 'Knocked prone — exposed and slowed.',
     Fog: 'Vision clouded; aim and stats drop.',

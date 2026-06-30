@@ -6,7 +6,6 @@
  * - The report's `friendshipReward.codexEntryUnlocked` field
  *   populates on first friendship with an enemy that has
  *   `journalEntry`; absent on repeat friendships.
- * - `derivePreview` (combat.tsx helper) truncates correctly.
  */
 
 import { describe, expect, it } from '@jest/globals';
@@ -15,7 +14,6 @@ import { applyEffect, effectsLibrary, type Enemy } from 'axiomancer-mechanics';
 import { createAppActions } from '@/state/actions';
 import { createAppStore } from '@/state/store';
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
-import { derivePreview } from '@/app/(tabs)/combat';
 
 function makeFriendlyEnemy(journalEntryBody?: string) {
     return {
@@ -149,28 +147,5 @@ describe('actions.endCombat: returns engine CombatEndReport (Phase 78)', () => {
         expect(effectsLibrary.buffs.length).toBeGreaterThan(0);
         const { activeEffects } = applyEffect([], effectsLibrary.buffs[0], 1);
         expect(activeEffects).toHaveLength(1);
-    });
-});
-
-describe('derivePreview (Phase 78)', () => {
-    it('returns the first sentence stripped of the trailing period', () => {
-        expect(derivePreview('first sentence. second sentence.')).toBe('first sentence');
-    });
-
-    it('returns the trimmed body when there is no period', () => {
-        expect(derivePreview('a fragment with no terminator')).toBe('a fragment with no terminator');
-    });
-
-    it('truncates at the last word boundary <= 120 chars', () => {
-        const long = 'a b c d e f g h i j '.repeat(20); // > 120 chars, no period
-        const out = derivePreview(long);
-        expect(out.length).toBeLessThanOrEqual(120);
-        // Must end on a word boundary, not mid-word.
-        expect(out.endsWith(' ')).toBe(false);
-    });
-
-    it('returns empty string for an empty body', () => {
-        expect(derivePreview('')).toBe('');
-        expect(derivePreview('   ')).toBe('');
     });
 });

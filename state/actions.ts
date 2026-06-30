@@ -38,9 +38,6 @@ import {
     equipmentTemplates,
     uniqueTemplates,
     createMapState,
-    determineAdvantage,
-    determineCombatEnd,
-    determineEnemyAction,
     endCombat,
     equipItem as engineEquipItem,
     unequipItem as engineUnequipItem,
@@ -55,14 +52,11 @@ import {
     isConsumable,
     isEquipment,
     markNodeConsumed,
-    resolveCombatRound,
     resolveMapEvent,
     revealAdjacent,
     unlockNode as worldUnlockNode,
-    type Action,
     type BattleLogEntry,
     type Character,
-    type CombatAction,
     type CombatPhase,
     type CombatState,
     type GameStore,
@@ -78,7 +72,6 @@ import {
     type MapState,
     type PhilosophicalAlignment,
     type ResolveMapEventResult,
-    type RoundEvent,
     type Skill,
     type Stance,
     type WorldState,
@@ -88,7 +81,6 @@ import {
 import {
     COMBAT_SKILLS,
     getCombatSkillById,
-    skillCostText,
     skillEffectText,
 } from '@/state/selectors/combat-skills';
 import { equipmentFromTemplate as templateToEquipment } from 'axiomancer-mechanics';
@@ -273,19 +265,6 @@ export interface ApplyCharacterPresetResult {
     presetName: string | null;
 }
 
-export interface ResolveRoundResult {
-    /** True when the engine's `determineCombatEnd` is no longer `'ongoing'`. */
-    combatEnded: boolean;
-    /** Who/what triggered the end. */
-    endReason: 'player' | 'ko' | 'friendship' | 'ongoing';
-    /** Damage dealt to the enemy this round (positive). */
-    damageToEnemy: number;
-    /** Damage taken by the player this round (positive). */
-    damageToPlayer: number;
-    /** Friendship counter delta this round (usually 0 or +1). */
-    friendshipDelta: number;
-}
-
 export interface AppActions {
     startCombat: (enemy: Enemy) => void;
     /**
@@ -311,12 +290,6 @@ export interface AppActions {
     setPlayerStance: (stance: Stance) => void;
     /** Sets the player's committed action (`'attack' | 'defend' | 'skill'`). */
     setPlayerAction: (action: CombatActionKey, skillId?: string) => void;
-    /**
-     * Resolves a full round through the engine resolver, mutates the
-     * combat slice, appends human-readable log entries, and transitions
-     * the engine phase to `'resolving'`.
-     */
-    resolveRound: () => ResolveRoundResult;
     /** Transitions phase back to `choosing_stance` and bumps the round. */
     nextRound: () => void;
     addItem: (item: Item) => void;
@@ -708,10 +681,9 @@ export interface UseItemResult {
  *    "Begin your next combat with a hostile Curse die."
  *  - `hazard-token-banked:*` → +1 PARADOX each in `combatResources`.
  *
- * Cross-combat RESOURCE CARRY is no longer applied here — the engine owns it
- * (`Character.carriedResources` + `carryPhilosophicalResources`, folded into
- * the combat seed by the engine reducer). Re-applying a client carry would
- * double-count it.
+ * Cross-combat RESOURCE CARRY is no longer applied here — the engine owns it,
+ * folding any carried skill-fuel into the combat seed inside its own reducer.
+ * Re-applying a client carry would double-count it.
  */
 function applyCombatStartBridges(store: AppStore): void {
     const state = store.getState();
@@ -833,8 +805,6 @@ export interface LearnableSkillOffer {
     tier: number;
     /** Compact effect line — same format as the combat picker rows. */
     effectText: string;
-    /** Compact per-resource cost line. */
-    costText: string;
 }
 
 function toLearnableOffer(store: AppStore, skill: Skill): LearnableSkillOffer {
@@ -856,7 +826,6 @@ function toLearnableOffer(store: AppStore, skill: Skill): LearnableSkillOffer {
         effectText: combatSkill
             ? skillEffectText(combatSkill, damage)
             : 'NO DIRECT EFFECT',
-        costText: skillCostText(skill.resourceCost),
     };
 }
 
@@ -911,226 +880,6 @@ function pushLog(
 ): CombatState {
     const entry: MobileLogEntry = { severity, text };
     return combatAppendLog(combat, entry as unknown as BattleLogEntry);
-}
-
-interface ResolutionSummary {
-    playerRoll: number;
-    enemyRoll: number;
-    outcome: 'damage' | 'crit' | 'friendship' | 'miss';
-    primaryText: string;
-    message: string;
-    /**
-     * Phase 127 — true when the committed player action was a skill.
-     * Skills always hit and carry static mechanics-owned damage, so the
-     * presenter suppresses the attack-roll tracker (a contested-roll
-     * affordance) and renders deterministic result feedback instead.
-     * Defaults false; `summarizeRoundEvents` sets it from `playerAction`.
-     */
-    wasSkill: boolean;
-}
-
-/**
- * Phase 79 — exported for hermetic testing. The combat
- * presenter calls this helper internally; the export lets
- * `state/e2e/combat.skill-events.engine.test.ts` exercise
- * each skill-event kind with a synthetic event array
- * without spinning up the full engine resolver.
- */
-export function summarizeRoundEvents(
-    events: readonly RoundEvent[],
-    playerStance: Stance,
-    enemyStance: Stance,
-    friendshipDelta: number,
-    playerAction?: Action,
-): { summary: ResolutionSummary; logLines: { severity: LogSeverityKey; text: string }[] } {
-    const logLines: { severity: LogSeverityKey; text: string }[] = [];
-    let playerRoll = 0;
-    let enemyRoll = 0;
-    let damageDealtToEnemy = 0;
-    let damageTakenByPlayer = 0;
-    let lethal = false;
-    let crit = false;
-
-    for (const ev of events) {
-        if (ev.phase === 'scenario' && ev.kind === 'attack-roll') {
-            if (ev.actor === 'player') playerRoll = ev.total;
-            else enemyRoll = ev.total;
-        } else if (ev.phase === 'scenario' && ev.kind === 'damage-applied') {
-            const amount = Math.max(0, ev.finalDamage);
-            if (ev.attacker === 'player') {
-                damageDealtToEnemy += amount;
-                logLines.push({
-                    severity: 'damage',
-                    text: `Your blade lands — ${amount} damage.`,
-                });
-            } else {
-                damageTakenByPlayer += amount;
-                logLines.push({
-                    severity: 'damage',
-                    text: `Foe strikes — you take ${amount} damage.`,
-                });
-            }
-            if (ev.hpAfter <= 0) lethal = true;
-        } else if (ev.phase === 'scenario' && ev.kind === 'contest-outcome') {
-            if (ev.winner === 'tie') {
-                logLines.push({ severity: 'info', text: 'Blades cross — neither lands.' });
-            }
-        } else if (ev.phase === 'stance-effects' && ev.kind === 'applied') {
-            const effectName = ev.effect.name ?? ev.effect.id ?? 'effect';
-            
-            // Phase 91: Two-line battle log format
-            if (ev.actor === 'player' && playerAction) {
-                // Generate player choice line
-                const stanceLabel = playerStance === 'heart' ? 'Heart' : 
-                                   playerStance === 'body' ? 'Body' : 'Mind';
-                const actionLabel = playerAction.toUpperCase();
-                
-                // First line: player choice
-                logLines.push({
-                    severity: 'info',
-                    text: `You chose ${actionLabel} (${stanceLabel} stance).`,
-                });
-                
-                // Second line: applied effect
-                logLines.push({
-                    severity: 'effect',
-                    text: `Applied: ${effectName}.`,
-                });
-            } else {
-                // Keep existing format for enemy effects or when playerAction is unknown
-                logLines.push({
-                    severity: 'effect',
-                    text: `${ev.actor === 'player' ? 'You' : 'Foe'} apply ${effectName}.`,
-                });
-            }
-        } else if (ev.phase === 'round-start' && ev.kind === 'dot') {
-            const who = ev.actor === 'player' ? 'You' : 'Foe';
-            logLines.push({
-                severity: 'damage',
-                text: `${who} take ${ev.amount} from lingering harm.`,
-            });
-        } else if (ev.phase === 'round-start' && ev.kind === 'regen') {
-            const who = ev.actor === 'player' ? 'You' : 'Foe';
-            logLines.push({
-                severity: 'heal',
-                text: `${who} recover ${ev.amount}.`,
-            });
-        } else if (ev.phase === 'round-end' && ev.kind === 'dot') {
-            const who = ev.actor === 'player' ? 'You' : 'Foe';
-            logLines.push({
-                severity: 'damage',
-                text: `${who} bleed for ${ev.amount} at round's end.`,
-            });
-        } else if (ev.phase === 'skill' && ev.kind === 'damage') {
-            damageDealtToEnemy += Math.max(0, ev.amount);
-            logLines.push({
-                severity: 'crit',
-                text: `Skill bites — ${ev.amount} damage.`,
-            });
-            crit = true;
-        } else if (ev.phase === 'skill' && ev.kind === 'heal') {
-            const who = ev.target === 'self' ? 'You' : 'Foe';
-            logLines.push({
-                severity: 'heal',
-                text: `Skill mends — ${who.toLowerCase()} recover ${ev.amount}.`,
-            });
-        } else if (ev.phase === 'skill' && ev.kind === 'effect-applied') {
-            const effectName = ev.effect.name ?? ev.effect.id ?? 'effect';
-            const target = ev.appliedTo === 'self' ? 'you' : 'foe';
-            logLines.push({
-                severity: 'effect',
-                text: `Skill binds — ${effectName} on ${target}.`,
-            });
-        } else if (ev.phase === 'skill' && ev.kind === 'buff-stripped') {
-            const effectName = ev.effect?.name ?? 'a buff';
-            const target = ev.target === 'self' ? 'You' : 'Foe';
-            logLines.push({
-                severity: 'effect',
-                text: `Skill scours — ${target} loses ${effectName}.`,
-            });
-        } else if (ev.phase === 'skill' && ev.kind === 'buff-converted') {
-            logLines.push({
-                severity: 'effect',
-                text: ev.message,
-            });
-        } else if (ev.phase === 'skill' && ev.kind === 'synergy-fired') {
-            damageDealtToEnemy += Math.max(0, ev.bonusDamage);
-            logLines.push({
-                severity: 'crit',
-                text: `Skill resonates — +${ev.bonusDamage} damage from synergy.`,
-            });
-            crit = true;
-        } else if (ev.phase === 'skill' && ev.kind === 'blocked') {
-            // Phase 79 fix — surface the engine's silent block to the
-            // player. Without this, A skill failing leaves the user
-            // staring at "nothing happened" with no diagnostic.
-            const reasonProse =
-                ev.reason === 'unknown-skill' ? 'the skill is not in your repertoire.'
-                : ev.reason === 'not-equipped' ? 'you have not equipped that skill.'
-                : ev.reason === 'not-known' ? 'you have not learned that skill.'
-                : 'you lack the resources to cast it.';
-            logLines.push({
-                severity: 'system',
-                text: `Skill fails — ${reasonProse}`,
-            });
-        }
-        // Intentionally suppressed (presenter-noise, no player-visible
-        // affordance yet): phase:'skill' kinds 'resources-spent',
-        // 'philosophical-generated'.
-    }
-
-    let outcome: ResolutionSummary['outcome'] = 'miss';
-    let primaryText = '—';
-    let message = 'No blow lands.';
-    if (friendshipDelta > 0) {
-        outcome = 'friendship';
-        primaryText = `FRIEND +${friendshipDelta}`;
-        message = "A pause; the foe's gaze softens.";
-    } else if (damageDealtToEnemy > damageTakenByPlayer && damageDealtToEnemy > 0) {
-        outcome = crit ? 'crit' : 'damage';
-        primaryText = `–${damageDealtToEnemy}`;
-        message = lethal ? 'The foe falls.' : 'Wound runs deep.';
-    } else if (damageTakenByPlayer > 0) {
-        outcome = 'damage';
-        primaryText = `–${damageTakenByPlayer}`;
-        message = 'You stagger but stand.';
-    } else if (damageDealtToEnemy > 0) {
-        outcome = 'damage';
-        primaryText = `–${damageDealtToEnemy}`;
-        message = 'A glancing blow.';
-    }
-
-    return {
-        summary: {
-            playerRoll,
-            enemyRoll,
-            outcome,
-            primaryText,
-            message,
-            wasSkill: playerAction === 'skill',
-        },
-        logLines,
-    };
-}
-
-/**
- * Mobile-extended `CombatState`: tacks on the round-resolve summary
- * the presenter reads in `selectCombatViewModel` (`combat?.lastResolution`).
- * Engine's `CombatState` doesn't have this field; the presenter's
- * `combat: Record<string, any> | null` signature is loose enough to
- * read it back at runtime. Defining the extension typed (instead of
- * `as any`) keeps the field a documented mobile slice rather than
- * an unfindable cast.
- */
-type MobileCombatState = CombatState & {
-    readonly lastResolution?: ResolutionSummary;
-};
-
-function setLastResolution(combat: CombatState, summary: ResolutionSummary): MobileCombatState {
-    return {
-        ...combat,
-        lastResolution: summary,
-    };
 }
 
 // ---------------------------------------------------------------------------
@@ -1209,134 +958,6 @@ export function createAppActions(store: AppStore): AppActions {
                 }
                 : withAction;
             updateCombat(finalCombat);
-        },
-        resolveRound: () => {
-            const { combat, updateCombat } = store.getState();
-            if (!combat) {
-                return {
-                    combatEnded: false,
-                    endReason: 'ongoing',
-                    damageToEnemy: 0,
-                    damageToPlayer: 0,
-                    friendshipDelta: 0,
-                };
-            }
-
-            const playerStance: Stance = combat.playerChoice?.stance ?? 'heart';
-            // Engine `CombatAction.action: Action` ('attack' |
-            // 'defend' | 'skill' | 'item' | 'flee'). Item is a
-            // mobile-only no-op (Spec 06 doesn't apply consumables
-            // mid-combat yet) — downgrade to 'attack' so the engine
-            // resolver picks the basic-attack path.
-            const requestedAction: Action = combat.playerChoice?.action ?? 'attack';
-            const playerAction: Action = requestedAction === 'item' ? 'attack' : requestedAction;
-            const skillIdRaw = combat.playerChoice?.skillId;
-            const skillId =
-                playerAction === 'skill' && typeof skillIdRaw === 'string'
-                    ? skillIdRaw
-                    : undefined;
-
-            const enemyAction = determineEnemyAction(combat.enemy);
-
-            // Phase 21 — real engine skill lookup. Pass `getSkillById`
-            // so the resolver can apply skill damage / effects rather
-            // than treating skill picks as basic attacks.
-            const skillLookup = getSkillById;
-
-            // Phase 21 — route `action: 'skill'` through the engine
-            // (was previously downgraded to 'attack' when a skillId was
-            // set; the engine now resolves the skill itself, using
-            // skillLookup above).
-            const playerCombatAction: CombatAction =
-                skillId !== undefined
-                    ? { stance: playerStance, action: 'skill', skillId }
-                    : { stance: playerStance, action: playerAction };
-
-            const enemyStance: Stance =
-                (enemyAction.stance as Stance) ??
-                (combat.enemyChoice?.stance as Stance) ??
-                'mind';
-
-            const hpEnemyBefore = combat.enemy.health;
-            const hpPlayerBefore = combat.player.health;
-            const friendshipBefore = combat.friendshipCounter ?? 0;
-
-            // The engine refuses skills missing from the in-combat
-            // player's `knownSkills` (blocked: 'not-known'), but the
-            // mobile picker treats the whole library as learned (Phase
-            // 97) — without this bridge every library skill resolved to
-            // NOTHING. The picker is the gate (stance + token cost), so
-            // grant the chosen skill on the combat-slice copy only; the
-            // persistent `state.player` is untouched.
-            const knownSkills = combat.player.knownSkills ?? [];
-            const combatForResolve: CombatState =
-                skillId !== undefined && !knownSkills.includes(skillId)
-                    ? {
-                          ...combat,
-                          player: { ...combat.player, knownSkills: [...knownSkills, skillId] },
-                      }
-                    : combat;
-
-            const resolution = resolveCombatRound(
-                combatForResolve,
-                playerCombatAction,
-                enemyAction,
-                skillLookup,
-            );
-
-            const nextState: CombatState = resolution.state;
-            const damageToEnemy = Math.max(0, hpEnemyBefore - nextState.enemy.health);
-            const damageToPlayer = Math.max(0, hpPlayerBefore - nextState.player.health);
-            const friendshipDelta = (nextState.friendshipCounter ?? 0) - friendshipBefore;
-
-            const { summary, logLines } = summarizeRoundEvents(
-                resolution.combatEvents,
-                playerStance,
-                enemyStance,
-                friendshipDelta,
-                playerAction,
-            );
-
-            // Stash the enemy's revealed stance so the next stance
-            // picker can highlight ADV/DIS relative to it.
-            let nextWithEnemy: CombatState = {
-                ...nextState,
-                enemyChoice: {
-                    ...(nextState.enemyChoice ?? {}),
-                    stance: enemyStance,
-                    action: enemyAction.action,
-                },
-            };
-
-            // Resource spending is engine-owned: `resolveCombatRound` debits
-            // the skill's `resourceCost` from `combatResources` as part of
-            // round resolution. The client no longer keeps a parallel pool.
-
-            nextWithEnemy = setLastResolution(nextWithEnemy, summary);
-
-            let withLog = nextWithEnemy;
-            for (const line of logLines) {
-                withLog = pushLog(withLog, line.severity, line.text);
-            }
-            withLog = combatSetPhase(withLog, 'resolving');
-
-            updateCombat(withLog);
-
-            const endReason = determineCombatEnd(withLog);
-
-            // Belt-and-braces: confirm we're using the engine's
-            // canonical advantage helper somewhere (the presenter
-            // mirrors the same triangle and the engine is the source
-            // of truth). This call has no side-effects.
-            void determineAdvantage(playerStance, enemyStance);
-
-            return {
-                combatEnded: endReason !== 'ongoing',
-                endReason,
-                damageToEnemy,
-                damageToPlayer,
-                friendshipDelta,
-            };
         },
         nextRound: () => {
             const { combat, updateCombat } = store.getState();

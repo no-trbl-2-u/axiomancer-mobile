@@ -93,7 +93,6 @@ describe('App Component Smoke Tests', () => {
                 require('@/app/(tabs)/memoir/index');
                 require('@/app/(tabs)/character/index');
                 require('@/app/(tabs)/exploration/index');
-                require('@/app/(tabs)/combat');
                 require('@/app/(tabs)/_layout');
             }).not.toThrow();
         });
@@ -105,7 +104,6 @@ describe('App Component Smoke Tests', () => {
                 '@/app/event/index', 
                 '@/app/(tabs)/_layout',
                 '@/app/(tabs)/character/index',
-                '@/app/(tabs)/combat',
                 '@/app/(tabs)/exploration/index',
                 '@/app/(tabs)/inventory/index',
                 '@/app/(tabs)/memoir/index'

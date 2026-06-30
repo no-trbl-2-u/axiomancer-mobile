@@ -26,7 +26,6 @@ import { isDevToolsEnabled } from '@/lib/buildProfile';
 import { FONTS } from '@/theme/axm';
 import { makeStyles, usePalette } from '@/theme/runtime';
 
-const DebugCombatButton = lazy(() => import('@/components/DebugCombatButton').then(m => ({ default: m.DebugCombatButton })));
 const DebugCombatEncounterButton = lazy(() => import('@/components/DebugCombatEncounterButton').then(m => ({ default: m.DebugCombatEncounterButton })));
 const DebugCombatTutorialButton = lazy(() => import('@/components/DebugCombatTutorialButton').then(m => ({ default: m.DebugCombatTutorialButton })));
 const DebugHazardButton = lazy(() => import('@/components/DebugHazardButton').then(m => ({ default: m.DebugHazardButton })));
@@ -105,7 +104,6 @@ export function DevToolsSections() {
                 <DevSection label="ENCOUNTER TRIGGERS" testID="dev-section-encounters">
                     <DebugTriggerEncounter />
                     <DebugEncounterButtons />
-                    <DebugCombatButton />
                     <DebugCombatEncounterButton />
                     <DebugCombatTutorialButton />
                 </DevSection>

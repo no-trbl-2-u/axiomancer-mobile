@@ -16,22 +16,24 @@
  *   - `description` = engine `description` verbatim
  *   - `category` = engine `category` ('fallacy' | 'paradox')
  *   - `stance` = engine `philosophicalAspect` ('body' | 'mind' | 'heart')
- *   - `manaCost` = sum of every resource in `resourceCost`
- *     (body + mind + heart + fallacy + paradox; missing keys 0)
  */
 
 import {
     skillLibrary,
     getSkillById,
     type Skill,
-    type ResourceCost,
     type SkillCombatEffects,
     type SkillTarget,
-    type SkillsStatType,
 } from 'axiomancer-mechanics';
 
 import { keywordForEffect } from '@/state/combat/keywords';
-import type { StanceKey } from '@/state/presenters/combat.engine';
+
+/**
+ * The three philosophical stances a skill can be locked to. Inlined
+ * here after the legacy `combat.engine.ts` presenter (its former
+ * home) was removed with the legacy turn-based combat surface.
+ */
+export type StanceKey = 'heart' | 'body' | 'mind';
 
 export type SkillCategoryKey = 'fallacy' | 'paradox';
 
@@ -46,37 +48,10 @@ export interface CombatSkill {
     category: SkillCategoryKey;
     /** Stance the skill is locked to. */
     stance: StanceKey;
-    /** Focus cost — sum of all resource pools (kept for display). */
-    manaCost: number;
-    /** Per-resource cost from the engine. */
-    resourceCost: ResourceCost;
-    /** Engine damage inputs — the presenter derives the effect line. */
-    basePower: number;
-    scalingStat: SkillsStatType;
-    scalingMultiplier?: number;
     /** 'enemy' = damage; 'self' = heal. */
     targetType: SkillTarget;
     /** Status effects the skill applies on cast. */
     combatEffects: readonly SkillCombatEffects[];
-}
-
-/** Short resource labels — match the crucible-token shorts in the HUD. */
-const RESOURCE_SHORT: Record<keyof ResourceCost, string> = {
-    body: 'BOD',
-    mind: 'MND',
-    heart: 'HRT',
-    fallacy: 'FAL',
-    paradox: 'PRX',
-};
-
-/** Compact cost line, e.g. `"2 BOD · 1 PRX"`; `"FREE"` when costless. */
-export function skillCostText(cost: ResourceCost): string {
-    const parts: string[] = [];
-    for (const key of Object.keys(RESOURCE_SHORT) as (keyof ResourceCost)[]) {
-        const n = cost[key] ?? 0;
-        if (n > 0) parts.push(`${n} ${RESOURCE_SHORT[key]}`);
-    }
-    return parts.length > 0 ? parts.join(' · ') : 'FREE';
 }
 
 /** The keyword for an effect id (e.g. 'debuff_bleed' → 'BLEED'), or a humanised id. */
@@ -102,11 +77,6 @@ export function skillEffectText(skill: CombatSkill, damage: number): string {
     return parts.length > 0 ? parts.join(' · ') : 'NO DIRECT EFFECT';
 }
 
-function totalResourceCost(skill: Skill): number {
-    const r = skill.resourceCost;
-    return (r.body ?? 0) + (r.mind ?? 0) + (r.heart ?? 0) + (r.fallacy ?? 0) + (r.paradox ?? 0);
-}
-
 function toCombatSkill(skill: Skill): CombatSkill {
     return {
         id: skill.id,
@@ -114,11 +84,6 @@ function toCombatSkill(skill: Skill): CombatSkill {
         description: skill.description,
         category: skill.category,
         stance: skill.philosophicalAspect,
-        manaCost: totalResourceCost(skill),
-        resourceCost: skill.resourceCost,
-        basePower: skill.basePower,
-        scalingStat: skill.scalingStat,
-        scalingMultiplier: skill.scalingMultiplier,
         targetType: skill.targetType,
         combatEffects: skill.combatEffects ?? [],
     };

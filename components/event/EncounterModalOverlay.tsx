@@ -27,7 +27,7 @@
  * in `components/event/__tests__/EncounterModalOverlay.test.tsx`.
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, {
     useAnimatedStyle,
     useSharedValue,
@@ -35,7 +35,6 @@ import Animated, {
     Easing,
 } from 'react-native-reanimated';
 
-import { CombatPanel } from '@/components/combat/CombatPanel';
 import { CombatEncounterPanel } from '@/components/combat/encounter/CombatEncounterPanel';
 import { CombatDefeatPanel } from '@/components/event/aftermath/CombatDefeatPanel';
 import { CombatFriendshipPanel } from '@/components/event/aftermath/CombatFriendshipPanel';
@@ -301,6 +300,14 @@ export function EncounterModalOverlay({
                         onLetClose={dismissAftermath}
                     />
                 ) : mode === 'combat' ? (
+                    // Fallback for the impossible-in-practice path where
+                    // combat mode is entered without a captured foe. The
+                    // live path is the full-screen hazard combat early-return
+                    // above (`encounterEnemy && player`); map encounters always
+                    // supply a foe. The legacy turn-based <CombatPanel> that
+                    // used to render here was removed with the legacy combat
+                    // surface; this placeholder keeps the modal's combat-mode
+                    // contract defined.
                     <ScrollView
                         ref={combatScrollRef}
                         style={styles.combatScroll}
@@ -308,7 +315,9 @@ export function EncounterModalOverlay({
                         showsVerticalScrollIndicator={false}
                         testID="encounter-modal-combat-mode"
                     >
-                        <CombatPanel />
+                        <Text style={styles.combatFallbackText}>
+                            NO FOE CAPTURED
+                        </Text>
                     </ScrollView>
                 ) : (
                     <EncounterPreludeContent
@@ -413,4 +422,11 @@ const useStyles = makeStyles((AXM) => ({
     // edge-to-edge and the EnemyPanel + phase rows looked cramped
     // against the modal border.
     combatScrollContent: { paddingBottom: 12, paddingHorizontal: 4 },
+    combatFallbackText: {
+        textAlign: 'center',
+        padding: 24,
+        color: AXM.bone,
+        fontSize: 12,
+        letterSpacing: 2,
+    },
 }));

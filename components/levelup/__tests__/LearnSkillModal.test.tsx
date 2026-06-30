@@ -21,7 +21,6 @@ const mockOffer: LearnableSkillOffer = {
     stance: 'mind',
     effectText: 'deals +2 damage',
     description: 'A test skill for unit testing',
-    costText: '3 XP',
 };
 
 describe('LearnSkillModal: mount contract', () => {
@@ -76,7 +75,6 @@ describe('LearnSkillModal: mount contract', () => {
         expect(tree.queryByText('T2 · FALLACY')).not.toBeNull();
         expect(tree.queryByText('deals +2 damage')).not.toBeNull();
         expect(tree.queryByText('A test skill for unit testing')).not.toBeNull();
-        expect(tree.queryByText('3 XP')).not.toBeNull();
         expect(tree.queryByText('LEARN ›')).not.toBeNull();
     });
 
@@ -173,7 +171,7 @@ describe('LearnSkillModal: accessibility', () => {
         );
         const button = tree.getByTestId('learn-skill-offer-test-skill-id');
         expect(button.props.accessibilityLabel).toBe(
-            'Learn Test Skill, deals +2 damage, costs 3 XP',
+            'Learn Test Skill, deals +2 damage',
         );
         expect(button.props.accessibilityRole).toBe('button');
     });

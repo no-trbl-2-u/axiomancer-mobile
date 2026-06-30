@@ -161,23 +161,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="combat"
-        options={{
-          title: TAB_TITLES.combat,
-          tabBarLabel: TAB_TITLES.combat,
-          tabBarIcon: ({ color, size }) => (
-            <TabIconWithBadge
-              kind="sword"
-              color={color}
-              size={size}
-              badge={badges.combat}
-            />
-          ),
-          // STRIFE tab hidden (combat moved to modal).
-          href: null,
-        }}
-      />
-      <Tabs.Screen
         name="character/index"
         options={{
           title: TAB_TITLES.character,

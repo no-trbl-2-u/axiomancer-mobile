@@ -679,13 +679,13 @@ export function CombatCardFace({
     const AXM = usePalette();
     const styles = useStyles();
     const f = card.face;
-    const gold = card.rarity === 'gold';
     // STANCE rides the name band + the art vignette; CATEGORY rides the frame (border)
     // + the glyph watermark — two orthogonal identity axes until per-card art ships.
-    const band = gold ? '#d9b44a' : f.stanceColor;
+    // Gold-rarity cards render with the NORMAL frame: no gold border/glow/star.
+    const band = f.stanceColor;
     const baseKw = f.inert ? AXM.ash : f.categoryColor;
     const kwColor = accent ?? baseKw;
-    const borderColor = accent ?? (gold ? '#d9b44a' : f.categoryColor);
+    const borderColor = accent ?? f.categoryColor;
     const numberless = !f.heroText && !heroOverride;
     const value = numberless ? (f.keyword ?? heroFace(f)) : paidValueText(f, heroOverride);
     return (
@@ -705,7 +705,7 @@ export function CombatCardFace({
             {children}
             <View style={styles.faceLower}>
                 <View style={[styles.nameBand, { backgroundColor: band }]}>
-                    <Text style={[styles.nameText, large && styles.nameTextLarge]} numberOfLines={1}>{gold ? '★ ' : ''}{card.name}</Text>
+                    <Text style={[styles.nameText, large && styles.nameTextLarge]} numberOfLines={1}>{card.name}</Text>
                 </View>
                 {large ? (
                     /* large inspect card: the effect SENTENCE (keywords bolded, hero number

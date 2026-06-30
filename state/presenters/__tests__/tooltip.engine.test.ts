@@ -322,7 +322,7 @@ describe('selectTooltipContentFor', () => {
     });
 
     describe('kind: skill (Phase 75)', () => {
-        it('returns engine-sourced name + description + cost/stance for a known skill id', () => {
+        it('returns engine-sourced name + description + stance for a known skill id', () => {
             // Pick any known engine skill — the first one is stable.
             const first = skillLibrary[0];
             const content = selectTooltipContentFor('skill', first.id, EMPTY_STATE);
@@ -330,7 +330,7 @@ describe('selectTooltipContentFor', () => {
             // getCombatSkillById uppercases the name.
             expect(content?.title).toBe(first.name.toUpperCase());
             expect(content?.body).toBe(first.description);
-            expect(content?.footnote).toMatch(/^focus cost \d+ · stance (HEART|BODY|MIND)$/);
+            expect(content?.footnote).toMatch(/^stance (HEART|BODY|MIND)$/);
         });
 
         it('returns null for an unknown skill id', () => {

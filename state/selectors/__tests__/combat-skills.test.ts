@@ -3,12 +3,11 @@
  *
  * Pins the mapping contract from the engine's `Skill` to the
  * mobile `CombatSkill` row: shape coverage, name uppercased,
- * category + stance literal-union safety, manaCost is the
- * resource-cost sum.
+ * category + stance literal-union safety.
  */
 
 import { describe, expect, it } from '@jest/globals';
-import { skillLibrary, getSkillById } from 'axiomancer-mechanics';
+import { skillLibrary } from 'axiomancer-mechanics';
 
 import {
     COMBAT_SKILLS,
@@ -50,26 +49,6 @@ describe('COMBAT_SKILLS: library coverage', () => {
     });
 });
 
-describe('COMBAT_SKILLS: manaCost mapping', () => {
-    it('manaCost equals the sum of every resourceCost key', () => {
-        for (const combat of COMBAT_SKILLS) {
-            const engine = getSkillById(combat.id);
-            expect(engine).toBeDefined();
-            const r = engine!.resourceCost;
-            const expected =
-                (r.body ?? 0) + (r.mind ?? 0) + (r.heart ?? 0) + (r.fallacy ?? 0) + (r.paradox ?? 0);
-            expect(combat.manaCost).toBe(expected);
-        }
-    });
-
-    it('manaCost is a non-negative integer (no NaN, no fractions)', () => {
-        for (const skill of COMBAT_SKILLS) {
-            expect(Number.isInteger(skill.manaCost)).toBe(true);
-            expect(skill.manaCost).toBeGreaterThanOrEqual(0);
-        }
-    });
-});
-
 describe('getCombatSkillById: resolution', () => {
     it('returns the mapped row for a known engine id', () => {
         const first = COMBAT_SKILLS[0];
@@ -77,7 +56,6 @@ describe('getCombatSkillById: resolution', () => {
         expect(found).not.toBeNull();
         expect(found!.id).toBe(first.id);
         expect(found!.name).toBe(first.name);
-        expect(found!.manaCost).toBe(first.manaCost);
     });
 
     it('returns null for an unknown id (e.g. legacy pre-Phase-16 ids)', () => {

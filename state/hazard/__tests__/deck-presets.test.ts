@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { decodeAcquiredCards, HAZARD_CARD_FLAG_PREFIX } from 'axiomancer-mechanics';
+import { decodeAcquiredCards } from 'axiomancer-mechanics';
 
 import {
     applyHazardDeckPresetAction,
@@ -69,6 +69,10 @@ describe('Hazard deck presets', () => {
         const granted = randomizeHazardDeckAction(store);
 
         expect(granted.length).toBeGreaterThan(0);
-        expect(store.getState().flags.every((flag) => flag.startsWith(HAZARD_CARD_FLAG_PREFIX))).toBe(true);
+        // 0.36.0 seeds a curated combat-loadout flag in fresh state, so not every
+        // flag is a hazard-card flag. Assert the randomizer recorded an acquired
+        // hazard-card flag for each granted card (the test's actual intent).
+        const acquired = decodeAcquiredCards(store.getState().flags);
+        for (const id of granted) expect(acquired).toContain(id);
     });
 });

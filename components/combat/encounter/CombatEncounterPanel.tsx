@@ -376,7 +376,7 @@ export function CombatEncounterPanel({
                     <View style={styles.detailModalWrap} onStartShouldSetResponder={() => true}>
                         <ScrollView
                             style={styles.detailScroll}
-                            contentContainerStyle={[styles.detailStack, { borderColor: detailCard.rarity === 'gold' ? '#d9b44a' : detailCard.face.categoryColor }]}
+                            contentContainerStyle={[styles.detailStack, { borderColor: detailCard.face.categoryColor }]}
                         >
                             {/* (1) keyword DEFINITION panels at the top */}
                             {detailCard.detail.keywords.length > 0 && (

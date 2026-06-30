@@ -39,7 +39,7 @@ export function CombatRewardsOverlay({ offers, onPick }: { offers: CombatRewardO
                                 <View style={[styles.stanceBar, { backgroundColor: o.stanceColor }]} />
                                 <Text style={styles.offerName} numberOfLines={2}>{o.name}</Text>
                                 <Text style={[styles.offerTrack, { color: o.stanceColor }]}>{EFFECT_GLYPH[o.effectKind] ?? o.effectKind}</Text>
-                                <Text style={styles.offerMeta}>{o.rarity === 'gold' ? '★ GOLD · ' : ''}{o.stance.toUpperCase()} · T{o.tier}</Text>
+                                <Text style={styles.offerMeta}>{o.stance.toUpperCase()} · T{o.tier}</Text>
                                 {o.effectKind !== 'none' ? <Text style={styles.offerPrev}>+{o.preview} {o.effectKind === 'dot' ? 'damage' : 'effect'}</Text> : null}
                             </Pressable>
                         );

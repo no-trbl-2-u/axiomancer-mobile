@@ -190,6 +190,11 @@ export function CombatCombatantPane({
                 const kw = (keywordForEffect(e.effectId) ?? e.effectKind ?? 'effect').toUpperCase();
                 const color = e.effect ? effectGlyph(e.effect as Parameters<typeof effectGlyph>[0]).color : (side === 'player' ? '#a86bdc' : '#d9b44a');
                 statusFloats.push({ side, text: kw, color });
+            } else if (e.kind === 'buff-stripped') {
+                // strip_random_buff surfaced (0.36.0): float the removed buff over the affected side.
+                const side = e.target === 'self' ? 'player' : 'enemy';
+                const label = e.effectName ? `STRIP ${e.effectName.toUpperCase()}` : 'STRIP';
+                statusFloats.push({ side, text: label, color: side === 'player' ? '#a86bdc' : '#d9b44a' });
             }
         }
         // (a) the player took damage → enemy ANTICIPATION (pull back) → scale-led lunge,

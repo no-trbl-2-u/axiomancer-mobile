@@ -56,7 +56,6 @@ import type { ResolveMapEventResult } from 'axiomancer-mechanics';
 
 import CharacterScreen from '@/app/(tabs)/character';
 import InventoryScreen from '@/app/(tabs)/inventory';
-import CombatScreen from '@/app/(tabs)/combat';
 import ExplorationScreen from '@/app/(tabs)/exploration';
 import MemoirScreen from '@/app/(tabs)/memoir';
 import EventScreen from '@/app/event';
@@ -180,11 +179,6 @@ describe('smoke-render: each primary surface', () => {
         expect(() => render(withProviders(store, <InventoryScreen />))).not.toThrow();
     });
 
-    it('renders the Combat tab at fresh-store boot without throwing', () => {
-        const store = makeStore();
-        expect(() => render(withProviders(store, <CombatScreen />))).not.toThrow();
-    });
-
     it('renders the Exploration tab at fresh-store boot without throwing', () => {
         const store = makeStore();
         expect(() => render(withProviders(store, <ExplorationScreen />))).not.toThrow();
@@ -230,16 +224,6 @@ describe('smoke-render: primary body is non-empty (no blank screens)', () => {
         expectNonEmptyBody(collectVisibleStrings(api), 'inventory');
     });
 
-    it('Combat tab paints visible text even before its bootstrap effect runs', () => {
-        // Tick C contract: the user-observed "combat encounter is
-        // blank" came from the loading-placeholder branch rendering
-        // an empty <View>. The placeholder must paint *something*
-        // visible so users always see context, not a void.
-        const store = makeStore();
-        const api = render(withProviders(store, <CombatScreen />));
-        expectNonEmptyBody(collectVisibleStrings(api), 'combat (loading)');
-    });
-
     it('Exploration tab paints visible text', () => {
         const store = makeStore();
         const api = render(withProviders(store, <ExplorationScreen />));
@@ -270,12 +254,6 @@ describe('smoke-render: no template-string leaks in rendered output', () => {
         const store = makeStore();
         const api = render(withProviders(store, <InventoryScreen />));
         expectNoTemplateLeaks(collectVisibleStrings(api), 'inventory');
-    });
-
-    it('Combat tab renders no `{ ... }` template strings', () => {
-        const store = makeStore();
-        const api = render(withProviders(store, <CombatScreen />));
-        expectNoTemplateLeaks(collectVisibleStrings(api), 'combat');
     });
 
     it('Exploration tab renders no `{ ... }` template strings', () => {

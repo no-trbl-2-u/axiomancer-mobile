@@ -45,7 +45,7 @@ export function LearnSkillModal({ offers, picksRemaining, onPick, onSkip }: Lear
                             key={offer.id}
                             onPress={() => onPick(offer.id)}
                             accessibilityRole="button"
-                            accessibilityLabel={`Learn ${offer.name}, ${offer.effectText}, costs ${offer.costText}`}
+                            accessibilityLabel={`Learn ${offer.name}, ${offer.effectText}`}
                             testID={`learn-skill-offer-${offer.id}`}
                             style={({ pressed }) => [styles.offerRow, pressed && styles.offerPressed]}
                         >
@@ -59,7 +59,6 @@ export function LearnSkillModal({ offers, picksRemaining, onPick, onSkip }: Lear
                                 <Text style={styles.offerDesc} numberOfLines={2}>{offer.description}</Text>
                             </View>
                             <View style={styles.offerCostCol}>
-                                <Text style={styles.offerCost}>{offer.costText}</Text>
                                 <Text style={styles.offerLearn}>LEARN ›</Text>
                             </View>
                         </Pressable>
@@ -176,12 +175,6 @@ const useStyles = makeStyles((AXM) => ({
         marginTop: 3,
     },
     offerCostCol: { alignItems: 'flex-end', maxWidth: 76 },
-    offerCost: {
-        fontFamily: FONTS.mono,
-        fontSize: 9,
-        color: AXM.parchment,
-        textAlign: 'right',
-    },
     offerLearn: {
         fontFamily: FONTS.sans,
         fontSize: 9,

@@ -108,7 +108,7 @@ describe('combat-start bridges: hazard omens', () => {
 // ---------------------------------------------------------------------------
 
 describe('combat resource carry (engine-owned: fallacy/paradox only)', () => {
-    it('a won combat carries unspent fallacy/paradox into the next combat seed', () => {
+    it('a won combat carries NOTHING into the next combat seed (carry removed in 0.36.0)', () => {
         actions.startCombat(makeEnemy());
         const combat = store.getState().combat!;
         store.setState({
@@ -120,19 +120,15 @@ describe('combat resource carry (engine-owned: fallacy/paradox only)', () => {
         } as never);
         actions.endCombat();
 
-        // The engine carries floor(0.5×) of the skill-fuel resources only,
-        // capped at 3: fallacy floor(0.5)=0 (omitted), paradox floor(2.5)=2.
-        // Stance tokens (heart/body/mind) never carry.
-        expect(store.getState().player.carriedResources).toEqual({ paradox: 2 });
-
+        // The cross-combat resource carry was removed in 0.36.0: a won combat no
+        // longer seeds unspent fallacy/paradox into the next fight — it starts empty.
         actions.startCombat(makeEnemy());
         const next = store.getState().combat!;
-        expect(next.combatResources.paradox).toBeGreaterThanOrEqual(2);
+        expect(next.combatResources.paradox).toBe(0);
+        expect(next.combatResources.fallacy).toBe(0);
         expect(next.combatResources.heart).toBe(0);
         expect(next.combatResources.body).toBe(0);
         expect(next.combatResources.mind).toBe(0);
-        // consumed — cleared from the player once the next combat seeds it
-        expect(store.getState().player.carriedResources).toBeUndefined();
     });
 
     it('a lost combat carries nothing', () => {
@@ -146,7 +142,11 @@ describe('combat resource carry (engine-owned: fallacy/paradox only)', () => {
             },
         } as never);
         actions.endCombat();
-        expect(store.getState().player.carriedResources ?? undefined).toBeUndefined();
+        // Nothing carries from a defeat — the next combat seeds clean.
+        actions.startCombat(makeEnemy());
+        const next = store.getState().combat!;
+        expect(next.combatResources.fallacy).toBe(0);
+        expect(next.combatResources.paradox).toBe(0);
     });
 });
 
@@ -205,7 +205,7 @@ describe('starter skills + learn-skill flow', () => {
         expect(snapshot).toEqual(known);
     });
 
-    it('getLearnableSkillOffers returns ≤3 unknown, requirement-met offers with effect + cost lines', () => {
+    it('getLearnableSkillOffers returns ≤3 unknown, requirement-met offers with effect lines', () => {
         const offers = actions.getLearnableSkillOffers();
         expect(offers.length).toBeGreaterThan(0);
         expect(offers.length).toBeLessThanOrEqual(3);
@@ -213,7 +213,6 @@ describe('starter skills + learn-skill flow', () => {
         for (const offer of offers) {
             expect(known).not.toContain(offer.id);
             expect(offer.effectText.length).toBeGreaterThan(0);
-            expect(offer.costText.length).toBeGreaterThan(0);
             expect(['body', 'mind', 'heart']).toContain(offer.stance);
         }
     });

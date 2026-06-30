@@ -121,7 +121,6 @@ const EXPECTED_ROUTE_FILES: ReadonlySet<string> = new Set([
     './dev/index.tsx',
     './(tabs)/_layout.tsx',
     './(tabs)/character/index.tsx',
-    './(tabs)/combat.tsx',
     './(tabs)/exploration/index.tsx',
     './(tabs)/inventory/index.tsx',
     // Phase 33 (2026-05-16) added the fifth tab.

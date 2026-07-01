@@ -6,7 +6,7 @@
  * `app/(tabs)/_layout.tsx`.
  */
 
-import type { GameStore } from 'axiomancer-mechanics';
+import { selectIsInCombat, type GameStore } from 'axiomancer-mechanics';
 
 import type { AppStoreState } from '../store';
 import { selectHasActiveEvent } from './event.engine';
@@ -41,7 +41,12 @@ export interface NavigationViewModel {
  * tab selection.
  */
 export function selectActiveTab(state: GameStore): TabRoute {
-    if (state.combat) {
+    // Legacy turn-based combat was removed from the engine (mechanics
+    // 0.37.0). The engine now signals an active encounter via
+    // `currentEncounter` (`selectIsInCombat`); live hazard combat runs
+    // in the panel's local state, so this only routes for the engine's
+    // own encounter bookkeeping.
+    if (selectIsInCombat(state)) {
         return 'combat';
     }
     return 'exploration';

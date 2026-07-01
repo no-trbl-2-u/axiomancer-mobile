@@ -6,6 +6,11 @@
  *
  * Hermetic = self-contained + deterministic + isolated.
  * See docs/testing.md for the full standard.
+ *
+ * Note: legacy turn-based combat (the `state.combat` slice, `selectCombat`,
+ * `setCombatPhase`, …) was removed from the engine in mechanics 0.37.0.
+ * "In combat" is now the engine's `currentEncounter` (`selectIsInCombat`);
+ * the live card/dice combat runs in the encounter panel's local state.
  */
 
 import { afterEach, beforeEach, describe, it, expect, jest } from '@jest/globals';
@@ -15,7 +20,6 @@ import {
     getSkillById,
     initializeCombatEncounter,
     handCards,
-    selectCombat,
     selectIsInCombat,
     selectPlayer,
     selectVersion,
@@ -61,17 +65,16 @@ describe('createAppStore: happy path', () => {
         expect(selectVersion(state)).toBeGreaterThan(0);
         expect(selectPlayer(state)).toBeTruthy();
         expect(selectPlayer(state).level).toBe(1);
-        expect(selectCombat(state)).toBeNull();
         expect(selectIsInCombat(state)).toBe(false);
     });
 
     it('honours overrides supplied at construction time', () => {
         const store = createAppStore({
             adapter,
-            // World/player default; only override combat to assert the merge.
-            overrides: { combat: null },
+            // World/player default; only override moralMeter to assert the merge.
+            overrides: { moralMeter: 7 },
         });
-        expect(selectCombat(store.getState())).toBeNull();
+        expect(store.getState().moralMeter).toBe(7);
     });
 });
 
@@ -80,7 +83,7 @@ describe('createAppStore: happy path', () => {
 // ---------------------------------------------------------------------------
 
 describe('createAppActions: dispatch', () => {
-    it('startCombat transitions the store into an active combat', () => {
+    it('startCombat records an active encounter', () => {
         const store = createAppStore({ adapter });
         const actions = createAppActions(store);
 
@@ -88,11 +91,8 @@ describe('createAppActions: dispatch', () => {
 
         actions.startCombat(makeEnemy());
 
-        const combat = selectCombat(store.getState());
-        expect(combat).not.toBeNull();
         expect(selectIsInCombat(store.getState())).toBe(true);
-        expect(combat!.phase).toBe('choosing_stance');
-        expect(combat!.enemy.name).toBe('Test Lich');
+        expect(store.getState().currentEncounter?.enemies[0]?.name).toBe('Test Lich');
     });
 
     // Regression: a level-1 player's starter skills must ALL be learnable at
@@ -134,35 +134,16 @@ describe('createAppActions: dispatch', () => {
         expect(verbs).toContain('defend');
     });
 
-    it('endCombat clears the combat slice and preserves player progress', () => {
+    it('endCombat clears the active encounter and preserves player progress', () => {
         const store = createAppStore({ adapter });
         const actions = createAppActions(store);
 
         actions.startCombat(makeEnemy());
         expect(selectIsInCombat(store.getState())).toBe(true);
 
-        actions.endCombat();
-        expect(selectCombat(store.getState())).toBeNull();
+        actions.endCombat('victory');
+        expect(selectIsInCombat(store.getState())).toBe(false);
         expect(selectPlayer(store.getState())).toBeTruthy();
-    });
-
-    it('setCombatPhase advances the engine combat phase', () => {
-        const store = createAppStore({ adapter });
-        const actions = createAppActions(store);
-
-        actions.startCombat(makeEnemy());
-        expect(selectCombat(store.getState())!.phase).toBe('choosing_stance');
-
-        actions.setCombatPhase('choosing_action');
-        expect(selectCombat(store.getState())!.phase).toBe('choosing_action');
-    });
-
-    it('setCombatPhase is a no-op when no combat is active', () => {
-        const store = createAppStore({ adapter });
-        const actions = createAppActions(store);
-
-        expect(() => actions.setCombatPhase('choosing_action')).not.toThrow();
-        expect(selectCombat(store.getState())).toBeNull();
     });
 });
 
@@ -177,8 +158,7 @@ describe('persistence adapter: invocation pattern', () => {
         const saveSpy = jest.spyOn(adapter, 'save');
 
         actions.startCombat(makeEnemy());
-        actions.setCombatPhase('choosing_action');
-        actions.endCombat();
+        actions.endCombat('victory');
 
         expect(saveSpy).not.toHaveBeenCalled();
     });
@@ -217,17 +197,17 @@ describe('selectors: stability', () => {
         actions.startCombat(makeEnemy());
         const after = selectVersion(store.getState());
 
-        // Version is unrelated to combat — must be === stable.
+        // Version is unrelated to the encounter — must be === stable.
         expect(after).toBe(before);
     });
 
-    it('selectCombat returns null both before and after a complete combat cycle', () => {
+    it('selectIsInCombat is false both before and after a complete combat cycle', () => {
         const store = createAppStore({ adapter });
         const actions = createAppActions(store);
 
-        expect(selectCombat(store.getState())).toBeNull();
+        expect(selectIsInCombat(store.getState())).toBe(false);
         actions.startCombat(makeEnemy());
-        actions.endCombat();
-        expect(selectCombat(store.getState())).toBeNull();
+        actions.endCombat('victory');
+        expect(selectIsInCombat(store.getState())).toBe(false);
     });
 });

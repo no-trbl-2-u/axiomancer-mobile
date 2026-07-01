@@ -73,7 +73,6 @@ describe('DebugPlaythroughPresets', () => {
         expect(state.player.knownSkills).toEqual([]);
         expect(state.player.currency).toBe(0);
         expect(state.player.inventory).toEqual([]);
-        expect(state.combat).toBe(null);
     });
 
     it('applies endgame preset correctly', () => {
@@ -94,7 +93,6 @@ describe('DebugPlaythroughPresets', () => {
         expect(state.player.knownSkills).toContain('bootstrap-paradox');
         expect(state.player.currency).toBe(500);
         expect(state.player.inventory.length).toBeGreaterThan(0);
-        expect(state.combat).toBe(null);
     });
 
     it('updates active state when presets are applied', () => {

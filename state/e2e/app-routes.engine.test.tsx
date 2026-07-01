@@ -185,16 +185,16 @@ describe('app/index.tsx: onboarding flow', () => {
         const store = makeStore();
         const state = store.getState();
         
-        // Set up combat state and level up player
+        // Set up an active encounter (legacy `combat` slice removed in
+        // mechanics 0.37.0; `selectActiveTab` reads `currentEncounter`) and
+        // level up the player.
         act(() => {
             store.setState({
                 player: {
                     ...state.player,
                     level: 2,
                 },
-                combat: {
-                    phase: 'choose'
-                } as any
+                currentEncounter: { enemies: [] } as never,
             });
         });
         

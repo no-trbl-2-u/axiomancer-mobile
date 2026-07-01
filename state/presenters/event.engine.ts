@@ -238,8 +238,6 @@ export function selectHasActiveEvent(state: AppStoreState): boolean {
     const slice = state.event;
     if (!slice || slice.pending === null) return false;
     if (slice.pending.event.kind === 'none') return false;
-    // Q4 = Future spec: mid-combat events are out of scope.
-    if (state.combat !== null) return false;
     return true;
 }
 
@@ -359,7 +357,6 @@ function withChrome(
 // `flags` — which Zustand replaces only when they actually change. These
 // are exactly the deps the `/event` screen already memoizes on.
 let _evtEventRef: unknown;
-let _evtCombatRef: unknown;
 let _evtQuestsRef: unknown;
 let _evtFlagsRef: unknown;
 let _evtVm: EventViewModel | null = null;
@@ -372,7 +369,6 @@ export function selectEventViewModel(state: AppStoreState): EventViewModel {
     if (
         _evtVm !== null &&
         state.event === _evtEventRef &&
-        state.combat === _evtCombatRef &&
         state.quests === _evtQuestsRef &&
         state.flags === _evtFlagsRef
     ) {
@@ -380,7 +376,6 @@ export function selectEventViewModel(state: AppStoreState): EventViewModel {
     }
     const vm = computeEventViewModel(state);
     _evtEventRef = state.event;
-    _evtCombatRef = state.combat;
     _evtQuestsRef = state.quests;
     _evtFlagsRef = state.flags;
     _evtVm = vm;

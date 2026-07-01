@@ -104,90 +104,27 @@ describe('Phase 105: Engine truth stat preview', () => {
     });
 });
 
-describe('Phase 105: Engine combat resources', () => {
-    it('combat HUD reads from CombatState.combatResources when available', () => {
+// Legacy turn-based combat (and `state.combat.combatResources`) was removed
+// from the engine in mechanics 0.37.0. The persistent top-bar HUD no longer
+// reads engine combat resources, so the mana bar always shows full (1.0); the
+// former per-resource calculation cases were retired.
+describe('combat HUD mana bar', () => {
+    it('shows a full bar (no turn-based combat resources)', () => {
         const state = createTestState();
-        
-        // Set up active combat with engine combat resources
-        state.combat = {
-            active: true,
-            phase: 'choosing_stance',
-            round: 1,
-            friendshipCounter: 0,
-            player: state.player,
-            enemy: { name: 'TEST_ENEMY', health: 50, maxHealth: 50 },
-            playerChoice: {},
-            enemyChoice: {},
-            log: [],
-            combatResources: {
-                heart: 3,
-                body: 4,
-                mind: 2,
-                fallacy: 1,
-                paradox: 1,
-            },
-        } as any;
 
         const vm = selectCombatHudViewModel(state);
-        
-        // Should calculate percentage from engine resources, not legacy combatMana
-        expect(vm.manaPercent).toBeGreaterThan(0);
-        expect(vm.manaPercent).toBeLessThanOrEqual(1);
-        
-        // Total resources: 3 + 4 + 2 + 1 + 1 = 11, estimated max = 20
-        // So percentage should be 11/20 = 0.55
-        expect(vm.manaPercent).toBeCloseTo(0.55, 2);
-    });
 
-    it('combat HUD shows full bar when combat is inactive', () => {
-        const state = createTestState();
-        state.combat = null;
-
-        const vm = selectCombatHudViewModel(state);
-        
-        // Should show full bar when no combat active
         expect(vm.manaPercent).toBe(1.0);
     });
 
-    it('combat HUD handles zero resources gracefully', () => {
+    it('respects the dev override for mana hiding (full bar)', () => {
         const state = createTestState();
-        
-        state.combat = {
-            combatResources: {
-                heart: 0,
-                body: 0,
-                mind: 0,
-                fallacy: 0,
-                paradox: 0,
-            },
-        } as any;
-
-        const vm = selectCombatHudViewModel(state);
-        
-        // Should show 0 when all resources are depleted
-        expect(vm.manaPercent).toBe(0);
-    });
-
-    it('combat HUD respects dev overrides for mana hiding', () => {
-        const state = createTestState();
-        
-        state.combat = {
-            combatResources: {
-                heart: 1,
-                body: 1,
-                mind: 1,
-                fallacy: 1,
-                paradox: 1,
-            },
-        } as any;
-        
         state.devOverrides = {
             hud: { hideMana: true, hideEffects: false, hideStance: false },
         };
 
         const vm = selectCombatHudViewModel(state);
-        
-        // Should show full bar when mana is hidden via dev override
+
         expect(vm.manaPercent).toBe(1.0);
     });
 });

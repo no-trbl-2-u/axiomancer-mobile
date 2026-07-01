@@ -4,30 +4,26 @@
  * Pins:
  *   - DEV gate (true / simulated-false)
  *   - BUFF · ME applies buff_body_defense_up to player.effects
- *   - BLEED · FOE no-ops cleanly when no active combat
- *   - BLEED · FOE applies debuff_bleed to combat.enemy.effects
- *     when combat is active
- *   - Stacked presses are cumulative on the effects array
+ *
+ * The legacy `BLEED · FOE` button targeted the removed turn-based
+ * `state.combat.enemy` slice (mechanics 0.37.0) and was dropped along
+ * with its coverage.
  */
 
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
-import { createEnemy } from 'axiomancer-mechanics';
 
 import { DebugEffectApply } from '@/components/DebugEffectApply';
 import { GameStoreProvider } from '@/state/GameStoreProvider';
 import { createAppStore, type AppStore } from '@/state/store';
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
 
-let warnSpy: ReturnType<typeof jest.spyOn>;
-
 beforeEach(() => {
-    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    jest.spyOn(console, 'warn').mockImplementation(() => undefined);
 });
 
 afterEach(() => {
-    warnSpy.mockRestore();
     jest.restoreAllMocks();
 });
 
@@ -39,24 +35,11 @@ function withProvider(store: AppStore, child: React.ReactNode) {
     return <GameStoreProvider store={store}>{child}</GameStoreProvider>;
 }
 
-function makeTestEnemy() {
-    return createEnemy({
-        id: 'test-foe',
-        name: 'Test Foe',
-        description: 'A test enemy',
-        level: 1,
-        baseStats: { heart: 1, body: 1, mind: 1 },
-        mapName: 'fishing-village',
-        logic: 'random',
-    });
-}
-
 describe('DebugEffectApply: DEV gate', () => {
-    it('renders both buttons when __DEV__ is true (jest default)', () => {
+    it('renders the buff button when __DEV__ is true (jest default)', () => {
         const store = makeStore();
         const tree = render(withProvider(store, <DebugEffectApply />));
         expect(tree.queryByTestId('debug-effect-buff-player')).not.toBeNull();
-        expect(tree.queryByTestId('debug-effect-bleed-enemy')).not.toBeNull();
     });
 
     it('renders null when __DEV__ is false (production build simulation)', () => {
@@ -89,43 +72,17 @@ describe('DebugEffectApply: buff routing', () => {
     });
 });
 
-describe('DebugEffectApply: enemy debuff routing', () => {
-    it('BLEED · FOE no-ops + warns when no combat is active', () => {
-        const store = makeStore();
-        expect(store.getState().combat).toBeNull();
-
-        const tree = render(withProvider(store, <DebugEffectApply />));
-        fireEvent.press(tree.getByTestId('debug-effect-bleed-enemy'));
-
-        expect(store.getState().combat).toBeNull();
-        expect(warnSpy).toHaveBeenCalledTimes(1);
-    });
-
-    it('BLEED · FOE adds an effect to combat.enemy.effects when combat is active', () => {
-        const store = makeStore();
-        store.getState().startCombat(makeTestEnemy());
-        const enemyBefore = store.getState().combat?.enemy.effects?.length ?? 0;
-
-        const tree = render(withProvider(store, <DebugEffectApply />));
-        fireEvent.press(tree.getByTestId('debug-effect-bleed-enemy'));
-
-        const enemyAfter = store.getState().combat?.enemy.effects ?? [];
-        expect(enemyAfter.length).toBeGreaterThan(enemyBefore);
-        expect(enemyAfter.some((e) => e.effectId === 'debuff_bleed')).toBe(true);
-    });
-});
+// The legacy `BLEED · FOE` button (which mutated `state.combat.enemy`,
+// removed from the engine in mechanics 0.37.0) was dropped; its coverage
+// retired with it.
 
 describe('DebugEffectApply: accessibility', () => {
-    it('exposes accessibilityRole=button and descriptive labels', () => {
+    it('exposes accessibilityRole=button and descriptive label', () => {
         const store = makeStore();
         const tree = render(withProvider(store, <DebugEffectApply />));
 
         const buff = tree.getByTestId('debug-effect-buff-player');
         expect(buff.props.accessibilityRole).toBe('button');
         expect(buff.props.accessibilityLabel).toMatch(/buff/i);
-
-        const debuff = tree.getByTestId('debug-effect-bleed-enemy');
-        expect(debuff.props.accessibilityRole).toBe('button');
-        expect(debuff.props.accessibilityLabel).toMatch(/bleed/i);
     });
 });

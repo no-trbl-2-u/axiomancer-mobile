@@ -577,13 +577,15 @@ describe('encounter-modal seam (Tick D)', () => {
         actions.resolveCurrentMapEvent();
 
         expect(selectHasActiveEvent(store.getState() as never)).toBe(true);
-        expect((store.getState() as { combat: unknown }).combat).toBeNull();
+        // Legacy `state.combat` removed in mechanics 0.37.0; the engine now
+        // records the fight via `currentEncounter`.
+        expect(store.getState().currentEncounter).toBeUndefined();
 
         actions.pickEventChoice('fight');
 
-        // After fight: combat is live, pending event slice cleared.
+        // After fight: the engine records the encounter, pending event slice cleared.
         const after = store.getState();
-        expect((after as { combat: unknown }).combat).not.toBeNull();
+        expect(after.currentEncounter).not.toBeUndefined();
         expect(selectHasActiveEvent(after as never)).toBe(false);
     });
 
@@ -599,7 +601,7 @@ describe('encounter-modal seam (Tick D)', () => {
         actions.pickEventChoice('flee');
 
         const after = store.getState();
-        expect((after as { combat: unknown }).combat).toBeNull();
+        expect(after.currentEncounter).toBeUndefined();
         expect(selectHasActiveEvent(after as never)).toBe(false);
     });
 
@@ -609,9 +611,9 @@ describe('encounter-modal seam (Tick D)', () => {
         actions.resolveCurrentMapEvent();
         actions.pickEventChoice('fight');
 
-        // After fight commits, combat is live. selectHasActiveEvent
-        // gates on combat === null per the presenter (Q4=Future spec:
-        // no mid-combat events), so the overlay never re-mounts.
+        // After fight commits, `pickEventChoice('fight')` has cleared the
+        // pending event slice, so `selectHasActiveEvent` is false and the
+        // overlay never re-mounts.
         expect(selectHasActiveEvent(store.getState() as never)).toBe(false);
     });
 });

@@ -3,7 +3,8 @@
  *
  * Pins:
  *   - HP percent calculation from player health
- *   - Mana percent calculation from combatMana slice
+ *   - Mana bar shows full (1.0) — legacy turn-based combat resources
+ *     were removed from the engine in mechanics 0.37.0
  *   - Effects list truncation at MAX_EFFECTS_SHOWN
  *   - Dev overrides (hideMana, hideEffects, hideStance) force empty states
  */
@@ -14,7 +15,6 @@ import { selectCombatHudViewModel } from '@/state/presenters/combat-hud.engine';
 import type { AppStoreState } from '@/state/store';
 import { createAppStore } from '@/state/store';
 import { createMemoryAdapter } from '@/test-utils/memoryAdapter';
-import type { CombatState } from 'axiomancer-mechanics';
 
 function makeBaseState(): AppStoreState {
     const store = createAppStore({ adapter: createMemoryAdapter() });
@@ -51,34 +51,16 @@ describe('selectCombatHudViewModel: HP calculation', () => {
 });
 
 describe('selectCombatHudViewModel: mana calculation', () => {
-    it('returns 1.0 when combat is null (out of combat)', () => {
+    // Legacy turn-based combat (and its `state.combat.combatResources`) was
+    // removed in mechanics 0.37.0. This persistent top-bar HUD no longer has
+    // an engine combat-resources source, so the mana bar always shows full
+    // (1.0) out of combat; the live card/dice HUD renders in the encounter
+    // panel. The former in-combat mana-percent cases were retired.
+    it('returns 1.0 (full bar) with no active turn-based combat', () => {
         const state = makeBaseState();
-        state.combat = null;
 
         const vm = selectCombatHudViewModel(state);
         expect(vm.manaPercent).toBe(1.0);
-    });
-
-    it('calculates percent from combatResources when present', () => {
-        const state = makeBaseState();
-        // Mock combat state with combat resources (total = 10, estimated max = 20, so 0.5)
-        state.combat = {
-            combatResources: { heart: 2, body: 2, mind: 2, fallacy: 2, paradox: 2 }
-        } as CombatState;
-
-        const vm = selectCombatHudViewModel(state);
-        expect(vm.manaPercent).toBe(0.5);
-    });
-
-    it('returns 0 when all combat resources are 0', () => {
-        const state = makeBaseState();
-        // Mock combat state with zero resources
-        state.combat = {
-            combatResources: { heart: 0, body: 0, mind: 0, fallacy: 0, paradox: 0 }
-        } as CombatState;
-
-        const vm = selectCombatHudViewModel(state);
-        expect(vm.manaPercent).toBe(0);
     });
 });
 
@@ -152,9 +134,6 @@ describe('selectCombatHudViewModel: dev overrides (Phase 87)', () => {
 
     it('overrides work independently — can hide multiple elements', () => {
         const state = makeBaseState();
-        state.combat = {
-            combatResources: { heart: 10, body: 10, mind: 0, fallacy: 0, paradox: 0 }
-        } as CombatState;
         state.player.effects = [{ effectId: 'test', intensity: 1, remainingDuration: 2, appliedAt: 0, tier: 1 }];
         state.devOverrides = {
             hud: { hideMana: true, hideEffects: true, hideStance: false },
@@ -168,11 +147,9 @@ describe('selectCombatHudViewModel: dev overrides (Phase 87)', () => {
     it('works when devOverrides is missing (defensive)', () => {
         const state = makeBaseState();
         delete (state as any).devOverrides; // Simulate old state
-        state.combat = {
-            combatResources: { heart: 5, body: 5, mind: 0, fallacy: 0, paradox: 0 }
-        } as CombatState;
 
         const vm = selectCombatHudViewModel(state);
-        expect(vm.manaPercent).toBe(0.5); // Normal calculation
+        // No turn-based combat resources → full bar.
+        expect(vm.manaPercent).toBe(1.0);
     });
 });

@@ -10,7 +10,6 @@ import {
     createEnemy,
     isCombatStartedEvent,
     isCombatEndedEvent,
-    isCombatRoundEvent,
     type TypedGameEvent,
 } from 'axiomancer-mechanics';
 
@@ -104,7 +103,7 @@ describe('engine-events: ring buffer feeds on engine dispatch', () => {
         // unit under test.
         for (let i = 0; i < RECENT_EVENTS_CAPACITY + 5; i++) {
             emitter!.emit({
-                type: 'combat:round',
+                type: 'combat:started',
                 payload: { state: store.getState() } as never,
             });
         }
@@ -119,7 +118,7 @@ describe('engine-events: ring buffer feeds on engine dispatch', () => {
 
         for (let i = 0; i < 10; i++) {
             emitter!.emit({
-                type: 'combat:round',
+                type: 'combat:started',
                 payload: { state: store.getState() } as never,
             });
         }
@@ -147,18 +146,9 @@ describe('engine-events: is*Event guards narrow correctly', () => {
         }
     });
 
-    it('isCombatRoundEvent fires for synthetic combat:round emissions', () => {
-        const store = createAppStore({ adapter: createMemoryAdapter() });
-        const emitter = getEmitterForStore(store);
-        emitter!.emit({
-            type: 'combat:round',
-            payload: { state: store.getState() } as never,
-        });
-
-        const events = selectRecentEngineEvents(store.getState());
-        const round = events.find(isCombatRoundEvent);
-        expect(round?.type).toBe('combat:round');
-    });
+    // The former `isCombatRoundEvent` guard + `combat:round` event were
+    // removed with legacy turn-based combat in mechanics 0.37.0. The
+    // corresponding narrowing test was retired.
 });
 
 describe('engine-events: presenter invariants', () => {

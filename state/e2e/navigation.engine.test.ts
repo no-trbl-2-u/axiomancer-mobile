@@ -53,9 +53,9 @@ describe('navigation.engine', () => {
         it('returns exploration when combat ends', () => {
             const store = createGameStore(createMemoryAdapter());
             
-            // Start then end combat
+            // Start then end combat (engine `endCombat` now requires an outcome)
             store.getState().startCombat(makeEnemy());
-            store.getState().endCombat();
+            store.getState().endCombat('victory');
             
             const result = selectActiveTab(store.getState());
             expect(result).toBe('exploration');
@@ -191,23 +191,11 @@ describe('navigation.engine', () => {
             expect(result.character?.kind).toBe('levelup');
         });
 
-        it('suppresses the event badge while combat is active (engine short-circuit)', () => {
-            const store: AppStore = createAppStore({ adapter: createMemoryAdapter() });
-            store.setState({
-                combat: { phase: 'choose' } as never,
-                event: {
-                    ...EMPTY_EVENT_SLICE,
-                    pending: {
-                        state: undefined as never,
-                        event: { kind: 'rest', healed: 1, healFraction: 1 },
-                    },
-                },
-            });
-
-            const result = selectTabBadges(store.getState());
-
-            expect(result.character).toBeNull();
-        });
+        // The former "suppresses the event badge while combat is active"
+        // test pinned `selectHasActiveEvent`'s short-circuit on the legacy
+        // `state.combat` slice, removed from the engine in mechanics 0.37.0.
+        // With no turn-based combat slice, mid-combat event suppression is
+        // no longer a concept, so the test was retired.
     });
 
     describe('selectNavigationViewModel', () => {

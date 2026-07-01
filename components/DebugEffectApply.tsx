@@ -1,23 +1,14 @@
 /**
  * Dev-only active-effect apply affordance (Phase 61e).
  *
- * Two buttons inside the DevMenu:
+ *   - `BUFF · ME` applies `buff_body_defense_up` to `player.effects`
+ *     via the engine's `applyEffect` helper. Visible on the SELF tab's
+ *     effects section.
  *
- *   - `BUFF PLAYER` applies `buff_body_defense_up` to
- *     `player.effects` via the engine's `applyEffect` helper.
- *     Visible on the SELF tab's effects section + on the combat
- *     HUD's effect chips when combat is active.
- *   - `BLEED ENEMY` applies `debuff_bleed` to the current
- *     encounter's first enemy (engine 0.10.2 normalized
- *     Encounter shape, Phase 60b). No-ops cleanly when no
- *     combat is active (logs a console.warn in dev so the user
- *     knows to start combat first).
- *
- * Effect IDs are static per row — full picker UI is out of
- * scope for the dev affordance. Picks reflect a clean buff
- * (defense up) and a recognizable DoT debuff (bleed) so the
- * effect chips render with distinguishable copy on the
- * presenter surfaces.
+ * The former `BLEED · FOE` button targeted the legacy turn-based
+ * `state.combat.enemy`, which was removed from the engine in mechanics
+ * 0.37.0 (live hazard combat owns its enemy in the panel's local
+ * state, unreachable from the store), so it was dropped.
  *
  * Renders null in production.
  */
@@ -32,7 +23,6 @@ import { FONTS } from '@/theme/axm';
 import { makeStyles } from '@/theme/runtime';
 
 const PLAYER_BUFF_ID = 'buff_body_defense_up';
-const ENEMY_DEBUFF_ID = 'debuff_bleed';
 
 export function DebugEffectApply() {
     const styles = useStyles();
@@ -44,40 +34,14 @@ export function DebugEffectApply() {
         const effect = effectsLibrary.registry.get(PLAYER_BUFF_ID);
         if (!effect) return;
         const player = store.getState().player;
-        const round = store.getState().combat?.round ?? 0;
         const { activeEffects } = applyEffect(
             [...(player.effects ?? [])],
             effect,
-            round,
+            0,
         );
-         
+
         store.setState({
             player: { ...player, effects: activeEffects },
-        });
-    };
-
-    const onBleedEnemy = () => {
-        const effect = effectsLibrary.registry.get(ENEMY_DEBUFF_ID);
-        if (!effect) return;
-        const combat = store.getState().combat;
-        if (!combat || !combat.enemy) {
-            // No active combat — dev-only escape hatch can't reach an enemy.
-            if (__DEV__) {
-                console.warn('DebugEffectApply: no active combat enemy to debuff.');
-            }
-            return;
-        }
-        const enemy = combat.enemy;
-        const round = combat.round ?? 0;
-        const { activeEffects } = applyEffect(
-            [...(enemy.effects ?? [])],
-            effect,
-            round,
-        );
-        const nextEnemy = { ...enemy, effects: activeEffects };
-         
-        store.setState({
-            combat: { ...combat, enemy: nextEnemy },
         });
     };
 
@@ -85,7 +49,7 @@ export function DebugEffectApply() {
         <View style={styles.row}>
             <View style={styles.labelCol}>
                 <Text style={styles.label}>DEBUG · EFFECTS</Text>
-                <Text style={styles.sub}>apply a buff / debuff</Text>
+                <Text style={styles.sub}>apply a buff</Text>
             </View>
             <View style={styles.buttonGroup}>
                 <Pressable
@@ -96,15 +60,6 @@ export function DebugEffectApply() {
                     testID="debug-effect-buff-player"
                 >
                     <Text style={styles.buttonLabel}>BUFF · ME</Text>
-                </Pressable>
-                <Pressable
-                    style={styles.button}
-                    onPress={onBleedEnemy}
-                    accessibilityRole="button"
-                    accessibilityLabel="Apply bleed to the current combat enemy"
-                    testID="debug-effect-bleed-enemy"
-                >
-                    <Text style={styles.buttonLabel}>BLEED · FOE</Text>
                 </Pressable>
             </View>
         </View>

@@ -98,17 +98,15 @@ export default function TabLayout() {
   // screen pattern.
   const player = useGameState((s) => s.player);
   const eventSlice = useGameState((s) => s.event);
-  const combat = useGameState((s) => s.combat);
   const notifications = useGameState((s) => s.notifications);
   const badges = useMemo(
     () =>
       selectTabBadges({
         player,
         event: eventSlice,
-        combat,
         notifications,
       } as never),
-    [player, eventSlice, combat, notifications],
+    [player, eventSlice, notifications],
   );
 
   // Phase 63c+ (2026-05-21) — hard-stop the tab bar while the

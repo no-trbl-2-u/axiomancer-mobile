@@ -126,16 +126,15 @@ export default function EventScreen() {
     // would loop useSyncExternalStore if used directly as a selector.
     // The screen pulls the underlying slices and memos the VM downstream.
     const slice = useGameState((s) => s.event);
-    const combat = useGameState((s) => s.combat);
     const quests = useGameState((s) => s.quests);
     const flags = useGameState((s) => s.flags);
     const vm = useMemo(
-        () => selectEventViewModel({ event: slice, combat, quests, flags } as never),
-        [slice, combat, quests, flags],
+        () => selectEventViewModel({ event: slice, quests, flags } as never),
+        [slice, quests, flags],
     );
     const hasEvent = useMemo(
-        () => selectHasActiveEvent({ event: slice, combat } as never),
-        [slice, combat],
+        () => selectHasActiveEvent({ event: slice } as never),
+        [slice],
     );
     const actions = useGameActions();
     const router = useRouter();

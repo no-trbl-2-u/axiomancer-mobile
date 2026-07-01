@@ -46,10 +46,11 @@ describe('integration: new player journey — fresh state through first encounte
         // Fresh state characteristics:
         // - Player at level 1
         expect(state.player?.level).toBe(1);
-        
-        // - No combat in progress
-        expect(state.combat).toBeNull();
-        
+
+        // - No encounter in progress (legacy `state.combat` removed in
+        //   mechanics 0.37.0; the engine now signals via `currentEncounter`)
+        expect(state.currentEncounter).toBeUndefined();
+
         // - No pending events
         expect(state.event?.pending).toBeNull();
         

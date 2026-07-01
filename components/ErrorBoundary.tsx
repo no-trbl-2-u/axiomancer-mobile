@@ -240,7 +240,6 @@ function ErrorScreen({ error, componentStack, onReset }: ErrorScreenProps) {
  */
 function useStateSnapshot(): string {
     const player = useGameState((s) => s.player);
-    const combat = useGameState((s) => s.combat);
     const world = useGameState((s) => s.world);
     const recentEvents = useGameState((s) => s._recentEvents);
 
@@ -253,16 +252,6 @@ function useStateSnapshot(): string {
                   maxHealth: player.maxHealth,
                   experience: player.experience,
                   inventoryCount: Array.isArray(player.inventory) ? player.inventory.length : 0,
-              }
-            : null,
-        combat: combat
-            ? {
-                  phase: combat.phase,
-                  round: combat.round,
-                  enemyName: combat.enemy?.name,
-                  enemyHp: combat.enemy?.health,
-                  playerHp: combat.player?.health,
-                  friendshipCounter: combat.friendshipCounter,
               }
             : null,
         world: world?.currentMap

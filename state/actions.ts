@@ -19,26 +19,19 @@
  */
 
 import {
-    appendLog as combatAppendLog,
     applyDialogueChoice,
     buyItem as engineBuyItem,
-    applyEffect as engineApplyEffect,
     buildCharacterFromPreset,
     calculateSkillDamage,
     defaultAlignment,
     getAvailableSkills,
     learnSkill as engineLearnSkill,
-    lookupEffect,
-    setPhase as combatSetPhase,
-    setPlayerAction as combatSetPlayerAction,
-    setPlayerStance as combatSetPlayerStance,
     changeMap as worldChangeMap,
     completeNode as worldCompleteNode,
     consumableLibrary,
     equipmentTemplates,
     uniqueTemplates,
     createMapState,
-    endCombat,
     equipItem as engineEquipItem,
     unequipItem as engineUnequipItem,
     getDialogueNode,
@@ -48,17 +41,13 @@ import {
     getPresetById,
     getSkillById,
     healCharacter,
-    incrementFriendship as combatIncrementFriendship,
     isConsumable,
     isEquipment,
     markNodeConsumed,
     resolveMapEvent,
     revealAdjacent,
     unlockNode as worldUnlockNode,
-    type BattleLogEntry,
     type Character,
-    type CombatPhase,
-    type CombatState,
     type GameStore,
     type Consumable,
     type DialogueChoice,
@@ -73,7 +62,6 @@ import {
     type PhilosophicalAlignment,
     type ResolveMapEventResult,
     type Skill,
-    type Stance,
     type WorldState,
 } from 'axiomancer-mechanics';
 
@@ -97,8 +85,6 @@ import {
     abandonHazardAction,
     acknowledgeHazardOutcomeAction,
     applyHazardDeckPresetAction,
-    HAZARD_HEXED_FLAG,
-    HAZARD_TOKEN_FLAG_PREFIX,
     applyHazardCardAction,
     beginHazardAction,
     chooseHazardCardKeyAction,
@@ -203,18 +189,6 @@ import {
  */
 export type CombatEndReport = ReturnType<GameStore['endCombat']>;
 
-export type CombatActionKey = 'attack' | 'defend' | 'skill' | 'item';
-
-/** Severity buckets the screen uses to colour log lines. */
-export type LogSeverityKey =
-    | 'info'
-    | 'damage'
-    | 'crit'
-    | 'heal'
-    | 'effect'
-    | 'friendship'
-    | 'system';
-
 export interface MoveToResult {
     /** True when the engine state was advanced. */
     moved: boolean;
@@ -284,14 +258,16 @@ export interface AppActions {
      * shift, narrative) read it off the return value; legacy callers
      * that ignore the return value remain compatible.
      */
-    endCombat: () => CombatEndReport | null;
-    setCombatPhase: (phase: CombatPhase) => void;
-    /** Sets the player's committed stance for the round. */
-    setPlayerStance: (stance: Stance) => void;
-    /** Sets the player's committed action (`'attack' | 'defend' | 'skill'`). */
-    setPlayerAction: (action: CombatActionKey, skillId?: string) => void;
-    /** Transitions phase back to `choosing_stance` and bumps the round. */
-    nextRound: () => void;
+    /**
+     * Legacy engine `endCombat` bridge (Phase 78). The live hazard
+     * encounter applies its own spoils; this store-level action forwards
+     * an outcome to the engine's `endCombat` method (which now requires
+     * an explicit outcome) and surfaces the resulting `CombatEndReport`
+     * (XP, loot, friendship codex unlock). Defaults to `'flee'` (no
+     * reward) when called with no argument. Returns `null` outside an
+     * encounter.
+     */
+    endCombat: (outcome?: CombatEndReport['outcome']) => CombatEndReport | null;
     addItem: (item: Item) => void;
     removeItem: (itemId: string) => void;
     useConsumable: (itemId: string) => void;
@@ -463,10 +439,6 @@ export interface AppActions {
     pickEventChoice: (choiceId: string) => void;
     /** Clear the pending event without dispatching any engine call. */
     dismissEvent: () => void;
-    /** Phase 103 — Choose spare/befriend path in mercy choice modal. */
-    spareMercyChoice: () => void;
-    /** Phase 103 — Choose exploit/critical path in mercy choice modal. */
-    exploitMercyChoice: () => void;
 
     // -----------------------------------------------------------------
     // Hazard minigame (engine: axiomancer-mechanics World/Hazard). The pure
@@ -662,70 +634,6 @@ export interface UseItemResult {
 }
 
 // ---------------------------------------------------------------------------
-// Hazard ⇄ combat bridges (one-economy pass)
-//
-// Hazards and combat share one economy: what a hazard leaves behind
-// (a curse, banked tokens) lands in the next combat, what a combat
-// leaves behind (unspent tokens, spoils) feeds the run. All of it
-// rides `GameState.flags`, so it persists with the save like the
-// hazard deck does.
-// ---------------------------------------------------------------------------
-
-/**
- * Fires once per combat, right after the engine's `startCombat` snapshots the
- * player. Bridges the HAZARD minigame's lingering omens into combat — a
- * hazard→combat hand-off the engine does NOT own:
- *
- *  - `hazard-hexed` → Allais' Curse (`debuff_hex`) opens on the player. The
- *    hazard's curse consequence lands where its catalogue copy promised:
- *    "Begin your next combat with a hostile Curse die."
- *  - `hazard-token-banked:*` → +1 PARADOX each in `combatResources`.
- *
- * Cross-combat RESOURCE CARRY is no longer applied here — the engine owns it,
- * folding any carried skill-fuel into the combat seed inside its own reducer.
- * Re-applying a client carry would double-count it.
- */
-function applyCombatStartBridges(store: AppStore): void {
-    const state = store.getState();
-    const combat = state.combat;
-    if (!combat) return;
-    const flags = ((state as unknown as GameState).flags ?? []).slice();
-
-    const hexed = flags.includes(HAZARD_HEXED_FLAG);
-    const bankedParadox = flags.filter((f) => f.startsWith(HAZARD_TOKEN_FLAG_PREFIX)).length;
-    if (!hexed && bankedParadox === 0) return;
-
-    let next: CombatState = combat;
-
-    if (hexed) {
-        const hex = lookupEffect('debuff_hex');
-        if (hex) {
-            const applied = engineApplyEffect(next.player.effects ?? [], hex, next.round ?? 1);
-            next = { ...next, player: { ...next.player, effects: applied.activeEffects } };
-            next = pushLog(
-                next,
-                'effect',
-                "The hazard's hex followed you here — Allais' Curse settles on your shoulders.",
-            );
-        }
-    }
-
-    if (bankedParadox > 0) {
-        const resources = {
-            ...next.combatResources,
-            paradox: (next.combatResources.paradox ?? 0) + bankedParadox,
-        };
-        next = { ...next, combatResources: resources };
-        next = pushLog(next, 'system', `Banked paradox answers the call — +${bankedParadox} PARADOX.`);
-    }
-
-    const nextFlags = flags.filter(
-        (f) => f !== HAZARD_HEXED_FLAG && !f.startsWith(HAZARD_TOKEN_FLAG_PREFIX),
-    );
-    store.setState({ combat: next, flags: nextFlags } as never);
-}
-
-// ---------------------------------------------------------------------------
 // Skill learning (level-up picks)
 // ---------------------------------------------------------------------------
 
@@ -858,31 +766,6 @@ function learnSkillAction(store: AppStore, skillId: string): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Log + resolve summary helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Mobile-side free-text log entry. Engine `BattleLogEntry`
- * (`Combat/types.d.ts:16-30`) is the structured round-resolution
- * record (round, playerAction, advantage, rolls, damage, …); mobile
- * pushes ad-hoc text entries through the same engine reducer for
- * the combat-log surface. The presenter filters
- * (`combat.engine.ts:1131-1133` — "Skip pure metadata entries") so
- * both shapes coexist at runtime; declaring the mobile shape here
- * keeps the boundary findable.
- */
-type MobileLogEntry = { readonly severity: LogSeverityKey; readonly text: string };
-
-function pushLog(
-    combat: CombatState,
-    severity: LogSeverityKey,
-    text: string,
-): CombatState {
-    const entry: MobileLogEntry = { severity, text };
-    return combatAppendLog(combat, entry as unknown as BattleLogEntry);
-}
-
-// ---------------------------------------------------------------------------
 // Action creators
 // ---------------------------------------------------------------------------
 
@@ -890,15 +773,11 @@ export function createAppActions(store: AppStore): AppActions {
     return {
         startCombat: (enemy) => {
             // Starter skills must exist BEFORE the engine snapshots the
-            // player into the combat slice — the picker and the engine
-            // both read the snapshot's knownSkills.
+            // player — the picker and the engine both read the
+            // snapshot's knownSkills. The engine's `startCombat` records
+            // the encounter (`currentEncounter`) and fires `combat:started`.
             ensureStarterSkills(store);
             store.getState().startCombat(enemy);
-            // The engine seeds combat resources (incl. carried fallacy/paradox)
-            // in its reducer; the client only bridges the hazard omens in.
-            if (store.getState().combat !== null) {
-                applyCombatStartBridges(store);
-            }
         },
         beginHazardEncounter: () => {
             // Live map encounters now run the new hazard-pattern combat
@@ -917,56 +796,17 @@ export function createAppActions(store: AppStore): AppActions {
             clearEventSlice(store);
             return enemy;
         },
-        endCombat: () => {
+        endCombat: (outcome) => {
             // Cross-combat resource carry is engine-owned now (the reducer's
             // END_COMBAT banks unspent philosophical resources onto the player
             // and folds them into the next combat's seed) — no client carry.
             // Phase 78 — surface the engine `CombatEndReport` so callers can
             // read post-combat metadata (codex unlock, alignment shift,
-            // narrative). Engine returns a stub 'flee' report when called
-            // outside combat; we still forward it.
-            const report = store.getState().endCombat();
+            // narrative). The engine `endCombat` now requires an explicit
+            // outcome; default to `'flee'` (no reward) when unspecified. It
+            // returns a stub 'flee' report when called outside an encounter.
+            const report = store.getState().endCombat(outcome ?? 'flee');
             return report ?? null;
-        },
-        setCombatPhase: (phase) => {
-            const { combat, updateCombat } = store.getState();
-            if (!combat) return;
-            updateCombat(combatSetPhase(combat, phase));
-        },
-        setPlayerStance: (stance) => {
-            const { combat, updateCombat } = store.getState();
-            if (!combat) return;
-            updateCombat(combatSetPlayerStance(combat, stance));
-        },
-        setPlayerAction: (action, skillId) => {
-            const { combat, updateCombat } = store.getState();
-            if (!combat) return;
-            // Mobile `CombatActionKey` is a strict subset of engine
-            // `Action` (no 'flee'); the engine signature accepts
-            // it directly. Engine `CombatAction.skillId?: string` is
-            // a typed field — closes [2.5] combat-audit row 10 (the
-            // earlier triplet of `as any` casts dated to before the
-            // engine type exposed skillId; today they're all clean).
-            const withAction = combatSetPlayerAction(combat, action);
-            const finalCombat: CombatState = skillId
-                ? {
-                    ...withAction,
-                    playerChoice: {
-                        ...withAction.playerChoice,
-                        skillId,
-                    },
-                }
-                : withAction;
-            updateCombat(finalCombat);
-        },
-        nextRound: () => {
-            const { combat, updateCombat } = store.getState();
-            if (!combat) return;
-            const cleared: CombatState = {
-                ...combat,
-                playerChoice: {},
-            };
-            updateCombat(combatSetPhase(cleared, 'choosing_stance'));
         },
         // Action creators used elsewhere — wired here for completeness.
         addItem: (item) => store.getState().addItem(item),
@@ -1024,8 +864,6 @@ export function createAppActions(store: AppStore): AppActions {
         resolveCurrentMapEvent: (sourceNodeType?: string) => resolveCurrentMapEventAction(store, sourceNodeType),
         pickEventChoice: (choiceId) => pickEventChoiceAction(store, choiceId),
         dismissEvent: () => dismissEventAction(store),
-        spareMercyChoice: () => spareMercyChoiceAction(store),
-        exploitMercyChoice: () => exploitMercyChoiceAction(store),
         beginHazard: (options) => beginHazardAction(store, options),
         selectHazardRoute: (route) => selectHazardRouteAction(store, route),
         finishHazardRolling: () => finishHazardRollingAction(store),
@@ -1243,13 +1081,6 @@ function dropItemAction(store: AppStore, itemId: string): void {
     // depth here for direct dispatch.
     if (target.category === 'quest-item') return;
     store.getState().removeItem(itemId);
-}
-
-// Re-export the friendship reducer as a no-arg incrementer for tests
-// that want to drive the friendship win condition without rolling
-// through `resolveRound` repeatedly.
-export function incrementCombatFriendship(combat: CombatState): CombatState {
-    return combatIncrementFriendship(combat);
 }
 
 // ---------------------------------------------------------------------------
@@ -1577,9 +1408,6 @@ function applyCharacterPresetAction(
 function resolveCurrentMapEventAction(store: AppStore, sourceNodeType?: string): boolean {
     try {
         const state = store.getState();
-        // Spec 08 Q4 = Future spec: do not stack events on top of combat.
-        if (state.combat !== null) return false;
-
         const gameState = state as unknown as GameState;
         const result: ResolveMapEventResult = resolveMapEvent(gameState);
 
@@ -1754,11 +1582,6 @@ function pickEventChoiceAction(store: AppStore, choiceId: string): void {
                     const enemy = processed.encounter.enemies[0];
                     ensureStarterSkills(store);
                     store.getState().startCombat(enemy);
-                    // Bridge hazard omens into the freshly-seeded combat
-                    // (matches the direct `actions.startCombat` branch above).
-                    if (store.getState().combat !== null) {
-                        applyCombatStartBridges(store);
-                    }
                     clearEventSlice(store);
                 } catch (error) {
                     console.error('Failed to start combat from encounter:', error);
@@ -1900,57 +1723,3 @@ function buyVillageWareAction(store: AppStore, itemId: string): boolean {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Mercy choice action implementations (Phase 103)
-// ---------------------------------------------------------------------------
-
-/**
- * Phase 106 — Handle spare/befriend choice using engine truth only.
- * 
- * Updated to use mechanics 0.14.0 endCombat() / engine outcome flow
- * instead of removed endCombatWithFriendship function.
- */
-function spareMercyChoiceAction(store: AppStore): void {
-    const { combat } = store.getState();
-    if (!combat) return;
-
-    // Phase 106 — Use engine's endCombat mechanism with friendship outcome
-    // Log the mercy choice for battle log first
-    const logEntry: MobileLogEntry = { severity: 'friendship', text: "You choose mercy. The heart's path is taken." };
-    const combatWithLog = combatAppendLog(combat, logEntry as unknown as BattleLogEntry);
-    
-    // Apply engine endCombat with friendship outcome
-    const endedCombat = endCombat(combatWithLog);
-    
-    store.setState({
-        combat: endedCombat
-    });
-}
-
-/**
- * Phase 108 — Handle exploit choice using engine truth only.
- * 
- * Implements exploit mercy choice by logging the choice and returning to combat.
- * The guaranteed critical effect would be implemented by the engine when 
- * selectMercyChoice export becomes available.
- */
-function exploitMercyChoiceAction(store: AppStore): void {
-    const { combat } = store.getState();
-    if (!combat) return;
-
-    // Log the mercy exploit choice
-    const logEntry: MobileLogEntry = { 
-        severity: 'crit', 
-        text: "You seize the opening. A critical strike is assured." 
-    };
-    const combatWithLog = combatAppendLog(combat, logEntry as unknown as BattleLogEntry);
-    
-    // Set mercy choice as inactive and return to action selection
-    store.setState({
-        combat: {
-            ...combatWithLog,
-            mercyChoiceActive: false,
-            phase: 'choosing_action'
-        }
-    });
-}

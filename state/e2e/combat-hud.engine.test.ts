@@ -11,10 +11,8 @@ import {
     createNewGameState,
     createCharacter,
     createEnemy,
-    randomLogic,
     applyEffect,
     effectsLibrary,
-    initializeCombat,
     createGameStore,
     nullAdapter,
 } from 'axiomancer-mechanics';
@@ -56,34 +54,23 @@ function makeEnemy() {
 
 /**
  * Build a `state`-shaped fixture (engine GameState + mobile slices).
- * Phase 106 — combat resources now read from engine `CombatState.combatResources`
- * instead of mobile-only `combatMana` slice. Tests that want specific resource
- * values pass the combatResources explicitly; the default of `null` reflects
- * "no active combat" which the presenter treats as a full bar (1.0).
+ * Legacy turn-based combat (and its `state.combat.combatResources`) was
+ * removed from the engine in mechanics 0.37.0, so this persistent top-bar
+ * HUD reads only the overworld player; the mana bar always shows full (1.0).
  */
 function stateWith(
     playerOverrides: Partial<ReturnType<typeof createCharacter>> = {},
-    combatResourcesOverride: { heart: number; body: number; mind: number; fallacy: number; paradox: number } | null = null,
 ): AppStoreState {
     const base = createNewGameState();
     // GameState + mobile slices is enough to satisfy AppStoreState
     // for selector-only tests; GameActions are not invoked here.
-    const state = {
+    return {
         ...base,
         player: makePlayer(playerOverrides),
         event: EMPTY_EVENT_SLICE,
         notifications: DEFAULT_NOTIFICATIONS_SLICE,
         _recentEvents: [],
     } as unknown as AppStoreState;
-
-    // If combat resources are provided, mock a combat state
-    if (combatResourcesOverride) {
-        state.combat = {
-            combatResources: combatResourcesOverride
-        } as any;
-    }
-
-    return state;
 }
 
 // ---------------------------------------------------------------------------
@@ -91,18 +78,14 @@ function stateWith(
 // ---------------------------------------------------------------------------
 
 describe('selectCombatHudViewModel: happy path', () => {
-    it('returns 1.0 for both percents when player is at full HP and resources', () => {
+    it('returns 1.0 for both percents when player is at full HP', () => {
         const player = makePlayer();
-        // Phase 106 — combat resources from engine CombatState.combatResources
-        // Total = 20, estimated max = 20, so manaPercent = 1.0
-        const state = stateWith(
-            { health: player.maxHealth },
-            { heart: 4, body: 4, mind: 4, fallacy: 4, paradox: 4 },
-        );
+        const state = stateWith({ health: player.maxHealth });
 
         const vm = selectCombatHudViewModel(state);
 
         expect(vm.hpPercent).toBe(1);
+        // Mana bar is always full (no turn-based combat resources).
         expect(vm.manaPercent).toBe(1);
     });
 
@@ -128,15 +111,9 @@ describe('selectCombatHudViewModel: boundary conditions', () => {
         expect(vm.hpPercent).toBe(0);
     });
 
-    it('clamps manaPercent to 0 when all combat resources are 0', () => {
-        // Phase 106 — combat resources from engine CombatState.combatResources
-        // All zero resources should result in manaPercent = 0
-        const state = stateWith({}, { heart: 0, body: 0, mind: 0, fallacy: 0, paradox: 0 });
-
-        const vm = selectCombatHudViewModel(state);
-
-        expect(vm.manaPercent).toBe(0);
-    });
+    // The former "clamps manaPercent to 0 when all combat resources are 0"
+    // test pinned the removed `state.combat.combatResources` calculation
+    // (mechanics 0.37.0). The mana bar is now always full, so it was retired.
 
     it('clamps hpPercent to 1 even when health exceeds maxHealth', () => {
         const player = makePlayer();
@@ -224,27 +201,16 @@ describe('selectCombatHudViewModel: effects', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Presenter — reads from in-combat snapshot
+// Presenter — reads the overworld player
 // ---------------------------------------------------------------------------
 
-describe('selectCombatHudViewModel: in-combat player snapshot', () => {
-    it('reads HP from the combat player when combat is active, not from the out-of-combat player', () => {
-        mockAlternatingRng();
+// The former "in-combat player snapshot" test read HP from the removed
+// `state.combat.player` slice (mechanics 0.37.0). Live card/dice combat owns
+// its HUD in the encounter panel; this persistent top-bar HUD always reflects
+// the overworld player, covered by the case below.
 
-        const state = stateWith();
-        const enemy = makeEnemy();
-        const combat = initializeCombat(state.player, enemy);
-
-        const damagedCombatPlayer = { ...combat.player, health: Math.floor(combat.player.maxHealth / 2) };
-        const inCombatState: AppStoreState = { ...state, combat: { ...combat, player: damagedCombatPlayer } };
-
-        const vm = selectCombatHudViewModel(inCombatState);
-
-        // The out-of-combat player is at full HP; the combat snapshot has half HP.
-        expect(vm.hpPercent).toBeCloseTo(0.5, 1);
-    });
-
-    it('falls back to out-of-combat player when no combat is active', () => {
+describe('selectCombatHudViewModel: reads the overworld player', () => {
+    it('reflects the overworld player HP (no turn-based combat slice)', () => {
         const state = stateWith();
 
         const vm = selectCombatHudViewModel(state);
@@ -281,7 +247,7 @@ describe('engine store lifecycle', () => {
         expect(adapter.saveCount).toBe(1);
     });
 
-    it('the presenter reflects in-combat state after startCombat', () => {
+    it('the presenter reflects the player after startCombat', () => {
         mockAlternatingRng();
         const adapter = createMemoryAdapter();
         const store = createAppStore({ adapter });
@@ -289,13 +255,9 @@ describe('engine store lifecycle', () => {
         store.getState().startCombat(makeEnemy());
         const vm = selectCombatHudViewModel(store.getState());
 
-        // Fresh combat; player entered at full HP.
+        // Player at full HP; mana bar always full (no turn-based combat slice).
         expect(vm.hpPercent).toBe(1);
-        
-        // Phase 106: In mechanics 0.14.0, combat starts with zero resources
-        // This reflects the engine's resource generation system where resources
-        // are generated during combat actions, not pre-allocated.
-        expect(vm.manaPercent).toBe(0);
+        expect(vm.manaPercent).toBe(1);
     });
 
     it('a new store reloads saved state from the adapter', () => {
@@ -311,6 +273,8 @@ describe('engine store lifecycle', () => {
     it('nullAdapter.load returns null so the store starts a fresh game', () => {
         const store = createGameStore(nullAdapter);
 
-        expect(store.getState().combat).toBeNull();
+        // Legacy `state.combat` removed in mechanics 0.37.0; a fresh game
+        // has no active encounter.
+        expect(store.getState().currentEncounter).toBeUndefined();
     });
 });

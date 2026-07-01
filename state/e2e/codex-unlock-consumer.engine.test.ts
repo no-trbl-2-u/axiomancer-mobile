@@ -2,10 +2,16 @@
  * Phase 78 — codex / journal-entry consumer pins.
  *
  * Asserts:
- * - `actions.endCombat()` returns the engine `CombatEndReport`.
- * - The report's `friendshipReward.codexEntryUnlocked` field
- *   populates on first friendship with an enemy that has
- *   `journalEntry`; absent on repeat friendships.
+ * - `actions.endCombat(outcome)` returns the engine `CombatEndReport`.
+ * - The report's `friendshipReward.codexEntryUnlocked` field populates on
+ *   first friendship with an enemy that has `journalEntry`; absent on repeat
+ *   friendships and on non-friendship outcomes.
+ *
+ * Legacy turn-based combat (the `state.combat` slice, its friendship
+ * counter) was removed from the engine in mechanics 0.37.0. The engine's
+ * `endCombat` now takes an explicit outcome and reads the recorded
+ * `currentEncounter` (set by `startCombat`) — so these pins drive the
+ * outcome directly rather than manipulating a combat slice.
  */
 
 import { describe, expect, it } from '@jest/globals';
@@ -49,66 +55,32 @@ function makeFriendlyEnemy(journalEntryBody?: string) {
     } as unknown as Enemy;
 }
 
-function forceFriendshipExit(store: ReturnType<typeof createAppStore>): void {
-    // Engine `endCombat` decides the outcome from combat slice state.
-    // `friendship` requires `isFriendshipEligible(combat)` to be true,
-    // which checks the friendship counter against the cap. Simplest
-    // path: drive the counter to max via `incrementFriendship` rounds.
-    // For a hermetic test, we just slam the counter to the cap via
-    // a direct setState — the engine reads the counter, not the
-    // history.
-    const s = store.getState();
-    if (s.combat === null) return;
-    store.setState({
-        combat: {
-            ...s.combat,
-            friendshipCounter: 100,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-    });
-}
-
 describe('actions.endCombat: returns engine CombatEndReport (Phase 78)', () => {
-    it('returns a report with outcome=flee when friendship counter is forced (0.15.0 behavior)', () => {
+    it('returns a friendship report that unlocks the foe codex entry on first friendship', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
         actions.startCombat(makeFriendlyEnemy('a long body about the test foe.'));
-        forceFriendshipExit(store);
-        // Phase 112: mechanics 0.15.0 hardened Befriend/mercy authority.
-        // The engine now requires proper mercy choice flow rather than
-        // just friendship counter manipulation for friendship outcomes.
-        const report = actions.endCombat();
+        const report = actions.endCombat('friendship');
+
         expect(report).not.toBeNull();
-        expect(report?.outcome).toBe('flee');
+        expect(report?.outcome).toBe('friendship');
+        expect(report?.friendshipReward?.codexEntryUnlocked?.id).toBe('codex-test-foe');
+        expect(store.getState().codex.unlockedEntries).toContain('codex-test-foe');
     });
 
-    it('no codexEntryUnlocked on flee outcome (0.15.0 behavior)', () => {
+    it('no codexEntryUnlocked on a repeat friendship (already unlocked)', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
-        actions.startCombat(makeFriendlyEnemy('a long body about the test foe.'));
-        forceFriendshipExit(store);
-        const report = actions.endCombat();
-
-        // Since 0.15.0 returns flee outcome, no friendship reward
-        expect(report?.friendshipReward?.codexEntryUnlocked).toBeUndefined();
-    });
-
-    it('no codex unlock with flee outcomes (0.15.0 behavior)', () => {
-        const store = createAppStore({ adapter: createMemoryAdapter() });
-        const actions = createAppActions(store);
-
-        // First combat ends in flee - no unlock.
+        // First friendship unlocks the entry.
         actions.startCombat(makeFriendlyEnemy('first body.'));
-        forceFriendshipExit(store);
-        actions.endCombat();
-        expect(store.getState().codex.unlockedEntries).not.toContain('codex-test-foe');
+        actions.endCombat('friendship');
+        expect(store.getState().codex.unlockedEntries).toContain('codex-test-foe');
 
-        // Second combat also ends in flee - still no unlock.
+        // Second friendship with the same journal entry — no fresh unlock.
         actions.startCombat(makeFriendlyEnemy('second body.'));
-        forceFriendshipExit(store);
-        const report = actions.endCombat();
+        const report = actions.endCombat('friendship');
         expect(report?.friendshipReward?.codexEntryUnlocked).toBeUndefined();
     });
 
@@ -117,27 +89,27 @@ describe('actions.endCombat: returns engine CombatEndReport (Phase 78)', () => {
         const actions = createAppActions(store);
 
         actions.startCombat(makeFriendlyEnemy(undefined));
-        forceFriendshipExit(store);
-        const report = actions.endCombat();
+        const report = actions.endCombat('friendship');
         expect(report?.friendshipReward?.codexEntryUnlocked).toBeUndefined();
     });
 
-    it('also returns the report for non-friendship outcomes', () => {
+    it('a victory outcome returns a report and does not unlock the codex', () => {
         const store = createAppStore({ adapter: createMemoryAdapter() });
         const actions = createAppActions(store);
 
         actions.startCombat(makeFriendlyEnemy('body.'));
-        // Drop enemy HP to zero — outcome becomes 'victory'.
-        const s = store.getState();
-        store.setState({
-            combat: {
-                ...s.combat!,
-                enemy: { ...s.combat!.enemy, health: 0 },
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any,
-        });
-        const report = actions.endCombat();
+        const report = actions.endCombat('victory');
         expect(report?.outcome).toBe('victory');
+        expect(store.getState().codex.unlockedEntries).not.toContain('codex-test-foe');
+    });
+
+    it('endCombat outside an encounter reports a flee and grants nothing', () => {
+        const store = createAppStore({ adapter: createMemoryAdapter() });
+        const actions = createAppActions(store);
+
+        const report = actions.endCombat('friendship');
+        expect(report?.outcome).toBe('flee');
+        expect(report?.friendshipReward?.codexEntryUnlocked).toBeUndefined();
     });
 
     // Smoke pin — `applyEffect` import keeps the engine-effect surface

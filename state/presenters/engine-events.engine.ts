@@ -14,10 +14,10 @@
  * narrow via:
  *
  * ```ts
- * import { isCombatRoundEvent } from 'axiomancer-mechanics';
+ * import { isCombatEndedEvent } from 'axiomancer-mechanics';
  * const events = selectRecentEngineEvents(state);
  * for (const ev of events) {
- *     if (isCombatRoundEvent(ev)) {
+ *     if (isCombatEndedEvent(ev)) {
  *         // ev.payload is EnginePayload; ev.payload.state is GameState
  *     }
  * }

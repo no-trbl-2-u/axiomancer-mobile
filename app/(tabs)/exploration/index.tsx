@@ -63,7 +63,6 @@ export default function ExplorationScreen() {
     const actions = useGameActions();
     const eventVm = useGameState(selectEventViewModel);
     const vm = useGameState(selectExplorationViewModel);
-    const combat = useGameState((s) => s.combat);
 
     // Phase 63c — the modal mount lifecycle. Skip `state.hasEvent` hook
     // (state shape; would re-render on every engine call), read the 
@@ -109,10 +108,10 @@ export default function ExplorationScreen() {
     // the modal survives until the panel resolves. Flee (never entered
     // combat) still closes correctly.
     useEffect(() => {
-        if (inEncounterModal && !preludeReady && !combat && lastOutcome === null && !inCombat) {
+        if (inEncounterModal && !preludeReady && lastOutcome === null && !inCombat) {
             closeEncounterModal();
         }
-    }, [inEncounterModal, preludeReady, combat, lastOutcome, inCombat, closeEncounterModal]);
+    }, [inEncounterModal, preludeReady, lastOutcome, inCombat, closeEncounterModal]);
     // Phase 200 — drop the captured foe once the modal session fully closes,
     // so the next encounter bootstraps clean.
     useEffect(() => {

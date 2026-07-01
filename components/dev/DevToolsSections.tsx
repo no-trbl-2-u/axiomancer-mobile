@@ -39,7 +39,6 @@ const DebugCombatDeck = lazy(() => import('@/components/DebugCombatDeck').then(m
 const DebugEffectApply = lazy(() => import('@/components/DebugEffectApply').then(m => ({ default: m.DebugEffectApply })));
 const DebugQuestState = lazy(() => import('@/components/DebugQuestState').then(m => ({ default: m.DebugQuestState })));
 const DebugTriggerEncounter = lazy(() => import('@/components/DebugTriggerEncounter').then(m => ({ default: m.DebugTriggerEncounter })));
-const DebugFriendship = lazy(() => import('@/components/DebugFriendship').then(m => ({ default: m.DebugFriendship })));
 const DebugHudOverrides = lazy(() => import('@/components/DebugHudOverrides').then(m => ({ default: m.DebugHudOverrides })));
 const DebugMapResetButton = lazy(() => import('@/components/DebugMapResetButton').then(m => ({ default: m.DebugMapResetButton })));
 const DebugPlaythroughPresets = lazy(() => import('@/components/DebugPlaythroughPresets').then(m => ({ default: m.DebugPlaythroughPresets })));
@@ -135,7 +134,6 @@ export function DevToolsSections() {
                     <DebugAlignmentShift />
                     <DebugDialogueJump />
                     <DebugQuestState />
-                    <DebugFriendship />
                 </DevSection>
 
                 <DevSection label="MISC & SYSTEM" testID="dev-section-system">

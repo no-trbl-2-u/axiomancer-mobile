@@ -1,17 +1,18 @@
 /**
- * Hermetic E2E Tests — one-economy bridges + skill learning.
+ * Hermetic E2E Tests — engine-owned spoils + skill learning.
  *
  * Drives `createAppStore` + the typed action layer end-to-end:
  *
- *  - hazard omens land in the next combat (hexed → Allais' Curse,
- *    banked paradox tokens → combatResources), consuming their flags;
- *  - half the unspent combat tokens carry to the next combat;
- *  - victory spoils are engine-owned: `endCombat()`'s report carries
- *    the rolled loot + granted XP, already applied to the player;
- *  - starter skills seed an empty `knownSkills` before the engine
- *    snapshots the player into the combat slice;
+ *  - victory spoils are engine-owned: `endCombat('victory')`'s report
+ *    carries the rolled loot + granted XP, already applied to the player;
+ *  - starter skills seed an empty `knownSkills` before combat starts;
  *  - level-up learn offers come alignment-gated from the engine and
  *    `learnSkill` grows `knownSkills`.
+ *
+ * Legacy turn-based combat (the `state.combat` slice, its per-round
+ * bridges + cross-combat resource carry) was removed from the engine in
+ * mechanics 0.37.0. Those describe blocks — hazard-omen bridges into the
+ * combat slice and combat-resource carry — were retired with the slice.
  *
  * Hermetic = self-contained + deterministic + isolated.
  * See docs/testing.md for the full standard.
@@ -22,10 +23,6 @@ import { createEnemy } from 'axiomancer-mechanics';
 
 import { createAppStore } from '../store';
 import { createAppActions, type AppActions } from '../actions';
-import {
-    HAZARD_HEXED_FLAG,
-    HAZARD_TOKEN_FLAG_PREFIX,
-} from '../hazard/store-actions';
 import type { AppStore } from '../store';
 import { createMemoryAdapter, type MemoryAdapter } from '@/test-utils/memoryAdapter';
 
@@ -55,117 +52,19 @@ afterEach(() => {
     jest.restoreAllMocks();
 });
 
-function flags(): readonly string[] {
-    return (store.getState() as unknown as { flags: string[] }).flags ?? [];
-}
-
-function setFlags(next: string[]): void {
-    store.setState({ flags: next } as never);
-}
-
-// ---------------------------------------------------------------------------
-// Hazard → combat bridges
-// ---------------------------------------------------------------------------
-
-describe('combat-start bridges: hazard omens', () => {
-    it('hazard-hexed opens the combat with Allais’ Curse and consumes the flag', () => {
-        setFlags([...flags(), HAZARD_HEXED_FLAG]);
-        actions.startCombat(makeEnemy());
-        const combat = store.getState().combat!;
-        expect(combat).not.toBeNull();
-        const effectIds = (combat.player.effects ?? []).map((e) => e.effectId);
-        expect(effectIds).toContain('debuff_hex');
-        expect(flags()).not.toContain(HAZARD_HEXED_FLAG);
-        // the omen surfaces in the battle log
-        const logText = JSON.stringify(combat.log);
-        expect(logText).toContain('Allais');
-    });
-
-    it('banked hazard paradox tokens seed combatResources and consume their flags', () => {
-        setFlags([
-            ...flags(),
-            `${HAZARD_TOKEN_FLAG_PREFIX}1`,
-            `${HAZARD_TOKEN_FLAG_PREFIX}2`,
-        ]);
-        actions.startCombat(makeEnemy());
-        const combat = store.getState().combat!;
-        expect(combat.combatResources.paradox).toBe(2);
-        expect(flags().filter((f) => f.startsWith(HAZARD_TOKEN_FLAG_PREFIX))).toHaveLength(0);
-    });
-
-    it('a clean start (no omens, no carry) leaves the combat untouched', () => {
-        actions.startCombat(makeEnemy());
-        const combat = store.getState().combat!;
-        expect(combat.combatResources).toEqual({
-            heart: 0, body: 0, mind: 0, fallacy: 0, paradox: 0,
-        });
-        expect((combat.player.effects ?? []).map((e) => e.effectId)).not.toContain('debuff_hex');
-    });
-});
-
-// ---------------------------------------------------------------------------
-// Token carry between combats
-// ---------------------------------------------------------------------------
-
-describe('combat resource carry (engine-owned: fallacy/paradox only)', () => {
-    it('a won combat carries NOTHING into the next combat seed (carry removed in 0.36.0)', () => {
-        actions.startCombat(makeEnemy());
-        const combat = store.getState().combat!;
-        store.setState({
-            combat: {
-                ...combat,
-                combatResources: { heart: 4, body: 3, mind: 0, fallacy: 1, paradox: 5 },
-                enemy: { ...combat.enemy, health: 0 }, // force a victory
-            },
-        } as never);
-        actions.endCombat();
-
-        // The cross-combat resource carry was removed in 0.36.0: a won combat no
-        // longer seeds unspent fallacy/paradox into the next fight — it starts empty.
-        actions.startCombat(makeEnemy());
-        const next = store.getState().combat!;
-        expect(next.combatResources.paradox).toBe(0);
-        expect(next.combatResources.fallacy).toBe(0);
-        expect(next.combatResources.heart).toBe(0);
-        expect(next.combatResources.body).toBe(0);
-        expect(next.combatResources.mind).toBe(0);
-    });
-
-    it('a lost combat carries nothing', () => {
-        actions.startCombat(makeEnemy());
-        const combat = store.getState().combat!;
-        store.setState({
-            combat: {
-                ...combat,
-                combatResources: { heart: 0, body: 0, mind: 0, fallacy: 8, paradox: 8 },
-                player: { ...combat.player, health: 0 }, // defeat
-            },
-        } as never);
-        actions.endCombat();
-        // Nothing carries from a defeat — the next combat seeds clean.
-        actions.startCombat(makeEnemy());
-        const next = store.getState().combat!;
-        expect(next.combatResources.fallacy).toBe(0);
-        expect(next.combatResources.paradox).toBe(0);
-    });
-});
-
 // ---------------------------------------------------------------------------
 // Victory spoils — engine-owned (CombatEndReport)
 // ---------------------------------------------------------------------------
 
 describe('victory spoils come from the engine endCombat report', () => {
-    it('endCombat surfaces xpGained + loot and applies them to the player', () => {
+    it('endCombat(victory) surfaces xpGained + loot and applies them to the player', () => {
         actions.startCombat(makeEnemy(2));
         const xpBefore = store.getState().player.experience;
         const invBefore = store.getState().player.inventory.length;
 
-        // Force the foe down so mechanics resolves a victory; the
-        // engine rolls loot + XP and applies them in END_COMBAT.
-        const live = store.getState();
-        live.updateCombat({ ...live.combat!, enemy: { ...live.combat!.enemy, health: 0 } });
-
-        const report = actions.endCombat();
+        // The engine reads the recorded `currentEncounter`, rolls loot + XP
+        // and applies them in END_COMBAT for a victory outcome.
+        const report = actions.endCombat('victory');
         expect(report).not.toBeNull();
         expect(report!.outcome).toBe('victory');
         expect(report!.xpGained).toBeGreaterThan(0);
@@ -179,7 +78,7 @@ describe('victory spoils come from the engine endCombat report', () => {
         expect(after.inventory.length).toBeGreaterThanOrEqual(invBefore);
     });
 
-    it('endCombat outside combat reports a flee and grants nothing', () => {
+    it('endCombat outside an encounter reports a flee and grants nothing', () => {
         const xpBefore = store.getState().player.experience;
         const report = actions.endCombat();
         expect(report?.outcome).toBe('flee');
@@ -193,16 +92,12 @@ describe('victory spoils come from the engine endCombat report', () => {
 // ---------------------------------------------------------------------------
 
 describe('starter skills + learn-skill flow', () => {
-    it('startCombat seeds the tier-1 starter set into an empty knownSkills BEFORE the snapshot', () => {
+    it('startCombat seeds the tier-1 starter set into an empty knownSkills', () => {
         expect(store.getState().player.knownSkills ?? []).toHaveLength(0);
         actions.startCombat(makeEnemy());
         const known = store.getState().player.knownSkills ?? [];
         expect(known.length).toBeGreaterThan(0);
         expect(known).toContain('brace-for-impact');
-        // the in-combat snapshot carries the same set — the engine
-        // accepts these skills without the resolveRound bridge
-        const snapshot = store.getState().combat!.player.knownSkills ?? [];
-        expect(snapshot).toEqual(known);
     });
 
     it('getLearnableSkillOffers returns ≤3 unknown, requirement-met offers with effect lines', () => {

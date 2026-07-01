@@ -48,8 +48,6 @@ export function DebugPlaythroughPresets() {
                 currency: 0,
                 effects: [],
             },
-            // Reset combat state if any
-            combat: null,
         });
         setActive('fresh');
     };
@@ -98,8 +96,6 @@ export function DebugPlaythroughPresets() {
                 currency: 500,
                 effects: [], // No permanent effects for clean testing
             },
-            // Reset combat state if any
-            combat: null,
         });
         setActive('endgame');
     };

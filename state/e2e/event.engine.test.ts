@@ -172,12 +172,10 @@ describe('selectHasActiveEvent', () => {
         expect(selectHasActiveEvent(store.getState())).toBe(true);
     });
 
-    it('short-circuits to false when combat is active', () => {
-        const store = makeStore();
-        setPending(store, makeEncounterResult());
-        store.setState({ combat: { phase: 'choose' } as never });
-        expect(selectHasActiveEvent(store.getState())).toBe(false);
-    });
+    // The former "short-circuits to false when combat is active" test
+    // pinned `selectHasActiveEvent`'s guard on the legacy `state.combat`
+    // slice, removed from the engine in mechanics 0.37.0. Turn-based
+    // combat no longer exists, so mid-combat event suppression is moot.
 
     // Phase 40 — event-shell distinction audit. EventGate must NOT
     // push the player into the full-screen /event route when the
@@ -226,15 +224,9 @@ describe('selectHasActiveEvent', () => {
         expect(selectHasActiveCombatPrelude(store.getState())).toBe(false);
     });
 
-    it('selectHasActiveCombatPrelude: false when combat is already active (engine guard)', () => {
-        const store = makeStore();
-        setPending(store, makeEncounterResult());
-        // Once combat actually starts, hasActiveEvent short-circuits
-        // to false (Q4 = mid-combat events out of scope), so the
-        // prelude selector follows.
-        store.setState({ combat: { phase: 'choose' } as never });
-        expect(selectHasActiveCombatPrelude(store.getState())).toBe(false);
-    });
+    // The former "selectHasActiveCombatPrelude: false when combat is
+    // already active" test relied on the removed `state.combat`
+    // short-circuit (mechanics 0.37.0). Retired with the legacy slice.
 });
 
 describe('selectEventViewModel: shape contract', () => {
@@ -747,18 +739,10 @@ describe('eventActions.dismissEvent', () => {
     });
 });
 
-describe('eventActions.resolveCurrentMapEvent', () => {
-    it('no-ops while combat is active (Spec 08 Q4)', () => {
-        const store = makeStore();
-        const actions = createAppActions(store);
-        store.setState({ combat: { phase: 'choose' } as never });
-
-        const produced = actions.resolveCurrentMapEvent();
-
-        expect(produced).toBe(false);
-        expect(store.getState().event.pending).toBeNull();
-    });
-});
+// The former `eventActions.resolveCurrentMapEvent` "no-ops while combat
+// is active" test pinned the removed `state.combat` guard (mechanics
+// 0.37.0). Turn-based combat no longer stacks over events, so it was
+// retired.
 
 describe('selectEventViewModel: sourceNodeType', () => {
     it('is null on the empty-state VM (no pending event)', () => {

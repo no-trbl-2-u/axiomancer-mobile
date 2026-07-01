@@ -54,7 +54,11 @@ function calculateResourcePercent(resources: CombatResources): number {
  *   branches that would otherwise require specific game state.
  */
 export function selectCombatHudViewModel(state: AppStoreState): CombatHudViewModel {
-    const player = state.combat?.player ?? state.player;
+    // Legacy turn-based combat (and its `state.combat` player snapshot)
+    // was removed in mechanics 0.37.0. Live hazard combat owns its HUD in
+    // the panel's local state, so this persistent top-bar HUD always
+    // reflects the overworld player.
+    const player = state.player;
 
     const hpPercent = player.maxHealth > 0
         ? clamp(player.health / player.maxHealth, 0, 1)
@@ -70,7 +74,9 @@ export function selectCombatHudViewModel(state: AppStoreState): CombatHudViewMod
         hideStance: false,
     };
     
-    const combatResources = hudOverrides.hideMana ? null : (state.combat?.combatResources ?? null);
+    // No legacy combat slice → no engine combat resources to read; the
+    // mana bar shows full (1.0) out of combat. `hideMana` still forces null.
+    const combatResources = hudOverrides.hideMana ? null : null;
     const manaPercent: number = combatResources === null
         ? 1
         : calculateResourcePercent(combatResources);

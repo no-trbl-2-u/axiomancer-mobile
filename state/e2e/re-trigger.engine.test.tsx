@@ -6,6 +6,11 @@
  * Tests the specific integration gap where completed encounters
  * would block subsequent event resolution.
  *
+ * Legacy turn-based combat (the `state.combat` slice) was removed from the
+ * engine in mechanics 0.37.0; "in combat" is now the recorded
+ * `currentEncounter` (set by `startCombat`, cleared by `endCombat`), so these
+ * pins assert on it rather than a combat slice.
+ *
  * Hermetic = self-contained + deterministic + isolated. See
  * `docs/testing.md`.
  */
@@ -42,14 +47,14 @@ describe('integration: encounter re-trigger — Phase 118 regression guard', () 
             actions.startCombat(makeTestEnemy('first-enemy'));
         });
         
-        expect(store.getState().combat).not.toBeNull();
-        
+        expect(store.getState().currentEncounter).not.toBeUndefined();
+
         await simulatePlayerAction(store, (actions) => {
             actions.endCombat();
         });
-        
-        expect(store.getState().combat).toBeNull();
-        
+
+        expect(store.getState().currentEncounter).toBeUndefined();
+
         // Clear any residual event state to simulate post-encounter cleanup
         store.setState({ 
             event: {
@@ -65,9 +70,9 @@ describe('integration: encounter re-trigger — Phase 118 regression guard', () 
             actions.startCombat(makeTestEnemy('second-enemy'));
         });
         
-        const secondCombat = store.getState().combat;
-        expect(secondCombat).not.toBeNull();
-        expect(secondCombat?.enemy?.id).toBe('second-enemy');
+        const secondEncounter = store.getState().currentEncounter;
+        expect(secondEncounter).not.toBeUndefined();
+        expect(secondEncounter?.enemies[0]?.id).toBe('second-enemy');
     });
 
     it('resolveCurrentMapEvent works after previous encounter completed', async () => {
@@ -105,27 +110,24 @@ describe('integration: encounter re-trigger — Phase 118 regression guard', () 
         });
         
         // Capture first encounter state fingerprint
-        const firstCombatId = store.getState().combat?.enemy?.id;
-        expect(firstCombatId).toBe('first');
-        
+        const firstEncounterId = store.getState().currentEncounter?.enemies[0]?.id;
+        expect(firstEncounterId).toBe('first');
+
         await simulatePlayerAction(store, (actions) => {
             actions.endCombat();
         });
-        
+
         // Ensure clean slate
-        expect(store.getState().combat).toBeNull();
-        
+        expect(store.getState().currentEncounter).toBeUndefined();
+
         // Second encounter
         await simulatePlayerAction(store, (actions) => {
             actions.startCombat(makeTestEnemy('second'));
         });
-        
+
         // State should be fresh, not contaminated by first encounter
-        const secondCombat = store.getState().combat;
-        expect(secondCombat?.enemy?.id).toBe('second');
-        expect(secondCombat?.round).toBe(1); // Fresh combat starts at round 1
-        expect(secondCombat?.phase).toBe('choosing_stance'); // Fresh phase
-        expect(secondCombat?.log?.length || 0).toBe(0); // Empty log
+        const secondEncounter = store.getState().currentEncounter;
+        expect(secondEncounter?.enemies[0]?.id).toBe('second');
     });
 
     it('event slice state resets properly between encounters', async () => {
@@ -146,7 +148,7 @@ describe('integration: encounter re-trigger — Phase 118 regression guard', () 
         });
         
         // Complete the combat
-        if (store.getState().combat) {
+        if (store.getState().currentEncounter) {
             await simulatePlayerAction(store, (actions) => {
                 actions.endCombat();
             });
@@ -215,17 +217,16 @@ describe('integration: encounter re-trigger — Phase 118 regression guard', () 
                 actions.startCombat(makeTestEnemy(encounterId));
             });
             
-            // Verify each combat starts clean
-            const combat = store.getState().combat;
-            expect(combat?.enemy?.id).toBe(encounterId);
-            expect(combat?.phase).toBe('choosing_stance');
-            
+            // Verify each encounter starts clean
+            const encounter = store.getState().currentEncounter;
+            expect(encounter?.enemies[0]?.id).toBe(encounterId);
+
             await simulatePlayerAction(store, (actions) => {
                 actions.endCombat();
             });
-            
+
             // Verify clean termination
-            expect(store.getState().combat).toBeNull();
+            expect(store.getState().currentEncounter).toBeUndefined();
         }
         
         // Final state should be stable

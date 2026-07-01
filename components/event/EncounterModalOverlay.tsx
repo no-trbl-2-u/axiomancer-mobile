@@ -166,11 +166,12 @@ export function EncounterModalOverlay({
     // active row (action picker → resolving → choosing_action of
     // next round) into view.
     const combatScrollRef = useRef<ScrollView>(null);
-    const combatPhase = useGameState((s) => s.combat?.phase ?? null);
-    // Phase 71 — phase-aware seal chrome. Round count comes from
-    // the engine combat slice (defaults to 1 in prelude / when the
-    // slice isn't live).
-    const combatRound = useGameState((s) => s.combat?.round ?? 1);
+    // Legacy turn-based combat (engine `state.combat` phase/round) was
+    // removed in mechanics 0.37.0. Live hazard combat owns its own state
+    // in the panel, so the phase-driven auto-scroll is inert and the seal
+    // chrome always renders round 1.
+    const combatPhase: string | null = null;
+    const combatRound = 1;
     const sealChrome = selectEncounterSealChrome(mode as EncounterSealMode, combatRound);
     useEffect(() => {
         if (mode !== 'combat' || combatPhase === null) return;

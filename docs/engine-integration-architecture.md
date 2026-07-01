@@ -29,10 +29,13 @@ The engine exports structured state through its store:
 // Engine state (axiomancer-mechanics)
 interface GameState {
   player: Character;          // Stats, effects, inventory
-  combat: CombatState | null; // Active battle, phases, choices
+  combat: CombatState | null; // Combat lifecycle bridge (XP / loot)
   exploration: ExplorationState;
   // ... other slices
 }
+
+// A live Hazard-Pattern battle is its own value — CombatEncounterState —
+// threaded through the combat panel, not a phase machine on GameState.
 ```
 
 ### 2. Mobile Store Integration
@@ -57,23 +60,24 @@ export function useGameActions() {
 Presenters (`state/presenters/*.engine.ts`) convert raw engine state into mobile-optimized view models:
 
 ```typescript
-// Example: combat.engine.ts
-export function selectCombatViewModel(
-  state: GameState,
-  localUi?: CombatLocalUi
+// Example: combat-encounter.engine.ts
+export function buildCombatViewModel(
+  state: CombatEncounterState
 ): CombatViewModel {
-  const combat = state.combat;
-  
+  const e = state.enemy;
+
   // Engine truth → Mobile UI concerns
   return {
-    isInCombat: combat !== null,
-    phase: combat?.phase ?? 'choosing_stance',
+    phase: state.phase,
     enemy: {
-      name: combat?.enemy?.name?.toUpperCase() ?? '',
-      hp: combat?.enemy?.health ?? 0,
-      hpRatio: safeRatio(combat?.enemy?.health, combat?.enemy?.maxHealth),
+      name: e.name,
+      hp: Math.max(0, e.health),        // enemy has ONE bar — HP
+      hpPct: e.maxHealth > 0 ? Math.max(0, e.health) / e.maxHealth : 0,
       // ... mobile-specific formatting
     },
+    dice: /* drafted / spent mana dice */,
+    read: /* hidden-read pip vs. enemy stance */,
+    hand: /* playable cards */,
     // ... rest of view model
   };
 }
@@ -84,18 +88,15 @@ export function selectCombatViewModel(
 React components read ONLY from view models, never from engine state directly:
 
 ```tsx
-// app/(tabs)/combat.tsx
-export default function CombatScreen() {
-  const vm = useCombatViewModel({ selectedStance: localStance });
-  const actions = useGameActions();
-  
+// components/combat/encounter/CombatEncounterPanel.tsx
+export function CombatEncounterPanel(/* … */) {
+  const vm = buildCombatViewModel(state);
+
   return (
     <View>
       <Text>{vm.enemy.name}</Text>
-      <HealthBar ratio={vm.enemy.hpRatio} />
-      <Button onPress={() => actions.selectStance('heart')}>
-        {vm.stancePicker.options[0].label}
-      </Button>
+      <HealthBar ratio={vm.enemy.hpPct} />   {/* enemy has ONE bar — HP */}
+      <CombatBoard hand={vm.hand} dice={vm.dice} onPlayCard={/* … */} />
     </View>
   );
 }
@@ -109,20 +110,19 @@ The architecture distinguishes between **engine state** (persisted game truth) a
 
 | Concern | Belongs To | Example |
 |---------|------------|---------|
-| Combat phase | Engine | `'choosing_stance'`, `'resolving'` |
+| Combat phase | Engine | `'phase-play'`, threat resolution |
 | Player HP | Engine | `{ health: 45, maxHealth: 100 }` |
-| Stance preview | Mobile | User hovering over Heart stance card |
-| Modal visibility | Mobile | Skill picker expanded state |
+| Drafted-die preview | Mobile | Card highlighted before the die is dropped |
+| Modal visibility | Mobile | Rewards overlay expanded state |
 | Animation state | Mobile | Damage number fade transition |
 
-Ephemeral UI state flows through the `localUi` parameter:
+Ephemeral UI state lives in the panel's local React state (e.g. the
+cards staged this turn) — never on engine state:
 
 ```typescript
-interface CombatLocalUi {
-  selectedStance?: StanceKey;    // Preview before commit
-  selectedSkillId?: string;      // Skill picker selection
-  // NO game logic — just mobile presentation state
-}
+// Mobile-only presentation state, held in CombatEncounterPanel
+const [stagedUids, setStagedUids] = useState<string[]>([]);
+// NO game logic — just which cards the player has queued this turn.
 ```
 
 ### Mobile UI Transformations
@@ -182,15 +182,10 @@ vm.a11y = {
 #### Performance Optimizations
 ```typescript
 // Mobile-only caching and memoization
-export function useCombatViewModel(localUi: CombatLocalUi = {}): CombatViewModel {
-  const combat = useGameState(s => s.combat);     // Zustand subscriptions
-  const player = useGameState(s => s.player);
-  
-  return useMemo(() => 
-    selectCombatViewModel({ combat, player }, localUi),
-    [combat, player, localUi.selectedStance]      // React-level caching
-  );
-}
+const vm = useMemo(
+  () => buildCombatViewModel(encounterState),   // pure engine-state → VM
+  [encounterState]                              // React-level caching
+);
 ```
 
 ## Integration Boundaries
@@ -214,7 +209,7 @@ Investigation path:
 1. Is the engine calculation wrong?
    → Check determineAdvantage('heart', 'body') in engine tests
 2. Is the presenter mapping wrong?
-   → Check stanceAdvantage() in combat.engine.ts
+   → Check the read/stance mapping in combat-encounter.engine.ts
 3. Is the component display wrong?
    → Check StanceCard rendering of vm.advantage prop
 ```
@@ -228,7 +223,7 @@ Engine 0.15.0 → 0.16.0: New skill resource system
 
 Mobile migration:
 1. Update npm dependency: axiomancer-mechanics@^0.16.0
-2. Update presenters: combat.engine.ts skill picker logic  
+2. Update presenters: combat-encounter.engine.ts card / dice logic  
 3. Update components: New resource displays (if needed)
 4. Update tests: New presenter contracts
 
@@ -262,9 +257,10 @@ const displayName = enemyName.toUpperCase() || 'ADVERSARY';  // Never show empty
 // Mobile triggers engine actions, never duplicates engine logic
 const actions = useGameActions();
 
-// ✅ Correct: Let engine handle the logic
-actions.selectStance('heart');
-actions.resolveCombatRound();
+// ✅ Correct: Let the engine handle the logic (each returns the next state)
+state = draftStanceDie(state, dieId).state;
+state = playCombatCard(state, { uid }, dieId).state;
+state = resolveThreatPhase(state).state;
 
 // ❌ Wrong: Mobile inventing game rules  
 setPlayerHp(prev => Math.max(0, prev - damage));
@@ -359,17 +355,14 @@ const mobileDisplay = {
 
 #### 2. Touch Gesture Translation
 ```typescript
-// Engine: discrete stance selection
-engine.selectStance('heart');
+// Engine: discrete card play
+state = playCombatCard(state, { uid }, dieId).state;
 
-// Mobile: gesture-driven card swapping
-const handleStanceSwipe = (gestureState: PanGestureHandlerStateChangeEvent) => {
-  const velocity = gestureState.velocityX;
-  
-  if (Math.abs(velocity) > SWIPE_THRESHOLD) {
-    const direction = velocity > 0 ? 'next' : 'prev';
-    const newStance = getAdjacentStance(currentStance, direction);
-    actions.selectStance(newStance);
+// Mobile: drag the drafted die onto a card to power + play it
+const handleDieDrop = (payload: DragPayload) => {
+  if (payload.overCardUid) {
+    state = draftStanceDie(state, payload.dieId).state;
+    state = playCombatCard(state, { uid: payload.overCardUid }, payload.dieId).state;
   }
 };
 ```
@@ -394,7 +387,7 @@ useEffect(() => {
 1. **Understand mobile constraints first**: Touch targets, screen size, performance
 2. **Read the presenter docs**: [`docs/presenters.md`](./presenters.md)
 3. **Study mobile-specific adaptations**: Above patterns section
-4. **Examine a complete example**: [`state/presenters/combat.engine.ts`](../state/presenters/combat.engine.ts)
+4. **Examine a complete example**: [`state/presenters/combat-encounter.engine.ts`](../state/presenters/combat-encounter.engine.ts)
 5. **Follow the data flow**: Engine state → Mobile Presenter → React Native Component
 6. **Test the boundary**: Every presenter has hermetic tests in `state/e2e/`
 

@@ -1,13 +1,19 @@
 # Hermetic E2E Inventory
 
-> **Purpose.** A single audit surface for the hermetic e2e test suite.
+> **Purpose.** A single audit surface for the test suite: the hermetic
+> Jest layer (self-contained, deterministic, isolated) plus the
+> browser-driven Playwright `*-e2e.mjs` layer that boots a real web
+> export against localhost.
 > Every row links the test file, what it pins, and the pattern it uses.
-> Generated 2026-05-19 against commit `12a485d` for an external audit
-> of the methodology. Re-run the catalog with the commands at the
-> bottom.
+> Regenerated 2026-07-01 against commit `160ae90`. Re-run the catalog
+> with the commands at the bottom.
 
 See [`docs/testing.md`](./testing.md) for the full standard. This doc
 is the **catalog** — testing.md is the **contract**.
+
+The runner is **Jest** (`npm test` → `jest`, `jest-expo` preset). Both
+`package-lock.json` and `pnpm-lock.yaml` are checked in, but the
+canonical repro is `npm test` / `node scripts/*-e2e.mjs`.
 
 ## 1. What "hermetic" means here (one-liner)
 
@@ -16,20 +22,26 @@ AsyncStorage / FS / timers / Reanimated / image fetch), **deterministic**
 (no wall-clock, no real `Math.random`, no PIDs / env), and **isolated**
 (no shared mutable state; `afterEach` restores mocks).
 
-## 2. Patterns in play
+The Jest layer (sections 3–6) is hermetic in this strict sense. The
+browser-e2e layer (section 7) is **hermetic-at-the-boundary**:
+localhost-only, headless, and seeded where RNG matters, but it does run
+a real `expo export` + local HTTP server, so it lives outside the Jest
+glob and is invoked by its own `e2e:*` npm scripts.
 
-The suite uses five patterns. Each test file uses exactly one as its
-primary pattern (a few mix two — noted in the row).
+## 2. Patterns in play (Jest layer)
+
+The Jest suite uses five patterns. Each test file uses exactly one as
+its primary pattern (a few mix two — noted in the row).
 
 | # | Pattern | What it asserts on | Mounts React? | Engine state? |
 |---|---|---|---|---|
 | **P1** | **Presenter-contract** | `select<Screen>ViewModel(state, localUi?) → ViewModel` shape + values | No | Real engine (`createGameStore`) wrapped by `createAppStore` |
 | **P2** | **Action-layer integration** | Dispatching actions through `createAppActions(...)` updates engine state correctly; then assert via P1 | No | Real engine |
 | **P3** | **renderHook / context** | A hook or context provider (e.g. `useCombatMode`, `useGameEvents`) emits the expected sequence on subscribe / dispatch / unmount | Provider only (no screens) | Real engine |
-| **P4** | **Screen render** | Mounting an `app/(tabs)/<screen>.tsx` does not throw and renders the right strings | Full screen + jest-expo's RN host | Real engine |
-| **P5** | **Source-grep contract** | Layout / routing invariants the type system can't catch (`<GestureHandlerRootView>` wraps root; folder routes named `<dir>/index`; no stray `_layout.*` files in `app/`) | No | None — reads source files as text |
+| **P4** | **Screen render** | Mounting an `app/…/<screen>.tsx` (or a component) does not throw and renders the right strings | Full screen + jest-expo's RN host | Real engine |
+| **P5** | **Source-grep contract** | Layout / routing / hermeticity invariants the type system can't catch (`<GestureHandlerRootView>` wraps root; folder routes named `<dir>/index`; no stray `_layout.*` files in `app/`; test-convention guards) | No | None — reads source files as text |
 
-All five run under `pnpm test` (Jest + `jest-expo` preset). Reanimated
+All five run under `npm test` (Jest + `jest-expo` preset). Reanimated
 is mocked via `react-native-reanimated/mock` in `jest.setup.ts`.
 RNG is replaced by `test-utils/rng.ts` (`mockFixedRng`, `mockSequentialRng`,
 `mockAlternatingRng`) which calls the engine's `setRng()`.
@@ -40,88 +52,158 @@ assertions.
 
 ## 3. Inventory — `state/e2e/`
 
-> Counts: `desc` = `describe()` blocks, `it` = `it()` blocks. Folder
-> totals at the bottom.
+> Counts: `desc` = `describe()` blocks, `it` = `it()` / `test()` blocks
+> (grep-derived, matching section 8). Folder totals at the bottom.
 
 | File | Pattern | Pins | desc | it |
 |---|---|---|---:|---:|
-| `character.engine.test.ts` | P1 | Character VM shape + stat-row composition + saves/tests block + 7 equipment slots in display order; alignment slice (cell name, three-axis bucketing, low/mid/high boundaries, a11y sentence) per Phase 52 | 9 | 34 |
-| `combat.engine.test.ts` | P1+P2 | Combat VM across all four phases (`choosing_stance` → `committed` → `resolving` → `aftermath`); every terminal condition (victory/defeat/flee/parley/friendship); stance preview via `localUi`; accessibility labels | 13 | 44 |
-| `combat-hud.engine.test.ts` | P1 | HUD percent clamping (HP/mana → 0..1); effect-array composition; degenerate-character invariants | 5 | 18 |
-| `combat-mode.engine.test.tsx` | P3 | `useCombatMode` context: `lastOutcome` one-shot signal, `exitCombatWith` (with optional aftermath snapshot payload), `clearLastOutcome`, `inEncounterModal` session flag (Phase 63c), `aftermathData` + `dismissAftermath` (Phase 70 Tick A), run-stats counters `encountersFaced` / `deepestNodeId` / `recordDeepestNode` / `resetRunStats` (Phase 70 Tick C) | 4 | 21 |
-| `combat.screen.test.tsx` | P4 | `app/(tabs)/combat.tsx` renders in every phase the engine can put it into (no-combat, choosing, committed, resolving, aftermath) | 2 | 7 |
-| `engine-events.engine.test.ts` | P2 | `_recentEvents` ring buffer is populated by real engine dispatches (`combat:started`, `combat:ended`); newest-first ordering; capacity at `RECENT_EVENTS_CAPACITY`; un-wired store returns `null` emitter | 4 | 12 |
-| `engine-events.hook.test.tsx` | P3 | `useGameEvents` subscribes on mount, fires in dispatch order, unsubscribes on unmount, tolerates a non-stable handler reference (internal ref) | 1 | 3 |
-| `event-assets.test.ts` | P1 (pure) | Exhaustively maps `ResolvedEvent.kind` → `EventArtSlug` (no store; pure unit-shape) | 2 | 14 |
-| `event.engine.test.ts` | P1 | Event VM + `selectHasActiveEvent` / `selectHasActivePacedEvent` / `selectHasActiveCombatPrelude` across all event kinds (encounter, rest, gathering, loot-cache, interaction, village); combat-prelude STRIKE/KNEEL relabel; action subtitles | 10 | 52 |
-| `event.screen.test.tsx` | P4 | `app/event/index.tsx` renders right VM-driven content per kind; pick dispatches the right action; `canSkip` gating | 3 | 13 |
-| `exploration.engine.test.ts` | P1+P2 | Exploration VM shape; `moveTo` / `changeMap` action layer; event-callout shape; deep-freeze invariant; **encounter-modal seam** pin | 13 | 31 |
-| `inventory.engine.test.ts` | P1+P2 | Inventory VM (5 canonical tabs in order); `useItem` / `equipItem` / `dropItem` end-to-end; equipment dock; replace-preview; `parseHealAmount` | 18 | 46 |
-| `inventory-feedback.engine.test.ts` | P1 (pure) | `selectInventoryToast` — synthetic `inventory:changed` events produce correct toasts; unrelated event kinds yield `null` (no false toasts) | 1 | 8 |
-| `inventory.modal.engine.test.ts` | P1 | Item-modal VM: USE preview HP delta; EQUIP / EQUIP·REPLACE label branches; null on unknown item id | 4 | 9 |
-| `inventory.screen.test.tsx` | P4 | Inventory screen renders empty + populated; modal confirm routes through action layer | 2 | 3 |
-| `memoir.engine.test.ts` | P1 | Memoir VM shape; quest section composition (active + completed); alignment / chronicle sections (extension-stable shape) | 5 | 26 |
-| `navigation.engine.test.ts` | P1 | `selectActiveTab` / `selectTabBadges` / full nav VM under varied game states | 4 | 15 |
-| `route-registration.engine.test.ts` | **P5** | `<GestureHandlerRootView>` wraps `app/_layout.tsx`; `<Tabs.Screen name="…">` strings match folder-route IDs (`<dir>/index`) — pins the 2026-05-19 runtime regressions | 2 | 5 |
-| `route-tree.engine.test.ts` | **P5** | No stray `_layout.*` files in `app/` other than `_layout.tsx` (Expo Router's `require.context` would mount them as routes / layouts in production) | 3 | 4 |
-| `smoke-render.engine.test.tsx` | P4 (broad) | Mounts each primary surface at fresh-store boot; asserts: render doesn't throw, no `{…}` template-string leaks, no missing-fragment crashes | 3 | 18 |
-| `store.engine.test.ts` | P2 | `createAppStore` lifecycle: load / save gating (explicit-only); `_recentEvents` initialized; engine-store passthrough | 4 | 11 |
-| `tabs.engine.test.ts` | P1 | Tab visibility mutex: MAP ⊕ COMBAT (never both); combat-prelude detection feeds the mutex | 6 | 11 |
-| `token-crucible.engine.test.ts` | P1 (pure) | Token-Crucible VM: skill-library partition; `canAfford` matrix; deep-freeze invariant | 4 | 10 |
-| `aesthetic-mode.engine.test.tsx` | P3 | `useAesthetic` context: default 'canonical', AsyncStorage hydration (valid / corrupt), setMode write-through, toggle round-trip, provider guard, `skipHydration` opt-out (Phase 50 tick A + verify-noise fix) | 4 | 12 |
-| `combat.codex.engine.test.ts` | P1 (pure) | `selectCodexStatusLine` + `selectCodexEnemySlug`: enemy name slug rules, design-source ENC/ROUND/STATE format, roman 1..10 + decimal fallback, all engine phases threaded verbatim (Phase 50 tick B) | 2 | 11 |
-| `event.codex.engine.test.ts` | P1 (pure) | `selectEventCodexHeader`: EVENT/<variant> left + KIND/<kind> right tokens, uppercase + hyphen→dot normalization, all variants threaded (Phase 50 tick C) | 1 | 5 |
-| `exploration.codex.engine.test.ts` | P1 (pure) | `selectExplorationCodexHeader`: REGION/<region-slug> + NODE/<currentNodeId-slug>, uppercase/hyphen/underscore/whitespace normalization, UNKNOWN/NONE fallbacks (Phase 50 tick D) | 1 | 5 |
-| `debug-seed.engine.test.ts` | P2 | `actions.debugSeed()` end-to-end: inventory gains items across categories (consumable + 3 equipment slots), knownSkills gains both paradox + fallacy fixture categories, current map resets to startingNode with fresh discovered/consumed sets, skills are set-idempotent on re-seed (Phase 54) | 1 | 5 |
-| `event-pools.engine.test.ts` | P2 | Per-node-type pool overrides + isBoss + unregistered-node fallback + idempotent re-registration. **Phase 55:** multi-entry encounter pools. **Phase 56:** per-quest-node NPC pools. **Phase 57:** per-map treasure + gather payloads with locale-themed items, distinct fv vs nf rosters, currency thread, material-category check. **Phase 58:** chaos-mode toggle | 5 | 28 |
-| `state/presenters/__tests__/aftermath.engine.test.ts` | P1 (pure) | Aftermath VM presenter (Phase 70): victory branch (uppercased enemy name, epithet derivation + truncation, finalBlow passthrough + fallbacks, per-tier flavor phrase selection, reward field threading); parley branch (per-level pact phrase, journal-entry passthrough); defeat branch (killer block + cause-phrase by damage tier + run-summary trio passthrough) | 3 | 29 |
-| `state/presenters/__tests__/encounter-seal.engine.test.ts` | P1 (pure) | `selectEncounterSealChrome(mode, round?)` (Phase 71): prelude / combat / aftermath chain-bar labels + accent colors, lowercase-roman round labels (i / ii / iii), round-independence of non-combat modes, defensive `·` sentinel for round 0 | 1 | 9 |
-| **Totals (`state/e2e/` + `state/presenters/__tests__/`)** | | | **136** | **508** |
+| `aesthetic-mode.engine.test.tsx` | P3 | `useAesthetic` context: default 'canonical', AsyncStorage hydration (valid / corrupt), setMode write-through, toggle round-trip, provider guard, `skipHydration` opt-out | 4 | 12 |
+| `aftermath-snapshot.engine.test.ts` | P1 | Aftermath snapshot regression guard (victory / parley / defeat payload shape survives round-trip) | 1 | 5 |
+| `app-components.engine.test.tsx` | P4 | App-component smoke: top-level components mount at fresh boot without throwing | 3 | 6 |
+| `app-routes.engine.test.tsx` | P4 | `app/index.tsx` onboarding flow + route surfaces render VM-driven content | 2 | 10 |
+| `cache.flow.engine.test.ts` | P2 | Loot-cache ("The Reliquary") store flow end-to-end via the action layer | 1 | 4 |
+| `cache.loot-table.engine.test.ts` | P1 (pure) | Cache loot-table reward depth / roster composition | 1 | 4 |
+| `character.engine.test.ts` | P1 | Character VM shape + stat-row composition + saves/tests block + 7 equipment slots in display order; alignment slice (cell name, three-axis bucketing, boundaries, a11y sentence) | 11 | 42 |
+| `character-preset.engine.test.ts` | P2 | `applyCharacterPreset` replaces the player with an engine preset | 2 | 3 |
+| `codex-unlock-consumer.engine.test.ts` | P2 | `actions.endCombat` returns the engine `CombatEndReport` and unlocks codex entries (Phase 78) | 1 | 6 |
+| `combat-encounter.screen.test.tsx` | P4 | `/combat-encounter` screen reveal → board; **pins the HP-only redesign**: the DoT/Control `combat-pressure-tracks` and the tap-draft `combat-read-banner` are asserted **absent** | 3 | 5 |
+| `combat-hud.engine.test.ts` | P1 | HUD percent clamping (HP → 0..1); effect-array composition; degenerate-character invariants | 5 | 16 |
+| `combat-mode.engine.test.tsx` | P3 | `useCombatMode` context: `lastOutcome` one-shot signal, `exitCombatWith` (+ aftermath snapshot payload), `clearLastOutcome`, `inEncounterModal` session flag, `aftermathData` + `dismissAftermath`, run-stats counters (`encountersFaced` / `deepestNodeId` / `recordDeepestNode` / `resetRunStats`) | 4 | 21 |
+| `combat-tutorial.screen.test.tsx` | P4 | Combat-tutorial screen gating + step progression | 2 | 5 |
+| `debug-seed.engine.test.ts` | P2 | `actions.debugSeed()` end-to-end: inventory + known cards + map reset, set-idempotent on re-seed | 1 | 5 |
+| `dev-presets.engine.test.ts` | P2 | `applyPlayerTierPreset` L1/L15/L30/L50 ladder | 2 | 10 |
+| `dev-route.screen.test.tsx` | P4 | `/dev` Developer screen renders under a DEV build | 2 | 3 |
+| `engine-events.engine.test.ts` | P2 | `_recentEvents` ring buffer populated by real engine dispatches; newest-first ordering; capacity at `RECENT_EVENTS_CAPACITY`; un-wired store returns `null` emitter | 4 | 11 |
+| `engine-events.hook.test.tsx` | P3 | `useGameEvents` subscribes on mount, fires in dispatch order, unsubscribes on unmount, tolerates a non-stable handler reference | 1 | 3 |
+| `event-assets.test.ts` | P1 (pure) | Exhaustively maps `ResolvedEvent.kind` → `EventArtSlug` (no store; pure unit-shape) | 2 | 12 |
+| `event.codex.engine.test.ts` | P1 (pure) | `selectEventCodexHeader`: EVENT/<variant> + KIND/<kind> tokens, uppercase + hyphen→dot normalization | 1 | 5 |
+| `event.engine.test.ts` | P1 | Event VM + `selectHasActiveEvent` / `selectHasActivePacedEvent` / `selectHasActiveCombatPrelude` across all event kinds (encounter, rest, gathering, loot-cache, interaction, village, narration); combat-prelude STRIKE/KNEEL relabel; action subtitles | 11 | 59 |
+| `event.screen.test.tsx` | P4 | `app/event/index.tsx` renders right VM-driven content per kind; pick dispatches the right action; `canSkip` gating | 3 | 12 |
+| `exploration.codex.engine.test.ts` | P1 (pure) | `selectExplorationCodexHeader`: REGION/<slug> + NODE/<slug>, normalization, UNKNOWN/NONE fallbacks | 1 | 5 |
+| `exploration.engine.test.ts` | P1+P2 | Exploration VM shape; `moveTo` / `changeMap` action layer; event-callout shape; deep-freeze invariant; encounter-modal seam pin | 13 | 32 |
+| `flee-action.engine.test.ts` | P2 | Flee/retreat action narrative feedback + state effect | 1 | 3 |
+| `gathering.flow.engine.test.ts` | P2 | Gathering ("The Gleaning") store flow — a clean gleaning end-to-end | 2 | 8 |
+| `gathering.screen.test.tsx` | P4 | Gathering screen — site intro + board render | 5 | 10 |
+| `gathering.tutorial.engine.test.ts` | P2 | The pinned gathering tutorial session (scripted step order) | 3 | 5 |
+| `hazard-deck.screen.test.tsx` | P4 | Hazard deck / card-library screen render | 2 | 7 |
+| `hazard.flow.engine.test.ts` | P2 | Hazard minigame store flow (draft → play → outcome → rewards) | 2 | 11 |
+| `hazard-out-of-combat-death.engine.test.ts` | P2 | Hazard damage can drop the player out of combat and route to defeat | 1 | 4 |
+| `hazard-scar-rest-recovery.engine.test.ts` | P2 | Hazard "scar" recovers at an inn rest | 1 | 4 |
+| `hazard.screen.test.tsx` | P4 | Hazard screen — danger intro + board render | 4 | 11 |
+| `hermeticity.audit.engine.test.ts` | **P5** | Self-policing test-convention guard: no network / wall-clock / unguarded `Math.random` / real AsyncStorage leaks into `state/e2e/` | 3 | 6 |
+| `inventory.engine.test.ts` | P1+P2 | Inventory VM (canonical tabs in order); `useItem` / `equipItem` / `dropItem` end-to-end; equipment dock; replace-preview; `parseHealAmount` | 20 | 58 |
+| `inventory-feedback.engine.test.ts` | P1 (pure) | `selectInventoryToast` — synthetic `inventory:changed` events produce correct toasts; unrelated kinds yield `null` | 1 | 8 |
+| `inventory.modal.engine.test.ts` | P1 | Item-modal VM: USE preview HP delta; EQUIP / EQUIP·REPLACE label branches; null on unknown item id | 4 | 20 |
+| `inventory.screen.test.tsx` | P4 | Inventory screen renders empty + populated; modal confirm routes through action layer | 3 | 4 |
+| `map-encounter-minigames.engine.test.ts` | P2 | Map encounter → minigame routing (northern-forest): each node kind launches the matching minigame session | 2 | 5 |
+| `memoir.engine.test.ts` | P1 | Memoir VM shape; quest section composition (active + completed); alignment / chronicle sections | 5 | 26 |
+| `minigame-seeds.engine.test.ts` | P1 | Minigame seed-resolver precedence (dev hook → node → default) | 1 | 4 |
+| `navigation.engine.test.ts` | P1 | `selectActiveTab` / `selectTabBadges` / full nav VM under varied game states | 4 | 14 |
+| `new-player-journey.engine.test.tsx` | P2 (integration) | Fresh state through the first encounter — full new-player journey | 1 | 6 |
+| `one-economy.engine.test.ts` | P2 | Victory spoils come from the engine `endCombat` report (single source of currency/loot) | 2 | 5 |
+| `performance.regression.test.tsx` | P4 | Performance regression guards (render-cost budgets on primary surfaces) | 5 | 9 |
+| `quest.flow.engine.test.ts` | P2 | Quest-board store flow end-to-end | 1 | 6 |
+| `quest.screen.test.tsx` | P4 | Quest screen render + interaction | 3 | 10 |
+| `rest.flow.engine.test.ts` | P2 | Rest ("the inn") store flow end-to-end | 1 | 5 |
+| `re-trigger.engine.test.tsx` | P2 (integration) | Encounter re-trigger regression guard (Phase 118) | 1 | 6 |
+| `route-registration.engine.test.ts` | **P5** | `<GestureHandlerRootView>` wraps `app/_layout.tsx`; `<Tabs.Screen name="…">` strings match folder-route IDs (`<dir>/index`) | 2 | 5 |
+| `route-tree.engine.test.ts` | **P5** | No stray `_layout.*` files in `app/` other than `_layout.tsx` (Expo Router's `require.context` would mount them in production) | 3 | 4 |
+| `smoke-render.engine.test.tsx` | P4 (broad) | Mounts each primary surface at fresh-store boot; asserts render doesn't throw, no `{…}` template-string leaks, no missing-fragment crashes | 4 | 18 |
+| `store.engine.test.ts` | P2 | `createAppStore` lifecycle: load / save gating (explicit-only); `_recentEvents` initialized; engine-store passthrough | 4 | 10 |
+| `tabs.engine.test.ts` | P1 | Tab visibility mutex (MAP ⊕ combat prelude never both); combat-prelude detection feeds the mutex | 6 | 11 |
+| **Totals (`state/e2e/`, 54 files)** | | | **178** | **599** |
 
-## 4. Inventory — `state/persistence/e2e/`
+## 4. Inventory — `state/presenters/__tests__/`
+
+Pure presenter-VM contracts (P1 unless noted). 14 files.
+
+| File | Pins | desc | it |
+|---|---|---:|---:|
+| `aftermath.engine.test.ts` | Aftermath VM presenter: victory / parley / defeat branches (epithet derivation, per-tier flavor, reward threading, killer block) | 5 | 48 |
+| `combat-card-vm.test.ts` | Combat-card VM shape (name, cost, effect chips, rarity tier) | 4 | 12 |
+| `combat-hud.engine.test.ts` | Combat HUD presenter (HP bar clamp, effect chips) | 4 | 11 |
+| `encounter-seal.engine.test.ts` | `selectEncounterSealChrome(mode, round?)`: prelude / combat / aftermath chain-bar labels + accent colors, lowercase-roman rounds, defensive sentinel | 1 | 9 |
+| `enemy-art.test.ts` | Enemy-art slug resolution | 1 | 3 |
+| `hazard-deck.engine.test.ts` | Hazard-deck / card-library VM | 2 | 6 |
+| `hazard.engine.test.ts` | Hazard board VM (dice, cards, routes, meters) | 6 | 15 |
+| `hazard-vm-lock.engine.test.ts` | Hazard VM lock / no-re-cast invariant | 1 | 3 |
+| `levelup.engine.test.ts` | Level-up VM (ascend strip, derived preview) | 2 | 5 |
+| `onboarding.engine.test.ts` | Onboarding VM | 1 | 3 |
+| `roman.test.ts` | Roman-numeral helper (1..10 + decimal fallback) | 1 | 6 |
+| `stances.test.ts` | Stance metadata / glyph mapping | 1 | 3 |
+| `tooltip.engine.test.ts` | Tooltip presenter contract | 18 | 60 |
+| `village.engine.test.ts` | Village event VM | 2 | 13 |
+| **Totals (14 files)** | | **49** | **197** |
+
+## 5. Inventory — `state/persistence/e2e/`
 
 | File | Pattern | Pins | desc | it |
 |---|---|---|---:|---:|
-| `asyncStorageAdapter.engine.test.ts` | P2 | `createAsyncStorageAdapter` round-trips via AsyncStorage's jest mock; envelope wrap/unwrap; error recovery; v2 envelope → v3 alignment backfill end-to-end (Phase 51) | 4 | 16 |
-| `migrations.engine.test.ts` | P1 (pure) | v1→v2 migration backfills `derivedStats` / `nonCombatStats`; v2→v3 migration backfills `state.alignment` via `defaultAlignment()`; schema version pin + DEFAULT_MIGRATIONS infrastructure (Phase 51) | 4 | 0¹ |
+| `asyncStorageAdapter.engine.test.ts` | P2 | `createAsyncStorageAdapter` round-trips via AsyncStorage's jest mock; envelope wrap/unwrap; error recovery; v2→v3 alignment backfill end-to-end | 4 | 16 |
+| `migrations.engine.test.ts` | P1 (pure) | v1→v2 backfills `derivedStats` / `nonCombatStats`; v2→v3 backfills `state.alignment` via `defaultAlignment()`; schema-version pin + DEFAULT_MIGRATIONS infrastructure | 5 | 17 |
 
-¹ All assertions live in `describe`-level setup or `test()` (not `it()`) — see source.
+## 6. Inventory — component-level & script-helper hermetic tests
 
-## 5. Inventory — component-level hermetic tests
+The `components/` tree holds **135** hermetic `*.test.tsx` files in
+total (mostly P4 render contracts) — far more than can be tabled here.
+The rows below are the **seam-critical** ones (combat/aftermath modal
+chain, error boundary, corrupt-save, dev affordances); enumerate the
+rest with the reproduction commands in section 8.
 
 | File | Pattern | Pins | desc | it |
 |---|---|---|---:|---:|
-| `components/event/__tests__/EncounterModalOverlay.test.tsx` | P4 | Modal-over-map seam: mount conditions, FLEE-disabled-for-boss branch, non-dismissible backdrop (chat1 invariant), prelude→combat mode transition (Phase 63b), combat-mode-survives-vm-kind-change (Phase 63c), combat→aftermath swap for victory / parley / defeat (Phase 70 A/B/C), phase-aware seal chrome (Phase 71 — chain bar labels swap with mode + round) | 9 | 24 |
-| `components/event/aftermath/__tests__/CombatVictoryPanel.test.tsx` | P4 | Victory panel render contract (Phase 70 Tick A): enemy name + epithet (with null collapse), final-blow phrase verbatim, reward strip + xp em-dash branch, loot list empty + populated branches, CARRY ON button wiring | 2 | 10 |
-| `components/event/aftermath/__tests__/CombatFriendshipPanel.test.tsx` | P4 | Friendship panel render contract (Phase 70 Tick B): panel + pixel-emblem mount, enemy / epithet / pact phrase / AN ACCORD label, reward strip, journal-entry collapse + populated branches, PART AS FRIENDS button wiring | 2 | 11 |
-| `components/event/aftermath/__tests__/CombatDefeatPanel.test.tsx` | P4 | Defeat panel render contract (Phase 70 Tick C): panel mount, eyebrow + character name + killer block (with null collapse) + damage ledger + cause phrase + run-summary ledger rows + em-dash for null deepest node, BEGIN AGAIN + let-the-page-close handler wiring | 2 | 13 |
-| `components/event/aftermath/__tests__/PixelEmblem.test.tsx` | P4 | The app's lone pixel-art carve-out (Phase 70 Tick B): frame mount, exact non-transparent `<Rect>` count vs PIXEL_HEART constant, default cell scaling (176×176), `cell` prop honored. **Invariant fence:** PIXEL_HEART is exactly 16 rows × 16 chars, uses only the documented character set (`. r s h p *`) | 2 | 7 |
-| `components/__tests__/ErrorBoundary.test.tsx` | P4 | App-wide React ErrorBoundary + in-world `<ErrorScreen>` fallback (Phase 70 Tick D): happy-path passthrough, error capture chrome (THE BINDING TORE title, in-world error code with TypeError → E_PAGE_TORN / network → E_THE_LINE_WENT_QUIET / default → E_BOUND_LOOSE mapping, technical-panel message render, scribe hint, bottom consolation line, STATE SNAPSHOT + BUILD CONTEXT diagnostics), COPY button pressed-state toggle, ✠ TRY AGAIN + return-to-hearth reset wiring | 4 | 13 |
-| `components/__tests__/CorruptSaveModal.test.tsx` | P4 | Boot-time corrupt-save prompt (Phase 53): mount on visible prop, confirm/cancel callback routing, lowercase ritual voice register, accessibilityLabel pin per button | 4 | 8 |
-| `components/__tests__/DebugSeedButton.test.tsx` | P4 | Dev-only debug seed button (Phase 54): DEV-gate (renders/null), tap routes through `actions.debugSeed()` (mutates inventory + skills + map), result line updates with summary, idempotent re-seed, accessibility | 3 | 6 |
-| `components/__tests__/DebugCombatButton.test.tsx` | P4 | Dev-only manual combat trigger (CRITIQUE jot 39695a5): DEV-gate, tap calls startCombat + router push to /(tabs)/combat, accessibility | 3 | 5 |
-| `components/__tests__/DevAutoSeed.test.tsx` | P4 | Boot-time auto-seed for DEV (CRITIQUE jot 39695a5): empty inventory triggers single `actions.debugSeed()` call, renders nothing visible, idempotent for populated inventory, production-gated | 2 | 4 |
-| `components/__tests__/DebugMapResetButton.test.tsx` | P4 | Dev-only map-reset (Phase 58): DEV gate, tap re-seeds currentMap via `actions.changeMap`, accessibility | 3 | 4 |
-| `components/__tests__/DebugChaosToggle.test.tsx` | P4 | Dev-only chaos-mode toggle (Phase 58): DEV gate, CALM↔CHAOS label flip on tap, subtitle reflects mode, a11y label includes on/off state | 3 | 7 |
-| `components/StanceGlyph.test.tsx` | P4 | StanceGlyph + GlyphHeart asset wiring (per-stance source resolution, fallback) | 4 | 16 |
+| `components/event/__tests__/EncounterModalOverlay.test.tsx` | P4 | Modal-over-map seam: mount conditions, FLEE-disabled-for-boss branch, non-dismissible backdrop, prelude→combat mode transition, combat→aftermath swap for victory / parley / defeat, phase-aware seal chrome | 10 | 27 |
+| `components/event/aftermath/__tests__/CombatVictoryPanel.test.tsx` | P4 | Victory panel render contract: enemy name + epithet (null collapse), final-blow phrase, reward strip + xp em-dash branch, loot list branches, CARRY ON button wiring | 3 | 14 |
+| `components/event/aftermath/__tests__/CombatFriendshipPanel.test.tsx` | P4 | Friendship/parley panel: pixel-emblem mount, enemy / epithet / pact phrase / AN ACCORD label, reward strip, journal-entry branches, PART AS FRIENDS wiring | 2 | 11 |
+| `components/event/aftermath/__tests__/CombatDefeatPanel.test.tsx` | P4 | Defeat panel: eyebrow + character name + killer block (null collapse) + damage ledger + cause phrase + run-summary rows, BEGIN AGAIN + page-close wiring | 2 | 13 |
+| `components/event/aftermath/__tests__/PixelEmblem.test.tsx` | P4 | The app's lone pixel-art carve-out: frame mount, exact `<Rect>` count vs PIXEL_HEART, default cell scaling, `cell` prop; invariant fence on the PIXEL_HEART grid + character set | 2 | 7 |
+| `components/__tests__/ErrorBoundary.test.tsx` | P4 | App-wide React ErrorBoundary + in-world `<ErrorScreen>` fallback: passthrough, error-code mapping, diagnostics panel, COPY toggle, TRY AGAIN + return-to-hearth reset wiring | 4 | 13 |
+| `components/__tests__/CorruptSaveModal.test.tsx` | P4 | Boot-time corrupt-save prompt: mount on visible prop, confirm/cancel routing, ritual voice register, per-button accessibilityLabel | 4 | 8 |
+| `components/__tests__/DebugSeedButton.test.tsx` | P4 | Dev-only debug-seed button: DEV-gate, tap routes through `actions.debugSeed()`, result-line update, idempotent re-seed, accessibility | 3 | 6 |
+| `components/__tests__/DevAutoSeed.test.tsx` | P4 | Boot-time auto-seed for DEV: empty inventory triggers a single `actions.debugSeed()`, renders nothing, idempotent when populated, production-gated | 2 | 4 |
+| `components/__tests__/DebugMapResetButton.test.tsx` | P4 | Dev-only map-reset: DEV gate, tap re-seeds currentMap via `actions.changeMap`, accessibility | 3 | 4 |
+| `components/__tests__/StanceGlyph.test.tsx` | P4 | StanceGlyph + GlyphHeart asset wiring (per-stance source resolution, fallback) | 4 | 16 |
 
-## 6. Inventory — script-helper tests (non-e2e but hermetic)
-
-These cover **pure helpers** extracted from `.mjs` scripts. Real
-`expo export`, EAS build, server, and browser are integration concerns
-and explicitly out of scope.
+Script-helper tests cover **pure helpers** extracted from `.mjs`
+scripts. Real `expo export`, EAS build, and server are integration
+concerns exercised by the browser-e2e layer (section 7).
 
 | File | Pins | desc | it/test |
 |---|---|---:|---:|
-| `scripts/__tests__/deploy-check.test.ts` | EAS build status → exit code mapping | 3 | 8 |
+| `scripts/__tests__/deploy-check.test.ts` | EAS build status → exit-code mapping | 3 | 8 |
 | `scripts/__tests__/smoke-bundler.test.ts` | Smoke-bundler pure helpers (CLI flag parse, output dir prep) | 4 | 11 |
-| `scripts/__tests__/smoke-screens.test.ts` | Smoke-screens pure helpers (route enumeration, expected text matchers) | 7 | 16 |
+| `scripts/__tests__/smoke-screens.test.ts` | Smoke-screens pure helpers (route enumeration, expected-text matchers) | 8 | 17 |
+| `scripts/__tests__/hermes-ui-playtest.test.ts` | Hermes UI-playtest harness pure helpers | 3 | 7 |
+| `scripts/__tests__/playtest-skill.test.ts` | Playtest card/skill-driver pure helpers | 2 | 5 |
 
-## 7. Auditing the methodology — falsifiable checks
+## 7. Browser-e2e suite — `scripts/*-e2e.mjs` (Playwright)
+
+Six wired browser-driven end-to-end scripts. Each boots a real
+`expo export` (web), serves it on `127.0.0.1`, and drives **headless
+Chromium** with real pointer/tap gestures. They are localhost-only and
+seeded through `globalThis.__AXM_*` dev hooks before boot, so they are
+deterministic without being pure-hermetic (they run a real bundler +
+server, hence they live outside the Jest glob). All six are wired to
+`npm` scripts — no orphans.
+
+| Script | npm script | Seed / dev hook | What it drives + asserts |
+|---|---|---|---|
+| `scripts/hazard-e2e.mjs` | `e2e:hazard` | `__AXM_HAZARD_SEED__` / `__AXM_HAZARD_ID__` | Boots the hazard minigame, dismisses the danger-intro, drags cards from the fanned hand into the play area, drags mana dice onto staged cards, presses PLAY, taps through the O/X stamps + outcome + rewards ledger for **both** routes; asserts the no-re-cast doctrine (identical die ids across all three rounds) and full phase order |
+| `scripts/combat-encounter-e2e.mjs` | `e2e:combat` | `__AXM_COMBAT_SEED__` | Launches `/combat-encounter` and plays the card-and-dice combat. **⚠ Currently rotted:** its docstring + board assertions still target the **removed** two-Pressure-Track UI (`combat-pressure-tracks` / `track-dot` / `track-control`, Erosion/Saturation summary) that the HP-only redesign purged — the Jest screen test now pins those testIDs as **absent**. Expect `e2e:combat` (and `e2e:minigames`) to exit 1 until it is re-pointed at the HP-only board |
+| `scripts/gathering-e2e.mjs` | `e2e:gathering` | `__AXM_GATHER_SEED__` / `__AXM_GATHER_SITE__` | Plays "The Gleaning" for **both** stances: GLEAN (inspect plot, take plots, use field tool, descend a stratum, withdraw clean → spoils → claim) and STRIP (take greedily until the WRATH meter fills, assert reprisal flashes, ERUPTION interrupt, ROUTED outcome, pieces-lost ledger) |
+| `scripts/encounter-routing-e2e.mjs` | `e2e:encounters` | (routing guard; no RNG seed) | Opens the DEV menu and clicks each "TRIGGER ENCOUNTER" button (HAZARD / REST / GATHER / TREASURE / QUEST); asserts the app lands on the matching full-screen minigame route **and** that the minigame mounted — never the "/event → NO EVENT IN PROGRESS" dead-end (2026-06-14 regression guard) |
+| `scripts/theme-switch-e2e.mjs` | `e2e:theme` | (deterministic UI) | Serves the export, opens `/character`, expands the COLOUR THEME picker, switches themes, asserts the palette re-paints in place (no reload, no console errors) |
+| `scripts/loot-rarity-e2e.mjs` | `e2e:loot` | (engine `generateRarityDrop`) | Opens SELF → DEV TOOLS → `/dev` and presses each LOOT button (COMMON / UNCOMMON / RARE / UNIQUE), asserting the engine's affix contract from on-screen feedback (0 / 1 / 2 named affixes, 3 fixed mods for unique) |
+
+`e2e:minigames` chains four of these (`hazard` → `combat` → `gathering`
+→ `encounters`) with `*_E2E_REUSE_EXPORT=1` so the web export is built
+once and reused.
+
+## 8. Auditing the methodology — falsifiable checks
 
 If any of these returns a hit in `state/e2e/`, the hermetic boundary
-has leaked and that test is **no longer** hermetic. Run them as
-spot-checks:
+has leaked and that test is **no longer** hermetic. These are the same
+greps `hermeticity.audit.engine.test.ts` enforces in-suite:
 
 ```bash
 # 1. No real network
@@ -141,53 +223,55 @@ grep -rE 'render\(' state/e2e/*.engine.test.ts
 grep -rE "from '@react-native-async-storage" state/e2e/
 ```
 
-All five currently return zero hits across `state/e2e/` (verified
-2026-05-19 against commit `12a485d`).
-
-## 8. Reproducing this inventory
+## 9. Reproducing this inventory
 
 ```bash
-# Catalog with one-line summaries:
+# Every test file on disk (224 at commit 160ae90):
+find . -name '*.test.ts' -o -name '*.test.tsx' | grep -v node_modules
+
+# Catalog the hermetic e2e folder with one-line summaries:
 ls state/e2e/
 grep -rEh "^\s*(describe|it|test)\(" state/e2e/
 
 # Block counts per file:
 for f in state/e2e/*.test.ts state/e2e/*.test.tsx; do
-  it=$(grep -cE "^\s*it\(" "$f")
+  it=$(grep -cE "^\s*(it|test)\(" "$f")
   desc=$(grep -cE "^\s*describe\(" "$f")
   echo "$(basename $f): $desc desc / $it it"
 done
 
 # Run the hermetic-suite only:
-pnpm test state/e2e
-
-# With coverage:
-pnpm test state/e2e --coverage
+npm test -- state/e2e
 
 # Just the catalog, no execution:
-pnpm test --listTests
+npm test -- --listTests
+
+# Browser-e2e (real export + headless chromium):
+npm run e2e:hazard        # or e2e:gathering / e2e:encounters / e2e:theme / e2e:loot
+npm run e2e:minigames     # chained, single reused export
 ```
 
-## 9. Known intentional gaps
+## 10. Known intentional gaps
 
-These are **not** covered by hermetic e2e and require
+These are **not** covered by the hermetic Jest layer. Most are now
+covered by the browser-e2e layer (section 7); the remainder need
 out-of-band verification:
 
-- **Real `expo export` / Metro bundling.** Covered by
-  `scripts/smoke-bundler.mjs` (integration) and EAS Build.
+- **Real `expo export` / Metro bundling.** Exercised by every
+  `scripts/*-e2e.mjs` (they build a real web export) and by
+  `scripts/smoke-bundler.mjs` + EAS Build.
+- **Real browser rendering + pointer gestures.** Covered by the
+  Playwright browser-e2e suite (localhost, headless Chromium).
 - **Real `AsyncStorage` IO.** Adapter logic is pinned via the jest
   mock; on-device behaviour relies on `react-native-async-storage`
   itself.
-- **Reanimated animations.** Mocked at module level; visual rise/fade
-  timings are not asserted.
-- **Image asset loading.** `expo-font` and image require()s are
-  jest-shimmed; broken asset paths surface only at build time.
+- **Reanimated animations.** Mocked at module level in Jest; visual
+  rise/fade timings are not asserted.
+- **Image asset loading.** `expo-font` and image `require()`s are
+  jest-shimmed; broken asset paths surface at build / browser-e2e time.
 - **EAS Build.** Verified via `deploy:check` + the `deploy-check`
   helper tests.
-- **End-to-end gesture handling.** Pinned structurally by P5
-  (`route-registration`) but real pan/zoom not exercised.
 
-If any of these need coverage, the most likely vehicle is the
-`smoke-render.engine.test.tsx` harness — extending it with deeper
-mount probes — rather than reaching for a Detox / Playwright layer
-that would re-introduce network and timer non-determinism.
+When a seam needs deeper coverage, the browser-e2e layer (section 7) is
+the vehicle for player-facing / rendering contracts, and the
+`smoke-render.engine.test.tsx` harness for cheap mount probes.

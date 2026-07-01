@@ -150,7 +150,7 @@ jobs:
           # Pin the current Sonnet latest family model. The action's built-in default
           # (claude-sonnet-4-20250514) retired 2026-06-15 and now 404s.
           # Use a deliberate active Sonnet pin rather than a retired action default.
-          model: claude-sonnet-4-6
+          model: claude-sonnet-5
           # Reasoning effort for the autonomous loop (low|medium|high|...).
           claude_env: |
             CLAUDE_CODE_EFFORT_LEVEL: medium

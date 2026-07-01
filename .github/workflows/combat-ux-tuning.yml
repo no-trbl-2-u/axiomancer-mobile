@@ -99,7 +99,7 @@ jobs:
             - Stop before engine/rules changes, public release/deploy, destructive operations, secrets changes, or major product-direction changes.
 
             If `focus` is blank, choose the highest-value measurable input-friction target from current repo truth.
-          model: claude-sonnet-4-6
+          model: claude-sonnet-5
           claude_env: |
             CLAUDE_CODE_EFFORT_LEVEL: high
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}

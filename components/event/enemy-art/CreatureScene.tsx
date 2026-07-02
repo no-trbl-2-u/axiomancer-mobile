@@ -39,17 +39,26 @@ export interface CreatureSceneProps {
     label: string;
     /** Width of the ground shadow under the creature. */
     shadowWidth?: number;
+    /** Scale the creature figure up around its ground origin (combat battlefield
+     *  renders the foe LARGE — the enemy is the screen). Default 1 = event size. */
+    figureScale?: number;
+    /** SVG preserveAspectRatio. The combat battlefield passes 'xMidYMid slice' so
+     *  the scene fills a band whose aspect differs from the 374×320 canvas. */
+    preserveAspectRatio?: string;
     /** The creature figure, drawn around the ground origin. */
     children: React.ReactNode;
 }
 
-export function CreatureScene({ label, shadowWidth = 64, children }: CreatureSceneProps) {
+export function CreatureScene({
+    label, shadowWidth = 64, figureScale = 1, preserveAspectRatio, children,
+}: CreatureSceneProps) {
     const AXM = usePalette();
     return (
         <Svg
             viewBox="0 0 374 320"
             width="100%"
             height="100%"
+            preserveAspectRatio={preserveAspectRatio}
             style={StyleSheet.absoluteFillObject}
             accessibilityLabel={label}
             accessibilityRole="image"
@@ -106,7 +115,7 @@ export function CreatureScene({ label, shadowWidth = 64, children }: CreatureSce
             </G>
 
             {/* Creature */}
-            <G transform="translate(187 200)">
+            <G transform={`translate(187 200) scale(${figureScale})`}>
                 <Ellipse cx={0} cy={6} rx={shadowWidth} ry={13} fill={AXM.deepBg} stroke={AXM.parchment} strokeWidth={0.75} opacity={0.85} />
                 {children}
             </G>

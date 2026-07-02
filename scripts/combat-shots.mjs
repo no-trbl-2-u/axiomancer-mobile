@@ -43,7 +43,9 @@ async function killPrimer(page) { for (let k = 0; k < 5; k++) { await page.waitF
 async function shot(page, name) { await mkdir(OUT, { recursive: true }); const p = join(OUT, `${name}.png`); await page.screenshot({ path: p, fullPage: false }); log(`shot → ${p}`) }
 
 const { server, base } = await serve()
-const browser = await chromium.launch()
+// PW_CHROMIUM: launch a system-provided Chromium (e.g. sandboxes that pre-install
+// one at a path the pinned Playwright version doesn't know about).
+const browser = await chromium.launch(process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {})
 const page = await browser.newPage({ viewport: VIEWPORT, deviceScaleFactor: 2 })
 await page.emulateMedia({ reducedMotion: 'reduce' })
 await page.addInitScript((s) => { globalThis.__AXM_COMBAT_SEED__ = s }, SEED)

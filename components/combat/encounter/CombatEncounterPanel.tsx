@@ -22,8 +22,9 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import Svg, { Circle, Defs, Line, Polygon, RadialGradient, Stop } from 'react-native-svg';
 import {
     initializeCombatEncounter, rollEncounterDice, playCombatCard, resolveThreatPhase,
     startTurn, endTurn, draftStanceDie, discardCombatCard, playSignatureSkill,
@@ -137,6 +138,68 @@ function keywordTypeTag(kind: string, index: number): string {
     }
 }
 
+// Reference-style coloured type tags (right-aligned on the keyword panels).
+const TAG_COLORS: Record<string, string> = {
+    DOT: '#e2543b', CONTROL: '#a86bdc', GUARD: '#9aa0a6', REGEN: '#5bbf6a',
+    STRIKE: '#c2a14e', MERCY: '#5bbf6a', EFFECT: '#8a8273',
+};
+
+// Category plaque for the status tooltip — glyph kind → badge label + colour.
+function effectCategory(kind: string, color: string): { label: string; color: string } {
+    switch (kind) {
+        case 'dot': return { label: 'AFFLICTION', color: '#e2543b' };
+        case 'control': return { label: 'CONTROL', color: '#a86bdc' };
+        case 'statdown':
+        case 'drain':
+        case 'mark': return { label: 'HEX', color: '#e08a3b' };
+        case 'statup':
+        case 'regen':
+        case 'advantage':
+        case 'thorns': return { label: 'BLESSING', color: '#5bbf6a' };
+        default: return { label: 'EFFECT', color };
+    }
+}
+
+/** Dimmed-backdrop plaque hero: a radial burst + rayed ring around a large
+ *  glowing glyph (the reference status-detail centrepiece). */
+function GlyphBurst({ color, glyph }: { color: string; glyph: string }) {
+    const styles = useStyles();
+    return (
+        <View style={styles.burstWrap} pointerEvents="none">
+            <Svg width={170} height={170} viewBox="0 0 170 170">
+                <Defs>
+                    <RadialGradient id="axmTipBurst" cx="50%" cy="50%" r="50%">
+                        <Stop offset="0%" stopColor={color} stopOpacity={0.55} />
+                        <Stop offset="55%" stopColor={color} stopOpacity={0.16} />
+                        <Stop offset="100%" stopColor={color} stopOpacity={0} />
+                    </RadialGradient>
+                </Defs>
+                <Circle cx={85} cy={85} r={85} fill="url(#axmTipBurst)" />
+                {Array.from({ length: 12 }).map((_, i) => {
+                    const a = (i / 12) * Math.PI * 2;
+                    return (
+                        <Line
+                            key={i}
+                            x1={85 + Math.cos(a) * 52} y1={85 + Math.sin(a) * 52}
+                            x2={85 + Math.cos(a) * (i % 2 === 0 ? 76 : 66)} y2={85 + Math.sin(a) * (i % 2 === 0 ? 76 : 66)}
+                            stroke={color}
+                            strokeWidth={1.4}
+                            opacity={0.3}
+                        />
+                    );
+                })}
+                <Circle cx={85} cy={85} r={46} fill="#070509" stroke={color} strokeWidth={3} />
+                <Circle cx={85} cy={85} r={41} fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth={1} />
+            </Svg>
+            <View style={StyleSheet.absoluteFill}>
+                <View style={styles.burstGlyphBox}>
+                    <Text style={[styles.burstGlyph, { color, textShadowColor: color }]} allowFontScaling={false}>{glyph}</Text>
+                </View>
+            </View>
+        </View>
+    );
+}
+
 export function CombatEncounterPanel({
     enemy,
     bootstrapPlayer,
@@ -148,6 +211,10 @@ export function CombatEncounterPanel({
 }: CombatEncounterPanelProps) {
     const styles = useStyles();
     const AXM = usePalette();
+    const { width: screenW } = useWindowDimensions();
+    // Hero card width in the inspect modal (reference: the card IS the screen) —
+    // sized so keyword panels + the full card fit a ~844pt viewport together.
+    const detailCardW = Math.min(264, screenW - 116);
     const player = useGameState((s) => s.player);
     const store = useGameStore();
 
@@ -212,8 +279,9 @@ export function CombatEncounterPanel({
         if (resolver) void resolver(payload, x, y);
     }, [drag, dragShown]);
     drag.end = end;
-    // Centre the 96×135 face under the finger (half-width 48 / half-height 67) and lift it slightly.
-    const ghostStyle = useAnimatedStyle(() => ({ opacity: dragShown.value, transform: [{ translateX: dragX.value - 48 }, { translateY: dragY.value - 67 }, { scale: 1.05 }] }));
+    // Centre the 108×158 face under the finger (half-width 54 / half-height 79)
+    // and lift it above the fingertip so the card stays readable mid-drag.
+    const ghostStyle = useAnimatedStyle(() => ({ opacity: dragShown.value, transform: [{ translateX: dragX.value - 54 }, { translateY: dragY.value - 79 - 24 }, { scale: 1.1 }] }));
 
     // ── engine wiring ──
     const apply = useCallback((fn: (s: CombatEncounterState) => CombatEncounterState) => {
@@ -369,48 +437,61 @@ export function CombatEncounterPanel({
             )}
 
             {/* card detail — Sanguine-Step shape: keyword DEFINITIONS on top, ONE
-                large rendered card centrepiece, then the FREE-vs-POWER fork. The
-                developer-facing mathLine / subtitle / readNote are NEVER shown. */}
+                large rendered card centrepiece over a stance-coloured halo, then the
+                FREE-vs-POWER fork. Un-boxed: everything floats on the dimmed backdrop.
+                The developer-facing mathLine / subtitle / readNote are NEVER shown. */}
             {detailCard && (
                 <Pressable style={styles.backdrop} testID="combat-card-detail" onPress={() => { if (Date.now() - detailOpenedAt.current > 350) setDetailCard(null); }}>
                     <View style={styles.detailModalWrap} onStartShouldSetResponder={() => true}>
                         <ScrollView
                             style={styles.detailScroll}
-                            contentContainerStyle={[styles.detailStack, { borderColor: detailCard.face.categoryColor }]}
+                            contentContainerStyle={styles.detailStack}
                         >
                             {/* (1) keyword DEFINITION panels at the top */}
                             {detailCard.detail.keywords.length > 0 && (
                                 <View style={styles.detailKeywords}>
-                                    {detailCard.detail.keywords.map((k, i) => (
-                                        <View key={k.name} style={styles.detailKeywordRow}>
-                                            <View style={styles.detailKeywordHead}>
-                                                <Text style={[styles.detailKeywordName, k.minor ? { color: AXM.ash } : null]}>{k.name}</Text>
-                                                <Text style={styles.detailKeywordTag}>{keywordTypeTag(detailCard.face.kind, i)}</Text>
+                                    {detailCard.detail.keywords.map((k, i) => {
+                                        const tag = keywordTypeTag(detailCard.face.kind, i);
+                                        return (
+                                            <View key={k.name} style={styles.detailKeywordRow}>
+                                                <View style={styles.detailKeywordHead}>
+                                                    <Text style={[styles.detailKeywordName, k.minor ? { color: AXM.ash } : null]}>{k.name}</Text>
+                                                    <Text style={[styles.detailKeywordTag, { color: TAG_COLORS[tag] ?? AXM.bone }]}>{tag}</Text>
+                                                </View>
+                                                <Text style={styles.detailKeywordDef}>{k.def}{k.minor ? ' (minor right now)' : ''}</Text>
                                             </View>
-                                            <Text style={styles.detailKeywordDef}>{k.def}{k.minor ? ' (minor right now)' : ''}</Text>
-                                        </View>
-                                    ))}
+                                        );
+                                    })}
                                 </View>
                             )}
 
-                            {/* (2) the LARGE rendered card — the effect SENTENCE + the type-tab now
-                                live ON the card (define once / show once), so no restated outcome
-                                line or stat-chip row below it. */}
+                            {/* (2) the LARGE rendered card over a stance-coloured radial halo —
+                                the effect SENTENCE + the type-tab live ON the card (define once /
+                                show once), so no restated outcome line below it. */}
                             <View style={styles.detailCardWrap}>
-                                <CombatCardFace card={detailCard} width={224} height={320} large />
+                                <Svg width={detailCardW + 120} height={detailCardW + 120} viewBox="0 0 100 100" style={styles.detailHalo} pointerEvents="none">
+                                    <Defs>
+                                        <RadialGradient id="axmCardHalo" cx="50%" cy="50%" r="50%">
+                                            <Stop offset="0%" stopColor={detailCard.stanceColor} stopOpacity={0.34} />
+                                            <Stop offset="60%" stopColor={detailCard.stanceColor} stopOpacity={0.1} />
+                                            <Stop offset="100%" stopColor={detailCard.stanceColor} stopOpacity={0} />
+                                        </RadialGradient>
+                                    </Defs>
+                                    <Circle cx={50} cy={50} r={50} fill="url(#axmCardHalo)" />
+                                </Svg>
+                                <CombatCardFace card={detailCard} width={detailCardW} height={Math.round(detailCardW * 1.43)} large />
                             </View>
                             {detailCard.detail.stacksText ? <Text style={styles.detailStacks}>{detailCard.detail.stacksText}</Text> : null}
 
-                            {/* (3) the die-optional choice as a compact two-row pill table (was two
-                                serif paragraphs that restated the face). The +DIE pill carries the
-                                real read-scaling math (guard ▲/▼ triplet, etc.) — the prose is
-                                flattened, NOT the math. */}
+                            {/* (3) the die-optional choice as a compact two-row pill table. The +DIE
+                                pill carries the real read-scaling math (guard ▲/▼ triplet, etc.) —
+                                the prose is flattened, NOT the math. */}
                             <View style={styles.detailPills}>
                                 <View style={styles.detailPillRow}>
                                     <Text style={styles.detailPillTag}>◇ NO DIE</Text>
                                     <Text style={styles.detailPillVal} numberOfLines={2}>{detailCard.detail.freePill}</Text>
                                 </View>
-                                <View style={[styles.detailPillRow, { borderColor: `${detailCard.face.categoryColor}66` }]}>
+                                <View style={[styles.detailPillRow, styles.detailPillRowPaid, { borderLeftColor: detailCard.face.categoryColor, backgroundColor: `${detailCard.face.categoryColor}14` }]}>
                                     <Text style={[styles.detailPillTag, { color: detailCard.face.categoryColor }]}>◆ +DIE</Text>
                                     <Text style={[styles.detailPillKw, { color: detailCard.face.categoryColor }]} numberOfLines={1}>{detailCard.detail.diePillKeyword}</Text>
                                     <Text style={styles.detailPillVal} numberOfLines={2}>{detailCard.detail.diePill}</Text>
@@ -420,32 +501,61 @@ export function CombatEncounterPanel({
                             <Text style={styles.detailColorMatch}>{detailCard.detail.colorMatchHint}</Text>
                         </ScrollView>
 
-                        {/* close ✕ — pinned to the modal's top-right OUTSIDE the ScrollView so it
-                            never falls below the fold on a 320px card. */}
-                        <Pressable
-                            onPress={() => setDetailCard(null)}
-                            testID="combat-card-detail-close"
-                            accessibilityRole="button"
-                            accessibilityLabel="Close card detail"
-                            hitSlop={10}
-                            style={[styles.detailClose, { borderColor: detailCard.face.categoryColor }]}
-                        >
-                            <Text style={[styles.detailCloseText, { color: detailCard.face.categoryColor }]}>✕</Text>
-                        </Pressable>
                     </View>
+
+                    {/* close ✕ — pinned to the BACKDROP's bottom-right (reference shape), so
+                        it never falls below the fold and never overlaps the keyword tags. */}
+                    <Pressable
+                        onPress={() => setDetailCard(null)}
+                        testID="combat-card-detail-close"
+                        accessibilityRole="button"
+                        accessibilityLabel="Close card detail"
+                        hitSlop={10}
+                        style={[styles.detailClose, { borderColor: detailCard.face.categoryColor }]}
+                    >
+                        <Text style={[styles.detailCloseText, { color: detailCard.face.categoryColor }]}>✕</Text>
+                    </Pressable>
                 </Pressable>
             )}
 
-            {/* effect tooltip */}
-            {tipEffect && (
-                <Pressable style={styles.backdrop} testID="combat-effect-tip" onPress={() => setTipEffect(null)}>
-                    <View style={[styles.modal, { borderColor: tipEffect.glyph.color }]}>
-                        <Text style={[styles.modalTitle, { color: tipEffect.glyph.color }]}>{tipEffect.glyph.glyph} {tipEffect.glyph.label}</Text>
-                        <Text style={styles.detailMeta}>intensity {tipEffect.intensity}{tipEffect.isMax ? ' (MAX)' : ''} · {tipEffect.duration} turns left</Text>
-                        {tipEffect.gloss && <Text style={styles.detailTipGloss}>{tipEffect.gloss}</Text>}
-                    </View>
-                </Pressable>
-            )}
+            {/* effect tooltip — reference status-detail plaque: radial glyph burst hero,
+                coloured name, serif gloss, mechanics meta, hex category badge pinned to
+                the bottom border. */}
+            {tipEffect && (() => {
+                const cat = effectCategory(tipEffect.glyph.kind, tipEffect.glyph.color);
+                return (
+                    <Pressable style={styles.backdrop} testID="combat-effect-tip" onPress={() => setTipEffect(null)}>
+                        <View style={[styles.tipPlaque, { borderColor: `${tipEffect.glyph.color}66` }]}>
+                            {/* corner brackets */}
+                            <View style={[styles.tipCorner, styles.tipCornerTl, { borderColor: tipEffect.glyph.color }]} pointerEvents="none" />
+                            <View style={[styles.tipCorner, styles.tipCornerTr, { borderColor: tipEffect.glyph.color }]} pointerEvents="none" />
+                            <View style={[styles.tipCorner, styles.tipCornerBl, { borderColor: tipEffect.glyph.color }]} pointerEvents="none" />
+                            <View style={[styles.tipCorner, styles.tipCornerBr, { borderColor: tipEffect.glyph.color }]} pointerEvents="none" />
+                            <GlyphBurst color={tipEffect.glyph.color} glyph={tipEffect.glyph.glyph} />
+                            <Text style={[styles.tipName, { color: tipEffect.glyph.color, textShadowColor: tipEffect.glyph.color }]}>
+                                {tipEffect.glyph.label.toUpperCase()}
+                            </Text>
+                            {tipEffect.gloss && <Text style={styles.tipGloss}>{tipEffect.gloss}</Text>}
+                            <Text style={styles.tipMeta}>intensity {tipEffect.intensity}{tipEffect.isMax ? ' (MAX)' : ''} · {tipEffect.duration} turns left</Text>
+                            <View style={styles.tipBadgeWrap} pointerEvents="none">
+                                <Svg width={128} height={30} viewBox="0 0 128 30">
+                                    <Polygon
+                                        points="14,1 114,1 127,15 114,29 14,29 1,15"
+                                        fill={AXM.panelBg}
+                                        stroke={cat.color}
+                                        strokeWidth={1.5}
+                                    />
+                                </Svg>
+                                <View style={StyleSheet.absoluteFill}>
+                                    <View style={styles.tipBadgeInner}>
+                                        <Text style={[styles.tipBadgeText, { color: cat.color }]} allowFontScaling={false}>{cat.label}</Text>
+                                    </View>
+                                </View>
+                            </View>
+                        </View>
+                    </Pressable>
+                );
+            })()}
 
             {/* deckbuilder reward — claimed before the summary on a win */}
             {live.finalOutcome === 'victory' && !rewardsClaimed && rewardOffers.length > 0 && (
@@ -470,7 +580,7 @@ export function CombatEncounterPanel({
                     {dragActive.type === 'card' ? (
                         // The dragged card keeps its real face (was a stripped name-only box
                         // that looked like a different, "old" card mid-drag).
-                        <CombatCardFace card={dragActive.card} width={96} height={135} />
+                        <CombatCardFace card={dragActive.card} width={108} height={158} />
                     ) : (
                         <CombatDie die={dragActive.die} size={56} />
                     )}
@@ -482,7 +592,7 @@ export function CombatEncounterPanel({
 
 const useStyles = makeStyles((AXM) => ({
     root: { flex: 1, width: '100%', height: '100%' },
-    backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.8)', alignItems: 'center', justifyContent: 'center', padding: 20, zIndex: 50 },
+    backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(4,3,6,0.93)', alignItems: 'center', justifyContent: 'center', padding: 20, zIndex: 50 },
     modal: { width: '100%', maxWidth: 380, borderWidth: 2, backgroundColor: AXM.panelBg, padding: 18, alignItems: 'center' },
     modalTitle: { fontFamily: FONTS.gothic, fontSize: 18, color: AXM.parchment, textAlign: 'center' },
     modalSub: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 13, color: AXM.bone, textAlign: 'center', marginTop: 4, marginBottom: 14 },
@@ -490,17 +600,21 @@ const useStyles = makeStyles((AXM) => ({
     modalBtn: { borderWidth: 2, paddingHorizontal: 22, paddingVertical: 9 },
     modalBtnText: { fontFamily: FONTS.gothic, fontSize: 16, letterSpacing: 1 },
     detailMeta: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone, letterSpacing: 0.6, marginTop: 4, marginBottom: 10 },
-    // Relative wrapper so the close ✕ can pin to the top-right OUTSIDE the ScrollView.
-    detailModalWrap: { width: '100%', maxWidth: 380, maxHeight: '90%' },
+    // Relative wrapper so the close ✕ can pin OUTSIDE the ScrollView.
+    detailModalWrap: { width: '100%', maxWidth: 380, maxHeight: '92%' },
     detailScroll: { width: '100%' },
-    // Sanguine-Step inspect stack (keyword defs → large card → fork).
-    detailStack: { width: '100%', maxWidth: 380, borderWidth: 2, backgroundColor: AXM.panelBg, padding: 16, alignItems: 'center' },
-    detailCardWrap: { marginTop: 4, marginBottom: 6, shadowColor: '#000', shadowOpacity: 0.6, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 8 },
+    // Sanguine-Step inspect stack (keyword defs → large card → fork) — UN-BOXED:
+    // panels/card/pills float directly on the dimmed backdrop.
+    detailStack: { width: '100%', maxWidth: 380, padding: 8, paddingBottom: 64, alignItems: 'center' },
+    detailCardWrap: { marginTop: 2, marginBottom: 6, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.8, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 10 },
+    detailHalo: { position: 'absolute' },
     detailBold: { fontFamily: FONTS.gothic, color: AXM.parchment },
-    detailKeywordHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 },
-    detailKeywordTag: { fontFamily: FONTS.sans, fontSize: 8.5, letterSpacing: 1.2, color: AXM.bone, opacity: 0.8, borderWidth: 1, borderColor: AXM.ash, borderRadius: 2, paddingHorizontal: 4, paddingVertical: 1 },
-    detailClose: { position: 'absolute', top: 6, right: 6, zIndex: 10, width: 40, height: 40, borderRadius: 20, borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: AXM.panelBg },
-    detailCloseText: { fontFamily: FONTS.sans, fontSize: 18, lineHeight: 20 },
+    detailKeywordHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3, gap: 8 },
+    detailKeywordTag: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1.5, flexShrink: 0 },
+    // Close ✕ — bottom-right of the BACKDROP (never overlaps the keyword tags,
+    // never falls below the fold).
+    detailClose: { position: 'absolute', bottom: 26, right: 18, zIndex: 10, width: 50, height: 50, borderRadius: 25, borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: AXM.panelBg },
+    detailCloseText: { fontFamily: FONTS.sans, fontSize: 20, lineHeight: 22 },
     detailSubtitle: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 13, color: AXM.parchment, textAlign: 'center', marginTop: 3 },
     detailOutcomeBox: { alignSelf: 'stretch', borderWidth: 1, borderRadius: 3, padding: 10, marginBottom: 8 },
     detailOutcomeHead: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1.5, color: AXM.bone, opacity: 0.7, marginBottom: 5 },
@@ -513,22 +627,46 @@ const useStyles = makeStyles((AXM) => ({
     detailFreeLine: { fontFamily: FONTS.serif, fontSize: 12.5, color: AXM.bone, lineHeight: 17, marginBottom: 5 },
     detailPowerLine: { fontFamily: FONTS.serif, fontSize: 12.5, lineHeight: 17, marginBottom: 5 },
     // Compact NO-DIE / +DIE pill table (replaces the two prose paragraphs).
-    detailPills: { alignSelf: 'stretch', gap: 6, marginBottom: 8 },
-    detailPillRow: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: AXM.ash, borderRadius: 4, paddingHorizontal: 9, paddingVertical: 7, backgroundColor: 'rgba(0,0,0,0.35)' },
-    detailPillTag: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1, color: AXM.bone, minWidth: 56 },
+    detailPills: { alignSelf: 'stretch', gap: 7, marginBottom: 10, marginTop: 4 },
+    detailPillRow: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 9, backgroundColor: 'rgba(0,0,0,0.6)' },
+    detailPillRowPaid: { borderLeftWidth: 3 },
+    detailPillTag: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1.5, color: AXM.bone, minWidth: 58 },
     detailPillKw: { fontFamily: FONTS.gothic, fontSize: 13, letterSpacing: 0.5 },
     detailPillVal: { flex: 1, fontFamily: FONTS.mono, fontSize: 12.5, color: AXM.parchment, letterSpacing: 0.2 },
-    detailColorMatch: { alignSelf: 'stretch', fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 11, color: AXM.bone, lineHeight: 15, marginBottom: 4 },
+    detailColorMatch: { alignSelf: 'stretch', fontFamily: FONTS.sans, fontSize: 9, letterSpacing: 1.6, color: AXM.bone, opacity: 0.6, lineHeight: 14, marginBottom: 4, textAlign: 'center' },
     detailReadNote: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 11, color: AXM.bone, lineHeight: 15 },
     detailLine: { fontFamily: FONTS.serif, fontSize: 13, color: AXM.parchment, lineHeight: 18 },
     detailKeywords: { alignSelf: 'stretch', marginBottom: 10 },
     detailKeywordsHead: { fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1.5, color: AXM.bone, opacity: 0.7, marginBottom: 7 },
-    detailKeywordRow: { alignSelf: 'stretch', borderWidth: 1, borderColor: AXM.ash, borderRadius: 3, padding: 9, marginBottom: 6, backgroundColor: 'rgba(255,255,255,0.04)' },
-    detailKeywordName: { fontFamily: FONTS.mono, fontSize: 13, letterSpacing: 0.8, color: AXM.sulfur },
-    detailKeywordDef: { fontFamily: FONTS.serif, fontSize: 12, color: AXM.bone, lineHeight: 16 },
+    detailKeywordRow: { alignSelf: 'stretch', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', borderRadius: 6, padding: 12, marginBottom: 7, backgroundColor: 'rgba(0,0,0,0.6)' },
+    detailKeywordName: { fontFamily: FONTS.sans, fontSize: 16, letterSpacing: 1.5, color: AXM.sulfur, flexShrink: 1 },
+    detailKeywordDef: { fontFamily: FONTS.serif, fontSize: 13.5, color: AXM.parchment, lineHeight: 19 },
     detailMath: { alignSelf: 'stretch', fontFamily: FONTS.mono, fontSize: 10.5, color: AXM.bone, opacity: 0.85, lineHeight: 15, marginBottom: 8 },
     detailTipGloss: { fontFamily: FONTS.serif, fontSize: 12, color: AXM.parchment, textAlign: 'center', marginTop: 6, lineHeight: 16 },
     detailHint: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 11, color: AXM.bone, marginTop: 4, textAlign: 'center' },
+
+    // ── status tooltip plaque (reference status-detail shape) ──
+    tipPlaque: {
+        width: '100%', maxWidth: 340, borderWidth: 1, borderRadius: 8, backgroundColor: AXM.panelBg,
+        paddingTop: 18, paddingBottom: 30, paddingHorizontal: 22, alignItems: 'center',
+    },
+    tipCorner: { position: 'absolute', width: 18, height: 18 },
+    tipCornerTl: { top: -1, left: -1, borderTopWidth: 2.5, borderLeftWidth: 2.5, borderTopLeftRadius: 8 },
+    tipCornerTr: { top: -1, right: -1, borderTopWidth: 2.5, borderRightWidth: 2.5, borderTopRightRadius: 8 },
+    tipCornerBl: { bottom: -1, left: -1, borderBottomWidth: 2.5, borderLeftWidth: 2.5, borderBottomLeftRadius: 8 },
+    tipCornerBr: { bottom: -1, right: -1, borderBottomWidth: 2.5, borderRightWidth: 2.5, borderBottomRightRadius: 8 },
+    burstWrap: { width: 170, height: 170, alignItems: 'center', justifyContent: 'center' },
+    burstGlyphBox: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    burstGlyph: { fontSize: 42, lineHeight: 50, textShadowRadius: 10, textShadowOffset: { width: 0, height: 0 } },
+    tipName: {
+        fontFamily: FONTS.sans, fontSize: 26, letterSpacing: 3, marginTop: 6,
+        textShadowRadius: 8, textShadowOffset: { width: 0, height: 0 },
+    },
+    tipGloss: { fontFamily: FONTS.serif, fontSize: 14, lineHeight: 20, color: AXM.parchmentDim, textAlign: 'center', marginTop: 8 },
+    tipMeta: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone, letterSpacing: 0.6, marginTop: 10 },
+    tipBadgeWrap: { position: 'absolute', bottom: -15, alignSelf: 'center', width: 128, height: 30 },
+    tipBadgeInner: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    tipBadgeText: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 2 },
 
     reveal: { flex: 1, backgroundColor: '#0c0a08' },
     revealScroll: { alignItems: 'center', padding: 22, paddingBottom: 40 },

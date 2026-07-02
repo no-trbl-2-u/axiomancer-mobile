@@ -48,11 +48,13 @@ describe('CombatBoard — multi-card staging', () => {
         );
         render(tree);
 
-        // Both staged cards render (was impossible with the old single-staged board).
+        // Both staged cards render (was impossible with the old single-staged board),
+        // each with its own APPLY ribbon (the 2026-07 polish dropped the text count —
+        // the staged row itself is the count).
         expect(screen.getByTestId(`combat-staged-${uids[0]}`)).toBeTruthy();
         expect(screen.getByTestId(`combat-staged-${uids[1]}`)).toBeTruthy();
-        // The play-area header surfaces the multi-staged count.
-        expect(screen.getByText(/2 STAGED/)).toBeTruthy();
+        expect(screen.getByTestId(`combat-apply-${uids[0]}`)).toBeTruthy();
+        expect(screen.getByTestId(`combat-apply-${uids[1]}`)).toBeTruthy();
     });
 
     // END PHASE is a COMMIT, not a discard: any card still staged when the player

@@ -132,24 +132,16 @@ async function playCombat(page, baseUrl) {
     await page.getByTestId('combat-enter').click({ timeout: 8000, force: true }).catch(() => {})
     await killPrimer()
 
-    // 2) The board renders the full Spec 26 surface.
+    // 2) The board renders the full Spec 26/26b surface. (The pressure tracks and
+    //    the read banner are legacy-combat chrome the HP model removed — the jest
+    //    screen suite pins their ABSENCE, so this list must not require them.)
     await page.getByTestId('combat-board').waitFor({ state: 'visible', timeout: 15000 })
-    for (const id of ['combat-combatant-pane', 'combat-pressure-tracks', 'combat-track-dot', 'combat-track-control', 'combat-dice-tray', 'combat-hand', 'combat-conviction', 'combat-signature-bar', 'combat-intent']) {
+    for (const id of ['combat-combatant-pane', 'combat-dice-tray', 'combat-hand', 'combat-conviction', 'combat-signature-bar', 'combat-intent', 'combat-end-phase', 'combat-new-turn', 'combat-play-area']) {
         if (!(await page.getByTestId(id).count())) fail(`missing board element: ${id}`)
     }
     await page.waitForTimeout(200)
     await shot(page, '02-board')
-    log('board renders portraits + HP + intent + tracks + 2-die draft + signatures ✅')
-
-    // 3) Draft the stance die → the hidden-stance read banner fires.
-    const die = page.getByTestId('combat-die-t1-d0')
-    if (await die.count()) {
-        await die.click({ timeout: 3000 }).catch(() => {})
-        await page.waitForTimeout(200)
-        if (!(await page.getByTestId('combat-read-banner').count())) fail('drafting a die did not surface the read banner')
-        await shot(page, '03-drafted-read')
-        log('drafting a die surfaces the hidden-stance read ✅')
-    }
+    log('board renders battlefield + HP + intent + dice + signatures ✅')
 
     // 4) Drive to a terminal outcome by ending phases (card POWER needs a drag
     //    gesture not reliably simulable here; the jest suite covers the play path).

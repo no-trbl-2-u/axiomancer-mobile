@@ -29,9 +29,12 @@ import {
     initializeCombatEncounter, rollEncounterDice, playCombatCard, resolveThreatPhase,
     startTurn, draftStanceDie, discardCombatCard, playSignatureSkill,
     selectEncounterMercyChoice, buildCombatSummary, rollCombatCardRewards, addRewardCard,
-    rollLoot, addItem, getSkillById, firstEquippedPerSlot,
+    rollLoot, addItem,
     type CombatEncounterState, type CombatOutcome, type Character, type Enemy, type CombatEvent,
+    type CombatManaDie,
 } from 'axiomancer-mechanics';
+
+import { advanceWheel, isMomentumDieId, isWheelStance, momentumDieId, type WheelStance } from '@/state/combat/momentum';
 
 import { CombatBoard, CombatCardFace, type DragController, type DragPayload } from '@/components/combat/encounter/CombatBoard';
 import { type CombatFx } from '@/components/combat/encounter/CombatCombatantPane';
@@ -264,6 +267,19 @@ export function CombatEncounterPanel({
 
     const live = state ?? initial;
     const vm = useMemo(() => buildCombatViewModel(live), [live]);
+    const vmRef = useRef(vm);
+    vmRef.current = vm;
+
+    // ── momentum wheel (see state/combat/momentum.ts) ──
+    // `lit` is panel-owned UI state; `charged` is DERIVED from the engine state:
+    // a live wild momentum die in the tray IS the charge.
+    const [wheelLit, setWheelLit] = useState<WheelStance[]>([]);
+    const wheelLitRef = useRef<WheelStance[]>([]);
+    const momentumCounter = useRef(0);
+    const [momentumInfoOpen, setMomentumInfoOpen] = useState(false);
+    const momentumCharged = vm.dice.some((d) => isMomentumDieId(d.id) && !d.spent && !d.isX);
+    const chargedRef = useRef(momentumCharged);
+    chargedRef.current = momentumCharged;
 
     // ── screen-level drag controller (cards + dice) ──
     // dragX/dragY are written straight from the board's gesture worklets every
@@ -302,12 +318,37 @@ export function CombatEncounterPanel({
     // the card (bottom action); `power` false → the FREE base action (top action,
     // no die). One commit; the card leaves staging.
     const onApply = useCallback((uid: string, dieId: string | null, power: boolean) => {
+        // Momentum: advance the wheel with this card's stance (looked up BEFORE the
+        // play removes it from the hand). A completed cycle forges a wild momentum
+        // die into the tray; while that die is live, plays don't advance the wheel.
+        let grantId: string | null = null;
+        const stance = vmRef.current.hand.find((c) => c.uid === uid)?.stance;
+        if (!chargedRef.current && isWheelStance(stance)) {
+            const r = advanceWheel(wheelLitRef.current, stance);
+            wheelLitRef.current = r.lit;
+            setWheelLit(r.lit);
+            if (r.completed) {
+                momentumCounter.current += 1;
+                grantId = momentumDieId(momentumCounter.current);
+                chargedRef.current = true;   // block re-advance within this apply batch
+            }
+        }
         apply((s) => {
             let ns = s;
             if (power && dieId && s.draftedDieId === null) ns = draftStanceDie(ns, dieId).state;
             const t = playCombatCard(ns, { uid }, power);
             fxRef.current = t.events;
-            return t.state;
+            ns = t.state;
+            // TODO(engine): momentum belongs in axiomancer-mechanics as a first-class
+            // rule. Until then the grant is a minimal host-side state write — the
+            // same precedent as this panel's economy write-back — of an engine-native
+            // wild die (draft/play/spend all handled by the engine). Id-guarded so a
+            // double-invoked updater can't duplicate it.
+            if (grantId && !ns.dice.some((d) => d.id === grantId)) {
+                const die: CombatManaDie = { id: grantId, color: 'wild', state: 'available', temporary: true };
+                ns = { ...ns, dice: [...ns.dice, die] };
+            }
+            return ns;
         });
         setFxSeq((n) => n + 1);
         unstageUid(uid);
@@ -391,6 +432,8 @@ export function CombatEncounterPanel({
                     onChip={setTipEffect}
                     onSignatureInfo={setSigInfo}
                     onPlayerInspect={() => setPilgrimOpen(true)}
+                    momentum={{ lit: wheelLit, charged: momentumCharged }}
+                    onMomentumInfo={() => setMomentumInfoOpen(true)}
                     fx={fx}
                 />
             )}
@@ -590,14 +633,48 @@ export function CombatEncounterPanel({
                 </Pressable>
             )}
 
-            {/* pilgrim modal — tap the player medallion: stats · status · gear · skills */}
+            {/* momentum — how the wheel works */}
+            {momentumInfoOpen && (
+                <Pressable style={styles.backdrop} testID="combat-momentum-info" onPress={() => setMomentumInfoOpen(false)}>
+                    <View style={[styles.tipPlaque, { borderColor: `${AXM.sulfur}66` }]}>
+                        <View style={[styles.tipCorner, styles.tipCornerTl, { borderColor: AXM.sulfur }]} pointerEvents="none" />
+                        <View style={[styles.tipCorner, styles.tipCornerTr, { borderColor: AXM.sulfur }]} pointerEvents="none" />
+                        <View style={[styles.tipCorner, styles.tipCornerBl, { borderColor: AXM.sulfur }]} pointerEvents="none" />
+                        <View style={[styles.tipCorner, styles.tipCornerBr, { borderColor: AXM.sulfur }]} pointerEvents="none" />
+                        <GlyphBurst color={AXM.sulfur} glyph="✦" />
+                        <Text style={[styles.tipName, { color: AXM.sulfur, textShadowColor: AXM.sulfur }]}>MOMENTUM</Text>
+                        <Text style={styles.tipGloss}>
+                            Play stances around the wheel — HEART, then BODY, then MIND (starting on any of
+                            them). Each right stance lights the next node; a wrong stance resets the wheel.
+                            Light all three and you forge a wild ✦ MOMENTUM die — drag it onto ANY card to
+                            power it, with the wild colour-match bonus.
+                        </Text>
+                        <Text style={styles.tipMeta}>wrong stance resets · the wild die lasts until spent or the turn ends</Text>
+                        <View style={styles.tipBadgeWrap} pointerEvents="none">
+                            <Svg width={128} height={30} viewBox="0 0 128 30">
+                                <Polygon points="14,1 114,1 127,15 114,29 14,29 1,15" fill={AXM.panelBg} stroke={AXM.sulfur} strokeWidth={1.5} />
+                            </Svg>
+                            <View style={StyleSheet.absoluteFill}>
+                                <View style={styles.tipBadgeInner}>
+                                    <Text style={[styles.tipBadgeText, { color: AXM.sulfur }]} allowFontScaling={false}>COMBO</Text>
+                                </View>
+                            </View>
+                        </View>
+                    </View>
+                </Pressable>
+            )}
+
+            {/* pilgrim modal — tap the player medallion: ALL stats + status effects */}
             {pilgrimOpen && (() => {
                 const p = live.player;
                 const stats = p.baseStats ?? { heart: 0, body: 0, mind: 0 };
-                const equipped = Array.from(firstEquippedPerSlot(p.inventory ?? []).entries());
-                const skills = (p.knownSkills ?? [])
-                    .map((id) => getSkillById(id))
-                    .filter((s): s is NonNullable<ReturnType<typeof getSkillById>> => Boolean(s));
+                const d = p.derivedStats ?? ({} as Partial<Character['derivedStats']>);
+                const nc = p.nonCombatStats ?? ({} as Partial<Character['nonCombatStats']>);
+                const axes = [
+                    { label: 'PHYSICAL', color: STANCE_COLORS.body, atk: d.physicalAttack, skl: d.physicalSkill, def: d.physicalDefense, save: nc.physicalSave, test: nc.physicalTest },
+                    { label: 'MENTAL', color: STANCE_COLORS.mind, atk: d.mentalAttack, skl: d.mentalSkill, def: d.mentalDefense, save: nc.mentalSave, test: nc.mentalTest },
+                    { label: 'EMOTIONAL', color: STANCE_COLORS.heart, atk: d.emotionalAttack, skl: d.emotionalSkill, def: d.emotionalDefense, save: nc.emotionalSave, test: nc.emotionalTest },
+                ] as const;
                 return (
                     <Pressable style={styles.backdrop} testID="combat-pilgrim-modal" onPress={() => setPilgrimOpen(false)}>
                         <View style={styles.pilgrimWrap} onStartShouldSetResponder={() => true}>
@@ -606,7 +683,7 @@ export function CombatEncounterPanel({
                                     <View style={styles.pilgrimPortrait}><PlayerPortrait width={56} height={68} /></View>
                                     <View style={{ flex: 1 }}>
                                         <Text style={styles.pilgrimName}>{vm.player.name}</Text>
-                                        <Text style={styles.pilgrimVitae}>♥ {vm.player.hp} / {vm.player.maxHp} VITAE{vm.player.guard > 0 ? `   🛡 ${vm.player.guard} GUARD` : ''}</Text>
+                                        <Text style={styles.pilgrimVitae}>LVL {p.level ?? 1}   ♥ {vm.player.hp} / {vm.player.maxHp} VITAE{vm.player.guard > 0 ? `   🛡 ${vm.player.guard}` : ''}</Text>
                                     </View>
                                     <Text style={[styles.pilgrimConviction, { color: AXM.sulfur }]}>◆ {vm.conviction}</Text>
                                 </View>
@@ -619,6 +696,26 @@ export function CombatEncounterPanel({
                                     ))}
                                 </View>
 
+                                {/* the FULL stat table — attack/skill/defense + save/test per axis */}
+                                <View style={styles.pilgrimGridHead}>
+                                    <Text style={styles.pilgrimGridLabel} />
+                                    {['ATK', 'SKL', 'DEF', 'SAVE', 'TEST'].map((h) => (
+                                        <Text key={h} style={styles.pilgrimGridCol} allowFontScaling={false}>{h}</Text>
+                                    ))}
+                                </View>
+                                {axes.map((a) => (
+                                    <View key={a.label} style={styles.pilgrimGridRow}>
+                                        <Text style={[styles.pilgrimGridLabel, { color: a.color }]} allowFontScaling={false}>{a.label}</Text>
+                                        {[a.atk, a.skl, a.def, a.save, a.test].map((v, i) => (
+                                            <Text key={i} style={styles.pilgrimGridVal} allowFontScaling={false}>{v ?? 0}</Text>
+                                        ))}
+                                    </View>
+                                ))}
+                                <View style={styles.pilgrimMetaRow}>
+                                    <Text style={styles.pilgrimMetaChip} allowFontScaling={false}>🍀 LUCK {d.luck ?? 0}</Text>
+                                    <Text style={styles.pilgrimMetaChip} allowFontScaling={false}>XP {p.experience ?? 0} / {p.experienceToNextLevel ?? 0}</Text>
+                                </View>
+
                                 <Text style={styles.pilgrimSection}>STATUS EFFECTS</Text>
                                 {vm.player.effects.length === 0 && <Text style={styles.pilgrimEmpty}>clear — nothing afflicts or blesses you</Text>}
                                 {vm.player.effects.map((e) => (
@@ -627,29 +724,6 @@ export function CombatEncounterPanel({
                                         <View style={{ flex: 1 }}>
                                             <Text style={[styles.pilgrimRowName, { color: e.glyph.color }]}>{e.glyph.label}  ·  ×{e.intensity} · {e.duration} turns</Text>
                                             {e.gloss ? <Text style={styles.pilgrimRowDef}>{e.gloss}</Text> : null}
-                                        </View>
-                                    </View>
-                                ))}
-
-                                <Text style={styles.pilgrimSection}>GEAR</Text>
-                                {equipped.length === 0 && <Text style={styles.pilgrimEmpty}>nothing equipped</Text>}
-                                {equipped.map(([slot, item]) => (
-                                    <View key={slot} style={styles.pilgrimRow}>
-                                        <Text style={styles.pilgrimRowSlot}>{slot.toUpperCase()}</Text>
-                                        <View style={{ flex: 1 }}>
-                                            <Text style={styles.pilgrimRowName}>{item.name}</Text>
-                                            {item.description ? <Text style={styles.pilgrimRowDef}>{item.description}</Text> : null}
-                                        </View>
-                                    </View>
-                                ))}
-
-                                <Text style={styles.pilgrimSection}>SKILLS</Text>
-                                {skills.length === 0 && <Text style={styles.pilgrimEmpty}>no learned skills</Text>}
-                                {skills.map((s) => (
-                                    <View key={s.id} style={styles.pilgrimRow}>
-                                        <View style={{ flex: 1 }}>
-                                            <Text style={styles.pilgrimRowName}>{s.name}</Text>
-                                            {s.description ? <Text style={styles.pilgrimRowDef}>{s.description}</Text> : null}
                                         </View>
                                     </View>
                                 ))}
@@ -792,6 +866,14 @@ const useStyles = makeStyles((AXM) => ({
     pilgrimStat: { flex: 1, borderWidth: 1, borderRadius: 6, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', paddingVertical: 7 },
     pilgrimStatVal: { fontFamily: FONTS.gothic, fontSize: 20, lineHeight: 23 },
     pilgrimStatLabel: { fontFamily: FONTS.sans, fontSize: 9, letterSpacing: 1.6, color: AXM.bone, marginTop: 1 },
+    // full stat table
+    pilgrimGridHead: { flexDirection: 'row', alignItems: 'center', marginTop: 8, paddingHorizontal: 4 },
+    pilgrimGridRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', borderRadius: 5, backgroundColor: 'rgba(0,0,0,0.4)', paddingVertical: 6, paddingHorizontal: 4, marginTop: 4 },
+    pilgrimGridLabel: { flex: 1.6, fontFamily: FONTS.sans, fontSize: 10, letterSpacing: 1.2, color: AXM.bone, paddingLeft: 4 },
+    pilgrimGridCol: { flex: 1, fontFamily: FONTS.sans, fontSize: 9, letterSpacing: 1, color: AXM.bone, textAlign: 'center', opacity: 0.75 },
+    pilgrimGridVal: { flex: 1, fontFamily: FONTS.mono, fontSize: 13, color: AXM.parchment, textAlign: 'center' },
+    pilgrimMetaRow: { flexDirection: 'row', gap: 8, marginTop: 6 },
+    pilgrimMetaChip: { fontFamily: FONTS.mono, fontSize: 11, color: AXM.bone, letterSpacing: 0.4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', borderRadius: 4, backgroundColor: 'rgba(0,0,0,0.4)', paddingHorizontal: 7, paddingVertical: 3, overflow: 'hidden' },
     pilgrimSection: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 2, color: AXM.sulfur, marginTop: 14, marginBottom: 6 },
     pilgrimEmpty: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 12, color: AXM.ash },
     pilgrimRow: { flexDirection: 'row', gap: 9, alignItems: 'flex-start', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', borderRadius: 6, backgroundColor: 'rgba(0,0,0,0.4)', padding: 9, marginBottom: 6 },

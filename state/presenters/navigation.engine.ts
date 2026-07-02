@@ -12,7 +12,8 @@ import type { AppStoreState } from '../store';
 import { selectHasActiveEvent } from './event.engine';
 import { freezeViewModel } from './freeze';
 
-export type TabRoute = 'exploration' | 'combat' | 'character' | 'memoir' | 'inventory';
+export type TabRoute = 'exploration' | 'character' | 'memoir' | 'inventory';
+export type ActiveRoute = TabRoute | 'combat-encounter';
 
 export interface TabBadge {
     /** Badge text (e.g., '!', '↑'). */
@@ -22,8 +23,8 @@ export interface TabBadge {
 }
 
 export interface NavigationViewModel {
-    /** Active tab route for cold-start. */
-    activeTab: TabRoute;
+    /** Active route for cold-start. */
+    activeTab: ActiveRoute;
     /** Tab badges by route key. */
     badges: Record<TabRoute, TabBadge | null>;
 }
@@ -40,14 +41,15 @@ export interface NavigationViewModel {
  * `selectHasActiveEvent`), not a tab, so they do not participate in
  * tab selection.
  */
-export function selectActiveTab(state: GameStore): TabRoute {
+export function selectActiveTab(state: GameStore): ActiveRoute {
     // Legacy turn-based combat was removed from the engine (mechanics
     // 0.37.0). The engine now signals an active encounter via
     // `currentEncounter` (`selectIsInCombat`); live hazard combat runs
-    // in the panel's local state, so this only routes for the engine's
-    // own encounter bookkeeping.
+    // in the panel's local state, so this routes cold-start combat to the
+    // standalone hazard-pattern combat encounter screen, not the retired
+    // `/combat` route.
     if (selectIsInCombat(state)) {
-        return 'combat';
+        return 'combat-encounter';
     }
     return 'exploration';
 }
@@ -60,7 +62,6 @@ export function selectActiveTab(state: GameStore): TabRoute {
  */
 const EMPTY_BADGES: Record<TabRoute, TabBadge | null> = Object.freeze({
     exploration: null,
-    combat: null,
     character: null,
     memoir: null,
     inventory: null,
@@ -100,7 +101,6 @@ export function selectTabBadges(state: AppStoreState): Record<TabRoute, TabBadge
 
     return {
         exploration: null,
-        combat: null,
         character: levelupReady ? LEVELUP_BADGE : EVENT_BADGE,
         memoir: null,
         inventory: null,

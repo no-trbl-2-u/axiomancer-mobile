@@ -181,7 +181,7 @@ describe('app/index.tsx: onboarding flow', () => {
         expect(getByTestId('redirect-/exploration')).toBeTruthy();
     });
 
-    it('redirects to combat tab when player is in combat', () => {
+    it('redirects to the hazard-pattern combat encounter route when player is in combat', () => {
         const store = makeStore();
         const state = store.getState();
         
@@ -200,8 +200,8 @@ describe('app/index.tsx: onboarding flow', () => {
         
         const { getByTestId } = render(withProviders(store, <IndexScreen />));
         
-        // Should redirect to combat when in combat
-        expect(getByTestId('redirect-/combat')).toBeTruthy();
+        // Should redirect to the current Hazard-pattern combat route, not retired `/combat`.
+        expect(getByTestId('redirect-/combat-encounter')).toBeTruthy();
     });
 
     it('handles onboarding flow correctly based on player state', () => {

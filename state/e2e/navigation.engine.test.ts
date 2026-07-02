@@ -33,14 +33,14 @@ function makeEnemy() {
 
 describe('navigation.engine', () => {
     describe('selectActiveTab', () => {
-        it('returns combat when in combat', () => {
+        it('returns combat-encounter when in combat', () => {
             const store = createGameStore(createMemoryAdapter());
             
             // Start combat to set combat state
             store.getState().startCombat(makeEnemy());
             
             const result = selectActiveTab(store.getState());
-            expect(result).toBe('combat');
+            expect(result).toBe('combat-encounter');
         });
 
         it('returns exploration when not in combat and no active event', () => {
@@ -70,7 +70,6 @@ describe('navigation.engine', () => {
 
             expect(result).toEqual({
                 exploration: null,
-                combat: null,
                 character: null,
                 memoir: null,
                 inventory: null,
@@ -104,7 +103,6 @@ describe('navigation.engine', () => {
 
             expect(result.character).toEqual({ text: '!', kind: 'event' });
             expect(result.exploration).toBeNull();
-            expect(result.combat).toBeNull();
             expect(result.inventory).toBeNull();
         });
 
@@ -217,7 +215,6 @@ describe('navigation.engine', () => {
                 activeTab: 'exploration',
                 badges: expect.objectContaining({
                     exploration: null,
-                    combat: null,
                     character: null,
                     memoir: null,
                     inventory: null,
@@ -225,14 +222,14 @@ describe('navigation.engine', () => {
             });
         });
 
-        it('reflects combat state in active tab', () => {
+        it('reflects combat state in active route', () => {
             const store: AppStore = createAppStore({ adapter: createMemoryAdapter() });
 
             // Start combat
             store.getState().startCombat(makeEnemy());
 
             const result = selectNavigationViewModel(store.getState());
-            expect(result.activeTab).toBe('combat');
+            expect(result.activeTab).toBe('combat-encounter');
         });
 
         it('is frozen in development', () => {

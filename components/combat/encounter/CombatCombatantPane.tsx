@@ -188,12 +188,13 @@ export function EffectChips({ effects, onChip, align = 'flex-start' }: {
  * hit-flash, hitstop squash, contact slash, floats, haptic — off the same `fx`
  * stream the pane reads for the enemy side.
  */
-export function PlayerMedallion({
-    player, enemyIntentDamage, onChip, fx, bottomInset = 0,
+export const PlayerMedallion = React.memo(function PlayerMedallion({
+    player, enemyIntentDamage, onPress, fx, bottomInset = 0,
 }: {
     player: CombatPlayerPaneVM;
     enemyIntentDamage: number;
-    onChip?: (e: CombatEffectChipVM) => void;
+    /** Tap the medallion → inspect the pilgrim (stats/effects/skills modal). */
+    onPress?: () => void;
     fx?: CombatFx;
     bottomInset?: number;
 }) {
@@ -275,49 +276,48 @@ export function PlayerMedallion({
 
     return (
         <View style={[styles.playerDock, { bottom: bottomInset + 34 }]} pointerEvents="box-none">
-            <EffectChips effects={player.effects} onChip={onChip} />
-            {player.guard > 0 ? (
-                <Text style={styles.guardChip} testID="combat-guard">🛡 {player.guard}</Text>
-            ) : null}
-            <Animated.View
-                style={[styles.medallion, anim]}
-                accessible
-                accessibilityRole="progressbar"
-                accessibilityLabel={`${player.name} VITAE ${player.hp} of ${player.maxHp}`}
-                accessibilityValue={{ min: 0, max: player.maxHp, now: player.hp }}
-            >
-                <View style={styles.medallionClip}>
-                    <PlayerPortrait width={72} height={86} />
-                    <Animated.View style={[styles.medallionFlash, flashAnim]} pointerEvents="none" />
-                </View>
-                <Svg width={92} height={92} viewBox="0 0 92 92" style={StyleSheet.absoluteFill} pointerEvents="none">
-                    <Circle cx={46} cy={46} r={40} stroke="rgba(0,0,0,0.65)" strokeWidth={6} fill="none" />
-                    <Circle
-                        cx={46} cy={46} r={40}
-                        stroke={AXM.heal}
-                        strokeWidth={5}
-                        strokeLinecap="round"
-                        fill="none"
-                        strokeDasharray={`${arcOn} ${ARC_C}`}
-                        transform="rotate(-90 46 46)"
-                    />
-                    <Circle cx={46} cy={46} r={44.5} stroke={AXM.sulfur} strokeWidth={1.8} fill="none" opacity={0.9} />
-                </Svg>
-                {/* one-frame contact slash at the moment of impact */}
-                <Animated.View style={[styles.contactSlash, contactStyle]} pointerEvents="none">
-                    <Text style={styles.contactSlashText}>✦</Text>
-                </Animated.View>
+            <Animated.View style={anim}>
+                <Pressable
+                    onPress={onPress}
+                    style={styles.medallion}
+                    testID="combat-player-medallion"
+                    accessibilityRole="button"
+                    accessibilityLabel={`${player.name}, VITAE ${player.hp} of ${player.maxHp}. Inspect your pilgrim — stats, status effects and skills.`}
+                    hitSlop={6}
+                >
+                    <View style={styles.medallionClip}>
+                        <PlayerPortrait width={72} height={86} />
+                        <Animated.View style={[styles.medallionFlash, flashAnim]} pointerEvents="none" />
+                    </View>
+                    <Svg width={92} height={92} viewBox="0 0 92 92" style={StyleSheet.absoluteFill} pointerEvents="none">
+                        <Circle cx={46} cy={46} r={40} stroke="rgba(0,0,0,0.65)" strokeWidth={6} fill="none" />
+                        <Circle
+                            cx={46} cy={46} r={40}
+                            stroke={AXM.heal}
+                            strokeWidth={5}
+                            strokeLinecap="round"
+                            fill="none"
+                            strokeDasharray={`${arcOn} ${ARC_C}`}
+                            transform="rotate(-90 46 46)"
+                        />
+                        <Circle cx={46} cy={46} r={44.5} stroke={AXM.sulfur} strokeWidth={1.8} fill="none" opacity={0.9} />
+                    </Svg>
+                    {/* one-frame contact slash at the moment of impact */}
+                    <Animated.View style={[styles.contactSlash, contactStyle]} pointerEvents="none">
+                        <Text style={styles.contactSlashText}>✦</Text>
+                    </Animated.View>
+                </Pressable>
             </Animated.View>
             <View style={styles.playerFloatLayer} pointerEvents="none">
                 {floats.map((f) => <FloatNum key={f.id} text={f.text} color={f.color} dx={f.dx} onDone={() => drop(f.id)} />)}
             </View>
         </View>
     );
-}
+});
 
 // ── The overlay ──────────────────────────────────────────────────────────────
 
-export function CombatCombatantPane({
+export const CombatCombatantPane = React.memo(function CombatCombatantPane({
     enemy, player, onChip, fx, topInset = 0, metaLine,
 }: {
     enemy: CombatEnemyPaneVM;
@@ -522,7 +522,7 @@ export function CombatCombatantPane({
             </View>
         </Animated.View>
     );
-}
+});
 
 const useStyles = makeStyles((AXM) => ({
     // Battlefield band — the scene fills the top ~62% and fades into the floor.
@@ -590,11 +590,6 @@ const useStyles = makeStyles((AXM) => ({
 
     // Player medallion.
     playerDock: { position: 'absolute', left: 10, alignItems: 'flex-start', gap: 6, zIndex: 35 },
-    guardChip: {
-        fontFamily: FONTS.mono, fontSize: 11, color: '#6fb3e0', letterSpacing: 0.5,
-        backgroundColor: 'rgba(0,0,0,0.7)', borderWidth: 1, borderColor: '#6fb3e055', borderRadius: 4,
-        paddingHorizontal: 5, paddingVertical: 2, overflow: 'hidden',
-    },
     medallion: { width: 92, height: 92, alignItems: 'center', justifyContent: 'center' },
     medallionClip: {
         width: 80, height: 80, borderRadius: 40, overflow: 'hidden', backgroundColor: AXM.deepBg,

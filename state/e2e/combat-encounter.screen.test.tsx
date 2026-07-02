@@ -79,8 +79,9 @@ describe('combat-encounter screen — drag-to-power flow (2026-06-22)', () => {
         expect(screen.queryByTestId('combat-read-banner')).toBeNull();
         expect(screen.queryByTestId('combat-free-slippery-slope')).toBeNull();
         expect(screen.queryByTestId('combat-power-slippery-slope')).toBeNull();
-        // END TURN (re-roll) + END PHASE + SCRAP stay visible.
-        expect(screen.getByTestId('combat-new-turn')).toBeTruthy();
+        // END PHASE + SCRAP stay; the dice-reroll button is deliberately GONE
+        // (2026-07 polish): the rolled dice ARE the turn.
+        expect(screen.queryByTestId('combat-new-turn')).toBeNull();
         expect(screen.getByTestId('combat-end-phase')).toBeTruthy();
         expect(screen.getByTestId('combat-trash')).toBeTruthy();
     });

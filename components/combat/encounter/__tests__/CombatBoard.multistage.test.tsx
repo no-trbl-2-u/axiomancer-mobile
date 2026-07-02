@@ -25,7 +25,7 @@ const noopDrag = (): DragController =>
 
 const boardCallbacks = () => ({
     onApply: jest.fn(), onStage: jest.fn(), onUnstage: jest.fn(), onDiscard: jest.fn(),
-    onSignature: jest.fn(), onNewTurn: jest.fn(), onEndPhase: jest.fn(), onInspect: jest.fn(),
+    onSignature: jest.fn(), onEndPhase: jest.fn(), onInspect: jest.fn(),
 });
 
 afterEach(() => { jest.clearAllMocks(); });

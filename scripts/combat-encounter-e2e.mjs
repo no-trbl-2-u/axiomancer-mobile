@@ -136,7 +136,7 @@ async function playCombat(page, baseUrl) {
     //    the read banner are legacy-combat chrome the HP model removed — the jest
     //    screen suite pins their ABSENCE, so this list must not require them.)
     await page.getByTestId('combat-board').waitFor({ state: 'visible', timeout: 15000 })
-    for (const id of ['combat-combatant-pane', 'combat-dice-tray', 'combat-hand', 'combat-conviction', 'combat-signature-bar', 'combat-intent', 'combat-end-phase', 'combat-new-turn', 'combat-play-area']) {
+    for (const id of ['combat-combatant-pane', 'combat-dice-tray', 'combat-hand', 'combat-conviction', 'combat-signature-bar', 'combat-intent', 'combat-end-phase', 'combat-play-area']) {
         if (!(await page.getByTestId(id).count())) fail(`missing board element: ${id}`)
     }
     await page.waitForTimeout(200)

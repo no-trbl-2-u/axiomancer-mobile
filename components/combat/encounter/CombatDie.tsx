@@ -19,7 +19,7 @@ import { FONTS } from '@/theme/axm';
 import { makeStyles } from '@/theme/runtime';
 import type { CombatDieVM } from '@/state/presenters/combat-encounter.engine';
 
-export function CombatDie({ die, size = 54, dimmed = false }: { die: CombatDieVM; size?: number; dimmed?: boolean }) {
+export const CombatDie = React.memo(function CombatDie({ die, size = 54, dimmed = false }: { die: CombatDieVM; size?: number; dimmed?: boolean }) {
     const styles = useStyles();
     const accent = die.colorHex;
     const ring = die.drafted ? accent : die.isX ? '#3a3a3a' : `${accent}aa`;
@@ -70,7 +70,7 @@ export function CombatDie({ die, size = 54, dimmed = false }: { die: CombatDieVM
             </View>
         </View>
     );
-}
+});
 
 const useStyles = makeStyles(() => ({
     die: {

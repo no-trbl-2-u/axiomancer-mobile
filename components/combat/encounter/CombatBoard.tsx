@@ -44,7 +44,8 @@ import type {
     CombatViewModel, CombatCardVM, CombatDieVM,
     CombatSignatureVM, CombatEffectChipVM, CombatCardFaceVM,
 } from '@/state/presenters/combat-encounter.engine';
-import { armedReadValue } from '@/state/presenters/combat-encounter.engine';
+import { armedReadValue, STANCE_COLORS } from '@/state/presenters/combat-encounter.engine';
+import { wheelNext, type WheelStance } from '@/state/combat/momentum';
 import type { CombatReadResult } from 'axiomancer-mechanics';
 import { TrashGlyph, LedgerMark } from '@/components/hazard/glyphs';
 import { CombatCombatantPane, EffectChips, PlayerMedallion, COMBAT_HUD_HEIGHT, type CombatFx } from './CombatCombatantPane';
@@ -206,20 +207,24 @@ function DiceRow({
 
 // ── Staged card (die socket · fused APPLY ribbon) ────────────────────────────
 
-function StagedCard({
+const StagedCard = React.memo(function StagedCard({
     card, assignedDie, read, onApply, gesture, register, compact = false, popKey = 0, socketPulse = false,
 }: {
     card: CombatCardVM;
     assignedDie: CombatDieVM | null;
     read: string;
-    onApply: () => void;
+    /** Stable dispatcher — called with the card uid (memo-friendly). */
+    onApply: (uid: string) => void;
     gesture: ReturnType<typeof Gesture.Exclusive>;
-    register: (node: View | null) => void;
+    /** Stable registrar — (uid, node) for the die drop-target measurement. */
+    register: (uid: string, node: View | null) => void;
     compact?: boolean;
     /** Rising nonce: when it changes (>0) this card just received a dropped die →
      *  a brief 1.05 scale-pop confirms the drop landed HERE (and only here). */
     popKey?: number;
-    /** True while a die drag is live — pulses the empty die socket. */
+    /** True while a die drag is live — highlights the empty die socket. (A static
+     *  highlight, deliberately not an animation: N staged cards each running an
+     *  infinite pulse measurably chugged die drags.) */
     socketPulse?: boolean;
 }) {
     const AXM = usePalette();
@@ -231,16 +236,6 @@ function StagedCard({
         if (popKey > 0) pop.value = withSequence(withTiming(1.05, { duration: 120 }), withTiming(1, { duration: 120 }));
     }, [popKey, pop]);
     const popStyle = useAnimatedStyle(() => ({ transform: [{ scale: pop.value }] }));
-    // Empty-socket pulse while a die is being dragged (the visible drop target).
-    const pulse = useSharedValue(0);
-    useEffect(() => {
-        if (socketPulse && !assignedDie) {
-            pulse.value = withRepeat(withSequence(withTiming(1, { duration: 420 }), withTiming(0, { duration: 420 })), -1);
-        } else {
-            pulse.value = 0;
-        }
-    }, [socketPulse, assignedDie, pulse]);
-    const socketStyle = useAnimatedStyle(() => ({ transform: [{ scale: 1 + pulse.value * 0.14 }] }));
     const armed = assignedDie !== null;
     const readColor = armed ? (READ_ACCENT[read] ?? AXM.bone) : AXM.bone;
     const cardW = compact ? 92 : 118;
@@ -261,7 +256,7 @@ function StagedCard({
         <View style={styles.stagedCol}>
             <GestureDetector gesture={gesture}>
                 <Animated.View
-                    ref={(node) => register(node as unknown as View | null)}
+                    ref={(node) => register(card.uid, node as unknown as View | null)}
                     entering={FadeInDown.duration(180)}
                     testID={`combat-staged-${card.uid}`}
                     accessible
@@ -280,24 +275,24 @@ function StagedCard({
                         heroOverride={heroOverride}
                     />
                     {/* die socket notched into the top-right corner: dashed target while
-                        empty (pulsing during a die drag), the assigned die once armed. */}
+                        empty (highlighted during a die drag), the assigned die once armed. */}
                     {/* testID must NOT share the `combat-die-` prefix (e2e drags dice by prefix) */}
-                    <Animated.View style={[styles.dieSocket, socketStyle]} testID={assignedDie ? undefined : `combat-socket-${card.uid}`}>
+                    <View style={[styles.dieSocket, socketPulse && !assignedDie ? { transform: [{ scale: 1.12 }] } : null]} testID={assignedDie ? undefined : `combat-socket-${card.uid}`}>
                         {assignedDie ? (
                             <View testID="combat-staged-die">
                                 <CombatDie die={assignedDie} size={compact ? 26 : 32} />
                             </View>
                         ) : (
-                            <View style={[styles.dieSocketEmpty, socketPulse ? { borderColor: AXM.sulfur } : null]}>
+                            <View style={[styles.dieSocketEmpty, socketPulse ? { borderColor: AXM.sulfur, backgroundColor: 'rgba(212,192,38,0.18)' } : null]}>
                                 <Text style={[styles.dieSocketGlyph, socketPulse ? { color: AXM.sulfur } : null]}>⬡</Text>
                             </View>
                         )}
-                    </Animated.View>
+                    </View>
                   </Animated.View>
                 </Animated.View>
             </GestureDetector>
             <Pressable
-                onPress={() => { Haptics.impactAsync(armed ? Haptics.ImpactFeedbackStyle.Heavy : Haptics.ImpactFeedbackStyle.Medium).catch(() => undefined); onApply(); }}
+                onPress={() => { Haptics.impactAsync(armed ? Haptics.ImpactFeedbackStyle.Heavy : Haptics.ImpactFeedbackStyle.Medium).catch(() => undefined); onApply(card.uid); }}
                 testID={`combat-apply-${card.uid}`}
                 accessibilityRole="button"
                 accessibilityLabel={armed ? `Apply powered: ${card.bottomActionText}` : `Apply free: ${card.topActionText}`}
@@ -313,6 +308,60 @@ function StagedCard({
                 </Text>
             </Pressable>
         </View>
+    );
+});
+
+// ── Momentum wheel (stance-sequencing combo tracker) ─────────────────────────
+
+const WHEEL_META: { stance: WheelStance; glyph: string }[] = [
+    { stance: 'heart', glyph: '♥' },
+    { stance: 'body', glyph: '⚡' },
+    { stance: 'mind', glyph: '★' },
+];
+
+/** Three stance nodes in wheel order. Playing cards that step the wheel
+ *  (heart → body → mind → heart…) lights nodes; a full cycle forges a wild
+ *  MOMENTUM die (rendered charged: every node gold + the ✦ tag). */
+function MomentumWheel({ lit, charged, onPress }: { lit: WheelStance[]; charged: boolean; onPress?: () => void }) {
+    const AXM = usePalette();
+    const styles = useStyles();
+    const litSet = new Set(lit);
+    const next = charged ? null : wheelNext(lit);
+    const a11y = charged
+        ? 'Momentum charged — a wild momentum die waits in your tray; it can power any card.'
+        : lit.length === 0
+            ? 'Momentum wheel empty — play any stance to start the cycle.'
+            : `Momentum ${lit.length} of 3 — next stance ${next?.toUpperCase() ?? ''}.`;
+    return (
+        <Pressable
+            style={styles.wheelRow}
+            onPress={onPress}
+            testID="combat-momentum"
+            accessibilityRole="button"
+            accessibilityLabel={a11y}
+            accessibilityHint="Tap for how momentum works"
+        >
+            {WHEEL_META.map(({ stance, glyph }, i) => {
+                const isLit = charged || litSet.has(stance);
+                const isNext = !charged && next === stance;
+                const color = charged ? AXM.sulfur : STANCE_COLORS[stance];
+                return (
+                    <React.Fragment key={stance}>
+                        {i > 0 ? <Text style={styles.wheelChevron} allowFontScaling={false}>›</Text> : null}
+                        <View
+                            style={[
+                                styles.wheelNode,
+                                { borderColor: isLit ? color : isNext ? `${color}aa` : AXM.ash, backgroundColor: isLit ? `${color}30` : 'rgba(0,0,0,0.5)' },
+                                isNext && styles.wheelNodeNext,
+                            ]}
+                        >
+                            <Text style={[styles.wheelGlyph, { color: isLit ? color : AXM.ash, textShadowColor: isLit ? color : 'transparent' }]} allowFontScaling={false}>{glyph}</Text>
+                        </View>
+                    </React.Fragment>
+                );
+            })}
+            {charged ? <Text style={[styles.wheelCharged, { color: AXM.sulfur, textShadowColor: AXM.sulfur }]} allowFontScaling={false}>✦ MOMENTUM</Text> : null}
+        </Pressable>
     );
 }
 
@@ -375,14 +424,19 @@ export interface CombatBoardProps {
     onChip?: (e: CombatEffectChipVM) => void;
     /** Long-press (or tap while unaffordable) on a signature rune → info popup. */
     onSignatureInfo?: (s: CombatSignatureVM) => void;
-    /** Tap the player medallion → pilgrim stats/effects/skills modal. */
+    /** Tap the player medallion → pilgrim stats/effects modal. */
     onPlayerInspect?: () => void;
+    /** Momentum wheel state (panel-owned): lit nodes + whether a wild momentum
+     *  die is currently live in the tray. */
+    momentum?: { lit: WheelStance[]; charged: boolean };
+    /** Tap the wheel → how-momentum-works popup. */
+    onMomentumInfo?: () => void;
     /** Latest resolved engine events (drives enemy/player resolution feedback). */
     fx?: CombatFx;
 }
 
 export const CombatBoard = React.memo(function CombatBoard({
-    vm, drag, stagedUids, onApply, onStage, onUnstage, onDiscard, onSignature, onEndPhase, onInspect, onChip, onSignatureInfo, onPlayerInspect, fx,
+    vm, drag, stagedUids, onApply, onStage, onUnstage, onDiscard, onSignature, onEndPhase, onInspect, onChip, onSignatureInfo, onPlayerInspect, momentum, onMomentumInfo, fx,
 }: CombatBoardProps) {
     const AXM = usePalette();
     const styles = useStyles();
@@ -498,35 +552,76 @@ export const CombatBoard = React.memo(function CombatBoard({
 
     (drag as DragController & { resolveDrop?: typeof resolveDrop }).resolveDrop = resolveDrop;
 
-    // Per-frame position updates write the shared values DIRECTLY on the UI
-    // thread — only begin (stage the ghost) and end (resolve the drop) hop to JS.
-    const handCardGesture = (card: CombatCardVM) => {
-        const pan = Gesture.Pan().minDistance(10)
-            .onStart((e) => { drag.x.value = e.absoluteX; drag.y.value = e.absoluteY; runOnJS(drag.begin)({ type: 'card', from: 'hand', uid: card.uid, card }, e.absoluteX, e.absoluteY); })
-            .onUpdate((e) => { drag.x.value = e.absoluteX; drag.y.value = e.absoluteY; })
-            .onEnd((e) => { runOnJS(drag.end)(e.absoluteX, e.absoluteY); })
-            .onFinalize((e, ok) => { if (!ok) runOnJS(drag.end)(-1, -1); });
-        const tap = Gesture.Tap().maxDistance(9).onEnd(() => { runOnJS(onInspect)(card); });
-        return Gesture.Exclusive(pan, tap);
-    };
+    // ── stable gesture layer (multi-card staging perf) ───────────────────────
+    // Gestures used to be REBUILT on every render — with several staged cards
+    // each interaction re-created and re-attached every pan/tap handler on the
+    // board, and the drags degraded the longer cards sat staged. Now:
+    //   · latest handlers live in refs, bridged through IDENTITY-STABLE JS
+    //     callbacks (runOnJS mappings never change);
+    //   · each card/die gets its gesture built ONCE, cached by uid;
+    //   · per-frame position updates write the shared values DIRECTLY on the
+    //     UI thread — only begin (stage the ghost) and end (resolve) hop to JS.
+    const handMapRef = useRef(new Map<string, CombatCardVM>());
+    handMapRef.current = new Map(vm.hand.map((c) => [c.uid, c]));
+    const diceMapRef = useRef(new Map<string, CombatDieVM>());
+    diceMapRef.current = new Map(vm.dice.map((d) => [d.id, d]));
+    const dragBeginRef = useRef(drag.begin); dragBeginRef.current = drag.begin;
+    const dragEndRef = useRef(drag.end); dragEndRef.current = drag.end;
+    const onInspectRef = useRef(onInspect); onInspectRef.current = onInspect;
+    const onUnstageRef = useRef(onUnstage); onUnstageRef.current = onUnstage;
 
-    const stagedGesture = (card: CombatCardVM) => {
-        const pan = Gesture.Pan().minDistance(10)
-            .onStart((e) => { drag.x.value = e.absoluteX; drag.y.value = e.absoluteY; runOnJS(drag.begin)({ type: 'card', from: 'play', uid: card.uid, card }, e.absoluteX, e.absoluteY); })
-            .onUpdate((e) => { drag.x.value = e.absoluteX; drag.y.value = e.absoluteY; })
-            .onEnd((e) => { runOnJS(drag.end)(e.absoluteX, e.absoluteY); })
-            .onFinalize((e, ok) => { if (!ok) runOnJS(drag.end)(-1, -1); });
-        const tap = Gesture.Tap().maxDistance(9).onEnd(() => { runOnJS(onUnstage)(card.uid); });
-        return Gesture.Exclusive(pan, tap);
-    };
+    const beginCardJS = useCallback((from: 'hand' | 'play', uid: string, x: number, y: number) => {
+        const card = handMapRef.current.get(uid);
+        if (card) dragBeginRef.current({ type: 'card', from, uid, card }, x, y);
+    }, []);
+    const beginDieJS = useCallback((dieId: string, x: number, y: number) => {
+        const die = diceMapRef.current.get(dieId);
+        if (die) dragBeginRef.current({ type: 'die', dieId, die }, x, y);
+    }, []);
+    const endJS = useCallback((x: number, y: number) => { dragEndRef.current(x, y); }, []);
+    const inspectJS = useCallback((uid: string) => {
+        const card = handMapRef.current.get(uid);
+        if (card) onInspectRef.current(card);
+    }, []);
+    const unstageJS = useCallback((uid: string) => { onUnstageRef.current(uid); }, []);
 
+    const gestureCacheRef = useRef(new Map<string, ReturnType<typeof Gesture.Exclusive>>());
+    // drag.x/drag.y are the SAME SharedValue objects across renders (created once
+    // in the panel), so gestures capturing them can be cached indefinitely.
+    const gx = drag.x;
+    const gy = drag.y;
+    const cardGestureFor = (from: 'hand' | 'play', uid: string) => {
+        const key = `${from}-${uid}`;
+        let g = gestureCacheRef.current.get(key);
+        if (!g) {
+            const pan = Gesture.Pan().minDistance(10)
+                .onStart((e) => { gx.value = e.absoluteX; gy.value = e.absoluteY; runOnJS(beginCardJS)(from, uid, e.absoluteX, e.absoluteY); })
+                .onUpdate((e) => { gx.value = e.absoluteX; gy.value = e.absoluteY; })
+                .onEnd((e) => { runOnJS(endJS)(e.absoluteX, e.absoluteY); })
+                .onFinalize((e, ok) => { if (!ok) runOnJS(endJS)(-1, -1); });
+            const tap = Gesture.Tap().maxDistance(9).onEnd(() => {
+                if (from === 'hand') runOnJS(inspectJS)(uid); else runOnJS(unstageJS)(uid);
+            });
+            g = Gesture.Exclusive(pan, tap);
+            gestureCacheRef.current.set(key, g);
+        }
+        return g;
+    };
+    const handCardGesture = (card: CombatCardVM) => cardGestureFor('hand', card.uid);
+    const stagedGesture = (card: CombatCardVM) => cardGestureFor('play', card.uid);
     const dieGesture = (die: CombatDieVM) => {
-        const pan = Gesture.Pan().minDistance(8)
-            .onStart((e) => { drag.x.value = e.absoluteX; drag.y.value = e.absoluteY; runOnJS(drag.begin)({ type: 'die', dieId: die.id, die }, e.absoluteX, e.absoluteY); })
-            .onUpdate((e) => { drag.x.value = e.absoluteX; drag.y.value = e.absoluteY; })
-            .onEnd((e) => { runOnJS(drag.end)(e.absoluteX, e.absoluteY); })
-            .onFinalize((e, ok) => { if (!ok) runOnJS(drag.end)(-1, -1); });
-        return Gesture.Exclusive(pan);
+        const key = `die-${die.id}`;
+        let g = gestureCacheRef.current.get(key);
+        if (!g) {
+            const pan = Gesture.Pan().minDistance(8)
+                .onStart((e) => { gx.value = e.absoluteX; gy.value = e.absoluteY; runOnJS(beginDieJS)(die.id, e.absoluteX, e.absoluteY); })
+                .onUpdate((e) => { gx.value = e.absoluteX; gy.value = e.absoluteY; })
+                .onEnd((e) => { runOnJS(endJS)(e.absoluteX, e.absoluteY); })
+                .onFinalize((e, ok) => { if (!ok) runOnJS(endJS)(-1, -1); });
+            g = Gesture.Exclusive(pan);
+            gestureCacheRef.current.set(key, g);
+        }
+        return g;
     };
 
     const stagedSet = new Set(stagedUids);
@@ -556,7 +651,10 @@ export const CombatBoard = React.memo(function CombatBoard({
     // APPLY this card powered regardless of comboTargetUid (binding consumption to one
     // uid would be a combo regression); else if this card has a usable dropped die,
     // draft+power it; else FREE (no die).
-    const handleApply = (uid: string) => {
+    // Latest-closure ref + a stable dispatcher so memoized StagedCards never
+    // re-render just because the board did.
+    const handleApplyRef = useRef<(uid: string) => void>(() => undefined);
+    handleApplyRef.current = (uid: string) => {
         if (draftedDie) {
             onApply(uid, null, true);
         } else {
@@ -567,6 +665,11 @@ export const CombatBoard = React.memo(function CombatBoard({
         }
         setPendingDieByUid((prev) => { const next = { ...prev }; delete next[uid]; return next; });
     };
+    const handleApply = useCallback((uid: string) => handleApplyRef.current(uid), []);
+    // Stable staged-frame registrar (drop-target measurement).
+    const registerStaged = useCallback((uid: string, node: View | null) => {
+        if (node) stagedRefs.current.set(uid, node); else stagedRefs.current.delete(uid);
+    }, []);
 
     // A staged card is a committed intent — END PHASE must never silently drop it.
     // Auto-APPLY every still-staged card first (each exactly as its own APPLY button
@@ -603,9 +706,10 @@ export const CombatBoard = React.memo(function CombatBoard({
                     dashed affordance appears ONLY while a card drag is live; staged
                     cards float as a centered row anchored to the region's bottom. */}
                 <View style={{ flex: 1 }} pointerEvents="box-none">
-                    <Animated.View
-                        ref={(node) => { playAreaRef.current = node as unknown as View | null; }}
-                        layout={LinearTransition.duration(220)}
+                    {/* plain View (no layout transition): a reanimated layout container
+                        wrapping animated staged children was measurable drag overhead */}
+                    <View
+                        ref={(node) => { playAreaRef.current = node; }}
                         style={[styles.playRegion, cardDragLive && { borderColor: `${AXM.sulfur}99`, backgroundColor: 'rgba(212,192,38,0.05)' }]}
                         testID="combat-play-area"
                         pointerEvents="box-none"
@@ -624,9 +728,9 @@ export const CombatBoard = React.memo(function CombatBoard({
                                         card={card}
                                         assignedDie={adie}
                                         read={readFor(adie)}
-                                        onApply={() => handleApply(card.uid)}
+                                        onApply={handleApply}
                                         gesture={stagedGesture(card)}
-                                        register={(node) => { if (node) stagedRefs.current.set(card.uid, node); else stagedRefs.current.delete(card.uid); }}
+                                        register={registerStaged}
                                         compact={stagedCards.length > 2}
                                         popKey={dropPop.uid === card.uid ? dropPop.n : 0}
                                         socketPulse={dieDragLive}
@@ -637,8 +741,13 @@ export const CombatBoard = React.memo(function CombatBoard({
                         {stagedCards.length > 0 && !stagedCards.some((c) => assignedDieFor(c.uid)) && !cardDragLive ? (
                             <Text style={styles.stageHint} numberOfLines={1}>drag a die onto your card · APPLY to commit</Text>
                         ) : null}
-                    </Animated.View>
+                    </View>
                 </View>
+
+                {/* momentum wheel — stance-sequencing combo tracker (heart→body→mind) */}
+                {momentum ? (
+                    <MomentumWheel lit={momentum.lit} charged={momentum.charged} onPress={onMomentumInfo} />
+                ) : null}
 
                 {/* player status strip — IN FLOW (not floated over the fan, where the
                     hand's gesture area swallowed the taps) so every tile stays tappable */}
@@ -672,7 +781,7 @@ export const CombatBoard = React.memo(function CombatBoard({
                                         marginLeft: i === 0 ? 0 : -overlap,
                                         zIndex: draggingCardUid === card.uid ? 30 : i,
                                         opacity: draggingCardUid === card.uid ? 0.3 : 1,
-                                        transform: [{ translateY: 8 + Math.abs(i - mid) * 4 }, { rotate: `${(i - mid) * 3.5}deg` }],
+                                        transform: [{ translateY: 2 + Math.abs(i - mid) * 3 }, { rotate: `${(i - mid) * 3}deg` }],
                                     }}
                                     testID={`combat-hand-${card.uid}`}
                                     accessible accessibilityRole="button"
@@ -955,7 +1064,15 @@ const useStyles = makeStyles((AXM) => ({
     diePip: { fontFamily: FONTS.sans, fontSize: 10, textAlign: 'center', marginTop: 2, letterSpacing: 0.6, textShadowColor: 'rgba(0,0,0,0.9)', textShadowRadius: 3 },
 
     // ── the hand dock ──
-    dock: { height: 172, overflow: 'hidden' },
+    dock: { height: 178, overflow: 'hidden' },
+
+    // ── momentum wheel ──
+    wheelRow: { alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 3, paddingHorizontal: 10, marginBottom: 2 },
+    wheelNode: { width: 26, height: 26, borderRadius: 13, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
+    wheelNodeNext: { borderStyle: 'dashed' },
+    wheelGlyph: { fontSize: 12, lineHeight: 15, textShadowRadius: 6, textShadowOffset: { width: 0, height: 0 } },
+    wheelChevron: { fontFamily: FONTS.sans, fontSize: 13, color: '#5a5346', marginHorizontal: -1 },
+    wheelCharged: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 1.6, marginLeft: 7, textShadowRadius: 7, textShadowOffset: { width: 0, height: 0 } },
     fanGlow: { position: 'absolute', bottom: 0, left: 0 },
     fan: { ...StyleSheet.absoluteFillObject, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', paddingHorizontal: 12 },
 

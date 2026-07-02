@@ -86,10 +86,10 @@ export const COMBAT_TUTORIAL_STEPS: CombatTutorialStep[] = [
         id: 'advance',
         title: 'PRESS THE ADVANTAGE',
         body:
-            'Spent your die with nothing left to chain? Tap ↻ NEW TURN to roll two fresh dice ' +
-            '(spent dice stay spent). When a track has cleared the phase, hit END PHASE to ' +
-            'resolve your pressure against the threat. The fight is yours to assemble.',
-        lookFor: '↻ NEW TURN · END PHASE',
+            'Your rolled dice are the turn — spend them well; there is no reroll. When your ' +
+            'cards are applied, hit ⧗ END PHASE to resolve your pressure against the threat ' +
+            '(fresh dice arrive with the new turn). The fight is yours to assemble.',
+        lookFor: '⧗ END PHASE',
         done: (s) => advanced(s),
     },
 ];

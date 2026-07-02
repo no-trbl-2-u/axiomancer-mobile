@@ -27,9 +27,9 @@ import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanima
 import Svg, { Circle, Defs, Line, Polygon, RadialGradient, Stop } from 'react-native-svg';
 import {
     initializeCombatEncounter, rollEncounterDice, playCombatCard, resolveThreatPhase,
-    startTurn, endTurn, draftStanceDie, discardCombatCard, playSignatureSkill,
+    startTurn, draftStanceDie, discardCombatCard, playSignatureSkill,
     selectEncounterMercyChoice, buildCombatSummary, rollCombatCardRewards, addRewardCard,
-    rollLoot, addItem,
+    rollLoot, addItem, getSkillById, firstEquippedPerSlot,
     type CombatEncounterState, type CombatOutcome, type Character, type Enemy, type CombatEvent,
 } from 'axiomancer-mechanics';
 
@@ -42,7 +42,8 @@ import { CombatTutorialPrimer } from '@/components/combat/encounter/CombatTutori
 import { CombatTutorialCoach } from '@/components/combat/encounter/CombatTutorialCoach';
 import { currentCombatTutorialStep } from '@/components/combat/encounter/combat-tutorial-steps';
 import { EnemyPortrait } from '@/components/event/enemy-art/EnemyPortrait';
-import { INTENT_ICONS, buildCombatViewModel, rewardOfferVMs, type CombatCardVM, type CombatEffectChipVM } from '@/state/presenters/combat-encounter.engine';
+import { INTENT_ICONS, buildCombatViewModel, rewardOfferVMs, STANCE_COLORS, type CombatCardVM, type CombatEffectChipVM, type CombatSignatureVM } from '@/state/presenters/combat-encounter.engine';
+import { PlayerPortrait } from '@/components/art/PlayerPortrait';
 import { useGameState, useGameStore } from '@/state/GameStoreProvider';
 import { COMBAT_TUTORIAL_FLAG, completeCombatTutorialAction, runArchetype, skewRewardsByArchetype } from '@/state/combat/store-actions';
 import { FONTS } from '@/theme/axm';
@@ -239,6 +240,9 @@ export function CombatEncounterPanel({
     // instantly ("blink"). Ignore backdrop dismiss for a moment after open (the ✕ always works).
     const detailOpenedAt = useRef(0);
     const [tipEffect, setTipEffect] = useState<CombatEffectChipVM | null>(null);
+    // Signature-rune info popup (long-press / unaffordable tap) + pilgrim modal.
+    const [sigInfo, setSigInfo] = useState<CombatSignatureVM | null>(null);
+    const [pilgrimOpen, setPilgrimOpen] = useState(false);
     // Deckbuilder reward (Spec 26b §C) — rolled once on victory, claimed before the summary.
     const [rewardOffers, setRewardOffers] = useState<string[]>([]);
     const [rewardsClaimed, setRewardsClaimed] = useState(false);
@@ -261,7 +265,9 @@ export function CombatEncounterPanel({
     const live = state ?? initial;
     const vm = useMemo(() => buildCombatViewModel(live), [live]);
 
-    // ── screen-level drag controller (cards only) ──
+    // ── screen-level drag controller (cards + dice) ──
+    // dragX/dragY are written straight from the board's gesture worklets every
+    // frame (see DragController.x/y) — the JS thread only sees begin and end.
     const [dragActive, setDragActive] = useState<DragPayload | null>(null);
     const dragRef = useRef<DragPayload | null>(null);
     const dragX = useSharedValue(0);
@@ -270,8 +276,7 @@ export function CombatEncounterPanel({
     const begin = useCallback((payload: DragPayload, x: number, y: number) => {
         dragRef.current = payload; dragX.value = x; dragY.value = y; dragShown.value = 1; setDragActive(payload);
     }, [dragX, dragY, dragShown]);
-    const move = useCallback((x: number, y: number) => { dragX.value = x; dragY.value = y; }, [dragX, dragY]);
-    const drag: DragController = useMemo(() => ({ begin, move, end: () => undefined, active: dragActive }), [begin, move, dragActive]);
+    const drag: DragController = useMemo(() => ({ begin, end: () => undefined, active: dragActive, x: dragX, y: dragY }), [begin, dragActive, dragX, dragY]);
     const end = useCallback((x: number, y: number) => {
         const payload = dragRef.current; dragRef.current = null; dragShown.value = 0; setDragActive(null);
         if (!payload) return;
@@ -309,7 +314,6 @@ export function CombatEncounterPanel({
     }, [apply, unstageUid]);
     const onDiscard = useCallback((uid: string) => { apply((s) => discardCombatCard(s, uid).state); unstageUid(uid); }, [apply, unstageUid]);
     const onSignature = useCallback((id: string) => apply((s) => playSignatureSkill(s, id).state), [apply]);
-    const onNewTurn = useCallback(() => { apply((s) => startTurn(endTurn(s).state).state); setStagedUids([]); }, [apply]);
     const onEndPhase = useCallback(() => {
         apply((s) => {
             const t = resolveThreatPhase(s);
@@ -382,10 +386,11 @@ export function CombatEncounterPanel({
                     onUnstage={onUnstage}
                     onDiscard={onDiscard}
                     onSignature={onSignature}
-                    onNewTurn={onNewTurn}
                     onEndPhase={onEndPhase}
                     onInspect={(c) => { detailOpenedAt.current = Date.now(); setDetailCard(c); }}
                     onChip={setTipEffect}
+                    onSignatureInfo={setSigInfo}
+                    onPlayerInspect={() => setPilgrimOpen(true)}
                     fx={fx}
                 />
             )}
@@ -557,6 +562,113 @@ export function CombatEncounterPanel({
                 );
             })()}
 
+            {/* signature-rune info — long-press (or unaffordable tap) on a rune */}
+            {sigInfo && (
+                <Pressable style={styles.backdrop} testID="combat-signature-info" onPress={() => setSigInfo(null)}>
+                    <View style={[styles.tipPlaque, { borderColor: `${AXM.sulfur}66` }]}>
+                        <View style={[styles.tipCorner, styles.tipCornerTl, { borderColor: AXM.sulfur }]} pointerEvents="none" />
+                        <View style={[styles.tipCorner, styles.tipCornerTr, { borderColor: AXM.sulfur }]} pointerEvents="none" />
+                        <View style={[styles.tipCorner, styles.tipCornerBl, { borderColor: AXM.sulfur }]} pointerEvents="none" />
+                        <View style={[styles.tipCorner, styles.tipCornerBr, { borderColor: AXM.sulfur }]} pointerEvents="none" />
+                        <GlyphBurst color={AXM.sulfur} glyph={sigInfo.icon} />
+                        <Text style={[styles.tipName, { color: AXM.sulfur, textShadowColor: AXM.sulfur }]}>{sigInfo.name.toUpperCase()}</Text>
+                        <Text style={styles.tipGloss}>{sigInfo.description}</Text>
+                        <Text style={styles.tipMeta}>
+                            consumes ◆ {sigInfo.cost} conviction{sigInfo.affordable ? '' : ` — you have too little`}
+                        </Text>
+                        <View style={styles.tipBadgeWrap} pointerEvents="none">
+                            <Svg width={128} height={30} viewBox="0 0 128 30">
+                                <Polygon points="14,1 114,1 127,15 114,29 14,29 1,15" fill={AXM.panelBg} stroke={AXM.sulfur} strokeWidth={1.5} />
+                            </Svg>
+                            <View style={StyleSheet.absoluteFill}>
+                                <View style={styles.tipBadgeInner}>
+                                    <Text style={[styles.tipBadgeText, { color: AXM.sulfur }]} allowFontScaling={false}>SIGNATURE</Text>
+                                </View>
+                            </View>
+                        </View>
+                    </View>
+                </Pressable>
+            )}
+
+            {/* pilgrim modal — tap the player medallion: stats · status · gear · skills */}
+            {pilgrimOpen && (() => {
+                const p = live.player;
+                const stats = p.baseStats ?? { heart: 0, body: 0, mind: 0 };
+                const equipped = Array.from(firstEquippedPerSlot(p.inventory ?? []).entries());
+                const skills = (p.knownSkills ?? [])
+                    .map((id) => getSkillById(id))
+                    .filter((s): s is NonNullable<ReturnType<typeof getSkillById>> => Boolean(s));
+                return (
+                    <Pressable style={styles.backdrop} testID="combat-pilgrim-modal" onPress={() => setPilgrimOpen(false)}>
+                        <View style={styles.pilgrimWrap} onStartShouldSetResponder={() => true}>
+                            <ScrollView contentContainerStyle={styles.pilgrimStack} showsVerticalScrollIndicator={false}>
+                                <View style={styles.pilgrimHead}>
+                                    <View style={styles.pilgrimPortrait}><PlayerPortrait width={56} height={68} /></View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={styles.pilgrimName}>{vm.player.name}</Text>
+                                        <Text style={styles.pilgrimVitae}>♥ {vm.player.hp} / {vm.player.maxHp} VITAE{vm.player.guard > 0 ? `   🛡 ${vm.player.guard} GUARD` : ''}</Text>
+                                    </View>
+                                    <Text style={[styles.pilgrimConviction, { color: AXM.sulfur }]}>◆ {vm.conviction}</Text>
+                                </View>
+                                <View style={styles.pilgrimStatRow}>
+                                    {([['HEART', stats.heart, STANCE_COLORS.heart], ['BODY', stats.body, STANCE_COLORS.body], ['MIND', stats.mind, STANCE_COLORS.mind]] as const).map(([label, val, color]) => (
+                                        <View key={label} style={[styles.pilgrimStat, { borderColor: `${color}88` }]}>
+                                            <Text style={[styles.pilgrimStatVal, { color }]}>{val}</Text>
+                                            <Text style={styles.pilgrimStatLabel}>{label}</Text>
+                                        </View>
+                                    ))}
+                                </View>
+
+                                <Text style={styles.pilgrimSection}>STATUS EFFECTS</Text>
+                                {vm.player.effects.length === 0 && <Text style={styles.pilgrimEmpty}>clear — nothing afflicts or blesses you</Text>}
+                                {vm.player.effects.map((e) => (
+                                    <View key={e.effectId} style={styles.pilgrimRow}>
+                                        <Text style={[styles.pilgrimRowIcon, { color: e.glyph.color }]}>{e.glyph.glyph}</Text>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={[styles.pilgrimRowName, { color: e.glyph.color }]}>{e.glyph.label}  ·  ×{e.intensity} · {e.duration} turns</Text>
+                                            {e.gloss ? <Text style={styles.pilgrimRowDef}>{e.gloss}</Text> : null}
+                                        </View>
+                                    </View>
+                                ))}
+
+                                <Text style={styles.pilgrimSection}>GEAR</Text>
+                                {equipped.length === 0 && <Text style={styles.pilgrimEmpty}>nothing equipped</Text>}
+                                {equipped.map(([slot, item]) => (
+                                    <View key={slot} style={styles.pilgrimRow}>
+                                        <Text style={styles.pilgrimRowSlot}>{slot.toUpperCase()}</Text>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={styles.pilgrimRowName}>{item.name}</Text>
+                                            {item.description ? <Text style={styles.pilgrimRowDef}>{item.description}</Text> : null}
+                                        </View>
+                                    </View>
+                                ))}
+
+                                <Text style={styles.pilgrimSection}>SKILLS</Text>
+                                {skills.length === 0 && <Text style={styles.pilgrimEmpty}>no learned skills</Text>}
+                                {skills.map((s) => (
+                                    <View key={s.id} style={styles.pilgrimRow}>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={styles.pilgrimRowName}>{s.name}</Text>
+                                            {s.description ? <Text style={styles.pilgrimRowDef}>{s.description}</Text> : null}
+                                        </View>
+                                    </View>
+                                ))}
+                            </ScrollView>
+                        </View>
+                        <Pressable
+                            onPress={() => setPilgrimOpen(false)}
+                            testID="combat-pilgrim-close"
+                            accessibilityRole="button"
+                            accessibilityLabel="Close pilgrim details"
+                            hitSlop={10}
+                            style={[styles.detailClose, { borderColor: AXM.sulfur }]}
+                        >
+                            <Text style={[styles.detailCloseText, { color: AXM.sulfur }]}>✕</Text>
+                        </Pressable>
+                    </Pressable>
+                );
+            })()}
+
             {/* deckbuilder reward — claimed before the summary on a win */}
             {live.finalOutcome === 'victory' && !rewardsClaimed && rewardOffers.length > 0 && (
                 <CombatRewardsOverlay offers={rewardOfferVMs(rewardOffers)} onPick={onRewardPick} />
@@ -667,6 +779,26 @@ const useStyles = makeStyles((AXM) => ({
     tipBadgeWrap: { position: 'absolute', bottom: -15, alignSelf: 'center', width: 128, height: 30 },
     tipBadgeInner: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     tipBadgeText: { fontFamily: FONTS.sans, fontSize: 12, letterSpacing: 2 },
+
+    // ── pilgrim modal (tap the player medallion) ──
+    pilgrimWrap: { width: '100%', maxWidth: 380, maxHeight: '88%', borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)', borderRadius: 8, backgroundColor: AXM.panelBg },
+    pilgrimStack: { padding: 16, paddingBottom: 24 },
+    pilgrimHead: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
+    pilgrimPortrait: { width: 60, height: 72, borderRadius: 6, borderWidth: 1.5, borderColor: AXM.sulfur, backgroundColor: AXM.deepBg, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+    pilgrimName: { fontFamily: FONTS.gothic, fontSize: 20, color: AXM.parchment },
+    pilgrimVitae: { fontFamily: FONTS.mono, fontSize: 12, color: AXM.bone, marginTop: 3, letterSpacing: 0.4 },
+    pilgrimConviction: { fontFamily: FONTS.gothic, fontSize: 18 },
+    pilgrimStatRow: { flexDirection: 'row', gap: 8, marginBottom: 6 },
+    pilgrimStat: { flex: 1, borderWidth: 1, borderRadius: 6, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', paddingVertical: 7 },
+    pilgrimStatVal: { fontFamily: FONTS.gothic, fontSize: 20, lineHeight: 23 },
+    pilgrimStatLabel: { fontFamily: FONTS.sans, fontSize: 9, letterSpacing: 1.6, color: AXM.bone, marginTop: 1 },
+    pilgrimSection: { fontFamily: FONTS.sans, fontSize: 11, letterSpacing: 2, color: AXM.sulfur, marginTop: 14, marginBottom: 6 },
+    pilgrimEmpty: { fontFamily: FONTS.serifItalic, fontStyle: 'italic', fontSize: 12, color: AXM.ash },
+    pilgrimRow: { flexDirection: 'row', gap: 9, alignItems: 'flex-start', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', borderRadius: 6, backgroundColor: 'rgba(0,0,0,0.4)', padding: 9, marginBottom: 6 },
+    pilgrimRowIcon: { fontSize: 17, lineHeight: 20 },
+    pilgrimRowSlot: { fontFamily: FONTS.sans, fontSize: 9, letterSpacing: 1.2, color: AXM.bone, marginTop: 2, minWidth: 52 },
+    pilgrimRowName: { fontFamily: FONTS.sans, fontSize: 13, letterSpacing: 0.8, color: AXM.parchment },
+    pilgrimRowDef: { fontFamily: FONTS.serif, fontSize: 12, lineHeight: 16, color: AXM.bone, marginTop: 2 },
 
     reveal: { flex: 1, backgroundColor: '#0c0a08' },
     revealScroll: { alignItems: 'center', padding: 22, paddingBottom: 40 },

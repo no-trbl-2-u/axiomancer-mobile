@@ -18,7 +18,7 @@
  *   signature rune column      → left edge (conviction chip + circular runes)
  *   dice row                   → free-floating gem dice above the hand
  *   hand fan                   → edge-to-edge arc, bottoms cropped off-screen
- *   corner medallions          → player portrait (pane) · END PHASE + NEW TURN
+ *   corner medallions          → player portrait (tap = pilgrim modal) · END PHASE
  *   bottom rail                → ♥ HP · phase ledger · deck/discard counts
  *
  * The drag ghost renders at screen level in `CombatEncounterPanel`.
@@ -34,6 +34,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
     FadeIn, FadeInDown, LinearTransition, runOnJS,
     useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming,
+    type SharedValue,
 } from 'react-native-reanimated';
 import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 
@@ -46,7 +47,7 @@ import type {
 import { armedReadValue } from '@/state/presenters/combat-encounter.engine';
 import type { CombatReadResult } from 'axiomancer-mechanics';
 import { TrashGlyph, LedgerMark } from '@/components/hazard/glyphs';
-import { CombatCombatantPane, PlayerMedallion, COMBAT_HUD_HEIGHT, type CombatFx } from './CombatCombatantPane';
+import { CombatCombatantPane, EffectChips, PlayerMedallion, COMBAT_HUD_HEIGHT, type CombatFx } from './CombatCombatantPane';
 import { CombatDie } from './CombatDie';
 
 // The single bundled card art (one photo across every card for now — see TODO at
@@ -62,9 +63,13 @@ export type DragPayload =
 
 export interface DragController {
     begin: (payload: DragPayload, x: number, y: number) => void;
-    move: (x: number, y: number) => void;
     end: (x: number, y: number) => void;
     active: DragPayload | null;
+    /** Ghost position shared values — written DIRECTLY from the gesture worklet
+     *  every frame (no runOnJS hop; a per-frame UI→JS round-trip made card drags
+     *  stutter whenever the JS thread was busy). begin/end still cross to JS once. */
+    x: SharedValue<number>;
+    y: SharedValue<number>;
 }
 
 interface Rect { x: number; y: number; width: number; height: number; }
@@ -100,7 +105,12 @@ export function OutcomeText({ text, names, base, bold }: { text: string; names: 
 
 // ── Signature rune column (left edge) ────────────────────────────────────────
 
-function SignatureColumn({ conviction, signatures, onCast }: { conviction: number; signatures: CombatSignatureVM[]; onCast: (id: string) => void }) {
+function SignatureColumn({ conviction, signatures, onCast, onInfo }: {
+    conviction: number;
+    signatures: CombatSignatureVM[];
+    onCast: (id: string) => void;
+    onInfo?: (s: CombatSignatureVM) => void;
+}) {
     const AXM = usePalette();
     const styles = useStyles();
     return (
@@ -117,13 +127,20 @@ function SignatureColumn({ conviction, signatures, onCast }: { conviction: numbe
             {signatures.map((s) => (
                 <Pressable
                     key={s.id}
-                    disabled={!s.affordable}
-                    onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => undefined); onCast(s.id); }}
+                    // NOT disabled while unaffordable — a tap then opens the info popup
+                    // instead of casting, and a long-press explains any rune.
+                    onPress={() => {
+                        if (s.affordable) { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => undefined); onCast(s.id); }
+                        else onInfo?.(s);
+                    }}
+                    onLongPress={() => onInfo?.(s)}
+                    delayLongPress={350}
                     testID={`combat-signature-${s.id}`}
                     accessibilityRole="button"
                     accessibilityState={{ disabled: !s.affordable }}
                     accessibilityLabel={`${s.name}, costs ${s.cost} conviction. ${s.description}${s.affordable ? '' : ' — not enough conviction'}`}
-                    style={[styles.sigRune, { borderColor: s.affordable ? AXM.sulfur : AXM.ash, opacity: s.affordable ? 1 : 0.45 }]}
+                    accessibilityHint="Long press for details"
+                    style={[styles.sigRune, { borderColor: s.affordable ? AXM.sulfur : AXM.ash, opacity: s.affordable ? 1 : 0.55 }]}
                 >
                     <Text style={[styles.sigRuneIcon, { color: s.affordable ? AXM.sulfur : AXM.bone }]}>{s.icon}</Text>
                     <View style={styles.sigCostBadge}>
@@ -299,7 +316,7 @@ function StagedCard({
     );
 }
 
-// ── END PHASE medallion + NEW TURN disc ──────────────────────────────────────
+// ── END PHASE medallion ──────────────────────────────────────────────────────
 
 function EndPhaseMedallion({ onPress }: { onPress: () => void }) {
     const AXM = usePalette();
@@ -353,16 +370,19 @@ export interface CombatBoardProps {
     onUnstage: (uid: string) => void;
     onDiscard: (uid: string) => void;
     onSignature: (id: string) => void;
-    onNewTurn: () => void;
     onEndPhase: () => void;
     onInspect: (card: CombatCardVM) => void;
     onChip?: (e: CombatEffectChipVM) => void;
+    /** Long-press (or tap while unaffordable) on a signature rune → info popup. */
+    onSignatureInfo?: (s: CombatSignatureVM) => void;
+    /** Tap the player medallion → pilgrim stats/effects/skills modal. */
+    onPlayerInspect?: () => void;
     /** Latest resolved engine events (drives enemy/player resolution feedback). */
     fx?: CombatFx;
 }
 
 export const CombatBoard = React.memo(function CombatBoard({
-    vm, drag, stagedUids, onApply, onStage, onUnstage, onDiscard, onSignature, onNewTurn, onEndPhase, onInspect, onChip, fx,
+    vm, drag, stagedUids, onApply, onStage, onUnstage, onDiscard, onSignature, onEndPhase, onInspect, onChip, onSignatureInfo, onPlayerInspect, fx,
 }: CombatBoardProps) {
     const AXM = usePalette();
     const styles = useStyles();
@@ -478,10 +498,12 @@ export const CombatBoard = React.memo(function CombatBoard({
 
     (drag as DragController & { resolveDrop?: typeof resolveDrop }).resolveDrop = resolveDrop;
 
+    // Per-frame position updates write the shared values DIRECTLY on the UI
+    // thread — only begin (stage the ghost) and end (resolve the drop) hop to JS.
     const handCardGesture = (card: CombatCardVM) => {
         const pan = Gesture.Pan().minDistance(10)
-            .onStart((e) => { runOnJS(drag.begin)({ type: 'card', from: 'hand', uid: card.uid, card }, e.absoluteX, e.absoluteY); })
-            .onUpdate((e) => { runOnJS(drag.move)(e.absoluteX, e.absoluteY); })
+            .onStart((e) => { drag.x.value = e.absoluteX; drag.y.value = e.absoluteY; runOnJS(drag.begin)({ type: 'card', from: 'hand', uid: card.uid, card }, e.absoluteX, e.absoluteY); })
+            .onUpdate((e) => { drag.x.value = e.absoluteX; drag.y.value = e.absoluteY; })
             .onEnd((e) => { runOnJS(drag.end)(e.absoluteX, e.absoluteY); })
             .onFinalize((e, ok) => { if (!ok) runOnJS(drag.end)(-1, -1); });
         const tap = Gesture.Tap().maxDistance(9).onEnd(() => { runOnJS(onInspect)(card); });
@@ -490,8 +512,8 @@ export const CombatBoard = React.memo(function CombatBoard({
 
     const stagedGesture = (card: CombatCardVM) => {
         const pan = Gesture.Pan().minDistance(10)
-            .onStart((e) => { runOnJS(drag.begin)({ type: 'card', from: 'play', uid: card.uid, card }, e.absoluteX, e.absoluteY); })
-            .onUpdate((e) => { runOnJS(drag.move)(e.absoluteX, e.absoluteY); })
+            .onStart((e) => { drag.x.value = e.absoluteX; drag.y.value = e.absoluteY; runOnJS(drag.begin)({ type: 'card', from: 'play', uid: card.uid, card }, e.absoluteX, e.absoluteY); })
+            .onUpdate((e) => { drag.x.value = e.absoluteX; drag.y.value = e.absoluteY; })
             .onEnd((e) => { runOnJS(drag.end)(e.absoluteX, e.absoluteY); })
             .onFinalize((e, ok) => { if (!ok) runOnJS(drag.end)(-1, -1); });
         const tap = Gesture.Tap().maxDistance(9).onEnd(() => { runOnJS(onUnstage)(card.uid); });
@@ -500,8 +522,8 @@ export const CombatBoard = React.memo(function CombatBoard({
 
     const dieGesture = (die: CombatDieVM) => {
         const pan = Gesture.Pan().minDistance(8)
-            .onStart((e) => { runOnJS(drag.begin)({ type: 'die', dieId: die.id, die }, e.absoluteX, e.absoluteY); })
-            .onUpdate((e) => { runOnJS(drag.move)(e.absoluteX, e.absoluteY); })
+            .onStart((e) => { drag.x.value = e.absoluteX; drag.y.value = e.absoluteY; runOnJS(drag.begin)({ type: 'die', dieId: die.id, die }, e.absoluteX, e.absoluteY); })
+            .onUpdate((e) => { drag.x.value = e.absoluteX; drag.y.value = e.absoluteY; })
             .onEnd((e) => { runOnJS(drag.end)(e.absoluteX, e.absoluteY); })
             .onFinalize((e, ok) => { if (!ok) runOnJS(drag.end)(-1, -1); });
         return Gesture.Exclusive(pan);
@@ -618,6 +640,15 @@ export const CombatBoard = React.memo(function CombatBoard({
                     </Animated.View>
                 </View>
 
+                {/* player status strip — IN FLOW (not floated over the fan, where the
+                    hand's gesture area swallowed the taps) so every tile stays tappable */}
+                {(vm.player.effects.length > 0 || vm.player.guard > 0) && (
+                    <View style={styles.statusStrip} pointerEvents="box-none">
+                        <EffectChips effects={vm.player.effects} onChip={onChip} />
+                        {vm.player.guard > 0 ? <Text style={styles.guardChip} testID="combat-guard">🛡 {vm.player.guard}</Text> : null}
+                    </View>
+                )}
+
                 <DiceRow vm={vm} dieGesture={dieGesture} draggingDieId={draggingDieId} assignedDieIds={assignedDieIds} />
 
                 {/* the hand dock — edge-to-edge fan, bottoms cropped off-screen */}
@@ -679,13 +710,13 @@ export const CombatBoard = React.memo(function CombatBoard({
             <PlayerMedallion
                 player={vm.player}
                 enemyIntentDamage={vm.enemy.intent.damage}
-                onChip={onChip}
+                onPress={onPlayerInspect}
                 fx={fx}
                 bottomInset={bottomInset}
             />
 
             {/* signature rune column — left edge */}
-            <SignatureColumn conviction={vm.conviction} signatures={vm.signatures} onCast={onSignature} />
+            <SignatureColumn conviction={vm.conviction} signatures={vm.signatures} onCast={onSignature} onInfo={onSignatureInfo} />
 
             {/* SCRAP — only present while a card is being dragged (no permanent
                 footprint). Kept mounted/hidden rather than unmounted so the drop
@@ -702,17 +733,9 @@ export const CombatBoard = React.memo(function CombatBoard({
                 <Text style={[styles.trashLabel, draggingCardUid ? { color: AXM.blood } : null]}>SCRAP</Text>
             </View>
 
-            {/* corner medallions — NEW TURN disc stacked above END PHASE */}
+            {/* corner medallion — END PHASE. (The dice-reroll disc is deliberately
+                gone: dice are the turn's hand, you play what you rolled.) */}
             <View style={[styles.cornerStack, { bottom: railH + 6 }]} pointerEvents="box-none">
-                <Pressable
-                    onPress={onNewTurn}
-                    testID="combat-new-turn"
-                    accessibilityRole="button"
-                    accessibilityLabel="New turn — discard your dice and roll two fresh ones (the enemy does NOT act)"
-                    style={[styles.newTurnDisc, { borderColor: AXM.bone }]}
-                >
-                    <Text style={styles.newTurnGlyph} allowFontScaling={false}>↻</Text>
-                </Pressable>
                 <EndPhaseMedallion onPress={handleEndPhase} />
             </View>
         </View>
@@ -766,7 +789,7 @@ function artMirrored(cardId: string): boolean {
  * per-card differentiation is carried by the stance tint + mirror + the glyph
  * until per-card art ships; swap CARD_ART for a per-card source then.
  */
-export function CombatCardFace({
+export const CombatCardFace = React.memo(function CombatCardFace({
     card, width, height, large = false, accent = null, readPip = null, heroOverride, children,
 }: {
     card: CombatCardVM;
@@ -862,7 +885,7 @@ export function CombatCardFace({
             </View>
         </View>
     );
-}
+});
 
 // The fanned hand card — a small instance of the shared face, art-forward at the
 // reference's ~1:1.5 proportion. The fan-overlap math (band fit) keys off these
@@ -957,13 +980,16 @@ const useStyles = makeStyles((AXM) => ({
     },
     trashLabel: { fontFamily: FONTS.mono, fontSize: 9, letterSpacing: 1, color: AXM.bone, marginTop: 1 },
 
+    // ── player status strip (in-flow, above the dice) ──
+    statusStrip: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingBottom: 6 },
+    guardChip: {
+        fontFamily: FONTS.mono, fontSize: 11, color: '#6fb3e0', letterSpacing: 0.5,
+        backgroundColor: 'rgba(0,0,0,0.7)', borderWidth: 1, borderColor: '#6fb3e055', borderRadius: 4,
+        paddingHorizontal: 5, paddingVertical: 2, overflow: 'hidden',
+    },
+
     // ── corner medallions ──
     cornerStack: { position: 'absolute', right: 10, alignItems: 'center', gap: 8, zIndex: 40 },
-    newTurnDisc: {
-        width: 42, height: 42, borderRadius: 21, borderWidth: 1.5, backgroundColor: 'rgba(0,0,0,0.6)',
-        alignItems: 'center', justifyContent: 'center',
-    },
-    newTurnGlyph: { fontFamily: FONTS.sans, fontSize: 18, lineHeight: 21, color: AXM.parchment },
     endWrap: { width: 80, height: 80 },
     endBtn: {
         width: 80, height: 80, borderRadius: 40, borderWidth: 3, backgroundColor: '#0c0a06',
